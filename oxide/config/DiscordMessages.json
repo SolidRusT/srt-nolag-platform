@@ -1,0 +1,37 @@
+{
+  "GeneralSettings": {
+    "Announce": true
+  },
+  "BanSettings": {
+    "Color": "3329330",
+    "Enabled": true,
+    "WebhookUrl": "https://discord.com/api/webhooks/804098382363754526/ascEENWi1XAA2rY0WkYGxBLDob6UhF0Jk8TiKKNn-7E6sM2o2wBXowwxW8VJe_bkluFh"
+  },
+  "ReportSettings": {
+    "LogToConsole": true,
+    "Alert": "",
+    "Cooldown": 30,
+    "Color": "3329330",
+    "Enabled": true,
+    "WebhookUrl": "https://discord.com/api/webhooks/804103107683549216/g7DkanILPCD_SVkBW6EyiK3zJxBs3MKQh34bVOBFBsAwzoRP-tcx4hxx0D3YmAySLzgf"
+  },
+  "MessageSettings": {
+    "LogToConsole": true,
+    "SuggestAlias": false,
+    "Alert": "",
+    "Cooldown": 30,
+    "Color": "3329330",
+    "Enabled": true,
+    "WebhookUrl": "https://discord.com/api/webhooks/804099875418800150/I4g9EzEOq6xYs7R3s1O9nROWPVASzfKTABx-iaW9m0XgJu9M2IrrnU5SDZNrXwC-F3j6"
+  },
+  "ChatSettings": {
+    "TextToSpeech": false,
+    "Enabled": true,
+    "WebhookUrl": "https://discord.com/api/webhooks/804099330939158559/IJhKfkLlm_wOxywNF4dxpPV9iIL7spYCZG3lViycnsGkTgsFDTe8pfc1K4CsVOETACvT"
+  },
+  "MuteSettings": {
+    "Color": "3329330",
+    "Enabled": true,
+    "WebhookUrl": "https://discord.com/api/webhooks/804098382363754526/ascEENWi1XAA2rY0WkYGxBLDob6UhF0Jk8TiKKNn-7E6sM2o2wBXowwxW8VJe_bkluFh"
+  }
+}

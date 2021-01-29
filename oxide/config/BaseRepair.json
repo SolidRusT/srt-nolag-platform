@@ -1,0 +1,9 @@
+{
+  "Number of entities to repair per server frame": 10,
+  "Default Enabled": false,
+  "Repair Cost Multiplier": 1.0,
+  "How long after an entity is damaged before it can be repaired (Seconds)": 30.0,
+  "Chat Commands": [
+    "br"
+  ]
+}

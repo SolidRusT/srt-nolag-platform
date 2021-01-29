@@ -1,0 +1,16 @@
+{
+  "Players": {
+    "76561198886543733": {
+      "Reports": 0,
+      "ReportCooldown": "2021-01-27T21:41:37.69744Z",
+      "MessageCooldown": "2021-01-27T21:37:07.338825Z",
+      "ReportDisabled": false
+    },
+    "76561198359580291": {
+      "Reports": 2,
+      "ReportCooldown": null,
+      "MessageCooldown": null,
+      "ReportDisabled": false
+    }
+  }
+}

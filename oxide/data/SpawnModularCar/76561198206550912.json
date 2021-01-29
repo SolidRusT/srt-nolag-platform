@@ -1,0 +1,17 @@
+{
+  "Settings": {
+    "AutoCodeLock": false,
+    "AutoKeyLock": false,
+    "AutoFillTankers": false
+  },
+  "Presets": [
+    {
+      "Name": "car1",
+      "ModuleIDs": [
+        170758448,
+        268565518
+      ]
+    }
+  ],
+  "OwnerID": "76561198206550912"
+}

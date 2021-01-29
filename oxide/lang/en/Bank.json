@@ -1,0 +1,17 @@
+{
+  "Denied: Permission": "You lack permission to do that",
+  "Denied: Privilege": "You lack build privileges and cannot do that",
+  "Denied: Swimming": "You cannot do that while swimming",
+  "Denied: Falling": "You cannot do that while falling",
+  "Denied: Wounded": "You cannot do that while wounded",
+  "Denied: Mounted": "You cannot do that while mounted",
+  "Denied: Generic": "You cannot do that right now",
+  "Denied: Irradiated": "You cannot do that while irradiated",
+  "Denied: Ship": "You cannot do that while on a ship",
+  "Denied: Lift": "You cannot do that while on a lift",
+  "Denied: Balloon": "You cannot do that while on a balloon",
+  "Denied: Safe Zone": "You cannot do that while in a safe zone",
+  "Cooldown: Seconds": "You are doing that too often, try again in a {0} seconds(s).",
+  "Cooldown: Minutes": "You are doing that too often, try again in a {0} minute(s).",
+  "Limit: Return": "Some items were returned to your inventory"
+}

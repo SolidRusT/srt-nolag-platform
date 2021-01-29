@@ -1,0 +1,8 @@
+{
+  "Settings": {
+    "Calories Needed Per Pump": 5.0,
+    "Pressure Needed For Production": 1.0,
+    "Pressure Per Pump": 0.2,
+    "Water Per Pump": 50
+  }
+}

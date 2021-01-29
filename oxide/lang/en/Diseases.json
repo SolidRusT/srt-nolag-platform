@@ -1,0 +1,20 @@
+{
+  "Infected message": "You are starting to feel sick from {0}",
+  "Recovering message": "You are recovering from {0}",
+  "Cured message": "You are no longer immune to {0}",
+  "Perm message": "You do not have permission to use this command",
+  "Prefix": "[Diseases]",
+  "List": "Diseases: ",
+  "Stat infected current": "Infected (current): ",
+  "Stat infected": "Infected (total): ",
+  "Stat deaths": "Deaths: ",
+  "Stat outbreaks": "Outbreaks: ",
+  "Stat outbreaks time": "Last Outbreak: ",
+  "Outbreak true": "Outbreak started on {0}",
+  "Outbreak false": "There are no valid entities for an outbreak",
+  "Invalid disease": "There is no loaded disease with that name",
+  "Invalid player": "There is no active player with that name",
+  "Infected": "Infected {0} with {1}",
+  "Cured": "Cured {0} of {1}",
+  "Commands": "Commands:"
+}

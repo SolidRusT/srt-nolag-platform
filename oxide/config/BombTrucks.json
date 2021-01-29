@@ -1,0 +1,47 @@
+{
+  "BombTrucks": [
+    {
+      "Name": "default",
+      "CooldownSeconds": 3600,
+      "SpawnLimitPerPlayer": 3,
+      "AttachRFReceiver": true,
+      "Modules": [
+        "vehicle.1mod.cockpit.with.engine",
+        "vehicle.2mod.fuel.tank"
+      ],
+      "ExplosionSettings": {
+        "Radius": 5.0,
+        "BlastRadiusMult": 1.0,
+        "DamageMult": 4.0,
+        "DensityCoefficient": 1.0,
+        "DensityExponent": 1.8,
+        "Speed": 10.0
+      },
+      "EnginePartsTier": 3
+    },
+    {
+      "Name": "Nuke",
+      "CooldownSeconds": 10800,
+      "SpawnLimitPerPlayer": 1,
+      "AttachRFReceiver": true,
+      "Modules": [
+        "vehicle.1mod.engine",
+        "vehicle.1mod.cockpit.armored",
+        "vehicle.2mod.fuel.tank"
+      ],
+      "ExplosionSettings": {
+        "Radius": 15.0,
+        "BlastRadiusMult": 1.0,
+        "DamageMult": 6.0,
+        "DensityCoefficient": 1.0,
+        "DensityExponent": 1.6,
+        "Speed": 10.0
+      },
+      "EnginePartsTier": 1
+    }
+  ],
+  "NoEscapeSettings": {
+    "CanSpawnWhileRaidBlocked": true,
+    "CanSpawnWhileCombatBlocked": true
+  }
+}

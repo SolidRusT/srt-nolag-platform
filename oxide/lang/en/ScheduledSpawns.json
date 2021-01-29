@@ -1,0 +1,18 @@
+{
+  "NotAllowed": "You are not allowed to use the '{0}' command",
+  "PlayersOnly": "Command '{0}' can only be used by players",
+  "UsageScheduledSpawns": "Usage {0} <item|prefab> <add|remove|list|start|stop>",
+  "UsageItemAddCommand": "Usage {0} item add <itemshortname> <timer> <name>",
+  "UsagePrefabAddCommand": "Usage {0} prefab add <prefabpath> <timer> <name>",
+  "UsageItemRemoveCommand": "Usage {0} item remove <name>",
+  "UsagePrefabRemoveCommand": "Usage {0} prefab remove <name>",
+  "AlreadyExist": "{0} already exist",
+  "NameDoesNotExist": "{0} does not exist",
+  "NameAdded": "{0} added successfully",
+  "NameRemoved": "{0} removed successfully",
+  "ItemSpawnStart": "Item spawn started",
+  "ItemSpawnStop": "Item spawn stopped",
+  "PrefabSpawnStart": "Prefab spawn started",
+  "PrefabSpawnStop": "Prefab spawn stopped",
+  "UnknownCommand": "Unknown command"
+}

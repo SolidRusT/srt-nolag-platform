@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "id": "-778367295",
+      "amount": 1,
+      "slot": 0,
+      "flags": 0,
+      "condition": 52.0,
+      "skin": 0,
+      "contents": [
+        {
+          "id": "174866732",
+          "amount": 1,
+          "slot": 0,
+          "flags": 0,
+          "condition": 300.0,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        }
+      ],
+      "primaryMagazine": 5,
+      "ammoType": -1211166256,
+      "dataInt": 0
+    },
+    {
+      "id": "1712070256",
+      "amount": 129,
+      "slot": 1,
+      "flags": 0,
+      "condition": 0.0,
+      "skin": 0,
+      "contents": [],
+      "primaryMagazine": 0,
+      "ammoType": 0,
+      "dataInt": 0
+    }
+  ]
+}
