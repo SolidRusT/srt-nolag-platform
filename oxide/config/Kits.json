@@ -1,7 +1,7 @@
 {
   "NPC - GUI Kits": {
     "0": {
-      "description": "Welcome on this server! Here is a list of free kits that you can get.<color=green>Enjoy your stay</color>",
+      "description": "Welcome to SolidRust! Here is a list of free kits that you can get.<color=green>Good luck!</color>",
       "kits": [
         "builder",
         "scuba",
@@ -9,7 +9,8 @@
         "semiauto",
         "getlit",
         "metallica",
-        "scrappy"
+        "scrappy",
+        "discord"
       ]
     },
     "1235439": {
@@ -34,13 +35,13 @@
     "true"
   ],
   "Custom AutoKits": {
-    "0": "KitName",
-    "1": "KitName",
-    "2": "KitName"
+    "0": "VipSpawn",
+    "1": "DiscordSpawn",
+    "2": "DefaultSpawn"
   },
-  "Kit - Logging": false,
-  "Show All Kits": false,
-  "Background - URL": "",
+  "Kit - Logging": true,
+  "Show All Kits": true,
+  "Background - URL": "http://suparious.com/images/rust-rusted-metal-100773678-large.jpg",
   "Wipe kit data on map wipe": true,
   "Kit Names & Cooldowns - Cooldowns (minutes)": {
     "kitName1": 20.0,

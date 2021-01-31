@@ -8,7 +8,6 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
-using System.IO;
 using Rust;
 using Oxide.Core.Configuration;
 using Oxide.Core.Libraries.Covalence;
@@ -33,13 +32,13 @@ using Oxide.Core.Libraries.Covalence;
  *******************************************************/
 
 /*****
-* This Update 2.0.3
-* Bug fix..
+* This Update 2.0.5
+* Image Override fix..
 */
 
 namespace Oxide.Plugins
 {
-    [Info("GUIShop", "Khan", "2.0.3")]
+    [Info("GUIShop", "Khan", "2.0.5")]
     [Description("GUI Shop Supports all known Currency, with NPC support - Re-Write Edition")]
     public class GUIShop : RustPlugin
     {
@@ -97,13 +96,13 @@ namespace Oxide.Plugins
 
             [JsonProperty("Switches to Economics as default curency")]
             public bool Economics = true;
-            
+
             [JsonProperty("Switches to ServerRewards as default curency")]
             public bool ServerRewards = false;
-            
+
             [JsonProperty("Switches to Custom as default curency")]
             public bool CustomCurrency = false;
-            
+
             [JsonProperty("Custom Currency Item ID")]
             public int CustomCurrencyID = -932201673;
 
@@ -121,7 +120,7 @@ namespace Oxide.Plugins
 
             [JsonProperty("If true = Images, If False = Text Labels")]
             public bool UIImageOption = false;
-            
+
             [JsonProperty("Enable NPC Auto Open")]
             public bool NPCAutoOpen = false;
 
@@ -215,7 +214,7 @@ namespace Oxide.Plugins
             public bool EnabledCategory;
             //public bool BluePrints;
             public bool EnableNPC;
-            public string NPCId;
+            public string NPCId = "";
             public HashSet<string> Items = new HashSet<string>();
         }
 
@@ -303,7 +302,7 @@ namespace Oxide.Plugins
         {
             PrintToConsole($"Configuration changes saved to {Name}.json");
 
-            Config.WriteObject(_config);
+            Config.WriteObject(_config, true);
         }
 
         private void CheckConfig()
@@ -506,25 +505,21 @@ namespace Oxide.Plugins
             foreach (ShopItem shopItem in _config.ShopItems.Values)
             {
                 if (string.IsNullOrEmpty(shopItem.Image) || shopItem.Shortname.Contains("hazmatsuit.spacesuit")) continue;
-                
-                if (imageListGUIShop.ContainsKey(shopItem.Image)) continue; //Fixed
 
-                imageListGUIShop.Add(shopItem.Image, shopItem.Image);
+                if (imageListGUIShop.ContainsKey(shopItem.Shortname)) continue; //Fixed
+                
+                imageListGUIShop.Add(shopItem.Shortname, shopItem.Image);
             }
 
             ImageLibrary?.Call("AddImage", _config.BackgroundUrl, BackgroundImage);
-
+            
             ImageLibrary?.Call("AddImage", _config.IconUrl, _config.IconUrl);
 
-            if (imageListGUIShop.Count > 0)
-            {
-                ImageLibrary?.Call("ImportImageList", Title, imageListGUIShop);
-            }
-            ImageLibrary?.Call("LoadImageList", Title, _config.ShopItems.Where(y => string.IsNullOrEmpty(y.Value.Image)).Select(x => new KeyValuePair<string, ulong>(x.Value.Image, x.Value.SkinId)).ToList(), new Action(ShopReady));
+            ImageLibrary?.Call("ImportImageList", Title, imageListGUIShop, 76561198021388082UL, true, new Action(ShopReady));
 
             if (!ImageLibrary)
             {
-                _isShopReady = true;
+            _isShopReady = true;
             }
         }
 
@@ -1314,7 +1309,7 @@ namespace Oxide.Plugins
                 {"Basic Horse Shoes", "Basic Horse Shoes"},
                 {"Generic vehicle chassis", "Generic vehicle chassis"}
             }, this); //en
-
+            
             lang.RegisterMessages(new Dictionary<string, string>
             {
                 {"MessageShowNoEconomics", "GUIShop n'a pas reçu de réponse du plugin Economics. Veuillez vous assurer que le plugin Economics est correctement installé."},
@@ -7010,11 +7005,10 @@ namespace Oxide.Plugins
                 {"Basic Horse Shoes", "Grundlegende Hufeisen"},
                 {"Generic vehicle chassis", "Generisches Fahrzeugchassis"}
             }, this, "de"); // German
-            
         }
         private string Lang(string key, string id = null) => lang.GetMessage(key, this, id);
         private string Lang(string key, string id = null, params object[] args) => string.Format(lang.GetMessage(key, this, id), args);
-        
+
         #endregion
 
         #region Oxide
@@ -7106,7 +7100,7 @@ namespace Oxide.Plugins
             foreach (BasePlayer player in BasePlayer.activePlayerList) DestroyUi(player, true);
             SaveData();
             _instance = null;
-            _config = null;
+            //_config = null;
         }
 
         #endregion
@@ -7392,7 +7386,7 @@ namespace Oxide.Plugins
                 FontSize = 15,
                 Align = TextAnchor.MiddleCenter
             },
-            RectTransform = {AnchorMin = "0.2 0.7", AnchorMax = "0.8 0.75"}
+            RectTransform = { AnchorMin = "0.2 0.7", AnchorMax = "0.8 0.75" }
         };
 
         private CuiElementContainer CreateShopItemEntry(ShopItem shopItem, float ymax, float ymin, string shop, string color, bool sell, bool cooldown, BasePlayer player) //add _limitsData, Semi finished
@@ -7503,14 +7497,14 @@ namespace Oxide.Plugins
                     Color = _instance.GetUITextColor(player),
                     Align = TextAnchor.MiddleLeft
                 },
-                RectTransform = {AnchorMin = $"0.1 {ymin}", AnchorMax = $"0.3 {ymax}"}
+                RectTransform = { AnchorMin = $"0.1 {ymin}", AnchorMax = $"0.3 {ymax}" }
             };
 
             var rawImage = new CuiRawImageComponent();
 
-            if ((bool)(ImageLibrary?.Call("HasImage", data.Image) ?? false))
+            if ((bool)(ImageLibrary?.Call("HasImage", data.Image, 76561198021388082UL) ?? false))
             {
-                rawImage.Png = (string)ImageLibrary?.Call("GetImage", data.Image);
+                rawImage.Png = (string)ImageLibrary?.Call("GetImage", data.Image, 76561198021388082UL, false);
             }
             else
             {
@@ -7699,7 +7693,7 @@ namespace Oxide.Plugins
                     ShopOverlayName,
                     "ButtonMore"
                 },
-                { 
+                {
                     new CuiElement
                     {
                         Parent = ShopOverlayName,
@@ -7749,14 +7743,14 @@ namespace Oxide.Plugins
                     }, ShopOverlayName, ShopColorPicker
                 }
             };
-            
-            
+
+
             int itemPos = 0;
-            
+
             foreach (string color in _instance._config.ColorsUI)
             {
                 int numberPerRow = 4;
-            
+
                 float padding = 0.03f; // Space between each 
                 float margin = (0.01f + padding); //left to right alignment adjuster
 
@@ -7768,23 +7762,23 @@ namespace Oxide.Plugins
                 int row = (int)Math.Floor((float)itemPos / numberPerRow);
                 int col = (itemPos - (row * numberPerRow));
                 container.Add(new CuiButton
-                    {
-                        Button =
+                {
+                    Button =
                         {
                             Command = $"shop.uicolor {HexToColor(color)} {currentshop.Replace(" ", "_")}",
                             Close = ShopOverlayName,
                             Color = $"{HexToColor(color)} 0.9"
                         },
-                        RectTransform = {
-                            AnchorMin = $"{margin + (width * col) + (padding * col)} {(0.975f - padding) - ((row + 1) * height) - (padding * row)}", 
+                    RectTransform = {
+                            AnchorMin = $"{margin + (width * col) + (padding * col)} {(0.975f - padding) - ((row + 1) * height) - (padding * row)}",
                             AnchorMax =  $"{margin + (width * (col + 1)) + (padding * col)} {(0.93f - padding) - (row * height) - (padding * row)}"
-                            
+
                         },
-                        Text =
+                    Text =
                         {
                             Text = "",
                         }
-                    }, ShopColorPicker, $"ColorPicker_{color}");
+                }, ShopColorPicker, $"ColorPicker_{color}");
                 itemPos++;
             }
 
@@ -7939,7 +7933,7 @@ namespace Oxide.Plugins
         {
             if (_config.Economics && Economics != null)
             {
-                return Economics.Call<bool>("Withdraw", player.userID, (double) amount);
+                return Economics.Call<bool>("Withdraw", player.userID, (double)amount);
             }
 
             if (_config.ServerRewards && ServerRewards != null)
@@ -7960,7 +7954,7 @@ namespace Oxide.Plugins
         {
             if (_config.Economics && Economics != null)
             {
-                Economics?.Call("Deposit", player.UserIDString, (double) amount);
+                Economics?.Call("Deposit", player.UserIDString, (double)amount);
                 return;
             }
 
@@ -7975,28 +7969,47 @@ namespace Oxide.Plugins
                 Item item = ItemManager.CreateByItemID(_config.CustomCurrencyID, amount);
                 player.GiveItem(item);
             }
-            
+
         }
-        
+
         #endregion
 
         #region Shop
+
+        private bool NearNpc(string npcId, Vector3 position)
+        {
+            BasePlayer npc = GetNPC(npcId);
+
+            if (npc == null)
+            {
+                return false;
+            }
+
+            return Vector3Ex.Distance2D(npc.ServerPosition, position) <= 2.5f;
+        }
+
+        private BasePlayer GetNPC(string npcId)
+        {
+            foreach (BasePlayer npcPlayer in BaseNetworkable.serverEntities.OfType<BasePlayer>())
+            {
+                if (npcPlayer.UserIDString == npcId)
+                {
+                    return npcPlayer;
+                }
+            }
+
+            return null;
+        }
+
         private void ShowShop(BasePlayer player, string shopid, int from = 0, bool fullPaint = true, bool refreshMoney = false)
         {
             _shopPage[player.userID] = from;
 
             ShopCategory shop;
 
-            if (_config.ShopCategories.Where(x => !x.Value.EnableNPC).Count() <= 0) //added: When all shops are disabled for global
-            {
-                SendReply(player, Lang("MessageErrorGlobalDisabled"));
-                return;
-            }
-
             if (!_config.ShopCategories.TryGetValue(shopid, out shop))
             {
                 SendReply(player, Lang("MessageErrorNoShop", player.UserIDString));
-
                 return;
             }
 
@@ -8030,27 +8043,27 @@ namespace Oxide.Plugins
 
                 int rowPos = 0;
 
-                if (shop.EnableNPC && !string.IsNullOrEmpty(shop.NPCId))
+                if (shop.EnableNPC && NearNpc(shop.NPCId, player.ServerPosition))
                 {
                     foreach (ShopCategory cat in _instance._config.ShopCategories.Values.Where(i => i.EnableNPC && i.NPCId == shop.NPCId))
                     {
                         CreateTab(ref container, cat, from, rowPos, player);
-
                         rowPos++;
                     }
                 }
                 else
                 {
-                    foreach (ShopCategory cat in _instance._config.ShopCategories.Values.Where(i => i.EnabledCategory && !i.EnableNPC))
+                    foreach (ShopCategory cat in _instance._config.ShopCategories.Values.Where(i => i.EnabledCategory))
                     {
                         CreateTab(ref container, cat, from, rowPos, player);
-
                         rowPos++;
                     }
                 }
             }
             else
+            {
                 container = new CuiElementContainer();
+            }
 
             container.Add(new CuiPanel
             {
@@ -8058,7 +8071,7 @@ namespace Oxide.Plugins
                 {
                     Color = "0 0 0 0"
                 },
-                RectTransform = {AnchorMin = "0 0.2", AnchorMax = "1 0.6"}
+                RectTransform = { AnchorMin = "0 0.2", AnchorMax = "1 0.6" }
             }, ShopOverlayName, ShopContentName);
 
             if (from < 0)
@@ -8127,7 +8140,7 @@ namespace Oxide.Plugins
                                 Color = _instance.GetUITextColor(player),
                                 Align = TextAnchor.MiddleLeft
                             },
-                            RectTransform = {AnchorMin = $"0.45 {pos}", AnchorMax = $"0.5 {pos + 0.125f}"}
+                            RectTransform = { AnchorMin = $"0.45 {pos}", AnchorMax = $"0.5 {pos + 0.125f}" }
                         }, ShopContentName);
                     }
 
@@ -8260,10 +8273,9 @@ namespace Oxide.Plugins
         {
             ShopItem data = _config.ShopItems[item];
 
-            if (!data.Command.IsNullOrEmpty())  //updated 1.8.5
+            if (!data.Command.IsNullOrEmpty())  //updated 2.0.4
             {
-                Vector3 pos = player.ServerPosition + player.eyes.HeadForward() * 3.5f;
-                pos.y = TerrainMeta.HeightMap.GetHeight(pos);
+                Vector3 pos = GetLookPoint(player);
 
                 foreach (var command in data.Command)
                 {
@@ -8278,7 +8290,6 @@ namespace Oxide.Plugins
                         NextTick(() => ConsoleSystem.Run(ConsoleSystem.Option.Server, c));
                     else
                         ConsoleSystem.Run(ConsoleSystem.Option.Server, c);
-
                 }
             }
 
@@ -8393,12 +8404,12 @@ namespace Oxide.Plugins
         object CanBuy(BasePlayer player, string item, int amount)
         {
 
-            if (_config.ServerRewards == true && ServerRewards == null)
+            if (_config.ServerRewards && ServerRewards == null)
             {
                 return Lang("MessageShowNoServerRewards", player.UserIDString);
             }
 
-            if (_config.Economics == false && Economics == null)
+            if (_config.Economics && Economics == null)
             {
                 return Lang("MessageShowNoEconomics", player.UserIDString);
             }
@@ -8623,14 +8634,26 @@ namespace Oxide.Plugins
                 return;
             }
 
+            if (_config.DefaultShop == String.Empty)
+            {
+                SendReply(player, Lang("MessageErrorGlobalDisabled", player.UserIDString));
+            }
+
             ShopCategory category;
 
             string shopKey;
 
             if (GetNearestVendor(player, out category))
+            {
                 shopKey = category.DisplayName;
+            }
             else
-                shopKey = _config.DefaultShop;
+                if (String.IsNullOrEmpty(_config.DefaultShop))
+                {
+                shopKey = Lang("MessageErrorGlobalDisabled", player.UserIDString);
+                return;
+                }
+                else shopKey = _config.DefaultShop;
 
             if (!player.CanBuild())
             {
@@ -8709,7 +8732,7 @@ namespace Oxide.Plugins
                 SendReply(player, success as string ?? "You are not allowed to shop at the moment");
                 return;
             }
-            
+
             string shopName = arg.GetString(0).Replace("_", " ");
             string item = arg.GetString(1).Replace("_", " ");
             int amount = arg.GetString(2).Equals("all") ? GetAmountBuy(player, item) : arg.GetInt(2);
@@ -8758,7 +8781,7 @@ namespace Oxide.Plugins
                 SendReply(player, message);
                 return;
             }
-            
+
             string shopName = arg.GetString(0).Replace("_", " ");
             string item = arg.GetString(1).Replace("_", " ");
             int amount = arg.GetString(2).Equals("all") ? GetAmountSell(player, item) : arg.GetInt(2);
@@ -8772,8 +8795,8 @@ namespace Oxide.Plugins
             }
 
             ShopItem shopitem = _config.ShopItems.Values.FirstOrDefault(x => x.DisplayName == item);
-            
-            if (shopitem == null ) return;
+
+            if (shopitem == null) return;
 
             SendReply(player, Lang("MessageSold", player.UserIDString), amount, shopitem.DisplayName);
             ShowShop(player, shopName, _shopPage[player.userID], false, true);
@@ -8828,12 +8851,12 @@ namespace Oxide.Plugins
         [ConsoleCommand("shop.colorsetting")]
         private void ConsoleUIColorSetting(ConsoleSystem.Arg arg)
         {
-            Puts("{0}", arg.GetString(1));
+            //Puts("{0}", arg.GetString(1));
             if (!arg.HasArgs(2))
             {
                 return;
             }
-            
+
             _uiSettingChange = arg.Args[0];
             if (!permission.UserHasPermission(arg.Player().UserIDString, Use)) //added vip
             {
@@ -8865,7 +8888,7 @@ namespace Oxide.Plugins
                 ShowShop(arg.Player(), arg.Args[0].Replace("_", " "));
                 return;
             }
-            
+
             SetImageOrText(arg.Player());
 
             if (!arg.Player().CanBuild())
@@ -8876,7 +8899,7 @@ namespace Oxide.Plugins
                     SendReply(arg.Player(), Lang("MessageErrorBuildingBlocked", arg.Player().UserIDString));
                 return;
             }
-            
+
             ShowShop(arg.Player(), arg.Args[0].Replace("_", " "));
         }
         #endregion
@@ -8921,13 +8944,13 @@ namespace Oxide.Plugins
         private void SetImageOrText(BasePlayer player)
         {
             PlayerUISetting playerUISetting = GetPlayerData(player);
-            
+
             if (permission.UserHasPermission(player.UserIDString, Vip))
             {
                 playerUISetting.ImageOrText = !playerUISetting.ImageOrText;
                 return;
             }
-            
+
             if (_config.PersonalUI)
             {
                 playerUISetting.ImageOrText = !playerUISetting.ImageOrText;
@@ -8951,7 +8974,7 @@ namespace Oxide.Plugins
             {
                 playerUISetting.ImageOrText = true;
             }
-            
+
             _imageChanger = playerUISetting.ImageOrText;
             return _imageChanger;
         }
@@ -9018,7 +9041,7 @@ namespace Oxide.Plugins
                     playerUISetting.RangeValue = playerUISetting.RangeValue + 1;
                     break;
                 case "decrease":
-                    if ( Math.Abs(playerUISetting.Transparency - 0.01) <= 0.9)
+                    if (Math.Abs(playerUISetting.Transparency - 0.01) <= 0.9)
                     {
                         break;
                     }
@@ -9027,13 +9050,13 @@ namespace Oxide.Plugins
                     break;
             }
         }
-        
+
         private double GetUITransparency(BasePlayer uiPlayer) => GetPlayerData(uiPlayer).Transparency;
 
         private void PlayerColorTextChange(BasePlayer uiPlayer, string textColorRed, string textColorGreen, string textColorBlue, string uiSettingToChange)
         {
             PlayerUISetting playerUISetting = GetPlayerData(uiPlayer);
-            
+
             switch (uiSettingToChange)
             {
                 case "Text":
@@ -9139,18 +9162,17 @@ namespace Oxide.Plugins
         private void OnUseNPC(BasePlayer npc, BasePlayer player) //added 1.8.7
         {
             ShopCategory category = _config.ShopCategories.Select(x => x.Value).FirstOrDefault(i => i.EnableNPC && i.NPCId == npc.UserIDString);
-
             if (category == null)
             {
                 return;
             }
+
             ShowShop(player, category.DisplayName);
         }
-        
+
         private void OnEnterNPC(BasePlayer npc, BasePlayer player) //added 2.0.0
         {
             ShopCategory category = _config.ShopCategories.Select(x => x.Value).FirstOrDefault(i => i.EnableNPC && i.NPCId == npc.UserIDString);
-
             if (category == null)
             {
                 return;
@@ -9158,10 +9180,10 @@ namespace Oxide.Plugins
 
             if (_config.NPCAutoOpen)
             {
-                OpenShop(player, category.DisplayName, category.NPCId);
+                ShowShop(player, category.DisplayName);
                 return;
             }
-            
+
             if (_config.NPCLeaveResponse) //added 2.0.0
             {
                 SendReply(player, Lang("MessageNPCResponseopen", player.UserIDString), category.DisplayName);
@@ -9171,11 +9193,11 @@ namespace Oxide.Plugins
         private void OnLeaveNPC(BasePlayer npc, BasePlayer player) //added 1.8.7
         {
             ShopCategory category = _config.ShopCategories.Select(x => x.Value).FirstOrDefault(i => i.EnableNPC && i.NPCId == npc.UserIDString);
-
             if (category == null)
             {
                 return;
             }
+
             CloseShop(player);
 
             if (_config.NPCLeaveResponse) //added 1.8.8
@@ -9187,6 +9209,16 @@ namespace Oxide.Plugins
         #endregion
 
         #region Helpers
+
+        private Vector3 GetLookPoint(BasePlayer player)
+        {
+            RaycastHit raycastHit;
+            if (!Physics.Raycast(new Ray(player.eyes.position, Quaternion.Euler(player.serverInput.current.aimAngles) * Vector3.forward), out raycastHit, 10f))
+            {
+                return player.ServerPosition;
+            }
+            return raycastHit.point;
+        }
 
         private bool IsNearMonument(BasePlayer player)
         {
@@ -9224,7 +9256,6 @@ namespace Oxide.Plugins
             }
 
             ShopCategory shopCategory;
-
             if (!_config.ShopCategories.TryGetValue(shopName, out shopCategory) || !shopCategory.EnableNPC || shopCategory.NPCId != npcID)
             {
                 return;
@@ -9239,6 +9270,7 @@ namespace Oxide.Plugins
             {
                 return;
             }
+
             CuiHelper.DestroyUi(player, ShopOverlayName);
         }
 

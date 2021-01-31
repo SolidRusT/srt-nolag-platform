@@ -1,10 +1,12 @@
 ﻿using System;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
+using Rust;
 using Rust.Modular;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,7 @@ using System.Text;
 
 namespace Oxide.Plugins
 {
-    [Info("Spawn Modular Car", "WhiteThunder", "4.0.2")]
+    [Info("Spawn Modular Car", "WhiteThunder", "5.0.0")]
     [Description("Allows players to spawn modular cars.")]
     internal class SpawnModularCar : CovalencePlugin
     {
@@ -22,10 +24,11 @@ namespace Oxide.Plugins
         [PluginReference]
         private Plugin CarCodeLocks, VehicleDeployedLocks;
 
-        private static SpawnModularCar pluginInstance;
+        private static SpawnModularCar _pluginInstance;
+        private static Configuration _pluginConfig;
 
-        private PluginData pluginData;
-        private PluginConfig pluginConfig;
+        private PluginData _pluginData;
+        private CommonPresets _commonPresets;
 
         private const string DefaultPresetName = "default";
         private const int PresetMaxLength = 30;
@@ -33,7 +36,7 @@ namespace Oxide.Plugins
         private const string PermissionSpawnSockets2 = "spawnmodularcar.spawn.2";
         private const string PermissionSpawnSockets3 = "spawnmodularcar.spawn.3";
         private const string PermissionSpawnSockets4 = "spawnmodularcar.spawn.4";
-        
+
         private const string PermissionEnginePartsTier1 = "spawnmodularcar.engineparts.tier1";
         private const string PermissionEnginePartsTier2 = "spawnmodularcar.engineparts.tier2";
         private const string PermissionEnginePartsTier3 = "spawnmodularcar.engineparts.tier3";
@@ -62,12 +65,48 @@ namespace Oxide.Plugins
         private const string RepairEffectPrefab = "assets/bundled/prefabs/fx/build/promote_toptier.prefab";
         private const string TankerFilledEffectPrefab = "assets/prefabs/food/water jug/effects/water-jug-fill-container.prefab";
 
-        private readonly Dictionary<string, PlayerConfig> PlayerConfigsMap = new Dictionary<string, PlayerConfig>();
+        // These layers are used to preventing spawning inside walls or players.
+        private const int BoxcastLayers = Layers.Mask.Default
+            + Layers.Mask.Deployed
+            + Layers.Mask.Player_Server
+            + Layers.Mask.AI
+            + Layers.Mask.Vehicle_Detailed
+            + Layers.Mask.Vehicle_World
+            + Layers.Mask.World
+            + Layers.Mask.Construction
+            + Layers.Mask.Tree;
 
-        private CooldownManager SpawnCarCooldowns;
-        private CooldownManager FixCarCooldowns;
-        private CooldownManager FetchCarCooldowns;
-        private CooldownManager LoadPresetCooldowns;
+        // These layers are used to find a surface to spawn on.
+        private const int RaycastLayers = Layers.Mask.Default
+            + Layers.Mask.Terrain
+            + Layers.World
+            + Layers.Mask.Construction;
+
+        private static readonly Vector3 ShortCarExtents = new Vector3(1, 1.1f, 1.5f);
+        private static readonly Vector3 MediumCarExtents = new Vector3(1, 1.1f, 2.3f);
+        private static readonly Vector3 LongCarExtents = new Vector3(1, 1.1f, 3);
+
+        private static readonly Vector3 ShortCarFrontLeft = new Vector3(ShortCarExtents.x, 0, ShortCarExtents.z);
+        private static readonly Vector3 ShortCarFrontRight = new Vector3(-ShortCarExtents.x, 0, ShortCarExtents.z);
+        private static readonly Vector3 ShortCarBackLeft = new Vector3(ShortCarExtents.x, 0, -ShortCarExtents.z);
+        private static readonly Vector3 ShortCarBackRight = new Vector3(-ShortCarExtents.x, 0, -ShortCarExtents.z);
+
+        private static readonly Vector3 MediumCarFrontLeft = new Vector3(MediumCarExtents.x, 0, MediumCarExtents.z);
+        private static readonly Vector3 MediumCarFrontRight = new Vector3(-MediumCarExtents.x, 0, MediumCarExtents.z);
+        private static readonly Vector3 MediumCarBackLeft = new Vector3(MediumCarExtents.x, 0, -MediumCarExtents.z);
+        private static readonly Vector3 MediumCarBackRight = new Vector3(-MediumCarExtents.x, 0, -MediumCarExtents.z);
+
+        private static readonly Vector3 LongCarFrontLeft = new Vector3(LongCarExtents.x, 0, LongCarExtents.z);
+        private static readonly Vector3 LongCarFrontRight = new Vector3(-LongCarExtents.x, 0, LongCarExtents.z);
+        private static readonly Vector3 LongCarBackLeft = new Vector3(LongCarExtents.x, 0, -LongCarExtents.z);
+        private static readonly Vector3 LongCarBackRight = new Vector3(-LongCarExtents.x, 0, -LongCarExtents.z);
+
+        private static readonly float ForwardRaycastDistance = 1.5f + ShortCarExtents.x;
+        private const float DownwardRaycastDistance = 4;
+
+        private readonly RaycastHit[] _raycastBuffer = new RaycastHit[1];
+
+        private readonly Dictionary<string, PlayerConfig> _playerConfigsMap = new Dictionary<string, PlayerConfig>();
 
         #endregion
 
@@ -75,10 +114,12 @@ namespace Oxide.Plugins
 
         private void Init()
         {
-            pluginInstance = this;
+            _pluginInstance = this;
 
-            pluginData = Interface.Oxide.DataFileSystem.ReadObject<PluginData>(Name);
-            pluginConfig = Config.ReadObject<PluginConfig>();
+            _pluginData = PluginData.LoadData();
+            _commonPresets = CommonPresets.LoadData(_pluginData);
+
+            MigrateConfig();
 
             permission.RegisterPermission(PermissionSpawnSockets2, this);
             permission.RegisterPermission(PermissionSpawnSockets3, this);
@@ -102,43 +143,41 @@ namespace Oxide.Plugins
             permission.RegisterPermission(PermissionPresetLoad, this);
             permission.RegisterPermission(PermissionCommonPresets, this);
             permission.RegisterPermission(PermissionManageCommonPresets, this);
-
-            SpawnCarCooldowns = new CooldownManager(pluginConfig.Cooldowns.SpawnSeconds);
-            FixCarCooldowns = new CooldownManager(pluginConfig.Cooldowns.FixSeconds);
-            FetchCarCooldowns = new CooldownManager(pluginConfig.Cooldowns.FetchSeconds);
-            LoadPresetCooldowns = new CooldownManager(pluginConfig.Cooldowns.LoadPresetSeconds);
         }
 
         private void Unload()
         {
-            pluginInstance = null;
+            _pluginInstance = null;
+            _pluginConfig = null;
         }
 
         private void OnNewSave(string filename)
         {
-            pluginData.playerCars.Clear();
-            pluginData.SaveData();
+            _pluginData.PlayerCars.Clear();
+            _pluginData.Cooldowns.ClearAll();
+            _pluginData.SaveData();
         }
 
         private void OnEntityKill(ModularCar car)
         {
-            if (!IsPlayerCar(car)) return;
-            
-            string userID = pluginData.playerCars.FirstOrDefault(x => x.Value == car.net.ID).Key;
-            BasePlayer player = BasePlayer.Find(userID);
+            if (!IsPlayerCar(car))
+                return;
+
+            string userId = _pluginData.PlayerCars.FirstOrDefault(x => x.Value == car.net.ID).Key;
+            BasePlayer player = BasePlayer.Find(userId);
 
             if (player != null)
                 ChatMessage(player, "Generic.Info.CarDestroyed");
 
-            pluginData.UnregisterCar(userID);
+            _pluginData.UnregisterCar(userId);
         }
 
         private object OnEngineStart(ModularCar car)
         {
-            if (car == null ||
-                car.OwnerID == 0 ||
-                !pluginData.playerCars.ContainsValue(car.net.ID) ||
-                !permission.UserHasPermission(car.OwnerID.ToString(), PermissionAutoStartEngine))
+            if (car == null
+                || car.OwnerID == 0
+                || !_pluginData.PlayerCars.ContainsValue(car.net.ID)
+                || !permission.UserHasPermission(car.OwnerID.ToString(), PermissionAutoStartEngine))
                 return null;
 
             car.FinishStartingEngine();
@@ -164,10 +203,20 @@ namespace Oxide.Plugins
                 return null;
             }
 
-            if (SpawnWasBlocked(player)) return null;
+            if (SpawnWasBlocked(player))
+                return null;
 
             var presetOptions = apiOptions.ToPresetOptions();
-            return SpawnCarForPlayer(player, presetOptions, false, onReady);
+
+            Vector3 spawnPosition;
+            Quaternion rotation;
+            if (!TryGetIdealCarPositionAndRotation(player, presetOptions.Length, out spawnPosition, out rotation))
+            {
+                spawnPosition = GetFixedCarPosition(player);
+                rotation = GetRelativeCarRotation(player);
+            }
+
+            return SpawnCarForPlayer(player, presetOptions, spawnPosition, rotation, shouldTrackCar: false, onReady: onReady);
         }
 
         internal class APIOptions
@@ -204,12 +253,14 @@ namespace Oxide.Plugins
 
             public int[] ParseModulesOption(Dictionary<string, object> options)
             {
-                if (!options.ContainsKey(ModulesField)) return null;
+                if (!options.ContainsKey(ModulesField))
+                    return null;
 
                 var moduleArray = options[ModulesField] as object[];
-                if (moduleArray == null) return null;
+                if (moduleArray == null)
+                    return null;
 
-                return pluginInstance.ParseModules(moduleArray);
+                return _pluginInstance.ValidateModules(moduleArray);
             }
 
             public PresetCarOptions ToPresetOptions()
@@ -221,7 +272,7 @@ namespace Oxide.Plugins
                     EnginePartsTier = EnginePartsTier,
                     FreshWaterAmount = FreshWaterAmount,
                     FuelAmount = FuelAmount,
-                    ModuleIDs = ModuleIDs
+                    NormalizedModuleIDs = ModuleIDs
                 };
             }
         }
@@ -233,7 +284,8 @@ namespace Oxide.Plugins
         [Command("givecar")]
         private void SpawnCarServerCommand(IPlayer player, string cmd, string[] args)
         {
-            if (!player.IsServer && !VerifyPermissionAny(player, PermissionGiveCar)) return;
+            if (!player.IsServer && !VerifyPermissionAny(player, PermissionGiveCar))
+                return;
 
             if (args.Length < 2)
             {
@@ -251,7 +303,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            foreach (var preset in pluginConfig.Presets)
+            foreach (var preset in _pluginConfig.Presets)
             {
                 if (preset.Name.ToLower() == presetNameArg.ToLower())
                 {
@@ -266,7 +318,16 @@ namespace Oxide.Plugins
                         ReplyToPlayer(player, "Command.Give.Error.PresetTooManyModules", preset.Name, carOptions.Length);
                         return;
                     }
-                    SpawnCarForPlayer(targetPlayer, carOptions, shouldTrackCar: false, onReady: car =>
+
+                    Vector3 spawnPosition;
+                    Quaternion rotation;
+                    if (!TryGetIdealCarPositionAndRotation(targetPlayer, preset.Options.Length, out spawnPosition, out rotation))
+                    {
+                        spawnPosition = GetFixedCarPosition(targetPlayer);
+                        rotation = GetRelativeCarRotation(targetPlayer);
+                    }
+
+                    SpawnCarForPlayer(targetPlayer, carOptions, spawnPosition, rotation, shouldTrackCar: false, onReady: car =>
                     {
                         ReplyToPlayer(player, "Command.Give.Success", targetPlayer.displayName, preset.Name);
                     });
@@ -280,7 +341,8 @@ namespace Oxide.Plugins
         [Command("mycar")]
         private void MyCarCommand(IPlayer player, string cmd, string[] args)
         {
-            if (player.IsServer) return;
+            if (player.IsServer)
+                return;
 
             if (args.Length == 0)
             {
@@ -456,7 +518,7 @@ namespace Oxide.Plugins
                 }
             }
 
-            var canCodeLock = GetLockPlugin() != null && permission.UserHasPermission(player.Id, PermissionAutoCodeLock);
+            var canCodeLock = VehicleDeployedLocks != null && permission.UserHasPermission(player.Id, PermissionAutoCodeLock);
             var canKeyLock = permission.UserHasPermission(player.Id, PermissionAutoKeyLock);
             var canFillTankers = permission.UserHasPermission(player.Id, PermissionAutoFillTankers);
 
@@ -490,12 +552,13 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (!VerifyHasNoCar(player)) return;
-            if (!VerifyOffCooldown(SpawnCarCooldowns, player)) return;
-            if (!VerifyLocationNotRestricted(player)) return;
-            if (!pluginConfig.CanSpawnBuildingBlocked && !VerifyNotBuildingBlocked(player)) return;
+            if (!VerifyHasNoCar(player)
+                || !VerifyOffCooldown(player, CooldownType.Spawn)
+                || !VerifyLocationNotRestricted(player)
+                || !_pluginConfig.CanSpawnBuildingBlocked && !VerifyNotBuildingBlocked(player))
+                return;
 
-            // Key binds automatically pass the "True" argument
+            // Key binds automatically pass the "True" argument.
             var wasPassedArgument = args.Length > 0 && args[0] != "True";
 
             if (wasPassedArgument)
@@ -519,12 +582,14 @@ namespace Oxide.Plugins
                     return;
                 }
 
-                if (!VerifyPermissionAny(player, PermissionPresets)) return;
+                if (!VerifyPermissionAny(player, PermissionPresets))
+                    return;
 
                 var presetNameArg = args[0];
 
                 SimplePreset preset;
-                if (!VerifyOnlyOneMatchingPreset(player, GetPlayerConfig(player), presetNameArg, out preset)) return;
+                if (!VerifyOnlyOneMatchingPreset(player, GetPlayerConfig(player), presetNameArg, out preset))
+                    return;
 
                 SpawnPresetCarForPlayer(player, preset);
             }
@@ -553,33 +618,39 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (!VerifyPermissionAny(player, PermissionCommonPresets)) return;
-            if (!VerifyHasNoCar(player)) return;
-            if (!VerifyOffCooldown(SpawnCarCooldowns, player)) return;
-            if (!VerifyLocationNotRestricted(player)) return;
-            if (!pluginConfig.CanSpawnBuildingBlocked && !VerifyNotBuildingBlocked(player)) return;
+            if (!VerifyPermissionAny(player, PermissionCommonPresets)
+                || !VerifyHasNoCar(player)
+                || !VerifyOffCooldown(player, CooldownType.Spawn)
+                || !VerifyLocationNotRestricted(player)
+                || !_pluginConfig.CanSpawnBuildingBlocked && !VerifyNotBuildingBlocked(player))
+                return;
 
             var presetNameArg = args[0];
 
             SimplePreset preset;
-            if (!VerifyOnlyOneMatchingPreset(player, pluginData, presetNameArg, out preset)) return;
+            if (!VerifyOnlyOneMatchingPreset(player, _commonPresets, presetNameArg, out preset))
+                return;
 
             SpawnPresetCarForPlayer(player, preset);
         }
 
         private void SubCommand_FixCar(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionFix)) return;
+            if (!VerifyPermissionAny(player, PermissionFix))
+                return;
 
             ModularCar car;
-            if (!VerifyHasCar(player, out car) ||
-                !VerifyCarIsNotDead(player, car) ||
-                !VerifyOffCooldown(FixCarCooldowns, player) ||
-                FixMyCarWasBlocked(player.Object as BasePlayer, car)) return;
+            if (!VerifyHasCar(player, out car)
+                || !VerifyOffCooldown(player, CooldownType.Fix)
+                || FixMyCarWasBlocked(player.Object as BasePlayer, car))
+                return;
+
+            if (car.IsDead())
+                ReviveCar(car);
 
             FixCar(car, GetPlayerAllowedFuel(player.Id), GetPlayerEnginePartsTier(player.Id));
             MaybeFillTankerModules(car, GetPlayerAllowedFreshWater(player.Id));
-            FixCarCooldowns.UpdateLastUsedForPlayer(player.Id);
+            _pluginData.StartCooldown(player.Id, CooldownType.Fix);
 
             MaybePlayCarRepairEffects(car);
             ReplyToPlayer(player, "Command.Fix.Success");
@@ -587,19 +658,24 @@ namespace Oxide.Plugins
 
         private void SubCommand_FetchCar(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionFetch)) return;
+            if (!VerifyPermissionAny(player, PermissionFetch))
+                return;
 
             var basePlayer = player.Object as BasePlayer;
             ModularCar car;
+            Vector3 fetchPosition;
+            Quaternion fetchRotation;
 
-            if (!VerifyHasCar(player, out car) ||
-                !pluginConfig.CanFetchOccupied && !VerifyCarNotOccupied(player, car) ||
-                !VerifyOffCooldown(FetchCarCooldowns, player) ||
-                !VerifyLocationNotRestricted(player) ||
-                !pluginConfig.CanFetchBuildingBlocked && !VerifyNotBuildingBlocked(player) ||
-                FetchMyCarWasBlocked(basePlayer, car)) return;
+            if (!VerifyHasCar(player, out car)
+                || !_pluginConfig.CanFetchOccupied && !VerifyCarNotOccupied(player, car)
+                || !VerifyOffCooldown(player, CooldownType.Fetch)
+                || !VerifyLocationNotRestricted(player)
+                || !_pluginConfig.CanFetchBuildingBlocked && !VerifyNotBuildingBlocked(player)
+                || !VerifySufficientSpace(player, car.TotalSockets, out fetchPosition, out fetchRotation)
+                || FetchMyCarWasBlocked(basePlayer, car))
+                return;
 
-            // This is a hacky way to determine that the car is on a lift
+            // This is a hacky way to determine that the car is on a lift.
             if (car.rigidBody.isKinematic && !TryReleaseCarFromLift(car))
             {
                 var messages = new List<string> { GetMessage(player, "Command.Fetch.Error.StuckOnLift") };
@@ -610,14 +686,14 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (pluginConfig.DismountPlayersOnFetch)
+            if (_pluginConfig.DismountPlayersOnFetch)
                 DismountAllPlayersFromCar(car);
 
-            // Temporarily clear max angular velocity to prevent the car from unexpectedly spinning when teleporting really far
+            // Temporarily clear max angular velocity to prevent the car from unexpectedly spinning when teleporting really far.
             var maxAngularVelocity = car.rigidBody.maxAngularVelocity;
             car.rigidBody.maxAngularVelocity = 0;
 
-            car.transform.SetPositionAndRotation(GetIdealCarPosition(basePlayer), GetIdealCarRotation(basePlayer));
+            car.transform.SetPositionAndRotation(fetchPosition, fetchRotation);
             car.SetVelocity(Vector3.zero);
             car.SetAngularVelocity(Vector3.zero);
             car.UpdateNetworkGroup();
@@ -628,26 +704,27 @@ namespace Oxide.Plugins
                     car.rigidBody.maxAngularVelocity = maxAngularVelocity;
             });
 
-            FetchCarCooldowns.UpdateLastUsedForPlayer(player.Id);
+            _pluginData.StartCooldown(player.Id, CooldownType.Fetch);
             ReplyToPlayer(player, "Command.Fetch.Success");
         }
 
         private void SubCommand_DestroyCar(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionDespawn)) return;
+            if (!VerifyPermissionAny(player, PermissionDespawn))
+                return;
 
             var basePlayer = player.Object as BasePlayer;
             ModularCar car;
 
-            if (!VerifyHasCar(player, out car) ||
-                !pluginConfig.CanDespawnOccupied && !VerifyCarNotOccupied(player, car) ||
-                DestroyMyCarWasBlocked(basePlayer, car))
+            if (!VerifyHasCar(player, out car)
+                || !_pluginConfig.CanDespawnOccupied && !VerifyCarNotOccupied(player, car)
+                || DestroyMyCarWasBlocked(basePlayer, car))
                 return;
 
             MaybeRemoveMatchingKeysFromPlayer(basePlayer, car);
 
             var extractedEngineParts = ExtractEnginePartsAboveTierAndDeleteRest(car, GetPlayerEnginePartsTier(player.Id));
-            
+
             car.Kill();
 
             if (extractedEngineParts.Count > 0)
@@ -659,7 +736,8 @@ namespace Oxide.Plugins
 
         private void SubCommand_ListPresets(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionPresets))
+                return;
 
             PlayerConfig config = GetPlayerConfig(player);
             if (config.Presets.Count == 0)
@@ -682,9 +760,10 @@ namespace Oxide.Plugins
 
         private void SubCommand_Common_ListPresets(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionCommonPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionCommonPresets))
+                return;
 
-            if (pluginData.Presets.Count == 0)
+            if (_commonPresets.Presets.Count == 0)
             {
                 ReplyToPlayer(player, "Generic.Error.NoCommonPresets");
                 return;
@@ -692,7 +771,7 @@ namespace Oxide.Plugins
 
             ushort maxAllowedSockets = GetPlayerMaxAllowedCarSockets(player.Id);
 
-            var presetList = pluginData.Presets.Where(p => p.NumSockets <= maxAllowedSockets).ToList();
+            var presetList = _commonPresets.Presets.Where(p => p.NumSockets <= maxAllowedSockets).ToList();
             presetList.Sort(SortPresetNames);
 
             var sb = new StringBuilder();
@@ -706,19 +785,22 @@ namespace Oxide.Plugins
 
         private void SubCommand_SavePreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionPresets))
+                return;
 
             ModularCar car;
-            if (!VerifyHasCar(player, out car)) return;
+            if (!VerifyHasCar(player, out car))
+                return;
 
             var presetNameArg = args.Length == 0 ? DefaultPresetName : args[0];
 
             var presetManager = GetPlayerConfig(player);
-            if (!VerifyNoMatchingPreset(player, presetManager, presetNameArg)) return;
-            
-            if (presetManager.Presets.Count >= pluginConfig.MaxPresetsPerPlayer)
+            if (!VerifyNoMatchingPreset(player, presetManager, presetNameArg))
+                return;
+
+            if (presetManager.Presets.Count >= _pluginConfig.MaxPresetsPerPlayer)
             {
-                ReplyToPlayer(player, "Command.SavePreset.Error.TooManyPresets", pluginConfig.MaxPresetsPerPlayer);
+                ReplyToPlayer(player, "Command.SavePreset.Error.TooManyPresets", _pluginConfig.MaxPresetsPerPlayer);
                 return;
             }
 
@@ -727,7 +809,8 @@ namespace Oxide.Plugins
 
         private void SubCommand_Common_SavePreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionManageCommonPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionManageCommonPresets))
+                return;
 
             if (args.Length == 0)
             {
@@ -738,10 +821,11 @@ namespace Oxide.Plugins
             var presetNameArg = args[0];
 
             ModularCar car;
-            if (!VerifyHasCar(player, out car)) return;
-            if (!VerifyNoMatchingPreset(player, pluginData, presetNameArg)) return;
-            
-            SavePreset(player, pluginData, presetNameArg, car);
+            if (!VerifyHasCar(player, out car)
+                || !VerifyNoMatchingPreset(player, _commonPresets, presetNameArg))
+                return;
+
+            SavePreset(player, _commonPresets, presetNameArg, car);
         }
 
         private void SavePreset(IPlayer player, SimplePresetManager presetManager, string presetNameArg, ModularCar car)
@@ -758,14 +842,17 @@ namespace Oxide.Plugins
 
         private void SubCommand_UpdatePreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionPresets))
+                return;
+
             var presetNameArg = args.Length == 0 ? DefaultPresetName : args[0];
             UpdatePreset(player, GetPlayerConfig(player), presetNameArg);
         }
 
         private void SubCommand_Common_UpdatePreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionManageCommonPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionManageCommonPresets))
+                return;
 
             if (args.Length == 0)
             {
@@ -773,16 +860,18 @@ namespace Oxide.Plugins
                 return;
             }
 
-            UpdatePreset(player, pluginData, args[0]);
+            UpdatePreset(player, _commonPresets, args[0]);
         }
 
         private void UpdatePreset(IPlayer player, SimplePresetManager presetManager, string presetNameArg)
         {
             ModularCar car;
-            if (!VerifyHasCar(player, out car)) return;
+            if (!VerifyHasCar(player, out car))
+                return;
 
             SimplePreset preset;
-            if (!VerifyHasPreset(player, presetManager, presetNameArg, out preset)) return;
+            if (!VerifyHasPreset(player, presetManager, presetNameArg, out preset))
+                return;
 
             presetManager.UpdatePreset(SimplePreset.FromCar(car, preset.Name));
             ReplyToPlayer(player, "Command.UpdatePreset.Success", preset.Name);
@@ -790,14 +879,18 @@ namespace Oxide.Plugins
 
         private void SubCommand_LoadPreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionPresetLoad)) return;
+            if (!VerifyPermissionAny(player, PermissionPresetLoad))
+                return;
+
             var presetNameArg = args.Length == 0 ? DefaultPresetName : args[0];
             LoadPreset(player, GetPlayerConfig(player.Id), presetNameArg);
         }
 
         private void SubCommand_Common_LoadPreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionPresetLoad) || !VerifyPermissionAny(player, PermissionCommonPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionPresetLoad)
+                || !VerifyPermissionAny(player, PermissionCommonPresets))
+                return;
 
             if (args.Length == 0)
             {
@@ -806,7 +899,7 @@ namespace Oxide.Plugins
             }
 
             var presetNameArg = args[0];
-            LoadPreset(player, pluginData, presetNameArg);
+            LoadPreset(player, _commonPresets, presetNameArg);
         }
 
         private void LoadPreset(IPlayer player, SimplePresetManager presetManager, string presetNameArg)
@@ -814,14 +907,15 @@ namespace Oxide.Plugins
             var basePlayer = player.Object as BasePlayer;
             ModularCar car;
 
-            if (!VerifyHasCar(player, out car) ||
-                !VerifyCarIsNotDead(player, car) ||
-                !VerifyCarNotOccupied(player, car) ||
-                !VerifyOffCooldown(LoadPresetCooldowns, player) ||
-                LoadMyCarPresetWasBlocked(basePlayer, car)) return;
+            if (!VerifyHasCar(player, out car)
+                || !VerifyCarNotOccupied(player, car)
+                || !VerifyOffCooldown(player, CooldownType.Load)
+                || LoadMyCarPresetWasBlocked(basePlayer, car))
+                return;
 
             SimplePreset preset;
-            if (!VerifyOnlyOneMatchingPreset(player, presetManager, presetNameArg, out preset)) return;
+            if (!VerifyOnlyOneMatchingPreset(player, presetManager, presetNameArg, out preset))
+                return;
 
             var presetNumSockets = preset.NumSockets;
             if (presetNumSockets > GetPlayerMaxAllowedCarSockets(player.Id))
@@ -836,11 +930,14 @@ namespace Oxide.Plugins
                 return;
             }
 
+            if (car.IsDead())
+                ReviveCar(car);
+
             var wasEngineOn = car.IsOn();
             var enginePartsTier = GetPlayerEnginePartsTier(player.Id);
             var extractedEngineParts = ExtractEnginePartsAboveTierAndDeleteRest(car, enginePartsTier);
             UpdateCarModules(car, preset.ModuleIDs);
-            LoadPresetCooldowns.UpdateLastUsedForPlayer(player.Id);
+            _pluginData.StartCooldown(player.Id, CooldownType.Load);
 
             NextTick(() => {
                 var wereExtraParts = false;
@@ -857,11 +954,12 @@ namespace Oxide.Plugins
 
                 FixCar(car, GetPlayerAllowedFuel(player.Id), enginePartsTier);
 
-                // Restart the engine if it turned off during the brief moment it had no engine or no parts
-                if (wasEngineOn && !car.IsOn() && car.CanRunEngines()) car.FinishStartingEngine();
+                // Restart the engine if it turned off during the brief moment it had no engine or no parts.
+                if (wasEngineOn && !car.IsOn() && car.CanRunEngines())
+                    car.FinishStartingEngine();
 
                 MaybeFillTankerModules(car, GetPlayerAllowedFreshWater(player.Id));
-                
+
                 if (car.carLock.HasALock && !car.carLock.CanHaveALock())
                 {
                     MaybeRemoveMatchingKeysFromPlayer(basePlayer, car);
@@ -880,7 +978,8 @@ namespace Oxide.Plugins
 
         private void SubCommand_RenamePreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionPresets))
+                return;
 
             if (args.Length < 2)
             {
@@ -893,7 +992,8 @@ namespace Oxide.Plugins
 
         private void SubCommand_Common_RenamePreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionManageCommonPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionManageCommonPresets))
+                return;
 
             if (args.Length < 2)
             {
@@ -901,15 +1001,16 @@ namespace Oxide.Plugins
                 return;
             }
 
-            RenamePreset(player, pluginData, args[0], args[1]);
+            RenamePreset(player, _commonPresets, args[0], args[1]);
         }
 
         private void RenamePreset(IPlayer player, SimplePresetManager presetManager, string oldName, string newName)
         {
             SimplePreset preset;
-            if (!VerifyHasPreset(player, presetManager, oldName, out preset)) return;
+            if (!VerifyHasPreset(player, presetManager, oldName, out preset))
+                return;
 
-            // Cache actual old preset name since matching is case-insensitive
+            // Cache actual old preset name since matching is case-insensitive.
             var actualOldPresetName = preset.Name;
 
             SimplePreset existingPresetWithNewName = presetManager.FindPreset(newName);
@@ -920,7 +1021,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            // Allow renaming if just changing case
+            // Allow renaming if just changing case.
             if (existingPresetWithNewName != null && preset != existingPresetWithNewName)
             {
                 ReplyToPlayer(player, "Generic.Error.PresetAlreadyTaken", existingPresetWithNewName.Name);
@@ -933,14 +1034,17 @@ namespace Oxide.Plugins
 
         private void SubCommand_DeletePreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionPresets))
+                return;
+
             var presetNameArg = args.Length == 0 ? DefaultPresetName : args[0];
             DeletePreset(player, GetPlayerConfig(player), presetNameArg);
         }
 
         private void SubCommand_Common_DeletePreset(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionManageCommonPresets)) return;
+            if (!VerifyPermissionAny(player, PermissionManageCommonPresets))
+                return;
 
             if (args.Length == 0)
             {
@@ -948,13 +1052,14 @@ namespace Oxide.Plugins
                 return;
             }
 
-            DeletePreset(player, pluginData, args[0]);
+            DeletePreset(player, _commonPresets, args[0]);
         }
 
         private void DeletePreset(IPlayer player, SimplePresetManager presetManager, string presetNameArg)
         {
             SimplePreset preset;
-            if (!VerifyHasPreset(player, presetManager, presetNameArg, out preset)) return;
+            if (!VerifyHasPreset(player, presetManager, presetNameArg, out preset))
+                return;
 
             presetManager.DeletePreset(preset);
             ReplyToPlayer(player, "Command.DeletePreset.Success", preset.Name);
@@ -962,7 +1067,9 @@ namespace Oxide.Plugins
 
         private void SubCommand_ToggleAutoCodeLock(IPlayer player, string[] args)
         {
-            if (GetLockPlugin() == null || !VerifyPermissionAny(player, PermissionAutoCodeLock)) return;
+            if (VehicleDeployedLocks == null
+                || !VerifyPermissionAny(player, PermissionAutoCodeLock))
+                return;
 
             var config = GetPlayerConfig(player);
             config.Settings.AutoCodeLock = !config.Settings.AutoCodeLock;
@@ -972,7 +1079,8 @@ namespace Oxide.Plugins
 
         private void SubCommand_ToggleAutoKeyLock(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionAutoKeyLock)) return;
+            if (!VerifyPermissionAny(player, PermissionAutoKeyLock))
+                return;
 
             var config = GetPlayerConfig(player);
             config.Settings.AutoKeyLock = !config.Settings.AutoKeyLock;
@@ -982,7 +1090,8 @@ namespace Oxide.Plugins
 
         private void SubCommand_ToggleAutoFillTankers(IPlayer player, string[] args)
         {
-            if (!VerifyPermissionAny(player, PermissionAutoFillTankers)) return;
+            if (!VerifyPermissionAny(player, PermissionAutoFillTankers))
+                return;
 
             var config = GetPlayerConfig(player);
             config.Settings.AutoFillTankers = !config.Settings.AutoFillTankers;
@@ -994,42 +1103,43 @@ namespace Oxide.Plugins
 
         #region Helper Methods - Command Checks
 
-        private bool SpawnWasBlocked(BasePlayer player)
+        private static bool SpawnWasBlocked(BasePlayer player)
         {
             object hookResult = Interface.CallHook("CanSpawnModularCar", player);
-            return (hookResult is bool && (bool)hookResult == false);
+            return hookResult is bool && (bool)hookResult == false;
         }
 
-        private bool SpawnMyCarWasBlocked(BasePlayer player)
+        private static bool SpawnMyCarWasBlocked(BasePlayer player)
         {
-            if (SpawnWasBlocked(player)) return true;
+            if (SpawnWasBlocked(player))
+                return true;
 
             object hookResult = Interface.CallHook("CanSpawnMyCar", player);
-            return (hookResult is bool && (bool)hookResult == false);
+            return hookResult is bool && (bool)hookResult == false;
         }
 
-        private bool FetchMyCarWasBlocked(BasePlayer player, ModularCar car)
+        private static bool FetchMyCarWasBlocked(BasePlayer player, ModularCar car)
         {
             object hookResult = Interface.CallHook("CanFetchMyCar", player, car);
-            return (hookResult is bool && (bool)hookResult == false);
+            return hookResult is bool && (bool)hookResult == false;
         }
 
-        private bool FixMyCarWasBlocked(BasePlayer player, ModularCar car)
+        private static bool FixMyCarWasBlocked(BasePlayer player, ModularCar car)
         {
             object hookResult = Interface.CallHook("CanFixMyCar", player, car);
-            return (hookResult is bool && (bool)hookResult == false);
+            return hookResult is bool && (bool)hookResult == false;
         }
 
-        private bool LoadMyCarPresetWasBlocked(BasePlayer player, ModularCar car)
+        private static bool LoadMyCarPresetWasBlocked(BasePlayer player, ModularCar car)
         {
             object hookResult = Interface.CallHook("CanLoadMyCarPreset", player, car);
-            return (hookResult is bool && (bool)hookResult == false);
+            return hookResult is bool && (bool)hookResult == false;
         }
 
-        private bool DestroyMyCarWasBlocked(BasePlayer player, ModularCar car)
+        private static bool DestroyMyCarWasBlocked(BasePlayer player, ModularCar car)
         {
             object hookResult = Interface.CallHook("CanDestroyMyCar", player, car);
-            return (hookResult is bool && (bool)hookResult == false);
+            return hookResult is bool && (bool)hookResult == false;
         }
 
         private bool VerifyPermissionAny(IPlayer player, params string[] permissionNames)
@@ -1062,6 +1172,20 @@ namespace Oxide.Plugins
                 ReplyToPlayer(player, "Generic.Error.BuildingBlocked");
                 return false;
             }
+            return true;
+        }
+
+        private bool VerifySufficientSpace(IPlayer player, int numSockets, out Vector3 determinedPosition, out Quaternion determinedRotation)
+        {
+            var basePlayer = player.Object as BasePlayer;
+
+            if (!TryGetIdealCarPositionAndRotation(basePlayer, numSockets, out determinedPosition, out determinedRotation)
+                || !HasSufficientSpace(basePlayer, numSockets, determinedPosition, determinedRotation))
+            {
+                ReplyToPlayer(player, "Generic.Error.InsufficientSpace");
+                return false;
+            }
+
             return true;
         }
 
@@ -1100,7 +1224,8 @@ namespace Oxide.Plugins
 
         private bool VerifyHasNoCar(IPlayer player)
         {
-            if (FindPlayerCar(player) == null) return true;
+            if (FindPlayerCar(player) == null)
+                return true;
 
             var messages = new List<string> { GetMessage(player, "Command.Spawn.Error.CarAlreadyExists") };
             if (permission.UserHasPermission(player.Id, PermissionFetch))
@@ -1112,8 +1237,9 @@ namespace Oxide.Plugins
 
         private bool VerifyCarNotOccupied(IPlayer player, ModularCar car)
         {
-            // Players can either be mounted in seats, or standing on flatbed modules
-            if (car.AnyMounted() || car.AttachedModuleEntities.Any(module => module.children.Any(child => child is BasePlayer)))
+            // Players can either be mounted in seats, or standing on flatbed modules.
+            if (car.AnyMounted()
+                || car.AttachedModuleEntities.Any(module => module.children.Any(child => child is BasePlayer)))
             {
                 ReplyToPlayer(player, "Generic.Error.CarOccupied");
                 return false;
@@ -1121,22 +1247,12 @@ namespace Oxide.Plugins
             return true;
         }
 
-        private bool VerifyCarIsNotDead(IPlayer player, ModularCar car)
+        private bool VerifyOffCooldown(IPlayer player, CooldownType cooldownType)
         {
-            if (car.IsDead())
-            {
-                ReplyToPlayer(player, "Generic.Error.CarDead");
-                return false;
-            }
-            return true;
-        }
-
-        private bool VerifyOffCooldown(CooldownManager cooldownManager, IPlayer player)
-        {
-            var secondsRemaining = cooldownManager.GetSecondsRemaining(player.Id);
+            var secondsRemaining = _pluginData.GetRemainingCooldownSeconds(player.Id, cooldownType);
             if (secondsRemaining > 0)
             {
-                ReplyToPlayer(player, "Generic.Error.Cooldown", Math.Ceiling(secondsRemaining));
+                ReplyToPlayer(player, "Generic.Error.Cooldown", secondsRemaining);
                 return false;
             }
             return true;
@@ -1145,7 +1261,8 @@ namespace Oxide.Plugins
         private bool VerifyOnlyOneMatchingPreset(IPlayer player, SimplePresetManager presetManager, string presetName, out SimplePreset preset)
         {
             preset = presetManager.FindPreset(presetName);
-            if (preset != null) return true;
+            if (preset != null)
+                return true;
 
             var matchingPresets = presetManager.FindMatchingPresets(presetName);
             var matchCount = matchingPresets.Count;
@@ -1169,30 +1286,50 @@ namespace Oxide.Plugins
 
         #region Helper Methods - Cars
 
-        private bool IsPlayerCar(ModularCar car) =>
-            pluginData.playerCars.ContainsValue(car.net.ID);
-
-        private int SortPresetNames(SimplePreset a, SimplePreset b) =>
+        private static int SortPresetNames(SimplePreset a, SimplePreset b) =>
             a.Name.ToLower() == DefaultPresetName ? -1 :
             b.Name.ToLower() == DefaultPresetName ? 1 :
             a.Name.CompareTo(b.Name);
 
-        private ModularCar FindPlayerCar(IPlayer player)
+        private static Vector3 GetCarExtents(int numSockets)
         {
-            if (!pluginData.playerCars.ContainsKey(player.Id))
-                return null;
-
-            var car = BaseNetworkable.serverEntities.Find(pluginData.playerCars[player.Id]) as ModularCar;
-
-            // Just in case the car was removed and that somehow wasn't detected sooner
-            // This could happen if the data file somehow got out of sync for instance
-            if (car == null)
-                pluginData.UnregisterCar(player.Id);
-
-            return car;
+            switch (numSockets)
+            {
+                case 2:
+                    return ShortCarExtents;
+                case 3:
+                    return MediumCarExtents;
+                default:
+                    return LongCarExtents;
+            }
         }
 
-        private int[] GetCarModuleIDs(ModularCar car)
+        private static void GetCarFrontBack(int numSockets, out Vector3 frontLeft, out Vector3 frontRight, out Vector3 backLeft, out Vector3 backRight)
+        {
+            switch (numSockets)
+            {
+                case 2:
+                    frontLeft = ShortCarFrontLeft;
+                    frontRight = ShortCarFrontRight;
+                    backLeft = ShortCarBackLeft;
+                    backRight = ShortCarBackRight;
+                    return;
+                case 3:
+                    frontLeft = MediumCarFrontLeft;
+                    frontRight = MediumCarFrontRight;
+                    backLeft = MediumCarBackLeft;
+                    backRight = MediumCarBackRight;
+                    return;
+                default:
+                    frontLeft = LongCarFrontLeft;
+                    frontRight = LongCarFrontRight;
+                    backLeft = LongCarBackLeft;
+                    backRight = LongCarBackRight;
+                    return;
+            }
+        }
+
+        private static int[] GetCarModuleIDs(ModularCar car)
         {
             var moduleIDs = new List<int>();
 
@@ -1202,160 +1339,70 @@ namespace Oxide.Plugins
                 if (car.TryGetModuleAt(socketIndex, out module) && module.FirstSocketIndex == socketIndex)
                     moduleIDs.Add(module.AssociatedItemDef.itemid);
                 else
-                    // Empty socket, use 0 to represent this
+                    // Use 0 to represent an empty socket.
                     moduleIDs.Add(0);
             }
 
             return moduleIDs.ToArray();
         }
 
-        private Vector3 GetIdealCarPosition(BasePlayer player)
+        private static Vector3 GetPlayerForwardPosition(BasePlayer player)
         {
             Vector3 forward = player.GetNetworkRotation() * Vector3.forward;
             forward.y = 0;
-            Vector3 position = player.transform.position + forward.normalized * 3f;
+            return forward.normalized;
+        }
+
+        // Directly in front of the player.
+        private static Vector3 GetFixedCarPosition(BasePlayer player)
+        {
+            Vector3 forward = GetPlayerForwardPosition(player);
+            Vector3 position = player.transform.position + forward * 3f;
             position.y = player.transform.position.y + 1f;
             return position;
         }
 
-        private Quaternion GetIdealCarRotation(BasePlayer player) =>
+        // On surface in front of player.
+        private static bool TryGetIdealCarPositionAndRotation(BasePlayer player, int numSockets, out Vector3 position, out Quaternion rotation)
+        {
+            var carMiddle = player.eyes.position + GetPlayerForwardPosition(player) * ForwardRaycastDistance;
+
+            Vector3 carFrontLeft, carFrontRight, carBackLeft, carBackRight;
+            GetCarFrontBack(numSockets, out carFrontLeft, out carFrontRight, out carBackLeft, out carBackRight);
+
+            var initialRotation = GetRelativeCarRotation(player);
+
+            RaycastHit frontLeftHit, frontRightHit, backLeftHit, backRightHit;
+            if (!Physics.Raycast(carMiddle + initialRotation * carFrontLeft, Vector3.down, out frontLeftHit, DownwardRaycastDistance, RaycastLayers, QueryTriggerInteraction.Ignore)
+                || !Physics.Raycast(carMiddle + initialRotation * carFrontRight, Vector3.down, out frontRightHit, DownwardRaycastDistance, RaycastLayers, QueryTriggerInteraction.Ignore)
+                || !Physics.Raycast(carMiddle + initialRotation * carBackLeft, Vector3.down, out backLeftHit, DownwardRaycastDistance, RaycastLayers, QueryTriggerInteraction.Ignore)
+                || !Physics.Raycast(carMiddle + initialRotation * carBackRight, Vector3.down, out backRightHit, DownwardRaycastDistance, RaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                position = Vector3.zero;
+                rotation = Quaternion.identity;
+                return false;
+            }
+
+            // Rotate the car relative to the hit positions.
+            rotation = Quaternion.LookRotation((frontLeftHit.point - backLeftHit.point), Vector3.up)
+                * Quaternion.Euler(0, 0, (frontLeftHit.point - frontRightHit.point).y * 30);
+
+            // Spawn in the midpoint between the front and back hits.
+            position = Vector3.Lerp(frontLeftHit.point, backRightHit.point, 0.5f);
+
+            return true;
+        }
+
+        private static Quaternion GetRelativeCarRotation(BasePlayer player) =>
             Quaternion.Euler(0, player.GetNetworkRotation().eulerAngles.y - 90, 0);
 
-        private int GetPlayerAllowedFreshWater(string userID) =>
-            permission.UserHasPermission(userID, PermissionAutoFillTankers) && GetPlayerConfig(userID).Settings.AutoFillTankers ? pluginConfig.FreshWaterAmount : 0;
-
-        private int GetPlayerAllowedFuel(string userID) =>
-            permission.UserHasPermission(userID, PermissionAutoFuel) ? pluginConfig.FuelAmount : 0;
-
-        private int GetPlayerEnginePartsTier(string userID)
-        {
-            if (permission.UserHasPermission(userID, PermissionEnginePartsTier3))
-                return 3;
-            else if (permission.UserHasPermission(userID, PermissionEnginePartsTier2))
-                return 2;
-            else if (permission.UserHasPermission(userID, PermissionEnginePartsTier1))
-                return 1;
-            else
-                return 0;
-        }
-
-        private ushort GetPlayerMaxAllowedCarSockets(string userID)
-        {
-            if (permission.UserHasPermission(userID, PermissionSpawnSockets4))
-                return 4;
-            else if (permission.UserHasPermission(userID, PermissionSpawnSockets3))
-                return 3;
-            else if (permission.UserHasPermission(userID, PermissionSpawnSockets2))
-                return 2;
-            else
-                return 0;
-        }
-
-        private void SpawnRandomCarForPlayer(IPlayer player, int desiredSockets)
-        {
-            var basePlayer = player.Object as BasePlayer;
-            if (SpawnMyCarWasBlocked(basePlayer)) return;
-
-            var carOptions = new RandomCarOptions(player.Id, desiredSockets);
-            SpawnCarForPlayer(basePlayer, carOptions, shouldTrackCar: true, onReady: car =>
-            {
-                var chatMessages = new List<string> { GetMessage(player, "Command.Spawn.Success") };
-
-                if (car.carLock.HasALock)
-                    chatMessages.Add(GetMessage(player, "Command.Spawn.Success.Locked"));
-
-                player.Reply(string.Join(" ", chatMessages));
-            });
-        }
-
-        private void SpawnPresetCarForPlayer(IPlayer player, SimplePreset preset)
-        {
-            if (preset.NumSockets > GetPlayerMaxAllowedCarSockets(player.Id))
-            {
-                ReplyToPlayer(player, "Generic.Error.NoPermissionToPresetSocketCount", preset.Name, preset.NumSockets);
-                return;
-            }
-
-            var basePlayer = player.Object as BasePlayer;
-            if (SpawnMyCarWasBlocked(basePlayer)) return;
-
-            var carOptions = new PresetCarOptions(player.Id, preset.ModuleIDs);
-            SpawnCarForPlayer(basePlayer, carOptions, shouldTrackCar: true, onReady: car =>
-            {
-                var chatMessages = new List<string> { GetMessage(player, "Command.Spawn.Success.Preset", preset.Name) };
-
-                if (car.carLock.HasALock)
-                    chatMessages.Add(GetMessage(player, "Command.Spawn.Success.Locked"));
-
-                ReplyToPlayer(player, string.Join(" ", chatMessages));
-
-                if (preset != null)
-                    MaybePlayCarRepairEffects(car);
-            });
-        }
-
-        private ModularCar SpawnCarForPlayer(BasePlayer player, BaseCarOptions options, bool shouldTrackCar = false, Action<ModularCar> onReady = null)
-        {
-            var numSockets = options.Length;
-
-            string prefabName;
-            if (numSockets == 4) prefabName = PrefabSockets4;
-            else if (numSockets == 3) prefabName = PrefabSockets3;
-            else if (numSockets == 2) prefabName = PrefabSockets2;
-            else return null;
-
-            var position = GetIdealCarPosition(player);
-            if (position == null) return null;
-
-            ModularCar car = (ModularCar)GameManager.server.CreateEntity(prefabName, position, GetIdealCarRotation(player));
-            if (car == null) return null;
-
-            var presetOptions = options as PresetCarOptions;
-            if (presetOptions != null)
-                car.spawnSettings.useSpawnSettings = false;
-
-            car.OwnerID = player.userID;
-            car.Spawn();
-
-            if (presetOptions != null)
-                AddInitialModules(car, presetOptions.ModuleIDs);
-
-            if (shouldTrackCar)
-            {
-                pluginData.RegisterCar(player.UserIDString, car);
-                SpawnCarCooldowns.UpdateLastUsedForPlayer(player.UserIDString);
-            }
-
-            NextTick(() =>
-            {
-                FixCar(car, options.FuelAmount, options.EnginePartsTier);
-                MaybeFillTankerModules(car, options.FreshWaterAmount);
-
-                if (options.CodeLock)
-                {
-                    var lockPlugin = GetLockPlugin();
-                    if (lockPlugin != null)
-                    {
-                        // both VehicleDeployedLocks and CarCodeLocks have the same API signature
-                        lockPlugin.Call("API_DeployCodeLock", car, player);
-                    }
-                }
-
-                if (options.KeyLock) TryAddKeyLockForPlayer(car, player);
-
-                onReady?.Invoke(car);
-            });
-
-            return car;
-        }
-
-        private void AddInitialModules(ModularCar car, int[] ModuleIDs)
+        private static void AddInitialModules(ModularCar car, int[] ModuleIDs)
         {
             for (int socketIndex = 0; socketIndex < car.TotalSockets; socketIndex++)
             {
                 var desiredItemID = ModuleIDs[socketIndex];
 
-                // We are using 0 to represent an empty socket which we skip
+                // We are using 0 to represent an empty socket which we skip.
                 if (desiredItemID != 0)
                 {
                     var moduleItem = ItemManager.CreateByItemID(desiredItemID);
@@ -1365,15 +1412,15 @@ namespace Oxide.Plugins
             }
         }
 
-        private void UpdateCarModules(ModularCar car, int[] moduleIDs)
+        private static void UpdateCarModules(ModularCar car, int[] moduleIDs)
         {
-            // Phase 1: Remove all modules that don't match the desired preset
-            // This is done first since some modules take up two sockets
+            // Phase 1: Remove all modules that don't match the desired preset.
+            // This is done first since some modules take up two sockets.
             for (int socketIndex = 0; socketIndex < car.TotalSockets; socketIndex++)
             {
                 var desiredItemID = moduleIDs[socketIndex];
                 var existingItem = car.Inventory.ModuleContainer.GetSlot(socketIndex);
-                
+
                 if (existingItem != null && existingItem.info.itemid != desiredItemID)
                 {
                     existingItem.RemoveFromContainer();
@@ -1381,13 +1428,13 @@ namespace Oxide.Plugins
                 }
             }
 
-            // Phase 2: Add the modules that are missing
+            // Phase 2: Add the modules that are missing.
             for (int socketIndex = 0; socketIndex < car.TotalSockets; socketIndex++)
             {
                 var desiredItemID = moduleIDs[socketIndex];
                 var existingItem = car.Inventory.ModuleContainer.GetSlot(socketIndex);
 
-                // We are using 0 to represent an empty socket which we skip
+                // We are using 0 to represent an empty socket which we skip.
                 if (existingItem == null && desiredItemID != 0)
                 {
                     var moduleItem = ItemManager.CreateByItemID(desiredItemID);
@@ -1397,7 +1444,7 @@ namespace Oxide.Plugins
             }
         }
 
-        private List<Item> AddEngineItemsAndReturnRemaining(ModularCar car, List<Item> engineItems)
+        private static List<Item> AddEngineItemsAndReturnRemaining(ModularCar car, List<Item> engineItems)
         {
             var itemsByType = engineItems
                 .GroupBy(item => item.info.GetComponent<ItemModEngineItem>().engineItemType)
@@ -1409,16 +1456,19 @@ namespace Oxide.Plugins
             foreach (var module in car.AttachedModuleEntities)
             {
                 var engineStorage = (module as VehicleModuleEngine)?.GetContainer() as EngineStorage;
-                if (engineStorage == null) continue;
+                if (engineStorage == null)
+                    continue;
 
                 for (var slotIndex = 0; slotIndex < engineStorage.inventory.capacity; slotIndex++)
                 {
                     var engineItemType = engineStorage.slotTypes[slotIndex];
-                    if (!itemsByType.ContainsKey(engineItemType)) continue;
+                    if (!itemsByType.ContainsKey(engineItemType))
+                        continue;
 
                     var itemsOfType = itemsByType[engineItemType];
                     var existingItem = engineStorage.inventory.GetSlot(slotIndex);
-                    if (existingItem != null || itemsOfType.Count == 0) continue;
+                    if (existingItem != null || itemsOfType.Count == 0)
+                        continue;
 
                     itemsOfType[0].MoveToContainer(engineStorage.inventory, slotIndex, allowStack: false);
                     itemsOfType.RemoveAt(0);
@@ -1428,11 +1478,16 @@ namespace Oxide.Plugins
             return itemsByType.Values.SelectMany(x => x).ToList();
         }
 
-        private void AddUpgradeOrRepairEngineParts(EngineStorage engineStorage, int desiredTier)
+        private static void AddUpgradeOrRepairEngineParts(EngineStorage engineStorage, int desiredTier)
         {
-            if (engineStorage.inventory == null) return;
-            
             var inventory = engineStorage.inventory;
+            if (inventory == null)
+                return;
+
+            // Ignore if the engine storage is locked, since it must be controlled by another plugin.
+            if (inventory.IsLocked())
+                return;
+
             for (var i = 0; i < inventory.capacity; i++)
             {
                 var item = inventory.GetSlot(i);
@@ -1453,14 +1508,16 @@ namespace Oxide.Plugins
             }
         }
 
-        private bool TryAddEngineItem(EngineStorage engineStorage, int slot, int tier)
+        private static bool TryAddEngineItem(EngineStorage engineStorage, int slot, int tier)
         {
             ItemModEngineItem output;
-            if (!engineStorage.allEngineItems.TryGetItem(tier, engineStorage.slotTypes[slot], out output)) return false;
+            if (!engineStorage.allEngineItems.TryGetItem(tier, engineStorage.slotTypes[slot], out output))
+                return false;
 
             var component = output.GetComponent<ItemDefinition>();
             var item = ItemManager.Create(component);
-            if (item == null) return false;
+            if (item == null)
+                return false;
 
             item.condition = component.condition.max;
             item.MoveToContainer(engineStorage.inventory, slot, allowStack: false);
@@ -1468,22 +1525,31 @@ namespace Oxide.Plugins
             return true;
         }
 
-        private List<Item> ExtractEnginePartsAboveTierAndDeleteRest(ModularCar car, int tier)
+        private static List<Item> ExtractEnginePartsAboveTierAndDeleteRest(ModularCar car, int tier)
         {
             var extractedEngineParts = new List<Item>();
 
             foreach (var module in car.AttachedModuleEntities)
             {
                 var engineStorage = (module as VehicleModuleEngine)?.GetContainer() as EngineStorage;
-                if (engineStorage == null) continue;
+                if (engineStorage == null)
+                    continue;
 
-                for (var i = 0; i < engineStorage.inventory.capacity; i++)
+                var inventory = engineStorage.inventory;
+
+                // Ignore if the engine storage is locked, since it must be controlled by another plugin.
+                if (inventory.IsLocked())
+                    continue;
+
+                for (var i = 0; i < inventory.capacity; i++)
                 {
-                    var item = engineStorage.inventory.GetSlot(i);
-                    if (item == null) continue;
+                    var item = inventory.GetSlot(i);
+                    if (item == null)
+                        continue;
 
                     var component = item.info.GetComponent<ItemModEngineItem>();
-                    if (component == null) continue;
+                    if (component == null)
+                        continue;
 
                     item.RemoveFromContainer();
 
@@ -1497,7 +1563,7 @@ namespace Oxide.Plugins
             return extractedEngineParts;
         }
 
-        private void GiveItemsToPlayerOrDrop(BasePlayer player, List<Item> itemList)
+        private static void GiveItemsToPlayerOrDrop(BasePlayer player, List<Item> itemList)
         {
             var itemsToDrop = new List<Item>();
 
@@ -1509,9 +1575,10 @@ namespace Oxide.Plugins
                 DropEngineParts(player, itemsToDrop);
         }
 
-        private void DropEngineParts(BasePlayer player, List<Item> itemList)
+        private static void DropEngineParts(BasePlayer player, List<Item> itemList)
         {
-            if (itemList.Count == 0) return;
+            if (itemList.Count == 0)
+                return;
 
             var position = player.GetDropPosition();
             if (itemList.Count == 1)
@@ -1521,12 +1588,13 @@ namespace Oxide.Plugins
             }
 
             var container = GameManager.server.CreateEntity(ItemDropPrefab, position, player.GetNetworkRotation()) as DroppedItemContainer;
-            if (container == null) return;
+            if (container == null)
+                return;
 
             container.playerName = $"{player.displayName}'s Engine Parts";
 
-            // 4 large engines * 8 parts (each damaged) = 32 max engine parts
-            // This fits within the standard max size of 36
+            // 4 large engines * 8 parts (each damaged) = 32 max engine parts.
+            // This fits within the standard max size of 36.
             var capacity = Math.Min(itemList.Count, container.maxItemCount);
 
             container.inventory = new ItemContainer();
@@ -1544,7 +1612,7 @@ namespace Oxide.Plugins
             container.Spawn();
         }
 
-        private void FixCar(ModularCar car, int fuelAmount, int enginePartsTier)
+        private static void FixCar(ModularCar car, int fuelAmount, int enginePartsTier)
         {
             car.SetHealth(car.MaxHealth());
             car.SendNetworkUpdate();
@@ -1565,11 +1633,21 @@ namespace Oxide.Plugins
             }
         }
 
-        private void AddOrRestoreFuel(ModularCar car, int specifiedFuelAmount)
+        private static void ReviveCar(ModularCar car)
+        {
+            car.lifestate = BaseCombatEntity.LifeState.Alive;
+            car.repair.enabled = true;
+
+            foreach (var module in car.AttachedModuleEntities)
+                module.repair.enabled = true;
+        }
+
+        private static void AddOrRestoreFuel(ModularCar car, int specifiedFuelAmount)
         {
             var fuelContainer = car.fuelSystem.GetFuelContainer();
             var targetFuelAmount = specifiedFuelAmount == -1 ? fuelContainer.allowedItem.stackable : specifiedFuelAmount;
-            if (targetFuelAmount == 0) return;
+            if (targetFuelAmount == 0)
+                return;
 
             var fuelItem = fuelContainer.inventory.FindItemByItemID(fuelContainer.allowedItem.itemid);
             if (fuelItem == null)
@@ -1585,14 +1663,11 @@ namespace Oxide.Plugins
 
         private bool TryReleaseCarFromLift(ModularCar car)
         {
-            RaycastHit hitInfo;
-            // This isn't perfect as it can hit other deployables such as rugs
-            if (!Physics.SphereCast(car.transform.position + Vector3.up, 1f, Vector3.down, out hitInfo, 1f)) return false;
+            ModularCarGarage lift;
+            if (!TryFindCarLift(car, out lift))
+                return false;
 
-            var lift = RaycastHitEx.GetEntity(hitInfo) as ModularCarGarage;
-            if (lift == null || lift.carOccupant != car) return false;
-
-            // Disable the lift for a bit, to prevent it from grabbing the car back
+            // Disable the lift for a bit, to prevent it from grabbing the car back.
             lift.enabled = false;
             lift.ReleaseOccupant();
             lift.Invoke(() => lift.enabled = true, 0.5f);
@@ -1600,36 +1675,52 @@ namespace Oxide.Plugins
             return true;
         }
 
-        private void DismountAllPlayersFromCar(ModularCar car)
+        private bool TryFindCarLift(ModularCar car, out ModularCarGarage lift)
         {
-            // Dismount seated players
+            if (Physics.RaycastNonAlloc(car.transform.position, car.transform.right, _raycastBuffer, 2, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) > 0)
+            {
+                lift = _raycastBuffer[0].GetEntity() as ModularCarGarage;
+                if (lift != null && lift.carOccupant == car)
+                    return true;
+            }
+
+            if (Physics.RaycastNonAlloc(car.transform.position, car.transform.right * -1, _raycastBuffer, 2, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) > 0)
+            {
+                lift = _raycastBuffer[0].GetEntity() as ModularCarGarage;
+                if (lift != null && lift.carOccupant == car)
+                    return true;
+            }
+
+            lift = null;
+            return false;
+        }
+
+        private static void DismountAllPlayersFromCar(ModularCar car)
+        {
+            // Dismount seated players.
             if (car.AnyMounted())
                 car.DismountAllPlayers();
 
-            // Dismount players standing on flatbed modules
+            // Dismount players standing on flatbed modules.
             foreach (var module in car.AttachedModuleEntities)
                 foreach (var child in module.children.ToList())
                     if (child is BasePlayer)
                         (child as BasePlayer).SetParent(null, worldPositionStays: true);
         }
 
-        private bool ShouldTryAddCodeLockForPlayer(string userID) =>
-            permission.UserHasPermission(userID, PermissionAutoCodeLock) && GetPlayerConfig(userID).Settings.AutoCodeLock;
-
-        private bool ShouldTryAddKeyLockForPlayer(string userID) =>
-            permission.UserHasPermission(userID, PermissionAutoKeyLock) && GetPlayerConfig(userID).Settings.AutoKeyLock;
-
-        private bool TryAddKeyLockForPlayer(ModularCar car, BasePlayer player)
+        private static bool TryAddKeyLockForPlayer(ModularCar car, BasePlayer player)
         {
-            if (car.carLock.HasALock || !car.carLock.CanHaveALock()) return false;
+            if (car.carLock.HasALock || !car.carLock.CanHaveALock())
+                return false;
+
             car.carLock.AddALock();
             car.carLock.TryCraftAKey(player, free: true);
             return true;
         }
 
-        private void MaybeRemoveMatchingKeysFromPlayer(BasePlayer player, ModularCar car)
+        private static void MaybeRemoveMatchingKeysFromPlayer(BasePlayer player, ModularCar car)
         {
-            if (pluginConfig.DeleteKeyOnDespawn && car.carLock.HasALock)
+            if (_pluginConfig.DeleteKeyOnDespawn && car.carLock.HasALock)
             {
                 var matchingKeys = player.inventory.FindItemIDs(car.carKeyDefinition.itemid)
                     .Where(key => key.instanceData != null && key.instanceData.dataInt == car.carLock.LockID);
@@ -1639,21 +1730,23 @@ namespace Oxide.Plugins
             }
         }
 
-        private void MaybeFillTankerModules(ModularCar car, int specifiedLiquidAmount)
+        private static void MaybeFillTankerModules(ModularCar car, int specifiedLiquidAmount)
         {
-            if (specifiedLiquidAmount == 0) return;
+            if (specifiedLiquidAmount == 0)
+                return;
 
             foreach (var module in car.AttachedModuleEntities)
             {
                 var liquidContainer = (module as VehicleModuleStorage)?.GetContainer() as LiquidContainer;
-                if (liquidContainer == null) continue;
+                if (liquidContainer == null)
+                    continue;
 
-                if (FillLiquidContainer(liquidContainer, specifiedLiquidAmount) && pluginConfig.EnableEffects)
+                if (FillLiquidContainer(liquidContainer, specifiedLiquidAmount) && _pluginConfig.EnableEffects)
                     Effect.server.Run(TankerFilledEffectPrefab, module.transform.position);
             }
         }
 
-        private bool FillLiquidContainer(LiquidContainer liquidContainer, int specifiedAmount)
+        private static bool FillLiquidContainer(LiquidContainer liquidContainer, int specifiedAmount)
         {
             var targetAmount = specifiedAmount == -1 ? liquidContainer.maxStackSize : specifiedAmount;
             var defaultItem = liquidContainer.defaultLiquid;
@@ -1667,15 +1760,15 @@ namespace Oxide.Plugins
 
             if (existingItem.info.itemid != defaultItem.itemid)
             {
-                // Remove other liquid such as salt water
+                // Remove other liquid such as salt water.
                 existingItem.RemoveFromContainer();
                 existingItem.Remove();
                 liquidContainer.inventory.AddItem(defaultItem, targetAmount);
                 return true;
             }
-            
+
             if (existingItem.amount >= targetAmount)
-                // Nothing added in this case
+                // Nothing added in this case.
                 return false;
 
             existingItem.amount = targetAmount;
@@ -1683,9 +1776,10 @@ namespace Oxide.Plugins
             return true;
         }
 
-        private void MaybePlayCarRepairEffects(ModularCar car)
+        private static void MaybePlayCarRepairEffects(ModularCar car)
         {
-            if (!pluginConfig.EnableEffects) return;
+            if (!_pluginConfig.EnableEffects)
+                return;
 
             if (car.AttachedModuleEntities.Count > 0)
                 foreach (var module in car.AttachedModuleEntities)
@@ -1694,8 +1788,182 @@ namespace Oxide.Plugins
                 Effect.server.Run(RepairEffectPrefab, car.transform.position);
         }
 
-        private int[] ParseModules(object[] moduleArray)
+        private static int Clamp(int x, int min, int max) => Math.Min(max, Math.Max(min, x));
+
+        private bool IsPlayerCar(ModularCar car) =>
+            _pluginData.PlayerCars.ContainsValue(car.net.ID);
+
+        private ModularCar FindPlayerCar(IPlayer player)
         {
+            if (!_pluginData.PlayerCars.ContainsKey(player.Id))
+                return null;
+
+            var car = BaseNetworkable.serverEntities.Find(_pluginData.PlayerCars[player.Id]) as ModularCar;
+
+            // Just in case the car was removed and that somehow wasn't detected sooner.
+            // This could happen if the data file somehow got out of sync for instance.
+            if (car == null)
+                _pluginData.UnregisterCar(player.Id);
+
+            return car;
+        }
+
+        private bool HasSufficientSpace(BasePlayer player, int numSockets, Vector3 desiredPosition, Quaternion rotation)
+        {
+            var carExtents = GetCarExtents(numSockets);
+            var carCenterPoint = desiredPosition + rotation * new Vector3(0, carExtents.y);
+
+            // Need some extra height for the boxcast to allow spawning on a lift since lifts are construction.
+            // Cars can't be spawned on sleepers.
+            // Cars can still be spawned below ceiling lights.
+            carCenterPoint.y += 0.3f;
+
+            return Physics.BoxCastNonAlloc(carCenterPoint, carExtents, rotation * Vector3.forward, _raycastBuffer, rotation, 0.1f, BoxcastLayers, QueryTriggerInteraction.Ignore) == 0;
+        }
+
+        private int GetPlayerAllowedFreshWater(string userId) =>
+            permission.UserHasPermission(userId, PermissionAutoFillTankers) && GetPlayerConfig(userId).Settings.AutoFillTankers ? _pluginConfig.FreshWaterAmount : 0;
+
+        private int GetPlayerAllowedFuel(string userId) =>
+            permission.UserHasPermission(userId, PermissionAutoFuel) ? _pluginConfig.FuelAmount : 0;
+
+        private int GetPlayerEnginePartsTier(string userId)
+        {
+            if (permission.UserHasPermission(userId, PermissionEnginePartsTier3))
+                return 3;
+            else if (permission.UserHasPermission(userId, PermissionEnginePartsTier2))
+                return 2;
+            else if (permission.UserHasPermission(userId, PermissionEnginePartsTier1))
+                return 1;
+            else
+                return 0;
+        }
+
+        private ushort GetPlayerMaxAllowedCarSockets(string userId)
+        {
+            if (permission.UserHasPermission(userId, PermissionSpawnSockets4))
+                return 4;
+            else if (permission.UserHasPermission(userId, PermissionSpawnSockets3))
+                return 3;
+            else if (permission.UserHasPermission(userId, PermissionSpawnSockets2))
+                return 2;
+            else
+                return 0;
+        }
+
+        private void SpawnRandomCarForPlayer(IPlayer player, int desiredSockets)
+        {
+            var basePlayer = player.Object as BasePlayer;
+            Vector3 spawnPosition;
+            Quaternion rotation;
+            if (!VerifySufficientSpace(player, desiredSockets, out spawnPosition, out rotation)
+                || SpawnMyCarWasBlocked(basePlayer))
+                return;
+
+            var carOptions = new RandomCarOptions(player.Id, desiredSockets);
+            SpawnCarForPlayer(basePlayer, carOptions, spawnPosition, rotation, shouldTrackCar: true, onReady: car =>
+            {
+                var chatMessages = new List<string> { GetMessage(player, "Command.Spawn.Success") };
+
+                if (car.carLock.HasALock)
+                    chatMessages.Add(GetMessage(player, "Command.Spawn.Success.Locked"));
+
+                player.Reply(string.Join(" ", chatMessages));
+            });
+        }
+
+        private void SpawnPresetCarForPlayer(IPlayer player, SimplePreset preset)
+        {
+            if (preset.NumSockets > GetPlayerMaxAllowedCarSockets(player.Id))
+            {
+                ReplyToPlayer(player, "Generic.Error.NoPermissionToPresetSocketCount", preset.Name, preset.NumSockets);
+                return;
+            }
+
+            var basePlayer = player.Object as BasePlayer;
+            Vector3 spawnPosition;
+            Quaternion rotation;
+            if (!VerifySufficientSpace(player, preset.NumSockets, out spawnPosition, out rotation)
+                || SpawnMyCarWasBlocked(basePlayer))
+                return;
+
+            var carOptions = new PresetCarOptions(player.Id, preset.ModuleIDs);
+            SpawnCarForPlayer(basePlayer, carOptions, spawnPosition, rotation, shouldTrackCar: true, onReady: car =>
+            {
+                var chatMessages = new List<string> { GetMessage(player, "Command.Spawn.Success.Preset", preset.Name) };
+
+                if (car.carLock.HasALock)
+                    chatMessages.Add(GetMessage(player, "Command.Spawn.Success.Locked"));
+
+                ReplyToPlayer(player, string.Join(" ", chatMessages));
+
+                if (preset != null)
+                    MaybePlayCarRepairEffects(car);
+            });
+        }
+
+        private ModularCar SpawnCarForPlayer(BasePlayer player, BaseCarOptions options, Vector3 position, Quaternion rotation, bool shouldTrackCar = false, Action<ModularCar> onReady = null)
+        {
+            var numSockets = options.Length;
+
+            string prefabName;
+            if (numSockets == 4)
+                prefabName = PrefabSockets4;
+            else if (numSockets == 3)
+                prefabName = PrefabSockets3;
+            else if (numSockets == 2)
+                prefabName = PrefabSockets2;
+            else
+                return null;
+
+            var car = GameManager.server.CreateEntity(prefabName, position, rotation) as ModularCar;
+            if (car == null)
+                return null;
+
+            var presetOptions = options as PresetCarOptions;
+            if (presetOptions != null)
+                car.spawnSettings.useSpawnSettings = false;
+
+            car.OwnerID = player.userID;
+            car.Spawn();
+
+            if (presetOptions != null)
+                AddInitialModules(car, presetOptions.NormalizedModuleIDs);
+
+            if (shouldTrackCar)
+            {
+                _pluginData.StartCooldown(player.UserIDString, CooldownType.Spawn, save: false);
+                _pluginData.RegisterCar(player.UserIDString, car);
+            }
+
+            // Using invoke because that is what the game uses to delay module entity creation.
+            car.Invoke(() =>
+            {
+                FixCar(car, options.FuelAmount, options.EnginePartsTier);
+                MaybeFillTankerModules(car, options.FreshWaterAmount);
+
+                if (options.CodeLock && VehicleDeployedLocks != null)
+                    VehicleDeployedLocks.Call("API_DeployCodeLock", car, player);
+
+                if (options.KeyLock)
+                    TryAddKeyLockForPlayer(car, player);
+
+                onReady?.Invoke(car);
+            }, 0);
+
+            return car;
+        }
+
+        private bool ShouldTryAddCodeLockForPlayer(string userId) =>
+            permission.UserHasPermission(userId, PermissionAutoCodeLock) && GetPlayerConfig(userId).Settings.AutoCodeLock;
+
+        private bool ShouldTryAddKeyLockForPlayer(string userId) =>
+            permission.UserHasPermission(userId, PermissionAutoKeyLock) && GetPlayerConfig(userId).Settings.AutoKeyLock;
+
+        private int[] ValidateModules(object[] moduleArray)
+        {
+            ItemManager.Initialize();
+
             var moduleIDList = new List<int>();
 
             foreach (var module in moduleArray)
@@ -1729,68 +1997,31 @@ namespace Oxide.Plugins
                 }
                 else
                 {
-                    pluginInstance.LogWarning("Unable to parse module id or name: '{0}'", module);
+                    LogWarning("Unable to parse module id or name: '{0}'", module);
                     continue;
                 }
 
                 if (itemDef == null)
                 {
-                    pluginInstance.LogWarning("No item definition found for: '{0}'", module);
+                    LogWarning("No item definition found for: '{0}'", module);
                     continue;
                 }
 
                 var vehicleModule = itemDef.GetComponent<ItemModVehicleModule>();
                 if (vehicleModule == null)
                 {
-                    pluginInstance.LogWarning("No vehicle module found for item: '{0}'", module);
+                    LogWarning("No vehicle module found for item: '{0}'", module);
                     continue;
                 }
 
                 moduleIDList.Add(itemDef.itemid);
 
-                // Normalize module IDs by adding 0s after the module if it takes multiple sockets
+                // Normalize module IDs by adding 0s after the module if it takes multiple sockets.
                 for (var i = 0; i < vehicleModule.SocketsTaken - 1; i++)
                     moduleIDList.Add(0);
             }
 
             return moduleIDList.ToArray();
-        }
-
-        private int Clamp(int x, int min, int max) => Math.Min(max, Math.Max(min, x));
-
-        #endregion
-
-        #region Helper Methods - Misc
-
-        private Plugin GetLockPlugin() => VehicleDeployedLocks ?? CarCodeLocks;
-
-        #endregion
-
-        #region Helper Classes
-
-        internal class CooldownManager
-        {
-            private readonly Dictionary<string, float> CooldownMap = new Dictionary<string, float>();
-            private readonly float CooldownDuration;
-
-            public CooldownManager(float duration)
-            {
-                CooldownDuration = duration;
-            }
-
-            public void UpdateLastUsedForPlayer(string userID)
-            {
-                if (CooldownMap.ContainsKey(userID))
-                    CooldownMap[userID] = Time.realtimeSinceStartup;
-                else
-                    CooldownMap.Add(userID, Time.realtimeSinceStartup);
-            }
-
-            public float GetSecondsRemaining(string userID)
-            {
-                if (!CooldownMap.ContainsKey(userID)) return 0;
-                return CooldownMap[userID] + CooldownDuration - Time.realtimeSinceStartup;
-            }
         }
 
         #endregion
@@ -1800,37 +2031,142 @@ namespace Oxide.Plugins
         internal class PluginData : SimplePresetManager
         {
             [JsonProperty("playerCars")]
-            public Dictionary<string, uint> playerCars = new Dictionary<string, uint>();
+            public Dictionary<string, uint> PlayerCars = new Dictionary<string, uint>();
+
+            [JsonProperty("Cooldowns")]
+            public CooldownManager Cooldowns = new CooldownManager();
+
+            public override List<SimplePreset> Presets { get; set; }
+            public bool ShouldSerializePresets() => false;
+
+            public static PluginData LoadData() =>
+                Interface.Oxide.DataFileSystem.ReadObject<PluginData>(_pluginInstance.Name);
 
             public override void SaveData()
             {
-                Interface.Oxide.DataFileSystem.WriteObject(pluginInstance.Name, this);
+                Interface.Oxide.DataFileSystem.WriteObject(_pluginInstance.Name, this);
             }
 
-            public void RegisterCar(string userID, ModularCar car)
+            public void RegisterCar(string userId, ModularCar car)
             {
-                playerCars.Add(userID, car.net.ID);
+                PlayerCars.Add(userId, car.net.ID);
                 SaveData();
             }
 
-            public void UnregisterCar(string userID)
+            public void UnregisterCar(string userId)
             {
-                playerCars.Remove(userID);
+                PlayerCars.Remove(userId);
                 SaveData();
             }
+
+            public long GetRemainingCooldownSeconds(string userId, CooldownType cooldownType)
+            {
+                long cooldownStart;
+                if (!Cooldowns.GetCooldownMap(cooldownType).TryGetValue(userId, out cooldownStart))
+                    return 0;
+
+                var cooldownSeconds = _pluginConfig.Cooldowns.GetSeconds(cooldownType);
+                return cooldownStart + cooldownSeconds - DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            }
+
+            public void StartCooldown(string userId, CooldownType cooldownType, bool save = true)
+            {
+                if (_pluginConfig.Cooldowns.GetSeconds(cooldownType) <= 0)
+                    return;
+
+                Cooldowns.GetCooldownMap(cooldownType)[userId] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+                if (save)
+                    SaveData();
+            }
+        }
+
+        internal class CommonPresets : SimplePresetManager
+        {
+            private static string Filename =>
+                $"{_pluginInstance.Name}_CommonPresets";
+
+            public static CommonPresets LoadData(PluginData pluginData)
+            {
+                var data = Interface.Oxide.DataFileSystem.ReadObject<CommonPresets>(Filename);
+
+                if (pluginData.Presets != null)
+                {
+                    if (data.Presets == null || data.Presets.Count == 0)
+                    {
+                        _pluginInstance.LogWarning($"Migrating common presets to separate data file: {Filename}.json.");
+                        data.Presets = pluginData.Presets.ToList();
+                        data.SaveData();
+                    }
+                    else
+                    {
+                        _pluginInstance.LogWarning($"Deleting common presets from main data file since they appear to have already been migrated to a separate data file: {Filename}.json.");
+                    }
+                    pluginData.Presets.Clear();
+                    pluginData.SaveData();
+                }
+
+                return data;
+            }
+
+            public override void SaveData() =>
+                Interface.Oxide.DataFileSystem.WriteObject(Filename, this);
         }
 
         private PlayerConfig GetPlayerConfig(IPlayer player) =>
             GetPlayerConfig(player.Id);
 
-        private PlayerConfig GetPlayerConfig(string userID)
+        private PlayerConfig GetPlayerConfig(string userId)
         {
-            if (PlayerConfigsMap.ContainsKey(userID))
-                return PlayerConfigsMap[userID];
+            if (_playerConfigsMap.ContainsKey(userId))
+                return _playerConfigsMap[userId];
 
-            PlayerConfig config = PlayerConfig.Get(Name, userID);
-            PlayerConfigsMap.Add(userID, config);
+            PlayerConfig config = PlayerConfig.Get(Name, userId);
+            _playerConfigsMap.Add(userId, config);
             return config;
+        }
+
+        internal enum CooldownType { Spawn, Fetch, Load, Fix }
+
+        internal class CooldownManager
+        {
+            [JsonProperty("Spawn")]
+            private Dictionary<string, long> Spawn = new Dictionary<string, long>();
+
+            [JsonProperty("Fetch")]
+            private Dictionary<string, long> Fetch = new Dictionary<string, long>();
+
+            [JsonProperty("LoadPreset")]
+            private Dictionary<string, long> LoadPreset = new Dictionary<string, long>();
+
+            [JsonProperty("Fix")]
+            private Dictionary<string, long> Fix = new Dictionary<string, long>();
+
+            public Dictionary<string, long> GetCooldownMap(CooldownType cooldownType)
+            {
+                switch (cooldownType)
+                {
+                    case CooldownType.Spawn:
+                        return Spawn;
+                    case CooldownType.Fetch:
+                        return Fetch;
+                    case CooldownType.Load:
+                        return LoadPreset;
+                    case CooldownType.Fix:
+                        return Fix;
+                    default:
+                        _pluginInstance.LogWarning($"Cooldown not implemented for {cooldownType}");
+                        return null;
+                }
+            }
+
+            public void ClearAll()
+            {
+                Spawn.Clear();
+                Fetch.Clear();
+                LoadPreset.Clear();
+                Fix.Clear();
+            }
         }
 
         internal abstract class SimplePresetManager
@@ -1839,7 +2175,7 @@ namespace Oxide.Plugins
                 new Func<SimplePreset, bool>(preset => preset.Name.Equals(presetName, StringComparison.CurrentCultureIgnoreCase));
 
             [JsonProperty("Presets")]
-            public List<SimplePreset> Presets = new List<SimplePreset>();
+            public virtual List<SimplePreset> Presets { get; set; } = new List<SimplePreset>();
 
             public SimplePreset FindPreset(string presetName) =>
                 Presets.FirstOrDefault(MatchPresetName(presetName));
@@ -1859,7 +2195,9 @@ namespace Oxide.Plugins
             public void UpdatePreset(SimplePreset newPreset)
             {
                 var presetIndex = Presets.FindIndex(new Predicate<SimplePreset>(MatchPresetName(newPreset.Name)));
-                if (presetIndex == -1) return;
+                if (presetIndex == -1)
+                    return;
+
                 Presets[presetIndex] = newPreset;
                 SaveData();
             }
@@ -1918,7 +2256,7 @@ namespace Oxide.Plugins
                 return new SimplePreset
                 {
                     Name = presetName,
-                    ModuleIDs = pluginInstance.GetCarModuleIDs(car)
+                    ModuleIDs = GetCarModuleIDs(car)
                 };
             }
 
@@ -1951,11 +2289,16 @@ namespace Oxide.Plugins
 
         #region Configuration
 
-        protected override void LoadDefaultConfig() => Config.WriteObject(GetDefaultConfig(), true);
+        private void MigrateConfig()
+        {
+            if (_pluginConfig.ValidateServerPresets())
+            {
+                LogWarning("Performing automatic config migration.");
+                SaveConfig();
+            }
+        }
 
-        private PluginConfig GetDefaultConfig() => new PluginConfig();
-
-        internal class PluginConfig
+        internal class Configuration : SerializableConfiguration
         {
             [JsonProperty("CanSpawnWhileBuildingBlocked")]
             public bool CanSpawnBuildingBlocked = false;
@@ -1969,29 +2312,40 @@ namespace Oxide.Plugins
             [JsonProperty("CanDespawnWhileOccupied")]
             public bool CanDespawnOccupied = false;
 
-            [JsonProperty("Presets")]
-            public ServerPreset[] Presets = new ServerPreset[0];
-
-            [JsonProperty("Cooldowns")]
-            public CooldownConfig Cooldowns = new CooldownConfig();
+            [JsonProperty("DismountPlayersOnFetch")]
+            public bool DismountPlayersOnFetch = true;
 
             [JsonProperty("DeleteMatchingKeysFromPlayerInventoryOnDespawn")]
             public bool DeleteKeyOnDespawn = true;
 
-            [JsonProperty("DismountPlayersOnFetch")]
-            public bool DismountPlayersOnFetch = true;
-
-            [JsonProperty("EnableEffects")]
-            public bool EnableEffects = true;
+            [JsonProperty("FuelAmount")]
+            public int FuelAmount = 500;
 
             [JsonProperty("FreshWaterAmount")]
             public int FreshWaterAmount = -1;
 
-            [JsonProperty("FuelAmount")]
-            public int FuelAmount = -1;
-
             [JsonProperty("MaxPresetsPerPlayer")]
             public int MaxPresetsPerPlayer = 10;
+
+            [JsonProperty("EnableEffects")]
+            public bool EnableEffects = true;
+
+            [JsonProperty("Cooldowns")]
+            public CooldownConfig Cooldowns = new CooldownConfig();
+
+            [JsonProperty("Presets")]
+            public ServerPreset[] Presets = new ServerPreset[0];
+
+            public bool ValidateServerPresets()
+            {
+                var changed = false;
+
+                foreach (var preset in Presets)
+                    if (preset.Options.ValidateModules())
+                        changed = true;
+
+                return changed;
+            }
         }
 
         internal class ServerPreset
@@ -2007,23 +2361,23 @@ namespace Oxide.Plugins
         {
             private int _enginePartsTier = 0;
 
-            [JsonProperty("CodeLock")]
+            [JsonProperty("CodeLock", DefaultValueHandling = DefaultValueHandling.Ignore)]
             public bool CodeLock = false;
 
-            [JsonProperty("EnginePartsTier")]
+            [JsonProperty("EnginePartsTier", DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int EnginePartsTier
             {
                 get { return _enginePartsTier; }
-                set { _enginePartsTier = pluginInstance.Clamp(value, 0, 3); }
+                set { _enginePartsTier = Clamp(value, 0, 3); }
             }
 
-            [JsonProperty("FreshWaterAmount")]
+            [JsonProperty("FreshWaterAmount", DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int FreshWaterAmount = 0;
 
-            [JsonProperty("FuelAmount")]
+            [JsonProperty("FuelAmount", DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int FuelAmount = 0;
 
-            [JsonProperty("KeyLock")]
+            [JsonProperty("KeyLock", DefaultValueHandling = DefaultValueHandling.Ignore)]
             public bool KeyLock = false;
 
             [JsonIgnore]
@@ -2031,33 +2385,33 @@ namespace Oxide.Plugins
 
             public BaseCarOptions() { }
 
-            public BaseCarOptions(string userID)
+            public BaseCarOptions(string userId)
             {
-                CodeLock = pluginInstance.ShouldTryAddCodeLockForPlayer(userID);
-                KeyLock = pluginInstance.ShouldTryAddKeyLockForPlayer(userID);
-                EnginePartsTier = pluginInstance.GetPlayerEnginePartsTier(userID);
-                FuelAmount = pluginInstance.GetPlayerAllowedFuel(userID);
-                FreshWaterAmount = pluginInstance.GetPlayerAllowedFreshWater(userID);
+                CodeLock = _pluginInstance.ShouldTryAddCodeLockForPlayer(userId);
+                KeyLock = _pluginInstance.ShouldTryAddKeyLockForPlayer(userId);
+                EnginePartsTier = _pluginInstance.GetPlayerEnginePartsTier(userId);
+                FuelAmount = _pluginInstance.GetPlayerAllowedFuel(userId);
+                FreshWaterAmount = _pluginInstance.GetPlayerAllowedFreshWater(userId);
             }
         }
 
         internal class PresetCarOptions : BaseCarOptions
         {
             [JsonProperty("ModuleIDs")]
-            public virtual int[] ModuleIDs { get; set; } = new int[0];
+            public virtual int[] NormalizedModuleIDs { get; set; } = new int[0];
 
             [JsonIgnore]
             public override int Length
             {
-                get { return ModuleIDs.Length; }
+                get { return NormalizedModuleIDs?.Length ?? 0; }
             }
 
-            // Empty constructor needed for deserialization
+            // Empty constructor needed for deserialization.
             public PresetCarOptions() { }
 
-            public PresetCarOptions(string userID, int[] moduleIDs) : base(userID)
+            public PresetCarOptions(string userId, int[] moduleIDs) : base(userId)
             {
-                ModuleIDs = moduleIDs;
+                NormalizedModuleIDs = moduleIDs;
             }
         }
 
@@ -2070,7 +2424,7 @@ namespace Oxide.Plugins
                 get { return NumSockets; }
             }
 
-            public RandomCarOptions(string userID, int numSockets) : base(userID)
+            public RandomCarOptions(string userId, int numSockets) : base(userId)
             {
                 NumSockets = numSockets;
             }
@@ -2078,31 +2432,47 @@ namespace Oxide.Plugins
 
         internal class ServerPresetOptions : PresetCarOptions
         {
-            private int[] _normalizedModuleIDs = new int[0];
+            // Override so we can avoid serializing it.
+            public override int[] NormalizedModuleIDs { get; set; }
 
-            public override int[] ModuleIDs
-            {
-                get { return _normalizedModuleIDs; }
-                // Legacy field
-                set { _normalizedModuleIDs = NormalizeModuleIDs(value); }
-            }
+            // Hidden from config.
+            public bool ShouldSerializeNormalizedModuleIDs() => false;
 
             [JsonProperty("Modules")]
-            public object[] Modules
+            public object[] Modules;
+
+            // Return value indicates whether the config was changed.
+            public bool ValidateModules()
             {
-                set { _normalizedModuleIDs = pluginInstance.ParseModules(value); }
+                // Give precedence to "Modules".
+                if (Modules != null)
+                {
+                    NormalizedModuleIDs = _pluginInstance.ValidateModules(Modules);
+                }
+                else if (NormalizedModuleIDs != null)
+                {
+                    // Resave the config with the field renamed to Modules.
+                    // Must do this before normalizing so that no extra 0's are added.
+                    Modules = NormalizedModuleIDs.Cast<object>().ToArray();
+                    NormalizedModuleIDs = NormalizeModuleIDs(NormalizedModuleIDs);
+                    return true;
+                }
+
+                return false;
             }
 
             private int[] NormalizeModuleIDs(int[] moduleIDs)
             {
+                ItemManager.Initialize();
+
                 var moduleIDList = moduleIDs.ToList();
 
                 for (var i = 0; i < moduleIDList.Count; i++)
                 {
                     if (moduleIDList[i] != 0)
                     {
-                        // Add a 0 after each module that takes 2 sockets
-                        // This is more user-friendly than having people add the 0s themselves
+                        // Add a 0 after each module that takes 2 sockets.
+                        // This is more user-friendly than requiring people to add the 0s themselves.
                         var itemDefinition = ItemManager.FindItemDefinition(moduleIDList[i]);
                         var socketsTaken = itemDefinition.GetComponent<ItemModVehicleModule>()?.SocketsTaken ?? 1;
                         if (socketsTaken == 2)
@@ -2117,16 +2487,141 @@ namespace Oxide.Plugins
         internal class CooldownConfig
         {
             [JsonProperty("SpawnCarSeconds")]
-            public float SpawnSeconds = 10;
+            public long SpawnSeconds = 3600;
 
             [JsonProperty("FetchCarSeconds")]
-            public float FetchSeconds = 10;
+            public long FetchSeconds = 600;
 
             [JsonProperty("LoadPresetSeconds")]
-            public float LoadPresetSeconds = 10;
+            public long LoadPresetSeconds = 3600;
 
             [JsonProperty("FixCarSeconds")]
-            public float FixSeconds = 60;
+            public long FixSeconds = 3600;
+
+            public long GetSeconds(CooldownType cooldownType)
+            {
+                switch (cooldownType)
+                {
+                    case CooldownType.Spawn:
+                        return SpawnSeconds;
+                    case CooldownType.Fetch:
+                        return FetchSeconds;
+                    case CooldownType.Load:
+                        return LoadPresetSeconds;
+                    case CooldownType.Fix:
+                        return FixSeconds;
+                    default:
+                        _pluginInstance.LogWarning($"Cooldown not implemented for {cooldownType}");
+                        return 0;
+                }
+            }
+        }
+
+        private Configuration GetDefaultConfig() => new Configuration();
+
+        #endregion
+
+        #region Configuration Boilerplate
+
+        internal class SerializableConfiguration
+        {
+            public string ToJson() => JsonConvert.SerializeObject(this);
+
+            public Dictionary<string, object> ToDictionary() => JsonHelper.Deserialize(ToJson()) as Dictionary<string, object>;
+        }
+
+        internal static class JsonHelper
+        {
+            public static object Deserialize(string json) => ToObject(JToken.Parse(json));
+
+            private static object ToObject(JToken token)
+            {
+                switch (token.Type)
+                {
+                    case JTokenType.Object:
+                        return token.Children<JProperty>()
+                                    .ToDictionary(prop => prop.Name,
+                                                  prop => ToObject(prop.Value));
+
+                    case JTokenType.Array:
+                        return token.Select(ToObject).ToList();
+
+                    default:
+                        return ((JValue)token).Value;
+                }
+            }
+        }
+
+        private bool MaybeUpdateConfig(SerializableConfiguration config)
+        {
+            var currentWithDefaults = config.ToDictionary();
+            var currentRaw = Config.ToDictionary(x => x.Key, x => x.Value);
+            return MaybeUpdateConfigDict(currentWithDefaults, currentRaw);
+        }
+
+        private bool MaybeUpdateConfigDict(Dictionary<string, object> currentWithDefaults, Dictionary<string, object> currentRaw)
+        {
+            bool changed = false;
+
+            foreach (var key in currentWithDefaults.Keys)
+            {
+                object currentRawValue;
+                if (currentRaw.TryGetValue(key, out currentRawValue))
+                {
+                    var defaultDictValue = currentWithDefaults[key] as Dictionary<string, object>;
+                    var currentDictValue = currentRawValue as Dictionary<string, object>;
+
+                    if (defaultDictValue != null)
+                    {
+                        if (currentDictValue == null)
+                        {
+                            currentRaw[key] = currentWithDefaults[key];
+                            changed = true;
+                        }
+                        else if (MaybeUpdateConfigDict(defaultDictValue, currentDictValue))
+                            changed = true;
+                    }
+                }
+                else
+                {
+                    currentRaw[key] = currentWithDefaults[key];
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        protected override void LoadDefaultConfig() => _pluginConfig = GetDefaultConfig();
+
+        protected override void LoadConfig()
+        {
+            base.LoadConfig();
+            try
+            {
+                _pluginConfig = Config.ReadObject<Configuration>();
+                if (_pluginConfig == null)
+                {
+                    throw new JsonException();
+                }
+
+                if (MaybeUpdateConfig(_pluginConfig))
+                {
+                    LogWarning("Configuration appears to be outdated; updating and saving");
+                    SaveConfig();
+                }
+            }
+            catch
+            {
+                LogWarning($"Configuration file {Name}.json is invalid; using defaults");
+                LoadDefaultConfig();
+            }
+        }
+
+        protected override void SaveConfig()
+        {
+            Log($"Configuration changes saved to {Name}.json");
+            Config.WriteObject(_pluginConfig, true);
         }
 
         #endregion
@@ -2162,13 +2657,13 @@ namespace Oxide.Plugins
                 ["Generic.Error.NoCommonPresets"] = "There are no common presets.",
                 ["Generic.Error.CarNotFound"] = "Error: You need a car to do that.",
                 ["Generic.Error.CarOccupied"] = "Error: Cannot do that while your car is occupied.",
-                ["Generic.Error.CarDead"] = "Error: Your car is dead.",
                 ["Generic.Error.Cooldown"] = "Please wait <color=yellow>{0}s</color> and try again.",
                 ["Generic.Error.NoPermissionToPresetSocketCount"] = "Error: You don't have permission to use preset <color=yellow>{0}</color> because it requires <color=yellow>{1}</color> sockets.",
                 ["Generic.Error.PresetNotFound"] = "Error: Preset <color=yellow>{0}</color> not found.",
                 ["Generic.Error.PresetMultipleMatches"] = "Error: Multiple presets found matching <color=yellow>{0}</color>. Use <color=yellow>mycar list</color> to view your presets.",
                 ["Generic.Error.PresetAlreadyTaken"] = "Error: Preset <color=yellow>{0}</color> is already taken.",
                 ["Generic.Error.PresetNameLength"] = "Error: Preset name may not be longer than {0} characters.",
+                ["Generic.Error.InsufficientSpace"] = "Error: Not enough space.",
 
                 ["Generic.Info.CarDestroyed"] = "Your modular car was destroyed.",
                 ["Generic.Info.PartsRecovered"] = "Recovered engine components were added to your inventory or dropped in front of you.",

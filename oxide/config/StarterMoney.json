@@ -1,0 +1,12 @@
+{
+  "Clear Data On New Save (Rust)": false,
+  "Use Economics": true,
+  "Use Server Rewards": true,
+  "Use Cash System": false,
+  "Cash System Currency": "$",
+  "Permissions": {
+    "startermoney.default": 10.0,
+    "startermoney.vip": 20.0,
+    "startermoney.god": 30.0
+  }
+}

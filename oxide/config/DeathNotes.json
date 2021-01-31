@@ -278,7 +278,8 @@
       "Metal Barricade": "Metal Barricade",
       "Flame Turret": "Flame Turret",
       "Murderer": "Murderer",
-      "Scarecrow": "Scarecrow"
+      "Scarecrow": "Scarecrow",
+      "Barricade": "Barricade"
     },
     "Bodyparts": {
       "Leg": "Leg",
@@ -325,7 +326,11 @@
       "40mm_grenade_he": "40mm_grenade_he",
       "Timed Explosive Charge": "Timed Explosive Charge",
       "Snowball Gun": "Snowball Gun",
-      "High Velocity Rocket": "High Velocity Rocket"
+      "High Velocity Rocket": "High Velocity Rocket",
+      "Wooden Spear": "Wooden Spear",
+      "Pitchfork": "Pitchfork",
+      "Salvaged Sword": "Salvaged Sword",
+      "Python Revolver": "Python Revolver"
     },
     "Attachments": {
       "Holosight": "Holosight",
