@@ -4,7 +4,7 @@ variable "env" {
 
 variable "project" {
   description = "The name of the project"
-  default = "suparious"
+  default = "solidrust"
 }
 
 variable "bucket" {

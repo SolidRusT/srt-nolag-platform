@@ -1,0 +1,69 @@
+`/a` - Send message to all Clan members and Allies
+`/airstrike` - Send an air or squad strike team
+`/ad` or `/autodoor` - Toggle auto close doors
+`/al` or `/autolock` - Toggle auto installing codelocks
+`/autoauth` - Add Clan / Friends to ToolChest or AutoTurrets
+`/autoauthui` - Open the Authorization UI
+`/bgrade` - Auto upgrade build
+`/backpacks` - Open your backpack inventory
+`/bandit` - Teleport to the NPC Bandit camp
+`/bank` - Global storage chest
+`/br` - Toggle ase repair on / off
+`/c` - Send message to all Clan members
+`/cctv` - Fast utility to manage cameras on a computer station
+`/carturret` - Deploy an AutoTurret on a modular car
+`/clan` - Clan management commands
+`/clanhelp` - Overview of Clan commands
+`/code` - Sets the code on codelocks placed, automatically
+`/dc` - Link Rust Player to Discord
+`/disease` - Get the current status of the pandemic
+
+`/fs` - Furnace Splitter, split ore into equal stacks
+`/friend` - Invite a player to be your Friend
+
+`/kit` - Free stuff to get started
+`/lantern` - Toggle lamps and lanterns auto-off on sunrise
+`/lot` - Open the Lottery GUI
+`/outpost` - Teleport to the NPC Outpost
+
+
+`/pm` - Send a private message to a player
+`/pmhistory` - shows your last 5 private messages
+
+`/r` - Reply to the most recent private message
+`/remove` - Building remover tool
+`/rewards` - Shows your current rewards balance
+`/setcraftskin` - Sets default crafting skin
+`/skin` - Apply Steam Workshop skin to an item (if supported)
+`/sil` - Download an image and apply to a sign
+`/silt` - Download an image with the text that you specify
+`/silrestore` - Restore image (if broken or after a Rust update)
+`/sili` - Adds currently held item icon to sign or frame
+`/sm` - Generates a whole map on a sign
+
+`/tpr` - Request teleport to player
+`/tpa` - Accept teleport request from player
+`/tpb` - Teleport back to previous location
+
+
+`/trade` - Long-distance trading with another player
+`/voteday` - Skip the night cycle
+`/vclaim` - Claim ownership of unowned vehicle
+`/vunclaim` - Relinquish ownership of a vehicle
+
+`/heal` -  Instantly heal yourself
+`/healplayer` - Instantly heal another player
+
+
+`/pets` - Tame the wild animals as pets
+`/gather` - Shows your gathering statistics
+`/stats` - Displays your current XP levels
+`/tree` - Plant trees on the server
+`/warcopter` - experimental war-heli and CCTV drone-heli
+
+`/tod` - shows the time of day
+
+/cargo -- Check when the next random Carg Ship event is
+/chinook -- Check when the next random Chinook Helicopter event is
+/heli -- Check when the next random Patrol Helicopter event is
+

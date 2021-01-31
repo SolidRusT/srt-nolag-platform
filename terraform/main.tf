@@ -154,56 +154,56 @@ module "cloudfront" {
   common_tags        = local.common_tags
 }
 
-#################
-## Jenkins server
-# User data and bootstrapping
-data "template_cloudinit_config" "jenkins_config" {
-  #gzip          = true
-  base64_encode = true
-  part {
-    content_type = "text/x-shellscript"
-    content  = file("${path.cwd}/templates/ec2_docker_install.tpl")
-  }
-}
+##################
+### Jenkins server
+## User data and bootstrapping
+#data "template_cloudinit_config" "jenkins_config" {
+#  #gzip          = true
+#  base64_encode = true
+#  part {
+#    content_type = "text/x-shellscript"
+#    content  = file("${path.cwd}/templates/ec2_docker_install.tpl")
+#  }
+#}
 
-# Select latest update in ami flavour
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-  owners = ["099720109477"] # Canonical
-}
-
-# Create the instance
-resource "aws_instance" "jenkins" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3a.small"
-  key_name      = local.ec2_key_name
-  user_data     = data.template_cloudinit_config.jenkins_config.rendered
-  vpc_security_group_ids = [
-    module.security.admin_sg_id,
-    module.security.jenkins_sg_id
-  ]
-  subnet_id            = module.vpc.subnet_public_2
-  iam_instance_profile = module.security.jenkins_iam_profile_name
-  root_block_device {
-    volume_type           = "gp2"
-    volume_size           = 60
-    delete_on_termination = true
-    encrypted             = false
-    #kms_key_id =
-  }
-  associate_public_ip_address = true
-  tags = merge(local.common_tags, map(
-    "Name", "${var.project}-jenkins-${var.env}"
-  ))
-  volume_tags = merge(local.common_tags, map(
-    "Name", "${var.project}-jenkins-${var.env}"
-  ))
-}
+## Select latest update in ami flavour
+#data "aws_ami" "ubuntu" {
+#  most_recent = true
+#  filter {
+#    name   = "name"
+#    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+#  }
+#  filter {
+#    name   = "virtualization-type"
+#    values = ["hvm"]
+#  }
+#  owners = ["099720109477"] # Canonical
+#}
+#
+## Create the instance
+#resource "aws_instance" "jenkins" {
+#  ami           = data.aws_ami.ubuntu.id
+#  instance_type = "t3a.small"
+#  key_name      = local.ec2_key_name
+#  user_data     = data.template_cloudinit_config.jenkins_config.rendered
+#  vpc_security_group_ids = [
+#    module.security.admin_sg_id,
+#    module.security.jenkins_sg_id
+#  ]
+#  subnet_id            = module.vpc.subnet_public_2
+#  iam_instance_profile = module.security.jenkins_iam_profile_name
+#  root_block_device {
+#    volume_type           = "gp2"
+#    volume_size           = 60
+#    delete_on_termination = true
+#    encrypted             = false
+#    #kms_key_id =
+#  }
+#  associate_public_ip_address = true
+#  tags = merge(local.common_tags, map(
+#    "Name", "${var.project}-jenkins-${var.env}"
+#  ))
+#  volume_tags = merge(local.common_tags, map(
+#    "Name", "${var.project}-jenkins-${var.env}"
+#  ))
+#}

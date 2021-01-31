@@ -1,13 +1,13 @@
 #!/bin/bash
 # configure
 export environment=$1
-export project="suparious"
+export project="solidrust"
 if [ -z ${environment} ]; then
   export environment="dev"
 fi
 echo "Running for ${environment}."
 export region="us-west-2"
-export bucket="suparious-tf-states-${region}"
+export bucket="${project}-tf-states-${region}"
 export s3_key="${project}/${environment}/${project}-${environment}.tfstat"
 export tf_plan_file=".terraform/latest-plan"
 export tf_override_vars=""
@@ -26,24 +26,17 @@ tfenv use
 echo "activating execution break on fail"
 set -e          # stop execution on failure
 
-# check
-echo "checking installed terraform version"
-#INSTALLED=$(terraform version | head -n 1 | sed 's/Terraform v//')
-echo "making fuckyou file"
-terraform version | head -n 1 > fuckyou.txt
-echo "cleaning the var"
-INSTALLED=$(cat fuckyou.txt | sed 's/Terraform v//')
-echo "removing fuckyou file"
-rm fuckyou.txt
-echo "declaring desired version"
+# check for updates
+echo "Checking for latest Terraform version"
+LATEST_TF=$(terraform version | head -n 1 | sed 's/Terraform v//')
+echo "Latest Terraform Version is: ${LATEST_TF} " 
 DESIRED=$(cat .terraform-version)
-echo "comparing installed and desired versions"
-if [ "$INSTALLED" = "$DESIRED" ]; then
+echo "comparing latest and desired terraform versions"
+if [ "$LATEST_TF" = "$DESIRED" ]; then
     echo "Terraform version is matching"
 else
-    echo "ERROR: Terraform version mismatch detected"
-    echo "ERROR: Found version: $INSTALLED, but expected version: $DESIRED."
-    exit 1
+    echo "WARNING: Terraform version mismatch detected"
+    echo "WARNING: Found desired version: $DESIRED, but expected latest version: $LATEST_TF."
 fi
 
 # init terraform
