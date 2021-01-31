@@ -1,9 +1,0 @@
-[SERVER v1.0.20] Started as service
-[SERVER v1.0.20] Running as service
-[SERVER v1.0.20] Got Message: Ready
-[SERVER v1.0.20] Got Message: Compile
-[SERVER v1.0.20] Console: Murderers.cs(35,21): warning CS0649: Field `Oxide.Plugins.Murderers.bradley_Safe' is never assigned to, and will always have its default value `false'
-Murderers.cs(44,22): warning CS0169: The private field `Oxide.Plugins.Murderers.initialized' is never used
-
-[SERVER v1.0.20] Connection closed.
-[SERVER v1.0.20] Shutdown
