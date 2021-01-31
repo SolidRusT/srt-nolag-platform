@@ -1,4 +1,42 @@
 {
+  "76561198886543733": {
+    "builder": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discordspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
   "76561198024774727": {
     "builder": {
       "max": 0,
@@ -9,16 +47,16 @@
       "cooldown": 0.0
     },
     "mechanic": {
-      "max": 1,
-      "cooldown": 1611728649.138834
+      "max": 0,
+      "cooldown": 0.0
     },
     "semiauto": {
       "max": 0,
       "cooldown": 0.0
     },
     "getlit": {
-      "max": 1,
-      "cooldown": 1611811444.813211
+      "max": 0,
+      "cooldown": 0.0
     },
     "metallica": {
       "max": 0,
@@ -27,30 +65,24 @@
     "scrappy": {
       "max": 0,
       "cooldown": 0.0
-    }
-  },
-  "76561198067555209": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611529215.354846
     },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611446416.1860969
-    },
-    "mechanic": {
+    "discord": {
       "max": 0,
       "cooldown": 0.0
     },
-    "semiauto": {
+    "vipspawn": {
       "max": 0,
-      "cooldown": 1611450798.2790329
+      "cooldown": 0.0
     }
   },
-  "76561198886543733": {
+  "76561198049629132": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
     "builder": {
-      "max": 1,
-      "cooldown": 1611813057.7943978
+      "max": 0,
+      "cooldown": 0.0
     },
     "scuba": {
       "max": 0,
@@ -62,7 +94,113 @@
     },
     "semiauto": {
       "max": 0,
-      "cooldown": 1611816456.23869
+      "cooldown": 1612096025.28785
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561199124776933": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198254199627": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561199124724111": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561199135759930": {
+    "builder": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discordspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198273427744": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198067351162": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561199026138880": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "builder": {
+      "max": 0,
+      "cooldown": 1612200218.235292
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 0.0
     },
     "getlit": {
       "max": 0,
@@ -73,6 +211,16 @@
       "cooldown": 0.0
     },
     "scrappy": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198891699579": {
+    "defaultspawn": {
       "max": 0,
       "cooldown": 0.0
     }
@@ -83,778 +231,6 @@
       "cooldown": 0.0
     },
     "scuba": {
-      "max": 1,
-      "cooldown": 1611483027.1716619
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611462861.874382
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611890147.799845
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611626776.5405669
-    },
-    "metallica": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561199116427902": {
-    "builder": {
-      "max": 2,
-      "cooldown": 1611633668.5805368
-    },
-    "scuba": {
-      "max": 3,
-      "cooldown": 1611550869.3276429
-    },
-    "mechanic": {
-      "max": 3,
-      "cooldown": 1611550867.9417839
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611550870.3839219
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611633667.0617619
-    }
-  },
-  "76561199039846678": {
-    "builder": {
-      "max": 2,
-      "cooldown": 1611959001.025831
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611456968.3856359
-    },
-    "mechanic": {
-      "max": 2,
-      "cooldown": 1611876098.9496629
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611876109.012857
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611958885.7694168
-    },
-    "metallica": {
-      "max": 1,
-      "cooldown": 1611958960.5061059
-    }
-  },
-  "76561198421090963": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611466189.550467
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611888370.9764988
-    }
-  },
-  "76561198822010294": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611711116.007179
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 2,
-      "cooldown": 1611628298.1215498
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611627548.021735
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561199013347983": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611740969.8218338
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611627492.8410878
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561198965302821": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611467227.9331598
-    }
-  },
-  "76561199110202715": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561199049838554": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611471871.0179739
-    }
-  },
-  "76561198807420307": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611541662.410455
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611888901.4853289
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611481005.578944
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611971645.7458329
-    },
-    "metallica": {
-      "max": 1,
-      "cooldown": 1611971702.671629
-    }
-  },
-  "76561198206550912": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611567548.0897908
-    },
-    "autokit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561199079300954": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611616107.7802789
-    },
-    "mechanic": {
-      "max": 2,
-      "cooldown": 1611698315.57945
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611698194.9679608
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611698699.551379
-    }
-  },
-  "76561198447768383": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611608155.3585699
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611525363.3033919
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611525361.8307579
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561199122405562": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611625961.795423
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611543163.6784868
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611547273.1403139
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611626118.2755229
-    }
-  },
-  "76561198297162524": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611629990.095011
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611547280.165977
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611631125.211926
-    }
-  },
-  "76561198389237834": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611636687.6596658
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611636755.7051139
-    }
-  },
-  "76561198397190354": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611556661.707633
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561199129136417": {
-    "builder": {
-      "max": 2,
-      "cooldown": 1611802232.6285679
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611632727.736908
-    },
-    "mechanic": {
-      "max": 3,
-      "cooldown": 1611643392.1588838
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611719429.404393
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611715516.488992
-    }
-  },
-  "76561198176633429": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611715034.1856248
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611632709.629446
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611715511.7259128
-    }
-  },
-  "76561199075658849": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611771391.5282629
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561198392361916": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611797215.9417679
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611714532.8231919
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611714447.142971
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611711720.157536
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611797263.6249819
-    }
-  },
-  "76561198280673203": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611723056.5087
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561198049629132": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611812615.864841
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611733662.337131
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611733638.8286979
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611778831.4786279
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611816458.825063
-    }
-  },
-  "76561198303679777": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611734315.0303578
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561198867613769": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611860299.7202959
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611777500.8702519
-    },
-    "mechanic": {
-      "max": 2,
-      "cooldown": 1611851057.387465
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611856733.2995698
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611860302.519856
-    },
-    "metallica": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561198101876479": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611780502.1973588
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561198359580291": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611866542.085237
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611786655.9586909
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611783932.708869
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611788067.279886
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561198966833121": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611872882.123107
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 2,
-      "cooldown": 1611796369.297339
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611790988.587564
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611873266.4324369
-    }
-  },
-  "76561199098596088": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611870936.722301
-    }
-  },
-  "76561198862944776": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611810908.9901919
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611808892.155592
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611809089.439445
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561198814512065": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611861141.695318
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "metallica": {
-      "max": 1,
-      "cooldown": 1611943943.693769
-    }
-  },
-  "76561198861213912": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611944619.439729
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611861766.1228359
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "metallica": {
-      "max": 0,
-      "cooldown": 0.0
-    }
-  },
-  "76561199086154187": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611948395.291189
-    },
-    "scuba": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611865868.035892
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611865759.8258219
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611948678.8818369
-    },
-    "metallica": {
-      "max": 1,
-      "cooldown": 1611948558.3026509
-    }
-  },
-  "76561199127635495": {
-    "builder": {
-      "max": 1,
-      "cooldown": 1611959288.996865
-    },
-    "scuba": {
-      "max": 1,
-      "cooldown": 1611876700.4485879
-    },
-    "mechanic": {
-      "max": 1,
-      "cooldown": 1611876694.89522
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 1611876699.343751
-    },
-    "getlit": {
-      "max": 1,
-      "cooldown": 1611959497.4481468
-    },
-    "metallica": {
-      "max": 1,
-      "cooldown": 1611959498.5746899
-    }
-  },
-  "76561199008323304": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "scuba": {
       "max": 0,
       "cooldown": 0.0
     },
@@ -873,32 +249,14 @@
     "metallica": {
       "max": 0,
       "cooldown": 0.0
-    }
-  },
-  "76561198358465465": {
-    "builder": {
-      "max": 0,
-      "cooldown": 0.0
     },
-    "scuba": {
+    "scrappy": {
       "max": 0,
-      "cooldown": 0.0
+      "cooldown": 1612206549.9277129
     },
-    "mechanic": {
+    "discord": {
       "max": 0,
-      "cooldown": 0.0
-    },
-    "semiauto": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "getlit": {
-      "max": 0,
-      "cooldown": 0.0
-    },
-    "metallica": {
-      "max": 0,
-      "cooldown": 0.0
+      "cooldown": 1612206513.4515
     }
   }
 }

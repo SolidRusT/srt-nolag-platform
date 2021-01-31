@@ -11,5 +11,6 @@
   "Invalid Item Amount": "Item amount must be an integer greater than 0.",
   "Item Not In Backpack": "Item \"{0}\" not found in backpack.",
   "Items Fetched": "Fetched {0} \"{1}\" from backpack.",
-  "Fetch Failed": "Couldn't fetch \"{0}\" from backpack. Inventory may be full."
+  "Fetch Failed": "Couldn't fetch \"{0}\" from backpack. Inventory may be full.",
+  "Toggled Backpack GUI": "Toggled backpack GUI button."
 }

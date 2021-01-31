@@ -1,4 +1,9 @@
 {
   "playerCars": {},
-  "Presets": []
+  "Cooldowns": {
+    "Spawn": {},
+    "Fetch": {},
+    "LoadPreset": {},
+    "Fix": {}
+  }
 }

@@ -39,6 +39,14 @@
       },
       "theDoorS": {},
       "doorTypeS": {}
+    },
+    "76561198886543733": {
+      "doorS": {
+        "enabled": true,
+        "time": 5.0
+      },
+      "theDoorS": {},
+      "doorTypeS": {}
     }
   }
 }

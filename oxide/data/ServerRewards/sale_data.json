@@ -5424,6 +5424,11 @@
         "price": 0.0,
         "displayName": "Pickaxe",
         "enabled": false
+      },
+      "904296143": {
+        "price": 0.0,
+        "displayName": "Pickaxe 904296143",
+        "enabled": false
       }
     },
     "shotgun.waterpipe": {

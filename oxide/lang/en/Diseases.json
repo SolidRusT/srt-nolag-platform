@@ -16,5 +16,7 @@
   "Invalid player": "There is no active player with that name",
   "Infected": "Infected {0} with {1}",
   "Cured": "Cured {0} of {1}",
-  "Commands": "Commands:"
+  "Commands": "Commands:",
+  "Invalid command": "Invalid command",
+  "Death message": "{0} has died from {1}"
 }

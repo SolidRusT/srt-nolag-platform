@@ -8,7 +8,6 @@
   "Generic.Error.NoCommonPresets": "There are no common presets.",
   "Generic.Error.CarNotFound": "Error: You need a car to do that.",
   "Generic.Error.CarOccupied": "Error: Cannot do that while your car is occupied.",
-  "Generic.Error.CarDead": "Error: Your car is dead.",
   "Generic.Error.Cooldown": "Please wait <color=yellow>{0}s</color> and try again.",
   "Generic.Error.NoPermissionToPresetSocketCount": "Error: You don't have permission to use preset <color=yellow>{0}</color> because it requires <color=yellow>{1}</color> sockets.",
   "Generic.Error.PresetNotFound": "Error: Preset <color=yellow>{0}</color> not found.",
@@ -82,5 +81,6 @@
   "Command.Help.ToggleAutoKeyLock": "<color=yellow>mycar autokeylock</color> - Toggle AutoKeyLock: {0}",
   "Command.Help.ToggleAutoFillTankers": "<color=yellow>mycar autofilltankers</color> - Toggle automatic filling of tankers with fresh water: {0}",
   "Command.Help.Section.OtherCommands": "<color=orange>--- Other commands ---</color>",
-  "Command.Help.Give": "<color=yellow>givecar <player> <preset></color> - Spawn a car for the target player from the specified server preset"
+  "Command.Help.Give": "<color=yellow>givecar <player> <preset></color> - Spawn a car for the target player from the specified server preset",
+  "Generic.Error.InsufficientSpace": "Error: Not enough space."
 }
