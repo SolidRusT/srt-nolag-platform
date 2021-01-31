@@ -1,0 +1,5 @@
+env = "dev"
+region = "us-west-2"
+bucket = "dev.solidrust.net"
+domain_name = "dev.solidrust.net"
+vpc_cidr_prefix = "10.12"

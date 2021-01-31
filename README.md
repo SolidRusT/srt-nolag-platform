@@ -306,6 +306,9 @@ oxide.grant group admin murderers.spawn
 oxide.grant group admin murderers.remove
 oxide.grant group admin diseases.admin
 oxide.grant group admin endlesscargo.admin
+oxide.grant group admin heal.self
+oxide.grant group admin heal.all
+oxide.grant group admin heal.nocooldown
 
 oxide.grant group dev skins.admin
 oxide.grant group dev tides.use
@@ -318,6 +321,8 @@ oxide.grant group dev murderers.point
 oxide.grant group dev murderers.spawn
 oxide.grant group dev murderers.remove
 oxide.grant group dev guishop.vip
+oxide.grant group dev heal.self
+oxide.grant group dev heal.nocooldown
 
 server.writecfg
 ```
