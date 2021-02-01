@@ -22,8 +22,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #
 # solidrust config sync 
 27 *    * * *   modded  cd /home/modded && rsync -qr /etc/crontab solidrust.net/
-28 *    * * *   modded  cd /home/modded && rsync -qr server/rust/cfg solidrust.net/
+28 *    * * *   modded  cd /home/modded && rsync -qr server/rust/cfg solidrust.net/west
 29 *    * * *   modded  cd /home/modded && rsync -qr oxide/ solidrust.net/oxide
 # solidrust backups 
 52 *    * * *   modded  cd /home/modded && zip -q9ru /tmp/solidrust.zip solidrust.net
 59 *    * * *   root    aws s3 cp /tmp/solidrust.zip s3://suparious.com/solidrust-west-config.zip
+# Push to secondary
+*/5 *    * * *   modded  aws s3 sync --quiet oxide s3://suparious.com/oxide

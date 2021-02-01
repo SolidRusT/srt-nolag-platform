@@ -286,7 +286,7 @@
         "AnimalKills": 9,
         "ArrowKills": 0,
         "ClothesCrafted": 0,
-        "Headshots": 3,
+        "Headshots": 4,
         "PlantsGathered": 25,
         "PlayersHealed": 0,
         "PlayersKilled": 0,
@@ -305,7 +305,7 @@
         "PVEKillDistance": 41,
         "HelicopterKills": 0,
         "APCKills": 0,
-        "NPCKills": 6
+        "NPCKills": 7
       }
     },
     "76561198437652847": {
@@ -734,7 +734,7 @@
         "AnimalKills": 12,
         "ArrowKills": 0,
         "ClothesCrafted": 0,
-        "Headshots": 20,
+        "Headshots": 21,
         "PlantsGathered": 32,
         "PlayersHealed": 0,
         "PlayersKilled": 11,
@@ -743,7 +743,7 @@
         "RocketsFired": 0,
         "RocksGathered": 150424,
         "BladeKills": 0,
-        "StructuresBuilt": 46,
+        "StructuresBuilt": 47,
         "StructuresRepaired": 80,
         "ExplosivesThrown": 10,
         "WeaponsCrafted": 1,
@@ -753,7 +753,7 @@
         "PVEKillDistance": 129,
         "HelicopterKills": 0,
         "APCKills": 0,
-        "NPCKills": 37
+        "NPCKills": 38
       }
     },
     "76561198852895608": {
@@ -771,7 +771,7 @@
         "RocketsFired": 29,
         "RocksGathered": 171366,
         "BladeKills": 0,
-        "StructuresBuilt": 1985,
+        "StructuresBuilt": 2013,
         "StructuresRepaired": 256,
         "ExplosivesThrown": 64,
         "WeaponsCrafted": 2,
@@ -2697,7 +2697,7 @@
     "StructuresBuilt": {
       "UserID": 76561198852895608,
       "DisplayName": "WeirdAl",
-      "Count": 1985
+      "Count": 2013
     },
     "StructuresRepaired": {
       "UserID": 76561199129136417,

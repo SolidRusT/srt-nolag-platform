@@ -246,7 +246,8 @@
         "hobobarrel_static": 2,
         "refinery_small_deployed": 3,
         "small_refinery_static": 3,
-        "skull_fire_pit": 2
+        "skull_fire_pit": 2,
+        "hobobarrel.deployed": 2
       }
     },
     "76561198329494772": {
