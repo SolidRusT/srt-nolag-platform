@@ -1,0 +1,22 @@
+{
+  "CommandCooldown": "Wait a bit before attempting to use '{0}' again",
+  "CommandHeal": "heal",
+  "CommandHealAll": "healall",
+  "CommandHealPlayer": "healplayer",
+  "NotAllowed": "You are not allowed to use the '{0}' command",
+  "NoPlayersFound": "No players found with name or ID '{0}'",
+  "NoPlayersOnline": "There are no players online to heal",
+  "PlayerAtMaxHealth": "{0} is already at max health",
+  "PlayerNotFound": "Player '{0}' was not found",
+  "PlayerWasHealed": "{0} was healed {1}",
+  "PlayerWasNotHealed": "{0} was unable to be healed",
+  "PlayersFound": "Multiple players were found, please specify: {0}",
+  "PlayersOnly": "Command '{0}' can only be used by players",
+  "PlayersHealed": "All players have been healed {0}!",
+  "YouAreAtMaxHealth": "You are already at max health",
+  "YouWereHealed": "You were healed {0}",
+  "YouWereNotHealed": "You were unable to be healed",
+  "UsageHeal": "Usage: {0} [amount] -- Heal self by specfied or default amount",
+  "UsageHealAll": "Usage: {0} [amount] -- Heal all players by specfied or default amount",
+  "UsageHealPlayer": "Usage: {0} <player name or id> [amount] -- Heal player by specfied or default amount"
+}

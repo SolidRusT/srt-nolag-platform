@@ -1,0 +1,13 @@
+{
+  "Raid Blocked Message": "You may not do that while raid blocked ({time})",
+  "Combat Blocked Message": "You may do that while a in combat ({time})",
+  "Raid Block Complete": "You are no longer raid blocked.",
+  "Combat Block Complete": "You are no longer combat blocked.",
+  "Raid Block Notifier": "You are raid blocked for {time}",
+  "Combat Block Notifier": "You are combat blocked for {time}",
+  "Combat Block UI Message": "COMBAT BLOCK",
+  "Raid Block UI Message": "RAID BLOCK",
+  "Unit Seconds": "second(s)",
+  "Unit Minutes": "minute(s)",
+  "Prefix": ""
+}

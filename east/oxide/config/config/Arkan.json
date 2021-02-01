@@ -1,0 +1,203 @@
+{
+  "NRProcessTimer": 4.0,
+  "EPSILON": 0.005,
+  "projectileTrajectoryForgiveness": 0.3,
+  "hitDistanceForgiveness": 0.25,
+  "minDistanceAIMCheck": 10.0,
+  "inRockCheckDistance": 200.0,
+  "isDetectAIM": true,
+  "isDetectNR": true,
+  "isDetectIR": true,
+  "debugMessages": true,
+  "autoSave": true,
+  "isCheckAIMOnTargetNPC": true,
+  "drawTime": 60.0,
+  "NRViolationAngle": 0.3,
+  "NRViolationScreenDistance": 5.0,
+  "playerEyesPositionToProjectileInitialPositionDistanceForgiveness": 10.0,
+  "The maximum allowed value for the physics.steps parameter": 40.0,
+  "Check players only on the blacklist": false,
+  "Notify when a player has a high value of the physics.steps parameter": false,
+  "Enable Discord No Recoil Notifications": false,
+  "Enable Discord AIMBOT Notifications": false,
+  "Enable Discord In Rock Notifications": false,
+  "Discord No Recoil Webhook URL": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
+  "Discord AIMBOT Webhook URL": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
+  "Discord In Rock Webhook URL": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
+  "AIMBodyParts": [
+    "head",
+    "chest"
+  ],
+  "IRBodyParts": [
+    "body",
+    "pelvis",
+    "left knee",
+    "left foot",
+    "left toe",
+    "groin",
+    "hip",
+    "right knee",
+    "right foot",
+    "right toe",
+    "lower spine",
+    "stomach",
+    "chest",
+    "left shoulder",
+    "left arm",
+    "left forearm",
+    "left hand",
+    "left ring finger",
+    "left thumb",
+    "left wrist",
+    "neck",
+    "head",
+    "jaw",
+    "left eye",
+    "right eye",
+    "right shoulder",
+    "right arm",
+    "right forearm",
+    "right hand",
+    "right ring finger",
+    "right thumb",
+    "right wrist"
+  ],
+  "weaponsConfig": {
+    "rifle.ak": {
+      "NRDetectEnabled": true,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.09375,
+      "weaponMaxTimeShotsInterval": 0.15625,
+      "NRMinShotsCountToCheck": 5,
+      "NRViolationProbability": 70.0
+    },
+    "lmg.m249": {
+      "NRDetectEnabled": true,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.09375,
+      "weaponMaxTimeShotsInterval": 0.15625,
+      "NRMinShotsCountToCheck": 5,
+      "NRViolationProbability": 70.0
+    },
+    "pistol.nailgun": {
+      "NRDetectEnabled": true,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.09375,
+      "weaponMaxTimeShotsInterval": 0.15625,
+      "NRMinShotsCountToCheck": 5,
+      "NRViolationProbability": 70.0
+    },
+    "smg.2": {
+      "NRDetectEnabled": true,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.09375,
+      "weaponMaxTimeShotsInterval": 0.125,
+      "NRMinShotsCountToCheck": 5,
+      "NRViolationProbability": 70.0
+    },
+    "smg.thompson": {
+      "NRDetectEnabled": true,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.09375,
+      "weaponMaxTimeShotsInterval": 0.15625,
+      "NRMinShotsCountToCheck": 5,
+      "NRViolationProbability": 70.0
+    },
+    "smg.mp5": {
+      "NRDetectEnabled": true,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0625,
+      "weaponMaxTimeShotsInterval": 0.125,
+      "NRMinShotsCountToCheck": 5,
+      "NRViolationProbability": 70.0
+    },
+    "bow.hunting": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "crossbow": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "rifle.bolt": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "rifle.l96": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "rifle.m39": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "rifle.semiauto": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "pistol.m92": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "pistol.python": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "pistol.revolver": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "pistol.semiauto": {
+      "NRDetectEnabled": false,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.0,
+      "weaponMaxTimeShotsInterval": 0.0,
+      "NRMinShotsCountToCheck": 0,
+      "NRViolationProbability": 0.0
+    },
+    "rifle.lr300": {
+      "NRDetectEnabled": true,
+      "AIMDetectEnabled": true,
+      "weaponMinTimeShotsInterval": 0.09375,
+      "weaponMaxTimeShotsInterval": 0.15625,
+      "NRMinShotsCountToCheck": 5,
+      "NRViolationProbability": 70.0
+    }
+  }
+}

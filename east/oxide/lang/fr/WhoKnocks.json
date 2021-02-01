@@ -1,0 +1,16 @@
+{
+  "KnocksMsg": "{0} est en train de tocquer à une de vos porte {1}.",
+  "KnocksMsgNoCoordinates": "{0} frappe à votre porte.",
+  "OwnerOnlineMsg": "L'habitant {0} est en ligne et a été informé.",
+  "OwnerMsg": "Le propriétaire {0} a été informé",
+  "OwnerDisplay": "Vous avez défini le statut de propriétaire de l'affichage Knock sur: {0}",
+  "OwnerOfflineMsg": "L'habitant {0} est en train de dormir !",
+  "TooFast": "{0}, Vous avez un temps de recharge de {1} secondes",
+  "MissingArgs": "{0}, Il vous manque des arguments. Ex, /whoknocks cooldown 5",
+  "NegativeCooldown": "{0}, La valeur du temps de recharge doit être supérieure à 0",
+  "WrongColor": "{0}, La couleur est incorrecte. Les options sont: blanc, jaune, orange, vert, rouge, noir et bleu",
+  "CorrectColor": "{0}, Vous avez défini {1} à {2}",
+  "CorrectCooldown": "{0}, Vous avez défini {1} à {2} secondes",
+  "IsAdmin": "L'administrateur du serveur, {1}, a frappé à votre porte!",
+  "CoordOff": "{0}, les coordonnées de la porte {1} affichées! "
+}

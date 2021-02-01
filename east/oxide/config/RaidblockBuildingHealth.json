@@ -1,0 +1,11 @@
+{
+  "Health on spawn in percents (0-100)": 0,
+  "Health on spawn in amount (0 to disable)": 10,
+  "Structure should be not attacked for X seconds to start healing": 60.0,
+  "Interrupt healing at all after getting any damage": false,
+  "Heal rate (seconds)": 1.0,
+  "Heal in amount (0 to disable)": 1.0,
+  "Heal in percents (0-100)": 1.0,
+  "Work for Building Blocks": true,
+  "Work for Doors": true
+}

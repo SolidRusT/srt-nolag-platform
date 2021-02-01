@@ -1,0 +1,7 @@
+{
+  "Knocking Cooldown in seconds (0 = no cooldown)": 0.0,
+  "Display Door coordinates for owner": true,
+  "Text color when the owner is offline": "red",
+  "Text color when the owner is online": "green",
+  "Display owner online/offline": true
+}

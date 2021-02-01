@@ -1,0 +1,22 @@
+{
+  "tcgui": "Tool Cupboard GUI",
+  "tcguisel": "Tool Cupboard GUI - Player Select",
+  "helptext1": "Tool Cupboard GUI instructions:",
+  "notauthorized": "You are not authorized for this command!",
+  "helptext2": "  type /tc to do stuff",
+  "close": "Close",
+  "me": "Me",
+  "manage": "Manage",
+  "foundtc": "Found a TC.  Authorized players:",
+  "none": "None found!",
+  "cupboard": "Cupboard",
+  "turret": "Turret",
+  "turrets": "Turrets",
+  "select": "Select",
+  "add": "Add",
+  "authall": "AuthAll",
+  "online": "Online",
+  "offline": "Offline",
+  "deauthall": "DeAuthAll",
+  "remove": "Remove"
+}

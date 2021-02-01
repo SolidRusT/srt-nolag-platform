@@ -1,0 +1,14 @@
+{
+  "EventStart": "<size=20><color=#1e90ff>Speed Type</color></size>\n<size=16><color=#{0}>Tier {1} Event</color></size>\n\nThe first person to type:\n<color=#33ccff>/guess {2}</color>\nWill win a prize!",
+  "EventEnd": "<size=20><color=#1e90ff>Speed Type</color></size>\n<size=16><color=#ffa500>Event Over!</color></size>\n\nNo Winners",
+  "EventEndWinner": "<size=20><color=#1e90ff>Speed Type</color></size>\n<size=16><color=#ffa500>Event Over!</color></size>\n\nThe Winner is:\n<color=#1e90ff>{0}</color>\nReward:{1}",
+  "EventNotStarted": "<size=20><color=#1e90ff>Speed Type</color></size>\n\n<size=16><color=#ffa500>No Active Events!</color></size>",
+  "EventStarted": "<size=20><color=#1e90ff>Speed Type</color></size>\n\n<size=16><color=#ffa500>Event already started</color></size>",
+  "LogEventStart": "Speed Type Tier {0} Event Started",
+  "LogEventEnd": "Speed Type Event Ended",
+  "LogEventEndWinner": "Speed Type Event Winner: {0} | User Won: {1} x{2}",
+  "WrongCode": "<size=20><color=#1e90ff>Speed Type</color></size>\n\n<size=16><color=#ffa500>Wrong Code!</color></size>",
+  "WrongSyntax": "<size=20><color=#1e90ff>Speed Type</color></size>\n\n<size=16><color=#ffa500>Wrong Command Syntax</color></size>",
+  "WrongPerm": "<size=20><color=#1e90ff>Speed Type</color></size>\n\n<size=16><color=#ffa500>No Permission!</color></size>",
+  "RewardFormat": "\n<color=#FFD700>{0}</color> x{1}"
+}

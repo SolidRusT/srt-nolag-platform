@@ -1,0 +1,8 @@
+{
+  "LordStatus": "<color=orange>LANDLORD:</color> Grounds seized: {0} TeamID is: {1}",
+  "LordStatusZero": "<color=orange>LANDLORD:</color> Grounds seized: 0 TeamID is: {0}",
+  "TeamClearSuccess": "<color=orange>LANDLORD:</color> Team clear: Success!",
+  "HaveNoTeam": "<color=orange>LANDLORD:</color> You are have no team!",
+  "CellHasPole": "<color=orange>LANDLORD:</color> This map cell already has a pole! Destroy it before build a new one",
+  "CellCaptured": "<color=orange>LANDLORD:</color> You deploy pole! Your gather rate increased!"
+}

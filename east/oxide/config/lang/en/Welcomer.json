@@ -1,0 +1,6 @@
+{
+  "WelcomeMessage": "Welcome to NoLag!",
+  "JoinMessage": "Player {0} has joined from {1}",
+  "JoinMessageUnknown": "Player {0} has joined",
+  "LeaveMessage": "Player {0} has left. Reason {1}"
+}

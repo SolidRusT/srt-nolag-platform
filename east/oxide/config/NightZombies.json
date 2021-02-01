@@ -1,0 +1,10 @@
+{
+  "Murderer Population": 75,
+  "Scarecrow Population": 150,
+  "Kill Murderers": true,
+  "Play sound": false,
+  "Broadcast Spawn amount": true,
+  "Broadcast murderer and scarecrow count separately": true,
+  "Slow destroy": true,
+  "Slow destroy time (seconds)": 0.3
+}

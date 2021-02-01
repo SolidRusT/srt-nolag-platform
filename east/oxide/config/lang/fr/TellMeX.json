@@ -1,0 +1,14 @@
+{
+  "StartTellMeXMsg": "X =",
+  "CommandTellMeXMsg": "CALCULEZ LA VALEUR DE X ET DONNEZ LA MOI ! (exemple: <color=yellow>/x 1234</color>)",
+  "NextTellMeXMsg": "Le prochain calcul se fera dans ",
+  "AlreadyTellMeXMsg": "Vous avez déjà essayé !\nEssayez de nouveau dans ",
+  "InvalidTellMeXMsg": "Valeur invalide.\nEssayez dans ce format<color=yellow>/x 1234</color>",
+  "NotNumericTellMeXMsg": "Ce n'est pas un nombre !\nUtilisez ce format <color=yellow>/x 1234</color>",
+  "WonTellMeXMsg": "a trouvé(e) X\net a remporté(e) :",
+  "EndTellMeXMsg": "X était ",
+  "ExpiredTellMeXMsg": "n'a pas été trouvé à temps !",
+  "LoseTellMeXMsg": "X n'est pas égal à ce nombre...",
+  "LoseTellMeXRPMsg": "X n'est pas égal à ce nombre... MAIS pour la participation, vous avez gagné ",
+  "SorryErrorMsg": "Désolé, une erreur a eue lieu. Touchez en un mot à Krungh Crow, Merci ! L'objet à donner été 'nul'. Le cadeau était : "
+}

@@ -1,0 +1,15 @@
+{
+  "Generic.Error.NoPermission": "You don't have permission to do that.",
+  "Generic.Error.BuildingBlocked": "Error: Cannot do that while building blocked.",
+  "Generic.Error.Cooldown": "Please wait <color=red>{0}s</color> and try again.",
+  "Generic.Error.VehicleLocked": "That vehicle is locked.",
+  "Deploy.Error.NoVehicleFound": "Error: No vehicle found.",
+  "Deploy.Error.VehicleDead": "Error: That vehicle is dead.",
+  "Deploy.Error.DifferentOwner": "Error: Someone else owns that vehicle.",
+  "Deploy.Error.NoOwner": "Error: You do not own that vehicle.",
+  "Deploy.Error.HasLock": "Error: That vehicle already has a lock.",
+  "Deploy.Error.InsufficientResources": "Error: Not enough resources to craft a {0}.",
+  "Deploy.Error.Mounted": "Error: That vehicle is currently occupied.",
+  "Deploy.Error.ModularCar.NoCockpit": "Error: That car needs a cockpit module to receive a lock.",
+  "Deploy.Error.Distance": "Error: Too far away."
+}

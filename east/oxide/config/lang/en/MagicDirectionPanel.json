@@ -1,0 +1,10 @@
+{
+  "North": "North",
+  "NorthEast": "Northeast",
+  "East": "East",
+  "SouthEast": "Southeast",
+  "South": "South",
+  "SouthWest": "Southwest",
+  "West": "West",
+  "NorthWest": "Northwest"
+}

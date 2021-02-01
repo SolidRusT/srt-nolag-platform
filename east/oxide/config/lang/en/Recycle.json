@@ -1,0 +1,23 @@
+{
+  "Recycle -> DestroyedAllBags": "All bags have been destroyed",
+  "Recycle -> DestroyedAll": "All recyclers have been destroyed",
+  "Recycle -> Dropped": "You left some items in the recycler!",
+  "Recycle -> Invalid": "You cannot recycle that!",
+  "Denied -> Permission": "You don't have permission to use that command",
+  "Denied -> Privilege": "You cannot recycle within someone's building privilege",
+  "Denied -> Swimming": "You cannot recycle while swimming",
+  "Denied -> Falling": "You cannot recycle while falling",
+  "Denied -> Mounted": "You cannot recycle while mounted",
+  "Denied -> Wounded": "You cannot recycle while wounded",
+  "Denied -> Irradiation": "You cannot recycle while irradiated",
+  "Denied -> Ship": "You cannot recycle while on a ship",
+  "Denied -> Elevator": "You cannot recycle while on an elevator",
+  "Denied -> Balloon": "You cannot recycle while on a balloon",
+  "Denied -> Safe Zone": "You cannot recycle while in a safe zone",
+  "Denied -> Hook Denied": "You can't recycle right now",
+  "Cooldown -> In": "You need to wait {0} before recycling",
+  "Timings -> second": "second",
+  "Timings -> seconds": "seconds",
+  "Timings -> minute": "minute",
+  "Timings -> minutes": "minutes"
+}

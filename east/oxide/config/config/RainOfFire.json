@@ -1,0 +1,101 @@
+{
+  "BarrageSettings": {
+    "NumberOfRockets": 20,
+    "RocketDelay": 0.33,
+    "RocketSpread": 16.0
+  },
+  "DamageControl": {
+    "DamageMultiplier": 0.2
+  },
+  "Options": {
+    "EnableAutomaticEvents": true,
+    "EventTimers": {
+      "EventInterval": 30,
+      "RandomTimerMax": 45,
+      "RandomTimerMin": 15,
+      "UseRandomTimer": false
+    },
+    "GlobalDropMultiplier": 1.0,
+    "NotifyEvent": true
+  },
+  "z_IntensitySettings": {
+    "Settings_Extreme": {
+      "Duration": 30,
+      "FireRocketChance": 10,
+      "ItemDropControl": {
+        "EnableItemDrop": true,
+        "ItemsToDrop": [
+          {
+            "Maximum": 400,
+            "Minimum": 250,
+            "Shortname": "stones"
+          },
+          {
+            "Maximum": 300,
+            "Minimum": 125,
+            "Shortname": "metal.fragments"
+          },
+          {
+            "Maximum": 50,
+            "Minimum": 20,
+            "Shortname": "metal.refined"
+          },
+          {
+            "Maximum": 120,
+            "Minimum": 45,
+            "Shortname": "sulfur.ore"
+          }
+        ]
+      },
+      "Radius": 100.0,
+      "RocketAmount": 70
+    },
+    "Settings_Mild": {
+      "Duration": 240,
+      "FireRocketChance": 30,
+      "ItemDropControl": {
+        "EnableItemDrop": true,
+        "ItemsToDrop": [
+          {
+            "Maximum": 120,
+            "Minimum": 80,
+            "Shortname": "stones"
+          },
+          {
+            "Maximum": 50,
+            "Minimum": 25,
+            "Shortname": "metal.ore"
+          }
+        ]
+      },
+      "Radius": 500.0,
+      "RocketAmount": 20
+    },
+    "Settings_Optimal": {
+      "Duration": 120,
+      "FireRocketChance": 20,
+      "ItemDropControl": {
+        "EnableItemDrop": true,
+        "ItemsToDrop": [
+          {
+            "Maximum": 250,
+            "Minimum": 160,
+            "Shortname": "stones"
+          },
+          {
+            "Maximum": 120,
+            "Minimum": 60,
+            "Shortname": "metal.fragments"
+          },
+          {
+            "Maximum": 50,
+            "Minimum": 20,
+            "Shortname": "hq.metal.ore"
+          }
+        ]
+      },
+      "Radius": 300.0,
+      "RocketAmount": 45
+    }
+  }
+}

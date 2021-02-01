@@ -1,0 +1,17 @@
+{
+  "Hired": "HandyMan has been Hired.",
+  "Fired": "HandyMan has been Fired.",
+  "Fix": "You fix this one, I'll get the rest.",
+  "NotAllowed": "You are not allowed to build here - I can't repair for you.",
+  "IFixed": "I fixed some damage over here...",
+  "IFixedEx": "I fixed {0} constructions over here...",
+  "FixDone": "Guess I fixed them all...",
+  "MissingFix": "I'm telling you... it disappeared... I can't find anything to fix.",
+  "NoPermission": "You don't have permission to use this command.",
+  "Help": "HandyMan - Help - v {ver} \n-----------------------------\n/HandyMan - Shows your current preference for HandyMan.\n/HandyMan on/off - Turns HandyMan on/off.",
+  "Missing Resources Single": "Missing resources: {0} ({1}). I'll need the full amount to repair this.",
+  "Missing Resources Multiple": "Missing resources: {0} ({1})",
+  "Missing Resources Partial": "I can do some repairs with a partial amount of these resources.",
+  "No Resources": "You must have some resources in order to repair!",
+  "CannotFixYet": "Everything has been attacked recently and cannot be repaired yet."
+}
