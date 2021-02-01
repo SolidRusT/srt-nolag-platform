@@ -1,0 +1,191 @@
+{
+  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 4,
+  "Additional Bases For This Difficulty": {
+    "NightmareBase1": [
+      {
+        "Option": "stability",
+        "Value": "false"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "1.0"
+      }
+    ],
+    "NightmareBase2": [
+      {
+        "Option": "stability",
+        "Value": "false"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "1.0"
+      }
+    ],
+    "NightmareBase3": [
+      {
+        "Option": "stability",
+        "Value": "false"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "1.0"
+      }
+    ],
+    "NightmareBase4": [
+      {
+        "Option": "stability",
+        "Value": "false"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "1.0"
+      }
+    ],
+    "NightmareBase5": [
+      {
+        "Option": "stability",
+        "Value": "false"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "1.0"
+      }
+    ]
+  },
+  "Paste Options": [
+    {
+      "Option": "stability",
+      "Value": "false"
+    },
+    {
+      "Option": "autoheight",
+      "Value": "false"
+    },
+    {
+      "Option": "height",
+      "Value": "1.0"
+    }
+  ],
+  "Arena Walls": {
+    "Enabled": true,
+    "Extra Stacks": 1,
+    "Use Stone Walls": true,
+    "Use Iced Walls": false,
+    "Use Least Amount Of Walls": true,
+    "Use UFO Walls": false,
+    "Radius": 25.0
+  },
+  "NPC Levels": {
+    "Level 1 - Play With Fire": {
+      "Amount (0 = disabled)": 0,
+      "Chance To Play": 0.5
+    },
+    "Level 2 - Final Death": false
+  },
+  "NPCs": {
+    "Murderer Items": [
+      "metal.facemask",
+      "metal.plate.torso",
+      "pants",
+      "tactical.gloves",
+      "boots.frog",
+      "tshirt",
+      "machete"
+    ],
+    "Scientist Items": [
+      "hazmatsuit_scientist",
+      "rifle.ak"
+    ],
+    "Murderer Kits": [
+      "murderer_kit_1",
+      "murderer_kit_2"
+    ],
+    "Scientist Kits": [
+      "scientist_kit_1",
+      "scientist_kit_2"
+    ],
+    "Random Names": [],
+    "Amount To Spawn": 3,
+    "Aggression Range": 70.0,
+    "Despawn Inventory On Death": true,
+    "Enabled": true,
+    "Health For Murderers (100 min, 5000 max)": 150.0,
+    "Health For Scientists (100 min, 5000 max)": 150.0,
+    "Minimum Amount To Spawn": 1,
+    "Use Dangerous Treasures NPCs": false,
+    "Spawn Murderers And Scientists": true,
+    "Scientist Weapon Accuracy (0 - 100)": 75.0,
+    "Spawn Murderers": false,
+    "Spawn Random Amount": false,
+    "Spawn Scientists Only": false
+  },
+  "Rewards": {
+    "Economics Money": 0.0,
+    "ServerRewards Points": 0
+  },
+  "Change Building Material Tier To": {
+    "Wooden": false,
+    "Stone": false,
+    "Metal": false,
+    "HQM": false
+  },
+  "Loot (Empty List = Use Treasure Loot)": [],
+  "Profile Enabled": true,
+  "Add Code Lock To Unlocked Or KeyLocked Doors": true,
+  "Close Open Doors With No Door Controller Installed": true,
+  "Allow Base To Float Above Water": false,
+  "Prevent Base To Float Above Water By Also Checking Surrounding Area (Do Not Use On Lower End Machines)": false,
+  "Allow Duplicate Items": false,
+  "Allow Players To Pickup Deployables": false,
+  "Allow Players To Deploy A Cupboard": true,
+  "Allow PVP": true,
+  "Allow Friendly Fire (Teams)": true,
+  "Amount Of Items To Spawn": 6,
+  "Auto Turret Health": 1000.0,
+  "Auto Turret Aim Cone": 5.0,
+  "Auto Turret Sight Range": 30.0,
+  "Flame Turret Health": 300.0,
+  "Block Damage Outside Of The Dome To Players Inside": false,
+  "Block Damage Outside Of The Dome To Bases Inside": false,
+  "Divide Loot Into All Containers": true,
+  "Drop Container Loot X Seconds After It Is Looted": 0.0,
+  "Drop Container Loot Applies Only To Boxes And Cupboards": true,
+  "Create Dome Around Event Using Spheres (0 = disabled, recommended = 5)": 5,
+  "Empty All Containers Before Spawning Loot": false,
+  "Eject Corpses From Enemy Raids (Advanced Users Only)": true,
+  "Eject Enemies From Purchased PVE Raids": false,
+  "Eject Enemies From Purchased PVP Raids": false,
+  "Eject Enemies From Locked PVE Raids": false,
+  "Eject Enemies From Locked PVP Raids": false,
+  "Equip Unequipped AutoTurret With": "rifle.ak",
+  "Explosion Damage Modifier (0-999)": 100.0,
+  "Force All Boxes To Have Same Skin": true,
+  "Maximum Elevation Level": 2.5,
+  "Protection Radius": 50.0,
+  "Block Plugins Which Prevent Item Durability Loss": false,
+  "Remove Equipped AutoTurret Weapon": false,
+  "Require Cupboard Access To Loot": false,
+  "Respawn Npc X Seconds After Death": 0.0,
+  "Skip Treasure Loot And Use Loot In Base Only": false,
+  "Use Loot Table Priority": false
+}

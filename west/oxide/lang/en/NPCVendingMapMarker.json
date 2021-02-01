@@ -1,0 +1,20 @@
+{
+  "UsageHelp": "NPCVendingMapMarker v{0} - A Rust umod plugin to add in-game vending map markers to NPC's.\r\nCopyright(C) 2020 by Pinguin and released under GPLv3\r\n\r\nThe following commands are available:\r\n  npcvmm.add : Add a new NPC vending map marker.\r\n  npcvmm.reset : Reset temporary NPC vending map marker data for current player.\r\n  npcvmm.list : List all configured NPC vending map markers.\r\n  npcvmm.del : Delete a single NPC vending map marker.\r\n  npcvmm.clear : Delete all configured NPC vending map markers.\r\n  npcvmm.refresh : Refresh all configured NPC vending map markers.\r\n  npcvmm.debug : Toggle internal debugging on/off.\r\n\r\nFor commands that take arguments, more help is available by executing them without any arguments.\r\n\r\nTo be able to execute any NPCVendingMapMarker commands, you need to have the umod 'npcvendingmapmarker.admin' right assigned to your user.",
+  "DebugOn": "Switched debugging ON",
+  "DebugOff": "Switched debugging OFF",
+  "MissingShopName": "Usage: npcvmm.add <shop name>",
+  "UseNpcToAdd": "The next NPC you use will get a vending map marker with the name '{0}'",
+  "NpcAlreadyHasMapMarker": "The selected NPC '{0}' already has a vending map marker configured!",
+  "FailedSpawningMarker": "Unable to spawn vending map marker!",
+  "AddingMapMarkerSuccess": "Successfully added vending map marker to NPC '{0}'",
+  "AlreadyHaveTempVmm": "You can't add another marker until you finished adding the previous one! Use an NPC to add your previously configured map marker or do npcvmm.reset",
+  "ResetSuccessful": "Successfully removed temporary config values",
+  "ResetFailed": "No temporary config values available",
+  "TotalConfiguredMarkers": "You have a total of {0} NPC vending map marker(s) configured",
+  "MarkerDetails": "{0} @ {1} : '{2}'",
+  "MissingNpcId": "Usage: npcvmm.del <npc_id>",
+  "InvalidNpcId": "The given NPC ID is not valid!",
+  "NpcvmmRemoved": "The vending map marker for NPC id {0} was removed",
+  "UnknownNpcId": "No vending map marker for NPC id {0} configured",
+  "AllCleared": "All vending map markers cleared"
+}

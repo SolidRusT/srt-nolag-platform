@@ -1,0 +1,5 @@
+{
+  "ChatPrefix": "<color=#00a7fe>[Breakable CCTV]</color>",
+  "CameraHealth": "Camera HP: <color=#cb3f2a>{0}</color>",
+  "CameraDisabled": "Camera disabled for <color=#87b33a>{0}s</color>"
+}

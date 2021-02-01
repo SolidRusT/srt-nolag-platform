@@ -1,0 +1,9 @@
+{
+  "killfeed": "<color=red>[KillFeed]</color> /killfeed disable<color=red>|</color>enable<color=red>|</color>status",
+  "killfeed enable > enabled": "<color=red>[KillFeed]</color> enabled!",
+  "killfeed enable > already enabled": "<color=red>[KillFeed]</color> already enabled!",
+  "killfeed disable > disabled": "<color=red>[KillFeed]</color> disabled!",
+  "killfeed disable > already disabled": "<color=red>[KillFeed]</color> already disabled!",
+  "killfeed status > is enabled": "<color=red>[KillFeed]</color> is enabled!",
+  "killfeed status > is disabled": "<color=red>[KillFeed]</color> is disabled!"
+}

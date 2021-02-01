@@ -1,0 +1,25 @@
+{
+  "1. Run only 1 event at action": false,
+  "2.Cargo plane speed": 10.0,
+  "3.Cargo plane height": 700.0,
+  "Event list:": [
+    {
+      "1. Chance": 10,
+      "2. Type": "Spawn",
+      "3. Parameter": "assets/rust.ai/agents/bear/bear.prefab",
+      "4. Range": 0.0
+    },
+    {
+      "1. Chance": 10,
+      "2. Type": "Spawn",
+      "3. Parameter": "assets/prefabs/npc/scientist/scientist.prefab",
+      "4. Range": 0.0
+    },
+    {
+      "1. Chance": 10,
+      "2. Type": "Damage",
+      "3. Parameter": "30",
+      "4. Range": 5.0
+    }
+  ]
+}

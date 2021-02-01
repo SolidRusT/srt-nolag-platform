@@ -1,0 +1,44 @@
+{
+  "Items": [
+    {
+      "ID": 833533164,
+      "Amount": 1,
+      "Skin": 2311523302,
+      "Condition": 75.0,
+      "MaxCondition": 100.0
+    },
+    {
+      "ID": 833533164,
+      "Position": 1,
+      "Amount": 1,
+      "Skin": 1753777701,
+      "Condition": 75.0,
+      "MaxCondition": 100.0
+    },
+    {
+      "ID": 833533164,
+      "Position": 2,
+      "Amount": 1,
+      "Skin": 2068850952,
+      "Condition": 75.0,
+      "MaxCondition": 100.0
+    },
+    {
+      "ID": 833533164,
+      "Position": 3,
+      "Amount": 1,
+      "Skin": 2023776102,
+      "Condition": 75.0,
+      "MaxCondition": 100.0
+    },
+    {
+      "ID": 833533164,
+      "Position": 4,
+      "Amount": 1,
+      "Skin": 2249242717,
+      "Condition": 100.0,
+      "MaxCondition": 100.0
+    }
+  ],
+  "OwnerID": 76561198852895608
+}

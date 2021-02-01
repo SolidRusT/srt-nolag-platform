@@ -1,0 +1,6 @@
+{
+  "NoPermission": "You do not have permission to use this command",
+  "SentWipe": "You have sent a test wipe message",
+  "SentProtocol": "You have sent a test protocol message",
+  "Help": "Sends test message for plugin\n{0}{1} wipe - sends a wipe test message\n{0}{1} protocol - sends a protocol test message\n{0}{1} - displays this help text again"
+}

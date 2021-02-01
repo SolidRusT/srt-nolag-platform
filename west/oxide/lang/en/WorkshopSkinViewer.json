@@ -1,0 +1,6 @@
+{
+  "Usage": "Usage:\n/wskin shortname skinID",
+  "Permission": "You don't have permission to use that!",
+  "Received": "You received {0} with skin #{1}",
+  "Error": "Looks as you made something wrong! SkinID or item shortname!"
+}
