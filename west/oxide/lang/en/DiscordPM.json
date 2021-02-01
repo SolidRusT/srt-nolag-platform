@@ -1,0 +1,13 @@
+{
+  "Chat": "[#BEBEBE][[#de8732]Discord PM[/#]] {0}[/#]",
+  "DiscordChatPrefixV1": "[#BEBEBE][#de8732]PM {0} {1}:[/#] {2}[/#]",
+  "DiscordChatNoPrefixV1": "[#BEBEBE][#de8732]{0}:[/#] {1}[/#]",
+  "DiscordPmInfoText": "To private message a player on the rust server / discord",
+  "DiscordReplyInfoText": "To reply to a previous private message",
+  "InvalidPmSyntaxV1": "Invalid Syntax. Type [#de8732]/{0} MJSU Hi![/#]",
+  "InvalidReplySyntaxV1": "Invalid Syntax. Ex: [#de8732]/{0} Hi![/#]",
+  "UnableToFindPlayer": "Unable to find player",
+  "NoPreviousPm": "You do not have any previous discord PM's. Please use /pm to be able to use this command.",
+  "From": "from",
+  "To": "to"
+}

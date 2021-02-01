@@ -1,0 +1,18 @@
+{
+  "No Permission": "You cannot use this command!",
+  "/setwp Invalid Syntax": "Invalid syntax! /setwp <waypoint name>",
+  "/wp Invalid Syntax": "Invalid syntax! /wp <waypoint name>",
+  "/setglobalwp Invalid Syntax": "Invalid syntax! /setglobalwp <waypoint name>",
+  "/hideglobalwp Invalid Syntax": "Invalid syntax! /hideglobalwp <waypoint name>",
+  "/removewp Invalid Syntax": "Invalid syntax! /removewp <waypoint name>",
+  "Waypoint Removed": "This waypoint has been removed!",
+  "Waypoint Already Exists": "This waypoint name already exists!",
+  "Waypoint Added": "You successfully created a new waypoint!",
+  "Waypoint Not Found": "Waypoint was not found",
+  "Max Waypoints Allowed": "You already have the maxiumum amount of waypoints allowed!",
+  "Global Waypoint Hidden": "This waypoint will disapear on the next update cycle",
+  "Global Waypoint Already Showing": "This waypoint is already being broadcasted",
+  "No Waypoints": "You do not have any waypoints!",
+  "List 1st Line": "Your current waypoints are:",
+  "List Entry": "- {0}"
+}

@@ -1,0 +1,10 @@
+{
+  "YouWereKilled": "You were killed by {0}",
+  "YouWereHurt": "You were damaged for {0} health by {1}",
+  "Suicide": "You killed yourself",
+  "PlayerNotFound": "{0} was not found",
+  "TargetSyntax": "{0} <target>",
+  "SuicideSyntax": "{0}",
+  "HurtSyntax": "{0} <target> <amount>",
+  "NoAccess": "You don't have access to this command"
+}

@@ -1,0 +1,89 @@
+{
+  "items": [
+    {
+      "id": "1712070256",
+      "amount": 129,
+      "slot": 1,
+      "flags": 0,
+      "condition": 0.0,
+      "skin": 0,
+      "contents": [],
+      "primaryMagazine": 0,
+      "ammoType": 0,
+      "dataInt": 0
+    },
+    {
+      "id": "28201841",
+      "amount": 1,
+      "slot": 0,
+      "flags": 0,
+      "condition": 98.5,
+      "skin": 0,
+      "contents": [
+        {
+          "id": "1478091698",
+          "amount": 1,
+          "slot": 0,
+          "flags": 0,
+          "condition": 198.5,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        },
+        {
+          "id": "-132516482",
+          "amount": 1,
+          "slot": 1,
+          "flags": 0,
+          "condition": 300.0,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        },
+        {
+          "id": "442289265",
+          "amount": 1,
+          "slot": 2,
+          "flags": 0,
+          "condition": 300.0,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        }
+      ],
+      "primaryMagazine": 20,
+      "ammoType": -1321651331,
+      "dataInt": 0
+    },
+    {
+      "id": "317398316",
+      "amount": 1000,
+      "slot": 2,
+      "flags": 0,
+      "condition": 0.0,
+      "skin": 0,
+      "contents": [],
+      "primaryMagazine": 0,
+      "ammoType": 0,
+      "dataInt": 0
+    },
+    {
+      "id": "317398316",
+      "amount": 823,
+      "slot": 3,
+      "flags": 0,
+      "condition": 0.0,
+      "skin": 0,
+      "contents": [],
+      "primaryMagazine": 0,
+      "ammoType": 0,
+      "dataInt": 0
+    }
+  ]
+}

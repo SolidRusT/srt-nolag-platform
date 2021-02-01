@@ -1,0 +1,9 @@
+{
+  "NormalGameCall": "Normal cargo event triggered. Ship killed.",
+  "KillcargoRcon": "Killcargo issued from RCon",
+  "NoActiveShips": "Killcargo command issued but no active ships",
+  "KillCargo": "Killcargo command executed",
+  "ShipSpawned": "Cargo ship spawned at X={0}  Z={1}",
+  "ConfigError": "Error reading config file. Defaut configuration used.",
+  "ShipSpawnError": "Cargo ship spawn error. Spawn failed."
+}

@@ -1,0 +1,13 @@
+{
+  "Command": "verify",
+  "Discord bot key (Look at documentation for how to get this)": "ODA0OTkyMjk1NzM2NzA1MDI0.YBUZfw.a3N3MhU9x_dR63AlqcMzlWaBjgE",
+  "Verification Role (role given when verified)": "Verified",
+  "Commands to execute when player is verified (use {0} for the player's steamid)": [
+    "oxide.usergroup add {0} discord",
+    "inventory.giveto {0} rifle.lr300 1",
+    "inventory.giveto {0} ammo.rifle 64"
+  ],
+  "Amount of characters in the code": 6,
+  "Erase all verification data on wipe (new map save)?": false,
+  "Characters used in the verification code": "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz"
+}

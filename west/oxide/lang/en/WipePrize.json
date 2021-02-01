@@ -1,0 +1,7 @@
+{
+  "givemoney": "Player {0} ({1}) received {2} to the balance in {3}",
+  "UITitle": "You are {0} from {1}\nSo you get the reward.",
+  "UIBTN": "Give award",
+  "GiveAward": "Congratulations! You received an award!",
+  "RecieveAward": "You've already received your reward!"
+}

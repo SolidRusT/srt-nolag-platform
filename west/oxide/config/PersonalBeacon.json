@@ -1,0 +1,12 @@
+{
+  "Arrow Settings": {
+    "Arrow Head Size": 3.0,
+    "Height": 100.0,
+    "Levitation from ground": 3.0
+  },
+  "Settings": {
+    "Global Waypoint Refresh Time": 60.0,
+    "Max Waypoints": 5,
+    "Player Display Time": 60.0
+  }
+}

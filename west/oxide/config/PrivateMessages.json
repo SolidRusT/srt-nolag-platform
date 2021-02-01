@@ -1,0 +1,11 @@
+{
+  "CooldownTime": 3,
+  "EnableHistory": false,
+  "EnableLogging": true,
+  "PmCommand": "pm",
+  "UseBetterChatMute": false,
+  "UseCooldown": false,
+  "UseIgnore": false,
+  "UsePermission": false,
+  "UseUFilter": false
+}

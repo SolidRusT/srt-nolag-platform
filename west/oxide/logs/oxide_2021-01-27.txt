@@ -1,0 +1,1851 @@
+00:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+00:16 [Info] [Running Man] [EVENT] | Running man - SmokeQc ran away from the chase and received as a reward!
+00:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+00:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+00:16 [Info] [Running Man] [EVENT] | random
+00:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+00:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+00:16 [Info] [Running Man] [EVENT] | timer eventstart stopped
+00:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+00:23 [Info] [Economics] Saving balances for players...
+00:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 221ms
+00:34 [Info] [Welcomer] Player Mitlander has joined from United States
+00:35 [Info] [Death Notes] Mitlander shot a Bear using their Hunting Bow over a distance of 3.9 meters.
+00:37 [Info] [Death Notes] Mitlander shot a Stag using their Hunting Bow over a distance of 12.6 meters.
+00:37 [Info] [Death Notes] Mitlander shot a Wolf using their Hunting Bow over a distance of 9.4 meters.
+00:40 [Info] [Death Notes] Mitlander shot a Boar using their Spas-12 Shotgun over a distance of 2 meters.
+00:45 [Info] [Welcomer] Player ogjoed has joined from United States
+00:45 [Info] [Death Notes] Mitlander shot a Stag using their Semi-Automatic Rifle over a distance of 17.1 meters.
+00:46 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+00:46 [Info] [Running Man] [EVENT] | Running man: Mitlander
+00:46 [Info] [Running Man] [EVENT] +---------------------------------------------
+00:50 [Info] [Death Notes] Mitlander did not want to be a part of the Easy Guard's experiments.
+00:51 [Info] [Death Notes] Mitlander did not want to be a part of the Easy Guard's experiments.
+00:51 [Info] [Death Notes] Mitlander did not want to be a part of the Easy Guard's experiments.
+00:51 [Info] [Death Notes] Mitlander did not want to be a part of the Easy Guard's experiments.
+00:51 [Info] [Death Notes] Mitlander did not want to be a part of the Easy Guard's experiments.
+00:51 [Info] [Death Notes] Mitlander did not want to be a part of the Easy Guard's experiments.
+00:53 [Info] [Economics] Saving balances for players...
+00:53 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 211ms
+00:53 [Info] [Death Notes] Mitlander shot a Boar using their Spas-12 Shotgun over a distance of 5.2 meters.
+01:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+01:16 [Info] [Running Man] [EVENT] | Running man - Mitlander ran away from the chase and received as a reward!
+01:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+01:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+01:16 [Info] [Running Man] [EVENT] | random
+01:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+01:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+01:16 [Info] [Running Man] [EVENT] | timer eventstart stopped
+01:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+01:23 [Info] [Economics] Saving balances for players...
+01:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 233ms
+01:23 [Info] [Welcomer] Player WeirdAl has joined from United States
+01:30 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 451ms
+01:30 [Info] [Welcomer] Player Mitlander has left. Reason Disconnected
+01:30 [Info] [Welcomer] Player Hannaht56 has joined from United States
+01:39 [Info] [NTeleportation] WeirdAl teleported back to previous location.
+01:44 [Info] [Welcomer] Player PhatChrisGaming has joined from United States
+01:46 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+01:46 [Info] [Running Man] [EVENT] | Running man: PhatChrisGaming
+01:46 [Info] [Running Man] [EVENT] +---------------------------------------------
+01:53 [Info] [Economics] Saving balances for players...
+01:53 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 215ms
+01:53 [Info] [NTeleportation] WeirdAl teleported back to previous location.
+02:04 [Info] [Welcomer] Player PhatChrisGaming has left. Reason Disconnected
+02:10 [Info] [Welcomer] Player RobotBoyGamer has joined from United States
+02:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:16 [Info] [Running Man] [EVENT] | Running man - PhatChrisGaming ran away from the chase and received as a reward!
+02:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:16 [Info] [Running Man] [EVENT] | random
+02:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:16 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:16 [Info] [Running Man] [EVENT] | timer eventstart stopped
+02:16 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:19 [Info] [Death Notes] RobotBoyGamer shot a Wolf using their Hunting Bow over a distance of 13.6 meters.
+02:19 [Info] [Death Notes] RobotBoyGamer shot a Wolf using their Hunting Bow over a distance of 7.4 meters.
+02:19 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:20 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:20 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:21 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:22 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:22 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+02:23 [Info] [Economics] Saving balances for players...
+02:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 212ms
+02:23 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+02:24 [Info] [Death Notes] RobotBoyGamer shot a Wolf using their Hunting Bow over a distance of 8.7 meters.
+02:29 [Info] [Death Notes] RobotBoyGamer couldn't run away from the Bear.
+02:30 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 441ms
+02:30 [Info] [Welcomer] Player RobotBoyGamer has left. Reason Disconnected
+02:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:34 [Info] [Running Man] [EVENT] | timer eventpause stopped
+02:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:34 [Info] [Running Man] [EVENT] | Running Man has stopped
+02:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:39 [Info] [Welcomer] Player coolthings105 has joined from Canada
+02:53 [Info] [Economics] Saving balances for players...
+02:53 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 214ms
+02:53 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 443ms
+02:53 [Info] [Welcomer] Player coolthings105 has left. Reason Disconnected
+03:03 [Info] [Welcomer] Player RainbowMozzie has joined from United States
+03:04 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+03:04 [Info] [Running Man] [EVENT] | Running man: SmokeQc
+03:04 [Info] [Running Man] [EVENT] +---------------------------------------------
+03:11 [Info] [Death Notes] RainbowMozzie had enough of life.
+03:18 [Info] [Death Notes] RainbowMozzie killed a Chicken using their Stone Spear.
+03:23 [Info] [Economics] Saving balances for players...
+03:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 213ms
+03:23 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+03:23 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+03:23 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:24 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:24 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+03:24 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:24 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+03:25 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+03:25 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:25 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+03:25 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:26 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:26 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+03:26 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:26 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:32 [Info] [Welcomer] Player MyBadPimp has joined from United States
+03:32 [Info] [Death Notes] A Scientist shot down Hannaht56.
+03:32 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:34 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+03:34 [Info] [Running Man] [EVENT] | Running man - SmokeQc ran away from the chase and received as a reward!
+03:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+03:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+03:34 [Info] [Running Man] [EVENT] | random
+03:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+03:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+03:34 [Info] [Running Man] [EVENT] | timer eventstart stopped
+03:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+03:34 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+03:34 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: whew, finished work - rough day
+03:35 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: going to continue adding skins
+03:36 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:37 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+03:37 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+03:47 [Info] [Welcomer] Player Suparious has joined from Canada
+03:48 [Info] [NTeleportation] Suparious teleported to SmokeQc.
+03:48 [Info] [Welcomer] Player soundcloud has joined from United States
+03:49 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 442ms
+03:49 [Info] [Welcomer] Player MyBadPimp has left. Reason Disconnected
+03:53 [Info] [Economics] Saving balances for players...
+03:53 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 218ms
+03:53 [Info] [Death Notes] ogjoed shot Suparious using their LR-300 Assault Rifle over a distance of 44.7 meters.
+03:53 [Info] [Better Chat] [Global] [Player] ogjoed: oops
+03:53 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: lol, that's what I get for standing in the open AFK
+03:53 [Info] [Better Chat] [Global] [Player] Hannaht56: sorry sup
+03:54 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: nah, kill the thing, my bad
+03:54 [Info] [Better Chat] [Global] [Player] Hannaht56: just got done doing oil rig. a little trigger happy lol
+03:54 [Info] [Death Notes] WeirdAl shot SmokeQc using their M39 Rifle over a distance of 57.4 meters.
+03:54 [Info] [Better Chat] [Global] [Player] ogjoed: gator dont take no shit
+03:54 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: haha
+03:55 [Info] [Death Notes] RainbowMozzie had enough of life.
+03:57 [Info] [NTeleportation] Suparious teleported to WeirdAl.
+03:58 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: are the supply drops working?
+03:58 [Info] [Better Chat] [Global] [Player] Hannaht56: yes!
+03:58 [Info] [Better Chat] [Global] [Player] WeirdAl: yessir
+03:58 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: nice
+03:58 [Info] [Better Chat] [Global] [Player] ogjoed: oh ya we got 4 coming down now
+03:59 [Info] [Better Chat] [Global] [Player] soundcloud: uh dev why is there a cooldown for trades at outpost
+03:59 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: googd question, let me look at that now
+04:02 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: Found a solution, working on Outpost trade timer
+04:02 [Info] [Better Chat] [Global] [Player] soundcloud: bte
+04:02 [Info] [Better Chat] [Global] [Player] soundcloud: bet
+04:02 [Info] [Better Chat] [Global] [Player] WeirdAl: solid
+04:02 [Info] CompoundOptions was compiled successfully in 2219ms
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for stables
+04:02 [Info] [Compound Options] Added Vending Machine: stables to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: stables to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for stables
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Vehicles
+04:02 [Info] [Compound Options] Added Vending Machine: Vehicles to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Vehicles to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Bandit_Farming
+04:02 [Info] [Compound Options] Added Vending Machine: Bandit_Farming to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Bandit_Farming to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Bandit_ProduceExchange
+04:02 [Info] [Compound Options] Added Vending Machine: Bandit_ProduceExchange to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Bandit_ProduceExchange to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Weapons_Bandit
+04:02 [Info] [Compound Options] Added Vending Machine: Weapons_Bandit to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Weapons_Bandit to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for BuyResources
+04:02 [Info] [Compound Options] Added Vending Machine: BuyResources to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: BuyResources to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for building_bandit
+04:02 [Info] [Compound Options] Added Vending Machine: building_bandit to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: building_bandit to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for FoodVendor
+04:02 [Info] [Compound Options] Added Vending Machine: FoodVendor to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: FoodVendor to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Vehicles2
+04:02 [Info] [Compound Options] Added Vending Machine: Vehicles2 to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Vehicles2 to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Compound_Extra2
+04:02 [Info] [Compound Options] Added Vending Machine: Compound_Extra2 to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Compound_Extra2 to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Compound_Extra1
+04:02 [Info] [Compound Options] Added Vending Machine: Compound_Extra1 to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Compound_Extra1 to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Tools
+04:02 [Info] [Compound Options] Added Vending Machine: Tools to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Tools to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Resources
+04:02 [Info] [Compound Options] Added Vending Machine: Resources to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Resources to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Components
+04:02 [Info] [Compound Options] Added Vending Machine: Components to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Components to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Weapons
+04:02 [Info] [Compound Options] Added Vending Machine: Weapons to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Weapons to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Attire
+04:02 [Info] [Compound Options] Added Vending Machine: Attire to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Attire to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for Building
+04:02 [Info] [Compound Options] Added Vending Machine: Building to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: Building to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+04:02 [Info] [Compound Options] Added Vending Machine: BoatVendor to data file!
+04:02 [Info] [Compound Options] Added Vending Machine: BoatVendor to data file!
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+04:02 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+04:02 [Warning] Calling 'OnServerInitialized' on 'CompoundOptions v1.1.7' took 103ms
+04:02 [Info] Loaded plugin Compound Options v1.1.7 by FastBurst
+04:03 [Error] Could not load plugin 'CompundOptions' (no plugin found with that file name)
+04:04 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+04:04 [Info] [Running Man] [EVENT] | Running man: ogjoed
+04:04 [Info] [Running Man] [EVENT] +---------------------------------------------
+04:04 [Info] [Death Notes] RainbowMozzie had enough of life.
+04:07 [Info] NPCDropGun was compiled successfully in 2188ms
+04:07 [Info] Loaded plugin NPC Drop Gun v2.0.4 by 2CHEVSKII
+04:08 [Warning] [DEBUG] Load requested for plugin which is already loading: AbsolutMarket
+04:08 [Info] AbsolutMarket was compiled successfully in 2297ms
+04:08 [Info] Loaded plugin AbsolutMarket v1.8.4 by Absolut
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnEntityDeath' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnEntityDeath (BaseEntity entity, HitInfo hitInfo) [0x0001d] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003a6] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Error] Failed to call hook 'OnItemRemovedFromContainer' on plugin 'AbsolutMarket v1.8.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.AbsolutMarket.OnItemRemovedFromContainer (ItemContainer cont, Item item) [0x00000] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.AbsolutMarket.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x003dc] in <0382043cf0084e9e829f5a21bb92d700>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:08 [Info] [AbsolutMarket] 13 Background Images have been added!
+04:10 [Info] Unloaded plugin AbsolutMarket v1.8.4 by Absolut
+04:14 [Info] RProtect was compiled successfully in 2156ms
+04:14 [Info] Loaded plugin Research Protection v0.1.4 by RFC1920
+04:15 [Info] [Death Notes] ogjoed shot soundcloud using their LR-300 Assault Rifle over a distance of 26.6 meters.
+04:15 [Info] [Better Chat] [Global] [Player] WeirdAl: lol good try
+04:16 [Info] DeathSpawn was compiled successfully in 2172ms
+04:16 [Info] Loaded plugin Death Spawn Points v0.0.1 by RFC1920
+04:16 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 443ms
+04:16 [Info] [Welcomer] Player soundcloud has left. Reason Disconnected
+04:16 [Info] [Death Notes] SmokeQc had enough of life.
+04:18 [Info] [Death Notes] weird guy couldn't run away from the Bear.
+04:22 [Info] [Welcomer] Player WeirdAl has left. Reason Disconnected
+04:22 [Info] [Welcomer] Player ogjoed has left. Reason Disconnected
+04:23 [Info] [Better Chat] [Global] [Player] Hannaht56: hey weirdal and ogjoed just tried to respawn at outpost cause its a new option and now
+04:23 [Info] [Better Chat] [Global] [Player] Hannaht56: they cant move their mouse in game or type
+04:23 [Info] [Economics] Saving balances for players...
+04:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 216ms
+04:23 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: damn
+04:23 [Info] [Death Notes] SmokeQc had enough of life.
+04:23 [Info] [Welcomer] Player ogjoed has joined from United States
+04:23 [Info] [Welcomer] Player WeirdAl has joined from United States
+04:23 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: I wasn't able to experience the same
+04:24 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: I did Bandit
+04:24 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: I'll try Outpost
+04:24 [Info] [Better Chat] [Global] [Player] WeirdAl: relogged and we are fine
+04:25 [Info] [Better Chat] [Global] [Player] ogjoed: tpr outpost
+04:25 [Info] [NTeleportation] SmokeQc teleported back to previous location.
+04:25 [Info] [Death Notes] SmokeQc had enough of life.
+04:30 [Info] [Death Notes] Suparious had enough of life.
+04:31 [Info] [Death Notes] ogjoed shot a Stag using their LR-300 Assault Rifle over a distance of 43 meters.
+04:34 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+04:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+04:34 [Info] [Running Man] [EVENT] | Running man - ogjoed ran away from the chase and received as a reward!
+04:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+04:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+04:34 [Info] [Running Man] [EVENT] | random
+04:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+04:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+04:34 [Info] [Running Man] [EVENT] | timer eventstart stopped
+04:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+04:34 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: scinetists should drop their weapons now
+04:35 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] Hannaht56 did not want to be a part of the Scientist's experiments.
+04:35 [Info] [Death Notes] ogjoed did not want to be a part of the Scientist's experiments.
+04:36 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+04:36 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+04:38 [Info] Tides was compiled successfully in 2312ms
+04:38 [Info] Loaded plugin Tides v1.0.3 by RFC1920
+04:43 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: enabled ocean tides
+04:47 [Info] Permission 'tide.use' doesn't exist
+04:47 [Info] Permission 'tide.use' doesn't exist
+04:47 [Info] Group 'dev' granted permission 'tides.use'
+04:48 [Info] Group 'admin' granted permission 'tides.use'
+04:49 [Error] Failed to call hook 'cmdOceanLevel' on plugin 'Tides v1.0.3' (FormatException: Input string was not in a correct format.)
+  at System.Number.ParseSingle (System.String value, System.Globalization.NumberStyles options, System.Globalization.NumberFormatInfo numfmt) [0x00083] in <fb001e01371b4adca20013e0ac763896>:0 
+  at System.Single.Parse (System.String s, System.Globalization.NumberStyles style, System.Globalization.NumberFormatInfo info) [0x00000] in <fb001e01371b4adca20013e0ac763896>:0 
+  at System.Single.Parse (System.String s) [0x0000b] in <fb001e01371b4adca20013e0ac763896>:0 
+  at Oxide.Plugins.Tides.cmdOceanLevel (Oxide.Core.Libraries.Covalence.IPlayer player, System.String command, System.String[] args) [0x000d9] in <36de72f67e994c628b2cf07604b3c1e4>:0 
+  at Oxide.Plugins.Tides.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x001f5] in <36de72f67e994c628b2cf07604b3c1e4>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+04:51 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I dont thing the Ocean tides will work out well for the bases by the ocean
+04:52 [Info] [Better Chat] [Global] [Player] Hannaht56: how come?
+04:52 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: the current ocean level is 0
+04:52 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: and that is level 3
+04:53 [Info] [Better Chat] [Global] [Player] Hannaht56: not home to see but we'll check it out
+04:53 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: so your front door is underwater
+04:53 [Info] [Better Chat] [Global] [Player] Hannaht56: from tide movements or the ocean level increased?
+04:54 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: he manually increased it to see, before I scheduled the tides
+04:56 [Info] Group 'default' granted permission 'signartist.raw'
+04:56 [Info] Group 'default' granted permission 'signartist.restoreall'
+04:56 [Info] Group 'default' granted permission 'backpacks.use'
+04:56 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: enabled "/backpack"
+04:57 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: this works similar to "/bank"
+04:58 [Info] Group 'default' granted permission 'backpacks.keeponwipe'
+04:58 [Info] Group 'default' granted permission 'backpacks.fetch'
+04:59 [Info] Group 'default' granted permission 'backpacks.gui'
+05:01 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: what gets put in the backpack will save the items from a server wipe
+05:02 [Info] [Better Chat] [Global] [Player] RainbowMozzie: dev
+05:02 [Info] Permission 'backpacks.use.8' doesn't exist
+05:03 [Info] Group 'default' revoked permission 'backpacks.fetch'
+05:03 [Info] [Better Chat] [Global] [Player] RainbowMozzie: plz fix the rain dev my whole base in underwater
+05:04 [Info] Group 'admin' granted permission 'backpacks.admin'
+05:04 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+05:04 [Info] [Running Man] [EVENT] | Running man: WeirdAl
+05:04 [Info] [Running Man] [EVENT] +---------------------------------------------
+05:04 [Info] [Better Chat] [Global] [Player] RainbowMozzie: thanks
+05:04 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: done - Smoke can you remove that mod please
+05:05 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: ion it
+05:05 [Info] Unloaded plugin Tides v1.0.3 by RFC1920
+05:23 [Info] [Death Notes] Suparious had enough of life.
+05:23 [Info] [Economics] Saving balances for players...
+05:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 216ms
+05:24 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 436ms
+05:24 [Info] [Welcomer] Player Suparious has left. Reason Timed Out
+05:26 [Info] [Welcomer] Player Suparious has joined from Canada
+05:27 [Info] [Welcomer] Player OOPS I DIED has joined from United States
+05:28 [Info] [Welcomer] Player Hannaht56 has left. Reason Disconnected
+05:30 [Info] [Welcomer] Player WeirdAl has left. Reason Disconnected
+05:32 [Info] [Death Notes] OOPS I DIED shot a Chicken using their Hunting Bow over a distance of 7.2 meters.
+05:32 [Info] [Death Notes] OOPS I DIED killed a Wolf using their Stone Spear.
+05:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+05:34 [Info] [Running Man] [EVENT] | Running man - WeirdAl ran away from the chase and received as a reward!
+05:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+05:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+05:34 [Info] [Running Man] [EVENT] | random
+05:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+05:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+05:34 [Info] [Running Man] [EVENT] | timer eventstart stopped
+05:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+05:35 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 1721ms
+05:35 [Info] [Welcomer] Player ogjoed has left. Reason Disconnected
+05:43 [Info] [Welcomer] Player Revolution Man has joined from United States
+05:44 [Info] [Death Notes] RainbowMozzie had enough of life.
+05:46 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 434ms
+05:46 [Info] [Welcomer] Player RainbowMozzie has left. Reason Disconnected
+05:48 [Info] [Welcomer] Player RainbowMozzie has joined from United States
+05:49 [Info] TCGui was compiled successfully in 2188ms
+05:49 [Info] [Tool Cupboard GUI] New configuration file created.
+05:49 [Info] Loaded plugin Tool Cupboard GUI v1.0.12 by RFC1920
+05:50 [Info] Group 'default' granted permission 'tcgui.use'
+05:51 [Info] [Death Notes] OOPS I DIED shot a Boar using their Hunting Bow over a distance of 12.9 meters.
+05:53 [Info] [Economics] Saving balances for players...
+05:53 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 214ms
+05:53 [Info] [Death Notes] Revolution Man shot a Boar using their Hunting Bow over a distance of 38.3 meters.
+05:54 [Info] [NTeleportation] Suparious teleported to SmokeQc.
+05:58 [Info] [NTeleportation] Suparious teleported SmokeQc to Suparious.
+05:59 [Info] [NTeleportation] Suparious teleported to RainbowMozzie.
+06:00 [Info] [NTeleportation] Suparious teleported to OOPS I DIED.
+06:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+06:00 [Info] [Running Man] [EVENT] | timer eventpause stopped
+06:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+06:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+06:00 [Info] [Running Man] [EVENT] | Running Man has stopped
+06:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+06:03 [Info] [NTeleportation] Suparious teleported to Revolution Man.
+06:04 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: the "/bgrade" command can help auto upgrade your construction
+06:05 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: the "/remove" command can remove your construction
+06:09 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: sunglasses actually work
+06:11 [Info] Unloaded plugin GUIShop v1.8.93 by Khan
+06:11 [Warning] Calling 'Unload' on 'LustyMap v2.1.42' took 430ms
+06:11 [Info] Unloaded plugin Lusty Map v2.1.42 by k1lly0u
+06:11 [Info] Unloaded plugin Image Library v2.0.56 by Absolut & K1lly0u
+06:12 [Error] Could not load plugin 'Image' (no plugin found with that file name)
+06:12 [Error] Could not load plugin 'Library' (no plugin found with that file name)
+06:12 [Info] Added '// Reference: Facepunch.Sqlite' in plugin 'ImageLibrary'
+06:12 [Info] Added '// Reference: UnityEngine.UnityWebRequestModule' in plugin 'ImageLibrary'
+06:12 [Info] ImageLibrary was compiled successfully in 2453ms
+06:12 [Warning] [Image Library] Retrieving item skin lists...
+06:12 [Info] Loaded plugin Image Library v2.0.56 by Absolut & K1lly0u
+06:12 [Warning] [Image Library] Processing approved skins; Page 1/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 2/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 3/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 4/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 5/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 6/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 7/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 8/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 9/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 10/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 11/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 12/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 13/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 14/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 15/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 16/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 17/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 18/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 19/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 20/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 21/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 22/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 23/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 24/25
+06:12 [Warning] [Image Library] Processing approved skins; Page 25/25
+06:12 [Info] [Image Library] Approved skins loaded
+06:13 [Info] GUIShop was compiled successfully in 2406ms
+06:13 [Info] Loaded plugin GUIShop v2.0.3 by Khan
+06:13 [Error] [Image Library] There was a error querying Steam for workshop item data : Code (400)
+06:13 [Info] [Image Library] Starting order GUIShop
+06:16 [Info] Group 'default' granted permission 'guishop.use'
+06:16 [Info] Group 'admin' granted permission 'guishop.admin'
+06:17 [Info] Group 'default' granted permission 'guishop.vip'
+06:17 [Info] [GUIShop] 76561198024774727 has cleared the data in the GUI Shop file
+06:21 [Info] [Death Notes] RainbowMozzie shot a Chicken using their Hunting Bow over a distance of 4.8 meters.
+06:22 [Info] [Death Notes] RainbowMozzie shot a Chicken using their Hunting Bow over a distance of 3.2 meters.
+06:23 [Info] [Economics] Saving balances for players...
+06:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 214ms
+06:28 [Info] Arkan was compiled successfully in 2391ms
+06:28 [Info] [Arkan] Arkan Init: map seed: 7880972, map size: 6000, server timestamp: 2021.1.24.6.24
+06:28 [Info] Loaded plugin Arkan v1.0.18 by Antidote
+06:29 [Info] Group 'admin' granted permission 'arkan.allowed'
+06:29 [Info] Group 'dev' granted permission 'arkan.allowed'
+06:30 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+06:30 [Info] [Running Man] [EVENT] | Running man: OOPS I DIED
+06:30 [Info] [Running Man] [EVENT] +---------------------------------------------
+06:30 [Info] [Arkan] Players violations list empty
+06:31 [Info] [Better Chat] [Global] [Player] OOPS I DIED: y me
+06:31 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: it's the algorithm, it love you
+06:31 [Info] [Better Chat] [Global] [Player] OOPS I DIED: noooooooooo
+06:32 [Info] [Better Chat] [Global] [Player] OOPS I DIED: who here smokes  the   W
+06:35 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: In VAncouver it is everywhere and legal
+06:36 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I've been baked for over 20yrs solid
+06:36 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: hahah noice
+06:38 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 438ms
+06:38 [Info] [Welcomer] Player RainbowMozzie has left. Reason Disconnected
+06:40 [Info] [NTeleportation] Suparious teleported to SmokeQc.
+06:40 [Warning] Calling hook CanUseLockedEntity resulted in a conflict between the following plugins: Bank - False (Boolean), Vanish (True (Boolean))
+06:40 [Warning] Calling hook CanUseLockedEntity resulted in a conflict between the following plugins: Bank - False (Boolean), Vanish (True (Boolean))
+06:41 [Warning] Calling hook CanUseLockedEntity resulted in a conflict between the following plugins: Bank - False (Boolean), Vanish (True (Boolean))
+06:41 [Warning] Calling hook CanUseLockedEntity resulted in a conflict between the following plugins: Bank - False (Boolean), Vanish (True (Boolean))
+06:42 [Warning] Calling hook CanUseLockedEntity resulted in a conflict between the following plugins: Bank - False (Boolean), Vanish (True (Boolean))
+06:47 [Info] [Death Notes] Suparious did not want to be a part of the Medium Guard's experiments.
+06:49 [Info] [Death Notes] Suparious had enough of life.
+06:49 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 442ms
+06:49 [Info] [Welcomer] Player Suparious has left. Reason Disconnected
+06:50 [Info] [Welcomer] Player Suparious has joined from Canada
+06:52 [Info] [Death Notes] OOPS I DIED shot a Bear using their Revolver over a distance of 15.7 meters.
+06:53 [Info] [Death Notes] OOPS I DIED shot a Bear using their Revolver over a distance of 20 meters.
+06:54 [Info] [Death Notes] Suparious did not want to be a part of the Medium Guard's experiments.
+06:54 [Info] [Death Notes] Suparious did not want to be a part of the Medium Guard's experiments.
+06:55 [Info] [Death Notes] Suparious did not want to be a part of the Medium Guard's experiments.
+06:58 [Info] [Death Notes] Suparious did not want to be a part of the Medium Guard's experiments.
+06:58 [Info] [Death Notes] Suparious did not want to be a part of the Medium Guard's experiments.
+06:58 [Info] [Death Notes] Suparious did not want to be a part of the Medium Guard's experiments.
+06:58 [Info] [Death Notes] Suparious did not want to be a part of the Medium Guard's experiments.
+07:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+07:00 [Info] [Running Man] [EVENT] | Running man - OOPS I DIED ran away from the chase and received as a reward!
+07:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+07:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+07:00 [Info] [Running Man] [EVENT] | random
+07:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+07:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+07:00 [Info] [Running Man] [EVENT] | timer eventstart stopped
+07:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+07:03 [Info] [Death Notes] Suparious killed a Wolf using their F1 Grenade.
+07:03 [Info] [Death Notes] Suparious shot a Wolf using their LR-300 Assault Rifle over a distance of 34.5 meters.
+07:03 [Info] [Death Notes] Suparious shot a Bear using their LR-300 Assault Rifle over a distance of 39.6 meters.
+07:04 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I think it's fixed, Smoke - Thank-you
+07:04 [Info] [Death Notes] OOPS I DIED did not want to be a part of the Scientist's experiments.
+07:08 [Info] [Death Notes] SmokeQc had enough of life.
+07:15 [Info] Unloaded plugin Kits v3.3.1 by Reneb
+07:15 [Info] Loaded plugin Kits v3.3.1 by Reneb
+07:16 [Info] [NTeleportation] Suparious teleported to SmokeQc.
+07:20 [Info] Group 'default' granted permission 'itemskinrandomizer.use'
+07:20 [Info] Group 'default' granted permission 'itemskinrandomizer.reskin'
+07:23 [Info] [Economics] Saving balances for players...
+07:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 219ms
+07:24 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 434ms
+07:24 [Info] [Welcomer] Player OOPS I DIED has left. Reason Disconnected
+07:30 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+07:30 [Info] [Running Man] [EVENT] | Running man: Revolution Man
+07:30 [Info] [Running Man] [EVENT] +---------------------------------------------
+07:30 [Info] WorkshopSkinViewer was compiled successfully in 2156ms
+07:30 [Info] Loaded plugin Workshop Skin Viewer v1.0.0 by Orange
+07:31 [Info] Group 'default' granted permission 'workshopskinviewer.use'
+07:47 [Info] [Death Notes] Revolution Man shot a Stag using their Semi-Automatic Rifle over a distance of 43 meters.
+07:53 [Info] [Economics] Saving balances for players...
+07:53 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 220ms
+07:58 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: test
+08:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:00 [Info] [Running Man] [EVENT] | Running man - Revolution Man ran away from the chase and received as a reward!
+08:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:00 [Info] [Running Man] [EVENT] | random
+08:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:00 [Info] [Running Man] [EVENT] | timer eventstart stopped
+08:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:04 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: ok 64 new sleeping bad skins added
+08:04 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: can use "/skin" to change them
+08:07 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: can use "/reskin" to change deployed bags
+08:18 [Info] [Welcomer] Player Charzzan has joined from United States
+08:22 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 446ms
+08:22 [Info] [Welcomer] Player Charzzan has left. Reason Disconnected
+08:23 [Info] [Economics] Saving balances for players...
+08:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 216ms
+08:30 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:30 [Info] [Running Man] [EVENT] | Running man: Revolution Man
+08:30 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:52 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 434ms
+08:52 [Info] [Welcomer] Player SmokeQc has left. Reason Disconnected
+08:53 [Info] [Economics] Saving balances for players...
+08:53 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 215ms
+08:56 [Info] [Welcomer] Player SmokeQc has joined from Canada
+08:57 [Info] Unloaded plugin Death Spawn Points v0.0.1 by RFC1920
+08:58 [Info] [Death Notes] SmokeQc had enough of life.
+08:59 [Warning] Calling 'OnTick' on 'RustIO v2.17.0' took 405ms [GARBAGE COLLECT]
+08:59 [Info] DeathNotes was compiled successfully in 2344ms
+08:59 [Info] Unloaded plugin Death Notes v6.3.5 by LaserHydra
+08:59 [Info] Loaded plugin Death Notes v6.3.5 by LaserHydra
+08:59 [Info] [Death Notes] Suparious had enough of life.
+09:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+09:00 [Info] [Running Man] [EVENT] | Running man - Revolution Man ran away from the chase and received as a reward!
+09:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+09:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+09:00 [Info] [Running Man] [EVENT] | random
+09:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+09:00 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+09:00 [Info] [Running Man] [EVENT] | timer eventstart stopped
+09:00 [Info] [Running Man] [EVENT] +---------------------------------------------
+09:02 [Info] [NTeleportation] Suparious teleported to SmokeQc.
+09:05 [Info] [Death Notes] Suparious killed SmokeQc using their Flashlight.
+09:06 [Info] [Better Chat] [Global] [Player] [Dev] SmokeQc: Flashlights are OP
+09:06 [Info] [Better Chat] [Global] [Player] Revolution Man: Indeed
+09:07 [Info] [Better Chat] [Global] [Player] Revolution Man: took me way too long to think to craft one
+09:14 [Error] Could not load plugin 'Remove' (no plugin found with that file name)
+09:15 [Error] Could not load plugin 'Remove' (no plugin found with that file name)
+09:15 [Info] RemoverTool was compiled successfully in 2594ms
+09:15 [Info] Unloaded plugin Remover Tool v4.3.23 by Reneb/Fuji/Arainrr
+09:15 [Info] Loaded plugin Remover Tool v4.3.23 by Reneb/Fuji/Arainrr
+09:17 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: reloading mods, might cause slight lag for a few seconds
+09:17 [Info] Uninstalling Rust:IO ...
+09:17 [Info] Rust:IO> Uninstalling ...
+09:17 [Info] Rust:IO> No longer ticking
+09:17 [Info] Rust:IO> Stopping server ...
+09:17 [Info] Rust:IO> Removing listeners ...
+09:17 [Info] Rust:IO> Performing maintenance ...
+09:17 [Info] Rust:IO> Closing database ...
+09:17 [Info] Rust:IO> Uninstalled.
+09:17 [Info] Unloaded plugin Rust:IO for Oxide v2.17.0 by playrust.io / dcode
+09:17 [Info] Updating Rust:IO ...
+09:17 [Info] Loaded plugin Rust:IO for Oxide v2.17.0 by playrust.io / dcode
+09:17 [Info] Unloaded plugin Better Chat v5.2.5 by LaserHydra
+09:17 [Info] Loaded plugin Better Chat v5.2.5 by LaserHydra
+09:17 [Warning] Calling 'Unload' on 'BetterLoot v3.5.3' took 215ms
+09:17 [Info] Unloaded plugin BetterLoot v3.5.3 by Default
+09:17 [Info] [BetterLoot] Using '34' active of '35' supported containertypes
+09:17 [Info] [BetterLoot] Updating internals ...
+09:17 [Info] Loaded plugin BetterLoot v3.5.3 by Default
+09:17 [Info] Unloaded plugin Death Notes v6.3.5 by LaserHydra
+09:17 [Info] Loaded plugin Death Notes v6.3.5 by LaserHydra
+09:17 [Info] Unloaded plugin Arkan v1.0.18 by Antidote
+09:17 [Info] [Arkan] Arkan Init: map seed: 7880972, map size: 6000, server timestamp: 2021.1.24.6.24
+09:17 [Info] Loaded plugin Arkan v1.0.18 by Antidote
+09:17 [Info] Unloaded plugin HelpText v2.0.51 by Calytic
+09:17 [Info] Loaded plugin HelpText v2.0.51 by Calytic
+09:17 [Info] Unloaded plugin Image Library v2.0.56 by Absolut & K1lly0u
+09:17 [Info] Loaded plugin Image Library v2.0.56 by Absolut & K1lly0u
+09:17 [Info] Unloaded plugin GUIShop v2.0.3 by Khan
+09:17 [Info] Loaded plugin GUIShop v2.0.3 by Khan
+09:17 [Info] Unloaded plugin InfoPanel v1.0.4 by Default
+09:17 [Info] Rust:IO: Update complete
+09:17 [Warning] Calling 'OnServerInitialized' on 'InfoPanel v1.0.4' took 875ms
+09:17 [Info] Loaded plugin InfoPanel v1.0.4 by Default
+09:17 [Info] Unloaded plugin Kits v3.3.1 by Reneb
+09:17 [Info] Loaded plugin Kits v3.3.1 by Reneb
+09:17 [Info] Unloaded plugin Remover Tool v4.3.23 by Reneb/Fuji/Arainrr
+09:17 [Info] Loaded plugin Remover Tool v4.3.23 by Reneb/Fuji/Arainrr
+09:17 [Info] Unloaded plugin Skins v2.1.2 by Iv Misticos
+09:17 [Info] Loaded plugin Skins v2.1.2 by Iv Misticos
+09:17 [Info] Unloaded plugin SAMSiteAuth v2.3.3 by haggbart
+09:17 [Info] Loaded plugin SAMSiteAuth v2.3.3 by haggbart
+09:17 [Info] Unloaded plugin Welcomer v1.5.4 by Dana
+09:17 [Info] Loaded plugin Welcomer v1.5.4 by Dana
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_vehicleshigh
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_extra
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_farming
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_tools
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_resources
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_components
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_weapons
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_attire
+09:17 [Info] [Compound Options] Restoring default orders for npcvendingmachine_building
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+09:17 [Info] Unloaded plugin Compound Options v1.1.7 by FastBurst
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for stables
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for stables
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Vehicles
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Bandit_Farming
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Bandit_ProduceExchange
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Weapons_Bandit
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for BuyResources
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for building_bandit
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for FoodVendor
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Vehicles2
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Compound_Extra2
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Compound_Extra1
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Tools
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Resources
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Components
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Weapons
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Attire
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for Building
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+09:17 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+09:17 [Info] Loaded plugin Compound Options v1.1.7 by FastBurst
+09:17 [Info] Unloaded plugin NPC Drop Gun v2.0.4 by 2CHEVSKII
+09:17 [Info] Loaded plugin NPC Drop Gun v2.0.4 by 2CHEVSKII
+09:17 [Info] Unloaded plugin Research Protection v0.1.4 by RFC1920
+09:17 [Info] Loaded plugin Research Protection v0.1.4 by RFC1920
+09:17 [Info] Unloaded plugin Tool Cupboard GUI v1.0.12 by RFC1920
+09:17 [Info] Loaded plugin Tool Cupboard GUI v1.0.12 by RFC1920
+09:17 [Info] Unloaded plugin Workshop Skin Viewer v1.0.0 by Orange
+09:17 [Info] Loaded plugin Workshop Skin Viewer v1.0.0 by Orange
+09:17 [Info] Installing Rust:IO ...
+09:17 [Info] Rust:IO> Setting up Rust:IO 2.3.7608.42166 ...
+09:17 [Info] Rust:IO> Creating directories ...
+09:17 [Info] Rust:IO> Applying config ...
+09:17 [Info] Rust:IO> Initializing database ...
+09:17 [Info] Rust:IO> Generating map image (this may take a while) ...
+09:17 [Info] Rust:IO> Generation complete
+--------- Summary --------
+Render       :  5616.432ms
+Postprocess  :  3926.640ms
+  Shadows    :   199.533ms
+  FXAA       :  3707.030ms
+Encoding     :    53.303ms
+Other        :    30.122ms
+--------------------------
+Total        :  9626.496ms
+09:17 [Info] Rust:IO> Starting HTTP server on *:28015 ...
+09:17 [Info] Rust:IO> Installed.
+09:17 [Info] Rust:IO> Now ticking
+09:17 [Warning] Calling 'OnTick' on 'RustIO v2.17.0' took 9875ms
+09:17 [Warning] [DEBUG] Plugin compilation is already queued: HumanNPC (11.906 ago)
+09:17 [Warning] [DEBUG] Plugin compilation is already queued: TwitchAuth (11.906 ago)
+09:17 [Warning] [DEBUG] Plugin compilation is already queued: TwitchCommands (11.906 ago)
+09:17 [Info] Added '// Reference: System.Drawing' in plugin 'SignArtist'
+09:17 [Info] [BetterLoot] Removed 202 stacked LootContainer
+09:17 [Warning] Calling 'OnEntitySpawned' on 'RustIO v2.17.0' took average 9876ms
+09:17 [Info] [BetterLoot] Populated '11770' supported containers.
+09:17 [Error] [Image Library] There was a error querying Steam for workshop item data : Code (400)
+09:17 [Info] Rust:IO> External IP address obtained from lookup: 52.39.196.77
+09:17 [Info] AdminPanel, Airstrike, AutoDoors, AutoFuel, AutoLock, AutomaticAuthorization, BGrade, Backpacks, Bank, BaseRepair, BombTrucks, BuildingGrades, CCTVUtilities, ChestStacks, Clans, CopyPaste, CraftMultiplier, CraftingController, Economics, ExtraGatherBonuses, ExtraLoot, ExtraSeating, FastLoot, FriendlyFire, Friends, FuelGauge, FurnaceSplitter, GatherManager, GlobalGamble, GlobalMail, GuardedCrate, HandyMan, HitIcon, Inbound, InstantCraft, ItemSkinRandomizer, KDRGui, KillFeed, KillInfo, KillStreaks, Lottery, MonumentsRecycler, NPCVendingMapMarker, NTeleportation, NoEscape, NoGiveNotices, NoRaidRepair, OfflineDoors, PathFinding, HumanNPC, PersonalBeacon, Pets, PlayerChallenges, PlaytimeTracker, Quests, QuickSmelt, RaidableBases, RaidblockBuildingHealth, RealisticWeather, RecyclerSpeed, RunningMan, Rustcord, ScheduledSpawns, ServerRewards, SignArtist, SpawnModularCar, SpeedType, StackSizeController, TankCommander, TcMapMarkers, TeamOfflineDoors, Trade, TreePlanter, TurretManager, Twitch, TwitchAuth, TwitchCommands, UpkeepDisplayFix, Vanish, VehicleLicence, VehicleLocks, VehicleVendorOptions, WaterCatcherBoost, WaterWellManager, Waypoints, WhoKnocks, WipeKits, WipePrize and ZLevelsRemastered were compiled successfully in 4062ms
+09:17 [Info] Unloaded plugin Admin Panel v1.4.5 by nivex
+09:17 [Warning] Calling 'Unload' on 'Airstrike v0.3.6' took 217ms
+09:17 [Info] Unloaded plugin Airstrike v0.3.6 by k1lly0u
+09:17 [Info] Unloaded plugin Auto Doors v3.2.8 by Wulf/lukespragg/Arainrr
+09:17 [Warning] A plugin has polluted the global namespace by defining PlacementMailbox
+09:17 [Warning] Calling 'Unload' on 'AutoFuel v1.2.0' took 432ms
+09:17 [Info] Unloaded plugin Auto Fuel v1.2.0 by redBDGR
+09:17 [Info] Unloaded plugin Auto Lock v2.3.2 by birthdates
+09:17 [Info] Unloaded plugin Automatic Authorization v1.2.4 by k1lly0u/Arainrr
+09:17 [Warning] Calling 'Unload' on 'BGrade v1.1.3' took 216ms
+09:17 [Info] Unloaded plugin BGrade v1.1.3 by Ryan / Rustoria.co
+09:17 [Info] Unloaded plugin Backpacks v3.3.0 by LaserHydra
+09:17 [Info] Unloaded plugin Bank v1.0.52 by Calytic
+09:17 [Info] Unloaded plugin Base Repair v1.0.18 by MJSU
+09:17 [Info] Unloaded plugin Bomb Trucks v0.7.3 by WhiteThunder
+09:17 [Info] Unloaded plugin Building Grades v0.5.1 by Default
+09:17 [Info] Unloaded plugin CCTV Utilities v1.5.1 by GrumpyGordon
+09:17 [Info] Unloaded plugin ChestStacks v1.3.3 by MON@H
+09:17 [Info] Unloaded plugin Clans v0.1.55 by k1lly0u
+09:17 [Info] Unloaded plugin Copy Paste v4.1.27 by misticos
+09:17 [Info] Unloaded plugin Craft Multiplier v1.4.1 by Arainrr
+09:17 [Info] Unloaded plugin Crafting Controller v3.2.2 by Whispers88
+09:17 [Info] [Economics] Saving balances for players...
+09:17 [Info] Unloaded plugin Economics v3.8.5 by Wulf
+09:17 [Info] Unloaded plugin Extra Gather Bonuses v1.0.4 by Orange
+09:17 [Info] Unloaded plugin Extra Loot v1.0.4 by Orange
+09:17 [Info] Unloaded plugin Extra Seating v1.0.8 by Pho3niX90
+09:17 [Info] Unloaded plugin Fast Loot v0.0.4 by DezLife
+09:17 [Info] Unloaded plugin FriendlyFire v1.7.0 by playrust.io / dcode
+09:17 [Info] Unloaded plugin Friends v3.1.2 by Wulf
+09:17 [Info] Unloaded plugin Fuel Gauge v0.5.2 by Oryx
+09:17 [Info] Unloaded plugin Furnace Splitter v2.2.9 by FastBurst
+09:17 [Warning] Calling 'Unload' on 'GatherManager v2.2.75' took 217ms
+09:17 [Info] Unloaded plugin Gathering Manager v2.2.75 by Mughisi
+09:17 [Info] Unloaded plugin Global Gamble v1.2.2 by Trey
+09:17 [Info] Unloaded plugin Global Mail v1.0.4 by Hovmodet
+09:17 [Info] Unloaded plugin Guarded Crate v1.4.5 by Bazz3l
+09:17 [Info] Unloaded plugin Handy Man v1.3.2 by nivex
+09:17 [Info] Unloaded plugin HitIcon v2.0.0 by FastBurst
+09:17 [Info] Unloaded plugin Inbound v0.5.1 by Substrata
+09:17 [Info] Unloaded plugin Instant Craft v2.1.5 by Orange
+09:17 [Info] Unloaded plugin Item Skin Randomizer v1.5.3 by Orange
+09:17 [Info] Unloaded plugin KDR GUI v2.0.3 by Ankawi
+09:17 [Info] Unloaded plugin Kill Feed v1.18.0 by Tuntenfisch
+09:17 [Info] Unloaded plugin Kill Info v1.0.0 by birthdates
+09:17 [Info] [Kill Streaks] Destroyed 2 KillStreak Helicopters
+09:17 [Info] Unloaded plugin Kill Streaks v0.1.8 by Default
+09:17 [Info] [Lottery] Data saved.
+09:17 [Info] Unloaded plugin Lottery v1.2.5 by Sami37
+09:17 [Info] Unloaded plugin MonumentsRecycler v0.2.2 by Dana
+09:17 [Info] Unloaded plugin NPC Vending Map Marker v0.1.0 by PinguinNordpol
+09:17 [Info] Unloaded plugin NTeleportation v1.4.7 by nivex
+09:17 [Warning] Calling 'Unload' on 'NoEscape v2.1.31' took 441ms
+09:17 [Info] Unloaded plugin No Escape v2.1.31 by Calytic
+09:17 [Info] Unloaded plugin No Give Notices v0.3.0 by Wulf
+09:17 [Info] Unloaded plugin NoRaidRepair v1.0.0 by Ryan
+09:17 [Info] Unloaded plugin Offline Doors v1.1.2 by Slydelix
+09:17 [Warning] Calling 'Unload' on 'HumanNPC v0.3.47' took 445ms
+09:17 [Info] Unloaded plugin Human NPC v0.3.47 by Ts3Hosting
+09:17 [Warning] Calling 'Unload' on 'PathFinding v1.1.3' took 410ms [GARBAGE COLLECT]
+09:17 [Info] Unloaded plugin PathFinding v1.1.3 by Reneb / Nogrod
+09:17 [Warning] [DEBUG] HumanNPC plugin is waiting for requirements to be loaded: PathFinding
+09:17 [Info] Unloaded plugin PersonalBeacon v2.0.4 by redBDGR
+09:17 [Warning] Calling 'Unload' on 'Pets v0.6.4' took 632ms
+09:17 [Info] Unloaded plugin Pets v0.6.4 by Nogrod/k1lly0u
+09:17 [Info] Unloaded plugin Player Challenges v2.0.47 by k1lly0u
+09:17 [Info] Unloaded plugin Playtime Tracker v0.1.7 by k1lly0u
+09:17 [Info] Unloaded plugin Quests v2.3.2 by k1lly0u
+09:17 [Warning] Calling 'Unload' on 'QuickSmelt v5.1.3' took 222ms
+09:17 [Info] Unloaded plugin Quick Smelt v5.1.3 by Iv Misticos
+09:17 [Info] Unloaded plugin Raidable Bases v1.6.6 by nivex
+09:17 [Info] Unloaded plugin Raidblock Building Health v1.1.4 by Orange
+09:17 [Info] Unloaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+09:17 [Info] Unloaded plugin Recycler Speed v2.0.0 by Ryz0r/yetzt
+09:17 [Info] Unloaded plugin Running Man v1.6.5 by sami37
+09:17 [Info] Unloaded plugin Rustcord v2.5.1 by Kirollos & OuTSMoKE
+09:17 [Info] Unloaded plugin Scheduled Spawns v1.0.2 by 1AK1
+09:17 [Info] Unloaded plugin Server Rewards v0.4.73 by k1lly0u
+09:17 [Info] Unloaded plugin Sign Artist v1.2.6 by Whispers88
+09:17 [Info] Unloaded plugin Spawn Modular Car v4.0.2 by WhiteThunder
+09:17 [Info] Unloaded plugin Speed Type v1.1.5 by TMafono
+09:17 [Info] Unloaded plugin Stack Size Controller v2.0.4 by Canopy Sheep
+09:17 [Warning] Calling 'Unload' on 'TankCommander v0.2.2' took 212ms
+09:17 [Info] Unloaded plugin Tank Commander v0.2.2 by k1lly0u
+09:17 [Info] Unloaded plugin TC Map Markers v1.1.2 by 1AK1
+09:17 [Info] Unloaded plugin Team Offline Doors v0.8.4 by Gargoyle
+09:17 [Info] Unloaded plugin Trade v1.2.43 by Calytic
+09:17 [Info] Unloaded plugin Tree Planter v1.1.2 by Bazz3l
+09:17 [Info] Unloaded plugin Turret Manager v1.2.0 by OrangeDoggo
+09:17 [Info] Unloaded plugin Twitch Auth v1.0.0 by Wulf
+09:17 [Info] Unloaded plugin Twitch Commands v1.0.0 by Wulf
+09:17 [Info] Unloaded plugin Twitch v1.0.0 by Wulf
+09:17 [Warning] [DEBUG] TwitchAuth plugin is waiting for requirements to be loaded: Twitch
+09:17 [Warning] [DEBUG] TwitchCommands plugin is waiting for requirements to be loaded: Twitch
+09:17 [Info] Unloaded plugin Upkeep Display Fix v1.0.1 by WhiteThunder
+09:17 [Info] Unloaded plugin Vanish v1.3.8 by Whispers88
+09:17 [Info] Unloaded plugin Vehicle Licence v1.7.9 by Sorrow/TheDoc/Arainrr
+09:17 [Info] Unloaded plugin Vehicle Locks v1.0.3 by MrPoundsign
+09:17 [Info] Unloaded plugin Vehicle Vendor Options v1.2.0 by WhiteThunder
+09:17 [Info] Unloaded plugin Water Catcher Boost v1.0.2 by Substrata
+09:17 [Info] Unloaded plugin WaterWellManager v1.0.0 by redBDGR
+09:17 [Info] Unloaded plugin Waypoints v1.1.3 by RFC1920
+09:17 [Info] Unloaded plugin Who Knocks v0.0.6 by Hockeygel23
+09:17 [Info] Unloaded plugin Wipe Kits v1.2.51 by Ryan
+09:17 [Info] Unloaded plugin Wipe Prize v1.0.6 by Mevent
+09:17 [Info] Unloaded plugin ZLevelsRemastered v2.9.22 by Default
+09:17 [Info] Loaded plugin Admin Panel v1.4.5 by nivex
+09:17 [Info] Loaded plugin Airstrike v0.3.6 by k1lly0u
+09:17 [Info] Loaded plugin Auto Doors v3.2.8 by Wulf/lukespragg/Arainrr
+09:17 [Warning] Calling 'OnServerInitialized' on 'AutoFuel v1.2.0' took 216ms
+09:17 [Info] Loaded plugin Auto Fuel v1.2.0 by redBDGR
+09:17 [Info] Loaded plugin Auto Lock v2.3.2 by birthdates
+09:17 [Info] Loaded plugin Automatic Authorization v1.2.4 by k1lly0u/Arainrr
+09:17 [Info] Loaded plugin BGrade v1.1.3 by Ryan / Rustoria.co
+09:17 [Info] Loaded plugin Backpacks v3.3.0 by LaserHydra
+09:17 [Info] Loaded plugin Bank v1.0.52 by Calytic
+09:17 [Info] Loaded plugin Base Repair v1.0.18 by MJSU
+09:17 [Error] [Bomb Trucks] SpawnModularCar is not loaded, get it at https://umod.org
+09:17 [Info] Loaded plugin Bomb Trucks v0.7.3 by WhiteThunder
+09:17 [Info] Loaded plugin Building Grades v0.5.1 by Default
+09:17 [Info] Loaded plugin CCTV Utilities v1.5.1 by GrumpyGordon
+09:17 [Info] Loaded plugin ChestStacks v1.3.3 by MON@H
+09:17 [Info] Loaded plugin Clans v0.1.55 by k1lly0u
+09:17 [Info] Loaded plugin Copy Paste v4.1.27 by misticos
+09:17 [Info] Loaded plugin Craft Multiplier v1.4.1 by Arainrr
+09:17 [Info] Loaded plugin Crafting Controller v3.2.2 by Whispers88
+09:17 [Info] Loaded plugin Economics v3.8.5 by Wulf
+09:17 [Info] Loaded plugin Extra Gather Bonuses v1.0.4 by Orange
+09:17 [Info] Loaded plugin Extra Loot v1.0.4 by Orange
+09:17 [Info] Loaded plugin Extra Seating v1.0.8 by Pho3niX90
+09:17 [Info] Loaded plugin Fast Loot v0.0.4 by DezLife
+09:17 [Info] Loaded plugin FriendlyFire v1.7.0 by playrust.io / dcode
+09:17 [Info] Loaded plugin Friends v3.1.2 by Wulf
+09:17 [Info] Loaded plugin Fuel Gauge v0.5.2 by Oryx
+09:17 [Info] Loaded plugin Furnace Splitter v2.2.9 by FastBurst
+09:17 [Warning] Calling 'OnServerInitialized' on 'GatherManager v2.2.75' took 215ms
+09:17 [Info] Loaded plugin Gathering Manager v2.2.75 by Mughisi
+09:17 [Info] Loaded plugin Global Gamble v1.2.2 by Trey
+09:17 [Warning] Calling 'OnServerInitialized' on 'GlobalMail v1.0.4' took 1704ms
+09:17 [Info] Loaded plugin Global Mail v1.0.4 by Hovmodet
+09:17 [Info] Loaded plugin Guarded Crate v1.4.5 by Bazz3l
+09:17 [Info] Loaded plugin Handy Man v1.3.2 by nivex
+09:17 [Warning] [HitIcon] Plugin Friends work with HitIcon
+09:17 [Warning] [HitIcon] Plugin Clans work with HitIcon
+09:17 [Info] Loaded plugin HitIcon v2.0.0 by FastBurst
+09:17 [Warning] Calling 'OnServerInitialized' on 'Inbound v0.5.1' took 213ms
+09:17 [Info] Loaded plugin Inbound v0.5.1 by Substrata
+09:17 [Info] Loaded plugin Instant Craft v2.1.5 by Orange
+09:17 [Info] Loaded plugin Item Skin Randomizer v1.5.3 by Orange
+09:17 [Info] Loaded plugin KDR GUI v2.0.3 by Ankawi
+09:17 [Info] [Kill Feed] Loading configuration file!
+09:17 [Info] Loaded plugin Kill Feed v1.18.0 by Tuntenfisch
+09:17 [Info] Loaded plugin Kill Info v1.0.0 by birthdates
+09:17 [Warning] [Kill Streaks] Advanced Airstrike is not found! Disabling advanced airstrike feature.
+09:17 [Warning] [Kill Streaks] ServerRewards is not found! Unable to issue RP rewards.
+09:17 [Info] Loaded plugin Kill Streaks v0.1.8 by Default
+09:17 [Info] [Lottery] Messages loaded...
+09:17 [Info] [Lottery] Messages loaded...
+09:17 [Info] Loaded plugin Lottery v1.2.5 by Sami37
+09:17 [Info] Loaded plugin MonumentsRecycler v0.2.2 by Dana
+09:17 [Warning] [NPC Vending Map Marker] This plugin requires the HumanNPC plugin in order to be of any use!
+09:17 [Info] Loaded plugin NPC Vending Map Marker v0.1.0 by PinguinNordpol
+09:17 [Warning] Calling 'OnServerInitialized' on 'NTeleportation v1.4.7' took 266ms
+09:17 [Info] Loaded plugin NTeleportation v1.4.7 by nivex
+09:17 [Info] Loaded plugin No Escape v2.1.31 by Calytic
+09:17 [Info] Loaded plugin No Give Notices v0.3.0 by Wulf
+09:17 [Info] Loaded plugin NoRaidRepair v1.0.0 by Ryan
+09:17 [Info] Loaded plugin Offline Doors v1.1.2 by Slydelix
+09:17 [Info] Loaded plugin PathFinding v1.1.3 by Reneb / Nogrod
+09:17 [Info] Loaded plugin Human NPC v0.3.47 by Ts3Hosting
+09:17 [Info] Loaded plugin PersonalBeacon v2.0.4 by redBDGR
+09:17 [Info] Loaded plugin Pets v0.6.4 by Nogrod/k1lly0u
+09:17 [Info] Loaded plugin Player Challenges v2.0.47 by k1lly0u
+09:17 [Info] Loaded plugin Playtime Tracker v0.1.7 by k1lly0u
+09:17 [Info] Loaded plugin Quests v2.3.2 by k1lly0u
+09:17 [Warning] Calling 'OnServerInitialized' on 'QuickSmelt v5.1.3' took 214ms
+09:17 [Info] Loaded plugin Quick Smelt v5.1.3 by Iv Misticos
+09:17 [Info] [Raidable Bases] Loaded 27 items from RaidableBases/Default_Loot
+09:17 [Warning] Calling 'OnServerInitialized' on 'RaidableBases v1.6.6' took 170ms
+09:17 [Info] Loaded plugin Raidable Bases v1.6.6 by nivex
+09:17 [Info] Loaded plugin Raidblock Building Health v1.1.4 by Orange
+09:17 [Info] Loaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+09:17 [Info] Loaded plugin Recycler Speed v2.0.0 by Ryz0r/yetzt
+09:17 [Info] Loaded plugin Running Man v1.6.5 by sami37
+09:17 [Error] [Rustcord] API key is empty or invalid!
+09:17 [Info] Loaded plugin Rustcord v2.5.1 by Kirollos & OuTSMoKE
+09:17 [Info] Loaded plugin Scheduled Spawns v1.0.2 by 1AK1
+09:17 [Warning] [Server Rewards] All UI elements have been successfully generated!
+09:17 [Warning] Calling 'OnServerInitialized' on 'ServerRewards v0.4.73' took 505ms [GARBAGE COLLECT]
+09:17 [Info] Loaded plugin Server Rewards v0.4.73 by k1lly0u
+09:17 [Info] Loaded plugin Sign Artist v1.2.6 by Whispers88
+09:17 [Info] Loaded plugin Spawn Modular Car v4.0.2 by WhiteThunder
+09:17 [Info] Loaded plugin Speed Type v1.1.5 by TMafono
+09:17 [Info] Loaded plugin Stack Size Controller v2.0.4 by Canopy Sheep
+09:17 [Info] Loaded plugin Tank Commander v0.2.2 by k1lly0u
+09:17 [Info] [TC Map Markers] Spawned 33 map markers
+09:17 [Info] Loaded plugin TC Map Markers v1.1.2 by 1AK1
+09:17 [Info] Loaded plugin Team Offline Doors v0.8.4 by Gargoyle
+09:17 [Info] Loaded plugin Trade v1.2.43 by Calytic
+09:17 [Info] Loaded plugin Tree Planter v1.1.2 by Bazz3l
+09:17 [Info] Loaded plugin Turret Manager v1.2.0 by OrangeDoggo
+09:17 [Info] Loaded plugin Twitch v1.0.0 by Wulf
+09:17 [Info] Loaded plugin Twitch Auth v1.0.0 by Wulf
+09:17 [Info] Loaded plugin Twitch Commands v1.0.0 by Wulf
+09:17 [Info] Loaded plugin Upkeep Display Fix v1.0.1 by WhiteThunder
+09:17 [Info] Loaded plugin Vanish v1.3.8 by Whispers88
+09:17 [Info] Loaded plugin Vehicle Licence v1.7.9 by Sorrow/TheDoc/Arainrr
+09:17 [Info] Loaded plugin Vehicle Locks v1.0.3 by MrPoundsign
+09:17 [Info] Loaded plugin Vehicle Vendor Options v1.2.0 by WhiteThunder
+09:17 [Info] Loaded plugin Water Catcher Boost v1.0.2 by Substrata
+09:17 [Info] Loaded plugin WaterWellManager v1.0.0 by redBDGR
+09:17 [Info] Loaded plugin Waypoints v1.1.3 by RFC1920
+09:17 [Info] Loaded plugin Who Knocks v0.0.6 by Hockeygel23
+09:17 [Info] Loaded plugin Wipe Kits v1.2.51 by Ryan
+09:17 [Info] Loaded plugin Wipe Prize v1.0.6 by Mevent
+09:17 [Info] [ZLevelsRemastered] Stats can be reset by > zl.reset <
+09:17 [Warning] Calling 'OnServerInitialized' on 'ZLevelsRemastered v2.9.22' took 288ms
+09:17 [Info] Loaded plugin ZLevelsRemastered v2.9.22 by Default
+09:17 [Warning] [Twitch] OAuth token is missing
+09:17 [Warning] [Twitch] Please set a valid Twitch channel
+09:17 [Warning] [Twitch] OAuth token is missing
+09:17 [Warning] Calling 'OnPlayerTick' on 'GlobalMail v1.0.4' took average 1720ms
+09:18 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: done
+09:18 [Info] [Raidable Bases] Grid initialization completed in 2 seconds and 543 milliseconds on a 6000 size map. 14287 locations are on the grid.
+09:21 [Info] [Death Notes] SmokeQc had enough of life.
+09:23 [Info] [Economics] Saving balances for players...
+09:23 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 211ms
+09:38 [Info] [Economics] Saving balances for players...
+09:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 214ms
+09:41 [Info] [Welcomer] Player Suparious has left. Reason Timed Out
+09:41 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 445ms
+09:42 [Info] [Death Notes] Revolution Man shot a Boar using their Semi-Automatic Rifle over a distance of 42.7 meters.
+09:42 [Info] [Death Notes] Revolution Man shot a Stag using their Semi-Automatic Rifle over a distance of 21.3 meters.
+09:43 [Info] [Death Notes] Revolution Man shot a Boar using their Semi-Automatic Rifle over a distance of 30.7 meters.
+09:44 [Info] [Welcomer] Player Suparious has joined from Canada
+09:47 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+09:47 [Info] [Running Man] [EVENT] | Running man: SmokeQc
+09:47 [Info] [Running Man] [EVENT] +---------------------------------------------
+10:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+10:17 [Info] [Running Man] [EVENT] | Running man - SmokeQc ran away from the chase and received as a reward!
+10:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+10:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+10:17 [Info] [Running Man] [EVENT] | random
+10:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+10:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+10:17 [Info] [Running Man] [EVENT] | timer eventstart stopped
+10:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+10:35 [Info] [Welcomer] Player Revolution Man has left. Reason Disconnected
+10:35 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 438ms
+10:38 [Info] [Economics] Saving balances for players...
+10:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 217ms
+11:08 [Info] [Economics] Saving balances for players...
+11:08 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 218ms
+11:38 [Info] [Economics] Saving balances for players...
+11:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 214ms
+12:08 [Info] [Economics] Saving balances for players...
+12:08 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 213ms
+12:38 [Info] [Economics] Saving balances for players...
+12:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 214ms
+13:08 [Info] [Economics] Saving balances for players...
+13:08 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 217ms
+13:38 [Info] [Economics] Saving balances for players...
+13:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 210ms
+14:38 [Info] [Economics] Saving balances for players...
+14:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 212ms
+15:38 [Info] [Economics] Saving balances for players...
+15:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 217ms
+16:19 [Warning] Calling 'OnPlayerInput' on 'TankCommander v0.2.2' took 119ms [GARBAGE COLLECT]
+16:38 [Info] [Economics] Saving balances for players...
+16:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 211ms
+17:08 [Info] [Economics] Saving balances for players...
+17:08 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 219ms
+17:26 [Info] [Welcomer] Player RainbowMozzie has joined from United States
+17:44 [Info] [Welcomer] Player WeirdAl has joined from United States
+17:47 [Info] [Death Notes] RainbowMozzie killed a Chicken using their Pickaxe.
+17:47 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+17:47 [Info] [Running Man] [EVENT] | Running man: WeirdAl
+17:47 [Info] [Running Man] [EVENT] +---------------------------------------------
+17:52 [Info] [Death Notes] RainbowMozzie shot a Wolf using their Semi-Automatic Rifle over a distance of 12.9 meters.
+17:59 [Info] [GUIShop] Commands
+17:59 [Info] [Welcomer] Player Revolution Man has joined from United States
+17:59 [Info] [GUIShop] Commands
+18:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+18:17 [Info] [Running Man] [EVENT] | Running man - WeirdAl ran away from the chase and received as a reward!
+18:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+18:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+18:17 [Info] [Running Man] [EVENT] | random
+18:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+18:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+18:17 [Info] [Running Man] [EVENT] | timer eventstart stopped
+18:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+18:31 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: is anyone on???
+18:31 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ME
+18:31 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: what up
+18:32 [Info] [Better Chat] [Global] [Player] RainbowMozzie: nothing rlly hbu
+18:32 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: just hanging. organizing the base. just little stuff
+18:32 [Info] [Death Notes] Revolution Man shot a Wolf using their Semi-Automatic Rifle over a distance of 31.9 meters.
+18:35 [Info] [Death Notes] Revolution Man shot a Bear using their Semi-Automatic Rifle over a distance of 31.5 meters.
+18:36 [Info] [Better Chat] [Global] [Player] RainbowMozzie: r u in a clan weirdal
+18:36 [Info] [Better Chat] [Global] [Player] RainbowMozzie: if you are can i join
+18:37 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: sort of. Its just 3 of us. If u tell me where youre building we wont raid you
+18:37 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i dont have one
+18:37 [Info] [Better Chat] [Global] [Player] RainbowMozzie: it got raided
+18:38 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: Lol what were the cords
+18:38 [Info] [Better Chat] [Global] [Player] RainbowMozzie: g35
+18:38 [Info] [Better Chat] [Global] [Player] RainbowMozzie: it decayed
+18:38 [Info] [Better Chat] [Global] [Player] RainbowMozzie: there is nothing left
+18:38 [Info] [Economics] Saving balances for players...
+18:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 213ms
+18:39 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ight well if u wanna build in the same spot go for it
+18:39 [Info] [Better Chat] [Global] [Player] RainbowMozzie: but i can craft weapons from tier 3 and 2 workbenches because i reserched them already
+18:39 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: honestly we probably raided you
+18:39 [Info] [Better Chat] [Global] [Player] RainbowMozzie: oh
+18:39 [Info] [Better Chat] [Global] [Player] RainbowMozzie: its ok
+18:39 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: if u need anything lemme know. we kinda stacked
+18:39 [Info] [Better Chat] [Global] [Player] RainbowMozzie: idc that much
+18:39 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:40 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:40 [Info] [Better Chat] [Global] [Player] RainbowMozzie: can i get high qual metak?
+18:40 [Info] [Better Chat] [Global] [Player] RainbowMozzie: metal
+18:40 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: Anything at all man. im serious
+18:40 [Info] [Better Chat] [Global] [Player] RainbowMozzie: thanks
+18:40 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: I keep respawning at that G37 mega compound
+18:40 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: hehe
+18:40 [Info] [Better Chat] [Global] [Player] RainbowMozzie: also do you have any rifle bodys
+18:41 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:41 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: Scrapped em all. we have chests full of guns
+18:41 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:41 [Info] [Better Chat] [Global] [Player] RainbowMozzie: oh ok
+18:41 [Info] [Better Chat] [Global] [Player] RainbowMozzie: nice
+18:41 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i just want to craft c4 i have nothing for crafting it
+18:42 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:42 [Info] [Better Chat] [Global] [Player] RainbowMozzie: do you have explosives
+18:42 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: trade me
+18:42 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: "can use "/trade"
+18:42 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:43 [Info] [Better Chat] [Global] [Player] RainbowMozzie: BROOOOO) THANKS SO MUCH
+18:43 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: no problem. just dont use it against us and we shouldnt have a problem
+18:43 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:44 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:45 [Info] [Better Chat] [Global] [Player] RainbowMozzie: does anyone know how to pick up door that are already placed
+18:45 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: open it first
+18:45 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: then use the hammer
+18:45 [Info] [Death Notes] A Scientist shot down Revolution Man.
+18:46 [Info] [Better Chat] [Global] [Player] RainbowMozzie: it dont pick it up tho
+18:46 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: if theres a lock on it still u have to take that off
+18:47 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+18:47 [Info] [Running Man] [EVENT] | Running man: WeirdAl
+18:47 [Info] [Running Man] [EVENT] +---------------------------------------------
+18:50 [Info] [Death Notes] Revolution Man did not want to be a part of the Scientist's experiments.
+18:51 [Info] [Death Notes] A Scientist shot down Revolution Man.
+18:54 [Info] [Death Notes] Revolution Man shot a Bear using their Stone Spear over a distance of 5.2 meters.
+18:54 [Info] [Better Chat] [Global] [Player] RainbowMozzie: yo wierdal
+18:54 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: what up
+18:54 [Info] [Death Notes] SmokeQc had enough of life.
+18:54 [Info] [Better Chat] [Global] [Player] RainbowMozzie: wanna raid thi guy by me
+18:54 [Info] [Better Chat] [Global] [Player] RainbowMozzie: he tried raiding me
+18:54 [Info] [Better Chat] [Global] [Player] RainbowMozzie: but failed
+18:54 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: maybe in a bit ill let you know when im done
+18:54 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+18:55 [Info] [Better Chat] [Global] [Player] RainbowMozzie: also sorry to ask but can i have one more thing weirdal
+18:56 [Info] [Welcomer] Player Revolution Man has left. Reason Disconnected
+18:56 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 440ms
+18:56 [Info] [Death Notes] WeirdAl shot Revolution Man using their Bolt Action Rifle over a distance of 114.5 meters.
+18:56 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i need 5.56 ammo is it ok if you can spare some
+18:56 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: has anyone figured out how to use the Pets system?
+18:56 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: so /kit and choose the rifle
+18:56 [Info] [Better Chat] [Global] [Player] RainbowMozzie: kk thanks
+18:57 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: yeah. Hannah on my squad had a pet boar for a bit
+18:57 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: oh cool, it worked
+18:57 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: yup
+18:57 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: Hannaht is the best tester, lol
+18:58 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: she is
+18:58 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: if u guys have anything else u wanna test just lemme know
+18:58 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+18:59 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+18:59 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I want to get the economy and server rewards kits setup
+19:00 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: Pasta usually pops in on the weekends, a he's focused on school atm
+19:00 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: he gave me a few lists to upgrade the guarded drops loot
+19:00 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: gotcha
+19:00 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+19:01 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: I want to remove the [Player] title for NPCs like Suparious
+19:02 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: lol, sure
+19:02 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+19:02 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+19:03 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+19:06 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+19:06 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+19:07 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+19:09 [Info] [Welcomer] Player Revolution Man has joined from United States
+19:14 [Info] [Death Notes] Revolution Man bled out after being attacked by WeirdAl.
+19:16 [Info] [NTeleportation] WeirdAl teleported back to previous location.
+19:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+19:17 [Info] [Running Man] [EVENT] | Running man - WeirdAl ran away from the chase and received as a reward!
+19:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+19:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+19:17 [Info] [Running Man] [EVENT] | random
+19:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+19:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+19:17 [Info] [Running Man] [EVENT] | timer eventstart stopped
+19:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+19:20 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: Raindbow
+19:22 [Info] [Better Chat] [Global] [Player] RainbowMozzie: who wants to go to large oil rig with me
+19:22 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: lol never been but im down here in a bit. u wanna raid that kid first?
+19:23 [Info] [Better Chat] [Global] [Player] RainbowMozzie: yea
+19:23 [Info] [Better Chat] [Global] [Player] RainbowMozzie: should i make an rpg and rockets
+19:23 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ight lemme get some things and ill meet you somewhere. no u dont have to
+19:23 [Info] [Better Chat] [Global] [Player] RainbowMozzie: the base is at
+19:23 [Info] [Better Chat] [Global] [Player] RainbowMozzie: h34
+19:24 [Info] [Better Chat] [Global] [Player] RainbowMozzie: also do you have any rockets you can spare
+19:24 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i only have 4
+19:24 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: dont have any. id rather use c4
+19:24 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+19:25 [Info] [Death Notes] Revolution Man shot a Wolf using their Semi-Automatic Rifle over a distance of 36.2 meters.
+19:25 [Info] [Better Chat] [Global] [Player] RainbowMozzie: the base is at h34
+19:25 [Info] [Better Chat] [Global] [Player] RainbowMozzie: the red mark on the map
+19:25 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ight
+19:25 [Info] [Better Chat] [Global] [Player] RainbowMozzie: where are you now?????
+19:25 [Info] [Better Chat] [Global] [Player] RainbowMozzie: im almost there
+19:26 [Info] [Better Chat] [Global] [Player] RainbowMozzie: im the guy in reg armor with a semiauto out ok
+19:26 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: half-way done adding the hoodie skins...
+19:26 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: noice. next up guns??????
+19:26 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: yeah, any priorities?
+19:27 [Info] [Better Chat] [Global] [Player] RainbowMozzie: when we meat can you inv to squad weird???
+19:27 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: i mean its your server but weapon skins is all i care about
+19:27 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: making ammo real quick
+19:27 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+19:28 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: Suparious's server, lol. Pasta usually advises us on gameplay decisions. I am just a worker drone punching in the commands
+19:28 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: skins are annoying, as I have to add them one by one
+19:28 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: the ak has the most skins, might to the LR-300 first
+19:28 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: RIP
+19:28 [Info] [Better Chat] [Global] [Player] RainbowMozzie: smoke ur the owner right
+19:29 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: no, just a dev
+19:29 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: the bills are in my name
+19:29 [Info] [Better Chat] [Global] [Player] RainbowMozzie: oh but you wanna go to big rig with us
+19:29 [Info] [Death Notes] Revolution Man shot a Bear using their Semi-Automatic Rifle over a distance of 5.9 meters.
+19:29 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I'd say that the players own this server
+19:29 [Info] [Better Chat] [Global] [Player] RainbowMozzie: k weirdal im in fornt of the base
+19:29 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: coming
+19:30 [Info] [Better Chat] [Global] [Player] RainbowMozzie: should i start
+19:30 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: up to you
+19:30 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i have a 5 min raid block
+19:31 [Info] [Death Notes] Revolution Man shot a Wolf using their Semi-Automatic Rifle over a distance of 1.1 meters.
+19:31 [Info] [Better Chat] [Global] [Player] RainbowMozzie: its already raided but there is a base close to it
+19:31 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i30
+19:31 [Info] [Better Chat] [Global] [Player] RainbowMozzie: wanna go for it
+19:32 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ye
+19:32 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok meet u there
+19:33 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ima be on a hoprse ok weirdal
+19:33 [Info] [Better Chat] [Global] [Player] RainbowMozzie: horse
+19:33 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: same
+19:33 [Info] [Death Notes] WeirdAl shot a Wolf using their LR-300 Assault Rifle over a distance of 0.9 meters.
+19:33 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok ur close to me i herd ur shots
+19:37 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: hoodie skins done, working on LR-300
+19:38 [Info] [Death Notes] WeirdAl shot Zombie60 using their LR-300 Assault Rifle over a distance of 2.5 meters.
+19:38 [Info] [Economics] Saving balances for players...
+19:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 218ms
+19:39 [Info] [Welcomer] Player The Money Store has joined from United States
+19:43 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: skin.add	rifle.lr300	1621894466
+19:43 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: oops
+19:43 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: was going too fast
+19:43 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: lmaop
+19:46 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i finished my base
+19:46 [Info] [Better Chat] [Global] [Player] RainbowMozzie: and thanks so much
+19:47 [Info] [Better Chat] [Global] [Player] RainbowMozzie: weirdal if we get lmg can i reserch it
+19:47 [Info] [Better Chat] [Global] [Player] RainbowMozzie: reaserch
+19:47 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+19:47 [Info] [Running Man] [EVENT] | Running man: Revolution Man
+19:47 [Info] [Running Man] [EVENT] +---------------------------------------------
+19:47 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: I can add lmg skins next
+19:48 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ight do it
+19:48 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: and if u want to rainbow
+19:50 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: Rainbow idk if u know but you cant research guns
+19:50 [Info] [Better Chat] [Global] [Player] RainbowMozzie: oh ok
+19:50 [Info] [Better Chat] [Global] [Player] RainbowMozzie: sorry im not that good
+19:50 [Info] [Welcomer] Player KillerClown has joined from United States
+19:50 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: but you can have whatever we get
+19:50 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: some of the guns can only come from crates
+19:50 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ^^^
+19:50 [Info] [Better Chat] [Global] [Player] KillerClown: yo juan you playing lol?
+19:51 [Info] [Better Chat] [Global] [Player] KillerClown: boiii
+19:51 [Info] [Better Chat] [Global] [Player] KillerClown: juan
+19:52 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: LR skins added
+19:52 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: hehe u da best
+19:52 [Info] [Death Notes] The Money Store slashed Haiirr into pieces with their Hatchet.
+19:54 [Info] [Death Notes] The Money Store shot a Stag using their Semi-Automatic Rifle over a distance of 9.5 meters.
+19:55 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: wish u could customize helis and boats
+19:55 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: there might be a plug in but idk
+19:55 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: definetly gonna check that out, good suggestion
+19:55 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: LMG skins added
+19:56 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: M39 skins done also, roadsign armor next
+19:56 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: lit
+19:56 [Info] [Death Notes] The Money Store slashed YourLadLogan into pieces with their Hatchet.
+19:56 [Info] [Death Notes] RainbowMozzie had enough of life.
+19:57 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: nice, that Logan kid was hacking - but instead of banning him, we worked on a detection bot. So waiting to see when he tried aga
+19:58 [Info] [Better Chat] [Global] [Player] RainbowMozzie: weirdal can we go for big rig in 30 min i have to do some chores
+19:58 [Info] [Death Notes] The Money Store slashed DerelictMonster into pieces with their Hatchet.
+19:58 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: yeah no problem
+19:58 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok thanks
+19:58 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: just lemme know
+19:59 [Info] [Better Chat] [Global] [Player] KillerClown: y are there so many
+19:59 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:00 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: I can't seem to control the accuracy of guards, so i just decreased their HP by 50%
+20:01 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:01 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: that was several days ago, though
+20:01 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:01 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:01 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: we could make the crates have less guards, but the current state encorages teams / clans
+20:03 [Info] [Better Chat] [Global] [Player] KillerClown: JUAN
+20:04 [Info] [Welcomer] Player Suparious has left. Reason Disconnected
+20:04 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 446ms
+20:05 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:05 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:07 [Info] [Better Chat] [Global] [Player] RainbowMozzie: weird do you have gun powder
+20:08 [Info] [Welcomer] Player Suparious has joined from Canada
+20:11 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: i do
+20:11 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: what you need it for???
+20:12 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: kill animals, get the fat, make lowgrade, make furnace, melt sulfur, melt metal ore and BAM! gunpowder!
+20:16 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: roadsign jacket done, roadsign kilt next
+20:16 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: that was a lot
+20:16 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: kilt has 67
+20:16 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: ak has like 120+  not looking forward to it
+20:17 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: at least you have me to keep you company
+20:17 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: ^^ for that, I am grateful
+20:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+20:17 [Info] [Running Man] [EVENT] | Running man - Revolution Man ran away from the chase and received as a reward!
+20:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+20:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+20:17 [Info] [Running Man] [EVENT] | random
+20:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+20:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+20:17 [Info] [Running Man] [EVENT] | timer eventstart stopped
+20:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+20:19 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: noice job rev
+20:25 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:25 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:25 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:25 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: roadsign kilt done
+20:26 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:26 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:26 [Info] [Death Notes] KillerClown did not want to be a part of the Easy Guard's experiments.
+20:30 [Info] [Welcomer] Player baydabrat has joined from United States
+20:30 [Info] [Better Chat] [Global] [Player] RainbowMozzie: yo weird
+20:30 [Info] [Better Chat] [Global] [Player] RainbowMozzie: r u ready
+20:31 [Info] [Better Chat] [Global] [Player] RainbowMozzie: weirdal r you there
+20:34 [Info] [Better Chat] [Global] [Player] RainbowMozzie: EVERYONE who wants to go for big oil rig
+20:36 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: I suggest making some roadsign armor for going to oil rig
+20:38 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: you all want some sunglasses? they actually work
+20:38 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: my bad i was working on the base
+20:38 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: I don't know how you would obtain then naturally
+20:38 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: idk
+20:38 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: i have a pair on rn
+20:38 [Info] [Economics] Saving balances for players...
+20:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 212ms
+20:39 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: added teh skins for sunglasses now
+20:40 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: done
+20:40 [Info] [Better Chat] [Global] [Player] RainbowMozzie: admin
+20:40 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i need help
+20:40 [Info] [NTeleportation] Suparious teleported to RainbowMozzie.
+20:40 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: hi
+20:40 [Info] [Better Chat] [Global] [Player] RainbowMozzie: can you help me with big oil rig
+20:40 [Info] [Better Chat] [Global] [Player] RainbowMozzie: and hi
+20:41 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ill help in a sec
+20:41 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I suck at playing this game
+20:41 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I am like an NPC
+20:41 [Info] [Better Chat] [Global] [Player] RainbowMozzie: its ok me and weirld will help you
+20:41 [Info] [Better Chat] [Team] [Player] RainbowMozzie: ok weird me and suparious are going to rig ok
+20:42 [Info] [Better Chat] [Team] [Player] RainbowMozzie: lets find a bout
+20:42 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: I dont see weirdal
+20:42 [Info] [Better Chat] [Team] [Player] RainbowMozzie: he is coming
+20:42 [Info] [Better Chat] [Team] [Player] RainbowMozzie: follow me
+20:42 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: i dont have any items, my account has too many powers
+20:42 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: so it would be considered admin abuse
+20:42 [Info] [Better Chat] [Team] [Player] RainbowMozzie: i got you
+20:43 [Info] [Better Chat] [Team] [Player] RainbowMozzie: here
+20:43 [Info] [Better Chat] [Team] [Player] RainbowMozzie: wait out here ima gets some guns
+20:44 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: where are the SMG skins, smoke?
+20:44 [Info] [Better Chat] [Team] [Player] RainbowMozzie: ok we ready weird
+20:44 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: he cant read this chat
+20:44 [Info] [Better Chat] [Team] [Player] RainbowMozzie: y
+20:45 [Info] [Better Chat] [Team] [Player] RainbowMozzie: oh
+20:45 [Info] [Better Chat] [Team] [Player] RainbowMozzie: i see
+20:45 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: we are in "Team" chat
+20:45 [Info] [Better Chat] [Global] [Player] RainbowMozzie: weird
+20:45 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: can press tab to toggle back to "Global" chat
+20:45 [Info] [Better Chat] [Global] [Player] RainbowMozzie: r u ready me and suparious are
+20:45 [Info] [Death Notes] baydabrat killed water using their Stone Spear.
+20:45 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I don't know how I got coersed into participating in this
+20:46 [Info] [Better Chat] [Global] [Player] RainbowMozzie: do you not want to
+20:46 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: yah, but this is my son'tr computer
+20:46 [Info] [Better Chat] [Global] [Player] RainbowMozzie: oh
+20:46 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: shit webcam mic
+20:46 [Info] [Death Notes] KillerClown shot a Wolf using their LR-300 Assault Rifle over a distance of 9.3 meters.
+20:46 [Info] [Better Chat] [Global] [Player] RainbowMozzie: can you spawn a bout
+20:46 [Info] [Better Chat] [Global] [Player] RainbowMozzie: im woundering
+20:47 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+20:47 [Info] [Running Man] [EVENT] | Running man: SmokeQc
+20:47 [Info] [Running Man] [EVENT] +---------------------------------------------
+20:48 [Info] [Better Chat] [Global] [Player] RainbowMozzie: u tp away
+20:48 [Info] [NTeleportation] Suparious teleported RainbowMozzie to Suparious.
+20:49 [Info] [Death Notes] Suparious did not did not follow the rules in a safezone and was killed by a Scientist Sentry.
+20:49 [Info] [Welcomer] Player baydabrat has left. Reason Disconnected
+20:49 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 440ms
+20:49 [Info] [Welcomer] Player Suparious has left. Reason Disconnected
+20:49 [Info] [Better Chat] [Global] [Player] The Money Store: trade 12 gag for hell
+20:49 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: oh, lol - looks like Supa tried to play the game again
+20:50 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: go to bandit and buy a hell. only 750 scrap
+20:50 [Info] [Better Chat] [Global] [Player] RainbowMozzie: where is it
+20:50 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: you can use "/bandit" to go there
+20:50 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: make sure not to hold a weapon
+20:50 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: if you do /bandit its the area that is surrounded by the wood walls
+20:50 [Info] [Better Chat] [Global] [Player] RainbowMozzie: k im here
+20:51 [Info] [Better Chat] [Global] [Player] RainbowMozzie: but i forgot to bring scrap
+20:51 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: rip. rn you can only tp their 5 times a day
+20:51 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: same with outpost and all your homes
+20:51 [Info] [Better Chat] [Global] [Player] RainbowMozzie: oh ok
+20:51 [Info] [Better Chat] [Global] [Player] RainbowMozzie: can you bring some scrap and tp here
+20:52 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: im not taking a helli to oil
+20:52 [Info] [Better Chat] [Global] [Player] RainbowMozzie: oh ok u have a bout
+20:52 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ive got a boat we can use
+20:52 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: Our admin is using a 20year old macbook, lol
+20:52 [Info] [Welcomer] Player Suparious has joined from Canada
+20:52 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: lmao. scrub
+20:52 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: ill meet u
+20:53 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: E36 if u want
+20:53 [Info] [Better Chat] [Global] [Player] RainbowMozzie: im at bandit
+20:53 [Info] [Better Chat] [Global] [Player] RainbowMozzie: do i kill myself
+20:53 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: Sorry Rainbow, I can't play on this machine. I can later this evening.
+20:53 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+20:54 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: you can if itll spawn u at home
+20:54 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: if you are in a team or clan you can use "/tpr" to someone
+20:54 [Info] [Better Chat] [Global] [Player] RainbowMozzie: oh but i aint in a team with him
+20:54 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: hehe
+20:55 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i can add you
+20:55 [Info] [Better Chat] [Global] [Player] RainbowMozzie: on steam if thats fine
+20:56 [Info] [Better Chat] [Global] [Player] RainbowMozzie: did you get it
+20:56 [Info] [Better Chat] [Global] [Player] RainbowMozzie: if you didnt add me weird
+20:56 [Info] [Death Notes] KillerClown turned into an ice statue.
+20:57 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: you can use "/home" to set your home spawns
+20:57 [Info] [Death Notes] RainbowMozzie had enough of life.
+20:57 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: you can use "/tpb" to teleport back to where you originally teleported from
+20:57 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: if youre over water you cant set home though. kinda sucks for me but it is what it is
+20:57 [Info] [NTeleportation] SmokeQc teleported back to previous location.
+20:58 [Info] [Better Chat] [Global] [Player] RainbowMozzie: im to close to a cave
+20:58 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: ok, and the ocean level is already at 9, as we learned yesterday
+20:58 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: 0, I mean
+20:58 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: correct
+20:58 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: back to skins
+20:58 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: it is what it is. i might relocate
+20:58 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: you ready yet rainbow???
+20:59 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: i think Suparious repaired your copter once
+20:59 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok im on my way i killed my seld
+20:59 [Info] [Better Chat] [Global] [Player] RainbowMozzie: self
+20:59 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: the decay is really strong on it
+20:59 [Info] [Welcomer] Player The Money Store has left. Reason Disconnected
+20:59 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 435ms
+20:59 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: you have everything you need?
+20:59 [Info] [Better Chat] [Global] [Player] RainbowMozzie: yea
+20:59 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: REALLY?!?!?!?!?! this is news to me
+20:59 [Info] [Better Chat] [Global] [Player] RainbowMozzie: k where we meet
+20:59 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: being in water effects it???
+20:59 [Info] [Welcomer] Player Revolution Man has left. Reason Disconnected
+20:59 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 449ms
+21:00 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: coming
+21:00 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: no, it's jus the decay is set to the vanilla default
+21:00 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: which is really punishing
+21:00 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: rip. any thoughts on changing it?
+21:00 [Info] [Better Chat] [Global] [Player] RainbowMozzie: what cords weird
+21:01 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: if you come to close my turrets will shoot
+21:01 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+21:01 [Info] [Better Chat] [Global] [Player] RainbowMozzie: whats ur cords tho
+21:01 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: yeah, on vehicles, but not bases - been learning the variables
+21:01 [Info] [Better Chat] [Global] [Player] RainbowMozzie: what is rp
+21:01 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: Server Rewards
+21:01 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok thanks
+21:02 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: they spend in "/shop" but that is still default
+21:02 [Info] [Better Chat] [Global] [Player] RainbowMozzie: weirdal we meet
+21:02 [Info] [Better Chat] [Global] [Player] RainbowMozzie: c33
+21:02 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: wow dirt cheap mini-copter in "/shop" right now
+21:04 [Info] [Better Chat] [Global] [Player] RainbowMozzie: im here
+21:04 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: Supa, got your smg skin added
+21:04 [Info] [Better Chat] [Global] [Player] RainbowMozzie: weird where are you????
+21:04 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: lol, thx. Lost Rainbow's SMG when I died
+21:04 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: one sec ill be there
+21:04 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+21:05 [Info] [Better Chat] [Global] [Player] RainbowMozzie: and its fine supar
+21:05 [Info] [Better Chat] [Global] [Player] RainbowMozzie: im at c333 on the beach witha hazmat on
+21:05 [Info] [Better Chat] [Global] [Player] RainbowMozzie: c33
+21:06 [Info] [Better Chat] [Global] [Player] RainbowMozzie: do you have a bout weird????
+21:06 [Info] [Better Chat] [Global] [Player] [Hunter] [HeliHunter] WeirdAl: no
+21:07 [Info] [Better Chat] [Global] [Player] RainbowMozzie: a heli right
+21:08 [Info] Gyrocopter was compiled successfully in 2250ms
+21:08 [Info] [Gyrocopter] Creating a new config file
+21:08 [Info] Loaded plugin Gyrocopter v1.2.9 by ColonBlow
+21:09 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+21:09 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+21:09 [Info] Group 'default' granted permission 'gyrocopter.build'
+21:09 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+21:09 [Info] [Death Notes] RainbowMozzie did not want to be a part of the Scientist's experiments.
+21:10 [Info] [Death Notes] WeirdAl did not want to be a part of the Scientist's experiments.
+21:10 [Info] [Death Notes] RainbowMozzie did not want to be a part of the Scientist's experiments.
+21:10 [Info] [Death Notes] A Scientist shot down WeirdAl.
+21:10 [Warning] Calling 'Unload' on 'Gyrocopter v1.2.9' took 419ms
+21:10 [Info] Unloaded plugin Gyrocopter v1.2.9 by ColonBlow
+21:11 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: well that went well
+21:11 [Info] [Better Chat] [Global] [Player] RainbowMozzie: sorry i couldnt ress
+21:11 [Info] [Better Chat] [Global] [Player] RainbowMozzie: lets go for reg oil rig
+21:11 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: oh idc
+21:11 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: ight
+21:11 [Info] Group 'default' revoked permission 'gyrocopter.build'
+21:12 [Info] [Better Chat] [Global] [Player] RainbowMozzie: do you have leather
+21:12 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: actually ill be on later if u wanna do it then
+21:12 [Info] [Better Chat] [Global] [Player] RainbowMozzie: so i can make road sine armor
+21:12 [Info] [Better Chat] [Global] [Player] RainbowMozzie: sign
+21:12 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: go on some scrap runs.
+21:12 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+21:12 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: youll get some good stuff to help
+21:13 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: killing animals will give you leather
+21:14 [Info] Unloaded plugin Vehicle Locks v1.0.3 by MrPoundsign
+21:14 [Info] [Welcomer] Player Lane ghost has joined from United States
+21:14 [Info] [Better Chat] [Global] [Player] RainbowMozzie: how many suply drops u have
+21:14 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: do
+21:15 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: ./shop and you can buy them
+21:15 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok how much
+21:15 [Info] VehicleDeployedLocks was compiled successfully in 2281ms
+21:15 [Info] Loaded plugin Vehicle Deployed Locks v1.0.0 by WhiteThunder
+21:15 [Info] [Better Chat] [Global] [Player] RainbowMozzie: like scrap
+21:15 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: 1 rp. you gain rp the longer your on this server
+21:15 [Info] Group 'default' granted permission 'vehicledeployedlocks.codelock.allvehicles'
+21:16 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: rp is respect points i beleive but you get 5 every so many minutes or something like that
+21:16 [Info] [Welcomer] Player OOPS I DIED has joined from United States
+21:16 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: updated the Vehicle Locks mod - should be able to apply locks to any mountable vehicle
+21:17 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: atta kid
+21:17 [Info] [Better Chat] [Global] [Player] RainbowMozzie: lol
+21:17 [Info] [Better Chat] [Global] [Player] RainbowMozzie: how long do they take
+21:17 [Info] [Better Chat] [Global] [Player] RainbowMozzie: and what you get from it
+21:17 [Info] Group 'default' granted permission 'vehicledeployedlocks.keylock.allvehicles'
+21:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+21:17 [Info] [Running Man] [EVENT] | Running man - SmokeQc ran away from the chase and received as a reward!
+21:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+21:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+21:17 [Info] [Running Man] [EVENT] | random
+21:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+21:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+21:17 [Info] [Running Man] [EVENT] | timer eventstart stopped
+21:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+21:17 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: 15 min for them to drop once they leave the plain i think
+21:17 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+21:18 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: youll be able to see the plane in the ski
+21:18 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: I want the plane to move faster
+21:18 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: sky
+21:18 [Info] [Better Chat] [Global] [Player] RainbowMozzie: and how many points of rp u have
+21:18 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: i agree
+21:18 [Info] [Better Chat] [Global] [Player] RainbowMozzie: can i have one of yours i dont have that much rp
+21:19 [Info] [Welcomer] Player OOPS I DIED has left. Reason Disconnected
+21:19 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 438ms
+21:19 [Info] DiscordMessages was compiled successfully in 2344ms
+21:19 [Warning] [DiscordMessages] Generating new config!
+21:19 [Warning] [DiscordMessages] Ban was enabled however the Webhook is incorrect.
+21:19 [Warning] [DiscordMessages] Report was enabled however the Webhook is incorrect.
+21:19 [Warning] [DiscordMessages] Message was enabled however the Webhook is incorrect.
+21:19 [Warning] [DiscordMessages] Mute was enabled however the Webhook is incorrect.
+21:19 [Warning] [DiscordMessages] PlayerChat was enabled however the Webhook is incorrect.
+21:19 [Info] Loaded plugin DiscordMessages v2.1.3 by Slut
+21:19 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: ight making food be back in 1.5 hours
+21:19 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ok
+21:20 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: i see your aircraft
+21:20 [Info] [Better Chat] [Global] [Player] RainbowMozzie: yea
+21:20 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: bombs awayyyyyyyyyy
+21:21 [Info] [Better Chat] [Global] [Player] RainbowMozzie: and i see 30 or yours lololol
+21:21 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: youll get to this point rather quickly doesnt take much
+21:21 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: just a little game knowlegde thats all
+21:21 [Info] [Better Chat] [Global] [Player] RainbowMozzie: what you mean
+21:22 [Info] [Better Chat] [Global] [Player] RainbowMozzie: who is at my base
+21:22 [Info] [Better Chat] [Global] [Player] [Assassin] [Hunter] WeirdAl: the more you play on this server the  more youll learn about the cool things you can do
+21:22 [Info] Unloaded plugin DiscordMessages v2.1.3 by Slut
+21:22 [Info] Loaded plugin DiscordMessages v2.1.3 by Slut
+21:22 [Info] [Death Notes] KillerClown shot RainbowMozzie using their LR-300 Assault Rifle over a distance of 56.1 meters.
+21:23 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i need help weird
+21:23 [Info] [Better Chat] [Global] [Player] RainbowMozzie: this guy killing me
+21:24 [Info] [Better Chat] [Global] [Player] RainbowMozzie: killer why
+21:24 [Info] [Better Chat] [Global] [Player] KillerClown: BECAUSE
+21:24 [Info] [Better Chat] [Global] [Player] RainbowMozzie: because what
+21:24 [Info] [Better Chat] [Global] [Player] KillerClown: YOU TRASH '
+21:24 [Info] [Better Chat] [Global] [Player] RainbowMozzie: why u toxic
+21:25 [Info] [Better Chat] [Global] [Player] KillerClown: because you trash
+21:25 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ur camping in lighthouse
+21:25 [Info] [Better Chat] [Global] [Player] RainbowMozzie: and im trash
+21:25 [Info] [Better Chat] [Global] [Player] RainbowMozzie: i aint coming out anymore
+21:26 [Info] [Better Chat] [Global] [Player] RainbowMozzie: so have fun
+21:26 [Info] [Better Chat] [Global] [Player] KillerClown: ight free air drop sayyy lesss
+21:26 [Info] Unloaded plugin DiscordMessages v2.1.3 by Slut
+21:26 [Info] Loaded plugin DiscordMessages v2.1.3 by Slut
+21:26 [Info] [Better Chat] [Global] [Player] RainbowMozzie: dont worry u aint getting it
+21:27 [Info] [Better Chat] [Global] [Player] RainbowMozzie: u cant get it yourself you bum
+21:28 [Info] [Death Notes] Lane ghost shot EdwardRanger using their Semi-Automatic Rifle over a distance of 0.3 meters.
+21:29 [Info] [Better Chat] [Global] [Player] RainbowMozzie: why you leave
+21:29 [Info] [Better Chat] [Global] [Player] RainbowMozzie: killer
+21:31 [Info] [Better Chat] [Global] [Player] RainbowMozzie: did you pick it up killer
+21:31 [Info] [Better Chat] [Global] [Player] KillerClown: what?
+21:31 [Info] [Better Chat] [Global] [Player] RainbowMozzie: the suply drop
+21:31 [Info] [Better Chat] [Global] [Player] KillerClown: nah im still in light house
+21:32 [Info] [Better Chat] [Global] [Player] RainbowMozzie: where
+21:32 [Info] [Better Chat] [Global] [Player] KillerClown: the roof
+21:32 [Info] [Better Chat] [Global] [Player] RainbowMozzie: where the resycler it
+21:32 [Info] [Better Chat] [Global] [Player] RainbowMozzie: is
+21:32 [Info] [Better Chat] [Global] [Player] KillerClown: yup
+21:32 [Info] [Better Chat] [Global] [Player] RainbowMozzie: peek than
+21:33 [Info] [Better Chat] [Global] [Player] RainbowMozzie: why u not peek
+21:34 [Info] [Better Chat] [Global] [Player] RainbowMozzie: did the supl drop land yet
+21:34 [Info] [Better Chat] [Global] [Player] RainbowMozzie: suply
+21:35 [Info] Group 'admin' granted permission 'discordmessages.ban'
+21:36 [Info] [Death Notes] KillerClown shot Lane ghost using their LR-300 Assault Rifle over a distance of 22.4 meters.
+21:36 [Info] Group 'default' granted permission 'discordmessages.report'
+21:36 [Info] Group 'default' granted permission 'discordmessages.message'
+21:37 [Info] [DiscordMessages] MESSAGE (SmokeQc/76561198886543733) : testing this shit
+21:37 [Info] [Better Chat] [Global] [Player] RainbowMozzie: ur not at lighthouse killer
+21:38 [Info] [DiscordMessages] REPORT (SmokeQc/76561198886543733) -> (KillerClown/76561198359580291): System.Collections.Generic.List`1[System.String]
+21:38 [Info] [Economics] Saving balances for players...
+21:38 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 215ms
+21:39 [Info] [Better Chat] [Global] [Player] RainbowMozzie: killer wanna go for oil rig
+21:40 [Info] Unloaded plugin DiscordMessages v2.1.3 by Slut
+21:40 [Info] Loaded plugin DiscordMessages v2.1.3 by Slut
+21:40 [Info] [Welcomer] Player XllXllX has joined from United States
+21:41 [Info] [DiscordMessages] REPORT (SmokeQc/76561198886543733) -> (KillerClown/76561198359580291): System.Collections.Generic.List`1[System.String]
+21:41 [Info] [Better Chat] [Global] [Player] Lane ghost: anyone wanna watch my show
+21:42 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: there is a twitch plugin installed, but i haven't looked at the config yet
+21:43 [Info] [Death Notes] KillerClown did not want to be a part of the Scientist's experiments.
+21:43 [Info] Group 'default' granted permission 'twitch.admin'
+21:43 [Info] [Death Notes] KillerClown did not want to be a part of the Scientist's experiments.
+21:44 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: I just gave you admin on the Twitch plugin for testing if you can Lane ghost
+21:44 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: use "/twitch"
+21:45 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: can we setup a special permissions group for streamers?
+21:46 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: sure, will add to the list
+21:46 [Info] [Death Notes] KillerClown did not want to be a part of the Scientist's experiments.
+21:46 [Info] [Better Chat] [Global] [Player] RainbowMozzie: how many rp points u start off with in this game
+21:47 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I think his show is the fireworks, and not twitch
+21:47 [Info] [Better Chat] [Global] [Player] Lane ghost: Lane Ghost#5992 is my discord call me
+21:47 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I think it is 1000?
+21:47 [Info] [Death Notes] KillerClown had no chance against the Helicopter.
+21:47 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+21:47 [Info] [Running Man] [EVENT] | Running man: KillerClown
+21:47 [Info] [Running Man] [EVENT] +---------------------------------------------
+21:47 [Info] [Death Notes] KillerClown had enough of life.
+21:48 [Info] [Death Notes] MyBadPimp couldn't run away from the Bear.
+21:48 [Info] [Better Chat] [Global] [Player] Lane ghost: come t Y36 for the show
+21:52 [Info] [Death Notes] Lane ghost inflamed The Money Store with their Flame Thrower.
+21:54 [Info] [Death Notes] KillerClown had enough of life.
+21:54 [Info] [Death Notes] Lane ghost killed Lane ghost using their Rocket.
+21:55 [Info] [Death Notes] KillerClown had enough of life.
+21:56 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: there is an untriggered firework here at Y36
+21:57 [Info] [Better Chat] [Global] [Player] Lane ghost: smoke can i tp to you
+21:58 [Info] [NTeleportation] Suparious teleported Lane ghost to SmokeQc.
+21:58 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: no, sorry
+21:58 [Info] [Better Chat] [Global] [Player] Lane ghost: hi
+21:59 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: wow, that's wild
+22:00 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: I can see the show all the way from T39
+22:01 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: server is not stressed at all from the fireworks
+22:03 [Info] [Better Chat] [Global] [Player] Lane ghost: this is cool
+22:03 [Info] [Better Chat] [Global] [Player] RainbowMozzie: what happened
+22:04 [Info] [Death Notes] RainbowMozzie killed a Chicken using their Flashlight.
+22:04 [Info] [Death Notes] RainbowMozzie killed a Chicken using their Flashlight.
+22:04 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: Fireworks
+22:04 [Info] [Better Chat] [Global] [Player] RainbowMozzie: at big rig
+22:08 [Info] [GUIShop] Weapon
+22:08 [Info] [GUIShop] Weapon
+22:08 [Info] [Death Notes] SmokeQc had enough of life.
+22:08 [Info] [Economics] Saving balances for players...
+22:09 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 216ms
+22:10 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: ^^ that was automated
+22:11 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: on nice
+22:11 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: is that also going to discord?
+22:11 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: umm, no. can work on that
+22:15 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: enabled "/message" to message an admin
+22:15 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: enabled "/report" for reporting hacking / scripting
+22:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+22:17 [Info] [Running Man] [EVENT] | Running man - KillerClown ran away from the chase and received as a reward!
+22:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+22:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+22:17 [Info] [Running Man] [EVENT] | random
+22:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+22:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+22:17 [Info] [Running Man] [EVENT] | timer eventstart stopped
+22:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+22:17 [Info] [Welcomer] Player RainbowMozzie has left. Reason Disconnected
+22:17 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 437ms
+22:18 [Info] [Welcomer] Player Revolution Man has joined from United States
+22:19 [Info] [Welcomer] Player Lane ghost has left. Reason Kicked: Steam: InvalidAuthSession
+22:19 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 437ms
+22:21 [Info] CarLockUI was compiled successfully in 2188ms
+22:21 [Info] [Car Lock UI] Configuration changes saved to CarLockUI.json
+22:21 [Info] Loaded plugin Car Lock UI v1.0.1 by WhiteThunder
+22:22 [Info] [Welcomer] Player Lane ghost has joined from United States
+22:22 [Info] Group 'default' granted permission 'carlockui.use.codelock'
+22:23 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: added a new UI for managing locks, while a car is on the lift - needs testing
+22:24 [Info] CarTurrets was compiled successfully in 2344ms
+22:24 [Info] [Modular Car Turrets] Configuration changes saved to CarTurrets.json
+22:24 [Info] Loaded plugin Modular Car Turrets v1.1.1 by WhiteThunder
+22:25 [Info] Group 'default' granted permission 'carturrets.allmodules'
+22:27 [Info] Group 'default' granted permission 'carturrets.deploy.inventory'
+22:27 [Info] Group 'default' granted permission 'carturrets.deploy.command'
+22:27 [Info] Group 'default' granted permission 'carturrets.limit.4'
+22:27 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: enabled adding turrets to cars, using a lift
+22:28 [Info] [Better Chat] [Global] [Player] Lane ghost: smoke can you come to me for a min
+22:28 [Info] [NTeleportation] Suparious teleported SmokeQc to Lane ghost.
+22:30 [Info] [NTeleportation] Suparious teleported Suparious to SmokeQc.
+22:32 [Info] [Better Chat] [Global] [Player] [Admin] Suparious: is the enviro effects going through Amazon?
+22:33 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: yah, all this firework stuff is getting processed by SageMaker
+22:36 [Info] Group 'default' already has permission 'carturrets.limit.4'
+22:40 [Info] [Death Notes] SmokeQc had enough of life.
+22:41 [Info] StorageMonitorControl was compiled successfully in 2219ms
+22:41 [Info] [Storage Monitor Control] Configuration changes saved to StorageMonitorControl.json
+22:41 [Info] Loaded plugin Storage Monitor Control v1.0.0 by WhiteThunder
+22:42 [Info] Group 'default' granted permission 'storagemonitorcontrol.owner.all'
+22:42 [Info] [Welcomer] Player Revolution Man has left. Reason Disconnected
+22:42 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 443ms
+22:42 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: Connected Rust+ mobile app to the storage monitoring item
+22:42 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: needs testing
+22:43 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: working on air supply plane speed
+22:44 [Info] LandLord was compiled successfully in 2219ms
+22:44 [Error] [Landlord] Missing plugin dependency Zone Manager: https://umod.org/plugins/zone-manager
+22:44 [Info] Loaded plugin Landlord v1.0.6 by bravoavo
+22:45 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: enabled "/lord" for you to be able to compete / own cells on the map
+22:45 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: works with "Large banner on Pole" - needs testing
+22:46 [Info] BuoyantSupplyDrops was compiled successfully in 2125ms
+22:46 [Info] Loaded plugin Buoyant Supply Drops v1.0.2 by Bazz3l
+22:46 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: enabled Air Drops to float in the water and be lootable
+22:47 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+22:47 [Info] [Running Man] [EVENT] | Running man: SmokeQc
+22:47 [Info] [Running Man] [EVENT] +---------------------------------------------
+22:49 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:49 [Info] [Better Chat] [Team] [Player] [Dev] [OG] SmokeQc: found the setting for drop speed
+22:49 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:49 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:50 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:50 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:50 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:50 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:50 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:50 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:50 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:50 [Error] Failed to call hook 'OnEntityBuilt' on plugin 'LandLord v1.0.6' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.LandLord.OnEntityBuilt (Planner plan, UnityEngine.GameObject go) [0x0000d] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.LandLord.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00264] in <8afa340dea9f4d02bec3ac243970f977>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:51 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: disabling "/lord" seems broken atm
+22:51 [Info] Unloaded plugin Landlord v1.0.6 by bravoavo
+22:51 [Info] [Welcomer] Player KillerClown has left. Reason Disconnected
+22:51 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 442ms
+22:52 [Info] FancyDrop was compiled successfully in 2375ms
+22:52 [Info] [FancyDrop] Map Highest Point: (500m) | Plane flying height: (~500m)
+22:52 [Info] [FancyDrop] Timed Airdrop activated with '2' players between '30' and '50' minutes
+22:52 [Info] [FancyDrop] Builtin Airdrop removed
+22:52 [Info] [FancyDrop] Next timed Airdrop in 48 minutes
+22:52 [Warning] Calling 'OnServerInitialized' on 'FancyDrop v2.9.2' took 220ms
+22:52 [Info] Loaded plugin FancyDrop v2.9.2 by FastBurst
+22:52 [Error] Exception while calling NextTick callback (ArgumentException: An item with the same key has already been added. Key: GunRoll_Sub_Medium)
+  at System.Collections.Generic.Dictionary`2[TKey,TValue].TryInsert (TKey key, TValue value, System.Collections.Generic.InsertionBehavior behavior) [0x000c1] in <fb001e01371b4adca20013e0ac763896>:0 
+  at System.Collections.Generic.Dictionary`2[TKey,TValue].Add (TKey key, TValue value) [0x00000] in <fb001e01371b4adca20013e0ac763896>:0 
+  at Oxide.Plugins.FancyDrop.ExportLootSpawn (Oxide.Plugins.FancyDrop+ExportData expData, LootSpawn lootSpawn, System.Int32 level) [0x000c1] in <8a53dbd92b7344f08baf2ff846da392f>:0 
+  at Oxide.Plugins.FancyDrop.ExportLootSpawn (Oxide.Plugins.FancyDrop+ExportData expData, LootSpawn lootSpawn, System.Int32 level) [0x000ce] in <8a53dbd92b7344f08baf2ff846da392f>:0 
+  at Oxide.Plugins.FancyDrop.SetupLoot () [0x000a7] in <8a53dbd92b7344f08baf2ff846da392f>:0 
+  at Oxide.Plugins.FancyDrop.<OnServerInitialized>m__0 () [0x00000] in <8a53dbd92b7344f08baf2ff846da392f>:0 
+  at Oxide.Core.OxideMod.OnFrame (System.Single delta) [0x00051] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:57 [Warning] Calling 'Unload' on 'FancyDrop v2.9.2' took 434ms
+22:57 [Info] Unloaded plugin FancyDrop v2.9.2 by FastBurst
+22:57 [Info] [FancyDrop] Map Highest Point: (500m) | Plane flying height: (~500m)
+22:57 [Info] [FancyDrop] Timed Airdrop activated with '2' players between '30' and '50' minutes
+22:57 [Info] [FancyDrop] Next timed Airdrop in 42 minutes
+22:57 [Warning] Calling 'OnServerInitialized' on 'FancyDrop v2.9.2' took 216ms
+22:57 [Info] Loaded plugin FancyDrop v2.9.2 by FastBurst
+22:57 [Error] Exception while calling NextTick callback (ArgumentException: An item with the same key has already been added. Key: GunRoll_Sub_Medium)
+  at System.Collections.Generic.Dictionary`2[TKey,TValue].TryInsert (TKey key, TValue value, System.Collections.Generic.InsertionBehavior behavior) [0x000c1] in <fb001e01371b4adca20013e0ac763896>:0 
+  at System.Collections.Generic.Dictionary`2[TKey,TValue].Add (TKey key, TValue value) [0x00000] in <fb001e01371b4adca20013e0ac763896>:0 
+  at Oxide.Plugins.FancyDrop.ExportLootSpawn (Oxide.Plugins.FancyDrop+ExportData expData, LootSpawn lootSpawn, System.Int32 level) [0x000c1] in <8a53dbd92b7344f08baf2ff846da392f>:0 
+  at Oxide.Plugins.FancyDrop.ExportLootSpawn (Oxide.Plugins.FancyDrop+ExportData expData, LootSpawn lootSpawn, System.Int32 level) [0x000ce] in <8a53dbd92b7344f08baf2ff846da392f>:0 
+  at Oxide.Plugins.FancyDrop.SetupLoot () [0x000a7] in <8a53dbd92b7344f08baf2ff846da392f>:0 
+  at Oxide.Plugins.FancyDrop.<OnServerInitialized>m__0 () [0x00000] in <8a53dbd92b7344f08baf2ff846da392f>:0 
+  at Oxide.Core.OxideMod.OnFrame (System.Single delta) [0x00051] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:58 [Warning] Calling 'Unload' on 'FancyDrop v2.9.2' took 427ms
+22:58 [Info] Unloaded plugin FancyDrop v2.9.2 by FastBurst
+23:00 [Info] [Better Chat] [Team] [Player] Lane ghost: somke can you come to me
+23:01 [Info] CarCodeLocks was compiled successfully in 2188ms
+23:01 [Warning] [Modular Car Code Locks] This plugin is deprecated. You have already installed Vehicle Deployed Locks so please uninstall this plugin to avoid conflicts.
+23:01 [Info] Loaded plugin Modular Car Code Locks v1.2.1 by WhiteThunder
+23:01 [Info] [Better Chat] [Team] [Player] Lane ghost: smoke i found something that you sould know about]
+23:02 [Info] Group 'default' granted permission 'carcodelocks.ui'
+23:02 [Info] [Better Chat] [Team] [Player] [Dev] [OG] SmokeQc: yeah
+23:03 [Info] Permission 'randomrespawner.use' doesn't exist
+23:03 [Info] [Welcomer] Player SmokeQc has left. Reason Timed Out
+23:05 [Info] [Death Notes] Lane ghost burned to death.
+23:07 [Info] Group 'default' revoked permission 'guishop.use'
+23:07 [Info] Group 'default' revoked permission 'guishop.vip'
+23:08 [Info] [Better Chat] [Team] [Player] [Admin] Suparious: tht was me
+23:10 [Info] [Welcomer] Player Lane ghost has left. Reason Disconnected
+23:13 [Info] [Arkan] No Recoil probable violation
+Player XllXllX/76561198966833121
+NR violation #1
+Shots count 5
+Probability 75%
+Attachments count = 1
+Attachment - weapon.mod.flashlight
+Weapon - rifle.lr300 
+Ammo - ammo.rifle
+Projectile ID: 16 | Standing shooting position | Recoil angle: 0.1724585 | Fire time interval 0.084926
+Projectile ID: 17 | Standing shooting position | Recoil angle: 0.2264194 | Fire time interval 0.120547
+Projectile ID: 18 | Standing shooting position | Recoil angle: 0.7162784 | Fire time interval 0.124302
+Projectile ID: 19 | Standing shooting position | Recoil angle: 0.2880355 | Fire time interval 0.121083
+23:14 [Info] [Death Notes] XllXllX was uncautious and ran into a Gun Trap.
+23:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:17 [Info] [Running Man] [EVENT] | Running man - SmokeQc ran away from the chase and received as a reward!
+23:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+23:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:17 [Info] [Running Man] [EVENT] | random
+23:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+23:17 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:17 [Info] [Running Man] [EVENT] | timer eventstart stopped
+23:17 [Info] [Running Man] [EVENT] +---------------------------------------------
+23:18 [Info] [Welcomer] Player SmokeQc has joined from Canada
+23:19 [Info] [Welcomer] Player Toby has joined from United States
+23:20 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: temporarily disabled the "/shop" due to some abuse
+23:20 [Info] [Better Chat] [Global] [Player] [Dev] [OG] SmokeQc: fixing now
+23:21 [Info] [Death Notes] Toby shot a Stag using their Hunting Bow over a distance of 29 meters.
+23:21 [Info] [Death Notes] Toby shot a Boar using their Hunting Bow over a distance of 19 meters.
+23:22 [Info] Group 'dev' granted permission 'guishop.use'
+23:22 [Info] Group 'dev' granted permission 'guishop.vip'
+23:27 [Info] [Welcomer] Player Sage has joined from United States
+23:30 [Info] [Death Notes] Creed was shot by Sage with their Hunting Bow over a distance of 1.2 meters.
+23:31 [Info] [Death Notes] XllXllX had enough of life.
+23:33 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:33 [Info] [Running Man] [EVENT] | timer eventpause stopped
+23:33 [Info] [Running Man] [EVENT] +---------------------------------------------
+23:33 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:33 [Info] [Running Man] [EVENT] | Running Man has stopped
+23:33 [Info] [Running Man] [EVENT] +---------------------------------------------
+23:34 [Info] [Welcomer] Player Sage has left. Reason Kicked: Steam: InvalidAuthSession
+23:34 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 439ms
+23:35 [Info] [Welcomer] Player WeirdAl has left. Reason Disconnected
+23:35 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 1747ms
+23:57 [Info] [Death Notes] Toby had enough of life.
+23:58 [Info] [Death Notes] SmokeQc had enough of life.

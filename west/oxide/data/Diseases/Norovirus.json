@@ -1,0 +1,55 @@
+{
+  "name": "Norovirus",
+  "minInfectionTime": 180,
+  "maxInfectionTime": 1200,
+  "minSpreadTime": 5,
+  "maxSpreadTime": 30,
+  "minImmunityTime": 120,
+  "maxImmunityTime": 180,
+  "infectionChanceCovered": 5,
+  "infectionChanceUncovered": 90,
+  "damageHealth": 10.0,
+  "damageCalories": 125.0,
+  "damageHydration": 85.0,
+  "randomOutbreaksOccur": true,
+  "randomOutbreakTickInterval": 300,
+  "randomOutbreakInfectionChance": 20,
+  "infectionSpreadDistance": 2.0,
+  "itemsThatCauseOutbreaksOnConsumption": {
+    "chicken.raw": 10,
+    "humanmeat.raw": 10,
+    "humanmeat.spoiled": 75
+  },
+  "itemsThatCureOnConsumption": {
+    "antiradpills": 100
+  },
+  "infectableEntities": [
+    "player",
+    "bandit_conversationalist",
+    "bandit_guard",
+    "bandit_shopkeeper",
+    "heavyscientist",
+    "scientist",
+    "scientist_astar_full_any",
+    "scientist_full_any",
+    "scientist_full_lr300",
+    "scientist_full_mp5",
+    "scientist_full_pistol",
+    "scientist_full_shotgun",
+    "scientist_gunner",
+    "scientistnpc",
+    "scientistpeacekeeper",
+    "zombie",
+    "murderer",
+    "bear",
+    "boar",
+    "stag",
+    "wolf",
+    "horse",
+    "chicken"
+  ],
+  "symptomEffects": [
+    "assets/bundled/prefabs/fx/gestures/drink_vomit.prefab",
+    "assets/bundled/prefabs/fx/water/midair_splash.prefab"
+  ]
+}

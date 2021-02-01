@@ -1,0 +1,10 @@
+{
+  "DayFormat": "<color=orange>{0}</color> day and <color=orange>{1}</color> hours",
+  "DaysFormat": "<color=orange>{0}</color> days and <color=orange>{1}</color> hours",
+  "HourFormat": "<color=orange>{0}</color> hour and <color=orange>{1}</color> minutes",
+  "HoursFormat": "<color=orange>{0}</color> hours and <color=orange>{1}</color> minutes",
+  "MinFormat": "<color=orange>{0}</color> minute and <color=orange>{1}</color> seconds",
+  "MinsFormat": "<color=orange>{0}</color> minutes and <color=orange>{1}</color> seconds",
+  "SecsFormat": "<color=orange>{0}</color> seconds",
+  "CantUse": "The server's just wiped! Try again in {0}"
+}
