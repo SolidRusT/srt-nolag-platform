@@ -4,45 +4,69 @@
 Create some backup and sync jobs
 
 ```bash
+sudo apt -y install golang
+wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.0/rcon-0.9.0-amd64_linux.tar.gz
+tar xzvf rcon-0.9.0-amd64_linux.tar.gz
+mv rcon-0.9.0-amd64_linux/rcon* .
+rm -rf rcon-0.9.0-amd64_linux*
+/sbin/ifconfig
+```
+
+```bash
 # in you .bashrc profile: REGION="east"
-# echo "" | sudo tee -a /etc/crontab
+echo "# write from memory" | sudo tee -a /etc/crontab
+echo "02 *    * * *   modded  cd /home/modded && ./rcon -c rcon.yaml server.writecfg" | sudo tee -a /etc/crontab
+echo "# backup server data" | sudo tee -a /etc/crontab
+echo "03 *    * * *   modded  cd /home/modded && ./rcon -c rcon.yaml server.backup" | sudo tee -a /etc/crontab
+echo "04 *    * * *   modded  aws s3 sync --quiet --delete  /home/modded/backup s3://suparious.com/backup/${REGION}" | sudo tee -a /etc/crontab
+echo "# save the map" | sudo tee -a /etc/crontab
+echo "0/5 *    * * *   modded  cd /home/modded && ./rcon -c rcon.yaml server.save" | sudo tee -a /etc/crontab
+echo "0/5 *    * * *   modded  cd /home/modded &&  ./rcon -c rcon.yaml \"o.reload WipeInfoApi\"" | sudo tee -a /etc/crontab 
+echo "0/5 *    * * *   modded  cd /home/modded &&  ./rcon -c rcon.yaml \"o.reload MagicWipePanel\"" | sudo tee -a /etc/crontab
+echo "# backup game mods" | sudo tee -a /etc/crontab
+echo "*/30 *    * * *   modded  aws s3 sync --delete --quiet /home/modded/oxide s3://suparious.com/backup/${REGION}/oxide" | sudo tee -a /etc/crontab
 echo "# solidrust config sync " | sudo tee -a /etc/crontab
-echo "27 *    * * *   modded  cd /home/modded && rsync -qr /etc/crontab solidrust.net/${REGION}" | sudo tee -a /etc/crontab
-echo "28 *    * * *   modded  cd /home/modded && rsync -qr server/rust/cfg solidrust.net/${REGION}" | sudo tee -a /etc/crontab
-echo "29 *    * * *   modded  cd /home/modded && rsync -qr oxide/ solidrust.net/${REGION}/oxide" | sudo tee -a /etc/crontab
-echo "# solidrust backups " | sudo tee -a /etc/crontab
+echo "27 *    * * *   modded rsync -qr /etc/crontab /home/modded/solidrust.net/${REGION}" | sudo tee -a /etc/crontab
+echo "28 *    * * *   modded rsync -qr /home/modded/server/rust/cfg /home/modded/solidrust.net/${REGION}" | sudo tee -a /etc/crontab
+echo "29 *    * * *   modded rsync -qr /home/modded/oxide/ /home/modded/solidrust.net/${REGION}/oxide" | sudo tee -a /etc/crontab
+echo "# solidrust backup export " | sudo tee -a /etc/crontab
 echo "52 *    * * *   modded  cd /home/modded && zip -q9ru /tmp/solidrust.zip solidrust.net" | sudo tee -a /etc/crontab
-echo "59 *    * * *   root    aws s3 cp /tmp/solidrust.zip s3://suparious.com/solidrust-${REGION}-config.zip" | sudo tee -a /etc/crontab
-echo "59 *    * * *   root    aws s3 sync --quiet --delete  backup s3://suparious.com/solidrust-${REGION}" | sudo tee -a /etc/crontab
+echo "59 *    * * *   modded  aws s3 cp /tmp/solidrust.zip s3://suparious.com/backup/${REGION}/config.zip" | sudo tee -a /etc/crontab
 ```
 
-### Primary server push out updates
+### Secondary-only (east)
+
+aws s3 sync --delete s3://suparious.com/backup/west/oxide/config/MagicPanel /home/modded/oxide/config/MagicPanel
+
+
 
 ```bash
-echo "# Push Oxide to s3" | sudo tee -a /etc/crontab
-echo "*/5 *    * * *   modded  aws s3 sync --quiet --delete oxide s3://suparious.com/oxide" | sudo tee -a /etc/crontab
-```
+SOURCE_S3="s3://suparious.com/backup/west"
 
-### Secondary server(s)
+CONFIGS=(
+oxide/config/Backpacks.json
+oxide/data/Kits.json
+oxide/data/BetterChat.json
+oxide/data/murdersPoint.json
+oxide/data/CompoundOptions.json
+oxide/data/StackSizeController.json
+oxide/data/FancyDrop.json
+oxide/config/Skins.json
+oxide/config/PermissionGroupSync.json
 
-```bash
-echo "# Pull Oxide from s3" | sudo tee -a /etc/crontab
-echo "*/10 *    * * *   modded  aws s3 sync --quiet --delete s3://suparious.com/oxide/plugins oxide/plugins" | sudo tee -a /etc/crontab
-echo "*/30 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/Kits.json oxide/data/" | sudo tee -a /etc/crontab
-echo "*/22 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/BetterChat.json oxide/data/" | sudo tee -a /etc/crontab
-echo "*/11 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/murdersPoint.json oxide/data/" | sudo tee -a /etc/crontab
-echo "*/13 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/CompoundOptions.json oxide/data/" | sudo tee -a /etc/crontab
-echo "*/12 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/StackSizeController.json oxide/data/" | sudo tee -a /etc/crontab
-echo "*/15 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/FancyDrop.json oxide/data/" | sudo tee -a /etc/crontab
-# actual
-echo "*/15 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/config/PermissionGroupSync.json oxide/config/PermissionGroupSync.json" | sudo tee -a /etc/crontab
-echo "*/15 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/config/Skins.json oxide/config/Skins.json" | sudo tee -a /etc/crontab
-echo "*/30 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/Kits.json oxide/data/Kits.json" | sudo tee -a /etc/crontab
+)
+
+for config in ${CONFIGS[@]}; do
+    echo "aws s3 cp --quiet ${SOURCE_S3}/$config $config"
+done
+
 
 
 #(M) Economics.json
 #(M) ServerRewards/*
 ```
+
+oxide/config/DiscordServerStats.json
 
 ## Updates - First Tuseday of each month
 

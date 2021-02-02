@@ -18,7 +18,7 @@ In this example, RustDedicated is installed in `~/`, so we will put Oxide files 
 ```bash
 # As the game server user
 cd ~/
-#wget https://umod.org/games/rust/download/develop -O Oxide.Rust.zip
+wget https://umod.org/games/rust/download/develop -O Oxide.Rust.zip
 unzip -o Oxide.Rust.zip
 rm Oxide.Rust.zip
 aws s3 sync --quiet s3://suparious.com/oxide oxide
