@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Timed Events", "Orange", "1.1.1")]
+    [Info("Timed Events", "Orange", "1.1.5")]
     [Description("Triggers various types of events like Airdrops, Helicopters and same")]
     public class TimedEvents : RustPlugin
     {
@@ -26,71 +26,44 @@ namespace Oxide.Plugins
             SpawnPlane(true);
             SpawnCH47(true);
         }
+        
+        private object OnEventTrigger(TriggeredEventPrefab info)
+        {
+            var prefabs = UnityEngine.Object.FindObjectsOfType<TriggeredEventPrefab>();
+            foreach (var obj in prefabs)
+            {
+                var name = obj.targetPrefab.resourcePath;
+                if (name.Contains("patrol") && config.patrol.disableDefault == true)
+                {
+                    return true;
+                }
 
-        private void OnEntitySpawned(SupplySignal entity)
-        {
-            DelaySubscribe(10);
-        }
-        
-        private void OnEntitySpawned(CargoPlane entity)
-        {
-            if (entity.OwnerID == 0 && config.plane.disableDefault)
-            {
-                entity.Kill();
-            }
-        }
-        
-        private void OnEntitySpawned(CargoShip entity)
-        {
-            if (entity.OwnerID == 0 && config.ship.disableDefault)
-            {
-                entity.Kill();
-            }
-        }
-        
-        private void OnEntitySpawned(BradleyAPC entity)
-        {
-            if (entity.OwnerID == 0 && config.tank.disableDefault)
-            {
-                entity.Kill();
-            }
-        }
-        
-        private void OnEntitySpawned(BaseHelicopter entity)
-        {
-            if (entity.OwnerID == 0 && config.patrol.disableDefault)
-            {
-                entity.Kill();
-            }
-        }
-        
-        private void OnEntitySpawned(CH47Helicopter entity)
-        {
-            if (entity.OwnerID == 0 && config.ch47.disableDefault)
-            {
-                timer.Once(1f, () => { entity.Kill(); });
-            }
-        }
+                if (name.Contains("ship") && config.ship.disableDefault == true)
+                {
+                    return true;
+                }
 
+                if (name.Contains("plane") && config.plane.disableDefault == true)
+                {
+                    return true;
+                }
+
+                if (name.Contains("ch47") && config.ch47.disableDefault == true)
+                {
+                    return true;
+                }
+            }
+
+            return null;
+        }
         #endregion
 
         #region Core
-
-        private void DelaySubscribe(int time = 0)
-        {
-            Unsubscribe("OnEntitySpawned");
-            
-            timer.Once(time, () =>
-            {
-                Subscribe("OnEntitySpawned");
-            });
-        }
 
         private void SpawnTank(bool skipSpawn = false)
         {
             if (Online() >= config.tank.playersMin && skipSpawn == false)
             {
-                DelaySubscribe(1);
                 BradleySpawner.singleton?.SpawnBradley();
             }
 
@@ -103,7 +76,6 @@ namespace Oxide.Plugins
             if (Online() >= config.ship.playersMin && skipSpawn == false)
             {
                 var amount = Core.Random.Range(config.ship.spawnMin, config.ship.spawnMax);
-                DelaySubscribe(1);
 
                 for (var i = 0; i < amount; i++)
                 {
@@ -127,7 +99,6 @@ namespace Oxide.Plugins
             if (Online() >= config.patrol.playersMin && skipSpawn == false)
             {
                 var amount = Core.Random.Range(config.patrol.spawnMin, config.patrol.spawnMax);
-                DelaySubscribe(1);
             
                 for (var i = 0; i < amount; i++)
                 {
@@ -146,7 +117,6 @@ namespace Oxide.Plugins
             if (Online() >= config.plane.playersMin && skipSpawn == false)
             {
                 var amount = Core.Random.Range(config.plane.spawnMin, config.plane.spawnMax);
-                DelaySubscribe(1);
             
                 for (var i = 0; i < amount; i++)
                 {
@@ -165,7 +135,6 @@ namespace Oxide.Plugins
             if (Online() >= config.ch47.playersMin && skipSpawn == false)
             {
                 var amount = Core.Random.Range(config.ch47.spawnMin, config.ch47.spawnMax);
-                DelaySubscribe(1);
             
                 for (var i = 0; i < amount; i++)
                 {

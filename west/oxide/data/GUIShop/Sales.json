@@ -11,7 +11,7 @@
   "supply.signal": 2,
   "sulfur.ore": 3500,
   "lowgradefuel": 332965,
-  "scrap": 124764,
+  "scrap": 144855,
   "ammo.pistol": 1312,
   "weapon.mod.holosight": 1,
   "shotgun.spas12": 2,
@@ -35,5 +35,6 @@
   "gates.external.high.stone": 1,
   "barricade.metal": 4,
   "wall.frame.garagedoor": 1,
-  "furnace": 8
+  "furnace": 8,
+  "ammo.handmade.shell": 1402
 }

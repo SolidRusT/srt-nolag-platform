@@ -330,7 +330,8 @@
       "Wooden Spear": "Wooden Spear",
       "Pitchfork": "Pitchfork",
       "Salvaged Sword": "Salvaged Sword",
-      "Python Revolver": "Python Revolver"
+      "Python Revolver": "Python Revolver",
+      "pickaxe.entity": "pickaxe.entity"
     },
     "Attachments": {
       "Holosight": "Holosight",

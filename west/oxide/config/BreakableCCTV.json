@@ -285,6 +285,76 @@
       "enabled": true,
       "health": 100,
       "respawnTime": 0
+    },
+    "CARGODECKA7044": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKA9816": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKB7044": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKB9816": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKC7044": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKC9816": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDA7044": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDA9816": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDB7044": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDB9816": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERA7044": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERA9816": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERB7044": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERB9816": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
     }
   }
 }

@@ -10,6 +10,7 @@
   "Blacklist of plugins names not to check": [
     "RustIO",
     "RProtect",
-    "TCGui"
+    "TCGui",
+    "RoadFinder"
   ]
 }

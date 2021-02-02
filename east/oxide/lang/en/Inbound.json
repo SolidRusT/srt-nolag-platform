@@ -10,5 +10,7 @@
   "SupplySignal": "{0} has deployed a supply signal{1}",
   "SupplyDrop": "Supply Drop has dropped{0}",
   "Location": " at {0}",
-  "LocationDestination": " and headed to {0}"
+  "LocationDestination": " and headed to {0}",
+  "SupplyDropLanded": "Supply Drop has landed{0}",
+  "DiscordMessage": ":arrow_lower_right:  **{0}**"
 }

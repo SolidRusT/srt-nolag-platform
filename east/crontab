@@ -20,19 +20,19 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
 52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
 #
+# write from memory
+02 *    * * *   modded  cd /home/modded && ./rcon -c rcon.yaml server.writecfg
+# backup server data
+03 *    * * *   modded  cd /home/modded && ./rcon -c rcon.yaml server.backup
+04 *    * * *   modded  aws s3 sync --quiet --delete  /home/modded/backup s3://suparious.com/backup/east
+# save the map
+0/5 *    * * *   modded  cd /home/modded && ./rcon -c rcon.yaml server.save
+# backup game mods
+*/30 *    * * *   modded  aws s3 sync --delete --quiet /home/modded/oxide s3://suparious.com/backup/east/oxide
 # solidrust config sync 
-27 *    * * *   modded  cd /home/modded && rsync -qr /etc/crontab solidrust.net/east
-28 *    * * *   modded  cd /home/modded && rsync -qr server/rust/cfg solidrust.net/east
-29 *    * * *   modded  cd /home/modded && rsync -qr oxide/ solidrust.net/east/oxide
-# solidrust backups 
+27 *    * * *   modded rsync -qr /etc/crontab /home/modded/solidrust.net/east
+28 *    * * *   modded rsync -qr /home/modded/server/rust/cfg /home/modded/solidrust.net/east
+29 *    * * *   modded rsync -qr /home/modded/oxide/ /home/modded/solidrust.net/east/oxide
+# solidrust backup export 
 52 *    * * *   modded  cd /home/modded && zip -q9ru /tmp/solidrust.zip solidrust.net
-59 *    * * *   root    aws s3 cp /tmp/solidrust.zip s3://suparious.com/solidrust-east-config.zip
-59 *    * * *   root    aws s3 sync --quiet --delete  backup s3://suparious.com/solidrust-east
-# Pull Oxide from s3
-*/10 *    * * *   modded  aws s3 sync --quiet --delete s3://suparious.com/oxide/plugins oxide/plugins
-*/30 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/Kits.json oxide/data/
-*/22 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/BetterChat.json oxide/data/
-*/11 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/murdersPoint.json oxide/data/
-*/13 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/CompoundOptions.json oxide/data/
-*/12 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/StackSizeController.json oxide/data/
-*/15 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/FancyDrop.json oxide/data/
+59 *    * * *   modded  aws s3 cp /tmp/solidrust.zip s3://suparious.com/backup/east/config.zip

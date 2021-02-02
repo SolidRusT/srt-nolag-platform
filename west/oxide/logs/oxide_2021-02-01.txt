@@ -2100,3 +2100,498 @@ removertool.normal, instantcraft.use, quicksmelt.use, recyclerspeed.use, ntelepo
 23:58 [Info] [Plugin Update Notifications] Configuration changes saved to PluginUpdateNotifications.json
 23:59 [Info] [Death Notes] blurr fought off a Scarecrow.
 23:59 [Info] [Death Notes] blurr fought off a Scarecrow.
+22:03 [Info] Loading Oxide Core v2.0.3991...
+22:03 [Info] Loading extensions...
+22:03 [Info] Loaded extension CSharp v2.0.4041 by Oxide Team and Contributors
+22:03 [Info] Loaded extension Discord v1.0.7 by PsychoTea & DylanSMR & Tricky
+22:03 [Info] Loaded extension MySql v2.0.3760 by Oxide Team and Contributors
+22:03 [Info] Loaded extension Rust v2.0.4891 by Oxide Team and Contributors
+22:03 [Info] Loaded extension SQLite v2.0.3762 by Oxide Team and Contributors
+22:03 [Info] Loaded extension Unity v2.0.3772 by Oxide Team and Contributors
+22:03 [Info] Latest compiler MD5: 8ce6d27e7718e3d164766bba8833537a
+22:03 [Info] Local compiler MD5: 0
+22:03 [Info] Compiler MD5 hash did not match, downloading latest
+22:03 [Info] Downloading Compiler.x86_x64 for .cs (C#) plugin compilation
+22:03 [Info] Local MD5 hash did not match remote MD5 hash for Compiler.x86_x64, attempting download again
+22:03 [Info] Latest compiler MD5: 8ce6d27e7718e3d164766bba8833537a
+22:03 [Info] Local compiler MD5: 8ce6d27e7718e3d164766bba8833537a
+22:03 [Info] [Discord Extension] [Info]: Using Discord Extension Version: 1.0.7
+22:03 [Info] Using Covalence provider for game 'Rust'
+22:03 [Info] Loading plugins...
+22:03 [Info] Loaded plugin Rust v2.0.4891 by Oxide Team and Contributors
+22:03 [Info] Loaded plugin Unity v2.0.3772 by Oxide Team and Contributors
+22:03 [Error] DeathNotesGui plugin requires missing dependency: PopupNotifications
+22:03 [Warning] Ignored unnecessary '// Reference: Oxide.Core.MySql' in plugin 'DonationClaim'
+22:03 [Info] Added '// Reference: Facepunch.Sqlite' in plugin 'ImageLibrary'
+22:03 [Info] Added '// Reference: UnityEngine.UnityWebRequestModule' in plugin 'ImageLibrary'
+22:03 [Info] Added '// Reference: System.Drawing' in plugin 'SignArtist'
+22:03 [Info] AdminPanel, Airstrike, Analytics, Arkan, AutoCode, AutoDemoRecordLite, AutoDoors, AutoFuel, AutoLock, AutomaticAuthorization, BGrade, Backpacks, Bank, BarrelPoints, Barrelless, BaseRepair, BetterChat, BetterChatMute, BetterChatMuteVoice, BetterLoot, BreakableCCTV, BuildingGrades, BuoyantSupplyDrops, CCTVUtilities, CarCodeLocks, CarLockUI, CarTurrets, CargoShipCCTV, ChestStacks, ClaimVehicle, Clans, CodeSync, CompoundOptions, CompoundTeleport, ConsoleFilter, CopyPaste, CraftMultiplier, CraftingController, DeathNotes, DiscordCore, DiscordEvents, DiscordGroup, DiscordMessages, DiscordPM, DiscordPlayers, DiscordPresence, DiscordRewards, DiscordServerStats, DiscordWelcomer, DiscordWipe, Diseases, DonationClaim, Economics, EnginePartsDurability, ExtraGatherBonuses, ExtraLoot, ExtraSeating, FancyDrop, FastLoot, FrameBox, FriendlyFire, Friends, FuelGauge, FurnaceSplitter, GUIShop, GatherManager, GestureWheel, GlobalGamble, GlobalMail, GuardedCrate, HandyMan, Heal, HitIcon, HumanNPC, ImageLibrary, ImgurApi, Inbound, InfoMenu, InstantCraft, ItemSkinRandomizer, KDRGui, KillFeed, KillInfo, KillStreaks, Kits, LargerCarStorage, Lottery, MagicAirStrikePanel, MagicAirdropPanel, MagicBradleyPanel, MagicCargoShipPanel, MagicCh47Panel, MagicClockPanel, MagicCoordinatesPanel, MagicCrashPanel, MagicDeathNotesPanel, MagicEarthquakePanel, MagicEconomicsPanel, MagicGatherPanel, MagicGridPanel, MagicHeliPanel, MagicHostilePanel, MagicOilRigPanel, MagicPanel, MagicPingPanel, MagicPlayersPanel, MagicRadiationInfoPanel, MagicRadiationPanel, MagicRainOfFirePanel, MagicServerRewardsPanel, MagicSleepersPanel, MagicWipePanel, MoneyTime, MonumentsRecycler, Murderers, NPCDropGun, NPCVendingMapMarker, NTeleportation, NightLantern, NightZombies, NoDecay, NoEscape, NoGiveNotices, NoRaidRepair, OfflineDoors, PathFinding, PerformanceUI, PermissionGroupSync, PersonalBeacon, Pets, PlaceholderAPI, PlaguedMurderers, PlayerChallenges, PlayerDatabase, PlaytimeSupplySignal, PlaytimeTracker, PluginUpdateNotifications, PrivateMessages, Quests, QuickSmelt, RProtect, RaidableBases, RaidblockBuildingHealth, RainOfFire, RandomDeployables, RandomRespawner, RealisticWeather, RecyclerSpeed, RemoverTool, ResearchUnlocked, RespawnProtection, RoadFinder, RustMapApi, SAMSiteAuth, ServerRewards, SignArtist, SignMap, Skins, SkipNightVote, SpawnModularCar, SpeedType, StackSizeController, StarterMoney, StorageMonitorControl, SurveyGather, TCGui, TankCommander, TcMapMarkers, TeaModifiers, TeamOfflineDoors, TellMeX, TemperatureExtender, TimeOfDay, TimedEvents, Trade, TreePlanter, TurretManager, Twitch, TwitchAuth, TwitchCommands, UpkeepDisplayFix, Vanish, VehicleDecayProtection, VehicleDeployedLocks, VehicleVendorOptions, Voter, WarCopter, WaterCatcherBoost, WaterWellManager, Waypoints, Welcomer, WhoKnocks, WipeInfoApi, WipeKits, WipePrize, WorkshopSkinViewer and ZLevelsRemastered were compiled successfully in 0ms
+22:03 [Warning] [DEBUG] GestureWheel plugin is waiting for requirements to be loaded: ImageLibrary
+22:03 [Warning] [DEBUG] HumanNPC plugin is waiting for requirements to be loaded: PathFinding
+22:03 [Warning] [DEBUG] PerformanceUI plugin is waiting for requirements to be loaded: ImageLibrary
+22:03 [Warning] [DEBUG] TwitchAuth plugin is waiting for requirements to be loaded: Twitch
+22:03 [Warning] [DEBUG] TwitchCommands plugin is waiting for requirements to be loaded: Twitch
+22:03 [Warning] A plugin has polluted the global namespace by defining PlacementMailbox
+22:03 [Info] Loaded plugin Admin Panel v1.4.5 by nivex
+22:03 [Info] Loaded plugin Airstrike v0.3.6 by k1lly0u
+22:03 [Info] Loaded plugin Analytics v1.1.2 by Wulf/lukespragg
+22:03 [Info] Loaded plugin Arkan v1.0.18 by Antidote
+22:03 [Info] Loaded plugin Auto Code v1.0.2 by slaymaster3000
+22:03 [Info] Loaded plugin Auto Demo Record Lite v1.0.82 by Pho3niX90
+22:03 [Info] Loaded plugin Auto Doors v3.2.8 by Wulf/lukespragg/Arainrr
+22:03 [Info] Loaded plugin Auto Fuel v1.2.0 by redBDGR
+22:03 [Info] Loaded plugin Auto Lock v2.3.2 by birthdates
+22:03 [Info] Loaded plugin Automatic Authorization v1.2.4 by k1lly0u/Arainrr
+22:03 [Info] Loaded plugin BGrade v1.1.3 by Ryan / Rustoria.co
+22:03 [Info] Loaded plugin Backpacks v3.4.0 by LaserHydra
+22:03 [Info] Loaded plugin Bank v1.0.52 by Calytic
+22:03 [Info] Loaded plugin Barrel Points v2.3.0 by Krungh Crow
+22:03 [Info] Loaded plugin Barrelless v2.0.3 by Krungh Crow
+22:03 [Info] Loaded plugin Base Repair v1.0.18 by MJSU
+22:03 [Info] Loaded plugin Better Chat v5.2.5 by LaserHydra
+22:03 [Info] Loaded plugin Better Chat Mute v1.2.1 by LaserHydra
+22:03 [Info] Loaded plugin Better Chat Mute Voice v1.0.4 by collect_vood
+22:03 [Info] Loaded plugin BetterLoot v3.5.3 by Default
+22:03 [Info] Loaded plugin Breakable CCTV v1.0.5 by Clearshot
+22:03 [Info] Loaded plugin Building Grades v0.5.1 by Default
+22:03 [Info] Loaded plugin Buoyant Supply Drops v1.0.2 by Bazz3l
+22:03 [Info] Loaded plugin CCTV Utilities v1.5.1 by GrumpyGordon
+22:03 [Info] Loaded plugin Modular Car Code Locks v1.2.1 by WhiteThunder
+22:03 [Info] Loaded plugin Car Lock UI v1.0.1 by WhiteThunder
+22:03 [Info] Loaded plugin Modular Car Turrets v1.1.1 by WhiteThunder
+22:03 [Info] Loaded plugin Cargo Ship CCTV v1.2.1 by GrumpyGordon
+22:03 [Info] Loaded plugin ChestStacks v1.3.3 by MON@H
+22:03 [Info] Loaded plugin Claim Vehicle Ownership v1.1.1 by WhiteThunder
+22:03 [Info] Loaded plugin Clans v0.1.55 by k1lly0u
+22:03 [Info] Loaded plugin Code Sync v2.0.1 by Wulf
+22:03 [Info] Loaded plugin Compound Options v1.1.7 by FastBurst
+22:03 [Info] Loaded plugin Compound Teleport v1.0.9 by DezLife
+22:03 [Info] Loaded plugin Console Filter v0.0.2 by Wulf
+22:03 [Info] Loaded plugin Copy Paste v4.1.27 by misticos
+22:03 [Info] Loaded plugin Craft Multiplier v1.4.1 by Arainrr
+22:03 [Info] Loaded plugin Crafting Controller v3.2.2 by Whispers88
+22:03 [Info] Loaded plugin Death Notes v6.3.5 by LaserHydra
+22:03 [Info] Loaded plugin Discord Core v0.16.12 by MJSU
+22:03 [Info] Loaded plugin Discord Events v1.2.0 by MON@H
+22:03 [Info] Loaded plugin Discord Group v1.0.4 by MJSU
+22:03 [Info] Loaded plugin DiscordMessages v2.1.3 by Slut
+22:03 [Info] Loaded plugin Discord PM v0.11.5 by MJSU
+22:03 [Info] Loaded plugin Discord Players v0.13.0 by MJSU
+22:03 [Info] Loaded plugin Discord Presence v1.0.3 by MJSU
+22:03 [Info] Loaded plugin Discord Rewards v1.3.1 by birthdates
+22:03 [Info] Loaded plugin Discord Server Stats v2.0.0 by MJSU
+22:03 [Info] Loaded plugin Discord Welcomer v1.0.0 by Trey
+22:03 [Info] Loaded plugin Discord Wipe v2.2.1 by MJSU
+22:03 [Info] [Diseases] 1 diseases loaded
+22:03 [Info] Loaded plugin Diseases v1.0.5 by mr01sam
+22:03 [Info] Loaded plugin DonationClaim v1.0.2 by Wulf/lukespragg
+22:03 [Info] Loaded plugin Economics v3.8.5 by Wulf
+22:03 [Info] Loaded plugin Engine Parts Durability v1.2.0 by WhiteThunder
+22:03 [Info] Loaded plugin Extra Gather Bonuses v1.0.4 by Orange
+22:03 [Info] Loaded plugin Extra Loot v1.0.4 by Orange
+22:03 [Info] Loaded plugin Extra Seating v1.0.8 by Pho3niX90
+22:03 [Info] Loaded plugin FancyDrop v2.9.2 by FastBurst
+22:03 [Info] Loaded plugin Fast Loot v0.0.4 by DezLife
+22:03 [Info] Loaded plugin Frame Box v1.0.1 by MJSU
+22:03 [Info] Loaded plugin FriendlyFire v1.7.0 by playrust.io / dcode
+22:03 [Info] Loaded plugin Friends v3.1.2 by Wulf
+22:03 [Info] Loaded plugin Fuel Gauge v0.5.2 by Oryx
+22:03 [Info] Loaded plugin Furnace Splitter v2.3.1 by FastBurst
+22:03 [Info] Loaded plugin GUIShop v2.0.5 by Khan
+22:03 [Info] Loaded plugin Gathering Manager v2.2.75 by Mughisi
+22:03 [Info] Loaded plugin Global Gamble v1.2.2 by Trey
+22:03 [Info] Loaded plugin Global Mail v1.0.4 by Hovmodet
+22:03 [Info] Loaded plugin Guarded Crate v1.4.5 by Bazz3l
+22:03 [Info] Loaded plugin Handy Man v1.3.2 by nivex
+22:03 [Info] Loaded plugin Heal v3.1.0 by Wulf
+22:03 [Info] Loaded plugin HitIcon v2.0.0 by FastBurst
+22:03 [Info] Loaded plugin Image Library v2.0.56 by Absolut & K1lly0u
+22:03 [Info] Loaded plugin Gesture Wheel v0.1.4 by Tricky & Mevent, RFC1920
+22:03 [Info] Loaded plugin Performance UI v1.0.7 by 2CHEVSKII
+22:03 [Info] Loaded plugin Imgur API v1.0.2 by MJSU
+22:03 [Info] Loaded plugin Inbound v0.5.2 by Substrata
+22:03 [Info] Loaded plugin Info Menu v1.0.3 by Iv Misticos
+22:03 [Info] Loaded plugin Instant Craft v2.1.5 by Orange
+22:03 [Info] Loaded plugin Item Skin Randomizer v1.5.3 by Orange
+22:03 [Info] Loaded plugin KDR GUI v2.0.3 by Ankawi
+22:03 [Info] Loaded plugin Kill Feed v1.18.0 by Tuntenfisch
+22:03 [Info] Loaded plugin Kill Info v1.0.0 by birthdates
+22:03 [Info] Loaded plugin Kill Streaks v0.1.8 by Default
+22:03 [Info] Loaded plugin Kits v3.3.1 by Reneb
+22:03 [Info] Loaded plugin Larger Car Storage v2.0.2 by WhiteThunder
+22:03 [Info] [Lottery] Messages loaded...
+22:03 [Info] Loaded plugin Lottery v1.2.5 by Sami37
+22:03 [Info] Loaded plugin Magic Air Strike Panel v1.0.3 by MJSU
+22:03 [Info] Loaded plugin Magic Airdrop Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Bradley Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Cargo Ship Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Ch47 Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Clock Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Coordinates Panel v1.0.3 by MJSU
+22:03 [Info] Loaded plugin Magic Crash Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Death Notes Panel v1.0.2 by MJSU
+22:03 [Info] Loaded plugin Magic Earthquake Panel v1.0.0 by MJSU
+22:03 [Info] Loaded plugin Magic Economics Panel v1.0.4 by MJSU
+22:03 [Info] Loaded plugin Magic Gather Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Grid Panel v1.0.6 by MJSU
+22:03 [Info] Loaded plugin Magic Heli Panel v1.0.2 by MJSU
+22:03 [Info] Loaded plugin Magic Hostile Panel v1.0.9 by MJSU
+22:03 [Info] Loaded plugin Magic Oil Rig Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Panel v1.0.6 by MJSU
+22:03 [Info] Loaded plugin Magic Ping Panel v1.0.5 by MJSU
+22:03 [Info] Loaded plugin Magic Players Panel v1.0.2 by MJSU
+22:03 [Info] Loaded plugin Magic Radiation Info Panel v1.0.3 by MJSU
+22:03 [Info] Loaded plugin Magic Radiation Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Rain Of Fire Panel v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Magic Server Rewards Panel v1.0.4 by MJSU
+22:03 [Info] Loaded plugin Magic Sleepers Panel v1.0.2 by MJSU
+22:03 [Info] Loaded plugin Magic Wipe Panel v1.0.5 by MJSU
+22:03 [Info] [Money Time] Registered permission 'moneytime.donor'; multiplier 2.5
+22:03 [Info] [Money Time] Registered permission 'moneytime.vip'; multiplier 5
+22:03 [Info] Loaded plugin Money Time v2.0.2 by Wulf
+22:03 [Info] Loaded plugin MonumentsRecycler v0.2.2 by Dana
+22:03 [Info] Loaded plugin Murderers v1.0.2 by Shadow
+22:03 [Info] Loaded plugin NPC Drop Gun v2.0.4 by 2CHEVSKII
+22:03 [Warning] [NPC Vending Map Marker] This plugin requires the HumanNPC plugin in order to be of any use!
+22:03 [Info] Loaded plugin NPC Vending Map Marker v0.1.0 by PinguinNordpol
+22:03 [Info] Loaded plugin NTeleportation v1.4.7 by nivex
+22:03 [Info] Loaded plugin Night Lantern v2.0.98 by k1lly0u
+22:03 [Info] Loaded plugin Night Zombies v0.9.0 by 0x89A
+22:03 [Info] Loaded plugin No Decay v1.3.2 by 0x89A
+22:03 [Info] Loaded plugin No Escape v2.1.31 by Calytic
+22:03 [Info] Loaded plugin No Give Notices v0.3.0 by Wulf
+22:03 [Info] Loaded plugin NoRaidRepair v1.0.0 by Ryan
+22:03 [Info] Loaded plugin Offline Doors v1.1.2 by Slydelix
+22:03 [Info] Loaded plugin PathFinding v1.1.3 by Reneb / Nogrod
+22:03 [Info] Loaded plugin Human NPC v0.3.47 by Ts3Hosting
+22:03 [Info] Loaded plugin Permission Group Sync v2.0.1 by OldSpice
+22:03 [Info] Loaded plugin PersonalBeacon v2.0.4 by redBDGR
+22:03 [Info] Loaded plugin Pets v0.6.4 by Nogrod/k1lly0u
+22:03 [Info] Loaded plugin Placeholder API v2.2.0 by misticos
+22:03 [Info] Loaded plugin Plagued Murderers v2.3.2 by DarkAz
+22:03 [Info] Loaded plugin Player Challenges v2.0.47 by k1lly0u
+22:03 [Info] Loaded plugin Player Database v1.6.1 by Reneb / Maintained by FakeNinja
+22:03 [Info] Loaded plugin Playtime Supply Signal v1.1.3 by Krungh Crow
+22:03 [Info] Loaded plugin Playtime Tracker v0.1.7 by k1lly0u
+22:03 [Info] Loaded plugin Plugin Update Notifications v1.1.0 by Whispers88
+22:03 [Warning] PrivateMessages has replaced the 'pm' command previously registered by DiscordPM
+22:03 [Warning] PrivateMessages has replaced the 'r' command previously registered by DiscordPM
+22:03 [Info] Loaded plugin PrivateMessages v1.1.11 by MisterPixie
+22:03 [Info] Loaded plugin Quests v2.3.2 by k1lly0u
+22:03 [Info] Loaded plugin Quick Smelt v5.1.3 by Iv Misticos
+22:03 [Info] Loaded plugin Research Protection v0.1.4 by RFC1920
+22:03 [Info] Loaded plugin Raidable Bases v1.6.6 by nivex
+22:03 [Info] Loaded plugin Raidblock Building Health v1.1.4 by Orange
+22:03 [Info] Loaded plugin RainOfFire v0.2.52 by emu / k1lly0u
+22:03 [Info] Loaded plugin Random Deployables v1.0.4 by Norn/Arainrr
+22:03 [Info] Loaded plugin Random Respawner v1.2.3 by Egor Blagov/Arainrr
+22:03 [Info] Loaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+22:03 [Info] Loaded plugin Recycler Speed v2.0.1 by Ryz0r/yetzt
+22:03 [Info] Loaded plugin Remover Tool v4.3.23 by Reneb/Fuji/Arainrr
+22:03 [Info] Loaded plugin Research Unlocked v1.0.1 by MJSU
+22:03 [Info] Loaded plugin Respawn Protection v2.0.2 by Ryz0r
+22:03 [Info] Loaded plugin RoadFinder v1.0.5 by RFC1920
+22:03 [Info] Loaded plugin Rust Map Api v1.3.2 by MJSU
+22:03 [Info] Loaded plugin SAMSiteAuth v2.3.3 by haggbart
+22:03 [Info] Loaded plugin Server Rewards v0.4.73 by k1lly0u
+22:03 [Info] Loaded plugin Sign Artist v1.2.6 by Whispers88
+22:03 [Info] Loaded plugin Sign Map v1.0.3 by MJSU
+22:03 [Info] Loaded plugin Skins v2.1.2 by Iv Misticos
+22:03 [Info] Loaded plugin SkipNightVote v0.1.4 by k1lly0u
+22:03 [Info] Loaded plugin Spawn Modular Car v5.0.1 by WhiteThunder
+22:03 [Info] Loaded plugin Speed Type v1.1.5 by TMafono
+22:03 [Info] Loaded plugin Stack Size Controller v2.0.4 by Canopy Sheep
+22:03 [Info] Loaded plugin Starter Money v1.1.0 by Tricky
+22:03 [Info] Loaded plugin Storage Monitor Control v1.0.0 by WhiteThunder
+22:03 [Info] Loaded plugin Survey Gather v1.0.3 by MJSU
+22:03 [Info] Loaded plugin Tool Cupboard GUI v1.0.12 by RFC1920
+22:03 [Info] Loaded plugin Tank Commander v0.2.2 by k1lly0u
+22:03 [Info] Loaded plugin TC Map Markers v1.1.2 by 1AK1
+22:03 [Info] Loaded plugin Tea Modifiers v1.0.0 by MJSU
+22:03 [Info] Loaded plugin Team Offline Doors v0.8.4 by Gargoyle
+22:03 [Info] Loaded plugin Tell Me X v1.0.1 by Krungh Crow
+22:03 [Info] Loaded plugin Temperature Extender v1.0.0 by MJSU
+22:03 [Info] Loaded plugin TimeOfDay v2.3.4 by FuJiCuRa
+22:03 [Info] Loaded plugin Timed Events v1.1.5 by Orange
+22:03 [Info] Loaded plugin Trade v1.2.43 by Calytic
+22:03 [Info] Loaded plugin Tree Planter v1.1.2 by Bazz3l
+22:03 [Info] Loaded plugin Turret Manager v1.2.0 by OrangeDoggo
+22:03 [Info] Loaded plugin Twitch v1.0.0 by Wulf
+22:03 [Info] Loaded plugin Twitch Auth v1.0.0 by Wulf
+22:03 [Info] Loaded plugin Twitch Commands v1.0.0 by Wulf
+22:03 [Info] Loaded plugin Upkeep Display Fix v1.0.1 by WhiteThunder
+22:03 [Info] Loaded plugin Vanish v1.3.8 by Whispers88
+22:03 [Info] Loaded plugin Vehicle Decay Protection v1.3.2 by WhiteThunder
+22:03 [Info] Loaded plugin Vehicle Deployed Locks v1.0.0 by WhiteThunder
+22:03 [Info] Loaded plugin Vehicle Vendor Options v1.2.0 by WhiteThunder
+22:03 [Info] Loaded plugin VoteRewards v2.1.0 by k1lly0u
+22:03 [Info] Loaded plugin War Copter v1.4.4 by Ryz0r
+22:03 [Info] Loaded plugin Water Catcher Boost v1.0.2 by Substrata
+22:03 [Info] Loaded plugin WaterWellManager v2.0.0 by Krungh Crow
+22:03 [Info] Loaded plugin Waypoints v1.1.3 by RFC1920
+22:03 [Info] Loaded plugin Welcomer v1.5.4 by Dana
+22:03 [Info] Loaded plugin Who Knocks v0.0.6 by Hockeygel23
+22:03 [Info] [Wipe Info Api] Next Wipe: 02/04/2021 00:00:00 Days Until: 3
+22:03 [Info] Loaded plugin Wipe Info Api v1.1.0 by MJSU
+22:03 [Info] Loaded plugin Wipe Kits v1.2.51 by Ryan
+22:03 [Info] Loaded plugin Wipe Prize v1.0.6 by Mevent
+22:03 [Info] Loaded plugin Workshop Skin Viewer v1.0.0 by Orange
+22:03 [Info] Loaded plugin ZLevelsRemastered v2.9.22 by Default
+22:03 [Warning] [Twitch] OAuth token is missing
+22:03 [Warning] [Twitch] Please set a valid Twitch channel
+22:03 [Warning] [Twitch] OAuth token is missing
+22:03 [Error] MySql handle raised an exception in 'PlayerDatabase v1.6.1' plugin (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <37b89bbb5f0444db962a2d24e0dc8333>:0 
+22:03 [Error] MySql handle raised an exception in 'PlayerDatabase v1.6.1' plugin (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <37b89bbb5f0444db962a2d24e0dc8333>:0 
+22:04 [Error] MySql handle raised an exception in 'PlayerDatabase v1.6.1' plugin (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <37b89bbb5f0444db962a2d24e0dc8333>:0 
+22:04 [Error] Couldn't get columns. Database might be corrupted.
+22:04 [Info] Unloaded plugin Player Database v1.6.1 by Reneb / Maintained by FakeNinja
+22:04 [Error] MySql handle raised an exception (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <37b89bbb5f0444db962a2d24e0dc8333>:0 
+22:08 [Info] [Quests] Error checking quests for 3065112
+22:08 [Info] [Quests] Error checking quests for 3065112
+22:08 [Info] [Quests] Error checking quests for 3065112
+22:08 [Info] [Quests] Error checking quests for 3065112
+22:08 [Info] [Quests] Error checking quests for 3065112
+22:08 [Info] [Quests] Error checking quests for 3065112
+22:08 [Info] [Quests] Error checking quests for 4369224
+22:08 [Info] [Quests] Error checking quests for 4369224
+22:08 [Info] [Quests] Error checking quests for 4369224
+22:08 [Info] [Quests] Error checking quests for 4369224
+22:08 [Info] [Quests] Error checking quests for 4369224
+22:08 [Info] [Quests] Error checking quests for 4369224
+22:08 [Info] [Quests] Error checking quests for 4577189
+22:08 [Info] [Quests] Error checking quests for 4577189
+22:08 [Info] [Quests] Error checking quests for 4577189
+22:08 [Info] [Quests] Error checking quests for 4577189
+22:08 [Info] [Quests] Error checking quests for 1736869
+22:08 [Info] [Quests] Error checking quests for 1736869
+22:08 [Info] [Quests] Error checking quests for 1736869
+22:08 [Info] [Quests] Error checking quests for 1736869
+22:08 [Info] [Quests] Error checking quests for 1914254
+22:08 [Info] [Quests] Error checking quests for 1914254
+22:08 [Info] [Quests] Error checking quests for 7433861
+22:08 [Info] [Quests] Error checking quests for 8294674
+22:08 [Info] [Quests] Error checking quests for 1217096
+22:08 [Info] [Quests] Error checking quests for 1217096
+22:08 [Info] [Quests] Error checking quests for 8972684
+22:08 [Info] [Quests] Error checking quests for 8972684
+22:08 [Info] [Quests] Error checking quests for 2744563
+22:09 [Info] IP address from Steam query: 0.0.0.0
+22:09 [Info] [Arkan] Arkan Init: map seed: 7880972, map size: 6000, server timestamp: 2021.2.1.22.3
+22:09 [Warning] Calling 'OnServerInitialized' on 'AutoFuel v1.2.0' took 219ms
+22:09 [Info] [BetterLoot] Using '34' active of '35' supported containertypes
+22:09 [Info] [BetterLoot] Updating internals ...
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGODECKA7044
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGODECKA9816
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGODECKB7044
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGODECKB9816
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGODECKC7044
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGODECKC9816
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGOHOLDA7044
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGOHOLDA9816
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGOHOLDB7044
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGOHOLDB9816
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGOLADDERA7044
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGOLADDERA9816
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGOLADDERB7044
+22:09 [Info] [Breakable CCTV] Adding missing CCTVConfig: CARGOLADDERB9816
+22:09 [Warning] Calling 'OnServerInitialized' on 'BreakableCCTV v1.0.5' took 224ms
+22:09 [Warning] [Modular Car Code Locks] This plugin is deprecated. You have already installed Vehicle Deployed Locks so please uninstall this plugin to avoid conflicts.
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for stables
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for stables
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Vehicles
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Bandit_Farming
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Bandit_ProduceExchange
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Weapons_Bandit
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for BuyResources
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for building_bandit
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for FoodVendor
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Vehicles2
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Compound_Extra2
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Compound_Extra1
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Tools
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Resources
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Components
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Weapons
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Attire
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for Building
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+22:09 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+22:09 [Warning] [Discord Welcomer] DiscordWelcomer cannot function while your Discord Bot Token is empty!
+22:09 [Info] [FancyDrop] Map Highest Point: (500m) | Plane flying height: (~500m)
+22:09 [Info] [FancyDrop] Timed Airdrop activated with '2' players between '30' and '50' minutes
+22:09 [Info] [FancyDrop] Builtin Airdrop removed
+22:09 [Info] [FancyDrop] Next timed Airdrop in 47 minutes
+22:09 [Warning] Calling 'OnServerInitialized' on 'FancyDrop v2.9.2' took 217ms
+22:09 [Info] [FriendlyFire] FriendlyFire: Rust:IO is not present. You need to install Rust:IO first in order to use this plugin!
+22:09 [Warning] [Discord Extension] [Warning]: Discord socket opened!
+22:09 [Warning] Calling 'OnServerInitialized' on 'GatherManager v2.2.75' took 217ms
+22:09 [Warning] [Discord Extension] [Warning]: Your bot was found in 1 Guilds!
+22:09 [Warning] Calling 'OnServerInitialized' on 'GlobalMail v1.0.4' took 1888ms
+22:09 [Warning] [HitIcon] Plugin Friends work with HitIcon
+22:09 [Warning] [HitIcon] Plugin Clans work with HitIcon
+22:09 [Warning] Calling 'OnServerInitialized' on 'Inbound v0.5.2' took 215ms
+22:09 [Warning] Calling 'OnServerInitialized' on 'ItemSkinRandomizer v1.5.3' took 167ms
+22:09 [Info] [Kill Feed] Loading configuration file!
+22:09 [Warning] [Kill Streaks] Advanced Airstrike is not found! Disabling advanced airstrike feature.
+22:09 [Info] [Lottery] Messages loaded...
+22:09 [Error] [Magic Crash Panel] Missing plugin dependency PlaneCrash
+22:09 [Error] [Magic Earthquake Panel] Missing plugin dependency Earthquake
+22:09 [Warning] Calling 'OnServerInitialized' on 'NTeleportation v1.4.7' took 339ms
+22:09 [Info] [Permission Group Sync] Connected to Database PermissionGroupSync.
+22:09 [Warning] Calling 'OnServerInitialized' on 'QuickSmelt v5.1.3' took 222ms
+22:09 [Info] [Raidable Bases] Loaded 27 items from RaidableBases/Default_Loot
+22:09 [Warning] Calling 'OnServerInitialized' on 'RaidableBases v1.6.6' took 200ms
+22:09 [Info] [Rust Map Api] Validating existing images
+22:09 [Warning] [Server Rewards] All UI elements have been successfully generated!
+22:09 [Warning] Calling 'OnServerInitialized' on 'ServerRewards v0.4.73' took 307ms
+22:09 [Warning] [Sign Artist] Waiting for Steamworks to update item definitions....
+22:09 [Info] [TC Map Markers] Spawned 44 map markers
+22:09 [Error] [VoteRewards] Please enter your API key in the config!
+22:09 [Info] Unloaded plugin VoteRewards v2.1.0 by k1lly0u
+22:09 [Warning] Calling 'OnServerInitialized' on 'WaterWellManager v2.0.0' took 218ms
+22:09 [Info] [Wipe Info Api] Next Wipe: 02/04/2021 00:00:00 Days Until: 3
+22:09 [Info] [ZLevelsRemastered] Stats can be reset by > zl.reset <
+22:09 [Warning] Calling 'OnServerInitialized' on 'ZLevelsRemastered v2.9.22' took 318ms
+22:09 [Info] [BetterLoot] No stacked LootContainer found.
+22:09 [Info] [BetterLoot] Populated '1616' supported containers.
+22:09 [Warning] [Discord Rewards] Discord bot connected!
+22:09 [Info] [FancyDrop] '4' custom loot tables loaded with overall '125' items
+22:09 [Error] [Magic Crash Panel] Missing plugin dependency PlaneCrash
+22:09 [Error] [Magic Earthquake Panel] Missing plugin dependency Earthquake
+22:09 [Warning] [Discord Extension] [Warning]: Discord socket opened!
+22:09 [Warning] [Discord Extension] [Warning]: Your bot was found in 1 Guilds!
+22:09 [Info] [Discord Core] Connected to bot: SolidRust
+22:09 [Info] [Discord Core] Discord connected to server: SolidRust NoLag
+22:09 [Info] [Discord Core] 7 Guild Discord Members Loaded
+22:09 [Info] [Image Library] Starting order GUIShop
+22:09 [Info] [Discord Core] 0 Chunk Discord Members Loaded
+22:09 [Info] [Discord Core] 7 Total Discord Members Loaded
+22:09 [Info] [Discord Core] Discord Core Ready
+22:09 [Error] [Plugin Update Notifications] waiting 30 seconds for rate limit
+22:09 [Info] [Rust Map Api] Validating config has latest monuments
+22:09 [Warning] [Random Respawner] Successfully found 2975 spawn positions.
+22:09 [Info] [Rust Map Api] Loaded image icons
+22:10 [Info] [Rust Map Api] Map Render Took: 7.37 Seconds
+22:10 [Info] [Rust Map Api] Icon Render Took: 1.03 Seconds
+22:10 [Warning] [Permission Group Sync] Removing 76561198886543733 from discord because no longer in Database.
+22:10 [Warning] [Permission Group Sync] Removing 76561198024774727 from discord because no longer in Database.
+22:10 [Warning] [Permission Group Sync] Removing 76561198852895608 from discord because no longer in Database.
+22:10 [Warning] [Permission Group Sync] Removing 76561198421090963 from discord because no longer in Database.
+22:10 [Warning] [Permission Group Sync] Removing 76561199135759930 from discord because no longer in Database.
+22:10 [Error] [Plugin Update Notifications] waiting 30 seconds for rate limit
+22:11 [Error] [Plugin Update Notifications] waiting 30 seconds for rate limit
+22:11 [Info] [Raidable Bases] Grid initialization completed in 34 seconds and 849 milliseconds on a 6000 size map. 14713 locations are on the grid.
+22:11 [Error] [Plugin Update Notifications] waiting 30 seconds for rate limit
+22:12 [Error] [Plugin Update Notifications] waiting 30 seconds for rate limit
+22:12 [Error] [Plugin Update Notifications] waiting 30 seconds for rate limit
+22:13 [Info] Usage: oxide.show <groups|perms>
+22:13 [Info] Usage: oxide.show <group|user> <name>
+22:13 [Error] [Plugin Update Notifications] waiting 30 seconds for rate limit
+22:13 [Info] [Plugin Update Notifications] Configuration changes saved to PluginUpdateNotifications.json
+22:15 [Info] Usage: oxide.load *|<pluginname>+
+22:15 [Error] DeathNotesGui plugin requires missing dependency: PopupNotifications
+22:15 [Info] PlayerDatabase and Voter were compiled successfully in 2163ms
+22:15 [Info] Loaded plugin Player Database v1.6.1 by Reneb / Maintained by FakeNinja
+22:15 [Error] [VoteRewards] Please enter your API key in the config!
+22:15 [Info] Unloaded plugin VoteRewards v2.1.0 by k1lly0u
+22:15 [Info] Loaded plugin VoteRewards v2.1.0 by k1lly0u
+22:15 [Info] MagicPanel was compiled successfully in 558ms
+22:15 [Info] Unloaded plugin Magic Panel v1.0.6 by MJSU
+22:15 [Info] Loaded plugin Magic Panel v1.0.6 by MJSU
+22:15 [Error] [Magic Crash Panel] Missing plugin dependency PlaneCrash
+22:15 [Error] [Magic Earthquake Panel] Missing plugin dependency Earthquake
+22:16 [Warning] Calling 'OnPlayerConnected' on 'KDRGui v2.0.3' took 116ms
+22:16 [Info] [Welcomer] Player SmokeQc has joined from Canada
+22:17 [Warning] 'NightLantern v2.0.98' is using deprecated hook 'OnConsumeFuel', which will stop working on Monday, 01 March 2021. Please ask the author to update to 'OnFuelConsume(BaseOven oven, Item fuel, ItemModBurnable burnable)'
+22:17 [Info] [Welcomer] Player Ratchet has joined from Canada
+22:18 [Info] [Welcomer] Player Suparious has joined from Canada
+22:19 [Info] [Tell Me X] TellMeX started, X = 15 + (3 x 9) = 42
+22:19 [Info] [Death Notes] SmokeQc had enough of life.
+22:20 [Info] Unloaded plugin Magic Panel v1.0.6 by MJSU
+22:20 [Info] Loaded plugin Magic Panel v1.0.6 by MJSU
+22:20 [Error] [Magic Crash Panel] Missing plugin dependency PlaneCrash
+22:20 [Error] [Magic Earthquake Panel] Missing plugin dependency Earthquake
+22:20 [Info] Backpacks was compiled successfully in 2193ms
+22:20 [Info] Unloaded plugin Backpacks v3.4.0 by LaserHydra
+22:20 [Info] Loaded plugin Backpacks v3.4.0 by LaserHydra
+22:21 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 503ms
+22:21 [Info] [Welcomer] Player SmokeQc has left. Reason Disconnected
+22:22 [Info] [Welcomer] Player SmokeQc has joined from Canada
+22:26 [Info] Unloaded plugin Backpacks v3.4.0 by LaserHydra
+22:26 [Info] Loaded plugin Backpacks v3.4.0 by LaserHydra
+22:30 [Info] [Tell Me X] TellMeX started, X = 10 x (19 - 2) = 170
+22:40 [Info] [Tell Me X] TellMeX started, X = 2 + (14 x 4) = 58
+22:41 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 102ms
+22:41 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 110ms
+22:46 [Warning] Calling 'OnItemRemovedFromContainer' on 'ResearchUnlocked v1.0.1' took 203ms [GARBAGE COLLECT]
+22:46 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 103ms
+22:49 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 562ms
+22:49 [Info] [Welcomer] Player SmokeQc has left. Reason Disconnected
+22:51 [Info] [Tell Me X] TellMeX started, X = 18 x (5 + 19) = 432
+22:51 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 105ms
+22:56 [Info] [FancyDrop] Random Airdrop of type 'regular' incoming at: (1339, 0, 1880) grid area: AD7
+22:56 [Info] [FancyDrop] Timed Airdrop initiated with command 'ad.random'
+22:56 [Info] [FancyDrop] Next timed Airdrop in 37 minutes
+22:56 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 105ms
+22:57 [Info] [Economics] Saving balances for players...
+22:57 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 274ms
+23:01 [Info] [Tell Me X] TellMeX started, X = (12 x 8) + 5 = 101
+23:01 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 105ms
+23:05 [Info] [Discord Extension] [Info]: Reconnect has been called (opcode 7)! Reconnecting...
+23:05 [Warning] [Discord Extension] [Warning]: Discord socket opened!
+23:05 [Warning] [Discord Extension] [Warning]: Attempting resume opcode...
+23:05 [Warning] [Discord Extension] [Warning]: Session resumed!
+23:06 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 105ms
+23:10 [Error] Failed to call hook 'OnEntityKill' on plugin 'NightLantern v2.0.98' (NullReferenceException: )
+  at (wrapper managed-to-native) UnityEngine.Component.GetComponentFastPath(UnityEngine.Component,System.Type,intptr)
+  at UnityEngine.Component.GetComponent[T] () [0x00021] in <0b31faaf1c50461d95c83ac166a20393>:0 
+  at Oxide.Plugins.NightLantern.OnEntityKill (BaseNetworkable entity) [0x0000c] in <ed56b60dd0914d48a600bdaf90894187>:0 
+  at Oxide.Plugins.NightLantern.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00328] in <ed56b60dd0914d48a600bdaf90894187>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+23:10 [Error] Failed to call hook 'OnEntityKill' on plugin 'WarCopter v1.4.4' (NullReferenceException: Object reference not set to an instance of an object)
+  at Oxide.Plugins.WarCopter.OnEntityKill (BaseNetworkable entity) [0x00000] in <ed56b60dd0914d48a600bdaf90894187>:0 
+  at Oxide.Plugins.WarCopter.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x002ab] in <ed56b60dd0914d48a600bdaf90894187>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+23:11 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 102ms
+23:12 [Info] [Tell Me X] TellMeX started, X = 14 x (19 + 17) = 504
+23:17 [Warning] 'NightLantern v2.0.98' is using deprecated hook 'OnConsumeFuel', which will stop working on Monday, 01 March 2021. Please ask the author to update to 'OnFuelConsume(BaseOven oven, Item fuel, ItemModBurnable burnable)'
+23:22 [Info] [Tell Me X] TellMeX started, X = 12 x (12 + 10) = 264
+23:26 [Info] Unloaded plugin Backpacks v3.4.0 by LaserHydra
+23:26 [Info] Loaded plugin Backpacks v3.4.0 by LaserHydra
+23:33 [Info] [Tell Me X] TellMeX started, X = (16 x 19) - 15 = 289
+23:33 [Info] [FancyDrop] Random Airdrop of type 'regular' incoming at: (105, 17, 1409) grid area: V10
+23:33 [Info] [FancyDrop] Timed Airdrop initiated with command 'ad.random'
+23:33 [Info] [FancyDrop] Next timed Airdrop in 41 minutes
+23:36 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 103ms
+23:41 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 116ms
+23:41 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 119ms
+23:43 [Info] [Tell Me X] TellMeX started, X = 8 x (12 + 16) = 224
+23:46 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 105ms
+23:51 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 105ms
+23:53 [Info] [Tell Me X] TellMeX started, X = (7 x 6) - 2 = 40
+23:56 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 104ms

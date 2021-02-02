@@ -35,6 +35,14 @@
     "discordspawn": {
       "max": 0,
       "cooldown": 0.0
+    },
+    "vipspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
     }
   },
   "76561198024774727": {
@@ -165,6 +173,14 @@
       "cooldown": 0.0
     },
     "discordspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "vipspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "defaultspawn": {
       "max": 0,
       "cooldown": 0.0
     }
@@ -339,6 +355,18 @@
       "cooldown": 1612239791.7376468
     },
     "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198397691637": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198248096900": {
+    "defaultspawn": {
       "max": 0,
       "cooldown": 0.0
     }
