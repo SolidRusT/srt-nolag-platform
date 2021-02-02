@@ -1301,3 +1301,28 @@ default, admin, raidhunter, gm, dev, duelist, discord, vip
 01:41 [Info] [Economics] Saving balances for players...
 01:41 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 281ms
 01:41 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 104ms
+01:46 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 107ms
+01:48 [Info] [Tell Me X] TellMeX started, X = 10 - (5 x 11) = -45
+01:51 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 110ms
+01:51 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 113ms
+01:56 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 110ms
+01:58 [Info] [FancyDrop] Random Airdrop of type 'regular' incoming at: (-552, 42, -1694) grid area: Q32
+01:58 [Info] [FancyDrop] Timed Airdrop initiated with command 'ad.random'
+01:58 [Info] [FancyDrop] Next timed Airdrop in 35 minutes
+01:59 [Info] [Tell Me X] TellMeX started, X = (8 x 7) + 2 = 58
+02:00 [Warning] Calling 'OnEntityDeath' on 'NPCDropGun v2.0.4' took 211ms [GARBAGE COLLECT]
+02:01 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 108ms
+02:01 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 108ms
+02:01 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 108ms
+02:01 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 108ms
+02:06 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 109ms
+02:07 [Warning] Calling 'OnEventTrigger' on 'TimedEvents v1.1.5' took 270ms
+02:09 [Info] [Tell Me X] TellMeX started, X = 10 + (17 x 12) = 214
+02:11 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 107ms
+02:13 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 557ms
+02:13 [Info] [Welcomer] Player Ratchet has left. Reason Disconnected
+02:16 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 102ms
+02:17 [Warning] 'NightLantern v2.0.98' is using deprecated hook 'OnConsumeFuel', which will stop working on Monday, 01 March 2021. Please ask the author to update to 'OnFuelConsume(BaseOven oven, Item fuel, ItemModBurnable burnable)'
+02:20 [Info] [Tell Me X] TellMeX started, X = 2 + (10 x 6) = 62
+02:21 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 100ms
+02:26 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 100ms
