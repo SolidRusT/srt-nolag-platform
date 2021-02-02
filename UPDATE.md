@@ -39,34 +39,44 @@ echo "59 *    * * *   modded  aws s3 cp /tmp/solidrust.zip s3://suparious.com/ba
 aws s3 sync --delete s3://suparious.com/backup/west/oxide/config/MagicPanel /home/modded/oxide/config/MagicPanel
 
 
+# update secondary configs
 
 ```bash
 SOURCE_S3="s3://suparious.com/backup/west"
-
-CONFIGS=(
-oxide/config/Backpacks.json
-oxide/data/Kits.json
-oxide/data/BetterChat.json
-oxide/data/murdersPoint.json
-oxide/data/CompoundOptions.json
-oxide/data/StackSizeController.json
-oxide/data/FancyDrop.json
-oxide/config/Skins.json
-oxide/config/PermissionGroupSync.json
-
+cd && mkdir shit
+SHITS=(
+oxide/config/AutoDemoRecordLite.json
+oxide/config/DiscordCore.json
+oxide/config/DiscordEvents.json
+oxide/config/DiscordMessages.json
+oxide/config/DiscordRewards.json
+oxide/config/DiscordServerStats.json
+oxide/config/DiscordWelcomer.json
+oxide/config/DiscordWipe.json
+oxide/config/PlayerDatabase.json
+oxide/config/PluginUpdateNotifications.json
 )
 
-for config in ${CONFIGS[@]}; do
-    echo "aws s3 cp --quiet ${SOURCE_S3}/$config $config"
+for shit in ${SHITS[@]}; do
+    cp $shit shit/
 done
 
+aws s3 sync --delete --quiet ${SOURCE_S3}/oxide/config /home/modded/oxide/config
+aws s3 cp --quiet ${SOURCE_S3}/oxide/data/Kits.json /home/modded/oxide/data/Kits.json
+aws s3 cp --quiet ${SOURCE_S3}/oxide/data/GuardedCrate.json /home/modded/oxide/data/GuardedCrate.json
+aws s3 cp --quiet ${SOURCE_S3}/oxide/data/BetterChat.json /home/modded/oxide/data/BetterChat.json
+
+cp /home/modded/shit/* /home/modded/oxide/config
+
+rm -rf shit
+
+./rcon -c rcon.yaml "o.reload *"
 
 
 #(M) Economics.json
 #(M) ServerRewards/*
 ```
 
-oxide/config/DiscordServerStats.json
 
 ## Updates - First Tuseday of each month
 
