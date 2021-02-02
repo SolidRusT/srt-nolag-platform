@@ -1,8 +1,0 @@
-{
-  "Gun (Shortname)": "rifle.ak",
-  "Ammo amount": 128,
-  "Stack amount": 6,
-  "Lock auto filled turrets (true/false)": false,
-  "Auto Authorize Friends (Requires Friends API)": true,
-  "Admin Bypass": false
-}

@@ -8,23 +8,37 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Inbound", "Substrata", "0.5.1")]
+    [Info("Inbound", "Substrata", "0.5.2")]
     [Description("Broadcasts notifications when patrol helicopters, supply drops, cargo ships, etc. are inbound")]
 
     class Inbound : RustPlugin
     {
         [PluginReference]
-        Plugin PopupNotifications;
+        Plugin DiscordMessages, PopupNotifications;
 
         bool hasSRig;
         bool hasLRig;
         Vector3 posSRig;
         Vector3 posLRig;
+        ulong iconID;
 
         private void OnServerInitialized()
         {
             if (configData.notifications.popup && !PopupNotifications)
                 PrintWarning("You have popup notifications enabled, but the 'Popup Notifications' plugin could not be found.");
+
+            if (configData.discordMsg.enabled)
+            {
+                if (!DiscordMessages)
+                    PrintWarning("You have Discord notifications enabled, but the 'Discord Messages' plugin could not be found.");
+                else if (!configData.discordMsg.webhookURL.Contains("/api/webhooks/"))
+                    PrintWarning("You have Discord notifications enabled, but the Webhook URL is missing or incorrect.");
+            }
+
+            if (configData.chatIcon.steamID.IsSteamId())
+                iconID = configData.chatIcon.steamID;
+            else if (configData.chatIcon.steamID != 0)
+                PrintWarning("Chat icon is not set to a valid Steam ID. The default icon will be used instead.");
 
             foreach (MonumentInfo monument in UnityEngine.Object.FindObjectsOfType<MonumentInfo>())
             {
@@ -50,14 +64,7 @@ namespace Oxide.Plugins
             {
                 if (apc == null) return;
 
-                var pos = apc.transform.position;
-                string msg = Lang("BradleyAPC", null, GetLocation(pos, null, null));
-
-                if (configData.notifications.chat) Server.Broadcast(msg);
-                if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-                if (configData.misc.logToConsole) Puts(msg);
-                if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+                SendMsg(Lang("BradleyAPC", null, GetLocation(apc.transform.position, null, null)));
             });
         }
 
@@ -69,15 +76,7 @@ namespace Oxide.Plugins
             {
                 if (plane == null) return;
 
-                var srcPos = plane.startPos;
-                var destPos = plane.dropPosition;
-                string msg = Lang("CargoPlane", null, GetLocation(srcPos, null, null), GetLocationDest(destPos));
-
-                if (configData.notifications.chat) Server.Broadcast(msg);
-                if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-                if (configData.misc.logToConsole) Puts(msg);
-                if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+                SendMsg(Lang("CargoPlane", null, GetLocation(plane.startPos, null, null), GetLocationDest(plane.dropPosition)));
             });
         }
 
@@ -89,14 +88,7 @@ namespace Oxide.Plugins
             {
                 if (ship == null) return;
 
-                var pos = ship.transform.position;
-                string msg = Lang("CargoShip", null, GetLocation(pos, null, null));
-
-                if (configData.notifications.chat) Server.Broadcast(msg);
-                if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-                if (configData.misc.logToConsole) Puts(msg);
-                if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+                SendMsg(Lang("CargoShip", null, GetLocation(ship.transform.position, null, null)));
             });
         }
 
@@ -109,32 +101,16 @@ namespace Oxide.Plugins
                 if (ch47 == null) return;
                 if (configData.misc.hideRigCrates && ch47.ShouldLand()) return;
 
-                var srcPos = ch47.transform.position;
-                var destPos = ch47.GetMoveTarget();
-                string msg = Lang("CH47", null, GetLocation(srcPos, null, null), GetLocationDest(destPos));
-
-                if (configData.notifications.chat) Server.Broadcast(msg);
-                if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-                if (configData.misc.logToConsole) Puts(msg);
-                if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+                SendMsg(Lang("CH47", null, GetLocation(ch47.transform.position, null, null), GetLocationDest(ch47.GetMoveTarget())));
             });
         }
 
         void OnExcavatorMiningToggled(ExcavatorArm arm)
         {
             if (!configData.alerts.excavator) return;
-            if (arm == null) return;
-            if (!arm.IsOn()) return;
+            if (arm == null || !arm.IsOn()) return;
 
-            var pos = arm.transform.position;
-            string msg = Lang("Excavator", null, GetLocation(pos, null, null));
-
-            if (configData.notifications.chat) Server.Broadcast(msg);
-            if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-            if (configData.misc.logToConsole) Puts(msg);
-            if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+            SendMsg(Lang("Excavator", null, GetLocation(arm.transform.position, null, null)));
         }
 
         void OnEntitySpawned(HackableLockedCrate crate)
@@ -150,13 +126,7 @@ namespace Oxide.Plugins
                 if (configData.misc.hideCargoCrates && AtCargoShip(null, crate)) return;
                 if (configData.misc.hideRigCrates && (AtLargeRig(pos) || AtSmallRig(pos))) return;
 
-                string msg = Lang("HackableCrate", null, GetLocation(pos, null, crate));
-
-                if (configData.notifications.chat) Server.Broadcast(msg);
-                if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-                if (configData.misc.logToConsole) Puts(msg);
-                if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+                SendMsg(Lang("HackableCrate", null, GetLocation(pos, null, crate)));
             });
         }
 
@@ -168,15 +138,7 @@ namespace Oxide.Plugins
             {
                 if (heli == null) return;
 
-                var srcPos = heli.transform.position;
-                var destPos = heli.GetComponentInParent<PatrolHelicopterAI>().destination;
-                string msg = Lang("PatrolHeli", null, GetLocation(srcPos, null, null), GetLocationDest(destPos));
-
-                if (configData.notifications.chat) Server.Broadcast(msg);
-                if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-                if (configData.misc.logToConsole) Puts(msg);
-                if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+                SendMsg(Lang("PatrolHeli", null, GetLocation(heli.transform.position, null, null), GetLocationDest(heli.GetComponentInParent<PatrolHelicopterAI>().destination)));
             });
         }
 
@@ -190,13 +152,7 @@ namespace Oxide.Plugins
             if (configData.misc.hideCargoCrates && AtCargoShip(null, crate)) return;
             if (configData.misc.hideRigCrates && (AtLargeRig(pos) || AtSmallRig(pos))) return;
 
-            string msg = Lang("HackingCrate", player.UserIDString, player.displayName, GetLocation(pos, null, crate));
-
-            if (configData.notifications.chat) Server.Broadcast(msg);
-            if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-            if (configData.misc.logToConsole) Puts(msg);
-            if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+            SendMsg(Lang("HackingCrate", player.UserIDString, player.displayName, GetLocation(pos, null, crate)));
         }
 
         void OnExplosiveThrown(BasePlayer player, SupplySignal signal)
@@ -204,44 +160,30 @@ namespace Oxide.Plugins
             if (!configData.alerts.supplySignal) return;
             if (player == null || signal == null) return;
 
-            var pos = player.transform.position;
-            string msg = Lang("SupplySignal", player.UserIDString, player.displayName, GetLocation(pos, player, null));
-
-            if (configData.notifications.chat) Server.Broadcast(msg);
-            if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-            if (configData.misc.logToConsole) Puts(msg);
-            if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+            SendMsg(Lang("SupplySignal", player.UserIDString, player.displayName, GetLocation(player.transform.position, player, null)));
         }
 
-        void OnExplosiveDropped(BasePlayer player, SupplySignal signal)
-        {
-            if (!configData.alerts.supplySignal) return;
-            if (player == null || signal == null) return;
-
-            var pos = player.transform.position;
-            string msg = Lang("SupplySignal", player.UserIDString, player.displayName, GetLocation(pos, player, null));
-
-            if (configData.notifications.chat) Server.Broadcast(msg);
-            if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
-
-            if (configData.misc.logToConsole) Puts(msg);
-            if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
-        }
+        void OnExplosiveDropped(BasePlayer player, SupplySignal signal) => OnExplosiveThrown(player, signal);
 
         void OnEntitySpawned(SupplyDrop drop)
         {
             if (!configData.alerts.supplyDrop) return;
             if (drop == null) return;
 
-            var pos = drop.transform.position;
-            string msg = Lang("SupplyDrop", null, GetLocation(pos, null, null));
+            SendMsg(Lang("SupplyDrop", null, GetLocation(drop.transform.position, null, null)));
+        }
 
-            if (configData.notifications.chat) Server.Broadcast(msg);
-            if (configData.notifications.popup) PopupNotifications.Call("CreatePopupNotification", msg);
+        private HashSet<uint> landedDrops = new HashSet<uint>();
+        void OnSupplyDropLanded(SupplyDrop drop)
+        {
+            if (!configData.alerts.supplyDropLand) return;
+            if (drop == null) return;
 
-            if (configData.misc.logToConsole) Puts(msg);
-            if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msg}", this);
+            if (!landedDrops.Contains(drop.net.ID))
+            {
+                SendMsg(Lang("SupplyDropLanded", null, GetLocation(drop.transform.position, null, null)));
+                landedDrops.Add(drop.net.ID);
+            }
         }
         #endregion
 
@@ -348,7 +290,7 @@ namespace Oxide.Plugins
 
         bool AtCargoShip(BasePlayer player, BaseEntity entity)
         {
-            if ((player != null && player.GetComponentInParent<CargoShip>()) || (entity != null && entity.GetComponentInParent<CargoShip>())) return true;
+            if (player?.GetComponentInParent<CargoShip>() || entity?.GetComponentInParent<CargoShip>()) return true;
             else return false;
         }
 
@@ -375,6 +317,19 @@ namespace Oxide.Plugins
             }
             return false;
         }
+
+        string filterTags = @"<\/?(align|alpha|cspace|indent|line-height|line-indent|margin|mark|mspace|pos|size|space|voffset).*?>|<\/?(b|i|lowercase|uppercase|smallcaps|s|u|sup|sub)>";
+        void SendMsg(string msg)
+        {
+            var msgFiltered_p = Regex.Replace(msg, filterTags, String.Empty);
+            var msgFiltered = Regex.Replace(msgFiltered_p, @"<\/?color.*?>", String.Empty);
+
+            if (configData.notifications.chat) Server.Broadcast(msg, null, iconID);
+            if (configData.notifications.popup) PopupNotifications?.Call("CreatePopupNotification", msgFiltered_p);
+            if (configData.discordMsg.enabled && configData.discordMsg.webhookURL.Contains("/api/webhooks/")) DiscordMessages?.Call("API_SendTextMessage", configData.discordMsg.webhookURL, Lang("DiscordMessage", null, msgFiltered));
+            if (configData.misc.logToConsole) Puts(msgFiltered);
+            if (configData.misc.logToFile) LogToFile("log", $"[{DateTime.Now.ToString("HH:mm:ss")}] {msgFiltered}", this);
+        }
         #endregion
 
         #region Config
@@ -384,6 +339,10 @@ namespace Oxide.Plugins
         {
             [JsonProperty(PropertyName = "Notifications (true/false)")]
             public Notifications notifications = new Notifications();
+            [JsonProperty(PropertyName = "Discord Messages")]
+            public DiscordMsg discordMsg = new DiscordMsg();
+            [JsonProperty(PropertyName = "Chat Icon")]
+            public ChatIcon chatIcon = new ChatIcon();
             [JsonProperty(PropertyName = "Alerts (true/false)")]
             public Alerts alerts = new Alerts();
             [JsonProperty(PropertyName = "Grid (true/false)")]
@@ -400,6 +359,20 @@ namespace Oxide.Plugins
             public bool chat = true;
             [JsonProperty(PropertyName = "Popup Notifications")]
             public bool popup = false;
+        }
+
+        class DiscordMsg
+        {
+            [JsonProperty(PropertyName = "Enabled (true/false)")]
+            public bool enabled = false;
+            [JsonProperty(PropertyName = "Webhook URL")]
+            public string webhookURL = "";
+        }
+
+        class ChatIcon
+        {
+            [JsonProperty(PropertyName = "Steam ID")]
+            public ulong steamID = 0;
         }
 
         class Alerts
@@ -424,6 +397,8 @@ namespace Oxide.Plugins
             public bool supplySignal = true;
             [JsonProperty(PropertyName = "Supply Drop Alerts")]
             public bool supplyDrop = true;
+            [JsonProperty(PropertyName = "Supply Drop Landed Alerts")]
+            public bool supplyDropLand = true;
         }
 
         class Grid
@@ -491,8 +466,10 @@ namespace Oxide.Plugins
                 {"HackingCrate", "{0} is hacking a locked crate{1}"},
                 {"SupplySignal", "{0} has deployed a supply signal{1}"},
                 {"SupplyDrop", "Supply Drop has dropped{0}"},
+                {"SupplyDropLanded", "Supply Drop has landed{0}"},
                 {"Location", " at {0}"},
-                {"LocationDestination", " and headed to {0}"}
+                {"LocationDestination", " and headed to {0}"},
+                {"DiscordMessage", ":arrow_lower_right:  **{0}**"}
 			}, this);
 		}
 

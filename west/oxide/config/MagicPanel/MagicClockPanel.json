@@ -8,7 +8,7 @@
   "Panel Layout": {
     "Image": {
       "Url": "https://suparious.com/images/clock.png",
-      "Enabled": true,
+      "Enabled": false,
       "Color": "#FFFFFFFF",
       "Order": 0,
       "Width": 0.28,

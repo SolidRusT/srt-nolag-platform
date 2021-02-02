@@ -1,9 +1,9 @@
 {
   "Active categories (global)": {
-    "Show commands tab": true,
+    "Show commands tab": false,
     "Show exchange tab": true,
-    "Show items tab": true,
-    "Show kits tab": true,
+    "Show items tab": false,
+    "Show kits tab": false,
     "Show seller tab": true,
     "Show transfer tab": true
   },

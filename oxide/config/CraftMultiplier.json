@@ -1,9 +1,0 @@
-{
-  "Chat Command": "cm",
-  "Chat Prefix": "<color=#00FFFF>[CraftMultiplier]</color>: ",
-  "Chat SteamID Icon": 0,
-  "Maximum Multiplier": 10,
-  "Time Before The Multiplier Is Disabled": 120.0,
-  "Use Blacklist (If false, a whitelist will be used)": true,
-  "Item List (Item short name)": []
-}

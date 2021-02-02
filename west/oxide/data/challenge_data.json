@@ -2631,6 +2631,34 @@
         "APCKills": 0,
         "NPCKills": 0
       }
+    },
+    "76561198343915013": {
+      "DisplayName": "nick",
+      "Stats": {
+        "AnimalKills": 1,
+        "ArrowKills": 0,
+        "ClothesCrafted": 0,
+        "Headshots": 4,
+        "PlantsGathered": 0,
+        "PlayersHealed": 0,
+        "PlayersKilled": 0,
+        "MeleeKills": 0,
+        "RevolverKills": 0,
+        "RocketsFired": 0,
+        "RocksGathered": 13250,
+        "BladeKills": 0,
+        "StructuresBuilt": 64,
+        "StructuresRepaired": 0,
+        "ExplosivesThrown": 0,
+        "WeaponsCrafted": 0,
+        "WoodGathered": 0,
+        "QuestsCompleted": 0,
+        "PVPKillDistance": 0,
+        "PVEKillDistance": 15,
+        "HelicopterKills": 0,
+        "APCKills": 0,
+        "NPCKills": 6
+      }
     }
   },
   "Titles": {

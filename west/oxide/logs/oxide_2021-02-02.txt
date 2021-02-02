@@ -1,0 +1,18 @@
+00:00 [Info] [Death Notes] A Murderer haunted down Ratchet.
+00:01 [Info] [Death Notes] blurr fought off a Scarecrow.
+00:01 [Info] [Death Notes] blurr fought off a Murderer.
+00:01 [Info] [FancyDrop] Direct Drop to Player 'blurr' at: (361, 50, -1166) grid area: X28
+00:01 [Info] [Death Notes] blurr fought off a Murderer.
+00:02 [Info] [Death Notes] blurr fought off a Murderer.
+00:02 [Info] [FancyDrop] blurr (76561198397691637) looted his Drop at: (361, 50, -1166) grid area: X28
+00:02 [Warning] Calling 'OnTick' on 'Diseases v1.0.5' took 100ms
+00:04 [Info] [FancyDrop] SupplySignal thrown by 'blurr' at: (450.5, 49.5, -1124.3)
+00:08 [Info] [FancyDrop] blurr (76561198397691637) looted the Drop at: (474, 50, -1130) grid area: X28
+00:08 [Info] [Tell Me X] TellMeX started, X = 14 + (10 x 6) = 74
+00:12 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 527ms
+00:12 [Info] [Welcomer] Player blurr has left. Reason Disconnected
+00:19 [Info] [Tell Me X] TellMeX started, X = 19 x 11 x 10 = 2090
+00:28 [Info] [Discord Extension] [Info]: Reconnect has been called (opcode 7)! Reconnecting...
+00:28 [Warning] [Discord Extension] [Warning]: Discord socket opened!
+00:28 [Warning] [Discord Extension] [Warning]: Attempting resume opcode...
+00:28 [Warning] [Discord Extension] [Warning]: Session resumed!

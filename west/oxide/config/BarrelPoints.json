@@ -10,7 +10,7 @@
   "Plugins": {
     "Use Battlepass": false,
     "Use Economics": true,
-    "Use ServerRewards": false
+    "Use ServerRewards": true
   },
   "Point Settings": {
     "Permission List barrels": {

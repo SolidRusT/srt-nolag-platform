@@ -4,18 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Oxide.Game.Rust.Cui;
 using UnityEngine;
+using Oxide.Core.Libraries.Covalence;
 
 namespace Oxide.Plugins
 {
-    [Info("Diseases", "mr01sam", "1.0.4")]
+    [Info("Diseases", "mr01sam", "1.0.5")]
     [Description("Players can be inflicted with disease that can be spread to others")]
-    public class Diseases : RustPlugin
+    public class Diseases : CovalencePlugin
     {
 
         private const string PermissionInfo = "diseases.info";
         private const string PermissionAdmin = "diseases.admin";
 
         List<Disease> diseases = new List<Disease>();
+
+        private bool showWarnings = false;
 
         #region JSON
         private static string TEMPLATE = @"[
@@ -99,7 +102,7 @@ namespace Oxide.Plugins
         }
         #endregion
 
-        #region Message
+        #region Localization
         protected override void LoadDefaultMessages()
         {
             lang.RegisterMessages(new Dictionary<string, string>
@@ -121,7 +124,7 @@ namespace Oxide.Plugins
                 ["Invalid player"] = "There is no active player with that name",
                 ["Infected"] = "Infected {0} with {1}",
                 ["Cured"] = "Cured {0} of {1}",
-                ["Invalid command"] = "Invalid command",
+                ["Invalid command"] = "Failed to execute command: {0}",
                 ["Commands"] = "Commands:",
                 ["Death message"] = "{0} has died from {1}"
             }, this);
@@ -140,102 +143,135 @@ namespace Oxide.Plugins
 
         }
 
+        private void BroadcastMessage(int chatChannel, string message, string title = null, string color = null)
+        {
+            foreach (BasePlayer player in BasePlayer.activePlayerList)
+            {
+                SendMessage(player, chatChannel, message, title, color);
+            }
+        }
+
         private string Color(string text, string colorCode)
         {
             return "<color=" + colorCode + ">" + text + "</color>";
         }
         #endregion
 
-        #region Chat Commands
-        [ChatCommand("disease")]
-        private void CommandHandler(BasePlayer player, string command, string[] args)
+        #region Commands
+        [Command("diseases"), Permission(PermissionInfo)]
+        private void cmd_diseases(IPlayer player, string command, string[] args)
+        {
+            cmd_diseases_help(player, command, args);
+        }
+
+        [Command("diseases.help"), Permission(PermissionInfo)]
+        private void cmd_diseases_help(IPlayer player, string command, string[] args)
         {
             try
             {
-                if (ArgsIs(args, 1, "list") && HasPerm(player, "diseases.info"))
-                {
-                    CommandPrintList(player);
-                    return;
-                }
-                if (ArgsIs(args, 2, "stats") && HasPerm(player, "diseases.info"))
-                {
-                    string diseaseName = args[1];
-                    CommandPrintStats(player, diseaseName);
-                    return;
-                }
-                if (ArgsIs(args, 2, "outbreak") && HasPerm(player, "diseases.admin"))
-                {
-                    int numOutbreaks = 1;
-                    
-                    if (args.Count() >= 3)
-                        numOutbreaks = int.Parse(args[2]);
-                    string diseaseName = args[1];
-                    Disease disease = diseases.Find(x => x.name.ToUpper() == diseaseName.ToUpper());
-                    
-                    if (disease == null)
-                        SendMessage(player, 0, lang.GetMessage("Invalid disease", this, player.UserIDString));
+                string message = lang.GetMessage("Commands", this, player.Id) + "\n";
+                message += "/diseases.help\n";
+                message += "/diseases.list\n";
+                message += "/diseases.stats <disease name>\n";
+                message += "/diseases.outbreak <disease name> <number of outbreaks>\n";
+                message += "/diseases.infect <player name> <disease name>\n";
+                message += "/diseases.cure <player name> <disease name>\n";
 
-                    int numInfected = 0;
-                    for (int i = 0; i < numOutbreaks; i++)
-                        if (AttemptOutbreak(disease, true) != null)
-                            numInfected++;
-                    
-                    if (numInfected == 0)
-                        SendMessage(player, 0, lang.GetMessage("Outbreak false", this, player.UserIDString));
-                    else
-                        SendMessage(player, 0, string.Format(lang.GetMessage("Outbreak true", this, player.UserIDString), numInfected));
-                    return;
-                }
-                if (ArgsIs(args, 3, "infect") && HasPerm(player, "diseases.admin"))
+                player.Reply(message);
+            }
+            catch (Exception) { player.Reply(string.Format(lang.GetMessage("Invalid command", this, player.Id), command)); };
+        }
+
+        [Command("diseases.list"), Permission(PermissionInfo)]
+        private void cmd_diseases_list(IPlayer player, string command, string[] args)
+        {
+            try
+            {
+                string message = lang.GetMessage("List", this, player.Id);
+                foreach (Disease disease in diseases)
+                    message += disease.name + ",";
+                message = message.Substring(0, message.Length - 1);
+                player.Reply(message);
+            }
+            catch (Exception) { player.Reply(string.Format(lang.GetMessage("Invalid command", this, player.Id), command)); };
+        }
+
+        [Command("diseases.stats"), Permission(PermissionInfo)]
+        private void cmd_diseases_stats(IPlayer player, string command, string[] args)
+        {
+            try
+            {
+                string diseaseName = args[0];
+                Disease disease = diseases.Find(x => x.name.ToUpper() == diseaseName.ToUpper());
+                if (disease != null)
                 {
-                    string playerName = args[1];
-                    string diseaseName = args[2];
+                    string message = diseaseName.ToUpper() + "\n";
+                    message += lang.GetMessage("Stat infected current", this, player.Id) + disease.infected.Count + "\n";
+                    message += lang.GetMessage("Stat infected", this, player.Id) + disease.totalInfectedCount + "\n";
+                    message += lang.GetMessage("Stat deaths", this, player.Id) + disease.totalDeathCount + "\n";
+                    message += lang.GetMessage("Stat outbreaks", this, player.Id) + disease.totalOutbreakCount + "\n";
+                    player.Reply(message);
+                }
+            }
+            catch (Exception) { player.Reply(string.Format(lang.GetMessage("Invalid command", this, player.Id), command)); };
+        }
+
+        [Command("diseases.infect"), Permission(PermissionAdmin)]
+        private void cmd_diseases_infect(IPlayer player, string command, string[] args)
+        {
+            try
+            {
+                long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+                if (ArgsIs(args, 2))
+                {
+                    string playerName = args[0];
+                    string diseaseName = args[1];
                     BasePlayer target = BasePlayer.Find(playerName);
                     Disease disease = diseases.Find(x => x.name.ToUpper() == diseaseName.ToUpper());
-                    if (target == null)
-                    {
-                        SendMessage(player, 0, lang.GetMessage("Invalid player", this, player.UserIDString));
-                        return;
-                    }
-                    if (disease == null)
-                    {
-                        SendMessage(player, 0, lang.GetMessage("Invalid disease", this, player.UserIDString));
-                        return;
-                    }
                     if (disease.Infect(target, true))
-                    {
-                        SendMessage(player, 0, string.Format(lang.GetMessage("Infected", this, player.UserIDString), player.displayName, disease.name));
-                        return;
-                    }
-                    return;
+                        player.Reply("Infected " + target.displayName + " with " + disease.name);
                 }
-                if (ArgsIs(args, 3, "cure") && HasPerm(player, "diseases.admin"))
+            } catch (Exception) { player.Reply(string.Format(lang.GetMessage("Invalid command", this, player.Id), command)); };
+        }
+
+        [Command("diseases.cure"), Permission(PermissionAdmin)]
+        private void cmd_diseases_cure(IPlayer player, string command, string[] args)
+        {
+            try
+            {
+                long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+                if (ArgsIs(args, 2))
                 {
-                    string playerName = args[1];
-                    string diseaseName = args[2];
+                    string playerName = args[0];
+                    string diseaseName = args[1];
                     BasePlayer target = BasePlayer.Find(playerName);
                     Disease disease = diseases.Find(x => x.name.ToUpper() == diseaseName.ToUpper());
-                    if (target == null)
-                    {
-                        SendMessage(player, 0, lang.GetMessage("Invalid player", this, player.UserIDString));
-                        return;
-                    }
-                    if (disease == null)
-                    {
-                        SendMessage(player, 0, lang.GetMessage("Invalid disease", this, player.UserIDString));
-                        return;
-                    }
                     if (disease.Recover(target))
-                    {
-                        SendMessage(player, 0, string.Format(lang.GetMessage("Cured", this, player.UserIDString), player.displayName, disease.name));
-                        return;
-                    }
-                    return;
+                        player.Reply("Cured " + target.displayName + " of " + disease.name);
                 }
-            } catch (Exception) {
-                SendMessage(player, 0, lang.GetMessage("Invalid command", this, player.UserIDString));
-            }; /* Print usage for any exception */
-            CommandPrintUsage(player);
+            }
+            catch (Exception) { player.Reply(string.Format(lang.GetMessage("Invalid command", this, player.Id), command)); };
+        }
+
+        [Command("diseases.outbreak"), Permission(PermissionAdmin)]
+        private void cmd_diseases_outbreak(IPlayer player, string command, string[] args)
+        {
+            try
+            {
+                long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+                if (ArgsIs(args, 2))
+                {
+                    string diseaseName = args[0];
+                    int numOutbreaks = int.Parse(args[1]);
+                    int numInfected = 0;
+                    Disease disease = diseases.Find(x => x.name.ToUpper() == diseaseName.ToUpper());
+                    for (int i = 0; i < numOutbreaks; i++)
+                        if (AttemptOutbreak(now, disease, true) != null)
+                            numInfected++;
+                    player.Reply("Outbreak affected " + numInfected + " entities");
+                }
+            }
+            catch (Exception) { player.Reply(string.Format(lang.GetMessage("Invalid command", this, player.Id), command)); };
         }
 
         private bool ArgsIs(string[] args, int minLength, string value = null)
@@ -245,13 +281,6 @@ namespace Oxide.Plugins
             if (value != null && args[0] != value)
                 return false;
             return true;
-        }
-
-        private void ShowIndicatorCUI(BasePlayer player)
-        {
-            CuiHelper.DestroyUi(player, "IndicatorIMG");
-            var filledTemplate = TEMPLATE.Replace("{imageUrl}", GetConfigString("General Settings", "Indicator image"));
-            CuiHelper.AddUi(player, filledTemplate);
         }
 
         private bool HasPerm(BasePlayer player, string permString)
@@ -264,57 +293,11 @@ namespace Oxide.Plugins
             return true;
         }
 
-        private void CommandPrintUsage(BasePlayer player)
-        {
-
-            string message = lang.GetMessage("Commands", this, player.UserIDString) + "\n";
-            message += "/disease list\n";
-            message += "/disease stats <disease name>\n";
-            message += "/disease outbreak <disease name>\n";
-            message += "/disease outbreak <disease name> <number of outbreaks>\n";
-            message += "/disease infect <player name> <disease name>\n";
-            message += "/disease cure <player name> <disease name>\n";
-            
-            SendMessage(player, 0, message);
-        }
-
-        private void CommandPrintList(BasePlayer player)
-        {
-            string message = lang.GetMessage("List", this, player.UserIDString);
-            foreach (Disease disease in diseases)
-                message += disease.name + ",";
-            message = message.Substring(0, message.Length - 1);
-            SendMessage(player, 0, message);
-        }
-
-        private void CommandPrintStats(BasePlayer player, string diseaseName)
-        {
-            Disease data = null;
-            foreach (Disease disease in diseases)
-                if (disease.name.ToUpper() == diseaseName.ToUpper())
-                {
-                    data = disease;
-                    break;
-                }
-            if (data != null)
-            {
-                string message = diseaseName.ToUpper() + "\n";
-                message += lang.GetMessage("Stat infected current", this, player.UserIDString) + data.infected.Count + "\n";
-                message += lang.GetMessage("Stat infected", this, player.UserIDString) + data.totalInfectedCount + "\n";
-                message += lang.GetMessage("Stat deaths", this, player.UserIDString) + data.totalDeathCount + "\n";
-                message += lang.GetMessage("Stat outbreaks", this, player.UserIDString) + data.totalOutbreakCount + "\n";
-                SendMessage(player, 0, message);
-            }
-        }
         #endregion
 
         #region Hooks
         void Init()
         {
-            /* Register Permissions */
-            permission.RegisterPermission(PermissionInfo, this);
-            permission.RegisterPermission(PermissionAdmin, this);
-
             List<string> files = new List<string>();
             try
             {
@@ -340,146 +323,157 @@ namespace Oxide.Plugins
                     diseases.Add(loadedDisease);
                 }
             }
+            foreach (BasePlayer player in BasePlayer.activePlayerList)
+            {
+                CuiHelper.DestroyUi(player, "IndicatorIMG");
+            }
             Puts(diseases.Count + " diseases loaded");
         }
 
         void OnTick()
         {
-            if (diseases.Count > 0)
+            long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+            if (diseases.Count() > 0)
             {
-                try
+                foreach (Disease disease in diseases)
                 {
-                    long now = DateTimeOffset.Now.ToUnixTimeSeconds();
-                    foreach (Disease disease in diseases)
+                    /* Outbreak tick */
+                    if (disease.ShouldOutbreak(now))
+                        AttemptOutbreak(now, disease);
+                    
+                    /* Spread tick */
+                    foreach (uint entityId in disease.infected.Keys)
                     {
-                        /* Outbreak */
-                        if (now >= disease.nextOutbreakTick && disease.randomOutbreaksOccur)
+                        try
                         {
-                            BaseEntity inflicted = AttemptOutbreak(disease);
-                            disease.nextOutbreakTick = now + disease.randomOutbreakTickInterval;
-                        }
-                        /* Disease Tick */
-                        if (now >= disease.nextDiseaseTick && disease.infected != null && disease.infected.Count > 0)
+                            InfectedEntity ie = disease.infected[entityId];
+                            if (ie.ShouldSpread(now))
+                                AttemptSpread(now, disease, ie);
+                            if (ie.ShouldRecover(now))
+                                disease.Recover(ie.entity);
+                            if (ie.ShouldCure(now))
+                                disease.Cure(ie.entity);
+                        } catch (NullReferenceException)
                         {
-                            foreach (InfectedEntity ie in disease.infected.Values)
-                            {
-                                try
-                                {
-                                    if (ie != null && (!ie.isPlayer || (!ie.player.IsSleeping())))
-                                    {
-                                        /* Spread */
-                                        if (ie.canSpread && now >= ie.symptomTime)
-                                        {
-                                            List<BaseEntity> inflictedEntities = AttemptSpread(disease, ie);
-                                            if (inflictedEntities != null)
-                                                disease.SetNextSymptomTime(ie);
-                                        }
-                                        /* Recover */
-                                        if (ie.cureTime == 0 && now >= ie.recoveryTime)
-                                            disease.Recover(ie.entity);
-
-                                        /* Cure */
-                                        if (ie.cureTime != 0 && now >= ie.cureTime)
-                                            disease.Cure(ie.entity);
-                                    }
-                                } catch (NullReferenceException)
-                                {}
-                            }
-                            disease.nextDiseaseTick = now + 1;
+                            disease.RemoveInfected(entityId);
                         }
                     }
+                    /* Cleanup tick */
+                    disease.UpdateInfectedList(now);
                 }
-                catch (InvalidOperationException) { };
             }
         }
 
         void OnPlayerSleepEnded(BasePlayer player)
         {
-            bool isInfected = false;
-            foreach (Disease disease in diseases)
+            try
             {
-                if (disease.HasInfected(player))
+                bool isInfected = false;
+                foreach (Disease disease in diseases)
                 {
-                    isInfected = true;
-                    break;
+                    if (disease.HasInfected(player))
+                    {
+                        isInfected = true;
+                        break;
+                    }
                 }
+                if (isInfected)
+                    ShowIndicatorCUI(player);
+            } catch (NullReferenceException)
+            {
+                if (showWarnings)
+                    Puts("Warning: Failed OnPlayerSleepEnded");
             }
-            if (isInfected)
-                ShowIndicatorCUI(player);
         }
 
         void OnItemUse(Item item, int amountToUse)
         {
-            if (item != null && item.info != null)
+            try
             {
-                foreach (Disease disease in diseases)
+                long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+                if (item != null && item.info != null)
                 {
-                    /* Try Cure */
-                    if (disease.itemsThatCureOnConsumption.ContainsKey(item.info.shortname))
+                    foreach (Disease disease in diseases)
                     {
-                        BasePlayer player = item.GetOwnerPlayer();
-                        if (UnityEngine.Random.Range(0, 100) <= disease.itemsThatCureOnConsumption[item.info.shortname])
-                            disease.Recover(player);
-                    }
+                        /* Try Cure */
+                        if (disease.itemsThatCureOnConsumption.ContainsKey(item.info.shortname))
+                        {
+                            BasePlayer player = item.GetOwnerPlayer();
+                            if (UnityEngine.Random.Range(0, 100) <= disease.itemsThatCureOnConsumption[item.info.shortname])
+                                disease.Recover(player);
+                        }
 
-                    /* Try Outbreak */
-                    if (disease.itemsThatCauseOutbreaksOnConsumption.ContainsKey(item.info.shortname))
-                    {
-                        BasePlayer player = item.GetOwnerPlayer();
-                        if (UnityEngine.Random.Range(0, 100) <= disease.itemsThatCauseOutbreaksOnConsumption[item.info.shortname])
-                            disease.Infect(player);
+                        /* Try Outbreak */
+                        if (disease.itemsThatCauseOutbreaksOnConsumption.ContainsKey(item.info.shortname))
+                        {
+                            BasePlayer player = item.GetOwnerPlayer();
+                            if (UnityEngine.Random.Range(0, 100) <= disease.itemsThatCauseOutbreaksOnConsumption[item.info.shortname])
+                                disease.Infect(player);
+                        }
                     }
                 }
+            } catch (NullReferenceException)
+            {
+                if (showWarnings)
+                    Puts("Warning: Failed OnItemUse");
             }
+
         }
 
         void OnEntityDeath(BaseCombatEntity entity, HitInfo info)
         {
-            foreach (Disease disease in diseases)
+            try
             {
-                if (disease.WasCauseOfDeath(entity, info))
+                foreach (Disease disease in diseases)
                 {
-                    disease.totalDeathCount += 1;
-                    if (entity is BasePlayer && GetConfigBool("General Settings", "Show Death Message (true/false)") == true)
+                    if (disease.WasCauseOfDeath(entity, info))
                     {
-                        BasePlayer player = (BasePlayer)entity;
-                        string color = GetConfigString("General Settings", "Disease Name Color");
-                        SendMessage(player, 0, String.Format(lang.GetMessage("Death message", this, player.UserIDString), player.displayName, Color(disease.name.TitleCase(), color)));
+                        disease.totalDeathCount += 1;
+                        if (entity is BasePlayer && !((BasePlayer) entity).IsNpc && GetConfigBool("General Settings", "Show Death Message (true/false)") == true)
+                        {
+                            BasePlayer player = (BasePlayer)entity;
+                            string color = GetConfigString("General Settings", "Disease Name Color");
+                            BroadcastMessage(0, String.Format(lang.GetMessage("Death message", this, player.UserIDString), player.displayName, Color(disease.name.TitleCase(), color)));
+                        }
+                    }
+
+                    if (disease.infected.ContainsKey(entity.net.ID))
+                    {
+                        disease.RemoveInfected(entity.net.ID);
+                        if (entity is BasePlayer)
+                            CuiHelper.DestroyUi((BasePlayer)entity, "IndicatorIMG");
                     }
                 }
-                
-                if (disease.infected.ContainsKey(entity.net.ID))
-                {
-                    disease.infected.Remove(entity.net.ID);
-                    if (entity is BasePlayer)
-                        CuiHelper.DestroyUi((BasePlayer) entity, "IndicatorIMG");
-                }
-                    
+            } catch (NullReferenceException)
+            {
+                if (showWarnings)
+                    Puts("Warning: Failed OnEntityDeath, entity=" + entity.ShortPrefabName);
             }
+
         }
 
         #endregion
 
-        #region Helper
+        #region Helpers
+        private void ShowIndicatorCUI(BasePlayer player)
+        {
+            CuiHelper.DestroyUi(player, "IndicatorIMG");
+            var filledTemplate = TEMPLATE.Replace("{imageUrl}", GetConfigString("General Settings", "Indicator image"));
+            CuiHelper.AddUi(player, filledTemplate);
+        }
 
-        private List<BaseEntity> AttemptSpread(Disease disease, InfectedEntity spreader)
+        private List<BaseEntity> AttemptSpread(long now, Disease disease, InfectedEntity spreader)
         {
             if (spreader != null && spreader.entity is BaseCombatEntity && spreader.hasSymptoms)
             {
                 foreach (string effect in disease.symptomEffects)
                     PlayEffect(spreader.entity, effect);
-                if (spreader.isPlayer)
+                if (spreader.isPlayer && spreader.player.metabolism != null)
                 {
                     spreader.player.metabolism.calories.value -= Math.Min(disease.damageCalories, spreader.player.metabolism.calories.value);
                     spreader.player.metabolism.hydration.value -= Math.Min(disease.damageHydration, spreader.player.metabolism.hydration.value);
                 }
-                try
-                {
-                    ((BaseCombatEntity)spreader.entity).Hurt(disease.damageHealth, Rust.DamageType.Poison);
-                } catch (NullReferenceException)
-                {
-                    ((BaseCombatEntity)spreader.entity).health -= disease.damageHealth;
-                }
+                ((BaseCombatEntity)spreader.entity).Hurt(disease.damageHealth, Rust.DamageType.Poison);
 
                 BaseEntity origin = spreader.entity;
                 Vector3 position = new Vector3(origin.transform.position.x, origin.transform.position.y, origin.transform.position.z);
@@ -490,7 +484,7 @@ namespace Oxide.Plugins
                 {
                     if (disease.CanInfect(entity))
                     {
-                        int chance = disease.infectionChanceUncovered;
+                        double chance = disease.infectionChanceUncovered;
                         if (HasFaceCovering(entity))
                             chance = disease.infectionChanceCovered;
                         if (UnityEngine.Random.Range(0, 100) <= chance)
@@ -503,10 +497,11 @@ namespace Oxide.Plugins
                 if (infected != null && infected.Count > 0)
                     return infected;
             }
+            spreader.SetSymptomTime(now, disease.RandomValue(disease.minSpreadTime, disease.maxSpreadTime));
             return new List<BaseEntity>() { };
         }
 
-        private BaseEntity AttemptOutbreak(Disease disease, bool force = false)
+        private BaseEntity AttemptOutbreak(long now, Disease disease, bool force = false)
         {
             List<BaseNpc> allNpc = BaseNetworkable.serverEntities.OfType<BaseNpc>().ToList();
             List<BasePlayer> allPlayers = BaseNetworkable.serverEntities.OfType<BasePlayer>().ToList();
@@ -532,6 +527,7 @@ namespace Oxide.Plugins
                     return randomEntity;
                 }
             }
+            disease.nextOutbreakTick = now + disease.randomOutbreakTickInterval;
             return null;
         }
 
@@ -554,9 +550,10 @@ namespace Oxide.Plugins
         }
         #endregion
 
-        #region Disease Class
+        #region Classes
         class Disease
         {
+            #region Fields
             [NonSerialized]
             public Dictionary<uint, InfectedEntity> infected;
             [NonSerialized]
@@ -571,6 +568,10 @@ namespace Oxide.Plugins
             public int totalDeathCount;
             [NonSerialized]
             public int totalOutbreakCount;
+            [NonSerialized]
+            private List<uint> entitiesToAdd;
+            [NonSerialized]
+            private List<uint> entitiesToRemove;
 
             public string name;
             public int minInfectionTime;
@@ -579,8 +580,8 @@ namespace Oxide.Plugins
             public int maxSpreadTime;
             public int minImmunityTime;
             public int maxImmunityTime;
-            public int infectionChanceCovered;
-            public int infectionChanceUncovered;
+            public double infectionChanceCovered;
+            public double infectionChanceUncovered;
             public float damageHealth;
             public float damageCalories;
             public float damageHydration;
@@ -592,7 +593,10 @@ namespace Oxide.Plugins
             public Dictionary<string, int> itemsThatCureOnConsumption;
             public List<object> infectableEntities;
             public List<object> symptomEffects;
+            
+            #endregion
 
+            #region Constructors
             public Disease(Diseases plugin)
             {
                 this.plugin = plugin;
@@ -605,7 +609,7 @@ namespace Oxide.Plugins
                 this.maxImmunityTime = 180;
                 this.infectionChanceUncovered = 90;
                 this.infectionChanceCovered = 5;
-                this.damageHealth = 10;
+                this.damageHealth = 5;
                 this.damageCalories = 125;
                 this.damageHydration = 85;
                 this.infectableEntities = new List<object> {
@@ -634,7 +638,7 @@ namespace Oxide.Plugins
                     "chicken"
                 };
                 this.randomOutbreaksOccur = true;
-                this.randomOutbreakTickInterval = 300;
+                this.randomOutbreakTickInterval = 500;
                 this.randomOutbreakInfectionChance = 20;
                 this.infectionSpreadDistance = 2f;
                 this.itemsThatCauseOutbreaksOnConsumption = new Dictionary<string, int>
@@ -651,86 +655,19 @@ namespace Oxide.Plugins
                 this.nextOutbreakTick = DateTimeOffset.Now.ToUnixTimeSeconds() + this.randomOutbreakTickInterval;
                 this.symptomEffects = new List<object> {
                     "assets/bundled/prefabs/fx/gestures/drink_vomit.prefab",
-                    "assets/bundled/prefabs/fx/water/midair_splash.prefab"
+                    "assets/bundled/prefabs/fx/water/midair_splash.prefab",
+                    "assets/prefabs/tools/jackhammer/effects/strike_screenshake.prefab"
                 };
                 this.totalInfectedCount = 0;
                 this.totalDeathCount = 0;
                 this.totalOutbreakCount = 0;
                 this.nextDiseaseTick = DateTimeOffset.Now.ToUnixTimeSeconds() + 1;
+                this.entitiesToAdd = new List<uint>();
+                this.entitiesToRemove = new List<uint>();
             }
+            #endregion
 
-            public bool HasInfected(BaseEntity entity)
-            {
-                if (infected != null && infected.Count > 0)
-                    return infected.ContainsKey(entity.net.ID);
-                return false;
-            }
-
-            public bool CanInfect(BaseEntity entity) {
-                if (infected != null && infectableEntities != null)
-                {
-                    if (entity is BasePlayer && ((BasePlayer)entity).IsSleeping())
-                        return false;
-                    return !infected.ContainsKey(entity.net.ID) && infectableEntities.Contains(entity.ShortPrefabName);
-                }
-                return false;
-            }
-
-            public bool Infect(BaseEntity entity, bool force=false)
-            {
-                if (force && infected != null && infected.ContainsKey(entity.net.ID))
-                    infected.Remove(entity.net.ID);
-                if (CanInfect(entity))
-                {
-                    infected.Add(entity.net.ID, new InfectedEntity(this, entity));
-                    InfectedEntity ie = infected[entity.net.ID];
-                    SetNextSymptomTime(ie);
-                    SetNextRecoverTime(ie);
-                    if (plugin.GetConfigBool("General Settings", "Show Infected Message (true/false)") && ie.isPlayer)
-                        ShowStatusMessage(entity, plugin.lang.GetMessage("Infected message", plugin, ie.player.UserIDString));
-                    totalInfectedCount += 1;
-                    if (ie.isPlayer)
-                        plugin.ShowIndicatorCUI(ie.player);
-                    return true;
-                }
-                return false;
-            }
-
-            public bool Recover(BaseEntity entity)
-            {
-                if (infected != null && infected.ContainsKey(entity.net.ID))
-                {
-                    InfectedEntity ie = infected[entity.net.ID];
-                    if (ie.canSpread == true || ie.hasSymptoms == true)
-                    {
-                        ie.hasSymptoms = false;
-                        ie.canSpread = false;
-                        SetNextCureTime(ie);
-                        if (plugin.GetConfigBool("General Settings", "Show Recovery Message (true/false)") && ie.isPlayer)
-                            ShowStatusMessage(entity, plugin.lang.GetMessage("Recovering message", plugin, ie.player.UserIDString));
-                        if (ie.isPlayer)
-                            CuiHelper.DestroyUi(ie.player, "IndicatorIMG");
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            public bool Cure(BaseEntity entity)
-            {
-                if (entity != null && entity.net != null && infected.ContainsKey(entity.net.ID))
-                {
-                    InfectedEntity ie = infected[entity.net.ID];
-                    infected.Remove(entity.net.ID);
-                    if (plugin.GetConfigBool("General Settings", "Show Cured Message (true/false)") && ie.isPlayer)
-                        ShowStatusMessage(entity, plugin.lang.GetMessage("Cured message", plugin, ie.player.UserIDString));
-                    return true;
-                    if (ie.isPlayer)
-                        CuiHelper.DestroyUi(ie.player, "IndicatorIMG");
-                }
-                return false;
-            }
-
+            #region Private Methods
             private void ShowStatusMessage(BaseEntity entity, string message)
             {
                 if (entity is BasePlayer)
@@ -746,23 +683,12 @@ namespace Oxide.Plugins
                         plugin.SendMessage((BasePlayer)entity, 0, message);
                 }
             }
+            #endregion
 
-            public void SetNextSymptomTime(InfectedEntity ie)
+            #region Public Methods
+            public int RandomValue(int min, int max)
             {
-                long now = DateTimeOffset.Now.ToUnixTimeSeconds();
-                ie.symptomTime = now + UnityEngine.Random.Range(this.minSpreadTime, this.maxSpreadTime);
-            }
-
-            public void SetNextRecoverTime(InfectedEntity ie)
-            {
-                long now = DateTimeOffset.Now.ToUnixTimeSeconds();
-                ie.recoveryTime = now + UnityEngine.Random.Range(this.minInfectionTime, this.maxInfectionTime);
-            }
-
-            public void SetNextCureTime(InfectedEntity ie)
-            {
-                long now = DateTimeOffset.Now.ToUnixTimeSeconds();
-                ie.cureTime = now + UnityEngine.Random.Range(this.minImmunityTime, this.maxImmunityTime);
+                return UnityEngine.Random.Range(min, max);
             }
 
             public bool WasCauseOfDeath(BaseEntity entity, HitInfo info)
@@ -780,6 +706,126 @@ namespace Oxide.Plugins
                 return false;
             }
 
+            public bool HasInfected(BaseEntity entity)
+            {
+                if (infected != null && infected.Count > 0 && entity != null)
+                    return infected.ContainsKey(entity.net.ID);
+                return false;
+            }
+
+            public bool CanInfect(BaseEntity entity)
+            {
+                if (infected != null && infectableEntities != null && entity != null)
+                {
+                    if (entity is BasePlayer && ((BasePlayer)entity).IsSleeping())
+                        return false;
+                    return !infected.ContainsKey(entity.net.ID) && infectableEntities.Contains(entity.ShortPrefabName);
+                }
+                return false;
+            }
+
+            public bool ShouldOutbreak(long now)
+            {
+                return now >= nextOutbreakTick;
+            }
+
+            public void AddInfected(uint id)
+            {
+                if (!entitiesToAdd.Contains(id))
+                    entitiesToAdd.Add(id);
+            }
+
+            public void RemoveInfected(uint id)
+            {
+                if (!entitiesToRemove.Contains(id))
+                    entitiesToRemove.Add(id);
+            }
+
+            public void UpdateInfectedList(long now)
+            {
+                if (entitiesToRemove.Count() > 0)
+                {
+                    foreach (uint id in entitiesToRemove)
+                    {
+                        infected.Remove(id);
+                    }
+                    entitiesToRemove = new List<uint>();
+                }
+
+                if (entitiesToAdd.Count() > 0)
+                {
+                    foreach (uint id in entitiesToAdd)
+                    {
+                        BaseEntity entity = (BaseEntity)BaseNetworkable.serverEntities.Find(id);
+                        if (entity != null)
+                        {
+                            InfectedEntity ie = new InfectedEntity(this, entity);
+                            infected.Add(id, ie);
+                            ie.SetSymptomTime(now, RandomValue(minSpreadTime, maxSpreadTime));
+                            ie.SetRecoveryTime(now, RandomValue(minInfectionTime, maxInfectionTime));
+                            ie.isInfected = true;
+                            if (plugin.GetConfigBool("General Settings", "Show Infected Message (true/false)") && ie.isPlayer)
+                                ShowStatusMessage(entity, plugin.lang.GetMessage("Infected message", plugin, ie.player.UserIDString));
+                            if (ie.isPlayer)
+                                plugin.ShowIndicatorCUI(ie.player);
+                        }
+                    }
+                    entitiesToAdd = new List<uint>();
+                }
+            }
+
+            public bool Infect(BaseEntity victim, bool force = false)
+            {
+                if (force && infected != null && victim != null && infected.ContainsKey(victim.net.ID))
+                    infected.Remove(victim.net.ID);
+                if (CanInfect(victim))
+                {
+                    AddInfected(victim.net.ID);
+                    totalInfectedCount += 1;
+                    return true;
+                }
+                return false;
+            }
+
+            public bool Recover(BaseEntity victim)
+            {
+                if (infected != null && victim != null && infected.ContainsKey(victim.net.ID))
+                {
+                    InfectedEntity ie = infected[victim.net.ID];
+                    if (ie.isInfected && !ie.isRecovering)
+                    {
+                        long now = DateTimeOffset.Now.ToUnixTimeSeconds();
+                        ie.hasSymptoms = false;
+                        ie.isRecovering = true;
+                        ie.SetCureTime(now, RandomValue(minImmunityTime, maxImmunityTime));
+                        if (plugin.GetConfigBool("General Settings", "Show Recovery Message (true/false)") && ie.isPlayer)
+                            ShowStatusMessage(victim, plugin.lang.GetMessage("Recovering message", plugin, ie.player.UserIDString));
+                        if (ie.isPlayer)
+                            CuiHelper.DestroyUi(ie.player, "IndicatorIMG");
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public bool Cure(BaseEntity victim)
+            {
+                if (victim != null && victim.net != null && infected.ContainsKey(victim.net.ID))
+                {
+                    InfectedEntity ie = infected[victim.net.ID];
+                    if (plugin.GetConfigBool("General Settings", "Show Cured Message (true/false)") && ie.isPlayer)
+                        ShowStatusMessage(victim, plugin.lang.GetMessage("Cured message", plugin, ie.player.UserIDString));
+                    if (ie.isPlayer)
+                        CuiHelper.DestroyUi(ie.player, "IndicatorIMG");
+                    RemoveInfected(victim.net.ID);
+                    return true;
+                }
+                return false;
+            }
+
+            #endregion
+
+            #region File IO
             public static void SaveToFile(Disease disease)
             {
                 Interface.Oxide.DataFileSystem.WriteObject("Diseases/" + disease.name, disease);
@@ -794,6 +840,8 @@ namespace Oxide.Plugins
                 disease.totalDeathCount = 0;
                 disease.totalOutbreakCount = 0;
                 disease.nextDiseaseTick = DateTimeOffset.Now.ToUnixTimeSeconds() + 1;
+                disease.entitiesToAdd = new List<uint>();
+                disease.entitiesToRemove = new List<uint>();
                 return disease;
             }
 
@@ -809,17 +857,17 @@ namespace Oxide.Plugins
                     return ((Disease)obj).name == name;
                 }
             }
+            #endregion
         }
-        #endregion
 
-        #region InfectedEntity
         class InfectedEntity
         {
             public Disease disease;
             public BaseEntity entity;
             public BasePlayer player;
             public bool isPlayer;
-            public bool canSpread;
+            public bool isInfected;
+            public bool isRecovering;
             public bool hasSymptoms;
             public long symptomTime;
             public long recoveryTime;
@@ -829,14 +877,54 @@ namespace Oxide.Plugins
             {
                 this.disease = disease;
                 this.entity = entity;
+                this.isInfected = false;
+                this.isRecovering = false;
                 this.isPlayer = (entity is BasePlayer);
                 if (isPlayer)
                     this.player = (BasePlayer)entity;
-                this.canSpread = true;
                 this.hasSymptoms = true;
             }
-        }
-        #endregion
 
+            private bool CanSpread()
+            {
+                return hasSymptoms && (!isPlayer || !player.IsSleeping());
+            }
+
+            public void SetSymptomTime(long now, int seconds)
+            {
+                this.symptomTime = now + seconds;
+            }
+
+            public void SetRecoveryTime(long now, int seconds)
+            {
+                this.recoveryTime = now + seconds;
+            }
+
+            public void SetCureTime(long now, int seconds)
+            {
+                this.cureTime = now + seconds;
+            }
+
+            public bool CanBeInfected()
+            {
+                return !isInfected && (!isPlayer || !player.IsSleeping());
+            }
+
+            public bool ShouldSpread(long now)
+            {
+                return now >= symptomTime && CanSpread();
+            }
+
+            public bool ShouldRecover(long now)
+            {
+                return isInfected && now >= recoveryTime;
+            }
+
+            public bool ShouldCure(long now)
+            {
+                return isRecovering && now >= cureTime;
+            }
+        }
     }
+    #endregion
 }

@@ -1,0 +1,38 @@
+{
+  "Command": "gestures",
+  "Use Permission": false,
+  "Button Radius": 100,
+  "Close Button Color": "#FFB6B3DE",
+  "Gesture Button Color": "#FF6666DE",
+  "Gesture Button Size": 50,
+  "Gestures": [
+    {
+      "Gesture Name": "wave",
+      "Image": "https://i.imgur.com/pB3iZer.png"
+    },
+    {
+      "Gesture Name": "victory",
+      "Image": "https://i.imgur.com/PLbSgED.png"
+    },
+    {
+      "Gesture Name": "shrug",
+      "Image": "https://i.imgur.com/A3hHcgV.png"
+    },
+    {
+      "Gesture Name": "thumbsup",
+      "Image": "https://i.imgur.com/yWuhCMu.png"
+    },
+    {
+      "Gesture Name": "chicken",
+      "Image": "https://i.imgur.com/Qxhjf6N.png"
+    },
+    {
+      "Gesture Name": "hurry",
+      "Image": "https://i.imgur.com/vVKVeha.png"
+    },
+    {
+      "Gesture Name": "whoa",
+      "Image": "https://i.imgur.com/AFeGOrK.png"
+    }
+  ]
+}

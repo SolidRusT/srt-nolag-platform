@@ -9,7 +9,7 @@
   "Panel Layout": {
     "Image": {
       "Url": "https://suparious.com/images/locator-map.png",
-      "Enabled": true,
+      "Enabled": false,
       "Color": "#FFFFFFFF",
       "Order": 0,
       "Width": 0.2,

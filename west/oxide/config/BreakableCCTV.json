@@ -250,6 +250,41 @@
       "enabled": true,
       "health": 100,
       "respawnTime": 0
+    },
+    "CARGODECKA8434": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKB8434": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKC8434": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDA8434": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDB8434": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERA8434": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERB8434": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
     }
   }
 }

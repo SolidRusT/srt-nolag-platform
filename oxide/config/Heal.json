@@ -1,6 +1,0 @@
-{
-  "Command cooldown in seconds (0 to disable)": 300,
-  "Maximum heal amount": 50,
-  "Notify target when healed": true,
-  "Use permission system": true
-}

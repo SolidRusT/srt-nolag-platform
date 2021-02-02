@@ -1,0 +1,13 @@
+{
+  "Msg_Bearspawned": "<color=yellow>A wild Bear just appeared!</color>",
+  "Msg_Chickenspawned": "<color=yellow>tok...toktoktok!</color>",
+  "Msg_BoarSpawned": "<color=yellow>Oink oink! a wild Boar spawned</color>",
+  "Msg_Wolfspawned": "<color=yellow>A wild Wolf just appeared!</color>",
+  "Msg_Scienistspawned": "<color=yellow>A Scienist saw you destroying barrels!</color>",
+  "Msg_Peacekeeperspawned": "<color=yellow>A Heavy Scienist saw you destroying barrels!</color>",
+  "Msg_Airdropspawned": "<color=yellow>An Airdrop has been sent to this location!</color>",
+  "Msg_Scarecrowspawned": "<color=yellow>A Scarecrow just appeared!</color>",
+  "Msg_Zombiespawned": "<color=yellow>A Zombie just appeared!</color>",
+  "Msg_Beancanspawned": "<color=yellow>A small explosive fell out of the barrel!</color>",
+  "Msg_Firespawned": "<color=yellow>Oops its lit!</color>"
+}
