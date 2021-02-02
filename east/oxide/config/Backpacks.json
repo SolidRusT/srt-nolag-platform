@@ -9,7 +9,7 @@
     "lmg.m249"
   ],
   "GUI Button": {
-    "Image": "https://suparious.com/images/backpack-wilson-school-backpack-png-image-db011990b0b3f99a11eeb0e96eff3034.png",
+    "Image": "https://suparious.com/images/backpack.png",
     "Background color (RGBA format)": "1 0.96 0.88 0.15",
     "GUI Button Position": {
       "Anchors Min": "0.5 0.0",
@@ -18,5 +18,5 @@
       "Offsets Max": "245 78"
     }
   },
-  "Backpack Size (1-7 Rows)": 1
+  "Backpack Size (1-7 Rows)": 2
 }
