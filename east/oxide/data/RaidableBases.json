@@ -166,6 +166,56 @@
       "Enabled": true,
       "Lockouts": true,
       "Status": true
+    },
+    "76561198112319647": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561198404949078": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561198347931912": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561198406390398": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561199121625462": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561198855285614": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561199060539966": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561199051464652": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561199078529202": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    },
+    "76561198396549851": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
     }
   },
   "RaidTime": "01/01/0001 00:00:00",

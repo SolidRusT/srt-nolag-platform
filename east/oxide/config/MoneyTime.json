@@ -1,0 +1,11 @@
+{
+  "Base payout amount": 100,
+  "Payout interval (seconds)": 600,
+  "Time alive bonus": false,
+  "Time alive multiplier": 0.0,
+  "New player welcome bonus": 500.0,
+  "Permission-based mulitipliers": {
+    "donor": 2.5,
+    "vip": 5.0
+  }
+}

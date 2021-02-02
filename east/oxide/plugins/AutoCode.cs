@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-  [Info("Auto Code", "slaymaster3000", "1.0.1")]
-  [Description("Automatically set the code on code locks you place.")]
+  [Info("Auto Code", "slaymaster3000", "1.0.2")]
+  [Description("Automatically sets the code on code locks placed.")]
   class AutoCode : RustPlugin
   {
     // Permissions.
@@ -71,16 +71,8 @@ namespace Oxide.Plugins
       Effect.server.Run(codeLock.effectCodeChanged.resourcePath, player.transform.position);
     }
 
-    void OnEntitySpawned(BaseNetworkable entity)
+    void OnEntitySpawned(CodeLock codeLock)
     {
-      // Not a code lock?
-      if (!(entity is CodeLock))
-      {
-        return;
-      }
-
-      CodeLock codeLock = entity as CodeLock;
-
       // Code already set?
       if (codeLock.hasCode)
       {
@@ -307,7 +299,7 @@ namespace Oxide.Plugins
      */
     private static string GetRandomCode()
     {
-      return Core.Random.Range(0, 10000).ToString();
+      return Core.Random.Range(0, 10000).ToString("0000");
     }
 
     private void OpenCodeLockUI(BasePlayer player)

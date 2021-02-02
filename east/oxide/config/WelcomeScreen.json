@@ -1,0 +1,10 @@
+{
+  "Image URL": "https://i.imgur.com/RhMXzvF.jpg",
+  "Fade-in duration": 5.0,
+  "Fade-out duration": 5.0,
+  "Delay after joining to create image": 10.0,
+  "Delay after creating image to start fade out": 20.0,
+  "Anchor min (left bottom coordinate)": "0 0",
+  "Anchor min (right top coordinate)": "1 1",
+  "Image transparency": 1.0
+}

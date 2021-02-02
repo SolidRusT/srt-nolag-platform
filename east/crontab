@@ -28,11 +28,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 52 *    * * *   modded  cd /home/modded && zip -q9ru /tmp/solidrust.zip solidrust.net
 59 *    * * *   root    aws s3 cp /tmp/solidrust.zip s3://suparious.com/solidrust-east-config.zip
 59 *    * * *   root    aws s3 sync --quiet --delete  backup s3://suparious.com/solidrust-east
-# Pull Oxide from s3
-*/10 *    * * *   modded  aws s3 sync --quiet --delete s3://suparious.com/oxide/plugins oxide/plugins
-*/30 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/Kits.json oxide/data/
-*/22 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/BetterChat.json oxide/data/
-*/11 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/murdersPoint.json oxide/data/
-*/13 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/CompoundOptions.json oxide/data/
-*/12 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/StackSizeController.json oxide/data/
-*/15 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/FancyDrop.json oxide/data/
+*/5 *    * * *   modded aws s3 sync --delete --quiet s3://suparious.com/oxide/plugins oxide/plugins
+*/15 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/config/Skins.json oxide/config/Skins.json
+*/30 *    * * *   modded  aws s3 cp --quiet s3://suparious.com/oxide/data/Kits.json oxide/data/Kits.json
