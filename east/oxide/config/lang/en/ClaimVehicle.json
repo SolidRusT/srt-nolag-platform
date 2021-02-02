@@ -1,0 +1,14 @@
+{
+  "Generic.Error.NoPermission": "You don't have permission to do that.",
+  "Generic.Error.BuildingBlocked": "Error: Cannot do that while building blocked.",
+  "Generic.Error.NoSupportedVehicleFound": "Error: No supported vehicle found.",
+  "Generic.Error.VehicleDead": "Error: That vehicle is dead.",
+  "Generic.Error.Cooldown": "Please wait <color=red>{0}</color> and try again.",
+  "Claim.Error.AlreadyOwnedByYou": "You already own that vehicle.",
+  "Claim.Error.DifferentOwner": "Error: Someone else already owns that vehicle.",
+  "Claim.Error.LockedByAnother": "Error: Someone else placed a lock on that vehicle.",
+  "Claim.Error.Mounted": "Error: That vehicle is currently occupied.",
+  "Claim.Success": "You now own that vehicle.",
+  "Unclaim.Error.NotOwned": "Error: You do not own that vehicle.",
+  "Unclaim.Success": "You no longer own that vehicle."
+}

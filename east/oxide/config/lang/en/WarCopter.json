@@ -1,0 +1,12 @@
+{
+  "BuildingBlockMsg": "You are building blocked and may not spawn a Warcopter here!",
+  "NoPerms": "You do not have permission to use this command.",
+  "Wrong1": "You are using the command wrong! Try: /warcopter {fighter/drone}!",
+  "Wrong2": "You are using the command wrong! Try: /warcopter {drone} {camera name}!",
+  "InvalidOption": "This is not a valid Warcopter option. Try: /warcopter {fighter/drone}",
+  "CooldownMsg": "Sorry, you are on a cooldown for {0} seconds and may not spawn another!",
+  "CooldownOver": "Your Warcopter cool down is over. You may spawn another one now.",
+  "Exists": "This Warcopter camera identifier exists already. Try again!",
+  "NotYours": "This Warcopter does not belong to you. You can't destroy this.",
+  "NoTarget": "A valid target could not be located. Try again."
+}

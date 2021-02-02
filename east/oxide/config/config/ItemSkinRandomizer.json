@@ -1,0 +1,16 @@
+{
+  "Commands": [
+    "reskin",
+    "rskin",
+    "randomskin"
+  ],
+  "Blocked skin id's": [
+    12,
+    345,
+    6789
+  ],
+  "Blocked items": [
+    "grenade.f1",
+    "explosive.satchel"
+  ]
+}

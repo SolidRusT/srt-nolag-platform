@@ -1,0 +1,13 @@
+{
+  "AutoPlaceMailbox": true,
+  "CanEmptyAtMonument": false,
+  "CanFillAtBase": false,
+  "CanOpenMailBoxAtBuildingBlock": false,
+  "CanPlaceMultipleMailBoxes": false,
+  "GivePlayersMailBoxBlueprint": false,
+  "SpawnMailAtBanditCamp": true,
+  "SpawnMailAtLargeMonuments": true,
+  "SpawnMailAtMediumMonuments": true,
+  "SpawnMailAtOutpost": true,
+  "SpawnMailAtSmallMonuments": true
+}

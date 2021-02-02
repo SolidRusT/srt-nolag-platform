@@ -1,0 +1,16 @@
+{
+  "KnocksMsg": "{0} is knocking your door at {1}.",
+  "KnocksMsgNoCoordinates": "{0} is knocking your door.",
+  "OwnerOnlineMsg": "Owner {0} is online and has been informed.",
+  "OwnerMsg": "Owner {0} has been informed.",
+  "OwnerDisplay": "You have set the knock display owner status to: {0}",
+  "OwnerOfflineMsg": "Owner {0} is actually sleeping !",
+  "TooFast": "{0}, You have a cooldown period of {1} seconds",
+  "MissingArgs": "{0}, You are missing  arguments. Ex, /whoknocks cooldown 5",
+  "NegativeCooldown": "{0}, The cooldown value has to be greater than 0",
+  "WrongColor": "{0}, The color is incorrect. The options are: white, yellow, orange, green, red, black, and blue",
+  "CorrectColor": "{0}, You have set {1} to {2}",
+  "CorrectCooldown": "{0}, You have set {1} to {2} seconds",
+  "IsAdmin": "{0}, The server admin, {1}, has knocked on your door!",
+  "CoordOff": "{0}, door coordinates {1} be displayed!"
+}

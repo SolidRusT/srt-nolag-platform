@@ -1,0 +1,14 @@
+{
+  "Force open a new vote": "Force open a new vote",
+  "Cancel the current vote": "Cancel the current vote",
+  "There is not a vote currently open": "There is not a vote currently open",
+  "You have voted to skip night": "You have voted to skip night",
+  "have voted to skip night": "players have voted to skip night",
+  "Voting was successful, skipping night.": "Voting was successful, skipping night.",
+  "Voting was unsuccessful.": "Voting was unsuccessful.",
+  "Minutes": "Minutes",
+  "Minute": "Minute",
+  "Seconds": "Seconds",
+  "voteMSG": "{secCol}Type</color> {mainCol}/voteday</color> {secCol}now if you want to skip night. If </color>{mainCol}{reqVote}%</color> {secCol}of players vote night will be skipped</color>",
+  "timeRem": "{secCol}Voting ends in</color> {mainCol}{time} {type}</color>{secCol}, use </color>{mainCol}/voteday</color>{secCol} to cast your vote</color>"
+}

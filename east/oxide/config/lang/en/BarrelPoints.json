@@ -1,0 +1,12 @@
+{
+  "Economy Notice (Barrel)": "You received <color=yellow>${0}</color> for destroying a barrel!",
+  "Economy Notice (Crate)": "You received <color=green>${0}</color> for looting a crate!",
+  "RP Notice (Barrel)": "You received <color=yellow>{0}</color> RP for destroying a barrel!",
+  "RP Notice (Crate)": "You received <color=green>{0}</color> RP for looting a crate!",
+  "Item Notice (Barrel)": "You received <color=green>{0}</color> {1} for destroying a barrel!",
+  "Item Notice (Crate)": "You received <color=green>{0}</color> {1} for looting a crate!",
+  "BP1 Notice (Barrel)": "You received <color=green>{0}</color> BP1 for destroying a barrel!",
+  "BP2 Notice (Barrel)": "You received <color=green>{0}</color> BP2 for looting a barrel!",
+  "BP1 Notice (Crate)": "You received <color=green>${0}</color> BP1 for looting a crate!",
+  "BP2 Notice (Crate)": "You received <color=green>${0}</color> BP2 for looting a crate!"
+}

@@ -1,0 +1,25 @@
+{
+  "Items": [
+    {
+      "ID": -1812555177,
+      "Position": 1,
+      "Amount": 1,
+      "Condition": 150.0,
+      "MaxCondition": 150.0,
+      "Ammo": 4,
+      "AmmoType": -1211166256,
+      "Contents": []
+    },
+    {
+      "ID": 1712070256,
+      "Position": 2,
+      "Amount": 25
+    },
+    {
+      "ID": -1848736516,
+      "Position": 3,
+      "Amount": 9
+    }
+  ],
+  "OwnerID": 76561199135759930
+}

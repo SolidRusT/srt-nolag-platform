@@ -1,0 +1,9 @@
+{
+  "NotAllowed": "You are not allowed to use the '{0}' command",
+  "PlayersOnly": "Command '{0}' can only be used by players",
+  "UsageTcMap": "Usage {0} <clear|update|showtoall|>",
+  "MarkersRemoved": "All map markers has been removed",
+  "MarkersSpawned": "Spawned {0} map markers",
+  "MarkersVisibleAdmin": "Map marker are now visible to ADMINS only",
+  "MarkersVisibleAll": "Map marker are now visible to ALL"
+}

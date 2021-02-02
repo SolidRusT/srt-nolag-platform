@@ -1,0 +1,11 @@
+{
+  "Update Rate (Seconds)": 5.0,
+  "How far off shore to spawn ship in grid blocks 1-10 (Default 5)": 5,
+  "NPC spawn on ship (Default true)": true,
+  "Egress duration in minutes (Default 10)": 10,
+  "Event duration in minutes (Default 50)": 50,
+  "Loot round spacing in minutes (Default 10)": 10,
+  "Loot rounds 1-3 (Default 3)": 3,
+  "Enable Log file (true/false)": true,
+  "Log output to console (true/false)": true
+}

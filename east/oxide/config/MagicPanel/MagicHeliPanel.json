@@ -1,0 +1,25 @@
+{
+  "Active Color": "#B33333FF",
+  "Inactive Color": "#FFFFFF1A",
+  "Panel Settings": {
+    "Dock": "center",
+    "Width": 0.02,
+    "Order": 3,
+    "BackgroundColor": "#FFF2DF08"
+  },
+  "Panel Layout": {
+    "Image": {
+      "Url": "http://i.imgur.com/hTTyTTx.png",
+      "Enabled": true,
+      "Color": "#FFFFFFFF",
+      "Order": 0,
+      "Width": 1.0,
+      "Padding": {
+        "Left": 0.1,
+        "Right": 0.1,
+        "Top": 0.1,
+        "Bottom": 0.1
+      }
+    }
+  }
+}

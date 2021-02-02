@@ -1,0 +1,4072 @@
+{
+  "CraftList": {
+    "hat.wolf": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hat.wolf",
+      "Enabled": true
+    },
+    "fogmachine": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fogmachine",
+      "Enabled": true
+    },
+    "strobelight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "strobelight",
+      "Enabled": true
+    },
+    "kayak": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "kayak",
+      "Enabled": true
+    },
+    "minihelicopter.repair": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "minihelicopter.repair",
+      "Enabled": true
+    },
+    "scraptransportheli.repair": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scraptransportheli.repair",
+      "Enabled": true
+    },
+    "ammo.grenadelauncher.buckshot": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.grenadelauncher.buckshot",
+      "Enabled": true
+    },
+    "ammo.grenadelauncher.he": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.grenadelauncher.he",
+      "Enabled": true
+    },
+    "ammo.grenadelauncher.smoke": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.grenadelauncher.smoke",
+      "Enabled": true
+    },
+    "arrow.hv": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "arrow.hv",
+      "Enabled": true
+    },
+    "arrow.wooden": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "arrow.wooden",
+      "Enabled": true
+    },
+    "arrow.bone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "arrow.bone",
+      "Enabled": true
+    },
+    "arrow.fire": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "arrow.fire",
+      "Enabled": true
+    },
+    "ammo.handmade.shell": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.handmade.shell",
+      "Enabled": true
+    },
+    "ammo.nailgun.nails": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.nailgun.nails",
+      "Enabled": true
+    },
+    "ammo.pistol": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.pistol",
+      "Enabled": true
+    },
+    "ammo.pistol.fire": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.pistol.fire",
+      "Enabled": true
+    },
+    "ammo.pistol.hv": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.pistol.hv",
+      "Enabled": true
+    },
+    "ammo.rifle": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rifle",
+      "Enabled": true
+    },
+    "ammo.rifle.explosive": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rifle.explosive",
+      "Enabled": true
+    },
+    "ammo.rifle.incendiary": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rifle.incendiary",
+      "Enabled": true
+    },
+    "ammo.rifle.hv": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rifle.hv",
+      "Enabled": true
+    },
+    "ammo.rocket.basic": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rocket.basic",
+      "Enabled": true
+    },
+    "ammo.rocket.fire": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rocket.fire",
+      "Enabled": true
+    },
+    "ammo.rocket.hv": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rocket.hv",
+      "Enabled": true
+    },
+    "ammo.rocket.smoke": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rocket.smoke",
+      "Enabled": true
+    },
+    "ammo.shotgun": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.shotgun",
+      "Enabled": true
+    },
+    "ammo.shotgun.fire": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.shotgun.fire",
+      "Enabled": true
+    },
+    "ammo.shotgun.slug": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.shotgun.slug",
+      "Enabled": true
+    },
+    "door.double.hinged.metal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.double.hinged.metal",
+      "Enabled": true
+    },
+    "door.double.hinged.toptier": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.double.hinged.toptier",
+      "Enabled": true
+    },
+    "door.double.hinged.wood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.double.hinged.wood",
+      "Enabled": true
+    },
+    "door.hinged.metal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.hinged.metal",
+      "Enabled": true
+    },
+    "door.hinged.toptier": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.hinged.toptier",
+      "Enabled": true
+    },
+    "door.hinged.wood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.hinged.wood",
+      "Enabled": true
+    },
+    "floor.grill": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "floor.grill",
+      "Enabled": true
+    },
+    "floor.ladder.hatch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "floor.ladder.hatch",
+      "Enabled": true
+    },
+    "floor.triangle.grill": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "floor.triangle.grill",
+      "Enabled": true
+    },
+    "floor.triangle.ladder.hatch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "floor.triangle.ladder.hatch",
+      "Enabled": true
+    },
+    "gates.external.high.stone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "gates.external.high.stone",
+      "Enabled": true
+    },
+    "gates.external.high.wood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "gates.external.high.wood",
+      "Enabled": true
+    },
+    "ladder.wooden.wall": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ladder.wooden.wall",
+      "Enabled": true
+    },
+    "wall.external.high.stone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.external.high.stone",
+      "Enabled": true
+    },
+    "wall.external.high": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.external.high",
+      "Enabled": true
+    },
+    "wall.frame.cell.gate": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.frame.cell.gate",
+      "Enabled": true
+    },
+    "wall.frame.cell": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.frame.cell",
+      "Enabled": true
+    },
+    "wall.frame.fence.gate": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.frame.fence.gate",
+      "Enabled": true
+    },
+    "wall.frame.fence": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.frame.fence",
+      "Enabled": true
+    },
+    "wall.frame.garagedoor": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.frame.garagedoor",
+      "Enabled": true
+    },
+    "wall.frame.netting": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.frame.netting",
+      "Enabled": true
+    },
+    "wall.frame.shopfront": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.frame.shopfront",
+      "Enabled": true
+    },
+    "wall.frame.shopfront.metal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.frame.shopfront.metal",
+      "Enabled": true
+    },
+    "wall.window.bars.metal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.window.bars.metal",
+      "Enabled": true
+    },
+    "wall.window.bars.toptier": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.window.bars.toptier",
+      "Enabled": true
+    },
+    "wall.window.bars.wood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.window.bars.wood",
+      "Enabled": true
+    },
+    "shutter.metal.embrasure.a": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shutter.metal.embrasure.a",
+      "Enabled": true
+    },
+    "shutter.metal.embrasure.b": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shutter.metal.embrasure.b",
+      "Enabled": true
+    },
+    "wall.window.glass.reinforced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.window.glass.reinforced",
+      "Enabled": true
+    },
+    "shutter.wood.a": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shutter.wood.a",
+      "Enabled": true
+    },
+    "watchtower.wood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "watchtower.wood",
+      "Enabled": true
+    },
+    "diving.fins": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "diving.fins",
+      "Enabled": true
+    },
+    "diving.mask": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "diving.mask",
+      "Enabled": true
+    },
+    "diving.tank": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "diving.tank",
+      "Enabled": true
+    },
+    "diving.wetsuit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "diving.wetsuit",
+      "Enabled": true
+    },
+    "boots.frog": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "boots.frog",
+      "Enabled": true
+    },
+    "barrelcostume": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "barrelcostume",
+      "Enabled": true
+    },
+    "cratecostume": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "cratecostume",
+      "Enabled": true
+    },
+    "burlap.gloves.new": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "burlap.gloves.new",
+      "Enabled": true
+    },
+    "burlap.gloves": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "burlap.gloves",
+      "Enabled": true
+    },
+    "roadsign.gloves": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "roadsign.gloves",
+      "Enabled": true
+    },
+    "tactical.gloves": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "tactical.gloves",
+      "Enabled": true
+    },
+    "ghostsheet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ghostsheet",
+      "Enabled": true
+    },
+    "halloween.mummysuit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "halloween.mummysuit",
+      "Enabled": true
+    },
+    "scarecrow.suit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scarecrow.suit",
+      "Enabled": true
+    },
+    "scarecrowhead": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scarecrowhead",
+      "Enabled": true
+    },
+    "attire.hide.helterneck": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.hide.helterneck",
+      "Enabled": true
+    },
+    "hat.beenie": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hat.beenie",
+      "Enabled": true
+    },
+    "hat.boonie": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hat.boonie",
+      "Enabled": true
+    },
+    "bucket.helmet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bucket.helmet",
+      "Enabled": true
+    },
+    "burlap.headwrap": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "burlap.headwrap",
+      "Enabled": true
+    },
+    "hat.candle": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hat.candle",
+      "Enabled": true
+    },
+    "hat.cap": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hat.cap",
+      "Enabled": true
+    },
+    "clatter.helmet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clatter.helmet",
+      "Enabled": true
+    },
+    "coffeecan.helmet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "coffeecan.helmet",
+      "Enabled": true
+    },
+    "deer.skull.mask": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "deer.skull.mask",
+      "Enabled": true
+    },
+    "heavy.plate.helmet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "heavy.plate.helmet",
+      "Enabled": true
+    },
+    "hat.miner": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hat.miner",
+      "Enabled": true
+    },
+    "partyhat": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "partyhat",
+      "Enabled": true
+    },
+    "riot.helmet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "riot.helmet",
+      "Enabled": true
+    },
+    "wood.armor.helmet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wood.armor.helmet",
+      "Enabled": true
+    },
+    "hoodie": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hoodie",
+      "Enabled": true
+    },
+    "bone.armor.suit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bone.armor.suit",
+      "Enabled": true
+    },
+    "heavy.plate.jacket": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "heavy.plate.jacket",
+      "Enabled": true
+    },
+    "jacket.snow": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "jacket.snow",
+      "Enabled": true
+    },
+    "jacket": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "jacket",
+      "Enabled": true
+    },
+    "wood.armor.jacket": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wood.armor.jacket",
+      "Enabled": true
+    },
+    "mask.balaclava": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "mask.balaclava",
+      "Enabled": true
+    },
+    "mask.bandana": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "mask.bandana",
+      "Enabled": true
+    },
+    "metal.facemask": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "metal.facemask",
+      "Enabled": true
+    },
+    "nightvisiongoggles": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "nightvisiongoggles",
+      "Enabled": true
+    },
+    "burlap.trousers": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "burlap.trousers",
+      "Enabled": true
+    },
+    "heavy.plate.pants": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "heavy.plate.pants",
+      "Enabled": true
+    },
+    "attire.hide.pants": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.hide.pants",
+      "Enabled": true
+    },
+    "roadsign.kilt": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "roadsign.kilt",
+      "Enabled": true
+    },
+    "pants.shorts": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pants.shorts",
+      "Enabled": true
+    },
+    "wood.armor.pants": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wood.armor.pants",
+      "Enabled": true
+    },
+    "pants": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pants",
+      "Enabled": true
+    },
+    "attire.hide.poncho": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.hide.poncho",
+      "Enabled": true
+    },
+    "burlap.shirt": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "burlap.shirt",
+      "Enabled": true
+    },
+    "shirt.collared": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shirt.collared",
+      "Enabled": true
+    },
+    "attire.hide.vest": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.hide.vest",
+      "Enabled": true
+    },
+    "shirt.tanktop": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shirt.tanktop",
+      "Enabled": true
+    },
+    "shoes.boots": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shoes.boots",
+      "Enabled": true
+    },
+    "burlap.shoes": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "burlap.shoes",
+      "Enabled": true
+    },
+    "attire.hide.boots": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.hide.boots",
+      "Enabled": true
+    },
+    "attire.hide.skirt": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.hide.skirt",
+      "Enabled": true
+    },
+    "attire.banditguard": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.banditguard",
+      "Enabled": true
+    },
+    "hazmatsuit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hazmatsuit",
+      "Enabled": true
+    },
+    "hazmatsuit_scientist": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hazmatsuit_scientist",
+      "Enabled": true
+    },
+    "hazmatsuit_scientist_peacekeeper": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hazmatsuit_scientist_peacekeeper",
+      "Enabled": true
+    },
+    "hazmatsuit.spacesuit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hazmatsuit.spacesuit",
+      "Enabled": true
+    },
+    "scientistsuit_heavy": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scientistsuit_heavy",
+      "Enabled": true
+    },
+    "tshirt.long": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "tshirt.long",
+      "Enabled": true
+    },
+    "tshirt": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "tshirt",
+      "Enabled": true
+    },
+    "metal.plate.torso": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "metal.plate.torso",
+      "Enabled": true
+    },
+    "roadsign.jacket": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "roadsign.jacket",
+      "Enabled": true
+    },
+    "bleach": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bleach",
+      "Enabled": true
+    },
+    "ducttape": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ducttape",
+      "Enabled": true
+    },
+    "carburetor1": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "carburetor1",
+      "Enabled": true
+    },
+    "carburetor2": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "carburetor2",
+      "Enabled": true
+    },
+    "carburetor3": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "carburetor3",
+      "Enabled": true
+    },
+    "crankshaft1": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "crankshaft1",
+      "Enabled": true
+    },
+    "crankshaft2": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "crankshaft2",
+      "Enabled": true
+    },
+    "crankshaft3": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "crankshaft3",
+      "Enabled": true
+    },
+    "piston1": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "piston1",
+      "Enabled": true
+    },
+    "piston2": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "piston2",
+      "Enabled": true
+    },
+    "piston3": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "piston3",
+      "Enabled": true
+    },
+    "sparkplug1": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sparkplug1",
+      "Enabled": true
+    },
+    "sparkplug2": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sparkplug2",
+      "Enabled": true
+    },
+    "sparkplug3": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sparkplug3",
+      "Enabled": true
+    },
+    "valve1": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "valve1",
+      "Enabled": true
+    },
+    "valve2": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "valve2",
+      "Enabled": true
+    },
+    "valve3": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "valve3",
+      "Enabled": true
+    },
+    "fuse": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fuse",
+      "Enabled": true
+    },
+    "gears": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "gears",
+      "Enabled": true
+    },
+    "glue": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "glue",
+      "Enabled": true
+    },
+    "metalblade": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "metalblade",
+      "Enabled": true
+    },
+    "metalpipe": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "metalpipe",
+      "Enabled": true
+    },
+    "propanetank": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "propanetank",
+      "Enabled": true
+    },
+    "roadsigns": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "roadsigns",
+      "Enabled": true
+    },
+    "rope": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rope",
+      "Enabled": true
+    },
+    "sewingkit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sewingkit",
+      "Enabled": true
+    },
+    "sheetmetal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sheetmetal",
+      "Enabled": true
+    },
+    "metalspring": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "metalspring",
+      "Enabled": true
+    },
+    "sticks": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sticks",
+      "Enabled": true
+    },
+    "tarp": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "tarp",
+      "Enabled": true
+    },
+    "techparts": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "techparts",
+      "Enabled": true
+    },
+    "riflebody": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "riflebody",
+      "Enabled": true
+    },
+    "semibody": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "semibody",
+      "Enabled": true
+    },
+    "smgbody": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "smgbody",
+      "Enabled": true
+    },
+    "barricade.concrete": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "barricade.concrete",
+      "Enabled": true
+    },
+    "barricade.wood.cover": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "barricade.wood.cover",
+      "Enabled": true
+    },
+    "barricade.metal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "barricade.metal",
+      "Enabled": true
+    },
+    "barricade.sandbags": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "barricade.sandbags",
+      "Enabled": true
+    },
+    "barricade.stone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "barricade.stone",
+      "Enabled": true
+    },
+    "barricade.wood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "barricade.wood",
+      "Enabled": true
+    },
+    "barricade.woodwire": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "barricade.woodwire",
+      "Enabled": true
+    },
+    "bbq": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bbq",
+      "Enabled": true
+    },
+    "trap.bear": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "trap.bear",
+      "Enabled": true
+    },
+    "bed": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bed",
+      "Enabled": true
+    },
+    "campfire": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "campfire",
+      "Enabled": true
+    },
+    "ceilinglight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ceilinglight",
+      "Enabled": true
+    },
+    "chair": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "chair",
+      "Enabled": true
+    },
+    "composter": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "composter",
+      "Enabled": true
+    },
+    "computerstation": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "computerstation",
+      "Enabled": true
+    },
+    "dropbox": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "dropbox",
+      "Enabled": true
+    },
+    "elevator": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "elevator",
+      "Enabled": true
+    },
+    "fireplace.stone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fireplace.stone",
+      "Enabled": true
+    },
+    "firework.boomer.blue": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.boomer.blue",
+      "Enabled": true
+    },
+    "firework.boomer.champagne": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.boomer.champagne",
+      "Enabled": true
+    },
+    "firework.boomer.green": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.boomer.green",
+      "Enabled": true
+    },
+    "firework.boomer.orange": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.boomer.orange",
+      "Enabled": true
+    },
+    "firework.boomer.red": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.boomer.red",
+      "Enabled": true
+    },
+    "firework.boomer.violet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.boomer.violet",
+      "Enabled": true
+    },
+    "firework.romancandle.blue": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.romancandle.blue",
+      "Enabled": true
+    },
+    "firework.romancandle.green": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.romancandle.green",
+      "Enabled": true
+    },
+    "firework.romancandle.red": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.romancandle.red",
+      "Enabled": true
+    },
+    "firework.romancandle.violet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.romancandle.violet",
+      "Enabled": true
+    },
+    "firework.volcano": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.volcano",
+      "Enabled": true
+    },
+    "firework.volcano.red": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.volcano.red",
+      "Enabled": true
+    },
+    "firework.volcano.violet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "firework.volcano.violet",
+      "Enabled": true
+    },
+    "spikes.floor": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "spikes.floor",
+      "Enabled": true
+    },
+    "fridge": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fridge",
+      "Enabled": true
+    },
+    "furnace.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "furnace.large",
+      "Enabled": true
+    },
+    "furnace": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "furnace",
+      "Enabled": true
+    },
+    "hitchtroughcombo": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hitchtroughcombo",
+      "Enabled": true
+    },
+    "habrepair": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "habrepair",
+      "Enabled": true
+    },
+    "jackolantern.angry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "jackolantern.angry",
+      "Enabled": true
+    },
+    "jackolantern.happy": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "jackolantern.happy",
+      "Enabled": true
+    },
+    "trap.landmine": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "trap.landmine",
+      "Enabled": true
+    },
+    "lantern": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "lantern",
+      "Enabled": true
+    },
+    "box.wooden.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "box.wooden.large",
+      "Enabled": true
+    },
+    "water.barrel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "water.barrel",
+      "Enabled": true
+    },
+    "locker": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "locker",
+      "Enabled": true
+    },
+    "mailbox": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "mailbox",
+      "Enabled": true
+    },
+    "mixingtable": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "mixingtable",
+      "Enabled": true
+    },
+    "modularcarlift": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "modularcarlift",
+      "Enabled": true
+    },
+    "mining.pumpjack": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "mining.pumpjack",
+      "Enabled": true
+    },
+    "small.oil.refinery": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "small.oil.refinery",
+      "Enabled": true
+    },
+    "planter.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "planter.large",
+      "Enabled": true
+    },
+    "planter.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "planter.small",
+      "Enabled": true
+    },
+    "electric.audioalarm": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.audioalarm",
+      "Enabled": true
+    },
+    "smart.alarm": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "smart.alarm",
+      "Enabled": true
+    },
+    "smart.switch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "smart.switch",
+      "Enabled": true
+    },
+    "storage.monitor": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "storage.monitor",
+      "Enabled": true
+    },
+    "electric.battery.rechargable.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.battery.rechargable.large",
+      "Enabled": true
+    },
+    "electric.battery.rechargable.medium": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.battery.rechargable.medium",
+      "Enabled": true
+    },
+    "electric.battery.rechargable.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.battery.rechargable.small",
+      "Enabled": true
+    },
+    "electric.button": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.button",
+      "Enabled": true
+    },
+    "electric.counter": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.counter",
+      "Enabled": true
+    },
+    "electric.hbhfsensor": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.hbhfsensor",
+      "Enabled": true
+    },
+    "electric.laserdetector": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.laserdetector",
+      "Enabled": true
+    },
+    "electric.pressurepad": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.pressurepad",
+      "Enabled": true
+    },
+    "electric.doorcontroller": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.doorcontroller",
+      "Enabled": true
+    },
+    "electric.heater": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.heater",
+      "Enabled": true
+    },
+    "fluid.combiner": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fluid.combiner",
+      "Enabled": true
+    },
+    "fluid.splitter": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fluid.splitter",
+      "Enabled": true
+    },
+    "fluid.switch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fluid.switch",
+      "Enabled": true
+    },
+    "electric.andswitch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.andswitch",
+      "Enabled": true
+    },
+    "electric.blocker": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.blocker",
+      "Enabled": true
+    },
+    "electrical.branch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electrical.branch",
+      "Enabled": true
+    },
+    "electrical.combiner": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electrical.combiner",
+      "Enabled": true
+    },
+    "electrical.memorycell": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electrical.memorycell",
+      "Enabled": true
+    },
+    "electric.orswitch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.orswitch",
+      "Enabled": true
+    },
+    "electric.random.switch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.random.switch",
+      "Enabled": true
+    },
+    "electric.rf.broadcaster": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.rf.broadcaster",
+      "Enabled": true
+    },
+    "electric.rf.receiver": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.rf.receiver",
+      "Enabled": true
+    },
+    "electric.xorswitch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.xorswitch",
+      "Enabled": true
+    },
+    "electric.fuelgenerator.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.fuelgenerator.small",
+      "Enabled": true
+    },
+    "electric.generator.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.generator.small",
+      "Enabled": true
+    },
+    "electric.solarpanel.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.solarpanel.large",
+      "Enabled": true
+    },
+    "electric.igniter": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.igniter",
+      "Enabled": true
+    },
+    "electric.flasherlight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.flasherlight",
+      "Enabled": true
+    },
+    "electric.simplelight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.simplelight",
+      "Enabled": true
+    },
+    "electric.sirenlight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.sirenlight",
+      "Enabled": true
+    },
+    "powered.water.purifier": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "powered.water.purifier",
+      "Enabled": true
+    },
+    "electric.switch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.switch",
+      "Enabled": true
+    },
+    "electric.splitter": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.splitter",
+      "Enabled": true
+    },
+    "electric.sprinkler": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.sprinkler",
+      "Enabled": true
+    },
+    "electric.teslacoil": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.teslacoil",
+      "Enabled": true
+    },
+    "electric.timer": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.timer",
+      "Enabled": true
+    },
+    "electric.cabletunnel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "electric.cabletunnel",
+      "Enabled": true
+    },
+    "waterpump": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "waterpump",
+      "Enabled": true
+    },
+    "mining.quarry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "mining.quarry",
+      "Enabled": true
+    },
+    "target.reactive": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "target.reactive",
+      "Enabled": true
+    },
+    "box.repair.bench": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "box.repair.bench",
+      "Enabled": true
+    },
+    "research.table": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "research.table",
+      "Enabled": true
+    },
+    "rug.bear": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rug.bear",
+      "Enabled": true
+    },
+    "rug": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rug",
+      "Enabled": true
+    },
+    "searchlight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "searchlight",
+      "Enabled": true
+    },
+    "secretlabchair": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "secretlabchair",
+      "Enabled": true
+    },
+    "shelves": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shelves",
+      "Enabled": true
+    },
+    "sign.hanging.banner.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.hanging.banner.large",
+      "Enabled": true
+    },
+    "sign.hanging": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.hanging",
+      "Enabled": true
+    },
+    "sign.hanging.ornate": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.hanging.ornate",
+      "Enabled": true
+    },
+    "sign.pictureframe.landscape": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.pictureframe.landscape",
+      "Enabled": true
+    },
+    "sign.pictureframe.portrait": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.pictureframe.portrait",
+      "Enabled": true
+    },
+    "sign.pictureframe.tall": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.pictureframe.tall",
+      "Enabled": true
+    },
+    "sign.pictureframe.xl": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.pictureframe.xl",
+      "Enabled": true
+    },
+    "sign.pictureframe.xxl": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.pictureframe.xxl",
+      "Enabled": true
+    },
+    "sign.pole.banner.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.pole.banner.large",
+      "Enabled": true
+    },
+    "sign.post.double": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.post.double",
+      "Enabled": true
+    },
+    "sign.post.single": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.post.single",
+      "Enabled": true
+    },
+    "sign.post.town": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.post.town",
+      "Enabled": true
+    },
+    "sign.post.town.roof": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.post.town.roof",
+      "Enabled": true
+    },
+    "sign.wooden.huge": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.wooden.huge",
+      "Enabled": true
+    },
+    "sign.wooden.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.wooden.large",
+      "Enabled": true
+    },
+    "sign.wooden.medium": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.wooden.medium",
+      "Enabled": true
+    },
+    "sign.wooden.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.wooden.small",
+      "Enabled": true
+    },
+    "guntrap": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "guntrap",
+      "Enabled": true
+    },
+    "sleepingbag": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sleepingbag",
+      "Enabled": true
+    },
+    "stash.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "stash.small",
+      "Enabled": true
+    },
+    "sofa": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sofa",
+      "Enabled": true
+    },
+    "spinner.wheel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "spinner.wheel",
+      "Enabled": true
+    },
+    "fishtrap.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fishtrap.small",
+      "Enabled": true
+    },
+    "table": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "table",
+      "Enabled": true
+    },
+    "workbench1": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "workbench1",
+      "Enabled": true
+    },
+    "workbench2": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "workbench2",
+      "Enabled": true
+    },
+    "workbench3": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "workbench3",
+      "Enabled": true
+    },
+    "cupboard.tool": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "cupboard.tool",
+      "Enabled": true
+    },
+    "tunalight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "tunalight",
+      "Enabled": true
+    },
+    "vending.machine": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vending.machine",
+      "Enabled": true
+    },
+    "water.catcher.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "water.catcher.large",
+      "Enabled": true
+    },
+    "water.catcher.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "water.catcher.small",
+      "Enabled": true
+    },
+    "water.purifier": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "water.purifier",
+      "Enabled": true
+    },
+    "generator.wind.scrap": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "generator.wind.scrap",
+      "Enabled": true
+    },
+    "box.wooden": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "box.wooden",
+      "Enabled": true
+    },
+    "apple": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "apple",
+      "Enabled": true
+    },
+    "apple.spoiled": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "apple.spoiled",
+      "Enabled": true
+    },
+    "black.raspberries": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "black.raspberries",
+      "Enabled": true
+    },
+    "blueberries": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "blueberries",
+      "Enabled": true
+    },
+    "botabag": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "botabag",
+      "Enabled": true
+    },
+    "cactusflesh": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "cactusflesh",
+      "Enabled": true
+    },
+    "can.beans": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "can.beans",
+      "Enabled": true
+    },
+    "can.tuna": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "can.tuna",
+      "Enabled": true
+    },
+    "chocholate": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "chocholate",
+      "Enabled": true
+    },
+    "fish.cooked": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fish.cooked",
+      "Enabled": true
+    },
+    "fish.raw": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fish.raw",
+      "Enabled": true
+    },
+    "fish.minnows": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fish.minnows",
+      "Enabled": true
+    },
+    "fish.troutsmall": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fish.troutsmall",
+      "Enabled": true
+    },
+    "granolabar": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "granolabar",
+      "Enabled": true
+    },
+    "chicken.burned": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "chicken.burned",
+      "Enabled": true
+    },
+    "chicken.cooked": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "chicken.cooked",
+      "Enabled": true
+    },
+    "chicken.raw": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "chicken.raw",
+      "Enabled": true
+    },
+    "chicken.spoiled": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "chicken.spoiled",
+      "Enabled": true
+    },
+    "deermeat.burned": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "deermeat.burned",
+      "Enabled": true
+    },
+    "deermeat.cooked": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "deermeat.cooked",
+      "Enabled": true
+    },
+    "deermeat.raw": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "deermeat.raw",
+      "Enabled": true
+    },
+    "horsemeat.burned": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horsemeat.burned",
+      "Enabled": true
+    },
+    "horsemeat.cooked": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horsemeat.cooked",
+      "Enabled": true
+    },
+    "horsemeat.raw": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horsemeat.raw",
+      "Enabled": true
+    },
+    "humanmeat.burned": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "humanmeat.burned",
+      "Enabled": true
+    },
+    "humanmeat.cooked": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "humanmeat.cooked",
+      "Enabled": true
+    },
+    "humanmeat.raw": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "humanmeat.raw",
+      "Enabled": true
+    },
+    "humanmeat.spoiled": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "humanmeat.spoiled",
+      "Enabled": true
+    },
+    "bearmeat.burned": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bearmeat.burned",
+      "Enabled": true
+    },
+    "bearmeat.cooked": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bearmeat.cooked",
+      "Enabled": true
+    },
+    "bearmeat": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bearmeat",
+      "Enabled": true
+    },
+    "wolfmeat.burned": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wolfmeat.burned",
+      "Enabled": true
+    },
+    "wolfmeat.cooked": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wolfmeat.cooked",
+      "Enabled": true
+    },
+    "wolfmeat.raw": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wolfmeat.raw",
+      "Enabled": true
+    },
+    "wolfmeat.spoiled": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wolfmeat.spoiled",
+      "Enabled": true
+    },
+    "meat.pork.burned": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "meat.pork.burned",
+      "Enabled": true
+    },
+    "meat.pork.cooked": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "meat.pork.cooked",
+      "Enabled": true
+    },
+    "meat.boar": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "meat.boar",
+      "Enabled": true
+    },
+    "mushroom": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "mushroom",
+      "Enabled": true
+    },
+    "jar.pickle": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "jar.pickle",
+      "Enabled": true
+    },
+    "smallwaterbottle": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "smallwaterbottle",
+      "Enabled": true
+    },
+    "waterjug": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "waterjug",
+      "Enabled": true
+    },
+    "fun.bass": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fun.bass",
+      "Enabled": true
+    },
+    "fun.cowbell": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fun.cowbell",
+      "Enabled": true
+    },
+    "drumkit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "drumkit",
+      "Enabled": true
+    },
+    "fun.flute": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fun.flute",
+      "Enabled": true
+    },
+    "fun.guitar": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fun.guitar",
+      "Enabled": true
+    },
+    "fun.jerrycanguitar": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fun.jerrycanguitar",
+      "Enabled": true
+    },
+    "piano": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "piano",
+      "Enabled": true
+    },
+    "fun.tambourine": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fun.tambourine",
+      "Enabled": true
+    },
+    "fun.trumpet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fun.trumpet",
+      "Enabled": true
+    },
+    "fun.tuba": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fun.tuba",
+      "Enabled": true
+    },
+    "xylophone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xylophone",
+      "Enabled": true
+    },
+    "car.key": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "car.key",
+      "Enabled": true
+    },
+    "door.key": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.key",
+      "Enabled": true
+    },
+    "lock.key": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "lock.key",
+      "Enabled": true
+    },
+    "lock.code": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "lock.code",
+      "Enabled": true
+    },
+    "blueprintbase": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "blueprintbase",
+      "Enabled": true
+    },
+    "chineselantern": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "chineselantern",
+      "Enabled": true
+    },
+    "dragondoorknocker": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "dragondoorknocker",
+      "Enabled": true
+    },
+    "hat.dragonmask": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hat.dragonmask",
+      "Enabled": true
+    },
+    "newyeargong": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "newyeargong",
+      "Enabled": true
+    },
+    "hat.ratmask": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hat.ratmask",
+      "Enabled": true
+    },
+    "lunar.firecrackers": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "lunar.firecrackers",
+      "Enabled": true
+    },
+    "arcade.machine.chippy": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "arcade.machine.chippy",
+      "Enabled": true
+    },
+    "door.closer": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.closer",
+      "Enabled": true
+    },
+    "attire.bunnyears": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.bunnyears",
+      "Enabled": true
+    },
+    "attire.bunny.onesie": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.bunny.onesie",
+      "Enabled": true
+    },
+    "easterdoorwreath": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "easterdoorwreath",
+      "Enabled": true
+    },
+    "easterbasket": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "easterbasket",
+      "Enabled": true
+    },
+    "rustige_egg_a": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rustige_egg_a",
+      "Enabled": true
+    },
+    "rustige_egg_b": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rustige_egg_b",
+      "Enabled": true
+    },
+    "rustige_egg_c": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rustige_egg_c",
+      "Enabled": true
+    },
+    "rustige_egg_d": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rustige_egg_d",
+      "Enabled": true
+    },
+    "attire.nesthat": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.nesthat",
+      "Enabled": true
+    },
+    "easter.bronzeegg": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "easter.bronzeegg",
+      "Enabled": true
+    },
+    "easter.goldegg": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "easter.goldegg",
+      "Enabled": true
+    },
+    "easter.paintedeggs": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "easter.paintedeggs",
+      "Enabled": true
+    },
+    "easter.silveregg": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "easter.silveregg",
+      "Enabled": true
+    },
+    "halloween.candy": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "halloween.candy",
+      "Enabled": true
+    },
+    "largecandles": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "largecandles",
+      "Enabled": true
+    },
+    "smallcandles": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "smallcandles",
+      "Enabled": true
+    },
+    "coffin.storage": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "coffin.storage",
+      "Enabled": true
+    },
+    "cursedcauldron": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "cursedcauldron",
+      "Enabled": true
+    },
+    "gravestone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "gravestone",
+      "Enabled": true
+    },
+    "woodcross": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "woodcross",
+      "Enabled": true
+    },
+    "wall.graveyard.fence": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.graveyard.fence",
+      "Enabled": true
+    },
+    "halloween.lootbag.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "halloween.lootbag.large",
+      "Enabled": true
+    },
+    "halloween.lootbag.medium": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "halloween.lootbag.medium",
+      "Enabled": true
+    },
+    "halloween.lootbag.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "halloween.lootbag.small",
+      "Enabled": true
+    },
+    "pumpkinbasket": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pumpkinbasket",
+      "Enabled": true
+    },
+    "scarecrow": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scarecrow",
+      "Enabled": true
+    },
+    "skullspikes.candles": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skullspikes.candles",
+      "Enabled": true
+    },
+    "skullspikes.pumpkin": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skullspikes.pumpkin",
+      "Enabled": true
+    },
+    "skullspikes": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skullspikes",
+      "Enabled": true
+    },
+    "skulldoorknocker": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skulldoorknocker",
+      "Enabled": true
+    },
+    "skull_fire_pit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skull_fire_pit",
+      "Enabled": true
+    },
+    "spiderweb": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "spiderweb",
+      "Enabled": true
+    },
+    "spookyspeaker": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "spookyspeaker",
+      "Enabled": true
+    },
+    "halloween.surgeonsuit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "halloween.surgeonsuit",
+      "Enabled": true
+    },
+    "skull.trophy.jar": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skull.trophy.jar",
+      "Enabled": true
+    },
+    "skull.trophy.jar2": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skull.trophy.jar2",
+      "Enabled": true
+    },
+    "skull.trophy.table": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skull.trophy.table",
+      "Enabled": true
+    },
+    "skull.trophy": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skull.trophy",
+      "Enabled": true
+    },
+    "movembermoustachecard": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "movembermoustachecard",
+      "Enabled": true
+    },
+    "movembermoustache": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "movembermoustache",
+      "Enabled": true
+    },
+    "note": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "note",
+      "Enabled": true
+    },
+    "skull.human": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skull.human",
+      "Enabled": true
+    },
+    "abovegroundpool": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "abovegroundpool",
+      "Enabled": true
+    },
+    "beachchair": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "beachchair",
+      "Enabled": true
+    },
+    "beachparasol": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "beachparasol",
+      "Enabled": true
+    },
+    "beachtable": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "beachtable",
+      "Enabled": true
+    },
+    "beachtowel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "beachtowel",
+      "Enabled": true
+    },
+    "boogieboard": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "boogieboard",
+      "Enabled": true
+    },
+    "innertube": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "innertube",
+      "Enabled": true
+    },
+    "innertube.horse": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "innertube.horse",
+      "Enabled": true
+    },
+    "innertube.unicorn": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "innertube.unicorn",
+      "Enabled": true
+    },
+    "tool.instant_camera": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "tool.instant_camera",
+      "Enabled": true
+    },
+    "paddlingpool": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "paddlingpool",
+      "Enabled": true
+    },
+    "photo": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "photo",
+      "Enabled": true
+    },
+    "photoframe.landscape": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "photoframe.landscape",
+      "Enabled": true
+    },
+    "photoframe.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "photoframe.large",
+      "Enabled": true
+    },
+    "photoframe.portrait": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "photoframe.portrait",
+      "Enabled": true
+    },
+    "sunglasses02black": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sunglasses02black",
+      "Enabled": true
+    },
+    "sunglasses02camo": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sunglasses02camo",
+      "Enabled": true
+    },
+    "sunglasses02red": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sunglasses02red",
+      "Enabled": true
+    },
+    "sunglasses03black": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sunglasses03black",
+      "Enabled": true
+    },
+    "sunglasses03chrome": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sunglasses03chrome",
+      "Enabled": true
+    },
+    "sunglasses03gold": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sunglasses03gold",
+      "Enabled": true
+    },
+    "sunglasses": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sunglasses",
+      "Enabled": true
+    },
+    "gun.water": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "gun.water",
+      "Enabled": true
+    },
+    "pistol.water": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pistol.water",
+      "Enabled": true
+    },
+    "twitchsunglasses": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "twitchsunglasses",
+      "Enabled": true
+    },
+    "twitch.headset": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "twitch.headset",
+      "Enabled": true
+    },
+    "hobobarrel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hobobarrel",
+      "Enabled": true
+    },
+    "door.hinged.industrial.a": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "door.hinged.industrial.a",
+      "Enabled": true
+    },
+    "candycaneclub": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "candycaneclub",
+      "Enabled": true
+    },
+    "xmas.lightstring": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.lightstring",
+      "Enabled": true
+    },
+    "xmas.door.garland": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.door.garland",
+      "Enabled": true
+    },
+    "candycane": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "candycane",
+      "Enabled": true
+    },
+    "giantcandycanedecor": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "giantcandycanedecor",
+      "Enabled": true
+    },
+    "wall.ice.wall": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.ice.wall",
+      "Enabled": true
+    },
+    "wall.external.high.ice": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wall.external.high.ice",
+      "Enabled": true
+    },
+    "giantlollipops": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "giantlollipops",
+      "Enabled": true
+    },
+    "sign.neon.125x125": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.neon.125x125",
+      "Enabled": true
+    },
+    "sign.neon.125x215.animated": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.neon.125x215.animated",
+      "Enabled": true
+    },
+    "sign.neon.125x215": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.neon.125x215",
+      "Enabled": true
+    },
+    "sign.neon.xl.animated": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.neon.xl.animated",
+      "Enabled": true
+    },
+    "sign.neon.xl": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sign.neon.xl",
+      "Enabled": true
+    },
+    "pookie.bear": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pookie.bear",
+      "Enabled": true
+    },
+    "xmas.lightstring.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.lightstring.advanced",
+      "Enabled": true
+    },
+    "coal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "coal",
+      "Enabled": true
+    },
+    "xmas.present.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.present.large",
+      "Enabled": true
+    },
+    "xmas.present.medium": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.present.medium",
+      "Enabled": true
+    },
+    "xmas.present.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.present.small",
+      "Enabled": true
+    },
+    "sled.xmas": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sled.xmas",
+      "Enabled": true
+    },
+    "sled": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sled",
+      "Enabled": true
+    },
+    "snowmachine": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "snowmachine",
+      "Enabled": true
+    },
+    "snowball": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "snowball",
+      "Enabled": true
+    },
+    "ammo.snowballgun": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.snowballgun",
+      "Enabled": true
+    },
+    "snowballgun": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "snowballgun",
+      "Enabled": true
+    },
+    "snowman": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "snowman",
+      "Enabled": true
+    },
+    "stocking.large": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "stocking.large",
+      "Enabled": true
+    },
+    "stocking.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "stocking.small",
+      "Enabled": true
+    },
+    "attire.reindeer.headband": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "attire.reindeer.headband",
+      "Enabled": true
+    },
+    "santabeard": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "santabeard",
+      "Enabled": true
+    },
+    "santahat": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "santahat",
+      "Enabled": true
+    },
+    "xmas.window.garland": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.window.garland",
+      "Enabled": true
+    },
+    "wrappedgift": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wrappedgift",
+      "Enabled": true
+    },
+    "wrappingpaper": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wrappingpaper",
+      "Enabled": true
+    },
+    "xmasdoorwreath": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmasdoorwreath",
+      "Enabled": true
+    },
+    "xmas.decoration.baubels": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.decoration.baubels",
+      "Enabled": true
+    },
+    "xmas.decoration.candycanes": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.decoration.candycanes",
+      "Enabled": true
+    },
+    "xmas.decoration.gingerbreadmen": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.decoration.gingerbreadmen",
+      "Enabled": true
+    },
+    "xmas.decoration.lights": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.decoration.lights",
+      "Enabled": true
+    },
+    "xmas.decoration.pinecone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.decoration.pinecone",
+      "Enabled": true
+    },
+    "xmas.decoration.star": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.decoration.star",
+      "Enabled": true
+    },
+    "xmas.decoration.tinsel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.decoration.tinsel",
+      "Enabled": true
+    },
+    "xmas.tree": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "xmas.tree",
+      "Enabled": true
+    },
+    "autoturret": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "autoturret",
+      "Enabled": true
+    },
+    "flameturret": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "flameturret",
+      "Enabled": true
+    },
+    "gloweyes": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "gloweyes",
+      "Enabled": true
+    },
+    "ammo.rocket.sam": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "ammo.rocket.sam",
+      "Enabled": true
+    },
+    "samsite": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "samsite",
+      "Enabled": true
+    },
+    "black.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "black.berry",
+      "Enabled": true
+    },
+    "clone.black.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.black.berry",
+      "Enabled": true
+    },
+    "seed.black.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.black.berry",
+      "Enabled": true
+    },
+    "blue.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "blue.berry",
+      "Enabled": true
+    },
+    "clone.blue.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.blue.berry",
+      "Enabled": true
+    },
+    "seed.blue.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.blue.berry",
+      "Enabled": true
+    },
+    "green.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "green.berry",
+      "Enabled": true
+    },
+    "clone.green.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.green.berry",
+      "Enabled": true
+    },
+    "seed.green.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.green.berry",
+      "Enabled": true
+    },
+    "red.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "red.berry",
+      "Enabled": true
+    },
+    "clone.red.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.red.berry",
+      "Enabled": true
+    },
+    "seed.red.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.red.berry",
+      "Enabled": true
+    },
+    "white.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "white.berry",
+      "Enabled": true
+    },
+    "clone.white.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.white.berry",
+      "Enabled": true
+    },
+    "seed.white.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.white.berry",
+      "Enabled": true
+    },
+    "yellow.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "yellow.berry",
+      "Enabled": true
+    },
+    "clone.yellow.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.yellow.berry",
+      "Enabled": true
+    },
+    "seed.yellow.berry": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.yellow.berry",
+      "Enabled": true
+    },
+    "corn": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "corn",
+      "Enabled": true
+    },
+    "clone.corn": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.corn",
+      "Enabled": true
+    },
+    "seed.corn": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.corn",
+      "Enabled": true
+    },
+    "clone.hemp": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.hemp",
+      "Enabled": true
+    },
+    "seed.hemp": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.hemp",
+      "Enabled": true
+    },
+    "potato": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "potato",
+      "Enabled": true
+    },
+    "clone.potato": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.potato",
+      "Enabled": true
+    },
+    "seed.potato": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.potato",
+      "Enabled": true
+    },
+    "pumpkin": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pumpkin",
+      "Enabled": true
+    },
+    "clone.pumpkin": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "clone.pumpkin",
+      "Enabled": true
+    },
+    "seed.pumpkin": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "seed.pumpkin",
+      "Enabled": true
+    },
+    "fat.animal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fat.animal",
+      "Enabled": true
+    },
+    "battery.small": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "battery.small",
+      "Enabled": true
+    },
+    "blood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "blood",
+      "Enabled": true
+    },
+    "bone.fragments": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bone.fragments",
+      "Enabled": true
+    },
+    "cctv.camera": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "cctv.camera",
+      "Enabled": true
+    },
+    "charcoal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "charcoal",
+      "Enabled": true
+    },
+    "cloth": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "cloth",
+      "Enabled": true
+    },
+    "crude.oil": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "crude.oil",
+      "Enabled": true
+    },
+    "diesel_barrel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "diesel_barrel",
+      "Enabled": true
+    },
+    "can.beans.empty": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "can.beans.empty",
+      "Enabled": true
+    },
+    "can.tuna.empty": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "can.tuna.empty",
+      "Enabled": true
+    },
+    "explosives": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "explosives",
+      "Enabled": true
+    },
+    "fertilizer": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fertilizer",
+      "Enabled": true
+    },
+    "gunpowder": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "gunpowder",
+      "Enabled": true
+    },
+    "horsedung": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horsedung",
+      "Enabled": true
+    },
+    "hq.metal.ore": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hq.metal.ore",
+      "Enabled": true
+    },
+    "metal.refined": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "metal.refined",
+      "Enabled": true
+    },
+    "leather": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "leather",
+      "Enabled": true
+    },
+    "lowgradefuel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "lowgradefuel",
+      "Enabled": true
+    },
+    "metal.fragments": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "metal.fragments",
+      "Enabled": true
+    },
+    "metal.ore": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "metal.ore",
+      "Enabled": true
+    },
+    "paper": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "paper",
+      "Enabled": true
+    },
+    "plantfiber": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "plantfiber",
+      "Enabled": true
+    },
+    "researchpaper": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "researchpaper",
+      "Enabled": true
+    },
+    "water.salt": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "water.salt",
+      "Enabled": true
+    },
+    "scrap": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scrap",
+      "Enabled": true
+    },
+    "stones": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "stones",
+      "Enabled": true
+    },
+    "sulfur.ore": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sulfur.ore",
+      "Enabled": true
+    },
+    "sulfur": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sulfur",
+      "Enabled": true
+    },
+    "targeting.computer": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "targeting.computer",
+      "Enabled": true
+    },
+    "water": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "water",
+      "Enabled": true
+    },
+    "skull.wolf": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "skull.wolf",
+      "Enabled": true
+    },
+    "wood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wood",
+      "Enabled": true
+    },
+    "healingtea.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "healingtea.advanced",
+      "Enabled": true
+    },
+    "healingtea": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "healingtea",
+      "Enabled": true
+    },
+    "healingtea.pure": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "healingtea.pure",
+      "Enabled": true
+    },
+    "maxhealthtea.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "maxhealthtea.advanced",
+      "Enabled": true
+    },
+    "maxhealthtea": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "maxhealthtea",
+      "Enabled": true
+    },
+    "maxhealthtea.pure": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "maxhealthtea.pure",
+      "Enabled": true
+    },
+    "oretea.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "oretea.advanced",
+      "Enabled": true
+    },
+    "oretea": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "oretea",
+      "Enabled": true
+    },
+    "oretea.pure": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "oretea.pure",
+      "Enabled": true
+    },
+    "radiationremovetea.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "radiationremovetea.advanced",
+      "Enabled": true
+    },
+    "radiationremovetea": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "radiationremovetea",
+      "Enabled": true
+    },
+    "radiationremovetea.pure": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "radiationremovetea.pure",
+      "Enabled": true
+    },
+    "radiationresisttea.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "radiationresisttea.advanced",
+      "Enabled": true
+    },
+    "radiationresisttea": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "radiationresisttea",
+      "Enabled": true
+    },
+    "radiationresisttea.pure": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "radiationresisttea.pure",
+      "Enabled": true
+    },
+    "scraptea.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scraptea.advanced",
+      "Enabled": true
+    },
+    "scraptea": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scraptea",
+      "Enabled": true
+    },
+    "scraptea.pure": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "scraptea.pure",
+      "Enabled": true
+    },
+    "woodtea.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "woodtea.advanced",
+      "Enabled": true
+    },
+    "woodtea": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "woodtea",
+      "Enabled": true
+    },
+    "woodtea.pure": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "woodtea.pure",
+      "Enabled": true
+    },
+    "antiradpills": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "antiradpills",
+      "Enabled": true
+    },
+    "tool.binoculars": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "tool.binoculars",
+      "Enabled": true
+    },
+    "explosive.timed": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "explosive.timed",
+      "Enabled": true
+    },
+    "tool.camera": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "tool.camera",
+      "Enabled": true
+    },
+    "rf.detonator": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rf.detonator",
+      "Enabled": true
+    },
+    "fishingrod.handmade": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "fishingrod.handmade",
+      "Enabled": true
+    },
+    "flare": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "flare",
+      "Enabled": true
+    },
+    "flashlight.held": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "flashlight.held",
+      "Enabled": true
+    },
+    "geiger.counter": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "geiger.counter",
+      "Enabled": true
+    },
+    "hosetool": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hosetool",
+      "Enabled": true
+    },
+    "jackhammer": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "jackhammer",
+      "Enabled": true
+    },
+    "keycard_blue": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "keycard_blue",
+      "Enabled": true
+    },
+    "keycard_green": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "keycard_green",
+      "Enabled": true
+    },
+    "keycard_red": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "keycard_red",
+      "Enabled": true
+    },
+    "largemedkit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "largemedkit",
+      "Enabled": true
+    },
+    "map": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "map",
+      "Enabled": true
+    },
+    "syringe.medical": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "syringe.medical",
+      "Enabled": true
+    },
+    "rf_pager": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rf_pager",
+      "Enabled": true
+    },
+    "building.planner": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "building.planner",
+      "Enabled": true
+    },
+    "grenade.smoke": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "grenade.smoke",
+      "Enabled": true
+    },
+    "supply.signal": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "supply.signal",
+      "Enabled": true
+    },
+    "surveycharge": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "surveycharge",
+      "Enabled": true
+    },
+    "wiretool": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "wiretool",
+      "Enabled": true
+    },
+    "vehicle.chassis.2mod": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.chassis.2mod",
+      "Enabled": true
+    },
+    "vehicle.chassis.3mod": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.chassis.3mod",
+      "Enabled": true
+    },
+    "vehicle.chassis.4mod": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.chassis.4mod",
+      "Enabled": true
+    },
+    "vehicle.chassis": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.chassis",
+      "Enabled": true
+    },
+    "vehicle.1mod.cockpit": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.cockpit",
+      "Enabled": true
+    },
+    "vehicle.1mod.cockpit.armored": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.cockpit.armored",
+      "Enabled": true
+    },
+    "vehicle.1mod.cockpit.with.engine": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.cockpit.with.engine",
+      "Enabled": true
+    },
+    "vehicle.1mod.engine": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.engine",
+      "Enabled": true
+    },
+    "vehicle.1mod.flatbed": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.flatbed",
+      "Enabled": true
+    },
+    "vehicle.1mod.passengers.armored": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.passengers.armored",
+      "Enabled": true
+    },
+    "vehicle.1mod.rear.seats": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.rear.seats",
+      "Enabled": true
+    },
+    "vehicle.1mod.storage": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.storage",
+      "Enabled": true
+    },
+    "vehicle.1mod.taxi": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.1mod.taxi",
+      "Enabled": true
+    },
+    "vehicle.2mod.flatbed": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.2mod.flatbed",
+      "Enabled": true
+    },
+    "vehicle.2mod.fuel.tank": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.2mod.fuel.tank",
+      "Enabled": true
+    },
+    "vehicle.2mod.passengers": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.2mod.passengers",
+      "Enabled": true
+    },
+    "vehicle.module": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "vehicle.module",
+      "Enabled": true
+    },
+    "telephone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "telephone",
+      "Enabled": true
+    },
+    "weapon.mod.8x.scope": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.8x.scope",
+      "Enabled": true
+    },
+    "weapon.mod.flashlight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.flashlight",
+      "Enabled": true
+    },
+    "weapon.mod.holosight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.holosight",
+      "Enabled": true
+    },
+    "weapon.mod.lasersight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.lasersight",
+      "Enabled": true
+    },
+    "weapon.mod.muzzleboost": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.muzzleboost",
+      "Enabled": true
+    },
+    "weapon.mod.muzzlebrake": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.muzzlebrake",
+      "Enabled": true
+    },
+    "weapon.mod.simplesight": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.simplesight",
+      "Enabled": true
+    },
+    "weapon.mod.silencer": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.silencer",
+      "Enabled": true
+    },
+    "weapon.mod.small.scope": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "weapon.mod.small.scope",
+      "Enabled": true
+    },
+    "rifle.ak": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rifle.ak",
+      "Enabled": true
+    },
+    "bandage": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bandage",
+      "Enabled": true
+    },
+    "grenade.beancan": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "grenade.beancan",
+      "Enabled": true
+    },
+    "rifle.bolt": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rifle.bolt",
+      "Enabled": true
+    },
+    "bone.club": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bone.club",
+      "Enabled": true
+    },
+    "knife.bone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "knife.bone",
+      "Enabled": true
+    },
+    "bow.hunting": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bow.hunting",
+      "Enabled": true
+    },
+    "cakefiveyear": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "cakefiveyear",
+      "Enabled": true
+    },
+    "chainsaw": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "chainsaw",
+      "Enabled": true
+    },
+    "salvaged.cleaver": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "salvaged.cleaver",
+      "Enabled": true
+    },
+    "bow.compound": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bow.compound",
+      "Enabled": true
+    },
+    "crossbow": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "crossbow",
+      "Enabled": true
+    },
+    "shotgun.double": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shotgun.double",
+      "Enabled": true
+    },
+    "pistol.eoka": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pistol.eoka",
+      "Enabled": true
+    },
+    "grenade.f1": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "grenade.f1",
+      "Enabled": true
+    },
+    "flamethrower": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "flamethrower",
+      "Enabled": true
+    },
+    "multiplegrenadelauncher": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "multiplegrenadelauncher",
+      "Enabled": true
+    },
+    "knife.butcher": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "knife.butcher",
+      "Enabled": true
+    },
+    "pitchfork": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pitchfork",
+      "Enabled": true
+    },
+    "sickle": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "sickle",
+      "Enabled": true
+    },
+    "hammer": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hammer",
+      "Enabled": true
+    },
+    "hatchet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hatchet",
+      "Enabled": true
+    },
+    "knife.combat": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "knife.combat",
+      "Enabled": true
+    },
+    "rifle.l96": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rifle.l96",
+      "Enabled": true
+    },
+    "rifle.lr300": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rifle.lr300",
+      "Enabled": true
+    },
+    "lmg.m249": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "lmg.m249",
+      "Enabled": true
+    },
+    "rifle.m39": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rifle.m39",
+      "Enabled": true
+    },
+    "pistol.m92": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pistol.m92",
+      "Enabled": true
+    },
+    "mace": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "mace",
+      "Enabled": true
+    },
+    "machete": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "machete",
+      "Enabled": true
+    },
+    "smg.mp5": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "smg.mp5",
+      "Enabled": true
+    },
+    "pistol.nailgun": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pistol.nailgun",
+      "Enabled": true
+    },
+    "paddle": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "paddle",
+      "Enabled": true
+    },
+    "pickaxe": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pickaxe",
+      "Enabled": true
+    },
+    "shotgun.waterpipe": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shotgun.waterpipe",
+      "Enabled": true
+    },
+    "pistol.python": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pistol.python",
+      "Enabled": true
+    },
+    "pistol.revolver": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pistol.revolver",
+      "Enabled": true
+    },
+    "rock": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rock",
+      "Enabled": true
+    },
+    "rocket.launcher": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rocket.launcher",
+      "Enabled": true
+    },
+    "axe.salvaged": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "axe.salvaged",
+      "Enabled": true
+    },
+    "hammer.salvaged": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "hammer.salvaged",
+      "Enabled": true
+    },
+    "icepick.salvaged": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "icepick.salvaged",
+      "Enabled": true
+    },
+    "explosive.satchel": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "explosive.satchel",
+      "Enabled": true
+    },
+    "shotgun.pump": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shotgun.pump",
+      "Enabled": true
+    },
+    "pistol.semiauto": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "pistol.semiauto",
+      "Enabled": true
+    },
+    "rifle.semiauto": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "rifle.semiauto",
+      "Enabled": true
+    },
+    "smg.2": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "smg.2",
+      "Enabled": true
+    },
+    "shotgun.spas12": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "shotgun.spas12",
+      "Enabled": true
+    },
+    "stonehatchet": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "stonehatchet",
+      "Enabled": true
+    },
+    "stone.pickaxe": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "stone.pickaxe",
+      "Enabled": true
+    },
+    "spear.stone": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "spear.stone",
+      "Enabled": true
+    },
+    "longsword": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "longsword",
+      "Enabled": true
+    },
+    "salvaged.sword": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "salvaged.sword",
+      "Enabled": true
+    },
+    "smg.thompson": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "smg.thompson",
+      "Enabled": true
+    },
+    "toolgun": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "toolgun",
+      "Enabled": true
+    },
+    "torch": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "torch",
+      "Enabled": true
+    },
+    "bucket.water": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "bucket.water",
+      "Enabled": true
+    },
+    "spear.wooden": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "spear.wooden",
+      "Enabled": true
+    },
+    "horse.armor.roadsign": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horse.armor.roadsign",
+      "Enabled": true
+    },
+    "horse.armor.wood": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horse.armor.wood",
+      "Enabled": true
+    },
+    "horse.saddle": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horse.saddle",
+      "Enabled": true
+    },
+    "horse.saddlebag": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horse.saddlebag",
+      "Enabled": true
+    },
+    "horse.shoes.advanced": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horse.shoes.advanced",
+      "Enabled": true
+    },
+    "horse.shoes.basic": {
+      "MaxBulkCraft": 10001,
+      "MinBulkCraft": 10,
+      "shortName": "horse.shoes.basic",
+      "Enabled": true
+    }
+  }
+}

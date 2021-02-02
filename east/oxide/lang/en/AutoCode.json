@@ -1,0 +1,9 @@
+{
+  "NoPermission": "You don't have permission.",
+  "Enabled": "Auto Code enabled.",
+  "Disabled": "Auto Code disabled.",
+  "CodeAutoLocked": "Code lock placed with code {0}.",
+  "CodeUpdated": "Your new code is {0}.",
+  "InvalidArgsTooMany": "No additional arguments expected.",
+  "SyntaxError": "Syntax Error: expected \"{0}\""
+}

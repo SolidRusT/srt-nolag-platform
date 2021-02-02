@@ -1,0 +1,116 @@
+{
+  "items": [
+    {
+      "id": "1318558775",
+      "amount": 1,
+      "slot": 0,
+      "flags": 0,
+      "condition": 89.11059,
+      "skin": 0,
+      "contents": [
+        {
+          "id": "-1405508498",
+          "amount": 1,
+          "slot": 0,
+          "flags": 0,
+          "condition": 100.0,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        },
+        {
+          "id": "442289265",
+          "amount": 1,
+          "slot": 1,
+          "flags": 0,
+          "condition": 300.0,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        }
+      ],
+      "primaryMagazine": 8,
+      "ammoType": 785728077,
+      "dataInt": 0
+    },
+    {
+      "id": "-1812555177",
+      "amount": 1,
+      "slot": 1,
+      "flags": 0,
+      "condition": 47.3764343,
+      "skin": 0,
+      "contents": [
+        {
+          "id": "-855748505",
+          "amount": 1,
+          "slot": 0,
+          "flags": 0,
+          "condition": 300.0,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        }
+      ],
+      "primaryMagazine": 4,
+      "ammoType": -1211166256,
+      "dataInt": 0
+    },
+    {
+      "id": "-1812555177",
+      "amount": 1,
+      "slot": 2,
+      "flags": 0,
+      "condition": 129.173279,
+      "skin": 0,
+      "contents": [
+        {
+          "id": "-1405508498",
+          "amount": 1,
+          "slot": 0,
+          "flags": 0,
+          "condition": 100.0,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        }
+      ],
+      "primaryMagazine": 4,
+      "ammoType": -1211166256,
+      "dataInt": 0
+    },
+    {
+      "id": "1318558775",
+      "amount": 1,
+      "slot": 3,
+      "flags": 0,
+      "condition": 85.0661,
+      "skin": 0,
+      "contents": [
+        {
+          "id": "567235583",
+          "amount": 1,
+          "slot": 0,
+          "flags": 0,
+          "condition": 300.0,
+          "skin": 0,
+          "contents": [],
+          "primaryMagazine": 0,
+          "ammoType": 0,
+          "dataInt": 0
+        }
+      ],
+      "primaryMagazine": 8,
+      "ammoType": 785728077,
+      "dataInt": 0
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "notauthorized": "You don't have access to this command",
+  "wpediting": "You are already editing {0}",
+  "notediting": "You are not editing any waypoints, say /waypoints_new or /waypoints_edit NAME",
+  "listcreated": "Waypoints: New WaypointList created, you may now add waypoints.",
+  "wpadded": "Waypoint Added: {0} {1} {2} - Speed: {3}",
+  "nowp": "No waypoints created yet",
+  "wpheader": "==== Waypoints ====",
+  "wplist": "/waypoints_list to get the list of waypoints",
+  "wpnotexist": "Waypoint {0} doesn't exist",
+  "wpremoved": "Waypoints: {0} was removed",
+  "wpsave": "Waypoints: /waypoints_save NAMEOFWAYPOINT",
+  "wperror": "Waypoints: Something went wrong while getting your WaypointList",
+  "wpsaved": "Waypoints: New waypoint saved with: {0} with {1} waypoints stored",
+  "wpclose": "Waypoints: Closed without saving"
+}

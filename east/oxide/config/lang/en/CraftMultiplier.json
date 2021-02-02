@@ -1,0 +1,13 @@
+{
+  "NotAllowed": "You don't have permission to use this command.",
+  "NotIntValue": "Please use an integer number greater than zero.",
+  "EnabledCraftMultiplier": "You have <color=#7FFF00>Enabled</color> craft multiplier, multiplier is <color=#1E90FF>{0}</color>. ",
+  "ChangedCraftMultiplier": "Craft multiplier has been changed to <color=#1E90FF>{0}</color>. ",
+  "DisabledCraftMultiplier": "You have <color=#FF8C00>Disabled</color> craft multiplier.",
+  "MultiplierNotEnable": "You have not enabled the craft multiplier, usage: '<color=#1E90FF>/{0} #</color>' -- # is the multiplier.",
+  "CantAfford": "You don't have enough resources to use craft multiplier.",
+  "IsBlocked": "This item is blocked by craft multiplier and cannot be multiplied.",
+  "CantUse": "Unable to use, please wait for server initialization.",
+  "MultiplierLimit": "The craft multiplier cannot be greater than {0}",
+  "AutoDisable": "The craft multiplier will disabled after {0} seconds"
+}

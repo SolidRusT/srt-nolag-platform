@@ -1,0 +1,593 @@
+00:05 [Info] [Death Notes] Zombie60 killed a Boar using their icepick_salvaged.entity.
+00:05 [Info] [Economics] Saving balances for players...
+00:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 203ms
+00:12 [Info] [Better Chat] [Global] [Player] Suparious: updating the kits
+00:13 [Info] [Better Chat] [Global] [Player] [Handyman] SmokeQc: can the mechanic git get the repair mats also?
+00:14 [Info] [Better Chat] [Global] [Player] Suparious: i'd worry about the kit being used just for collecting the materials
+00:14 [Info] [Better Chat] [Global] [Player] Suparious: maybe we need a materials kit in its own, but with a long cooldown
+00:24 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+00:24 [Info] [Running Man] [EVENT] | Running man: SmokeQc
+00:24 [Info] [Running Man] [EVENT] +---------------------------------------------
+00:32 [Info] [Better Chat] [Global] [Player] [Handyman] SmokeQc: map is rediculous
+00:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+00:34 [Info] [Running Man] [EVENT] | <color=#C4FF00>EVENT</color>: Player - Elite Guard kill SmokeQc and received a reward!
+00:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+00:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+00:34 [Info] [Running Man] [EVENT] | timer eventstart stopped
+00:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+00:34 [Info] [Death Notes] A Elite Guard shot down SmokeQc.
+00:34 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 410ms
+00:34 [Info] [Welcomer] Player Zombie60 has left the server. Reason Disconnected
+00:34 [Info] [Better Chat] [Global] [Player] [Handyman] SmokeQc: faggot
+00:34 [Info] [Better Chat] [Global] [Player] Suparious: ?
+00:35 [Info] [Better Chat] [Global] [Player] [Handyman] SmokeQc: elite guard guy
+01:05 [Info] [Economics] Saving balances for players...
+01:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 205ms
+01:35 [Info] [Economics] Saving balances for players...
+01:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 202ms
+01:49 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 411ms
+01:49 [Info] [Welcomer] Player SmokeQc has left the server. Reason Disconnected
+01:56 [Info] [Welcomer] Player Zombie60 has joined the server from United States
+01:58 [Info] [Welcomer] Player PICDIC has joined the server from Canada
+01:59 [Info] [Death Notes] Zombie60 did not want to be a part of the Scientist's experiments.
+02:03 [Info] [Death Notes] Zombie60 shot a Wolf using their Semi-Automatic Rifle over a distance of 1.3 meters.
+02:04 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:04 [Info] [Running Man] [EVENT] | Running man: Zombie60
+02:04 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:04 [Info] [Welcomer] Player Twitch escor03 has joined the server from United States
+02:05 [Info] [Death Notes] PICDIC killed a Chicken using their Salvaged Axe.
+02:06 [Info] [Death Notes] PICDIC killed a Chicken using their Salvaged Axe.
+02:06 [Info] [Death Notes] Zombie60 shot a Boar using their Revolver over a distance of 7.7 meters.
+02:09 [Info] [Death Notes] Twitch escor03 shot a Boar using their Semi-Automatic Rifle over a distance of 20.6 meters.
+02:10 [Info] [Death Notes] Zombie60 had enough of life.
+02:11 [Info] [Welcomer] Player SmokeQc has joined the server from Canada
+02:11 [Info] [Better Chat] [Global] [Player] [Handyman] SmokeQc: wow huge map!
+02:11 [Info] [Better Chat] [Global] [Player] [Handyman] SmokeQc: still lv2 woodcutting from previous wipe
+02:12 [Info] [Better Chat] [Global] [Player] PICDIC: whens wipe?
+02:12 [Info] [Better Chat] [Global] [Player] Suparious: yeah, I didn't clear any PvE stats, was just a size increas
+02:12 [Info] [Better Chat] [Global] [Player] Suparious: wipe is when server reaches 15GB of used memory
+02:12 [Info] [Better Chat] [Global] [Player] [Handyman] SmokeQc: I guess that would depend on activity
+02:13 [Info] [Better Chat] [Global] [Player] Suparious: 7/15G right now
+02:13 [Info] [Better Chat] [Global] [Player] PICDIC: k
+02:13 [Info] [Better Chat] [Global] [Player] Suparious: started with 6G with the fresh map and no player stuff
+02:13 [Info] [Better Chat] [Global] [Player] Twitch escor03: Y CANT WE TP TO BANDIT
+02:13 [Info] [Better Chat] [Global] [Player] Twitch escor03: ?
+02:14 [Info] [Better Chat] [Global] [Player] Suparious: working on more free kits, lmk if you have suggestions
+02:14 [Info] [Better Chat] [Global] [Player] Suparious: hrmm, OK. like a respawn to bandit option. OK I will work on that
+02:15 [Info] [Better Chat] [Global] [Player] Twitch escor03: no i mean like tp
+02:15 [Info] [Better Chat] [Global] [Player] Twitch escor03: like /bandit and /outpost
+02:15 [Info] [Better Chat] [Global] [Player] Suparious: ok, a if not raid blocked, then allow tp to that entity
+02:16 [Info] [Better Chat] [Global] [Player] Twitch escor03: ya
+02:16 [Info] [Better Chat] [Global] [Player] Twitch escor03: just because its big map
+02:17 [Info] [Better Chat] [Global] [Player] Twitch escor03: it would be awsome if u cold tp to home also
+02:17 [Info] [Better Chat] [Global] [Player] Suparious: thank-you, I was considering a 4250 map, but there are many other mature servers with that already
+02:19 [Info] [Death Notes] Twitch escor03 shot a Boar using their Semi-Automatic Rifle over a distance of 11.4 meters.
+02:19 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 424ms
+02:19 [Info] [Welcomer] Player SmokeQc has left the server. Reason Kicked: Unresponsive
+02:25 [Info] [Welcomer] Player andreyjrk12 has joined the server from United States
+02:27 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 415ms
+02:27 [Info] [Welcomer] Player Twitch escor03 has left the server. Reason Disconnected
+02:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:34 [Info] [Running Man] [EVENT] | Running man - Zombie60 ran away from the chase and received as a reward!
+02:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:34 [Info] [Running Man] [EVENT] | random
+02:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+02:34 [Info] [Running Man] [EVENT] | timer eventstart stopped
+02:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+02:43 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 415ms
+02:43 [Info] [Welcomer] Player andreyjrk12 has left the server. Reason Disconnected
+02:46 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 407ms
+02:46 [Info] [Welcomer] Player PICDIC has left the server. Reason Disconnected
+02:53 [Info] [Better Chat] [Team] [Player] [Assassin] [Hunter] Zombie60: what is rp ?
+03:00 [Info] [Death Notes] Suparious turned into an ice statue.
+03:01 [Info] [NTeleportation] Suparious teleported to Zombie60.
+03:02 [Info] [Death Notes] Suparious had enough of life.
+03:05 [Info] [Economics] Saving balances for players...
+03:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 198ms
+03:07 [Info] [Death Notes] Suparious fell to their death.
+03:13 [Info] [Death Notes] A Hard Guard shot down Suparious.
+03:17 [Info] [Death Notes] Suparious did not want to be a part of the Hard Guard's experiments.
+03:18 [Info] [Death Notes] Suparious did not want to be a part of the Hard Guard's experiments.
+03:18 [Info] [Death Notes] Suparious did not want to be a part of the Hard Guard's experiments.
+03:18 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 407ms
+03:18 [Info] [Welcomer] Player Zombie60 has left the server. Reason Disconnected
+03:19 [Info] [Death Notes] Suparious did not want to be a part of the Hard Guard's experiments.
+03:26 [Info] [Death Notes] Suparious turned into an ice statue.
+03:27 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 413ms
+03:27 [Info] [Welcomer] Player Suparious has left the server. Reason Disconnected
+03:35 [Info] [Economics] Saving balances for players...
+03:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 199ms
+04:05 [Info] [Economics] Saving balances for players...
+04:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 198ms
+04:06 [Info] [Welcomer] Player derreckoo has joined the server from United States
+04:26 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 421ms
+04:26 [Info] [Welcomer] Player derreckoo has left the server. Reason Timed Out
+04:38 [Info] [Welcomer] Player derreckoo has joined the server from United States
+05:05 [Info] [Economics] Saving balances for players...
+05:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 198ms
+05:06 [Info] [Death Notes] derreckoo shot a Wolf using their Semi-Automatic Rifle over a distance of 1.4 meters.
+05:14 [Info] [Welcomer] Player SmokeQc has joined the server from Canada
+05:24 [Info] [Death Notes] SmokeQc shot a Boar using their Semi-Automatic Rifle over a distance of 2.1 meters.
+05:32 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 416ms
+05:32 [Info] [Welcomer] Player SmokeQc has left the server. Reason Disconnected
+05:35 [Info] [Economics] Saving balances for players...
+05:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 205ms
+05:55 [Info] [Welcomer] Player Suparious has joined the server from Canada
+05:56 [Info] [Death Notes] derreckoo had enough of life.
+05:57 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 416ms
+05:57 [Info] [Welcomer] Player Suparious has left the server. Reason Disconnected
+05:58 [Info] [Welcomer] Player Suparious has joined the server from Canada
+05:58 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 421ms
+05:58 [Info] [Welcomer] Player Suparious has left the server. Reason Disconnected
+06:05 [Info] [Economics] Saving balances for players...
+06:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 204ms
+06:07 [Info] [Death Notes] As derreckoo just found out, breathing underwater is rather difficult.
+06:29 [Info] [Death Notes] derreckoo shot a Boar using their Semi-Automatic Rifle over a distance of 3.7 meters.
+06:43 [Info] [Death Notes] derreckoo did not want to be a part of the Scientist's experiments.
+06:49 [Info] [Death Notes] derreckoo shot a Boar using their Semi-Automatic Rifle over a distance of 49.9 meters.
+06:49 [Info] [Death Notes] derreckoo shot a Boar using their Semi-Automatic Rifle over a distance of 54 meters.
+06:53 [Info] [Death Notes] derreckoo did not want to be a part of the Scientist's experiments.
+06:54 [Info] [Death Notes] derreckoo shot a Boar using their Semi-Automatic Rifle over a distance of 43.4 meters.
+06:54 [Info] [Death Notes] derreckoo shot a Wolf using their Semi-Automatic Rifle over a distance of 21.4 meters.
+07:05 [Info] [Economics] Saving balances for players...
+07:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 205ms
+07:35 [Info] [Economics] Saving balances for players...
+07:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 200ms
+08:01 [Info] [Welcomer] Player biscuitball has joined the server from United States
+08:04 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:04 [Info] [Running Man] [EVENT] | Running man: biscuitball
+08:04 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:05 [Info] [Economics] Saving balances for players...
+08:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 206ms
+08:06 [Info] [Death Notes] derreckoo had enough of life.
+08:10 [Info] [Death Notes] derreckoo shot Frosty_IFN.GG using their Semi-Automatic Rifle over a distance of 5 meters.
+08:13 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 415ms
+08:13 [Info] [Welcomer] Player biscuitball has left the server. Reason Disconnected
+08:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:34 [Info] [Running Man] [EVENT] | Running man - biscuitball ran away from the chase and received as a reward!
+08:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:34 [Info] [Running Man] [EVENT] | random
+08:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:34 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:34 [Info] [Running Man] [EVENT] | timer eventstart stopped
+08:34 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:35 [Info] [Economics] Saving balances for players...
+08:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 204ms
+08:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:43 [Info] [Running Man] [EVENT] | timer eventpause stopped
+08:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+08:43 [Info] [Running Man] [EVENT] | Running Man has stopped
+08:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+08:54 [Info] [Welcomer] Player SmokeQc has joined the server from Canada
+08:56 [Info] [Death Notes] SmokeQc couldn't run away from the Bear.
+09:05 [Info] [Economics] Saving balances for players...
+09:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 204ms
+09:06 [Info] [Death Notes] derreckoo had enough of life.
+09:13 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+09:13 [Info] [Running Man] [EVENT] | Running man: derreckoo
+09:13 [Info] [Running Man] [EVENT] +---------------------------------------------
+09:19 [Info] [Death Notes] derreckoo had enough of life.
+09:35 [Info] [Economics] Saving balances for players...
+09:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 207ms
+09:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+09:43 [Info] [Running Man] [EVENT] | Running man - derreckoo ran away from the chase and received as a reward!
+09:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+09:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+09:43 [Info] [Running Man] [EVENT] | random
+09:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+09:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+09:43 [Info] [Running Man] [EVENT] | timer eventstart stopped
+09:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+09:58 [Info] [Death Notes] derreckoo shot a Wolf using their Semi-Automatic Rifle over a distance of 0.9 meters.
+10:05 [Info] [Economics] Saving balances for players...
+10:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 204ms
+10:08 [Info] [Welcomer] Player Fatocto has joined the server from United States
+10:11 [Info] [Death Notes] Fatocto shot a Boar using their Semi-Automatic Rifle over a distance of 7.3 meters.
+10:11 [Info] [Death Notes] Fatocto couldn't run away from the Boar.
+10:13 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+10:13 [Info] [Running Man] [EVENT] | Running man: derreckoo
+10:13 [Info] [Running Man] [EVENT] +---------------------------------------------
+10:18 [Info] [Welcomer] Player samsayiam has joined the server from Canada
+10:23 [Info] [Death Notes] samsayiam couldn't run away from the Bear.
+10:23 [Info] [Death Notes] samsayiam couldn't run away from the Boar.
+10:31 [Info] [Death Notes] samsayiam shot a Bear using their Semi-Automatic Rifle over a distance of 3.4 meters.
+10:37 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 418ms
+10:37 [Info] [Welcomer] Player Fatocto has left the server. Reason Disconnected
+10:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+10:43 [Info] [Running Man] [EVENT] | Running man - derreckoo ran away from the chase and received as a reward!
+10:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+10:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+10:43 [Info] [Running Man] [EVENT] | random
+10:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+10:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+10:43 [Info] [Running Man] [EVENT] | timer eventstart stopped
+10:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+10:49 [Info] [Death Notes] derreckoo had enough of life.
+11:05 [Info] [Economics] Saving balances for players...
+11:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 203ms
+11:13 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+11:13 [Info] [Running Man] [EVENT] | Running man: SmokeQc
+11:13 [Info] [Running Man] [EVENT] +---------------------------------------------
+11:20 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 447ms
+11:20 [Info] [Welcomer] Player samsayiam has left the server. Reason Disconnected
+11:35 [Info] [Economics] Saving balances for players...
+11:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 208ms
+11:36 [Info] [Death Notes] derreckoo shot a Bear using their Semi-Automatic Rifle over a distance of 8.9 meters.
+11:36 [Info] [Death Notes] derreckoo shot a Boar using their Semi-Automatic Rifle over a distance of 0 meters.
+11:40 [Info] [Death Notes] derreckoo killed derreckoo using their Satchel Charge.
+11:41 [Info] [Death Notes] derreckoo had enough of life.
+11:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+11:43 [Info] [Running Man] [EVENT] | Running man - SmokeQc ran away from the chase and received as a reward!
+11:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+11:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+11:43 [Info] [Running Man] [EVENT] | random
+11:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+11:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+11:43 [Info] [Running Man] [EVENT] | timer eventstart stopped
+11:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+12:05 [Info] [Economics] Saving balances for players...
+12:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 220ms
+12:05 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 423ms
+12:05 [Info] [Welcomer] Player SmokeQc has left the server. Reason Timed Out
+12:20 [Info] [Death Notes] derreckoo had enough of life.
+12:30 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 420ms
+12:30 [Info] [Welcomer] Player derreckoo has left the server. Reason Kicked: Steam: InvalidAuthSession
+12:35 [Info] [Economics] Saving balances for players...
+12:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 203ms
+13:05 [Info] [Economics] Saving balances for players...
+13:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 206ms
+13:09 [Info] [Welcomer] Player IceSpike_06 has joined the server from Indonesia
+13:14 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 425ms
+13:14 [Info] [Welcomer] Player IceSpike_06 has left the server. Reason Disconnected
+14:05 [Info] [Economics] Saving balances for players...
+14:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 204ms
+14:35 [Info] [Economics] Saving balances for players...
+14:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 202ms
+15:05 [Info] [Economics] Saving balances for players...
+15:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 206ms
+15:35 [Info] [Economics] Saving balances for players...
+15:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 201ms
+16:05 [Info] [Economics] Saving balances for players...
+16:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 203ms
+17:05 [Info] [Economics] Saving balances for players...
+17:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 205ms
+18:05 [Info] [Economics] Saving balances for players...
+18:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 204ms
+18:35 [Info] [Economics] Saving balances for players...
+18:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 203ms
+19:03 [Info] [Welcomer] Player weird guy has joined the server from United States
+19:05 [Info] [Economics] Saving balances for players...
+19:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 206ms
+19:07 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 420ms
+19:07 [Info] [Welcomer] Player weird guy has left the server. Reason Disconnected
+19:14 [Info] [Welcomer] Player SmokeQc has joined the server from Canada
+19:30 [Info] [Welcomer] Player ogjoed has joined the server from United States
+19:31 [Info] [Better Chat] [Global] [Player] ogjoed: whats the discord?
+19:35 [Info] [Welcomer] Player WeirdAl has joined the server from United States
+19:35 [Info] [Economics] Saving balances for players...
+19:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 208ms
+19:37 [Info] [Welcomer] Player Suparious has joined the server from Canada
+19:38 [Info] [Welcomer] Player Hannaht56 has joined the server from United States
+19:43 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+19:43 [Info] [Running Man] [EVENT] | Running man: ogjoed
+19:43 [Info] [Running Man] [EVENT] +---------------------------------------------
+19:44 [Info] [Welcomer] Player seasyth has joined the server from United States
+19:44 [Info] [Death Notes] seasyth shot a Stag using their Semi-Automatic Rifle over a distance of 17.4 meters.
+19:45 [Info] [Better Chat] [Global] [Player] seasyth: hello
+19:45 [Info] [Better Chat] [Global] [Player] ogjoed: yo
+19:45 [Info] [Better Chat] [Global] [Player] SmokeQc: hi
+19:45 [Info] [Better Chat] [Global] [Player] Suparious: hello
+19:45 [Info] [Better Chat] [Global] [Player] ogjoed: does this server have a discord?
+19:45 [Info] [Death Notes] Hannaht56 shot a Bear using their Semi-Automatic Rifle over a distance of 13.6 meters.
+19:46 [Info] [Better Chat] [Global] [Player] SmokeQc: https://discord.gg/NWeEgKEe
+19:46 [Info] [Better Chat] [Global] [Player] SmokeQc: its not setup yet, we were gonna do that today, to get the server to use the discord bot
+19:47 [Info] [Better Chat] [Global] [Player] ogjoed: is this a new server?
+19:47 [Info] [Better Chat] [Global] [Player] SmokeQc: Yes, we are testing the NoLag algo, using Amazon Sagemaker on the back end
+19:47 [Info] [Better Chat] [Global] [Player] Hannaht56: this seems like it has a lot of potential. really in depth/detailed work
+19:48 [Info] [Better Chat] [Global] [Player] ogjoed: SmokeQc let me know if you need help with anything. I'm pretty tech savy. Glad to be here, great job so far.
+19:48 [Info] [Better Chat] [Global] [Player] Suparious: Smoke has done all the server work, I just pay the bills at the moment
+19:49 [Info] [Better Chat] [Global] [Player] seasyth: w
+19:49 [Info] [Better Chat] [Global] [Player] SmokeQc: I have my son helping me with the kits and gameplay ideas
+19:49 [Info] [Better Chat] [Global] [Player] SmokeQc: he's still sleeping, lol
+19:49 [Info] [Better Chat] [Global] [Player] ogjoed: nice, well let me know if i can help. I can help chat mod or anything.
+19:49 [Info] [Better Chat] [Global] [Player] seasyth: map looks nice
+19:49 [Info] [Better Chat] [Global] [Player] seasyth: lots of rivers
+19:50 [Info] [Death Notes] WeirdAl shot a Wolf using their Semi-Automatic Rifle over a distance of 13.6 meters.
+19:50 [Info] [Better Chat] [Global] [Player] ogjoed: we just came out of a similar server, we were really enjoying it but then unfortunetly the owner teamed up and abused power to o
+19:50 [Info] [Better Chat] [Global] [Player] ogjoed: online raid us
+19:51 [Info] [Better Chat] [Global] [Player] WeirdAl: i love the leveling system
+19:51 [Info] [Better Chat] [Global] [Player] ogjoed: set up donations for skins or something and i'll donate
+19:51 [Info] [Better Chat] [Global] [Player] WeirdAl: ^
+19:51 [Info] [Better Chat] [Global] [Player] ogjoed: to help pay for server
+19:52 [Info] [Better Chat] [Global] [Player] Suparious: I want to have all the VIP stuff open for free, until we get a feel for it all being reasonable and fun
+19:52 [Info] [Death Notes] WeirdAl shot a Boar using their Semi-Automatic Rifle over a distance of 7.9 meters.
+19:52 [Info] [Better Chat] [Global] [Player] Suparious: costing only about $0.04 for each server, and I have about 3 at the moment with differenr scenarios that we are tesating
+19:52 [Info] [Death Notes] WeirdAl did not want to be a part of the Easy Guard's experiments.
+19:53 [Info] [Better Chat] [Global] [Player] ogjoed: well, if this one doesnt end up being the one. please let us know which one you main so we can join
+19:53 [Info] [Better Chat] [Global] [Player] seasyth: crates are funkin loaded
+19:53 [Info] [Better Chat] [Global] [Player] seasyth: just got 10 cctv cams
+19:54 [Info] [Better Chat] [Global] [Player] SmokeQc: I was lazy with the 10x mod, and some of the loot doesn't make sense yet
+19:54 [Info] [Better Chat] [Global] [Player] SmokeQc: I will have to go through each "dispenser" and "pickup" to see how to tune it more
+19:54 [Info] [Better Chat] [Global] [Player] WeirdAl: W
+19:54 [Info] [Better Chat] [Global] [Player] SmokeQc: like, I get 10x binocular from a crate
+19:55 [Info] [Death Notes] WeirdAl couldn't run away from the Boar.
+19:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+19:55 [Info] [Running Man] [EVENT] | <color=#C4FF00>EVENT</color>: Player - Hannaht56 kill ogjoed and received a reward!
+19:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+19:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+19:55 [Info] [Running Man] [EVENT] | timer eventstart stopped
+19:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+19:55 [Info] [Death Notes] Hannaht56 shot ogjoed using their Semi-Automatic Rifle over a distance of 3.1 meters.
+19:55 [Info] [Better Chat] [Global] [Player] SmokeQc: I want to enable the teleport to Outpost / Bandit Camp, while not raid blocked
+19:55 [Info] [Better Chat] [Global] [Player] SmokeQc: and to allow respawning to bandit camp
+19:56 [Info] [Death Notes] seasyth had enough of life.
+19:59 [Info] [Death Notes] seasyth shot a Bear using their Semi-Automatic Rifle over a distance of 3.4 meters.
+20:01 [Info] [Death Notes] WeirdAl shot a Wolf using their Semi-Automatic Rifle over a distance of 4.1 meters.
+20:01 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: are the red dots bases?
+20:01 [Info] [Better Chat] [Global] [Player] SmokeQc: They are TCs / Bases yeah
+20:01 [Info] [Death Notes] seasyth shot Fatocto using their Semi-Automatic Rifle over a distance of 0 meters.
+20:01 [Info] [Better Chat] [Global] [Player] SmokeQc: Large red circles are Elite Raids
+20:02 [Info] [Better Chat] [Global] [Player] SmokeQc: seems impossible/difficult to solo at the moment
+20:02 [Info] [Better Chat] [Global] [Player] SmokeQc: set at difficulty 2 / 10 (i don't know what that means yet)
+20:03 [Info] [Better Chat] [Global] [Player] [Murderer] [Sniper] Hannaht56: yeah, so there was a large red dot near the middle of the map when we joined. and its gone now. just curious what it was
+20:05 [Info] [Economics] Saving balances for players...
+20:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 207ms
+20:07 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: rf
+20:14 [Info] [Better Chat] [Global] [Player] ogjoed: can we get remove tool permissions?
+20:15 [Info] [Better Chat] [Global] [Player] SmokeQc: ok 'removertool.normal'   on it
+20:16 [Info] [Better Chat] [Global] [Player] SmokeQc: Fixed!
+20:17 [Info] [Better Chat] [Global] [Player] SmokeQc: that was an easy one
+20:18 [Info] [Better Chat] [Global] [Player] ogjoed: also, question. whats up with raid block? it keeps resetting on me as soon as it runs out ha
+20:19 [Info] [Better Chat] [Global] [Player] SmokeQc: Hrmm, could it be a ZoneBlock? Are you in a zone with Bandits or Scientists and holding a weapon?
+20:24 [Info] HelpText was compiled successfully in 2172ms
+20:24 [Info] Loaded plugin HelpText v2.0.51 by Calytic
+20:25 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+20:25 [Info] [Running Man] [EVENT] | Running man: SmokeQc
+20:25 [Info] [Running Man] [EVENT] +---------------------------------------------
+20:25 [Error] Could not load plugin 'HelpTExt' (no plugin found with that file name)
+20:25 [Info] Unloaded plugin HelpText v2.0.51 by Calytic
+20:25 [Info] Loaded plugin HelpText v2.0.51 by Calytic
+20:25 [Info] Unloaded plugin HelpText v2.0.51 by Calytic
+20:25 [Info] Loaded plugin HelpText v2.0.51 by Calytic
+20:26 [Info] [Better Chat] [Global] [Player] SmokeQc: lol, wth
+20:26 [Info] [Better Chat] [Global] [Player] [Murderer] [Sniper] Hannaht56: oohh bounty on the admin
+20:27 [Info] [Better Chat] [Global] [Player] SmokeQc: I got "/help" enabled, if you want to see the commands now
+20:27 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: where do you check bountys
+20:29 [Info] [Better Chat] [Global] [Player] SmokeQc: ok it is "/run" to see the bounty on running man
+20:29 [Info] [Better Chat] [Global] [Player] ogjoed: any plans on insta craft and insta smelt?
+20:29 [Info] [Better Chat] [Global] [Player] SmokeQc: yes, it is available. It needs to be configured
+20:30 [Info] [Better Chat] [Global] [Player] ogjoed: thats would be sick!
+20:32 [Info] [Better Chat] [Global] [Player] SmokeQc: I think instant craft should work now, can you please confirm?
+20:32 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: works
+20:32 [Info] [Better Chat] [Global] [Player] ogjoed: YESSIR!!
+20:32 [Info] [Better Chat] [Team] [Player] WeirdAl: sick
+20:32 [Info] [Better Chat] [Global] [Player] WeirdAl: Thats lit
+20:33 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: cant wait for insta smelt
+20:37 [Info] [Better Chat] [Global] [Player] SmokeQc: ok, I increased the smelt speed a bit
+20:37 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: WWWWW
+20:38 [Info] [Better Chat] [Global] [Player] WeirdAl: how muc is a bit? doesnt look like it did
+20:39 [Info] [Better Chat] [Global] [Player] SmokeQc: haha, OK, I guess 1x does nothing
+20:40 [Info] [Better Chat] [Global] [Player] SmokeQc: I have to study this for a sec
+20:43 [Info] QuickSmelt was compiled successfully in 2203ms
+20:43 [Warning] Calling 'Unload' on 'QuickSmelt v5.1.3' took 208ms
+20:43 [Info] Unloaded plugin Quick Smelt v5.1.3 by Iv Misticos
+20:43 [Warning] Calling 'OnServerInitialized' on 'QuickSmelt v5.1.3' took 214ms
+20:43 [Info] Loaded plugin Quick Smelt v5.1.3 by Iv Misticos
+20:43 [Info] [Better Chat] [Global] [Player] SmokeQc: OK, it should be 10x - I will have to test
+20:44 [Info] [Better Chat] [Global] [Player] ogjoed: GOOD TO GO!
+20:44 [Info] [Better Chat] [Global] [Player] WeirdAl: works great!!
+20:44 [Info] [Better Chat] [Global] [Player] SmokeQc: ahh yeah, thanks for confirming
+20:45 [Info] [Better Chat] [Global] [Player] WeirdAl: Recycler getting a boost?
+20:46 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: insta craft is off
+20:46 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: its back
+20:46 [Info] [Death Notes] Suparious couldn't run away from the Bear.
+20:46 [Info] [Better Chat] [Global] [Player] WeirdAl: lmao
+20:49 [Info] [Better Chat] [Global] [Player] SmokeQc: Working on the reclycler
+20:49 [Info] [Better Chat] [Global] [Player] WeirdAl: Ight
+20:50 [Info] Unloaded plugin Recycle v3.0.4 by 5Dev24
+20:50 [Info] RecyclerSpeed was compiled successfully in 2078ms
+20:50 [Info] Loaded plugin Recycler Speed v2.0.0 by Ryz0r/yetzt
+20:52 [Info] [Better Chat] [Global] [Player] SmokeQc: Recycler should be set to 1 second now
+20:52 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: :0
+20:52 [Info] [Better Chat] [Global] [Player] WeirdAl: Awesome!
+20:52 [Info] [Better Chat] [Global] [Player] [Murderer] [Sniper] Hannaht56: awesome ill be at one soon to check it
+20:52 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: :O
+20:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+20:55 [Info] [Running Man] [EVENT] | Running man - SmokeQc ran away from the chase and received as a reward!
+20:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+20:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+20:55 [Info] [Running Man] [EVENT] | random
+20:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+20:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+20:55 [Info] [Running Man] [EVENT] | timer eventstart stopped
+20:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+20:56 [Info] [Better Chat] [Global] [Player] SmokeQc: unlocked "/bgrade" for all material levels
+20:56 [Info] [Death Notes] seasyth had enough of life.
+20:57 [Info] [Better Chat] [Global] [Player] ogjoed: last question for now, will this be a team learn all tech tree and bp server?
+21:02 [Info] [Better Chat] [Global] [Player] [Murderer] [Sniper] Hannaht56: okay recycle is interesting. im testing it right now and some are going in stacks and some are still just going 1 at a time
+21:03 [Info] NTeleportation was compiled successfully in 2516ms
+21:03 [Info] Unloaded plugin NTeleportation v1.4.7 by nivex
+21:03 [Warning] Calling 'OnServerInitialized' on 'NTeleportation v1.4.7' took 251ms
+21:03 [Info] Loaded plugin NTeleportation v1.4.7 by nivex
+21:04 [Info] [Better Chat] [Global] [Player] SmokeQc: I think the server wipe and BP wipe can be managed at different intervals, I am not really sure
+21:04 [Info] [Better Chat] [Global] [Player] SmokeQc: Will have to ask ThePastaMasta when he is online
+21:05 [Info] [Better Chat] [Global] [Player] SmokeQc: For the recyler, I may need to still adjust the max stack size of some items
+21:05 [Info] [Better Chat] [Global] [Player] WeirdAl: If one person learns something does the whole team learn it also?
+21:05 [Info] [Better Chat] [Global] [Player] [Murderer] [Sniper] Hannaht56: okay that would make sense. yeah the stackable objects varries so thats probably it
+21:05 [Info] [Economics] Saving balances for players...
+21:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 201ms
+21:05 [Info] [Better Chat] [Global] [Player] SmokeQc: WeirdAl, that's a cool idea - I will study that. Not sure how to do it right now
+21:06 [Info] [Better Chat] [Global] [Player] WeirdAl: Not a big deal if not. You get a lot of scrap
+21:06 [Info] [Better Chat] [Global] [Player] [Murderer] [Sniper] Hannaht56: hope were not bogging you down. if you need any help/suggestions or testing something out just ask!
+21:07 [Info] [Better Chat] [Global] [Player] SmokeQc: Hey, thank-you. No this is what I wanted to do this weekend.
+21:07 [Info] [Better Chat] [Global] [Player] SmokeQc: I just enable teleporting to stuff
+21:08 [Info] [Better Chat] [Global] [Player] SmokeQc: not working well yet, keep getting "interrupted"
+21:08 [Info] [Better Chat] [Global] [Player] SmokeQc: the "/outpost" and "/bandit" commands
+21:09 [Info] [Better Chat] [Global] [Player] [Murderer] [Sniper] Hannaht56: just used the /outpost and it worked.
+21:15 [Info] [Better Chat] [Global] [Player] SmokeQc: nice
+21:15 [Info] [Better Chat] [Global] [Player] [Murderer] [Sniper] Hannaht56: tpr weirdal
+21:15 [Info] [Better Chat] [Global] [Player] SmokeQc: Oh, I cat do it because I'm starving / dehydrated
+21:24 [Info] Vanish was compiled successfully in 2250ms
+21:24 [Info] Loaded plugin Vanish v1.3.8 by Whispers88
+21:25 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+21:25 [Info] [Running Man] [EVENT] | Running man: WeirdAl
+21:25 [Info] [Running Man] [EVENT] +---------------------------------------------
+21:25 [Info] [Welcomer] Player ThePastaMasta has joined the server from Canada
+21:27 [Info] [Better Chat] [Global] [Player] ThePastaMasta: hello
+21:27 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: hello
+21:27 [Info] Unloaded plugin Vanish v1.3.8 by Whispers88
+21:27 [Info] Loaded plugin Vanish v1.3.8 by Whispers88
+21:29 [Info] [Welcomer] Player Hannaht56 has left the server. Reason Disconnected
+21:33 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 426ms
+21:33 [Info] [Welcomer] Player ThePastaMasta has left the server. Reason Disconnected
+21:33 [Info] [Better Chat] [Global] [Player] ogjoed: the give award button in the right middle of the screen gets in the way if you are trying to grab the top right items out of boe
+21:33 [Info] [Better Chat] [Global] [Player] ogjoed: boxes
+21:33 [Info] [Welcomer] Player ThePastaMasta has joined the server from Canada
+21:34 [Info] [Death Notes] seasyth had enough of life.
+21:35 [Info] [Economics] Saving balances for players...
+21:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 202ms
+21:36 [Info] [NTeleportation] SmokeQc teleported to ThePastaMasta.
+21:37 [Info] [Better Chat] [Team] [Player] ThePastaMasta: test
+21:37 [Info] [Welcomer] Player ThePastaMasta has left the server. Reason Disconnected
+21:38 [Info] [Welcomer] Player ThePastaMasta has joined the server from Canada
+21:38 [Info] [Better Chat] [Team] [Player] ThePastaMasta: test
+21:41 [Info] [Death Notes] ThePastaMasta shot a Wolf using their Semi-Automatic Rifle over a distance of 2.1 meters.
+21:42 [Info] [Death Notes] ThePastaMasta shot a Bear using their Semi-Automatic Rifle over a distance of 3.3 meters.
+21:47 [Info] [Death Notes] ThePastaMasta shot a Bear using their Hunting Bow over a distance of 13.7 meters.
+21:48 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: WHAT IS RP
+21:48 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: caps my baf
+21:49 [Info] [Better Chat] [Global] [Player] Suparious: Smoke?
+21:50 [Info] [Better Chat] [Global] [Player] SmokeQc: RP is server rewards for time played
+21:51 [Info] [Better Chat] [Global] [Player] SmokeQc: They will be redeemable for something GREAT in the near future
+21:53 [Info] [Welcomer] Player ThePastaMasta has left the server. Reason Disconnected
+21:54 [Info] [Welcomer] Player ThePastaMasta has joined the server from Canada
+21:54 [Info] [Better Chat] [Team] [Player] ThePastaMasta: test
+21:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+21:55 [Info] [Running Man] [EVENT] | Running man - WeirdAl ran away from the chase and received as a reward!
+21:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+21:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+21:55 [Info] [Running Man] [EVENT] | random
+21:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+21:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+21:55 [Info] [Running Man] [EVENT] | timer eventstart stopped
+21:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+21:56 [Info] [Death Notes] ThePastaMasta shot a Boar using their Spas-12 Shotgun over a distance of 1.4 meters.
+21:58 [Info] [Better Chat] [Team] [Player] SmokeQc: nigerians are comming!
+21:58 [Info] [Death Notes] ThePastaMasta shot a Bear using their Spas-12 Shotgun over a distance of 1.5 meters.
+22:01 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Medium Guard's experiments.
+22:01 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Medium Guard's experiments.
+22:01 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Medium Guard's experiments.
+22:01 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: whoi got that huge base at g37
+22:01 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Medium Guard's experiments.
+22:01 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Medium Guard's experiments.
+22:01 [Info] [Better Chat] [Global] [Player] WeirdAl: hehe
+22:01 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Medium Guard's experiments.
+22:02 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Medium Guard's experiments.
+22:02 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: chill
+22:02 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: chill
+22:02 [Info] [NTeleportation] SmokeQc teleported to ThePastaMasta.
+22:02 [Info] [Death Notes] SmokeQc did not want to be a part of the Medium Guard's experiments.
+22:05 [Info] [Economics] Saving balances for players...
+22:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 203ms
+22:07 [Info] [Welcomer] Player Fent 5 has joined the server from Canada
+22:11 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 425ms
+22:11 [Info] [Welcomer] Player Fent 5 has left the server. Reason Disconnected
+22:11 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 429ms
+22:11 [Info] [Welcomer] Player seasyth has left the server. Reason Kicked: Steam: InvalidAuthSession
+22:15 [Info] [Welcomer] Player seasyth has joined the server from United States
+22:15 [Info] [NTeleportation] SmokeQc teleported to ThePastaMasta.
+22:18 [Error] Failed to call hook 'CmdChatKit' on plugin 'Kits v3.3.1' (KeyNotFoundException: The given key was not present in the dictionary.)
+  at System.Collections.Generic.Dictionary`2[TKey,TValue].get_Item (TKey key) [0x0001e] in <fb001e01371b4adca20013e0ac763896>:0 
+  at Oxide.Plugins.Kits.CmdChatKit (BasePlayer player, System.String command, System.String[] args) [0x00731] in <09c36f16d6094613a56309f5cfcf0c67>:0 
+  at Oxide.Plugins.Kits.DirectCallHook (System.String name, System.Object& ret, System.Object[] args) [0x00e2a] in <09c36f16d6094613a56309f5cfcf0c67>:0 
+  at Oxide.Plugins.CSharpPlugin.InvokeMethod (Oxide.Core.Plugins.HookMethod method, System.Object[] args) [0x00079] in <80b90e8213db44b29ec2d4111764172c>:0 
+  at Oxide.Core.Plugins.CSPlugin.OnCallHook (System.String name, System.Object[] args) [0x000d8] in <ec05e0208c9149bba43236ca58fea105>:0 
+  at Oxide.Core.Plugins.Plugin.CallHook (System.String hook, System.Object[] args) [0x00060] in <ec05e0208c9149bba43236ca58fea105>:0 
+22:19 [Info] [Death Notes] ThePastaMasta had enough of life.
+22:19 [Info] [Better Chat] [Global] [Player] ThePastaMasta: new default kit in effect
+22:20 [Info] [Better Chat] [Global] [Player] ThePastaMasta: let us know if you like the default kit
+22:21 [Info] [Better Chat] [Global] [Player] ThePastaMasta: when dying and respawning the kit only has a bow, working on a kit with weapons
+22:23 [Info] [Welcomer] Player samsayiam has joined the server from Canada
+22:23 [Info] [Better Chat] [Global] [Player] ThePastaMasta: what weapon would you like to see in the kits?
+22:25 [Warning] Calling 'OnPlayerDisconnected' on 'TeamOfflineDoors v0.8.4' took 427ms
+22:25 [Info] [Welcomer] Player samsayiam has left the server. Reason Disconnected
+22:25 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+22:25 [Info] [Running Man] [EVENT] | Running man: WeirdAl
+22:25 [Info] [Running Man] [EVENT] +---------------------------------------------
+22:28 [Info] [Better Chat] [Global] [Player] ThePastaMasta: adding flashlight to autokit
+22:28 [Info] [Better Chat] [Global] [Player] ThePastaMasta: sorry
+22:29 [Info] [Death Notes] ThePastaMasta had enough of life.
+22:33 [Info] [Death Notes] Suparious had enough of life.
+22:34 [Info] [Death Notes] seasyth had enough of life.
+22:39 [Info] [Better Chat] [Global] [Player] ThePastaMasta: ./kit semi auto is availiable
+22:39 [Info] Kits was compiled successfully in 2266ms
+22:39 [Info] Unloaded plugin Kits v3.3.1 by Reneb
+22:39 [Info] Loaded plugin Kits v3.3.1 by Reneb
+22:51 [Info] [Death Notes] ThePastaMasta shot a Bear using their Semi-Automatic Rifle over a distance of 1.5 meters.
+22:52 [Warning] Calling 'OnEntityDeath' on 'RustIO v2.17.0' took 120ms [GARBAGE COLLECT]
+22:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+22:55 [Info] [Running Man] [EVENT] | Running man - WeirdAl ran away from the chase and received as a reward!
+22:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+22:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+22:55 [Info] [Running Man] [EVENT] | random
+22:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+22:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+22:55 [Info] [Running Man] [EVENT] | timer eventstart stopped
+22:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+22:56 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Scientist's experiments.
+22:57 [Info] Unloaded plugin Kits v3.3.1 by Reneb
+22:57 [Info] Loaded plugin Kits v3.3.1 by Reneb
+22:59 [Info] [Death Notes] seasyth had enough of life.
+22:59 [Info] [Better Chat] [Global] [Player] Suparious: done
+23:01 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Scientist's experiments.
+23:05 [Info] [Economics] Saving balances for players...
+23:05 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 202ms
+23:12 [Info] [Death Notes] ThePastaMasta did not want to be a part of the Scientist's experiments.
+23:13 [Info] [Welcomer] Player ogjoed has left the server. Reason Disconnected
+23:19 [Info] [Welcomer] Player ogjoed has joined the server from United States
+23:20 [Info] [Death Notes] SmokeQc shot a Wolf using their Semi-Automatic Rifle over a distance of 1.2 meters.
+23:21 [Info] RealisticWeather was compiled successfully in 2438ms
+23:21 [Info] Loaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+23:25 [Info] Unloaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+23:25 [Info] Loaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+23:25 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:25 [Info] [Running Man] [EVENT] | Running man: WeirdAl
+23:25 [Info] [Running Man] [EVENT] +---------------------------------------------
+23:34 [Info] [Death Notes] seasyth shot PICDIC using their Double Barrel Shotgun over a distance of 0 meters.
+23:34 [Info] [NTeleportation] ThePastaMasta teleported to seasyth.
+23:35 [Info] [Economics] Saving balances for players...
+23:35 [Warning] Calling 'OnServerSave' on 'Pets v0.6.4' took 205ms
+23:36 [Info] [Better Chat] [Global] [Player] SmokeQc: Yes, ThePastaMasta - working on the weird loot crates now
+23:38 [Warning] Calling hook CanUseLockedEntity resulted in a conflict between the following plugins: Bank - False (Boolean), Vanish (True (Boolean))
+23:38 [Warning] Calling hook CanUseLockedEntity resulted in a conflict between the following plugins: Bank - False (Boolean), Vanish (True (Boolean))
+23:38 [Warning] Calling hook CanUseLockedEntity resulted in a conflict between the following plugins: Bank - False (Boolean), Vanish (True (Boolean))
+23:41 [Info] [Better Chat] [Global] [Player] SmokeQc: 104 mods installed on the server now
+23:42 [Info] [Better Chat] [Global] [Player] SmokeQc: 7.79G/15.5G RAM used for map data
+23:44 [Info] [Better Chat] [Global] [Player] ThePastaMasta: vanish
+23:44 [Info] [Better Chat] [Global] [Player] ThePastaMasta: aweh
+23:45 [Info] [Death Notes] ThePastaMasta had enough of life.
+23:51 [Info] BetterLoot was compiled successfully in 2250ms
+23:51 [Warning] Calling 'Unload' on 'BetterLoot v3.5.3' took 205ms
+23:51 [Info] Unloaded plugin BetterLoot v3.5.3 by Default
+23:51 [Info] [BetterLoot] Using '33' active of '35' supported containertypes
+23:51 [Info] [BetterLoot] Updating internals ...
+23:51 [Info] Loaded plugin BetterLoot v3.5.3 by Default
+23:51 [Info] [BetterLoot] Removed 200 stacked LootContainer
+23:51 [Info] [BetterLoot] Populated '11618' supported containers.
+23:51 [Info] [Better Chat] [Global] [Player] Suparious: what was that lag?
+23:51 [Info] [Better Chat] [Global] [Player] [Harvester] seasyth: ON THE NO LAG SERVER
+23:52 [Info] [Better Chat] [Global] [Player] SmokeQc: my bad, I reloaded the loot plugin to solve the weird crate isuus, sorry
+23:55 [Info] [Death Notes] ThePastaMasta had enough of life.
+23:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:55 [Info] [Running Man] [EVENT] | Running man - WeirdAl ran away from the chase and received as a reward!
+23:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+23:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:55 [Info] [Running Man] [EVENT] | random
+23:55 [Info] [Running Man] [EVENT] +---------------------------------------------
+23:55 [Info] [Running Man] [EVENT] +--------------- RUNNING MAN -----------------
+23:55 [Info] [Running Man] [EVENT] | timer eventstart stopped
+23:55 [Info] [Running Man] [EVENT] +---------------------------------------------

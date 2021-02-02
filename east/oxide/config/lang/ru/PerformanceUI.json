@@ -1,0 +1,6 @@
+{
+  "Wrong command usage": "<color=yellow>Неверная команда! Попробуйте \"/performance help\"!</color>",
+  "User has no permission": "<color=red>У Вас недостаточно прав для использования данной команды!</color>",
+  "Help command response": "Использование:\n/performance - Получить сообщение о текущей производительнсти сервера и Вашем пинге\n/performance gui - Отобразить UI с информацией в реальном времени",
+  "Performance report": "Текущая производительность:\nТикрейт: {0}\nКадров в секунду: {1}\nВремя кадра: {2}\nВаш пинг: {3}"
+}

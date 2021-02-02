@@ -1,0 +1,13 @@
+{
+  "Chat": "<color=#bebebe>[<color=#de8732>Base Repair</color>] {0}</color>",
+  "NoPermission": "You do not have permission to use this command",
+  "RepairInProcess": "You have a current repair in progress. Please wait for that to finish before repairing again",
+  "RecentlyDamaged": "We failed to repair {0} because they were recently damaged",
+  "AmountRepaired": "We have repaired {0} damaged items in this base. ",
+  "CantAfford": "We failed to repair {0} because you were missing items to pay for it.",
+  "MissingItems": "The items you were missing are:",
+  "MissingItem": "{0}: {1}x",
+  "Enabled": "You enabled enabled building repair. Hit the building you wish to repair with the hammer and we will do the rest for you.",
+  "Disabled": "You have disabled building repair.",
+  "NoEscape": "You cannot repair your base right now because you're raid or combat blocked"
+}

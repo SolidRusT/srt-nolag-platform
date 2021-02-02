@@ -1,0 +1,6 @@
+{
+  "Wrong command usage": "<color=yellow>Wrong command usage! Try \"/performance help\"!</color>",
+  "User has no permission": "<color=red>You are not allowed to use this command!</color>",
+  "Help command response": "Usage:\n/performance - Get a single text message with current server performance and Your ping\n/performance gui - Display a UI with live updated performance information",
+  "Performance report": "Current server performance:\nTickrate: {0}\nFramerate: {1}\nFrametime: {2}\nYour ping: {3}"
+}

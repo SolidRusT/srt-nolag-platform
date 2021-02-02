@@ -1,0 +1,9 @@
+{
+  "NotAValidCode": "That is not a valid code!",
+  "Success": "Success you are now verified, check for you rewards in game!",
+  "AlreadyVerified": "You are already verified.",
+  "NoPermission": "You dont have permission to do this!",
+  "YouAlreadyHaveACodeOut": "You already have a code out, it is {0}",
+  "Verify": "Please message the bot on our discord with {0}",
+  "VerifiedInGame": "Thank you for supporting the server, here are your rewards!"
+}

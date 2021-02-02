@@ -1,0 +1,6 @@
+{
+  "RespawnProtected": "You are protected from damage for the next {0} seconds.",
+  "NotProtected": "Your damage protection has expired.",
+  "CantDamage": "This player is protected and you can't damage them for {0} seconds.",
+  "RaidBlocked": "You are raid blocked, so your respawn protection has been disabled."
+}
