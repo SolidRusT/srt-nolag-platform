@@ -40,7 +40,7 @@
 `/silrestore` - Restore image (if broken or after a Rust update)
 `/sili` - Adds currently held item icon to sign or frame
 `/sm` - Generates a whole map on a sign
-
+`/sg` - Survey gather
 `/tpr` - Request teleport to player
 `/tpa` - Accept teleport request from player
 `/tpb` - Teleport back to previous location
