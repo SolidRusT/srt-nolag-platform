@@ -180,6 +180,111 @@
       "enabled": true,
       "health": 100,
       "respawnTime": 0
+    },
+    "CARGODECKA3110": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKA4263": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKA8955": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKB3110": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKB4263": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKB8955": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKC3110": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKC4263": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGODECKC8955": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDA3110": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDA4263": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDA8955": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDB3110": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDB4263": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOHOLDB8955": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERA3110": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERA4263": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERA8955": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERB3110": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERB4263": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
+    },
+    "CARGOLADDERB8955": {
+      "enabled": true,
+      "health": 100,
+      "respawnTime": 0
     }
   }
 }

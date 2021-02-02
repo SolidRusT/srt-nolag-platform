@@ -36,6 +36,9 @@ echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/cloud/templates/hosts.debian.
 sudo hostnamectl set-hostname ${NEW_NAME}
 ```
 
+sudo dpkg-reconfigure tzdata
+America/Los_Angeles or America/New_York
+
 The next time you log in, you will see the new hostname.
 
 ### Install base environment
@@ -65,6 +68,8 @@ sudo apt-get -y install \
     netcat \
     lib32z1 \
     libgdiplus \
+    mariadb-client \
+    python3-pip \
     linux-headers-$(uname -r) \
     build-essential
 # OPTIONAL - to help the server realize the updates and hostname change
@@ -74,6 +79,15 @@ sudo apt clean
 sudo apt autoclean
 sudo reboot
 ```
+
+sudo apt remove awscli
+PATH=$PATH:/home/admin/.local/bin
+PATH=$PATH:/home/modded/.local/bin
+#relog
+pip3 install awscli
+
+
+
 
 ## Install Steam Console Client
 
@@ -97,6 +111,7 @@ replace `modded` with a mame of your choice.
 
 ```bash
 echo "export STEAMUSER=\"modded\"" >> ~/.bashrc
+echo "export REGION=\"west\"" >> ~/.bashrc
 STEAMUSER="modded"
 # sudo adduser modded --disabled-password --quiet
 sudo adduser ${STEAMUSER} --disabled-password --quiet

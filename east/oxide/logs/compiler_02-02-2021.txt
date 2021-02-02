@@ -1,0 +1,170 @@
+[SERVER v1.0.20] Started as service
+[SERVER v1.0.20] Running as service
+[SERVER v1.0.20] Got Message: Ready
+[SERVER v1.0.20] Got Message: Compile
+[SERVER v1.0.20] Console: TellMeX.cs(90,41): warning CS0108: `Oxide.Plugins.TellMeX.Item' hides inherited member `Oxide.Plugins.RustPlugin.Item'. Use the new keyword if hiding was intended
+/home/modded/Oxide.Rust.dll (Location of the symbol related to previous warning)
+TellMeX.cs(132,14): warning CS0114: `Oxide.Plugins.TellMeX.LoadDefaultMessages()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadDefaultMessages()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
+/home/modded/Oxide.Core.dll (Location of the symbol related to previous warning)
+StackSizeController.cs(205,22): warning CS0114: `Oxide.Plugins.StackSizeController.SaveConfig()' hides inherited member `Oxide.Core.Plugins.Plugin.SaveConfig()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
+/home/modded/Oxide.Core.dll (Location of the symbol related to previous warning)
+NoRaidRepair.cs(15,14): warning CS0114: `Oxide.Plugins.NoRaidRepair.LoadDefaultMessages()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadDefaultMessages()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
+/home/modded/Oxide.Core.dll (Location of the symbol related to previous warning)
+Lottery.cs(136,14): warning CS0114: `Oxide.Plugins.Lottery.LoadConfig()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadConfig()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
+/home/modded/Oxide.Core.dll (Location of the symbol related to previous warning)
+Lottery.cs(229,14): warning CS0114: `Oxide.Plugins.Lottery.LoadDefaultMessages()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadDefaultMessages()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
+/home/modded/Oxide.Core.dll (Location of the symbol related to previous warning)
+GUIShop.cs(190,27): warning CS0108: `Oxide.Plugins.GUIShop.PluginConfig.ToJson()' hides inherited member `Oxide.Plugins.GUIShop.SerializableConfiguration.ToJson()'. Use the new keyword if hiding was intended
+GUIShop.cs(440,27): (Location of the symbol related to previous warning)
+GUIShop.cs(192,47): warning CS0108: `Oxide.Plugins.GUIShop.PluginConfig.ToDictionary()' hides inherited member `Oxide.Plugins.GUIShop.SerializableConfiguration.ToDictionary()'. Use the new keyword if hiding was intended
+GUIShop.cs(442,47): (Location of the symbol related to previous warning)
+RoadFinder.cs(218,17): warning CS0219: The variable `config' is assigned but its value is never used
+VehicleVendorOptions.cs(273,21): warning CS0219: The variable `speechNode' is assigned but its value is never used
+Trade.cs(998,28): warning CS0219: The variable `target' is assigned but its value is never used
+ServerRewards.cs(417,24): warning CS0219: The variable `categories' is assigned but its value is never used
+ServerRewards.cs(1722,17): warning CS0219: The variable `itemId' is assigned but its value is never used
+Quests.cs(321,30): warning CS0168: The variable `ex' is declared but never used
+PlayerChallenges.cs(674,52): warning CS0219: The variable `updates' is assigned but its value is never used
+HumanNPC.cs(1070,14): warning CS0219: The variable `targetPos' is assigned but its value is never used
+HumanNPC.cs(2148,19): warning CS0472: The result of comparing value type `ulong' with null is always `true'
+NoEscape.cs(1144,17): warning CS0219: The variable `targetMembers' is assigned but its value is never used
+NoEscape.cs(2069,32): warning CS0168: The variable `ex' is declared but never used
+NoEscape.cs(2083,32): warning CS0168: The variable `ex' is declared but never used
+NoEscape.cs(2097,32): warning CS0168: The variable `ex' is declared but never used
+NTeleportation.cs(2940,33): warning CS0219: The variable `w' is assigned but its value is never used
+NPCVendingMapMarker.cs(488,24): warning CS0219: The variable `base_player' is assigned but its value is never used
+GestureWheel.cs(289,17): warning CS0162: Unreachable code detected
+ImageLibrary.cs(671,59): warning CS0219: The variable `loadOrder' is assigned but its value is never used
+ImageLibrary.cs(774,75): warning CS0219: The variable `loadOrder' is assigned but its value is never used
+KillStreaks.cs(235,25): warning CS0472: The result of comparing value type `UnityEngine.Vector3' with null is always `false'
+KillStreaks.cs(236,25): warning CS0162: Unreachable code detected
+KillStreaks.cs(658,30): warning CS0219: The variable `rocketProjectile' is assigned but its value is never used
+KillStreaks.cs(741,21): warning CS0472: The result of comparing value type `UnityEngine.Vector3' with null is always `true'
+KillFeed.cs(989,17): warning CS0618: `UnityEngine.WWW' is obsolete: `Use UnityWebRequest, a fully featured replacement which is more efficient and has additional features'
+KillFeed.cs(989,31): warning CS0618: `UnityEngine.WWW' is obsolete: `Use UnityWebRequest, a fully featured replacement which is more efficient and has additional features'
+KillFeed.cs(988,13): warning CS0618: `UnityEngine.WWW' is obsolete: `Use UnityWebRequest, a fully featured replacement which is more efficient and has additional features'
+KDRGui.cs(336,30): warning CS0168: The variable `ex' is declared but never used
+Barrelless.cs(221,42): warning CS0472: The result of comparing value type `UnityEngine.Vector3' with null is always `true'
+Barrelless.cs(522,29): warning CS0219: The variable `inv_belt' is assigned but its value is never used
+HitIcon.cs(154,38): warning CS0618: `UnityEngine.WWW' is obsolete: `Use UnityWebRequest, a fully featured replacement which is more efficient and has additional features'
+HitIcon.cs(153,13): warning CS0618: `UnityEngine.WWW' is obsolete: `Use UnityWebRequest, a fully featured replacement which is more efficient and has additional features'
+ExtraSeating.cs(77,23): warning CS0472: The result of comparing value type `UnityEngine.Vector3' with null is always `true'
+ExtraSeating.cs(77,53): warning CS0429: Unreachable expression code detected
+DiscordServerStats.cs(67,36): warning CS0618: `Oxide.Plugins.DiscordServerStats.DiscordMessageConfig.Embed' is obsolete: `This was replaced with Embeds in version 2.0.0'
+DiscordServerStats.cs(71,39): warning CS0618: `Oxide.Plugins.DiscordServerStats.DiscordMessageConfig.Embed' is obsolete: `This was replaced with Embeds in version 2.0.0'
+DiscordServerStats.cs(73,35): warning CS0618: `Oxide.Plugins.DiscordServerStats.DiscordMessageConfig.Embed' is obsolete: `This was replaced with Embeds in version 2.0.0'
+DiscordServerStats.cs(1085,24): warning CS0618: `Oxide.Plugins.DiscordServerStats.DiscordMessageConfig.Embed' is obsolete: `This was replaced with Embeds in version 2.0.0'
+DiscordEvents.cs(655,17): warning CS0472: The result of comparing value type `UnityEngine.Vector3' with null is always `false'
+DiscordEvents.cs(657,17): warning CS0162: Unreachable code detected
+DiscordEvents.cs(697,17): warning CS0472: The result of comparing value type `UnityEngine.Vector3' with null is always `false'
+DiscordEvents.cs(699,17): warning CS0162: Unreachable code detected
+DiscordCore.cs(145,17): warning CS0612: `Oxide.Ext.Discord.DiscordSettings.Debugging' is obsolete
+CopyPaste.cs(985,17): warning CS0219: The variable `ioEntities' is assigned but its value is never used
+CopyPaste.cs(986,18): warning CS0219: The variable `buildingId' is assigned but its value is never used
+CopyPaste.cs(1562,40): warning CS0168: The variable `temp' is declared but never used
+CopyPaste.cs(1672,49): warning CS0618: `UnityEngine.Quaternion.EulerRotation(UnityEngine.Vector3)' is obsolete: `Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.'
+CopyPaste.cs(1689,32): warning CS0618: `UnityEngine.Quaternion.EulerRotation(UnityEngine.Vector3)' is obsolete: `Use Quaternion.Euler instead. This function was deprecated because it uses radians instead of degrees.'
+CarCodeLocks.cs(422,17): warning CS0219: The variable `itemDefinition' is assigned but its value is never used
+Arkan.cs(1162,26): warning CS0472: The result of comparing value type `uint' with null is always `false'
+Arkan.cs(1162,43): warning CS0162: Unreachable code detected
+Arkan.cs(1358,14): warning CS0219: The variable `lengthLastSegmentProjectileTrajectory' is assigned but its value is never used
+Arkan.cs(1359,14): warning CS0219: The variable `lengthLastSegmentReverseProjectileTrajectory' is assigned but its value is never used
+Arkan.cs(2846,12): warning CS0219: The variable `hitInfoDistance' is assigned but its value is never used
+Arkan.cs(3294,33): warning CS0219: The variable `projectilePosition' is assigned but its value is never used
+Arkan.cs(3295,33): warning CS0219: The variable `projectileVelocity' is assigned but its value is never used
+Arkan.cs(3327,14): warning CS0219: The variable `lengthLastSegmentProjectileTrajectory' is assigned but its value is never used
+Arkan.cs(3328,14): warning CS0219: The variable `lengthLastSegmentReverseProjectileTrajectory' is assigned but its value is never used
+Arkan.cs(3610,40): warning CS0219: The variable `fsd' is assigned but its value is never used
+ZLevelsRemastered.cs(30,34): warning CS0414: The private field `Oxide.Plugins.ZLevelsRemastered.zLevels' is assigned but its value is never used
+ZLevelsRemastered.cs(25,30): warning CS0649: Field `Oxide.Plugins.ZLevelsRemastered.CraftingController' is never assigned to, and will always have its default value `null'
+Twitch.cs(96,35): warning CS0169: The private field `Oxide.Plugins.Twitch.data' is never used
+Trade.cs(29,24): warning CS0169: The private field `Oxide.Plugins.Trade.Clans' is never used
+Trade.cs(29,31): warning CS0169: The private field `Oxide.Plugins.Trade.Friends' is never used
+Trade.cs(39,31): warning CS0649: Field `Oxide.Plugins.Trade.OnlinePlayer.Player' is never assigned to, and will always have its default value `null'
+TellMeX.cs(44,14): warning CS0169: The private field `Oxide.Plugins.TellMeX.OnReloading' is never used
+TellMeX.cs(72,14): warning CS0414: The private field `Oxide.Plugins.TellMeX.useBattlepassloss' is assigned but its value is never used
+TCGui.cs(44,25): warning CS0169: The private field `Oxide.Plugins.TCGui.HumanNPC' is never used
+TCGui.cs(52,53): warning CS0414: The private field `Oxide.Plugins.TCGui.onlinePlayers' is assigned but its value is never used
+TCGui.cs(53,53): warning CS0414: The private field `Oxide.Plugins.TCGui.offlinePlayers' is assigned but its value is never used
+SpeedType.cs(31,15): warning CS0414: The private field `Oxide.Plugins.SpeedType.EventAutoTimer' is assigned but its value is never used
+ServerRewards.cs(40,29): warning CS0649: Field `Oxide.Plugins.ServerRewards.uiFadeIn' is never assigned to, and will always have its default value `false'
+ServerRewards.cs(26,33): warning CS0169: The private field `Oxide.Plugins.ServerRewards.EventManager' is never used
+ServerRewards.cs(26,47): warning CS0169: The private field `Oxide.Plugins.ServerRewards.HumanNPC' is never used
+ServerRewards.cs(26,67): warning CS0169: The private field `Oxide.Plugins.ServerRewards.PlaytimeTracker' is never used
+RaidableBases.cs(40,157): warning CS0649: Field `Oxide.Plugins.RaidableBases.TruePVE' is never assigned to, and will always have its default value `null'
+RaidableBases.cs(40,174): warning CS0649: Field `Oxide.Plugins.RaidableBases.NightLantern' is never assigned to, and will always have its default value `null'
+RaidableBases.cs(40,188): warning CS0649: Field `Oxide.Plugins.RaidableBases.Wizardry' is never assigned to, and will always have its default value `null'
+RaidableBases.cs(40,198): warning CS0649: Field `Oxide.Plugins.RaidableBases.NextGenPVE' is never assigned to, and will always have its default value `null'
+RaidableBases.cs(40,210): warning CS0649: Field `Oxide.Plugins.RaidableBases.Imperium' is never assigned to, and will always have its default value `null'
+Quests.cs(130,25): warning CS0649: Field `Oxide.Plugins.Quests.RewardItem.BP' is never assigned to, and will always have its default value `false'
+PlaytimeTracker.cs(20,27): warning CS0169: The private field `Oxide.Plugins.PlaytimeTracker.Economy' is never used
+PlaytimeSupplySignal.cs(36,23): warning CS0414: The private field `Oxide.Plugins.PlaytimeSupplySignal.clock' is assigned but its value is never used
+Pets.cs(428,28): warning CS0649: Field `Oxide.Plugins.Pets.NpcAI.attackRange' is never assigned to, and will always have its default value `0'
+HumanNPC.cs(46,20): warning CS0414: The private field `Oxide.Plugins.HumanNPC.playerMask' is assigned but its value is never used
+HumanNPC.cs(49,20): warning CS0414: The private field `Oxide.Plugins.HumanNPC.terrainMask' is assigned but its value is never used
+HumanNPC.cs(64,30): warning CS0169: The private field `Oxide.Plugins.HumanNPC.Waypoints' is never used
+NoEscape.cs(52,15): warning CS0649: Field `Oxide.Plugins.NoEscape.combatOnHitPlayerMinDamage' is never assigned to, and will always have its default value `0'
+NoEscape.cs(199,22): warning CS0414: The private field `Oxide.Plugins.NoEscape._htmlRegex' is assigned but its value is never used
+NTeleportation.cs(70,35): warning CS0169: The private field `Oxide.Plugins.NTeleportation.dataConvert' is never used
+NTeleportation.cs(94,30): warning CS0414: The private field `Oxide.Plugins.NTeleportation.triggerLayer' is assigned but its value is never used
+NPCVendingMapMarker.cs(94,31): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.name' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(95,30): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.x' is never assigned to, and will always have its default value `0'
+NPCVendingMapMarker.cs(96,29): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.useCustom' is never assigned to, and will always have its default value `false'
+NPCVendingMapMarker.cs(95,33): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.z' is never assigned to, and will always have its default value `0'
+NPCVendingMapMarker.cs(96,40): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.sellItems' is never assigned to, and will always have its default value `false'
+NPCVendingMapMarker.cs(96,51): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.sellKits' is never assigned to, and will always have its default value `false'
+NPCVendingMapMarker.cs(96,61): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.sellCommands' is never assigned to, and will always have its default value `false'
+NPCVendingMapMarker.cs(96,75): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.canTransfer' is never assigned to, and will always have its default value `false'
+NPCVendingMapMarker.cs(96,88): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.canSell' is never assigned to, and will always have its default value `false'
+NPCVendingMapMarker.cs(96,97): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_NPCData.SR_NPCInfo.canExchange' is never assigned to, and will always have its default value `false'
+NPCVendingMapMarker.cs(110,31): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardItem.shortname' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(111,28): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardItem.amount' is never assigned to, and will always have its default value `0'
+NPCVendingMapMarker.cs(112,30): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardItem.skinId' is never assigned to, and will always have its default value `0'
+NPCVendingMapMarker.cs(113,29): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardItem.isBp' is never assigned to, and will always have its default value `false'
+NPCVendingMapMarker.cs(114,36): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardItem.category' is never assigned to, and will always have its default value `0'
+NPCVendingMapMarker.cs(110,42): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardItem.customIcon' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(121,31): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardKit.kitName' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(121,40): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardKit.description' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(121,53): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardKit.iconName' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(126,31): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardCommand.description' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(126,44): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_RewardCommand.iconName' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(132,31): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_Reward.displayName' is never assigned to, and will always have its default value `null'
+NPCVendingMapMarker.cs(133,28): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_Reward.cost' is never assigned to, and will always have its default value `0'
+NPCVendingMapMarker.cs(134,28): warning CS0649: Field `Oxide.Plugins.NPCVendingMapMarker.SR_RewardData.SR_Reward.cooldown' is never assigned to, and will always have its default value `0'
+Murderers.cs(35,21): warning CS0649: Field `Oxide.Plugins.Murderers.bradley_Safe' is never assigned to, and will always have its default value `false'
+Murderers.cs(44,22): warning CS0169: The private field `Oxide.Plugins.Murderers.initialized' is never used
+ImageLibrary.cs(45,26): warning CS0414: The private field `Oxide.Plugins.ImageLibrary.itemShortNames' is assigned but its value is never used
+ImageLibrary.cs(1003,26): warning CS0414: The private field `Oxide.Plugins.ImageLibrary.ImageAssets.isLoading' is assigned but its value is never used
+MagicEarthquakePanel.cs(18,63): warning CS0649: Field `Oxide.Plugins.MagicEarthquakePanel.Earthquake' is never assigned to, and will always have its default value `null'
+Lottery.cs(38,16): warning CS0169: The private field `Oxide.Plugins.Lottery.HumanNPC' is never used
+Lottery.cs(84,24): warning CS0169: The private field `Oxide.Plugins.Lottery.container' is never used
+Lottery.cs(84,35): warning CS0169: The private field `Oxide.Plugins.Lottery.containerwin' is never used
+Kits.cs(23,31): warning CS0414: The private field `Oxide.Plugins.Kits._returnFalse' is assigned but its value is never used
+Kits.cs(30,67): warning CS0169: The private field `Oxide.Plugins.Kits.EventManager' is never used
+KillStreaks.cs(1330,14): warning CS0414: The private field `Oxide.Plugins.KillStreaks.Changed' is assigned but its value is never used
+KillStreaks.cs(20,111): warning CS0649: Field `Oxide.Plugins.KillStreaks.FancyDrop' is never assigned to, and will always have its default value `null'
+KillStreaks.cs(1531,27): warning CS0649: Field `Oxide.Plugins.KillStreaks.Streaks.KitName' is never assigned to, and will always have its default value `null'
+KillFeed.cs(1059,27): warning CS0649: Field `Oxide.Plugins.KillFeed.Key.key' is never assigned to, and will always have its default value `null'
+KillFeed.cs(1060,27): warning CS0649: Field `Oxide.Plugins.KillFeed.Key.action' is never assigned to, and will always have its default value `null'
+KillFeed.cs(1061,27): warning CS0649: Field `Oxide.Plugins.KillFeed.Key.defaultAction' is never assigned to, and will always have its default value `null'
+HandyMan.cs(24,57): warning CS0414: The private field `Oxide.Plugins.HandyMan.entities' is assigned but its value is never used
+GuardedCrate.cs(113,27): warning CS0649: Field `Oxide.Plugins.GuardedCrate.LootItem.Shortname' is never assigned to, and will always have its default value `null'
+GuardedCrate.cs(114,24): warning CS0649: Field `Oxide.Plugins.GuardedCrate.LootItem.MinAmount' is never assigned to, and will always have its default value `0'
+GuardedCrate.cs(115,24): warning CS0649: Field `Oxide.Plugins.GuardedCrate.LootItem.MaxAmount' is never assigned to, and will always have its default value `0'
+GlobalMail.cs(26,14): warning CS0414: The private field `Oxide.Plugins.GlobalMail.CanOpenMailBoxAtBuildingBlock' is assigned but its value is never used
+GlobalMail.cs(36,13): warning CS0414: The private field `Oxide.Plugins.GlobalMail.MaxStackSizeInMailbox' is assigned but its value is never used
+FuelGauge.cs(32,24): warning CS0414: The private field `Oxide.Plugins.FuelGauge.gaugeType' is assigned but its value is never used
+FancyDrop.cs(230,21): warning CS0414: The private field `Oxide.Plugins.FancyDrop.spawnFilter' is assigned but its value is never used
+FancyDrop.cs(23,27): warning CS0649: Field `Oxide.Plugins.FancyDrop.GUIAnnouncements' is never assigned to, and will always have its default value `null'
+CompoundOptions.cs(29,25): warning CS0649: Field `Oxide.Plugins.CompoundOptions.Order.currencyAsBP' is never assigned to, and will always have its default value `false'
+CarCodeLocks.cs(24,40): warning CS0649: Field `Oxide.Plugins.CarCodeLocks.VehicleDeployedLocks' is never assigned to, and will always have its default value `null'
+BuildingGrades.cs(30,36): warning CS0414: The private field `Oxide.Plugins.BuildingGrades.meshLookupField' is assigned but its value is never used
+Bank.cs(320,31): warning CS0649: Field `Oxide.Plugins.Bank.OnlinePlayer.Player' is never assigned to, and will always have its default value `null'
+AutoFuel.cs(206,25): warning CS0649: Field `Oxide.Plugins.AutoFuel.AutomaticRefuelGenerator.cachedFuelItem' is never assigned to, and will always have its default value `null'
+AdminPanel.cs(57,36): warning CS0169: The private field `Oxide.Plugins.AdminPanel.EnhancedBanSystem' is never used
+AdminPanel.cs(57,64): warning CS0169: The private field `Oxide.Plugins.AdminPanel.NTeleportation' is never used
+
+[SERVER v1.0.20] Got Message: Exit
+[SERVER v1.0.20] Exit received.
+[SERVER v1.0.20] Connection closed.
+[SERVER v1.0.20] Shutdown

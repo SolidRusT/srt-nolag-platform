@@ -350,5 +350,85 @@
     "UITextColor": "1 1 1 1",
     "RangeValue": 4.9999999999999929,
     "ImageOrText": true
+  },
+  "76561198112319647": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561198404949078": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561198347931912": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561198406390398": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561199121625462": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561198855285614": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561199060539966": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561199051464652": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561199078529202": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
+  },
+  "76561198396549851": {
+    "Transparency": 0.95,
+    "SellBoxColors": "1 1 1 0.15",
+    "BuyBoxColors": "1 1 1 0.15",
+    "UITextColor": "1 1 1 1",
+    "RangeValue": 4.9999999999999929,
+    "ImageOrText": true
   }
 }

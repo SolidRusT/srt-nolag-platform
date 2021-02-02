@@ -3,6 +3,13 @@
     "Chat Notifications": true,
     "Popup Notifications": false
   },
+  "Discord Messages": {
+    "Enabled (true/false)": false,
+    "Webhook URL": ""
+  },
+  "Chat Icon": {
+    "Steam ID": 0
+  },
   "Alerts (true/false)": {
     "Bradley APC Alerts": true,
     "Cargo Plane Alerts": true,
@@ -13,7 +20,8 @@
     "Patrol Helicopter Alerts": true,
     "Player Hacking Crate Alerts": true,
     "Player Supply Signal Alerts": true,
-    "Supply Drop Alerts": true
+    "Supply Drop Alerts": true,
+    "Supply Drop Landed Alerts": true
   },
   "Grid (true/false)": {
     "Show Grid": true,
