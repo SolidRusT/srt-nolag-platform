@@ -60,30 +60,6 @@
       "primaryMagazine": 20,
       "ammoType": -1321651331,
       "dataInt": 0
-    },
-    {
-      "id": "317398316",
-      "amount": 1000,
-      "slot": 2,
-      "flags": 0,
-      "condition": 0.0,
-      "skin": 0,
-      "contents": [],
-      "primaryMagazine": 0,
-      "ammoType": 0,
-      "dataInt": 0
-    },
-    {
-      "id": "317398316",
-      "amount": 823,
-      "slot": 3,
-      "flags": 0,
-      "condition": 0.0,
-      "skin": 0,
-      "contents": [],
-      "primaryMagazine": 0,
-      "ammoType": 0,
-      "dataInt": 0
     }
   ]
 }

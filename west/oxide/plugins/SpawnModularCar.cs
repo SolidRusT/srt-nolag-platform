@@ -15,7 +15,7 @@ using System.Text;
 
 namespace Oxide.Plugins
 {
-    [Info("Spawn Modular Car", "WhiteThunder", "5.0.0")]
+    [Info("Spawn Modular Car", "WhiteThunder", "5.0.1")]
     [Description("Allows players to spawn modular cars.")]
     internal class SpawnModularCar : CovalencePlugin
     {
@@ -216,7 +216,14 @@ namespace Oxide.Plugins
                 rotation = GetRelativeCarRotation(player);
             }
 
-            return SpawnCarForPlayer(player, presetOptions, spawnPosition, rotation, shouldTrackCar: false, onReady: onReady);
+            var car = SpawnCarForPlayer(player, presetOptions, spawnPosition, rotation, shouldTrackCar: false);
+            if (car != null)
+            {
+                // Note: Consumers no longer need to use this callback since this plugin now forces synchronous module registration.
+                onReady?.Invoke(car);
+            }
+
+            return car;
         }
 
         internal class APIOptions
@@ -327,10 +334,10 @@ namespace Oxide.Plugins
                         rotation = GetRelativeCarRotation(targetPlayer);
                     }
 
-                    SpawnCarForPlayer(targetPlayer, carOptions, spawnPosition, rotation, shouldTrackCar: false, onReady: car =>
-                    {
+                    var car = SpawnCarForPlayer(targetPlayer, carOptions, spawnPosition, rotation, shouldTrackCar: false);
+                    if (car != null)
                         ReplyToPlayer(player, "Command.Give.Success", targetPlayer.displayName, preset.Name);
-                    });
+
                     return;
                 }
             }
@@ -1861,15 +1868,15 @@ namespace Oxide.Plugins
                 return;
 
             var carOptions = new RandomCarOptions(player.Id, desiredSockets);
-            SpawnCarForPlayer(basePlayer, carOptions, spawnPosition, rotation, shouldTrackCar: true, onReady: car =>
-            {
-                var chatMessages = new List<string> { GetMessage(player, "Command.Spawn.Success") };
+            var car = SpawnCarForPlayer(basePlayer, carOptions, spawnPosition, rotation, shouldTrackCar: true);
+            if (car == null)
+                return;
 
-                if (car.carLock.HasALock)
-                    chatMessages.Add(GetMessage(player, "Command.Spawn.Success.Locked"));
+            var chatMessages = new List<string> { GetMessage(player, "Command.Spawn.Success") };
+            if (car.carLock.HasALock)
+                chatMessages.Add(GetMessage(player, "Command.Spawn.Success.Locked"));
 
-                player.Reply(string.Join(" ", chatMessages));
-            });
+            player.Reply(string.Join(" ", chatMessages));
         }
 
         private void SpawnPresetCarForPlayer(IPlayer player, SimplePreset preset)
@@ -1888,21 +1895,21 @@ namespace Oxide.Plugins
                 return;
 
             var carOptions = new PresetCarOptions(player.Id, preset.ModuleIDs);
-            SpawnCarForPlayer(basePlayer, carOptions, spawnPosition, rotation, shouldTrackCar: true, onReady: car =>
-            {
-                var chatMessages = new List<string> { GetMessage(player, "Command.Spawn.Success.Preset", preset.Name) };
+            var car = SpawnCarForPlayer(basePlayer, carOptions, spawnPosition, rotation, shouldTrackCar: true);
+            if (car == null)
+                return;
 
-                if (car.carLock.HasALock)
-                    chatMessages.Add(GetMessage(player, "Command.Spawn.Success.Locked"));
+            var chatMessages = new List<string> { GetMessage(player, "Command.Spawn.Success.Preset", preset.Name) };
+            if (car.carLock.HasALock)
+                chatMessages.Add(GetMessage(player, "Command.Spawn.Success.Locked"));
 
-                ReplyToPlayer(player, string.Join(" ", chatMessages));
+            ReplyToPlayer(player, string.Join(" ", chatMessages));
 
-                if (preset != null)
-                    MaybePlayCarRepairEffects(car);
-            });
+            if (preset != null)
+                MaybePlayCarRepairEffects(car);
         }
 
-        private ModularCar SpawnCarForPlayer(BasePlayer player, BaseCarOptions options, Vector3 position, Quaternion rotation, bool shouldTrackCar = false, Action<ModularCar> onReady = null)
+        private ModularCar SpawnCarForPlayer(BasePlayer player, BaseCarOptions options, Vector3 position, Quaternion rotation, bool shouldTrackCar = false)
         {
             var numSockets = options.Length;
 
@@ -1936,20 +1943,23 @@ namespace Oxide.Plugins
                 _pluginData.RegisterCar(player.UserIDString, car);
             }
 
-            // Using invoke because that is what the game uses to delay module entity creation.
-            car.Invoke(() =>
+            // Force all modules to be processed and registered in AttachedModuleEntities.
+            // This allows plugins to easily interact with the module entities such as to add engine parts.
+            // Tested the performance cost of this, and it was negligible compared to creating entities above.
+            foreach (KeyValuePair<BaseVehicleModule, Action> entry in car.moduleAddActions.ToList())
             {
-                FixCar(car, options.FuelAmount, options.EnginePartsTier);
-                MaybeFillTankerModules(car, options.FreshWaterAmount);
+                entry.Key.CancelInvoke(entry.Value);
+                entry.Value.Invoke();
+            }
 
-                if (options.CodeLock && VehicleDeployedLocks != null)
-                    VehicleDeployedLocks.Call("API_DeployCodeLock", car, player);
+            FixCar(car, options.FuelAmount, options.EnginePartsTier);
+            MaybeFillTankerModules(car, options.FreshWaterAmount);
 
-                if (options.KeyLock)
-                    TryAddKeyLockForPlayer(car, player);
+            if (options.CodeLock && VehicleDeployedLocks != null)
+                VehicleDeployedLocks.Call("API_DeployCodeLock", car, player);
 
-                onReady?.Invoke(car);
-            }, 0);
+            if (options.KeyLock)
+                TryAddKeyLockForPlayer(car, player);
 
             return car;
         }

@@ -11,5 +11,8 @@
   "GroupRemoved": "Removed {0} from Group {1}.",
   "NoAction": "No action needed because {0} is already in Group or removed.",
   "NoLongerInDB": "Removing {0} from {1} because no longer in Database.",
-  "NotAddedGroup": "Permissions could not be added to Group. Retrying."
+  "NotAddedGroup": "Permissions could not be added to Group. Retrying.",
+  "PermissionChanged": "Your ingame Permissions have changed. Please relog so they can apply.",
+  "NotRemovedProtected": "Could not remove {0} from Group {1} because Group is protected.",
+  "PermissionChangedLog": "Changed AuthLevel for User {0} to {1}."
 }
