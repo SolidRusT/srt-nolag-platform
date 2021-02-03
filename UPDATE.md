@@ -42,7 +42,8 @@ aws s3 sync --delete s3://suparious.com/backup/west/oxide/config/MagicPanel /hom
 # update secondary configs
 
 ```bash
-SOURCE_S3="s3://suparious.com/backup/west"
+export SOURCE_S3="s3://suparious.com/backup/west"
+
 cd && mkdir shit
 SHITS=(
 oxide/config/AutoDemoRecordLite.json
@@ -69,6 +70,8 @@ aws s3 cp --quiet ${SOURCE_S3}/oxide/data/BetterChat.json /home/modded/oxide/dat
 cp /home/modded/shit/* /home/modded/oxide/config
 
 rm -rf shit
+
+aws s3 sync --delete ${SOURCE_S3}/oxide/plugins /home/modded/oxide/plugins
 
 ./rcon -c rcon.yaml "o.reload *"
 

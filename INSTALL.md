@@ -89,6 +89,10 @@ default perms
 ```
 "removertool.normal", "instantcraft.use", "quicksmelt.use", "recyclerspeed.use", "nteleportation.home", "nteleportation.deletehome", "nteleportation.homehomes", "nteleportation.radiushome", "nteleportation.tpb", "nteleportation.tpr", "nteleportation.tphome", "nteleportation.tptown", "nteleportation.tpoutpost", "nteleportation.tpbandit", "nteleportation.tpn", "nteleportation.tpl", "nteleportation.tpremove", "nteleportation.tpsave", "nteleportation.wipehomes", "fuelgauge.allow", "pets.wolf", "pets.stag", "pets.horse", "pets.chicken", "pets.boar", "pets.bear", "skins.use", "trade.use", "trade.accept", "bank.use", "whoknocks.message", "whoknocks.knock", "signartist.url", "signartist.text", "signartist.restore", "bgrade.all", "signartist.raw", "signartist.restoreall", "backpacks.use", "backpacks.keeponwipe", "tcgui.use", "backpacks.gui", "randomrespawner.use", "respawnprotection.use", "itemskinrandomizer.use", "itemskinrandomizer.reskin", "workshopskinviewer.use", "vehicledeployedlocks.codelock.allvehicles", "vehicledeployedlocks.keylock.allvehicles", "discordmessages.report", "discordmessages.message", "carlockui.use.codelock", "carturrets.allmodules", "carturrets.deploy.inventory", "carturrets.deploy.command", "carturrets.limit.4", "storagemonitorcontrol.owner.all", "carcodelocks.ui", "infomenu.view", "warcopter.spawn", "warcopter.drone", "warcopter.fighter", "discordrewards.use", "heal.player", "heal.self", "airstrike.signal.strike", "airstrike.signal.squad", "airstrike.purchase.strike", "airstrike.purchase.squad", "airstrike.chat.strike", "airstrike.chat.squad", "diseases.info", "privatemessages.allow", "claimvehicle.claim.allvehicles", "automaticauthorization.use", "baserepair.use", "autolock.use", "cctvutilities.help", "cctvutilities.status.me", "cctvutilities.status.server", "cctvutilities.add.me", "cctvutilities.autoname", "cctvutilities.autoadd", "cctvutilities.autoadd.on", "cctvutilities.autoadd.off", "cctvutilities.autoadd.toggle", "cctvutilities.autoadd.me", "cctvutilities.status.custom", "cctvutilities.add.all", "cctvutilities.autoadd.server", "carcodelocks.use", "claimvehicle.unclaim", "fastloot.use", "largercarstorage.size.7", "craftingcontroller.setskins", "eventrandomizer.check", "discordcore.use", "signmap.use", "discordcore.plugins", "barrelpoints.default", "lottery.canuse", "nightlantern.lanterns", "nightlantern.tunalight", "nightlantern.searchlight", "treeplanter.use", "autocode.use", "furnacesplitter.use", "globalmail.use", "kits.defaultspawn", "framebox.use", "surveygather.use", "gesturewheel.use", "roadfinder.use", "nteleportation.importhomes", "playtimesupplysignal.bonus"
 ```
+
+# oxide.grant group <group> <permission>
+oxide.grant group default nteleportation.tpbandit
+
 aws s3 sync --quiet --delete rust-west.zip s3://suparious.com/
 
 UserManagement
@@ -105,6 +109,15 @@ VipSpawn add 76561198852895608 (WeirdAl)
 VipSpawn add 76561198421090963 (Hannaht56)
 VipSpawn add 76561199135759930 (Ratchet)
 
+DiscordSpawn add 76561199016007366 (1F-01 | J. Kilo)
+DiscordSpawn add 76561199078529202 (thatlegitgamer310)
+DiscordSpawn add 76561199051464652 (76561199051464652)
+
+
+VipSpawn add 76561199016007366 (1F-01 | J. Kilo)
+VipSpawn add 76561199078529202 (thatlegitgamer310)
+VipSpawn add 76561199051464652 (76561199051464652)
+
 DevSpawn add 76561198886543733 (SmokeQc)
 
 GMSpawn add 76561198206550912 (ThePastaMasta)
@@ -120,6 +133,7 @@ oxide.usergroup add Suparious default
 oxide.usergroup add TheBoxiestCat default
 oxide.usergroup add parkourgriffin default
 oxide.usergroup add Ratchet default
+
 oxide.usergroup add nick default
 oxide.usergroup add miles96690 default
 oxide.usergroup add Zombie60 default
