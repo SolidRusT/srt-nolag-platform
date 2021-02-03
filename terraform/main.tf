@@ -38,28 +38,83 @@ locals {
   }
 }
 
-# VPC network
-module "vpc" {
-  source          = "./modules/vpc"
-  env             = var.env
-  project         = var.project
-  region          = var.region
-  multi_az        = false
-  nat_gw_multi_az = false
-  rds             = false
-  nat_mode        = "gateway"
-  vpc_cidr_prefix = var.vpc_cidr_prefix
-  common_tags     = local.common_tags
+# public subnets for us-west-2
+resource "aws_vpc" "us_west_2" {
+  cidr_block                       = "${var.vpc_region_us_west_2_prefix}.0/24"
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
+  assign_generated_ipv6_cidr_block = false
+  tags = merge(local.common_tags, map(
+    "Name", "${var.project}-${var.env}"
+  ))
 }
+resource "aws_internet_gateway" "default" {
+  vpc_id = aws_vpc.us_west_2.id
+}
+resource "aws_subnet" "us_west_2a" {
+  cidr_block        = "${var.vpc_region_us_west_2_prefix}.0/28"
+  vpc_id            = aws_vpc.us_west_2.id
+  availability_zone = "us-west-2a"
+
+  tags = merge(local.common_tags, map(
+    "Name", "${var.project}-us_west_2a-${var.env}"
+  ))
+}
+resource "aws_subnet" "us_west_2b" {
+  cidr_block        = "${var.vpc_region_us_west_2_prefix}.16/28"
+  vpc_id            = aws_vpc.us_west_2.id
+  availability_zone = "us-west-2b"
+
+  tags = merge(local.common_tags, map(
+    "Name", "${var.project}-us_west_2b-${var.env}"
+  ))
+}
+resource "aws_subnet" "us_west_2c" {
+  cidr_block        = "${var.vpc_region_us_west_2_prefix}.32/28"
+  vpc_id            = aws_vpc.us_west_2.id
+  availability_zone = "us-west-2c"
+
+  tags = merge(local.common_tags, map(
+    "Name", "${var.project}-us_west_2c-${var.env}"
+  ))
+}
+resource "aws_subnet" "us_west_2d" {
+  cidr_block        = "${var.vpc_region_us_west_2_prefix}.48/28"
+  vpc_id            = aws_vpc.us_west_2.id
+  availability_zone = "us-west-2d"
+
+  tags = merge(local.common_tags, map(
+    "Name", "${var.project}-us_west_2d-${var.env}"
+  ))
+}
+#resource "aws_subnet" "us_west_2e" {
+#  cidr_block        = "${var.vpc_region_us_west_2_prefix}.64/28"
+#  vpc_id            = aws_vpc.us_west_2.id
+#  availability_zone = "us-west-2e"
+#
+#  tags = merge(local.common_tags, map(
+#    "Name", "${var.project}-us_west_2e-${var.env}"
+#  ))
+#}
+#resource "aws_subnet" "us_west_2f" {
+#  cidr_block        = "${var.vpc_region_us_west_2_prefix}.72/28"
+#  vpc_id            = aws_vpc.us_west_2.id
+#  availability_zone = "us-west-2f"
+#
+#  tags = merge(local.common_tags, map(
+#    "Name", "${var.project}-us_west_2f-${var.env}"
+#  ))
+#}
+
 
 # security module
-module "security" {
+module "security_us_west_2" {
   source             = "./modules/security"
   env                = var.env
   project            = var.project
-  region             = var.region
-  vpc_id             = module.vpc.vpc_id
-  vpc_cidr_block     = module.vpc.vpc_cidr_block
+  region             = "us-west-2"
+  vpc_id             = aws_vpc.us_west_2.id
+  vpc_cidr_block     = aws_vpc.us_west_2.cidr_block
   allowed_admin_ip_1 = "24.80.112.171/32"
   allowed_admin_ip_2 = "50.92.183.181/32"
 
@@ -153,57 +208,3 @@ module "cloudfront" {
   acm_cert_arn       = aws_acm_certificate.cert.arn
   common_tags        = local.common_tags
 }
-
-##################
-### Jenkins server
-## User data and bootstrapping
-#data "template_cloudinit_config" "jenkins_config" {
-#  #gzip          = true
-#  base64_encode = true
-#  part {
-#    content_type = "text/x-shellscript"
-#    content  = file("${path.cwd}/templates/ec2_docker_install.tpl")
-#  }
-#}
-
-## Select latest update in ami flavour
-#data "aws_ami" "ubuntu" {
-#  most_recent = true
-#  filter {
-#    name   = "name"
-#    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-#  }
-#  filter {
-#    name   = "virtualization-type"
-#    values = ["hvm"]
-#  }
-#  owners = ["099720109477"] # Canonical
-#}
-#
-## Create the instance
-#resource "aws_instance" "jenkins" {
-#  ami           = data.aws_ami.ubuntu.id
-#  instance_type = "t3a.small"
-#  key_name      = local.ec2_key_name
-#  user_data     = data.template_cloudinit_config.jenkins_config.rendered
-#  vpc_security_group_ids = [
-#    module.security.admin_sg_id,
-#    module.security.jenkins_sg_id
-#  ]
-#  subnet_id            = module.vpc.subnet_public_2
-#  iam_instance_profile = module.security.jenkins_iam_profile_name
-#  root_block_device {
-#    volume_type           = "gp2"
-#    volume_size           = 60
-#    delete_on_termination = true
-#    encrypted             = false
-#    #kms_key_id =
-#  }
-#  associate_public_ip_address = true
-#  tags = merge(local.common_tags, map(
-#    "Name", "${var.project}-jenkins-${var.env}"
-#  ))
-#  volume_tags = merge(local.common_tags, map(
-#    "Name", "${var.project}-jenkins-${var.env}"
-#  ))
-#}

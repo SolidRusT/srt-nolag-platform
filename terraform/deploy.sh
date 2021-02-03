@@ -19,25 +19,25 @@ echo "Vars file: ${tf_vars_file}"
 # init environment
 echo "Wiping out previous local state"
 rm -rf .terraform
-echo "Installing configured Terraform version"
-tfenv install
-echo "Activating configured Terraform version"
-tfenv use
-echo "activating execution break on fail"
+#echo "Installing configured Terraform version"
+#tfenv install
+#echo "Activating configured Terraform version"
+#tfenv use
+#echo "activating execution break on fail"
 set -e          # stop execution on failure
 
 # check for updates
-echo "Checking for latest Terraform version"
-LATEST_TF=$(terraform version | head -n 1 | sed 's/Terraform v//')
-echo "Latest Terraform Version is: ${LATEST_TF} " 
-DESIRED=$(cat .terraform-version)
-echo "comparing latest and desired terraform versions"
-if [ "$LATEST_TF" = "$DESIRED" ]; then
-    echo "Terraform version is matching"
-else
-    echo "WARNING: Terraform version mismatch detected"
-    echo "WARNING: Found desired version: $DESIRED, but expected latest version: $LATEST_TF."
-fi
+#echo "Checking for latest Terraform version"
+#LATEST_TF=$(terraform version | head -n 1 | sed 's/Terraform v//')
+#echo "Latest Terraform Version is: ${LATEST_TF} " 
+#DESIRED=$(cat .terraform-version)
+#echo "comparing latest and desired terraform versions"
+#if [ "$LATEST_TF" = "$DESIRED" ]; then
+#    echo "Terraform version is matching"
+#else
+#    echo "WARNING: Terraform version mismatch detected"
+#    echo "WARNING: Found desired version: $DESIRED, but expected latest version: $LATEST_TF."
+#fi
 
 # init terraform
 echo "initializing terraform state"

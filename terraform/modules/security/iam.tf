@@ -1,11 +1,11 @@
-# Jenkins iam instance profile
-resource "aws_iam_instance_profile" "jenkins_profile" {
-  name = "jenkins_profile"
-  role = aws_iam_role.jenkins_role.name
+# SolidRust IAM instance profile
+resource "aws_iam_instance_profile" "rust_profile" {
+  name = "rust_profile"
+  role = aws_iam_role.rust_role.name
 }
 
-resource "aws_iam_role" "jenkins_role" {
-  name = "jenkins_role"
+resource "aws_iam_role" "rust_role" {
+  name = "rust_role"
 
   assume_role_policy = <<EOF
 {
@@ -27,9 +27,9 @@ EOF
   ))
 }
 
-resource "aws_iam_role_policy" "jenkins_s3_policy" {
-  name = "jenkins_s3_policy"
-  role = aws_iam_role.jenkins_role.name
+resource "aws_iam_role_policy" "rust_s3_policy" {
+  name = "rust_s3_policy"
+  role = aws_iam_role.rust_role.name
 
   policy = <<EOF
 {

@@ -54,58 +54,59 @@ resource "aws_security_group_rule" "admin_rdp_access_2" {
   security_group_id = aws_security_group.allow_admins.id
 }
 
-#######################
-## Allow Jenkins access
-resource "aws_security_group" "allow_jenkins" {
-  name        = "allow_jenkins"
-  description = "Allow Suparious Jenkins inbound traffic"
+####################
+## Allow Public Rust
+resource "aws_security_group" "allow_rust" {
+  name        = "allow_rust"
+  description = "Allow SolidRust public inbound traffic"
   vpc_id      = var.vpc_id
 
   tags = merge(var.common_tags, map(
-    "Name", "${var.project}-${var.env}-sg-jenkins"
+    "Name", "${var.project}-${var.env}-sg-rust"
   ))
 }
 
-# Jenkins HTTP rule
-resource "aws_security_group_rule" "jenkins_http_admin_access" {
-  description       = "jenkins_http_access"
+# Public Rust game rule
+resource "aws_security_group_rule" "rust_game_access_1" {
+  description       = "rust_game_access"
   type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  source_security_group_id        = aws_security_group.allow_admins.id
-  security_group_id = aws_security_group.allow_jenkins.id
+  from_port         = 28015
+  to_port           = 28015
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_rust.id
 }
 
-# Admin HTTP proxy rule
-resource "aws_security_group_rule" "jenkins_http_proxy_admin_access" {
-  description       = "jenkins_http_proxy_access"
+# Public Rust webapp rule
+resource "aws_security_group_rule" "rust_game_access_2" {
+  description       = "rust_game_access"
   type              = "ingress"
-  from_port         = 8080
-  to_port           = 8080
+  from_port         = 28082
+  to_port           = 28082
   protocol          = "tcp"
-  source_security_group_id        = aws_security_group.allow_admins.id
-  security_group_id = aws_security_group.allow_jenkins.id
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_rust.id
 }
 
-# SSL rule
-resource "aws_security_group_rule" "jenkins_ssl_admin_access" {
-  description       = "jenkins_ssl_access"
+# Admin RCON rule 1
+resource "aws_security_group_rule" "admin_rcon_access_1" {
+  description       = "rust_rcon_access"
   type              = "ingress"
-  from_port         = 443
-  to_port           = 443
+  from_port         = 28016
+  to_port           = 28016
   protocol          = "tcp"
-  source_security_group_id        = aws_security_group.allow_admins.id
-  security_group_id = aws_security_group.allow_jenkins.id
+  cidr_blocks       = [var.allowed_admin_ip_1]
+  security_group_id = aws_security_group.allow_rust.id
 }
 
-# Admin SSL proxy rule
-resource "aws_security_group_rule" "jenkins_ssl_proxy_admin_access" {
-  description       = "jenkins_ssl_proxy_access"
+# Admin RCON rule 2
+resource "aws_security_group_rule" "admin_rcon_access_2" {
+  description       = "rust_rcon_access"
   type              = "ingress"
-  from_port         = 8443
-  to_port           = 8443
+  from_port         = 28016
+  to_port           = 28016
   protocol          = "tcp"
-  source_security_group_id        = aws_security_group.allow_admins.id
-  security_group_id = aws_security_group.allow_jenkins.id
+  cidr_blocks       = [var.allowed_admin_ip_2]
+  security_group_id = aws_security_group.allow_rust.id
 }
+

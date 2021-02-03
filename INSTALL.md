@@ -174,3 +174,6 @@ https://umod.org/plugins/vote-for-money
 
 https://umod.org/plugins/spawn-logger
 ```
+
+
+sudo dpkg --add-architecture i386; sudo apt-get update;sudo apt-get install mailutils postfix curl wget file bzip2 gzip unzip bsdmainutils python util-linux ca-certificates binutils bc tmux lib32gcc1 libstdc++6 libstdc++6:i386 lib32z1

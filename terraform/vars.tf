@@ -23,6 +23,6 @@ variable "domain_name" {
   type        = string
 }
 
-variable "vpc_cidr_prefix" {
+variable "vpc_region_us_west_2_prefix" {
   description = "the network CIDR prefix for the VPC"
 }
