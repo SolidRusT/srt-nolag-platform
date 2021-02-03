@@ -44,3 +44,4 @@ git config --global user.name "SmokeQc"
 git clone git@github.com:suparious/solidrust.net.git
 echo "7 *    * * *   modded  /home/modded/solidrust.net/backup.sh" | sudo tee -a /etc/crontab
 
+#https://just-wiped.net/rust-maps/procedural-map-3500-973546
