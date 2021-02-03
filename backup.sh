@@ -1,5 +1,6 @@
 #!/bin/bash
-# pust to s3
+#echo "7 *    * * *   modded  /home/modded/solidrust.net/backup.sh" | sudo tee -a /etc/crontab
+# push to s3
 export MYNAME=$(hostname)
 export DEST_S3="s3://solidrust.net-backups/${MYNAME}"
 export INSTALL_DIR="/home/modded"
