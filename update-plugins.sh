@@ -37,3 +37,13 @@ aws s3 sync --delete ${SOURCE_S3}/oxide/plugins /home/modded/oxide/plugins
 
 #(M) Economics.json
 #(M) ServerRewards/*
+
+
+
+# Create update
+aws s3 sync --quiet s3://suparious.com/oxide oxide
+
+# Download updates
+aws s3 sync --quiet s3://suparious.com/oxide/plugins oxide/plugins
+aws s3 sync --quiet s3://suparious.com/oxide/config oxide/config
+

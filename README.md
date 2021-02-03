@@ -1,27 +1,67 @@
-# Suparious Rust Server
+# SolidRusT Server Configuration
 
  - no lag gameplay
- - rust-vanilla-us-east-1
- - 
-
-## Debian Buster 10 Overview
-
- - Configure and update Debian base server
- - Install steamcmd and steam login
- - Install Rust server and test
- - Install linuxGSM and add rust
- - Import config backup, or create new config
- - Run rust using service manager
- - Backup working config
- - Monitor running games
 
 ## Install Rust Server
 
-`install_system.sh`
+`install_1_system.sh`
 
-`install_rust_server.sh`
+`install_2_server.sh`
 
-You are now ready to use the game manager, without pre-requisite issues.
+create the initial `server/solidrust/cfg/server/cfg` file, ot use one from another server's backup.
+
+`solidrust.sh`
+
+Once Rust Community server is working great, then we can get to the mods.
+
+Stop the server.
+
+`install_3_mods.sh`
+
+`solidrust.sh`
+
+## Backups
+
+`backup.sh`
+
+## Updates - First Tuseday of each month
+
+from the game F1 console
+
+```
+server.writecfg
+server.backup
+server.save
+server.stop( string "Getting FacePunched monthy" )
+```
+
+Then apply the latest patch from Steam.
+
+```bash
+steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 +quit
+steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +quit
+```
+
+Now, re-run the mods installer.
+
+`install_3_mods.sh`
+
+Start the service.
+
+`solidrust.sh`
+
+
+### Emergency restarting
+
+```
+#restart <seconds> <message>
+restart 120 “Don’t wander too far off!”
+```
+
+
+
+
+
 
 #### Notes
 
