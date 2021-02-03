@@ -215,6 +215,28 @@ module "logging_s3" {
   common_tags = local.common_tags
 }
 
+# Backups s3
+module "backups_s3" {
+  source        = "./modules/s3"
+  env           = var.env
+  project       = var.project
+  region        = var.region
+  bucket        = "${var.bucket}-backups"
+  acl           = "private"
+  force_destroy = true
+  versioning = {
+    enabled = true
+  }
+  server_side_encryption_configuration = {
+    rule = {
+      apply_server_side_encryption_by_default = {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+  common_tags = local.common_tags
+}
+
 # main SSL Certificate
 resource "aws_acm_certificate" "cert" {
   provider = aws.acm
