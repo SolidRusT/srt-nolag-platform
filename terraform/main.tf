@@ -38,7 +38,7 @@ locals {
   }
 }
 
-# public subnets for us-west-2
+# us-west-2 network block
 resource "aws_vpc" "us_west_2" {
   cidr_block                       = "${var.vpc_region_us_west_2_prefix}.0/24"
   enable_dns_hostnames             = true
@@ -48,9 +48,8 @@ resource "aws_vpc" "us_west_2" {
     "Name", "${var.project}-${var.env}"
   ))
 }
-resource "aws_internet_gateway" "default" {
-  vpc_id = aws_vpc.us_west_2.id
-}
+
+# us-west-2 subnets
 resource "aws_subnet" "us_west_2a" {
   cidr_block        = "${var.vpc_region_us_west_2_prefix}.0/28"
   vpc_id            = aws_vpc.us_west_2.id
@@ -87,6 +86,44 @@ resource "aws_subnet" "us_west_2d" {
     "Name", "${var.project}-us_west_2d-${var.env}"
   ))
 }
+
+# us-west-2 Internet gateway
+resource "aws_internet_gateway" "us_west_2" {
+  vpc_id = aws_vpc.us_west_2.id
+}
+
+# us-west-2 Internet router
+resource "aws_route_table" "public_us_west_2" {
+  vpc_id = aws_vpc.us_west_2.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.us_west_2.id
+  }
+
+  tags = merge(local.common_tags, map(
+    "Name", "${var.project}-public-us_west_2-${var.env}"
+  ))
+}
+
+# us_west_2 subnet-router associations
+resource "aws_route_table_association" "public-us_west_2a" {
+  route_table_id = aws_route_table.public_us_west_2.id
+  subnet_id      = aws_subnet.us_west_2a.id
+}
+resource "aws_route_table_association" "public-us_west_2b" {
+  route_table_id = aws_route_table.public_us_west_2.id
+  subnet_id      = aws_subnet.us_west_2b.id
+}
+resource "aws_route_table_association" "public-us_west_2c" {
+  route_table_id = aws_route_table.public_us_west_2.id
+  subnet_id      = aws_subnet.us_west_2c.id
+}
+resource "aws_route_table_association" "public-us_west_2d" {
+  route_table_id = aws_route_table.public_us_west_2.id
+  subnet_id      = aws_subnet.us_west_2d.id
+}
+
 #resource "aws_subnet" "us_west_2e" {
 #  cidr_block        = "${var.vpc_region_us_west_2_prefix}.64/28"
 #  vpc_id            = aws_vpc.us_west_2.id
