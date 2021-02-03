@@ -1,5 +1,5 @@
 default:
-  address: "10.20.60.246:28016" # host:port, for example 127.0.0.1:16260
+  address: "127.0.0.1:28016" # host:port, for example 127.0.0.1:16260
   password: "NOFAGS"
   log: "rcon-default.log"
   type: "web" # rcon, telnet, web.
