@@ -4,22 +4,18 @@ sudo dpkg --add-architecture i386
 sudo apt update
 sudo apt -y dist-upgrade
 
-NEW_NAME="rust-west-mods"
+NEW_NAME="nine"
 echo ${NEW_NAME} | sudo tee /etc/hostname
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/hosts
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
 sudo hostnamectl set-hostname ${NEW_NAME}
 
+echo "en_US.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+sudo locale-gen
 
 sudo dpkg-reconfigure tzdata
-America/Los_Angeles or America/New_York
+#America/Los_Angeles or America/New_York
 
-
-The next time you log in, you will see the new hostname.
-
-### Install base environment
-
-```bash
 sudo apt-get -y install \
     git \
     apt-transport-https \
@@ -29,13 +25,18 @@ sudo apt-get -y install \
     htop \
     gnupg-agent \
     gnupg2 \
+    mailutils \
     software-properties-common \
     screen \
     lib32gcc1 \
     libsdl2-2.0-0:i386 \
     libsdl2* \
     lib32stdc++6 \
+    libstdc++6:i386 \
+    zip \
     unzip \
+    bzip2 \
+    file \
     binutils \
     rsync \
     bc \
@@ -45,19 +46,23 @@ sudo apt-get -y install \
     lib32z1 \
     libgdiplus \
     mariadb-client \
+    python \
+    python3 \
+    golang \
     python3-pip \
     linux-headers-$(uname -r) \
+    util-linux \
+    bsdmainutils \
     build-essential
-# OPTIONAL - to help the server realize the updates and hostname change
-sudo apt install -f
-sudo apt autoremove
-sudo apt clean
-sudo apt autoclean
-sudo reboot
-```
 
 sudo apt remove awscli
-PATH=$PATH:/home/admin/.local/bin
-PATH=$PATH:/home/modded/.local/bin
-#relog
-pip3 install awscli
+
+echo "PATH=\$PATH:$HOME/.local/bin" >> ".bashrc"
+
+# early pre-maintenance maintenance maintenance
+sudo apt install -f
+sudo apt -y autoremove
+sudo apt clean
+sudo apt autoclean
+
+sudo reboot

@@ -1,0 +1,1 @@
+aws s3 sync --delete s3://suparious.com/backup/west/oxide/config/MagicPanel /home/modded/oxide/config/MagicPanel

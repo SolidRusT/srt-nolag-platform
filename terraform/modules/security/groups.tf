@@ -110,3 +110,13 @@ resource "aws_security_group_rule" "admin_rcon_access_2" {
   security_group_id = aws_security_group.allow_rust.id
 }
 
+# Rust Outbound
+resource "aws_security_group_rule" "outbound_access" {
+  description       = "rust_outbound_access"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_rust.id
+}

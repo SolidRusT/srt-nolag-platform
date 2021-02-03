@@ -4,12 +4,7 @@
 Create some backup and sync jobs
 
 ```bash
-sudo apt -y install golang
-wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.0/rcon-0.9.0-amd64_linux.tar.gz
-tar xzvf rcon-0.9.0-amd64_linux.tar.gz
-mv rcon-0.9.0-amd64_linux/rcon* .
-rm -rf rcon-0.9.0-amd64_linux*
-/sbin/ifconfig
+
 ```
 
 ```bash
@@ -103,7 +98,7 @@ Patching
 
 ```bash
 cd ~/
-steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +quit
+
 wget https://umod.org/games/rust/download/develop -O Oxide.Rust.zip
 unzip -o Oxide.Rust.zip
 rm Oxide.Rust.zip
@@ -111,9 +106,7 @@ wget https://umod.org/extensions/discord/download -O ~/RustDedicated_Data/Manage
 ```
 
 
-ssh-keygen -b 4096
-git config user.email "smoke@techfusion.ca"
-git config user.name "SmokeQc"
+
 
 # Create update
 aws s3 sync --quiet s3://suparious.com/oxide oxide
