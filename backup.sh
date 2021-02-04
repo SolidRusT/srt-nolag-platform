@@ -8,7 +8,7 @@ export INSTALL_DIR="/home/modded"
 # config
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.save"
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.writecfg"
-aws s3 sync --quiet --delete ${INSTALL_DIR}/server/rust/cfg ${DEST_S3}/server/rust/cfg
+aws s3 sync --quiet --delete ${INSTALL_DIR}/server/solidrust/cfg ${DEST_S3}/server/solidrust/cfg
 # data
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.backup"
 aws s3 sync --quiet --delete ${INSTALL_DIR}/backup ${DEST_S3}/backup
