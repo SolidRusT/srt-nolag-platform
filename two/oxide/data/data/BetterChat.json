@@ -1,0 +1,25 @@
+[
+  {
+    "GroupName": "default",
+    "Priority": 0,
+    "Title": {
+      "Text": "[Player]",
+      "Color": "#55aaff",
+      "Size": 15,
+      "Hidden": false,
+      "HiddenIfNotPrimary": false
+    },
+    "Username": {
+      "Color": "#55aaff",
+      "Size": 15
+    },
+    "Message": {
+      "Color": "white",
+      "Size": 15
+    },
+    "Format": {
+      "Chat": "{Title} {Username}: {Message}",
+      "Console": "{Title} {Username}: {Message}"
+    }
+  }
+]
