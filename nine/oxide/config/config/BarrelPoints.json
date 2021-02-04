@@ -1,0 +1,32 @@
+{
+  "Battlepass Settings": {
+    "Use Battlepass 1st currency": false,
+    "Use Battlepass 2nd currency": false
+  },
+  "Items": {
+    "Item Shortname": "scrap",
+    "Use Item Rewards": false
+  },
+  "Plugins": {
+    "Use Battlepass": false,
+    "Use Economics": true,
+    "Use ServerRewards": false
+  },
+  "Point Settings": {
+    "Permission List barrels": {
+      "barrelpoints.1stcurreny": 2.0,
+      "barrelpoints.1stcurrenyvip": 10.0,
+      "barrelpoints.2ndcurrency": 5.0,
+      "barrelpoints.2ndcurrencyvip": 15.0,
+      "barrelpoints.default": 2.0,
+      "barrelpoints.vip": 5.0
+    }
+  },
+  "Settings": {
+    "Give Points Every x Barrels": 1,
+    "Give Points For Barrels": true,
+    "Give Points For Crates": false,
+    "Reset Barrel Count on Death": true,
+    "Send Notification Message": true
+  }
+}

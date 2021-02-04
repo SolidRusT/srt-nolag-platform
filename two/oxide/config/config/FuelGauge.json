@@ -1,0 +1,12 @@
+{
+  "Display": {
+    "Background Color": "#9b9696",
+    "Background Transparency": 0.3,
+    "Image URL": "https://i.imgur.com/n9Vp4yz.png",
+    "Use Icon": true
+  },
+  "Settings": {
+    "Dock": "Left",
+    "Only Display to Driver": true
+  }
+}

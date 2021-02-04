@@ -1,0 +1,11 @@
+{
+  "UISettings": {
+    "AnchorMin": "1 0",
+    "AnchorMax": "1 0",
+    "OffsetMin": "-255 349",
+    "OffsetMax": "-68 377",
+    "AddButtonColor": "0.44 0.54 0.26 1",
+    "RemoveButtonColor": "0.7 0.3 0 1",
+    "ButtonTextColor": "0.97 0.92 0.88 1"
+  }
+}

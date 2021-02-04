@@ -1,0 +1,6 @@
+{
+  "1.Disable collision": true,
+  "2.Dynamic collision disabling": true,
+  "3.Amount to disable collision": 300,
+  "5.Log plugin activity": true
+}

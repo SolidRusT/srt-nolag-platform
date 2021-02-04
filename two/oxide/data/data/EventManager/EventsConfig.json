@@ -1,0 +1,10 @@
+{
+  "Event_List": {},
+  "Classes": [],
+  "AutoEvent_Config": {
+    "GameInterval": 0,
+    "AutoCancel": false,
+    "AutoCancel_Timer": 0,
+    "AutoEvent_List": []
+  }
+}

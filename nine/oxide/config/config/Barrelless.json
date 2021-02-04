@@ -1,0 +1,46 @@
+{
+  "Drop Settings": {
+    "Drop : Spawn only 1 entity on trigger": false,
+    "Drop : Count random per x barrels": 1,
+    "Airdrop : Chance on spawn (1-00)": 0,
+    "Airdrop : Drop height": 20,
+    "Beancan : Chance on spawn (1-00)": 0
+  },
+  "Scientist Settings": {
+    "Scientist : Use Custom Name": false,
+    "Scientist : Name": "BarrelScientist",
+    "Scientist : Chance on spawn (1-00)": 0,
+    "Scientist : Health": 200
+  },
+  "Peacekeeper Settings": {
+    "Peacekeeper : Use Custom Name": false,
+    "Peacekeeper : Name": "BarrelKeeper",
+    "Peacekeeper : Chance on spawn (1-00)": 0,
+    "PeaceKeeper : Health": 300
+  },
+  "Scarecrow Settings": {
+    "Scarecrow : Use Custom Name": false,
+    "Scarecrow : Name": "BarrelCrow",
+    "Scarecrow : Chance on spawn (1-00)": 0,
+    "Scarecrow : Health": 300
+  },
+  "Zombie Settings": {
+    "Zombie : Use clothes": false,
+    "Zombie : Use Custom Name": false,
+    "Zombie : Name": "BarrelZombie",
+    "Zombie : Chance on spawn (1-00)": 0,
+    "Zombie : Health": 250
+  },
+  "Animal Settings": {
+    "Bear : Chance on spawn (1-00)": 0,
+    "Wolf : Chance on spawn (1-00)": 0,
+    "Chicken : Chance on spawn (1-00)": 0,
+    "Boar : Chance on spawn (1-00)": 0
+  },
+  "Fire Settings": {
+    "Fire : Trigger only on oil/diesel barrels": false,
+    "Fire (Large) : Chance on spawn (1-00)": 0,
+    "Fire (Medium): Chance on spawn (1-00)": 0,
+    "Fire (Small): Chance on spawn (1-00)": 0
+  }
+}
