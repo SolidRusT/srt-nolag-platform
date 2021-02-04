@@ -1,0 +1,20 @@
+{
+  "Limitations": {
+    "Maximum clan alliance count": 2,
+    "Maximum clan member count": 8,
+    "Maximum clan moderator count": 2
+  },
+  "Message colors": {
+    "Clan and Alliance chat color": "#3999D5",
+    "Clan tag color": "#783CD7",
+    "Highlight color": "#D85540",
+    "Message color": "#D8D8D8"
+  },
+  "Settings": {
+    "Data save timer (seconds)": 600,
+    "Maximum clan tag characters": 6,
+    "Minimum clan tag characters": 2,
+    "Show clan member connection message": true,
+    "Show clan member disconnection message": true
+  }
+}

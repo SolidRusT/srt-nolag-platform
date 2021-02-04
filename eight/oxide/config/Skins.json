@@ -1,0 +1,53 @@
+{
+  "Command": "skin",
+  "Skins": [
+    {
+      "Item Shortname": "shortname",
+      "Skins": [
+        0
+      ]
+    }
+  ],
+  "Container Panel Name": "generic",
+  "Container Capacity": 36,
+  "UI": {
+    "Background Color": "0.18 0.28 0.36",
+    "Background Anchors": {
+      "Anchor Min X": "1.0",
+      "Anchor Min Y": "1.0",
+      "Anchor Max X": "1.0",
+      "Anchor Max Y": "1.0"
+    },
+    "Background Offsets": {
+      "Offset Min X": "-300",
+      "Offset Min Y": "-100",
+      "Offset Max X": "0",
+      "Offset Max Y": "0"
+    },
+    "Left Button Text": "<size=36><</size>",
+    "Left Button Color": "0.11 0.51 0.83",
+    "Left Button Anchors": {
+      "Anchor Min X": "0.025",
+      "Anchor Min Y": "0.05",
+      "Anchor Max X": "0.325",
+      "Anchor Max Y": "0.95"
+    },
+    "Center Button Text": "<size=36>Page: {page}</size>",
+    "Center Button Color": "0.11 0.51 0.83",
+    "Center Button Anchors": {
+      "Anchor Min X": "0.350",
+      "Anchor Min Y": "0.05",
+      "Anchor Max X": "0.650",
+      "Anchor Max Y": "0.95"
+    },
+    "Right Button Text": "<size=36>></size>",
+    "Right Button Color": "0.11 0.51 0.83",
+    "Right Button Anchors": {
+      "Anchor Min X": "0.675",
+      "Anchor Min Y": "0.05",
+      "Anchor Max X": "0.975",
+      "Anchor Max Y": "0.95"
+    }
+  },
+  "Debug": false
+}

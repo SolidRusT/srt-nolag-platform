@@ -1,0 +1,19 @@
+{
+  "Autolight Options": {
+    "Time to turn lights on": 18.0,
+    "Time to turn lights off": 6.0,
+    "Lights require fuel to activate automatically": true
+  },
+  "Notification Options": {
+    "Display notifications via PopupNotifications": false,
+    "Chat prefix": "[Zone Manager] :",
+    "Chat color (hex)": "#d85540"
+  },
+  "NPC players can deal player damage in zones with PvpGod flag": false,
+  "Allow decay damage in zones with Undestr flag": false,
+  "Version": {
+    "Major": 3,
+    "Minor": 0,
+    "Patch": 20
+  }
+}
