@@ -1,0 +1,36 @@
+{
+  "Colors": {
+    "Background_Dark": {
+      "Alpha": 0.98,
+      "Color": "#2a2a2a"
+    },
+    "Background_Light": {
+      "Alpha": 0.3,
+      "Color": "#696969"
+    },
+    "Background_Medium": {
+      "Alpha": 0.98,
+      "Color": "#373737"
+    },
+    "Button_Accept": {
+      "Alpha": 0.9,
+      "Color": "#00cd00"
+    },
+    "Button_Inactive": {
+      "Alpha": 0.9,
+      "Color": "#a8a8a8"
+    },
+    "Button_Standard": {
+      "Alpha": 0.9,
+      "Color": "#2a2a2a"
+    },
+    "TextColor_Primary": "#ce422b",
+    "TextColor_Secondary": "#939393"
+  },
+  "Voting": {
+    "Auto_AllowEventVoting": true,
+    "Standard_AllowVoteToOpen": true,
+    "Standard_MinPlayersRequired": 10,
+    "Standard_RequiredVoteFraction": 0.4
+  }
+}
