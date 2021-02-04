@@ -2,18 +2,24 @@
 #echo "7 *    * * *   modded  /home/modded/solidrust.net/backup.sh" | sudo tee -a /etc/crontab
 # push to s3
 export MYNAME=$(hostname)
-export DEST_S3="s3://solidrust.net-backups/${MYNAME}"
+export S3_BUCKET="s3://solidrust.net-backups/${MYNAME}"
 export INSTALL_DIR="/home/modded"
 
-# config
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.save"
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.writecfg"
-aws s3 sync --quiet --delete ${INSTALL_DIR}/server/solidrust/cfg ${DEST_S3}/server/solidrust/cfg
-# data
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.backup"
-aws s3 sync --quiet --delete ${INSTALL_DIR}/backup ${DEST_S3}/backup
-# plugins
-aws s3 sync --quiet --delete ${INSTALL_DIR}/oxide ${DEST_S3}/oxide
+
+aws s3 sync --quiet --delete ${INSTALL_DIR}/backup ${S3_BUCKET}/backup
+aws s3 sync --quiet --delete ${INSTALL_DIR}/oxide/data ${S3_BUCKET}/oxide/data
+
+cd ${INSTALL_DIR}/solidrust.net && git pull
+
+# regular sync
+rsync -r ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg/ ${INSTALL_DIR}/server/solidrust/cfg
+aws s3 sync --quiet --delete ${INSTALL_DIR}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
+rsync -r ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config/ ${INSTALL_DIR}/oxide/config
+aws s3 sync --quiet --delete ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config ${S3_BUCKET}/oxide/config
+rsync -r ${INSTALL_DIR}/solidrust.net/oxide/plugins/ ${INSTALL_DIR}/oxide/plugins
 
 #(M) Economics.json
 #(M) ServerRewards/*
