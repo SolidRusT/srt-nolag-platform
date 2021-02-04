@@ -26,3 +26,7 @@ variable "domain_name" {
 variable "vpc_region_us_west_2_prefix" {
   description = "the network CIDR prefix for the VPC"
 }
+
+variable "vpc_region_ap_southeast_2_prefix" {
+  description = "the network CIDR prefix for the VPC"
+}

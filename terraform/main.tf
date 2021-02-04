@@ -38,126 +38,6 @@ locals {
   }
 }
 
-# us-west-2 network block
-resource "aws_vpc" "us_west_2" {
-  cidr_block                       = "${var.vpc_region_us_west_2_prefix}.0/24"
-  enable_dns_hostnames             = true
-  enable_dns_support               = true
-  assign_generated_ipv6_cidr_block = false
-  tags = merge(local.common_tags, map(
-    "Name", "${var.project}-${var.env}"
-  ))
-}
-
-# us-west-2 subnets
-resource "aws_subnet" "us_west_2a" {
-  cidr_block        = "${var.vpc_region_us_west_2_prefix}.0/28"
-  vpc_id            = aws_vpc.us_west_2.id
-  availability_zone = "us-west-2a"
-
-  tags = merge(local.common_tags, map(
-    "Name", "${var.project}-us_west_2a-${var.env}"
-  ))
-}
-resource "aws_subnet" "us_west_2b" {
-  cidr_block        = "${var.vpc_region_us_west_2_prefix}.16/28"
-  vpc_id            = aws_vpc.us_west_2.id
-  availability_zone = "us-west-2b"
-
-  tags = merge(local.common_tags, map(
-    "Name", "${var.project}-us_west_2b-${var.env}"
-  ))
-}
-resource "aws_subnet" "us_west_2c" {
-  cidr_block        = "${var.vpc_region_us_west_2_prefix}.32/28"
-  vpc_id            = aws_vpc.us_west_2.id
-  availability_zone = "us-west-2c"
-
-  tags = merge(local.common_tags, map(
-    "Name", "${var.project}-us_west_2c-${var.env}"
-  ))
-}
-resource "aws_subnet" "us_west_2d" {
-  cidr_block        = "${var.vpc_region_us_west_2_prefix}.48/28"
-  vpc_id            = aws_vpc.us_west_2.id
-  availability_zone = "us-west-2d"
-
-  tags = merge(local.common_tags, map(
-    "Name", "${var.project}-us_west_2d-${var.env}"
-  ))
-}
-
-# us-west-2 Internet gateway
-resource "aws_internet_gateway" "us_west_2" {
-  vpc_id = aws_vpc.us_west_2.id
-}
-
-# us-west-2 Internet router
-resource "aws_route_table" "public_us_west_2" {
-  vpc_id = aws_vpc.us_west_2.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.us_west_2.id
-  }
-
-  tags = merge(local.common_tags, map(
-    "Name", "${var.project}-public-us_west_2-${var.env}"
-  ))
-}
-
-# us_west_2 subnet-router associations
-resource "aws_route_table_association" "public-us_west_2a" {
-  route_table_id = aws_route_table.public_us_west_2.id
-  subnet_id      = aws_subnet.us_west_2a.id
-}
-resource "aws_route_table_association" "public-us_west_2b" {
-  route_table_id = aws_route_table.public_us_west_2.id
-  subnet_id      = aws_subnet.us_west_2b.id
-}
-resource "aws_route_table_association" "public-us_west_2c" {
-  route_table_id = aws_route_table.public_us_west_2.id
-  subnet_id      = aws_subnet.us_west_2c.id
-}
-resource "aws_route_table_association" "public-us_west_2d" {
-  route_table_id = aws_route_table.public_us_west_2.id
-  subnet_id      = aws_subnet.us_west_2d.id
-}
-
-#resource "aws_subnet" "us_west_2e" {
-#  cidr_block        = "${var.vpc_region_us_west_2_prefix}.64/28"
-#  vpc_id            = aws_vpc.us_west_2.id
-#  availability_zone = "us-west-2e"
-#
-#  tags = merge(local.common_tags, map(
-#    "Name", "${var.project}-us_west_2e-${var.env}"
-#  ))
-#}
-#resource "aws_subnet" "us_west_2f" {
-#  cidr_block        = "${var.vpc_region_us_west_2_prefix}.72/28"
-#  vpc_id            = aws_vpc.us_west_2.id
-#  availability_zone = "us-west-2f"
-#
-#  tags = merge(local.common_tags, map(
-#    "Name", "${var.project}-us_west_2f-${var.env}"
-#  ))
-#}
-
-
-# security module
-module "security_us_west_2" {
-  source             = "./modules/security"
-  env                = var.env
-  project            = var.project
-  region             = "us-west-2"
-  vpc_id             = aws_vpc.us_west_2.id
-  vpc_cidr_block     = aws_vpc.us_west_2.cidr_block
-  allowed_admin_ip_1 = "24.80.112.171/32"
-  allowed_admin_ip_2 = "50.92.183.181/32"
-
-  common_tags = local.common_tags
-}
-
 # main web content storage
 module "main_s3" {
   source        = "./modules/s3"
@@ -267,3 +147,63 @@ module "cloudfront" {
   acm_cert_arn       = aws_acm_certificate.cert.arn
   common_tags        = local.common_tags
 }
+
+########################
+## US-EAST-2 GAME CONFIG
+# Provider
+provider "aws" {
+  alias = "us-west-2"
+  region = "us-west-2"
+}
+
+# security module
+module "security_us_west_2" {
+  source             = "./modules/security"
+  env                = var.env
+  project            = var.project
+  region             = "us-west-2"
+  vpc_id             = aws_vpc.us_west_2.id
+  vpc_cidr_block     = aws_vpc.us_west_2.cidr_block
+  allowed_admin_ip_1 = "24.80.112.171/32"
+  allowed_admin_ip_2 = "50.92.183.181/32"
+
+  common_tags = local.common_tags
+}
+
+# security module
+module "security_ap_southeast_2" {
+  source             = "./modules/vpc/us-west-2.tf"
+  env                = var.env
+  project            = var.project
+  region             = "vpc-ap-southeast-2"
+  vpc_id             = aws_vpc.ap_southeast_2.id
+  vpc_cidr_block     = aws_vpc.ap_southeast_2.cidr_block
+  allowed_admin_ip_1 = "24.80.112.171/32"
+  allowed_admin_ip_2 = "50.92.183.181/32"
+
+  common_tags = local.common_tags
+}
+
+
+#############################
+## AP-SOUTHEAST-2 GAME CONFIG
+# Provider
+provider "aws" {
+  alias = "vpc-ap-southeast-2"
+  region = "vpc-ap-southeast-2"
+}
+
+# security module
+module "security_ap_southeast_2" {
+  source             = "./modules/security"
+  env                = var.env
+  project            = var.project
+  region             = "vpc-ap-southeast-2"
+  vpc_id             = aws_vpc.ap_southeast_2.id
+  vpc_cidr_block     = aws_vpc.ap_southeast_2.cidr_block
+  allowed_admin_ip_1 = "24.80.112.171/32"
+  allowed_admin_ip_2 = "50.92.183.181/32"
+
+  common_tags = local.common_tags
+}
+

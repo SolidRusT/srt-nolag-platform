@@ -98,31 +98,7 @@ aws s3 sync --quiet --delete rust-west.zip s3://suparious.com/
 UserManagement
 
 ```
-Users and groups
-DiscordSpawn add 76561198886543733 (SmokeQc)
-DiscordSpawn add 76561199135759930 (Ratchet)
-DiscordSpawn add 76561198421090963 (Hannaht56)
-DiscordSpawn add 76561198852895608 (WeirdAl)
-DiscordSpawn add 76561198024774727 (Suparious)
 
-VipSpawn add 76561198852895608 (WeirdAl)
-VipSpawn add 76561198421090963 (Hannaht56)
-VipSpawn add 76561199135759930 (Ratchet)
-
-DiscordSpawn add 76561199016007366 (1F-01 | J. Kilo)
-DiscordSpawn add 76561199078529202 (thatlegitgamer310)
-DiscordSpawn add 76561199051464652 (76561199051464652)
-
-
-VipSpawn add 76561199016007366 (1F-01 | J. Kilo)
-VipSpawn add 76561199078529202 (thatlegitgamer310)
-VipSpawn add 76561199051464652 (76561199051464652)
-
-DevSpawn add 76561198886543733 (SmokeQc)
-
-GMSpawn add 76561198206550912 (ThePastaMasta)
-
-AdminSpawn add 76561198024774727 (Suparious)
 
 
 oxide.usergroup add Suparious default
