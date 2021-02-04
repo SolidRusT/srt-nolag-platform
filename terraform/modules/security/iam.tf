@@ -1,11 +1,11 @@
 # SolidRust IAM instance profile
 resource "aws_iam_instance_profile" "rust_profile" {
-  name = "rust_profile"
+  name = "rust_profile-${var.region}"
   role = aws_iam_role.rust_role.name
 }
 
 resource "aws_iam_role" "rust_role" {
-  name = "rust_role"
+  name = "rust_role-${var.region}"
 
   assume_role_policy = <<EOF
 {
@@ -28,7 +28,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "rust_s3_policy" {
-  name = "rust_s3_policy"
+  name = "s3_policy-${var.region}"
   role = aws_iam_role.rust_role.name
 
   policy = <<EOF
