@@ -1,0 +1,19 @@
+{
+  "ChassisCost": {
+    "2sockets": {
+      "Amount": 200,
+      "ItemShortName": "metal.fragments"
+    },
+    "3sockets": {
+      "Amount": 300,
+      "ItemShortName": "metal.fragments"
+    },
+    "4sockets": {
+      "Amount": 400,
+      "ItemShortName": "metal.fragments"
+    }
+  },
+  "FuelAmount": 0,
+  "EnableEffects": true,
+  "SetOwner": false
+}

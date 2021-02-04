@@ -1,0 +1,31 @@
+{
+  "Settings": {
+    "Allowed In Safe Zones": true,
+    "Blacklisted Items": [],
+    "Command To Open Recycler": "recycle",
+    "Cooldown (in minutes)": 5.0,
+    "Instant Recycling": false,
+    "Maximum Radiation": 1.0,
+    "NPC Ids": [],
+    "NPCs Only": false,
+    "Recyclable Types": [
+      "Ammunition",
+      "Attire",
+      "Common",
+      "Component",
+      "Construction",
+      "Electrical",
+      "Fun",
+      "Items",
+      "Medical",
+      "Misc",
+      "Tool",
+      "Traps",
+      "Weapon"
+    ],
+    "Refund Ratio": 0.5,
+    "Send Items To Inventory Before Bag": false,
+    "Send Recycled Items To Inventory": false
+  },
+  "VERSION": "3.0.4"
+}
