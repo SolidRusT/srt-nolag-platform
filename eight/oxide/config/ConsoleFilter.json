@@ -1,0 +1,29 @@
+{
+  "List of partial strings to filter": [
+    "AngryAnt Behave version",
+    "alphamapResolution is clamped to the range of",
+    "api.facepunch.com/api/public/manifest/",
+    "Checking for new Steam Item Definitions..",
+    "Floating point textures aren't supported on this device",
+    "HDR Render Texture not supported, disabling HDR on reflection probe",
+    "Image Effects are not supported on this platform",
+    "Loading Prefab Bundle",
+    "Missing shader in",
+    "Missing projectileID",
+    "Motion vectors not supported on a platform that does not support",
+    "SwitchParent Missed",
+    "saddletest",
+    "The image effect Main Camera",
+    "The image effect effect -",
+    "The referenced script",
+    "Unsupported encoding: 'utf8'",
+    "Warning, null renderer for ScaleRenderer!",
+    "[AmplifyColor]",
+    "[AmplifyOcclusion]",
+    "[CoverageQueries] Disabled due to unsupported",
+    "[CustomProbe]",
+    "[Manifest] URI IS",
+    "[SpawnHandler] populationCounts",
+    ", disk("
+  ]
+}
