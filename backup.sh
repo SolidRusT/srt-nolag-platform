@@ -59,10 +59,10 @@ ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default recyclerspeed.use"
 #(M) ServerRewards/*
 #(M) Backpacks/*
 
-# Push any newly created configs and data back into GitHub
-rsync -r ${INSTALL_DIR}/server/solidrust/cfg    ${REPO_HOME}/server/solidrust/
-rsync -r ${INSTALL_DIR}/oxide/config            ${REPO_HOME}/oxide/
-rsync -r ${INSTALL_DIR}/oxide/data              ${REPO_HOME}/oxide/
-cd ${REPO_HOME} && git add .
-git commit -m "${MYNAME} autocommit"
-git push
+## Push any newly created configs and data back into GitHub
+#rsync -r ${INSTALL_DIR}/server/solidrust/cfg    ${REPO_HOME}/server/solidrust/
+#rsync -r ${INSTALL_DIR}/oxide/config            ${REPO_HOME}/oxide/
+#rsync -r ${INSTALL_DIR}/oxide/data              ${REPO_HOME}/oxide/
+#cd ${REPO_HOME} && git add .
+#git commit -m "${MYNAME} autocommit"
+#git push
