@@ -30,9 +30,19 @@ aws s3 sync --quiet --delete \
 
 
 # Additional RCON commands
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load *"
+sleep 5
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load TcMapMarkers"
+sleep 5
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload TcMapMarkers"
 sleep 10
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default tcmapmarkers.use"
 sleep 5
+
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load RealisticTorch"
+sleep 5
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload RealisticTorch"
+sleep 10
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default realistictorch.use"
 #sleep 5
 
