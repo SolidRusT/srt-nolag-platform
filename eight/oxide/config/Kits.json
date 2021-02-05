@@ -41,7 +41,7 @@
   },
   "Kit - Logging": true,
   "Show All Kits": true,
-  "Background - URL": "http://suparious.com/images/rust_main_small.jpg",
+  "Background - URL": "https://www.solidrust.net/images/rust_main_small.jpg",
   "Wipe kit data on map wipe": true,
   "Kit Names & Cooldowns - Cooldowns (minutes)": {
     "kitName1": 20.0,

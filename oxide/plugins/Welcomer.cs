@@ -43,7 +43,7 @@ namespace Oxide.Plugins
                 new CustomMessage
                 {
                     PlayerId = 123,
-                    Message = "Welcome"
+                    Message = "SolidRusT"
                 }
             };
         }
