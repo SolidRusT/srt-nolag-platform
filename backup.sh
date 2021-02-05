@@ -34,18 +34,21 @@ aws s3 sync --quiet --delete \
 
 
 # Additional RCON commands
+
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load *"
+sleep 15
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ConsoleFilter"
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load ChestStacks"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload StackSizeController"
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ImageLibrary"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload FastLoot"
 sleep 5
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload Kits"
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ItemSkinRandomizer"
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload NightZombies"
 sleep 5
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load StackSizeController"
-#sleep 10
-#${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default realistictorch.use"
-#sleep 5
+sleep 10
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default fastloot.use"
+sleep 5
 
 # TODO:
 #(M) Economics.json
