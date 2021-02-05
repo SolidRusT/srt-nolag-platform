@@ -21,6 +21,7 @@ rsync -r ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config/ ${INSTALL_DIR}/oxi
 aws s3 sync --quiet --delete ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config ${S3_BUCKET}/oxide/config
 rsync -r ${INSTALL_DIR}/solidrust.net/oxide/plugins/ ${INSTALL_DIR}/oxide/plugins
 
+${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.reload FurnaceSplitter"
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.grant group default furnacesplitter.use"
 
 #(M) Economics.json
