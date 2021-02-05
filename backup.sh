@@ -30,9 +30,11 @@ aws s3 sync --quiet --delete \
 
 
 # Additional RCON commands
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.unload TcMapMarkers"
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load TcMapMarkers"
+sleep 10
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default tcmapmarkers.use"
+sleep 5
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default realistictorch.use"
+#sleep 5
 
 # TODO:
 #(M) Economics.json
