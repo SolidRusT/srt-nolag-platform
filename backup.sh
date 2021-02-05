@@ -42,16 +42,12 @@ rsync -avr ${REPO_HOME}/oxide/config                  ${INSTALL_DIR}/oxide/
 rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/config  ${INSTALL_DIR}/oxide/
 rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/data    ${INSTALL_DIR}/oxide/
 
-# push a copy to aws s3 just in case
-
-
-
 # Update group permissions
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load *"
 sleep 15
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
-sleep 10
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default recyclerspeed.use"
+#sleep 10
+#${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default recyclerspeed.use"
 
 
 # TODO:
