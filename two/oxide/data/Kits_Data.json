@@ -216,5 +216,201 @@
       "max": 0,
       "cooldown": 0.0
     }
+  },
+  "76561199091690944": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "builder": {
+      "max": 0,
+      "cooldown": 1612546138.8877089
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 1612464812.8869989
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 1612468047.1330309
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 1612546840.140245
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198867067449": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "builder": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 1612466245.4027429
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 1612463649.0046458
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561197974339178": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "builder": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198831502454": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561199102134435": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "builder": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 1612484375.916291
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198876298412": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "builder": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
   }
 }
