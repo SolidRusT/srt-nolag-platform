@@ -32,22 +32,14 @@ aws s3 sync --quiet --delete \
 
 
 # Additional RCON commands
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload HitIcon"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load *"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ConsoleFilter"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ImageLibrary"
 sleep 5
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load TcMapMarkers"
-sleep 5
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload PlaguedMurderers"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload Kits"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ItemSkinRandomizer"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload NightZombies"
 sleep 10
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default tcmapmarkers.use"
-sleep 5
-
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load RealisticTorch"
-sleep 5
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload RealisticTorch"
-sleep 10
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default realistictorch.use"
+#${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default realistictorch.use"
 #sleep 5
 
 # TODO:
