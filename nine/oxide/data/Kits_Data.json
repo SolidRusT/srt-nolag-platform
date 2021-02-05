@@ -79,6 +79,10 @@
     "discord": {
       "max": 0,
       "cooldown": 1612593651.547081
+    },
+    "discordspawn": {
+      "max": 0,
+      "cooldown": 0.0
     }
   },
   "76561198352148500": {
