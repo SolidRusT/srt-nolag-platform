@@ -105,17 +105,6 @@
       "Contents": []
     },
     {
-      "ID": -1039528932,
-      "Position": 29,
-      "Amount": 1,
-      "Contents": [
-        {
-          "ID": -1779180711,
-          "Amount": 120
-        }
-      ]
-    },
-    {
       "ID": -321733511,
       "Position": 9,
       "Amount": 31
@@ -137,6 +126,59 @@
     {
       "ID": 593465182,
       "Position": 22,
+      "Amount": 1,
+      "Condition": 100.0,
+      "MaxCondition": 100.0
+    },
+    {
+      "ID": -1535621066,
+      "Position": 5,
+      "Amount": 1,
+      "Condition": 100.0,
+      "MaxCondition": 100.0
+    },
+    {
+      "ID": -1286302544,
+      "Position": 7,
+      "Amount": 1,
+      "Condition": 100.0,
+      "MaxCondition": 100.0
+    },
+    {
+      "ID": -1302129395,
+      "Position": 10,
+      "Amount": 1,
+      "Condition": 146.758713,
+      "MaxCondition": 275.198639
+    },
+    {
+      "ID": -1302129395,
+      "Position": 16,
+      "Amount": 1,
+      "Condition": 320.0,
+      "MaxCondition": 320.0
+    },
+    {
+      "ID": -1252059217,
+      "Position": 17,
+      "Amount": 1,
+      "Condition": 331.162964,
+      "MaxCondition": 400.0
+    },
+    {
+      "ID": 200773292,
+      "Position": 24,
+      "Amount": 1,
+      "Skin": 1120977731
+    },
+    {
+      "ID": 1199391518,
+      "Position": 28,
+      "Amount": 6
+    },
+    {
+      "ID": -1863559151,
+      "Position": 29,
       "Amount": 1,
       "Condition": 100.0,
       "MaxCondition": 100.0
