@@ -15,16 +15,18 @@ ${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.save"
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.writecfg"
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.backup"
 
-# Push to S3
+# Backup to S3
 aws s3 sync --quiet --delete ${INSTALL_DIR}/backup ${S3_BUCKET}/backup
 aws s3 sync --quiet --delete ${INSTALL_DIR}/oxide ${S3_BUCKET}/oxide
 
-# regular sync config from github repo
+# Update plugins
+rsync -avr --delete  ${INSTALL_DIR}/solidrust.net/oxide/plugins ${INSTALL_DIR}/oxide/
+
+# update config from github repo
 rsync -avr ${REPO_HOME}/server/solidrust/cfg          ${INSTALL_DIR}/server/solidrust/
 rsync -avr ${REPO_HOME}/oxide/config                  ${INSTALL_DIR}/oxide/
 rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/config  ${INSTALL_DIR}/oxide/
 rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/data    ${INSTALL_DIR}/oxide/
-rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/plugins ${INSTALL_DIR}/oxide/
 aws s3 sync --quiet --delete \
     ${INSTALL_DIR}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
 aws s3 sync --quiet --delete \
@@ -32,22 +34,14 @@ aws s3 sync --quiet --delete \
 
 
 # Additional RCON commands
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload HitIcon"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load *"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ConsoleFilter"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ImageLibrary"
 sleep 5
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load TcMapMarkers"
-sleep 5
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload PlaguedMurderers"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload Kits"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ItemSkinRandomizer"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload NightZombies"
 sleep 10
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default tcmapmarkers.use"
-sleep 5
-
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load RealisticTorch"
-sleep 5
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload RealisticTorch"
-sleep 10
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default realistictorch.use"
+#${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default realistictorch.use"
 #sleep 5
 
 # TODO:
