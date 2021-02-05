@@ -41,7 +41,7 @@
   },
   "Kit - Logging": true,
   "Show All Kits": true,
-  "Background - URL": "http://suparious.com/images/rust-rusted-metal-100773678-large.jpg",
+  "Background - URL": "https://www.solidrust.net/images/kit_bg.jpg",
   "Wipe kit data on map wipe": true,
   "Kit Names & Cooldowns - Cooldowns (minutes)": {
     "kitName1": 20.0,
