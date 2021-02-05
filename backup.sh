@@ -40,7 +40,9 @@ sleep 5
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload Kits"
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ItemSkinRandomizer"
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload NightZombies"
-sleep 10
+sleep 5
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load StackSizeController"
+#sleep 10
 #${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default realistictorch.use"
 #sleep 5
 
