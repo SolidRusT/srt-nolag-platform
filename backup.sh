@@ -30,8 +30,9 @@ aws s3 sync --quiet --delete \
 
 
 # Additional RCON commands
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload FurnaceSplitter"
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default furnacesplitter.use"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.unload TcMapMarkers"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load TcMapMarkers"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default tcmapmarkers.use"
 
 # TODO:
 #(M) Economics.json
