@@ -36,6 +36,7 @@ aws s3 sync --quiet --delete \
 # Additional RCON commands
 
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load *"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load FastLoot"
 sleep 15
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload ConsoleFilter"
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload StackSizeController"
