@@ -13,7 +13,7 @@
     {
       "ID": 1414245522,
       "Position": 3,
-      "Amount": 1
+      "Amount": 7
     },
     {
       "ID": 1525520776,
@@ -29,18 +29,6 @@
       "ID": 143803535,
       "Position": 8,
       "Amount": 1
-    },
-    {
-      "ID": -151838493,
-      "Position": 9,
-      "Amount": 1000,
-      "Fuel": 10.0
-    },
-    {
-      "ID": -151838493,
-      "Position": 10,
-      "Amount": 461,
-      "Fuel": 10.0
     },
     {
       "ID": -1211166256,
@@ -60,11 +48,6 @@
       "Amount": 1,
       "Condition": 50.0,
       "MaxCondition": 50.0
-    },
-    {
-      "ID": -2072273936,
-      "Position": 17,
-      "Amount": 3
     },
     {
       "ID": -692338819,
@@ -98,44 +81,8 @@
       "Amount": 1
     },
     {
-      "ID": 1199391518,
-      "Position": 24,
-      "Amount": 3
-    },
-    {
-      "ID": 69511070,
-      "Position": 5,
-      "Amount": 300
-    },
-    {
-      "ID": -321733511,
-      "Position": 14,
-      "Amount": 15
-    },
-    {
-      "ID": -946369541,
-      "Position": 16,
-      "Amount": 7,
-      "Fuel": 150.0
-    },
-    {
-      "ID": 317398316,
-      "Position": 22,
-      "Amount": 2
-    },
-    {
       "ID": -1557377697,
       "Amount": 1
-    },
-    {
-      "ID": -1511285251,
-      "Position": 7,
-      "Amount": 1
-    },
-    {
-      "ID": -858312878,
-      "Position": 11,
-      "Amount": 100
     },
     {
       "ID": 1751045826,
@@ -158,11 +105,6 @@
       "Contents": []
     },
     {
-      "ID": -1941646328,
-      "Position": 28,
-      "Amount": 1
-    },
-    {
       "ID": -1039528932,
       "Position": 29,
       "Amount": 1,
@@ -172,6 +114,32 @@
           "Amount": 120
         }
       ]
+    },
+    {
+      "ID": -321733511,
+      "Position": 9,
+      "Amount": 31
+    },
+    {
+      "ID": -89874794,
+      "Position": 11,
+      "Amount": 1,
+      "Condition": 33.25727,
+      "MaxCondition": 60.0
+    },
+    {
+      "ID": 1883981798,
+      "Position": 14,
+      "Amount": 1,
+      "Condition": 20.0881,
+      "MaxCondition": 60.0
+    },
+    {
+      "ID": 593465182,
+      "Position": 22,
+      "Amount": 1,
+      "Condition": 100.0,
+      "MaxCondition": 100.0
     }
   ],
   "OwnerID": 76561198145453077
