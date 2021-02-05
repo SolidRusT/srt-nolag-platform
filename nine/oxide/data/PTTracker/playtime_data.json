@@ -1,8 +1,8 @@
 {
   "timeData": {
     "76561198886543733": {
-      "playTime": 3906.0345368385315,
-      "afkTime": 37953.764576196671,
+      "playTime": 3906.0345418453217,
+      "afkTime": 38193.7642083168,
       "lastReward": 0.0,
       "referrals": 0
     },
@@ -13,8 +13,8 @@
       "referrals": 0
     },
     "76561199135759930": {
-      "playTime": 699.85599279403687,
-      "afkTime": 21893.019726753235,
+      "playTime": 781.3569757938385,
+      "afkTime": 26393.113012313843,
       "lastReward": 0.0,
       "referrals": 0
     },
@@ -73,7 +73,7 @@
       "referrals": 0
     },
     "76561198145453077": {
-      "playTime": 9261.2085437774658,
+      "playTime": 9681.2161965370178,
       "afkTime": 120.00028920173645,
       "lastReward": 0.0,
       "referrals": 0
@@ -109,7 +109,13 @@
       "referrals": 0
     },
     "76561198013947122": {
-      "playTime": 659.99908852577209,
+      "playTime": 871.83550620079041,
+      "afkTime": 0.0,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561198355312185": {
+      "playTime": 270.38427186012268,
       "afkTime": 0.0,
       "lastReward": 0.0,
       "referrals": 0
