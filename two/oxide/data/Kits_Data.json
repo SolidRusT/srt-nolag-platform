@@ -418,5 +418,21 @@
       "max": 0,
       "cooldown": 0.0
     }
+  },
+  "76561198326399637": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561199093222337": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discordspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
   }
 }
