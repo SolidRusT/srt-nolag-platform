@@ -1,0 +1,11 @@
+{
+  "Minimal Amount Of Mushrooms": 1,
+  "Maximal Amount Of Mushrooms": 5,
+  "Opacity of the colors": 0.3,
+  "Repeat interval of the Colors": 0.25,
+  "Repeat amount of the Colors": 58,
+  "Vomit": true,
+  "Lick": true,
+  "Breath": true,
+  "Shake": true
+}

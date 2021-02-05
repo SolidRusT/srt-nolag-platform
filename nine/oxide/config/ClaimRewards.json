@@ -1,0 +1,18 @@
+{
+  "ChatCommand": {
+    "Claim": "gimme",
+    "Discard": "discard",
+    "Nextreward": "nextreward",
+    "Rewards": "rw"
+  },
+  "Config": {
+    "AutoGiveRewardsUnlessFullInventory": true,
+    "MaxKillsBeforeReset": 35,
+    "OneLife": false
+  },
+  "Rewards": {
+    "10": "bow.hunting 1",
+    "20": "wood 250",
+    "30": "easter.goldegg 1"
+  }
+}

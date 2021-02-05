@@ -1,164 +1,78 @@
 {
   "Items": [
     {
-      "ID": 1367190888,
+      "ID": -1211166256,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
       "Position": 1,
-      "Amount": 2,
-      "Condition": 100.0,
-      "MaxCondition": 100.0
+      "Amount": 256
     },
     {
-      "ID": -2072273936,
-      "Position": 5,
-      "Amount": 1
-    },
-    {
-      "ID": 1719978075,
-      "Position": 6,
-      "Amount": 500
-    },
-    {
-      "ID": 998894949,
-      "Position": 8,
-      "Amount": 2
-    },
-    {
-      "ID": -151838493,
+      "ID": -1211166256,
       "Position": 2,
-      "Amount": 5000,
-      "Fuel": 10.0
+      "Amount": 256
     },
     {
-      "ID": 1234880403,
+      "ID": -1211166256,
       "Position": 3,
-      "Amount": 2
+      "Amount": 256
     },
     {
-      "ID": 1381010055,
-      "Position": 10,
-      "Amount": 5
-    },
-    {
-      "ID": -265876753,
-      "Position": 11,
-      "Amount": 77
-    },
-    {
-      "ID": -2099697608,
-      "Position": 15,
-      "Amount": 5000
-    },
-    {
-      "ID": 69511070,
-      "Position": 16,
-      "Amount": 3000
-    },
-    {
-      "ID": 363467698,
-      "Amount": 2
-    },
-    {
-      "ID": 317398316,
-      "Position": 14,
-      "Amount": 70
-    },
-    {
-      "ID": -1848736516,
-      "Position": 13,
-      "Amount": 9
-    },
-    {
-      "ID": -858312878,
-      "Position": 7,
-      "Amount": 468
-    },
-    {
-      "ID": -4031221,
-      "Position": 9,
-      "Amount": 2500
-    },
-    {
-      "ID": -932201673,
-      "Position": 12,
-      "Amount": 52
-    },
-    {
-      "ID": -946369541,
-      "Position": 17,
-      "Amount": 1000,
-      "Fuel": 150.0
-    },
-    {
-      "ID": -1581843485,
-      "Position": 18,
-      "Amount": 10
-    },
-    {
-      "ID": -151838493,
-      "Position": 19,
-      "Amount": 5000,
-      "Fuel": 10.0
-    },
-    {
-      "ID": -151838493,
-      "Position": 20,
-      "Amount": 5000,
-      "Fuel": 10.0
-    },
-    {
-      "ID": -151838493,
-      "Position": 21,
-      "Amount": 5000,
-      "Fuel": 10.0
-    },
-    {
-      "ID": -151838493,
-      "Position": 22,
-      "Amount": 5000,
-      "Fuel": 10.0
-    },
-    {
-      "ID": -2099697608,
-      "Position": 23,
-      "Amount": 5000
-    },
-    {
-      "ID": -151838493,
-      "Position": 24,
-      "Amount": 3975,
-      "Fuel": 10.0
-    },
-    {
-      "ID": -2099697608,
-      "Position": 25,
-      "Amount": 4536
-    },
-    {
-      "ID": 69511070,
-      "Position": 26,
-      "Amount": 267
-    },
-    {
-      "ID": 1548091822,
-      "Position": 27,
-      "Amount": 4
-    },
-    {
-      "ID": -746030907,
-      "Position": 29,
-      "Amount": 1
-    },
-    {
-      "ID": -586342290,
-      "Position": 28,
-      "Amount": 2
-    },
-    {
-      "ID": 1104520648,
+      "ID": -1211166256,
       "Position": 4,
-      "Amount": 1,
-      "Condition": 90.2494049,
-      "MaxCondition": 100.0
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 5,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 6,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 7,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 8,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 9,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 10,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 11,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 12,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 13,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 14,
+      "Amount": 77
     }
   ],
   "OwnerID": 76561198145453077
