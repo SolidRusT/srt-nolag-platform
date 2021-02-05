@@ -8,7 +8,9 @@ export REPO_HOME="${INSTALL_DIR}/solidrust.net/${MYNAME}" # github source for co
 export RCON_CFG="${INSTALL_DIR}/solidrust.net/rcon.yaml" # local RCON CLI
 
 # Update the app repo
-cd ${INSTALL_DIR}/solidrust.net && git pull
+cd ${INSTALL_DIR}/solidrust.net/oxide && git pull
+mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}
+cd ${INSTALL_DIR}/solidrust.net/${MYNAME} && git pull
 
 # Make sure github paths exists (useful for new servers)
 mkdir -p ${REPO_HOME}/server/solidrust/cfg
@@ -49,43 +51,7 @@ ${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load *"
 sleep 15
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
 sleep 10
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default boxsorterlite.use"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default raidalarm.use"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default clearrepair.use"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default mushroomeffects.use"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default treeplanter.use"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default bounty.use"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default dronepilot.use"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default farmtools.clone"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default farmtools.clone.all"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default farmtools.harvest.all"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default turretloadouts.autoauth"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default turretloadouts.autotoggle"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default turretloadouts.manage"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default turretloadouts.manage.custom"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default claimrewards.use"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default heal.self"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default heal.player"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default blueprintshare.toggle"
-sleep 1
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default blueprintshare.share"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default recyclerspeed.use"
 
 
 # TODO:
