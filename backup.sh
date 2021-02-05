@@ -58,7 +58,7 @@ ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default mushroomeffects.us
 #sleep 5
 
 
-playtimesupplysignal.bonus
+
 
 # TODO:
 #(M) Economics.json
