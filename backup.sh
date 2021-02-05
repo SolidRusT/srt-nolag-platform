@@ -1,46 +1,47 @@
 #!/bin/bash
 #echo "7 *    * * *   modded  /home/modded/solidrust.net/backup.sh" | sudo tee -a /etc/crontab
-# push to s3
+# Configuration
 export MYNAME=$(hostname)
-export S3_BUCKET="s3://solidrust.net-backups/${MYNAME}"
 export INSTALL_DIR="/home/modded"
+export S3_BUCKET="s3://solidrust.net-backups/${MYNAME}"
+export REPO_HOME="${INSTALL_DIR}/solidrust.net/${MYNAME}"
+export RCON_CFG="${INSTALL_DIR}/solidrust.net/rcon.yaml"
 
-${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.save"
-${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.writecfg"
-${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "server.backup"
-
-aws s3 sync --quiet --delete ${INSTALL_DIR}/backup ${S3_BUCKET}/backup
-aws s3 sync --quiet --delete ${INSTALL_DIR}/oxide/data ${S3_BUCKET}/oxide/data
-
+# Update the app repo
 cd ${INSTALL_DIR}/solidrust.net && git pull
 
-# regular sync
-rsync -r ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg/ ${INSTALL_DIR}/server/solidrust/cfg
-aws s3 sync --quiet --delete ${INSTALL_DIR}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
-rsync -r ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config/ ${INSTALL_DIR}/oxide/config
-aws s3 sync --quiet --delete ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config ${S3_BUCKET}/oxide/config
-rsync -r ${INSTALL_DIR}/solidrust.net/oxide/plugins/ ${INSTALL_DIR}/oxide/plugins
+# Save server state
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.save"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.writecfg"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.backup"
 
-${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.reload FurnaceSplitter"
-${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.grant group default furnacesplitter.use"
+# Push to S3
+aws s3 sync --quiet --delete ${INSTALL_DIR}/backup ${S3_BUCKET}/backup
+aws s3 sync --quiet --delete ${INSTALL_DIR}/oxide ${S3_BUCKET}/oxide
 
-${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.reload FurnaceSplitter"
-${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.grant group default furnacesplitter.use"
+# regular sync config from github repo
+rsync -r ${REPO_HOME}/server/solidrust/cfg          ${INSTALL_DIR}/server/solidrust/
+rsync -r ${REPO_HOME}/oxide/config                  ${INSTALL_DIR}/oxide/
+rsync -r ${INSTALL_DIR}/solidrust.net/oxide/plugins ${INSTALL_DIR}/oxide/
+aws s3 sync --quiet --delete \
+    ${INSTALL_DIR}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
+aws s3 sync --quiet --delete \
+    ${INSTALL_DIR}/oxide/config         ${S3_BUCKET}/oxide/config
 
+
+# Additional RCON commands
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload FurnaceSplitter"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default furnacesplitter.use"
+
+# TODO:
 #(M) Economics.json
 #(M) ServerRewards/*
 #(M) Backpacks/*
 
-mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
-rsync -r ${INSTALL_DIR}/server/solidrust/cfg ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
-mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
-rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
-mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/data
-
-rsync -r ${INSTALL_DIR}/oxide/data/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/data
-rsync -r ${INSTALL_DIR}/server/solidrust/cfg/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
-rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
-
-cd ${INSTALL_DIR}/solidrust.net && git add .
+# Push any newly created configs and data back into GitHub
+rsync -r ${INSTALL_DIR}/server/solidrust/cfg    ${REPO_HOME}/server/solidrust/
+rsync -r ${INSTALL_DIR}/oxide/config            ${REPO_HOME}/oxide/
+rsync -r ${INSTALL_DIR}/oxide/data              ${REPO_HOME}/oxide/
+git add .
 git commit -m "${MYNAME} autocommit"
 git push
