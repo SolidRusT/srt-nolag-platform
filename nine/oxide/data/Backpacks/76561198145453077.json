@@ -96,12 +96,6 @@
       "MaxCondition": 4.0
     },
     {
-      "ID": -151838493,
-      "Position": 3,
-      "Amount": 150,
-      "Fuel": 10.0
-    },
-    {
       "ID": -321733511,
       "Position": 4,
       "Amount": 17
@@ -139,6 +133,31 @@
       "Position": 10,
       "Amount": 1,
       "Skin": 1125995819
+    },
+    {
+      "ID": -1211166256,
+      "Position": 11,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 12,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 13,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 14,
+      "Amount": 256
+    },
+    {
+      "ID": -1211166256,
+      "Position": 29,
+      "Amount": 256
     }
   ],
   "OwnerID": 76561198145453077
