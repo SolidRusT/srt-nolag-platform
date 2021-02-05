@@ -50,7 +50,7 @@ rsync -avr ${GAME_ROOT}/solidrust.net/oxide/data             ${GAME_ROOT}/oxide/
 # update customized config for this server
 rsync -avr ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
 
-# update customized data for this server (dangerous)
+# (dangerous) update customized data for this server
 #rsync -avr ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
 
 # update server details
