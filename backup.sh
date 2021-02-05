@@ -46,11 +46,19 @@ rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/data    ${INSTALL_DIR}/oxide/
 
 # Additional RCON commands
 #${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load FastLoot"
-#sleep 15
+sleep 15
 #${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload FastLoot"
-#sleep 10
+sleep 10
 #${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default fastloot.use"
 #sleep 5
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default boxsorterlite.use"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default raidalarm.use"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default clearrepair.use"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default mushroomeffects.use"
+#sleep 5
+
+
+playtimesupplysignal.bonus
 
 # TODO:
 #(M) Economics.json
