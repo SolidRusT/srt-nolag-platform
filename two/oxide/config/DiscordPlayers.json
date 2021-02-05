@@ -1,0 +1,5 @@
+{
+  "Players Discord Bot Command": "players",
+  "Player name format": "{clan}{name} ({steamid})",
+  "Player name separator": "\n"
+}
