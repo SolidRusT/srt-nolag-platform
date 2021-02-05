@@ -58,11 +58,11 @@
     },
     "mechanic": {
       "max": 0,
-      "cooldown": 1612490644.2508039
+      "cooldown": 1612514610.643827
     },
     "semiauto": {
       "max": 0,
-      "cooldown": 1612507518.968977
+      "cooldown": 1612514609.5570879
     },
     "getlit": {
       "max": 0,
@@ -299,6 +299,44 @@
   },
   "76561198024774727": {
     "vipspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198294812576": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "builder": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scuba": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "mechanic": {
+      "max": 0,
+      "cooldown": 1612514886.5665219
+    },
+    "semiauto": {
+      "max": 0,
+      "cooldown": 1612514805.491817
+    },
+    "getlit": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "metallica": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "scrappy": {
+      "max": 0,
+      "cooldown": 1612597688.229203
+    },
+    "discord": {
       "max": 0,
       "cooldown": 0.0
     }

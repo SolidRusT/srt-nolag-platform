@@ -25,7 +25,7 @@
       "PermissionsOxide": [
 	"bounty.use","craftchassis.3","airstrike.signal.strike","airstrike.purchase.strike","airstrike.chat.strike","removertool.all","backpacks.use.5",
 	"backpacks.keeponwipe","kits.DiscordSpawn","guishop.use","blueprintshare.toggle","blueprintshare.share","recycle.bypass","carturrets.limit.3",
-        "largercarstorage.size.5"
+        "largercarstorage.size.5","playtimesupplysignal.bonus"
       ],
       "AdditionalCommands": [
       ]
