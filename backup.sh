@@ -47,7 +47,7 @@ rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/data    ${INSTALL_DIR}/oxide/
 # Update group permissions
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load *"
 sleep 15
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.reload PermissionsGroupSync"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
 sleep 10
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default boxsorterlite.use"
 sleep 1
