@@ -62,7 +62,7 @@
     },
     "semiauto": {
       "max": 0,
-      "cooldown": 1612488351.7515569
+      "cooldown": 1612501921.9057579
     },
     "getlit": {
       "max": 0,
@@ -279,6 +279,22 @@
       "cooldown": 1612581000.4260459
     },
     "discord": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561199101301426": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    },
+    "discordspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
+  },
+  "76561198024774727": {
+    "vipspawn": {
       "max": 0,
       "cooldown": 0.0
     }
