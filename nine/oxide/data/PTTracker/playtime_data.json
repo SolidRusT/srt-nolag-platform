@@ -1,20 +1,20 @@
 {
   "timeData": {
     "76561198886543733": {
-      "playTime": 1559.8283307552338,
-      "afkTime": 20734.664935112,
+      "playTime": 3906.0345368385315,
+      "afkTime": 37953.764576196671,
       "lastReward": 0.0,
       "referrals": 0
     },
     "76561198024774727": {
-      "playTime": 659.93474745750427,
-      "afkTime": 26675.368760824203,
+      "playTime": 779.93324756622314,
+      "afkTime": 54064.251618862152,
       "lastReward": 0.0,
       "referrals": 0
     },
     "76561199135759930": {
-      "playTime": 539.92959952354431,
-      "afkTime": 18112.976495742798,
+      "playTime": 699.85599279403687,
+      "afkTime": 21893.019726753235,
       "lastReward": 0.0,
       "referrals": 0
     },
@@ -62,6 +62,54 @@
     },
     "76561198363996872": {
       "playTime": 515.27499008178711,
+      "afkTime": 0.0,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561198351654391": {
+      "playTime": 3119.9692661762238,
+      "afkTime": 65.803966999053955,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561198145453077": {
+      "playTime": 9261.2085437774658,
+      "afkTime": 120.00028920173645,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561198352148500": {
+      "playTime": 43.319770097732544,
+      "afkTime": 0.0,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561199118976847": {
+      "playTime": 89.433879137039185,
+      "afkTime": 0.0,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561198421090963": {
+      "playTime": 1251.390522480011,
+      "afkTime": 540.01673007011414,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561198351002016": {
+      "playTime": 499.73982810974121,
+      "afkTime": 0.0,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561198038976639": {
+      "playTime": 149.43531799316406,
+      "afkTime": 0.0,
+      "lastReward": 0.0,
+      "referrals": 0
+    },
+    "76561198013947122": {
+      "playTime": 659.99908852577209,
       "afkTime": 0.0,
       "lastReward": 0.0,
       "referrals": 0
