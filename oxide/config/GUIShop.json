@@ -10145,6 +10145,34 @@
       "KitName": null,
       "Command": null,
       "SkinId": 0
+    },
+    "Drone": {
+      "DisplayName": "Drone",
+      "Shortname": "drone",
+      "EnableBuy": true,
+      "EnableSell": true,
+      "Image": "https://rustlabs.com/img/items180/drone.png",
+      "SellPrice": 1.0,
+      "BuyPrice": 1.0,
+      "BuyCooldown": 0,
+      "SellCooldown": 0,
+      "KitName": null,
+      "Command": null,
+      "SkinId": 0
+    },
+    "Ox Mask": {
+      "DisplayName": "Ox Mask",
+      "Shortname": "hat.oxmask",
+      "EnableBuy": true,
+      "EnableSell": true,
+      "Image": "https://rustlabs.com/img/items180/hat.oxmask.png",
+      "SellPrice": 1.0,
+      "BuyPrice": 1.0,
+      "BuyCooldown": 0,
+      "SellCooldown": 0,
+      "KitName": null,
+      "Command": null,
+      "SkinId": 0
     }
   }
 }
