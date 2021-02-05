@@ -50,9 +50,43 @@ sleep 15
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.reload PermissionsGroupSync"
 sleep 10
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default boxsorterlite.use"
+sleep 1
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default raidalarm.use"
+sleep 1
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default clearrepair.use"
+sleep 1
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default mushroomeffects.use"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default treeplanter.use"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default bounty.use"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default dronepilot.use"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default farmtools.clone"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default farmtools.clone.all"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default farmtools.harvest.all"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default turretloadouts.autoauth"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default turretloadouts.autotoggle"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default turretloadouts.manage"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default turretloadouts.manage.custom"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default claimrewards.use"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default heal.self"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default heal.player"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default blueprintshare.toggle"
+sleep 1
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default blueprintshare.share"
+
 
 # TODO:
 #(M) Economics.json
