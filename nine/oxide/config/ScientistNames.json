@@ -1,0 +1,11 @@
+{
+  "BanditTitle": "bandit",
+  "LogInConsole": false,
+  "LogInFile": false,
+  "MurdererTitle": "murderer",
+  "ScarecrowTitle": "scare",
+  "ScientistTitle": "scientist",
+  "SurnameList": "",
+  "UseFirstNameFirstLetter": true,
+  "UseTitle": true
+}
