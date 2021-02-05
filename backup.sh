@@ -20,10 +20,11 @@ aws s3 sync --quiet --delete ${INSTALL_DIR}/backup ${S3_BUCKET}/backup
 aws s3 sync --quiet --delete ${INSTALL_DIR}/oxide ${S3_BUCKET}/oxide
 
 # regular sync config from github repo
-rsync -r ${REPO_HOME}/server/solidrust/cfg          ${INSTALL_DIR}/server/solidrust/
-rsync -r ${REPO_HOME}/oxide/config                  ${INSTALL_DIR}/oxide/
-rsync -r ${INSTALL_DIR}/solidrust.net/oxide/data    ${INSTALL_DIR}/oxide/
-rsync -r ${INSTALL_DIR}/solidrust.net/oxide/plugins ${INSTALL_DIR}/oxide/
+rsync -avr ${REPO_HOME}/server/solidrust/cfg          ${INSTALL_DIR}/server/solidrust/
+rsync -avr ${REPO_HOME}/oxide/config                  ${INSTALL_DIR}/oxide/
+rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/config  ${INSTALL_DIR}/oxide/
+rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/data    ${INSTALL_DIR}/oxide/
+rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/plugins ${INSTALL_DIR}/oxide/
 aws s3 sync --quiet --delete \
     ${INSTALL_DIR}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
 aws s3 sync --quiet --delete \
