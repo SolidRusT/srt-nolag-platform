@@ -1,0 +1,15 @@
+{
+  "Prefab": "assets/prefabs/deployable/modular car lift/electrical.modularcarlift.deployed.prefab",
+  "Spawn Setting (name - pos correction)": {
+    "gas_station_1": {
+      "x": 4.2,
+      "y": 0.0,
+      "z": -0.5
+    },
+    "supermarket_1": {
+      "x": 0.2,
+      "y": 0.0,
+      "z": 17.5
+    }
+  }
+}
