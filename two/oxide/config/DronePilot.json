@@ -1,0 +1,17 @@
+{
+  "Vertical acceleration speed": 20.0,
+  "Horizontal acceleration speed": 15.0,
+  "Yaw speed": 6.0,
+  "The speed that the drone will return to a levelled rotation after leaning": 2.0,
+  "Lean weight (how much the drone leans in to movement) (0.0 -> 1.0)": 0.35,
+  "Lean max velocity (the maximum velocity for full lean)": 6.0,
+  "The impact speed before damage is applied": 3.0,
+  "The amount of damage to apply from impacts (scales depending on speed)": 3.0,
+  "The amount of time to disable the drone controls after a collision (seconds)": 0.25,
+  "Maximum cruising height above terrain": 30.0,
+  "Version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  }
+}
