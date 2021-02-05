@@ -44,13 +44,19 @@ aws s3 sync --quiet --delete \
 rsync -avr --delete  ${GAME_ROOT}/solidrust.net/oxide/plugins ${GAME_ROOT}/oxide/
 
 # update global config from github repo
-rsync -avr ${GAME_ROOT}/solidrust.net/oxide/config  ${GAME_ROOT}/oxide/
-rsync -avr ${GAME_ROOT}/solidrust.net/oxide/data    ${GAME_ROOT}/oxide/
+rsync -avr --delete ${GAME_ROOT}/solidrust.net/oxide/config  ${GAME_ROOT}/oxide/
+rsync -avr ${GAME_ROOT}/solidrust.net/oxide/data             ${GAME_ROOT}/oxide/
 
 # update customized config for this server
-rsync -avr ${GITHUB_ROOT}/server/solidrust/cfg      ${GAME_ROOT}/server/solidrust/
-rsync -avr ${GITHUB_ROOT}/oxide/config              ${GAME_ROOT}/oxide/
-rsync -avr ${GITHUB_ROOT}/oxide/data                ${GAME_ROOT}/oxide/
+rsync -avr ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
+
+# update customized data for this server (dangerous)
+#rsync -avr ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
+
+# update server details
+rsync -avr ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
+
+
 
 # Update global group permissions
 ## TODO: make this a separate cron
