@@ -1,7 +1,0 @@
-next map after wipe
-zombie spawn points
-rcon cron not working
-remove dead mods / config / data
-welcome info
-help panel
-server names
