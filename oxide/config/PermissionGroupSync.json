@@ -38,7 +38,8 @@
         "recycle.bypass",
         "carturrets.limit.3",
         "largercarstorage.size.5",
-        "playtimesupplysignal.bonus"
+        "playtimesupplysignal.bonus",
+        "copypaste.*"
       ],
       "AdditionalCommands": []
     },

@@ -1,6 +1,0 @@
-{
-  "Discord Command Command": "command",
-  "Command Usage Logging Channel Id": "",
-  "Log command usage in server console": true,
-  "Allow command usage in bot channel": false
-}

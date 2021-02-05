@@ -1,64 +1,67 @@
 #!/bin/bash
+## Configuration
+# example crontab
 #echo "7 *    * * *   modded  /home/modded/solidrust.net/backup.sh" | sudo tee -a /etc/crontab
-# Configuration
-export MYNAME=$(hostname) # get my name
-export INSTALL_DIR="/home/modded"  # root of where the game server is installed
-export S3_BUCKET="s3://solidrust.net-backups/${MYNAME}"  # s3 destination for backups
-export REPO_HOME="${INSTALL_DIR}/solidrust.net/${MYNAME}" # github source for configs
-export RCON_CFG="${INSTALL_DIR}/solidrust.net/rcon.yaml" # local RCON CLI
+# Collect user input
+export COMMAND="$1"
+# Say my name
+export MYNAME=$(hostname) 
+# root of where the game server is installed
+export GAME_ROOT="/home/modded"
+# Amazon s3 destination for backups
+export S3_BUCKET="s3://solidrust.net-backups/${MYNAME}"
+# Github source for configs
+export GITHUB_ROOT="${GAME_ROOT}/solidrust.net/${MYNAME}"
+# local RCON CLI config 
+export RCON_CFG="${GAME_ROOT}/solidrust.net/rcon.yaml" 
 
 # Update the app repo
-cd ${INSTALL_DIR}/solidrust.net/oxide && git pull
-mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}
-cd ${INSTALL_DIR}/solidrust.net/${MYNAME} && git pull
+cd ${GAME_ROOT}/solidrust.net && git pull
 
-# Make sure github paths exists (useful for new servers)
-mkdir -p ${REPO_HOME}/server/solidrust/cfg
-mkdir -p ${REPO_HOME}/solidrust.net/oxide/config
-mkdir -p ${REPO_HOME}/solidrust.net/oxide/data
-mkdir -p ${INSTALL_DIR}/backup
-mkdir -p ${INSTALL_DIR}/oxide
-mkdir -p ${INSTALL_DIR}/server/solidrust/cfg
+# Make sure path stubs exists (useful for new servers)
+mkdir -p ${GAME_ROOT}/backup
+mkdir -p ${GAME_ROOT}/oxide
+mkdir -p ${GAME_ROOT}/server/solidrust/cfg
 
 # Save server state
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.save"
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.writecfg"
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "server.backup"
+## TODO: check if the server is running, instead of this
+# if no arguments are passed, assume we are running from crontab
+if [ -z ${COMMAND} ]; then 
+    ${GAME_ROOT}/rcon -c ${RCON_CFG} "server.save"
+    ${GAME_ROOT}/rcon -c ${RCON_CFG} "server.writecfg"
+    ${GAME_ROOT}/rcon -c ${RCON_CFG} "server.backup"
+fi
 
 # Backup to S3
 aws s3 sync --quiet --delete \
-    ${INSTALL_DIR}/backup               ${S3_BUCKET}/backup
+    ${GAME_ROOT}/backup               ${S3_BUCKET}/backup
 aws s3 sync --quiet --delete \
-    ${INSTALL_DIR}/oxide                ${S3_BUCKET}/oxide
+    ${GAME_ROOT}/oxide                ${S3_BUCKET}/oxide
 aws s3 sync --quiet --delete \
-    ${INSTALL_DIR}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
+    ${GAME_ROOT}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
 
 # Update plugins
-rsync -avr --delete  ${INSTALL_DIR}/solidrust.net/oxide/plugins ${INSTALL_DIR}/oxide/
+rsync -avr --delete  ${GAME_ROOT}/solidrust.net/oxide/plugins ${GAME_ROOT}/oxide/
 
-# update config from github repo
-rsync -avr ${REPO_HOME}/server/solidrust/cfg          ${INSTALL_DIR}/server/solidrust/
-rsync -avr ${REPO_HOME}/oxide/config                  ${INSTALL_DIR}/oxide/
-rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/config  ${INSTALL_DIR}/oxide/
-rsync -avr ${INSTALL_DIR}/solidrust.net/oxide/data    ${INSTALL_DIR}/oxide/
+# update global config from github repo
+rsync -avr ${GAME_ROOT}/solidrust.net/oxide/config  ${GAME_ROOT}/oxide/
+rsync -avr ${GAME_ROOT}/solidrust.net/oxide/data    ${GAME_ROOT}/oxide/
 
-# Update group permissions
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.load *"
+# update customized config for this server
+rsync -avr ${GITHUB_ROOT}/server/solidrust/cfg      ${GAME_ROOT}/server/solidrust/
+rsync -avr ${GITHUB_ROOT}/oxide/config              ${GAME_ROOT}/oxide/
+rsync -avr ${GITHUB_ROOT}/oxide/data                ${GAME_ROOT}/oxide/
+
+# Update global group permissions
+## TODO: make this a separate cron
+${GAME_ROOT}/rcon -c ${RCON_CFG} "o.load *"
 sleep 15
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
+${GAME_ROOT}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
 #sleep 10
-#${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default recyclerspeed.use"
+#${GAME_ROOT}/rcon -c ${RCON_CFG} "oxide.grant group default recyclerspeed.use"
 
 
-# TODO:
+# TODO: Figure out global economics
 #(M) Economics.json
 #(M) ServerRewards/*
 #(M) Backpacks/*
-
-## Push any newly created configs and data back into GitHub
-#rsync -r ${INSTALL_DIR}/server/solidrust/cfg    ${REPO_HOME}/server/solidrust/
-#rsync -r ${INSTALL_DIR}/oxide/config            ${REPO_HOME}/oxide/
-#rsync -r ${INSTALL_DIR}/oxide/data              ${REPO_HOME}/oxide/
-#cd ${REPO_HOME} && git add .
-#git commit -m "${MYNAME} autocommit"
-#git push
