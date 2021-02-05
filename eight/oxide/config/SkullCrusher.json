@@ -1,0 +1,27 @@
+{
+  "Economy": {
+    "Money Per Skull Crush": 20.0,
+    "RP Per Skull Crush": 20,
+    "Scrap Per Skull Crush": 20.0,
+    "Send Notification Message": true,
+    "Use Economy": false,
+    "Use Scrap as reward": false,
+    "Use ServerRewards": false
+  },
+  "Settings": {
+    "Give items on crush": true,
+    "Normal Crush Message": true,
+    "Null Owner Crush Message": true,
+    "Own Skull Crush Message": true,
+    "Random Messages": [
+      "{0}'s skull was crushed by {1}",
+      "{1} crushed {0}'s skull"
+    ],
+    "Use Random Global Crush Messages": false
+  },
+  "Team Settings": {
+    "Use Clans": false,
+    "Use Friends": false,
+    "Use Teams": false
+  }
+}
