@@ -24,6 +24,23 @@ rsync -r ${INSTALL_DIR}/solidrust.net/oxide/plugins/ ${INSTALL_DIR}/oxide/plugin
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.reload FurnaceSplitter"
 ${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.grant group default furnacesplitter.use"
 
+${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.reload FurnaceSplitter"
+${INSTALL_DIR}/rcon -c ${INSTALL_DIR}/solidrust.net/rcon.yaml "oxide.grant group default furnacesplitter.use"
+
 #(M) Economics.json
 #(M) ServerRewards/*
 #(M) Backpacks/*
+
+mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
+rsync -r ${INSTALL_DIR}/server/solidrust/cfg ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
+mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
+rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
+mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/data
+
+rsync -r ${INSTALL_DIR}/oxide/data/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/data
+rsync -r ${INSTALL_DIR}/server/solidrust/cfg/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
+rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
+
+cd ${INSTALL_DIR}/solidrust.net && git add .
+git commit -m "${MYNAME} autocommit"
+git push
