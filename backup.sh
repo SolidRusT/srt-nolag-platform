@@ -38,7 +38,7 @@ ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load *"
 sleep 5
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.load TcMapMarkers"
 sleep 5
-${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload TcMapMarkers"
+${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.reload PlaguedMurderers"
 sleep 10
 ${INSTALL_DIR}/rcon -c ${RCON_CFG} "oxide.grant group default tcmapmarkers.use"
 sleep 5
