@@ -1,0 +1,27 @@
+{
+  "ChatIcon (chat icon SteamID64)": 0,
+  "APCHealth (set starting health)": 1000.0,
+  "APCCrates (amount of crates to spawn)": 4,
+  "NPCAmount (amount of guards to spawn max 11)": 6,
+  "InstantCrates (unlock crates when guards are eliminated)": true,
+  "GuardSettings (create different types of guards must contain atleast 1)": [
+    {
+      "Name (custom display name)": "Heavy Gunner",
+      "Health (set starting health)": 300.0,
+      "DamageScale (higher the value more damage)": 0.2,
+      "MaxRoamRadius (max radius guards will roam)": 80.0,
+      "MaxAggressionRange (distance guards will become aggressive)": 200.0,
+      "KitName (custom kit name)": "",
+      "KitEnabled (enable custom kit)": false
+    },
+    {
+      "Name (custom display name)": "Light Gunner",
+      "Health (set starting health)": 200.0,
+      "DamageScale (higher the value more damage)": 0.2,
+      "MaxRoamRadius (max radius guards will roam)": 80.0,
+      "MaxAggressionRange (distance guards will become aggressive)": 150.0,
+      "KitName (custom kit name)": "",
+      "KitEnabled (enable custom kit)": false
+    }
+  ]
+}
