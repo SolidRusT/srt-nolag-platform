@@ -412,5 +412,11 @@
       "max": 0,
       "cooldown": 0.0
     }
+  },
+  "76561198963453721": {
+    "defaultspawn": {
+      "max": 0,
+      "cooldown": 0.0
+    }
   }
 }
