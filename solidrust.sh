@@ -3,6 +3,15 @@ GAME_DIR=$HOME
 cd ${GAME_DIR}
 LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 
+steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 +quit
+steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +quit
+
+wget https://umod.org/extensions/discord/download -O ~/RustDedicated_Data/Managed/Oxide.Ext.Discord.dll
+
+wget https://umod.org/games/rust/download/develop -O Oxide.Rust.zip
+unzip -o Oxide.Rust.zip
+rm Oxide.Rust.zip
+
 ./RustDedicated -batchmode -nographics -silent-crashes \
     -server.ip 0.0.0.0 \
     -rcon.ip 0.0.0.0 \
