@@ -16,7 +16,11 @@ ${GAME_ROOT}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
 # TODO: Figure out global economics
 #(M) Economics.json
 #(M) ServerRewards/*
-#Backpack
-#Bank
 
-
+# Sync Push
+for data in ${PLAYER_DATA[@]}; do
+    aws s3 sync --quiet \
+    ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/defaults/oxide/data/$data
+    aws s3 sync --quiet \
+    ${S3_BUCKET}/defaults/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
+done

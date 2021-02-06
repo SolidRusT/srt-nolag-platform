@@ -1,3 +1,5 @@
+## THIS IS NOT A SCRIPT
+# these are just shitty notes
 # If installed from AMI
 NEW_NAME="eight"
 echo ${NEW_NAME} | sudo tee /etc/hostname
@@ -39,7 +41,3 @@ rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxi
 
 # TODO: Figure out inventory sync
 #(M) Backpacks/*
-rsync -avr ${GAME_ROOT}/oxide/data/Backpacks ${GLOBAL_CONFIG}/oxide/data/
-rsync -avr ${GAME_ROOT}/oxide/data/banks ${GLOBAL_CONFIG}/oxide/data/
-rsync -avr ${GAME_ROOT}/oxide/data/barrelless_players ${GLOBAL_CONFIG}/oxide/data/
-rsync -avr ${GAME_ROOT}/oxide/data/KDRGui ${GLOBAL_CONFIG}/oxide/data/
