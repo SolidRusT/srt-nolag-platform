@@ -1,7 +1,7 @@
 {
-  "Chat Channel name or id": "Chat",
-  "Team Channel name or id": "Team",
-  "Join / Leave Channel name or id": "Chat",
+  "Chat Channel name or id": "global-chat",
+  "Team Channel name or id": "teams-chat",
+  "Join / Leave Channel name or id": "guestbook",
   "Server Time Offset (Hours)": 0.0,
   "Add discord tag to chat": true,
   "Use bot to display message": true,
