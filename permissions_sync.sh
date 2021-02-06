@@ -24,6 +24,3 @@ for data in ${PLAYER_DATA[@]}; do
     aws s3 sync --quiet \
     ${S3_BUCKET}/defaults/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
 done
-
-json
-png
