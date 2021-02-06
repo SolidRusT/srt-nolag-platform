@@ -19,7 +19,6 @@ export RCON_CFG="${GAME_ROOT}/solidrust.net/servers/rcon.yaml"
 ## TODO: make this a separate cron
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "o.load *"
 sleep 15
-${GAME_ROOT}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
 
 # TODO: Figure out global economics
 #(M) Economics.json
@@ -30,7 +29,19 @@ PLAYER_DATA=(
     Backpacks \
     banks \
     EventManager \
-    Zonemanager \
+    Zonemanager
+)
+
+# Sync Push
+for data in ${PLAYER_DATA[@]}; do
+    aws s3 sync  \
+    ${S3_BUCKET}/defaults/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
+    aws s3 sync  \
+    ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/defaults/oxide/data/$data
+done
+
+
+PLAYER_JSON=(
     BetterChat.jsonBetterChat.json \
     CompoundOptions.json \
     GuardedCrate.json \
@@ -40,13 +51,14 @@ PLAYER_DATA=(
     StackSizeController.json \
     death.png \
     hit.png \
-    killstreak_data.json \
+    killstreak_data.json
 )
 
-# Sync Push
-for data in ${PLAYER_DATA[@]}; do
-    aws s3 sync --quiet \
+for data in ${PLAYER_JSON[@]}; do
+    aws s3 cp  \
     ${S3_BUCKET}/defaults/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
-    aws s3 sync --quiet \
+    aws s3 cp  \
     ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/defaults/oxide/data/$data
 done
+
+${GAME_ROOT}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
