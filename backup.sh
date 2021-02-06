@@ -47,8 +47,9 @@ rsync -avr --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
 
 # update global config from github repo
 rsync -avr --delete ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
-rsync -avr ${GLOBAL_CONFIG}/oxide/data             ${GAME_ROOT}/oxide/
 rsync -avr ${GLOBAL_CONFIG}/RustDedicated_Data/Managed            ${GAME_ROOT}/RustDedicated_Data/
+
+aws s3 sync --quiet ${GLOBAL_CONFIG}/oxide/data             ${S3_BUCKET}/oxide/data
 
 # update customized config for this server
 rsync -avr ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
