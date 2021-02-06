@@ -1,0 +1,61 @@
+{
+  "Items": [
+    {
+      "ID": -4031221,
+      "Position": 3,
+      "Amount": 2000
+    },
+    {
+      "ID": 1234880403,
+      "Position": 1,
+      "Amount": 4
+    },
+    {
+      "ID": 1414245522,
+      "Position": 8,
+      "Amount": 2
+    },
+    {
+      "ID": 317398316,
+      "Position": 9,
+      "Amount": 11
+    },
+    {
+      "ID": 51984655,
+      "Position": 4,
+      "Amount": 10
+    },
+    {
+      "ID": -1691396643,
+      "Position": 7,
+      "Amount": 10
+    },
+    {
+      "ID": 785728077,
+      "Position": 10,
+      "Amount": 15
+    },
+    {
+      "ID": 215754713,
+      "Position": 11,
+      "Amount": 3
+    },
+    {
+      "ID": 1104520648,
+      "Position": 2,
+      "Amount": 1,
+      "Condition": 97.4498444,
+      "MaxCondition": 100.0
+    },
+    {
+      "ID": -4031221,
+      "Amount": 4000
+    },
+    {
+      "ID": 1230323789,
+      "Position": 5,
+      "Amount": 1
+    }
+  ],
+  "OwnerID": 76561198005095463
+}
