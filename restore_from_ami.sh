@@ -35,3 +35,11 @@ mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/data
 rsync -r ${INSTALL_DIR}/oxide/data/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/data
 rsync -r ${INSTALL_DIR}/server/solidrust/cfg/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
 rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
+
+
+# TODO: Figure out inventory sync
+#(M) Backpacks/*
+rsync -avr ${GAME_ROOT}/oxide/data/Backpacks ${GLOBAL_CONFIG}/oxide/data/
+rsync -avr ${GAME_ROOT}/oxide/data/banks ${GLOBAL_CONFIG}/oxide/data/
+rsync -avr ${GAME_ROOT}/oxide/data/barrelless_players ${GLOBAL_CONFIG}/oxide/data/
+rsync -avr ${GAME_ROOT}/oxide/data/KDRGui ${GLOBAL_CONFIG}/oxide/data/

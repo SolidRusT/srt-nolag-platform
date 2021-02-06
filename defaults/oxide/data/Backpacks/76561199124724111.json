@@ -1,0 +1,57 @@
+{
+  "Items": [
+    {
+      "ID": -1758372725,
+      "Amount": 1,
+      "Condition": 100.0,
+      "MaxCondition": 100.0,
+      "Ammo": 7,
+      "AmmoType": 785728077,
+      "Contents": [
+        {
+          "ID": 442289265,
+          "Amount": 1,
+          "Condition": 300.0,
+          "MaxCondition": 300.0
+        }
+      ]
+    },
+    {
+      "ID": -765183617,
+      "Position": 1,
+      "Amount": 1,
+      "Skin": 2249169000,
+      "Condition": 100.0,
+      "MaxCondition": 100.0,
+      "Ammo": 2,
+      "AmmoType": -727717969,
+      "Contents": []
+    },
+    {
+      "ID": 442886268,
+      "Position": 2,
+      "Amount": 1,
+      "Skin": 1926503780,
+      "Condition": 200.0,
+      "MaxCondition": 200.0,
+      "AmmoType": -742865266
+    },
+    {
+      "ID": -727717969,
+      "Position": 3,
+      "Amount": 2
+    },
+    {
+      "ID": -946369541,
+      "Position": 4,
+      "Amount": 37,
+      "Fuel": 150.0
+    },
+    {
+      "ID": 73681876,
+      "Position": 5,
+      "Amount": 1
+    }
+  ],
+  "OwnerID": 76561199124724111
+}
