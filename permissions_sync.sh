@@ -25,10 +25,28 @@ ${GAME_ROOT}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
 #(M) Economics.json
 #(M) ServerRewards/*
 
+PLAYER_DATA=(
+    DeathNotes \
+    Backpacks \
+    banks \
+    EventManager \
+    Zonemanager \
+    BetterChat.jsonBetterChat.json \
+    CompoundOptions.json \
+    GuardedCrate.json \
+    KillStreaks-Zones.json \
+    Kits.json \
+    NTeleportationDisabledCommands.json \
+    StackSizeController.json \
+    death.png \
+    hit.png \
+    killstreak_data.json \
+)
+
 # Sync Push
 for data in ${PLAYER_DATA[@]}; do
     aws s3 sync --quiet \
-    ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/defaults/oxide/data/$data
-    aws s3 sync --quiet \
     ${S3_BUCKET}/defaults/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
+    aws s3 sync --quiet \
+    ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/defaults/oxide/data/$data
 done
