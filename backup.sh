@@ -58,7 +58,3 @@ rsync -avr ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
 
 # update server details
 rsync -avr ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
-
-
-# TODO: Figure out inventory sync
-#(M) Backpacks/*
