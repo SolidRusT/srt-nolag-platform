@@ -48,6 +48,7 @@ rsync -avr --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
 # update global config from github repo
 rsync -avr --delete ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
 rsync -avr ${GLOBAL_CONFIG}/oxide/data             ${GAME_ROOT}/oxide/
+rsync -avr ${GLOBAL_CONFIG}/RustDedicated_Data/Managed            ${GAME_ROOT}/RustDedicated_Data/
 
 # update customized config for this server
 rsync -avr ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
@@ -59,17 +60,5 @@ rsync -avr ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
 rsync -avr ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
 
 
-
-# Update global group permissions
-## TODO: make this a separate cron
-${GAME_ROOT}/rcon -c ${RCON_CFG} "o.load *"
-sleep 15
-${GAME_ROOT}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
-#sleep 10
-#${GAME_ROOT}/rcon -c ${RCON_CFG} "oxide.grant group default recyclerspeed.use"
-
-
-# TODO: Figure out global economics
-#(M) Economics.json
-#(M) ServerRewards/*
+# TODO: Figure out inventory sync
 #(M) Backpacks/*
