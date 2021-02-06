@@ -42,7 +42,7 @@ done
 
 
 PLAYER_JSON=(
-    BetterChat.jsonBetterChat.json \
+    BetterChat.json \
     CompoundOptions.json \
     GuardedCrate.json \
     KillStreaks-Zones.json \
