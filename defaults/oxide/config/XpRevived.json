@@ -1605,7 +1605,7 @@
     "TextColourAutomatic": "#aa42f4",
     "HudColourLevel": "#CD7C41",
     "HudColourXp": "#95BB42",
-    "HudEnabled": true
+    "HudEnabled": false
   },
   "LevelRates": {
     "RepeatDelay": 120.0,
