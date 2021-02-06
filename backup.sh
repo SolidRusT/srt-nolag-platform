@@ -11,9 +11,9 @@ export GAME_ROOT="/home/modded"
 # Amazon s3 destination for backups
 export S3_BUCKET="s3://solidrust.net-backups/${MYNAME}"
 # Github source for configs
-export GITHUB_ROOT="${GAME_ROOT}/solidrust.net/${MYNAME}"
+export GITHUB_ROOT="${GAME_ROOT}/solidrust.net/servers/${MYNAME}"
 # local RCON CLI config 
-export RCON_CFG="${GAME_ROOT}/solidrust.net/rcon.yaml" 
+export RCON_CFG="${GAME_ROOT}/solidrust.net/servers/rcon.yaml" 
 
 # Update the app repo
 cd ${GAME_ROOT}/solidrust.net && git pull
