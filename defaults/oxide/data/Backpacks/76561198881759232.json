@@ -1,0 +1,35 @@
+{
+  "Items": [
+    {
+      "ID": 605467368,
+      "Amount": 8
+    },
+    {
+      "ID": 1488979457,
+      "Position": 1,
+      "Amount": 1,
+      "Condition": 300.0,
+      "MaxCondition": 300.0
+    },
+    {
+      "ID": 215754713,
+      "Position": 2,
+      "Amount": 52
+    },
+    {
+      "ID": -932201673,
+      "Position": 3,
+      "Amount": 1440
+    },
+    {
+      "ID": 1796682209,
+      "Position": 4,
+      "Amount": 1,
+      "Condition": 100.0,
+      "MaxCondition": 100.0,
+      "AmmoType": 785728077,
+      "Contents": []
+    }
+  ],
+  "OwnerID": 76561198881759232
+}
