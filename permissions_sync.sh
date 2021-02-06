@@ -7,7 +7,7 @@ export MYNAME=$(hostname)
 # root of where the game server is installed
 export GAME_ROOT="/home/modded"
 # Amazon s3 destination for backups
-export S3_BUCKET="s3://solidrust.net-backups/${MYNAME}"
+export S3_BUCKET="s3://solidrust.net-backups/defaults"
 # Github source for configs
 export GITHUB_ROOT="${GAME_ROOT}/solidrust.net/servers/${MYNAME}"
 # Default configs
@@ -35,9 +35,9 @@ PLAYER_DATA=(
 # Sync Push
 for data in ${PLAYER_DATA[@]}; do
     aws s3 sync  \
-    ${S3_BUCKET}/defaults/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
+    ${S3_BUCKET}/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
     aws s3 sync  \
-    ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/defaults/oxide/data/$data
+    ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/oxide/data/$data
 done
 
 
@@ -56,9 +56,9 @@ PLAYER_JSON=(
 
 for data in ${PLAYER_JSON[@]}; do
     aws s3 cp  \
-    ${S3_BUCKET}/defaults/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
+    ${S3_BUCKET}/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
     aws s3 cp  \
-    ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/defaults/oxide/data/$data
+    ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/oxide/data/$data
 done
 
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
