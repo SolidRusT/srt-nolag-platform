@@ -43,19 +43,19 @@ aws s3 sync --quiet --delete \
 ${GAME_ROOT}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
 
 # Update plugins
-rsync -avr --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
+rsync -ar --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
 
 # update global config from github repo
-rsync -avr --delete ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
-rsync -avr ${GLOBAL_CONFIG}/RustDedicated_Data/Managed            ${GAME_ROOT}/RustDedicated_Data/
+rsync -ar --delete ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
+rsync -ar ${GLOBAL_CONFIG}/RustDedicated_Data/Managed            ${GAME_ROOT}/RustDedicated_Data/
 
 aws s3 sync --quiet ${GLOBAL_CONFIG}/oxide/data             ${S3_BUCKET}/oxide/data
 
 # update customized config for this server
-rsync -avr ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
+rsync -ar ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
 
 # update customized data for this server
-rsync -avr ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
+rsync -ar ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
 
 # update server details
-rsync -avr ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
+rsync -ar ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
