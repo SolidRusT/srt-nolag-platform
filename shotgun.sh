@@ -15,5 +15,4 @@ rm ${GAME_ROOT}/Compiler.x86_x64
 rm ${GAME_ROOT}/runds.sh
 rm ${GAME_ROOT}/libsteam_api.so
 rm ${GAME_ROOT}/Unity*
-# nuke players
-rm ${GAME_ROOT}/server/solidrust/player*
+
