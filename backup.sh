@@ -61,12 +61,8 @@ rsync -ar ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
 
 # Update global plugins
 rsync -ar --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
-sleep 15
+#sleep 15
 
 # Update global permissions
 #${GAME_ROOT}/rcon -c ${RCON_CFG} "quicksort.use"
 #sleep 2
-
-LoadingMessages
-DiscordWipe
-DiscordEvents
