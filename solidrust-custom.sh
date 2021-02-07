@@ -4,8 +4,6 @@ cd ${GAME_DIR}
 LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 
 # Refresh Steam installation
-echo "===> Updating Steam files..."
-steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 +quit
 echo "===> Validating installed Steam components..."
 steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +quit
 
