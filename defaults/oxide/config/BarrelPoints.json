@@ -5,7 +5,7 @@
   },
   "Items": {
     "Item Shortname": "scrap",
-    "Use Item Rewards": false
+    "Use Item Rewards": true
   },
   "Plugins": {
     "Use Battlepass": false,
@@ -25,7 +25,7 @@
   "Settings": {
     "Give Points Every x Barrels": 1,
     "Give Points For Barrels": true,
-    "Give Points For Crates": false,
+    "Give Points For Crates": true,
     "Reset Barrel Count on Death": true,
     "Send Notification Message": true
   }

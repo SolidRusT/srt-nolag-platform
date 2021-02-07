@@ -1,0 +1,229 @@
+{
+  "Entity Settings": {
+    "bbq.static": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 4.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "campfire_static": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 1.0,
+        "Comfort range (Meters)": 6.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "hobobarrel_static": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 1.0,
+        "Comfort range (Meters)": 6.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "bbq.deployed": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 4.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "campfire": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 4.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "fireplace.deployed": {
+      "Temperature": {
+        "Max temperature": 40.0,
+        "Temperature range (Meters)": 5.0,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.75,
+        "Comfort range (Meters)": 5.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 4.0
+      },
+      "Enabled": false
+    },
+    "furnace": {
+      "Temperature": {
+        "Max temperature": 30.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 3.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "electrical.heater": {
+      "Temperature": {
+        "Max temperature": 25.0,
+        "Temperature range (Meters)": 4.0,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 3.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 4.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "rug.bear.deployed": {
+      "Temperature": null,
+      "Comfort": {
+        "Max comfort": 0.25,
+        "Comfort range (Meters)": 1.1,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "rug.deployed": {
+      "Temperature": null,
+      "Comfort": {
+        "Max comfort": 0.25,
+        "Comfort range (Meters)": 1.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "table.deployed": {
+      "Temperature": null,
+      "Comfort": {
+        "Max comfort": 0.1,
+        "Comfort range (Meters)": 2.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "cursedcauldron.deployed": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 4.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "skull_fire_pit": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 4.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "beachparasol.deployed": {
+      "Temperature": {
+        "Max temperature": 50.0,
+        "Temperature range (Meters)": 1.25,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": null,
+      "Enabled": false
+    },
+    "beachtable.deployed": {
+      "Temperature": null,
+      "Comfort": {
+        "Max comfort": 0.1,
+        "Comfort range (Meters)": 2.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "hobobarrel.deployed": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 4.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
+    },
+    "pookie_deployed": {
+      "Temperature": null,
+      "Comfort": {
+        "Max comfort": 1.0,
+        "Comfort range (Meters)": 6.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 3.0
+      },
+      "Enabled": false
+    }
+  }
+}

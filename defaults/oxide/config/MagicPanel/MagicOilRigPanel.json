@@ -1,0 +1,56 @@
+{
+  "Small Oil Rig": {
+    "No Crate Color": "#FFFFFF1A",
+    "Untouched Crate Color": "#FF4E49FF",
+    "Hacking Crate Color": "#E5E500FF",
+    "Fully Hacked Crate Color": "#4EE44EFF",
+    "Panel Settings": {
+      "Dock": "center",
+      "Width": 0.02,
+      "Order": 12,
+      "BackgroundColor": "#FFF2DF08"
+    },
+    "Panel Layout": {
+      "Image": {
+        "Url": "https://i.imgur.com/xnT0SjR.png",
+        "Enabled": true,
+        "Color": "#FFFFFFFF",
+        "Order": 0,
+        "Width": 1.0,
+        "Padding": {
+          "Left": 0.1,
+          "Right": 0.1,
+          "Top": 0.1,
+          "Bottom": 0.1
+        }
+      }
+    }
+  },
+  "Large Oil Rig": {
+    "No Crate Color": "#FFFFFF1A",
+    "Untouched Crate Color": "#FF4E49FF",
+    "Hacking Crate Color": "#E5E500FF",
+    "Fully Hacked Crate Color": "#4EE44EFF",
+    "Panel Settings": {
+      "Dock": "center",
+      "Width": 0.02,
+      "Order": 13,
+      "BackgroundColor": "#FFF2DF08"
+    },
+    "Panel Layout": {
+      "Image": {
+        "Url": "https://i.imgur.com/xnT0SjR.png",
+        "Enabled": true,
+        "Color": "#FFFFFFFF",
+        "Order": 0,
+        "Width": 1.0,
+        "Padding": {
+          "Left": 0.05,
+          "Right": 0.05,
+          "Top": 0.05,
+          "Bottom": 0.05
+        }
+      }
+    }
+  }
+}

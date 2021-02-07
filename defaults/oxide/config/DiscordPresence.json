@@ -1,0 +1,17 @@
+{
+  "Update Rate (Seconds)": 15.0,
+  "Activity Type (Game, Streaming, Listening, Watching)": "Game",
+  "Presence Text formats": [
+    "on {server.name}",
+    "{server.players}/{server.players.max} Players",
+    "{server.players.sleepers} Sleepers",
+    "{server.players.stored} Total Players",
+    "{server.players.total} Lifetime Players",
+    "{server.players.queued} Queued",
+    "{server.players.loading} Joining",
+    "Server FPS {server.fps}",
+    "Wiped: {server.map.wipe.last!local}",
+    "Size: {world.size} Seed: {world.seed}",
+    "{server.entities} Entities"
+  ]
+}
