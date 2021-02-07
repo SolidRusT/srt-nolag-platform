@@ -35,15 +35,7 @@ exec ./RustDedicated -batchmode -nographics -silent-crashes \
     -app.port 28082 \
     -rcon.web 1 \
     -rcon.password "NOFAGS" \
-    -server.level "SolidRusT" \
     -server.identity "solidrust" \
-    -levelurl "https://www.solidrust.net/maps/Stellarium4.map"
-    -server.tickrate 30 \
-    -server.saveinterval 900 \
-    -server.maxplayers 300  \
-    -server.globalchat true \
-    -fps.limit 250 \
-    -server.savebackupcount "2" \
     -logfile 2>&1 "RustDedicated-${LOG_DATE}.log"
 
 echo "I'm done! (finished)"
