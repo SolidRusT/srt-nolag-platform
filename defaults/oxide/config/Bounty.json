@@ -10,7 +10,7 @@
   },
   "Reward Options": {
     "Allow bounties to be placed using Economics": true,
-    "Allow bounties to be placed using RP": true,
+    "Allow bounties to be placed using RP": false,
     "Allow bounties to be placed using items": true
   },
   "Version": {
