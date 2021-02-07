@@ -73,3 +73,5 @@ sleep 2
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "fuelgauge.allow"
 sleep 2
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "whoknocks.message"
+sleep 2
+${GAME_ROOT}/rcon -c ${RCON_CFG} "framebox.use"
