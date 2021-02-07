@@ -8,7 +8,7 @@ steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +qui
 
 wget https://umod.org/extensions/discord/download -O ~/RustDedicated_Data/Managed/Oxide.Ext.Discord.dll
 
-wget https://umod.org/games/rust/download/develop -O Oxide.Rust.zip
+wget https://umod.org/games/rust/download -O Oxide.Rust.zip
 unzip -o Oxide.Rust.zip
 rm Oxide.Rust.zip
 
@@ -22,7 +22,7 @@ rm Oxide.Rust.zip
     -rcon.password "NOFAGS" \
     -server.level "SolidRusT" \
     -server.identity "solidrust" \
-    -levelurl "https://www.solidrust.net/maps/Stellarium4.map"
+    -levelurl https://www.solidrust.net/maps/Stellarium4.map
     -server.tickrate 30 \
     -server.saveinterval 900 \
     -server.maxplayers 300  \
