@@ -5,7 +5,7 @@
   "Server Time Offset (Hours)": 0.0,
   "Add discord tag to chat": true,
   "Use bot to display message": true,
-  "Send messages from server to discord": true,
+  "Send messages from server to discord": false,
   "Send messages from discord to server": true,
   "Discord tag text": "Discord",
   "Discord tag color": "5f79d6",
