@@ -30,3 +30,4 @@ rm Oxide.Rust.zip
     -fps.limit 250 \
     -server.savebackupcount "2" \
     -logfile 2>&1 "RustDedicated-${LOG_DATE}.log"
+
