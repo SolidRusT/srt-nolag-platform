@@ -32,7 +32,6 @@
         "backpacks.use.5",
         "backpacks.keeponwipe",
         "kits.DiscordSpawn",
-        "guishop.use",
         "blueprintshare.toggle",
         "blueprintshare.share",
         "recycle.bypass",
@@ -65,7 +64,6 @@
         "backpacks.use.7",
         "backpacks.keepondeath",
         "kits.VipSpawn",
-        "guishop.vip",
         "vehicledeployedlocks.keylock.free",
         "vehicledeployedlocks.codelock.free",
         "carturrets.limit.4",
@@ -115,7 +113,9 @@
         "betterchat.admin",
         "guardedcrate.use",
         "dronepilot.create",
-        "heal.all"
+        "heal.all",
+        "guishop.use",
+        "guishop.vip"
       ],
       "AdditionalCommands": []
     },
@@ -171,7 +171,9 @@
         "bounty.admin",
         "dronepilot.create",
         "heal.all",
-        "heal.nocooldown"
+        "heal.nocooldown",
+        "guishop.use",
+        "guishop.vip"
       ],
       "AdditionalCommands": []
     },
@@ -238,7 +240,9 @@
         "bounty.admin",
         "dronepilot.create",
         "heal.all",
-        "heal.nocooldown"
+        "heal.nocooldown",
+        "guishop.use",
+        "guishop.vip"
       ],
       "AdditionalCommands": []
     }
