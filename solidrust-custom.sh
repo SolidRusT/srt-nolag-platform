@@ -1,5 +1,5 @@
 #!/bin/bash
-GAME_DIR=$HOME
+GAME_DIR="${HOME}"
 cd ${GAME_DIR}
 LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 
