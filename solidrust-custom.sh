@@ -37,7 +37,7 @@ exec ./RustDedicated -batchmode -nographics -silent-crashes \
     -rcon.password "NOFAGS" \
     -server.level "SolidRusT" \
     -server.identity "solidrust" \
-    -levelurl https://www.solidrust.net/maps/Stellarium4.map
+    -levelurl "https://www.solidrust.net/maps/Stellarium4.map"
     -server.tickrate 30 \
     -server.saveinterval 900 \
     -server.maxplayers 300  \
