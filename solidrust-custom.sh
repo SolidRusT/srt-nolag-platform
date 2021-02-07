@@ -24,6 +24,8 @@ echo "===> Downloading RustEdit.io binary..."
 wget https://github.com/k1lly0u/Oxide.Ext.RustEdit/raw/master/Oxide.Ext.RustEdit.dll -O \
     ${GAME_DIR}/RustDedicated_Data/Managed/Oxide.Ext.RustEdit.dll
 
+# Update custom maps
+aws s3 cp s3://solidrust.net/maps/Stellarium4.map ${GAME_DIR}/server/solidrust/
 
 # Launch game server
 echo "===> Touching my peepee..."

@@ -24,7 +24,7 @@
         "ServerRewards": true
       },
       "Universal": {
-        "UEconomics": false
+        "UEconomics": true
       }
     },
     "SendDepositMessage": true
