@@ -20,7 +20,7 @@
         "Economy": false
       },
       "Rust": {
-        "Economics": false,
+        "Economics": true,
         "ServerRewards": true
       },
       "Universal": {
