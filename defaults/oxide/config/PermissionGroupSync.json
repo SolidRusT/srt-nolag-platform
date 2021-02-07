@@ -117,7 +117,8 @@
         "heal.all",
         "guishop.use",
         "guishop.vip",
-        "whoknocks.admin"
+        "whoknocks.admin",
+        "adminchat.use"
       ],
       "AdditionalCommands": []
     },
@@ -176,7 +177,8 @@
         "heal.nocooldown",
         "guishop.use",
         "guishop.vip",
-        "whoknocks.admin"
+        "whoknocks.admin",
+        "adminchat.use"
       ],
       "AdditionalCommands": []
     },
@@ -246,7 +248,8 @@
         "heal.nocooldown",
         "guishop.use",
         "guishop.vip",
-        "whoknocks.admin"
+        "whoknocks.admin",
+        "adminchat.use"
       ],
       "AdditionalCommands": []
     }

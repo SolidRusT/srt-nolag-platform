@@ -5,7 +5,7 @@
   "Server Time Offset (Hours)": 0.0,
   "Add discord tag to chat": true,
   "Use bot to display message": true,
-  "Send messages from server to discord": false,
+  "Send messages from server to discord": true,
   "Send messages from discord to server": true,
   "Discord tag text": "Discord",
   "Discord tag color": "5f79d6",
@@ -22,7 +22,7 @@
       "Exclude from chat channel": true,
       "Admin chat channel": "admin-chat",
       "Admin Chat Prefix": "@",
-      "Enable AdminChat Plugin Support": false
+      "Enable AdminChat Plugin Support": true
     },
     "ChatTranslator Settings": {
       "Discord Server Chat Language": "en"
