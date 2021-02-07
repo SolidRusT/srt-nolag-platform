@@ -4,21 +4,23 @@ cd ${GAME_DIR}
 LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 
 # Refresh Steam installation
-echo "Updating Steam files"
+echo "===> Updating Steam files...\n"
 steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 +quit
-echo "Validating installed Steam components"
+echo "===> Validating installed Steam components...\n"
 steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +quit
 
 # Update uMod platform
+echo "===> Updating uMod...\n"
 wget https://umod.org/games/rust/download/develop -O Oxide.Rust.zip
 unzip -o Oxide.Rust.zip
 rm Oxide.Rust.zip
 
 # Integrate discord binary
+echo "===> Downloading discord binary...\n"
 wget https://umod.org/extensions/discord/download -O ~/RustDedicated_Data/Managed/Oxide.Ext.Discord.dll
 
 # Launch game server
-echo "Touching my peepee...\n"
+echo "===> Touching my peepee...\n"
 exec ./RustDedicated -batchmode -nographics -silent-crashes \
     -server.ip 0.0.0.0 \
     -rcon.ip 0.0.0.0 \
@@ -38,6 +40,6 @@ exec ./RustDedicated -batchmode -nographics -silent-crashes \
     -server.savebackupcount "2" \
     -logfile 2>&1 "RustDedicated-${LOG_DATE}.log"
 
-echo "I'm done!"
+echo "I'm done! (finished)\n"
 
 exit 0
