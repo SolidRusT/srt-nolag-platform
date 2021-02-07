@@ -66,3 +66,7 @@ sleep 15
 # Update global permissions
 #${GAME_ROOT}/rcon -c ${RCON_CFG} "quicksort.use"
 #sleep 2
+
+LoadingMessages
+DiscordWipe
+DiscordEvents
