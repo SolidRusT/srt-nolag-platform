@@ -64,14 +64,5 @@ rsync -ar --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
 sleep 15
 
 # Update global permissions
-${GAME_ROOT}/rcon -c ${RCON_CFG} "quicksort.use"
-sleep 2
-${GAME_ROOT}/rcon -c ${RCON_CFG} "quicksort.lootall"
-sleep 2
-${GAME_ROOT}/rcon -c ${RCON_CFG} "quicksort.autolootall"
-sleep 2
-${GAME_ROOT}/rcon -c ${RCON_CFG} "fuelgauge.allow"
-sleep 2
-${GAME_ROOT}/rcon -c ${RCON_CFG} "whoknocks.message"
-sleep 2
-${GAME_ROOT}/rcon -c ${RCON_CFG} "framebox.use"
+#${GAME_ROOT}/rcon -c ${RCON_CFG} "quicksort.use"
+#sleep 2
