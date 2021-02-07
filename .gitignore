@@ -26,3 +26,5 @@ oxide/logs/*
 
 
 rcon-default.log
+
+.vscode
