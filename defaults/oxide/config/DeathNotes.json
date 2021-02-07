@@ -282,7 +282,7 @@
   },
   "Chat Format": "<color=#838383>[<color=#80D000>DeathNotes</color>] {message}</color>",
   "Chat Icon (SteamID)": "76561198077847390",
-  "Show Kills in Console": true,
+  "Show Kills in Console": false,
   "Show Kills in Chat": true,
   "Message Broadcast Radius (in meters)": -1,
   "Use Metric Distance": true,

@@ -3,7 +3,7 @@
   "Discord bot key (Look at documentation for how to get this)": "ODA0OTkyMjk1NzM2NzA1MDI0.YBUZfw.a3N3MhU9x_dR63AlqcMzlWaBjgE",
   "Verification Role (role given when verified)": "Verified",
   "Commands to execute when player is verified (use {0} for the player's steamid)": [
-    "oxide.usergroup add {0} discord",
+    "usermod.verified add {0}",
     "inventory.giveto {0} rifle.lr300 1",
     "inventory.giveto {0} ammo.rifle 64"
   ],
