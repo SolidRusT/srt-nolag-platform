@@ -71,8 +71,8 @@
     "Enabled?": true
   },
   "Player disconnect settings": {
-    "WebhookURL": "https://discord.com/api/webhooks/804915117413105664/yrpsyVxGP91rPwMG3JauK22Hj8qbARlrYPTJJOe8f5ugSmyEdBuOVxyLZJxNa38PxLSZ",
-    "Enabled?": true
+    "WebhookURL": "",
+    "Enabled?": false
   },
   "Raidable Bases settings": {
     "WebhookURL": "",
