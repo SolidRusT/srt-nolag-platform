@@ -22,7 +22,7 @@ rm Oxide.Rust.zip
     -rcon.password "NOFAGS" \
     -server.level "SolidRusT" \
     -server.identity "solidrust" \
-    -levelurl https://www.solidrust.net/maps/Stellarium4.map
+    -server.levelurl https://www.solidrust.net/maps/Stellarium4.map
     -server.tickrate 30 \
     -server.saveinterval 900 \
     -server.maxplayers 300  \
