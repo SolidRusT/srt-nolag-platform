@@ -70,7 +70,8 @@
         "arkan.*",
         "largercarstorage.size.7",
         "barrelpoints.vip",
-        "dronepilot.create"
+        "dronepilot.create",
+        "whoknocks.knock"
       ],
       "AdditionalCommands": []
     },
@@ -115,7 +116,8 @@
         "dronepilot.create",
         "heal.all",
         "guishop.use",
-        "guishop.vip"
+        "guishop.vip",
+        "whoknocks.admin"
       ],
       "AdditionalCommands": []
     },
@@ -173,7 +175,8 @@
         "heal.all",
         "heal.nocooldown",
         "guishop.use",
-        "guishop.vip"
+        "guishop.vip",
+        "whoknocks.admin"
       ],
       "AdditionalCommands": []
     },
@@ -242,7 +245,8 @@
         "heal.all",
         "heal.nocooldown",
         "guishop.use",
-        "guishop.vip"
+        "guishop.vip",
+        "whoknocks.admin"
       ],
       "AdditionalCommands": []
     }

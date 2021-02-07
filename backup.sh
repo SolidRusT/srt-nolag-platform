@@ -43,7 +43,7 @@ aws s3 sync --quiet --delete \
 ${GAME_ROOT}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
 
 # update global config from github repo
-rsync -ar --delete ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
+rsync -ar ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
 #rsync -ar ${GLOBAL_CONFIG}/RustDedicated_Data/Managed            ${GAME_ROOT}/RustDedicated_Data/
 
 # update customized config for this server
@@ -71,3 +71,5 @@ sleep 2
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "quicksort.autolootall"
 sleep 2
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "fuelgauge.allow"
+sleep 2
+${GAME_ROOT}/rcon -c ${RCON_CFG} "whoknocks.message"
