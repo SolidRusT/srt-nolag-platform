@@ -16,6 +16,13 @@ sudo locale-gen
 sudo dpkg-reconfigure tzdata
 #America/Los_Angeles or America/New_York
 
+sudo dd if=/dev/zero of=/swapfile bs=128M count=128
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+sudo swapon -s
+echo "/swapfile swap swap defaults 0 0" | sudo tee -a /etc/fstab
+
 sudo apt-get -y install \
     git \
     apt-transport-https \
