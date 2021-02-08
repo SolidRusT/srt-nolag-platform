@@ -29,7 +29,7 @@ aws s3 cp s3://solidrust.net/maps/Stellarium4.map ${GAME_DIR}/server/solidrust/
 
 # Launch game server
 echo "===> Touching my peepee..."
-exec ./RustDedicated -batchmode -nographics -silent-crashes \
+sudo ./RustDedicated -batchmode -nographics -silent-crashes \
     -server.ip 0.0.0.0 \
     -rcon.ip 0.0.0.0 \
     -server.port 28015 \
