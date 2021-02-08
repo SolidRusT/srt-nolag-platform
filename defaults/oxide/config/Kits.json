@@ -35,7 +35,9 @@
     "true"
   ],
   "Custom AutoKits": {
-    "0": "VipSpawn"
+    "0": "VipSpawn",
+    "1": "VipSpawn",
+    "2": "VipSpawn"
   },
   "Kit - Logging": true,
   "Show All Kits": true,
