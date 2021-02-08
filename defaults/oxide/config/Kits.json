@@ -35,9 +35,7 @@
     "true"
   ],
   "Custom AutoKits": {
-    "0": "VipSpawn",
-    "1": "DiscordSpawn",
-    "2": "DefaultSpawn"
+    "0": "VipSpawn"
   },
   "Kit - Logging": true,
   "Show All Kits": true,
