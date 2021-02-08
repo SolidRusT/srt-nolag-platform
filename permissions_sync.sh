@@ -15,10 +15,33 @@ export GLOBAL_CONFIG="${GAME_ROOT}/solidrust.net/defaults"
 # local RCON CLI config
 export RCON_CFG="${GAME_ROOT}/solidrust.net/servers/rcon.yaml"
 
+# Update the app repo
+cd ${GAME_ROOT}/solidrust.net && git pull
+
+# update global config from github repo
+rsync -ar ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
+#rsync -ar ${GLOBAL_CONFIG}/RustDedicated_Data/Managed            ${GAME_ROOT}/RustDedicated_Data/
+
+# update customized config for this server
+rsync -ar ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
+
+# update common data (configuration) for data sync process
+aws s3 sync --quiet ${GLOBAL_CONFIG}/oxide/data             ${S3_BUCKET}/oxide/data
+
+# update customized data for this server
+rsync -ar ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
+
+
+# update customized server details
+rsync -ar ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
+
+# Update global plugins
+rsync -ar --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
+
 # Update global group permissions
 ## TODO: make this a separate cron
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "o.load *"
-sleep 15
+sleep 10
 
 # TODO: Figure out global economics
 #(M) Economics.json
