@@ -42,25 +42,7 @@ ${GAME_ROOT}/oxide                ${S3_BUCKET}/oxide
 aws s3 sync --quiet --delete \
 ${GAME_ROOT}/server/solidrust/cfg ${S3_BUCKET}/server/solidrust/cfg
 
-# update global config from github repo
-rsync -ar ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
-#rsync -ar ${GLOBAL_CONFIG}/RustDedicated_Data/Managed            ${GAME_ROOT}/RustDedicated_Data/
 
-# update customized config for this server
-rsync -ar ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
-
-# update common data (configuration) for data sync process
-aws s3 sync --quiet ${GLOBAL_CONFIG}/oxide/data             ${S3_BUCKET}/oxide/data
-
-# update customized data for this server
-rsync -ar ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
-
-
-# update customized server details
-rsync -ar ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
-
-# Update global plugins
-rsync -ar --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
 #sleep 15
 
 # Update global permissions
