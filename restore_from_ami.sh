@@ -1,7 +1,7 @@
 ## THIS IS NOT A SCRIPT
 # these are just shitty notes
 # If installed from AMI
-NEW_NAME="eight"
+NEW_NAME="nine"
 echo ${NEW_NAME} | sudo tee /etc/hostname
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/hosts
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
