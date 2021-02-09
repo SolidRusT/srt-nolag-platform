@@ -1,0 +1,14 @@
+{
+  "Detection Radius - All": 30,
+  "Tracking Radius - All": 30,
+  "Detection Radius - Player": 30,
+  "Tracking Radius - Player": 30,
+  "Detection Radius - Helicopter": 100,
+  "Tracking Radius - Helicopter": 100,
+  "Auto Convert Lights When Placed": false,
+  "Require Power": true,
+  "Night Only Operation": false,
+  "Target Acquired Sound": true,
+  "Target Friends": true,
+  "Target Team Members": true
+}

@@ -1,0 +1,35 @@
+{
+  "Rewards": {
+    "Bear": 25.0,
+    "Boar": 25.0,
+    "Breathe": 25.0,
+    "Chicken": 25.0,
+    "Clan Member": -25.0,
+    "Corn": 25.0,
+    "Death": 25.0,
+    "Hemp": 420.0,
+    "Horse": 25.0,
+    "Murderer": 50.0,
+    "Mushroom": 25.0,
+    "Ore": 5.0,
+    "Player": 100.0,
+    "Player's Friend": -250.0,
+    "Pumpkin": 25.0,
+    "Scientist": 50.0,
+    "Stag": 25.0,
+    "Stone": 3.0,
+    "Wolf": 25.0,
+    "Wood": -5.0,
+    "Zombie": 25.0
+  },
+  "Settings": {
+    "ChatEditCommand": "gatherrewards",
+    "ConsoleEditCommand": "gatherrewards",
+    "EditPermission": "gatherrewards.canedit",
+    "PluginPrefix": "<color=#00FFFF>[SolidRust]</color>",
+    "ShowMessagesOnGather": true,
+    "ShowMessagesOnKill": true,
+    "UseEconomics": true,
+    "UseServerRewards": false
+  }
+}

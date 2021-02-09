@@ -1,0 +1,38 @@
+{
+  "Game length": {
+    "in seconds": "25"
+  },
+  "Game repeater": {
+    "Rate in seconds": "600"
+  },
+  "Message Settings": {
+    "ChatColor": "#a0ffb5",
+    "Color For Winner Name": "#4fffc7",
+    "Color Of Math Expression": "#e2ffe9",
+    "Prefix": "[TellMeX] ",
+    "PrefixColor": "#47ff6f",
+    "SteamIDIcon": 76561198842176097,
+    "Use GuiAnnouncement on win": "false"
+  },
+  "Online Settings": {
+    "Minimum amount of players to be online to start the game": "1"
+  },
+  "Reward Battlepass Settings": {
+    "Amount 1st currency (loss)": 10,
+    "Amount 1st currency (win)": 20,
+    "Amount 2nd currency (loss)": 10,
+    "Amount 2nd currency (win)": 20,
+    "Use Battlepass": false,
+    "Use Battlepass 1st currency": false,
+    "Use Battlepass 2nd currency": false,
+    "Use Battlepass on loss": false
+  },
+  "Rewards Settings": {
+    "Economics on Lose": 1,
+    "Economics on Win": 5,
+    "RP Points on Lose": 1,
+    "RP Points on Win": 5,
+    "Use Economics": false,
+    "Use Server Rewards": true
+  }
+}

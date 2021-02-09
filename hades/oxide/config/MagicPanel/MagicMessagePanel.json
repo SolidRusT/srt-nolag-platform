@@ -1,0 +1,50 @@
+{
+  "Message Panels": {
+    "MagicMessagePanel_1": {
+      "Perm or Group messages": [
+        {
+          "Messages": [
+            "You must be in the default group to see this message"
+          ],
+          "Group or Permission": "default",
+          "Player Group or Permission State (In, NotIn)": "In",
+          "Enabled": true
+        },
+        {
+          "Messages": [
+            "Messages here for players not in VIP group or perm"
+          ],
+          "Group or Permission": "VIP",
+          "Player Group or Permission State (In, NotIn)": "NotIn",
+          "Enabled": true
+        }
+      ],
+      "Panel Settings": {
+        "Dock": "bottom",
+        "Width": 0.2954,
+        "Order": 0,
+        "BackgroundColor": "#FFF2DF08"
+      },
+      "Panel Layout": {
+        "Text": {
+          "Text": "",
+          "FontSize": 14,
+          "TextAnchor": "MiddleCenter",
+          "Enabled": true,
+          "Color": "#FFFFFFFF",
+          "Order": 1,
+          "Width": 1.0,
+          "Padding": {
+            "Left": 0.05,
+            "Right": 0.05,
+            "Top": 0.1,
+            "Bottom": 0.0
+          }
+        }
+      },
+      "Random Message Display Order": false,
+      "Update Rate (Seconds)": 15.0,
+      "Enabled": true
+    }
+  }
+}
