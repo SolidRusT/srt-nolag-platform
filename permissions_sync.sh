@@ -17,9 +17,9 @@ export RCON_CFG="${GAME_ROOT}/solidrust.net/servers/rcon.yaml"
 
 # Update the app repo
 cd ${GAME_ROOT}/solidrust.net && git pull
-sudo chown -R ${$USER}:${$USER} ${GAME_ROOT}/oxide/data
-sudo chown -R ${$USER}:${$USER} ${GAME_ROOT}/oxide/config
-sudo chown -R ${$USER}:${$USER} ${GAME_ROOT}/server/solidrust/cfg
+sudo chown -R ${USER}:${USER} ${GAME_ROOT}/oxide/data
+sudo chown -R ${USER}:${USER} ${GAME_ROOT}/oxide/config
+sudo chown -R ${USER}:${USER} ${GAME_ROOT}/server/solidrust/cfg
 
 # update global config from github repo
 rsync -ar ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
