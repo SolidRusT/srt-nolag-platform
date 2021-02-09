@@ -45,6 +45,7 @@ rsync -ar --delete  ${GLOBAL_CONFIG}/oxide/plugins ${GAME_ROOT}/oxide/
 # Update global group permissions
 ## TODO: make this a separate cron
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "o.load *"
+echo "Snoozing..."
 sleep 10
 
 # TODO: Figure out global economics
