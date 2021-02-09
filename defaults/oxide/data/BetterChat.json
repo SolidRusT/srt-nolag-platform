@@ -6,7 +6,7 @@
       "Text": "[Player]",
       "Color": "#55aaff",
       "Size": 15,
-      "Hidden": false,
+      "Hidden": true,
       "HiddenIfNotPrimary": false
     },
     "Username": {

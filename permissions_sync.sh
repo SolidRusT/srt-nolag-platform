@@ -61,9 +61,9 @@ PLAYER_DATA=(
 
 # Sync Push-Pull
 for data in ${PLAYER_DATA[@]}; do
-    aws s3 sync  \
+    aws s3 sync --quiet  \
     ${S3_BUCKET}/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
-    aws s3 sync  \
+    aws s3 sync --quiet \
     ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/oxide/data/$data
 done
 
@@ -83,9 +83,9 @@ PLAYER_JSON=(
 
 # Sync Push-Pull
 for data in ${PLAYER_JSON[@]}; do
-    aws s3 cp  \
+    aws s3 cp --quiet\
     ${S3_BUCKET}/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
-    aws s3 cp  \
+    aws s3 cp --quiet\
     ${GAME_ROOT}/oxide/data/$data  ${S3_BUCKET}/oxide/data/$data
 done
 
