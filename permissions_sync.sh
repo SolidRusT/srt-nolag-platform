@@ -19,7 +19,8 @@ export RCON_CFG="${GAME_ROOT}/solidrust.net/servers/rcon.yaml"
 
 # Update the app repo
 cd ${GAME_ROOT}/solidrust.net && git pull
-chown -R ${MYUSER}:${MYUSER} ${GAME_ROOT}/oxide
+chown -R ${MYUSER}:${MYUSER} ${GAME_ROOT}/oxide/data
+chown -R ${MYUSER}:${MYUSER} ${GAME_ROOT}/oxide/config
 chown -R ${MYUSER}:${MYUSER} ${GAME_ROOT}/server/cfg
 
 # update global config from github repo
@@ -29,12 +30,11 @@ rsync -ar ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
 # update customized config for this server
 rsync -ar ${GITHUB_ROOT}/oxide/config    ${GAME_ROOT}/oxide/
 
-# update common data (configuration) for data sync process
+# push common data (configuration) for data sync process
 aws s3 sync --quiet ${GLOBAL_CONFIG}/oxide/data             ${S3_BUCKET}/oxide/data
 
-# update customized data for this server
+# apply customized data for this server
 rsync -ar ${GITHUB_ROOT}/oxide/data      ${GAME_ROOT}/oxide/
-
 
 # update customized server details
 rsync -ar ${GITHUB_ROOT}/server/solidrust/cfg   ${GAME_ROOT}/server/solidrust/
@@ -59,7 +59,7 @@ PLAYER_DATA=(
     Zonemanager
 )
 
-# Sync Push
+# Sync Push-Pull
 for data in ${PLAYER_DATA[@]}; do
     aws s3 sync  \
     ${S3_BUCKET}/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
@@ -71,16 +71,17 @@ done
 PLAYER_JSON=(
     BetterChat.json \
     CompoundOptions.json \
+    death.png \
     GuardedCrate.json \
+    hit.png \
+    killstreak_data.json \
     KillStreaks-Zones.json \
     Kits.json \
     NTeleportationDisabledCommands.json \
-    StackSizeController.json \
-    death.png \
-    hit.png \
-    killstreak_data.json
+    StackSizeController.json
 )
 
+# Sync Push-Pull
 for data in ${PLAYER_JSON[@]}; do
     aws s3 cp  \
     ${S3_BUCKET}/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
