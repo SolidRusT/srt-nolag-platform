@@ -1,0 +1,39 @@
+{
+  "Map Marker Options": {
+    "Prefab Path": "assets/prefabs/tools/map/genericradiusmarker.prefab",
+    "Show to all? (true/false)": true,
+    "Enable Teams? (true/false)": false,
+    "Enable Friends? (true/false)": true,
+    "Enable Clans? (true/false)": false
+  },
+  "Owned Markers Options": {
+    "Color1 (hex)": "#00FF00",
+    "Color2 (hex)": "#00FF00",
+    "Alpha": 1.0,
+    "Radius": 0.08
+  },
+  "Other Markers Options": {
+    "Color1 (hex)": "#FF0000",
+    "Color2 (hex)": "#FF0000",
+    "Alpha": 1.0,
+    "Radius": 0.08
+  },
+  "Teams Markers Options": {
+    "Color1 (hex)": "#0000FF",
+    "Color2 (hex)": "#0000FF",
+    "Alpha": 1.0,
+    "Radius": 0.08
+  },
+  "Friends Markers Options": {
+    "Color1 (hex)": "#0000FF",
+    "Color2 (hex)": "#0000FF",
+    "Alpha": 1.0,
+    "Radius": 0.08
+  },
+  "Clans Markers Options": {
+    "Color1 (hex)": "#0000FF",
+    "Color2 (hex)": "#0000FF",
+    "Alpha": 1.0,
+    "Radius": 0.08
+  }
+}

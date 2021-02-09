@@ -1,0 +1,17 @@
+{
+  "DatabaseHost": "localhost",
+  "DatabaseName": "oxide",
+  "DatabasePassword": "changeme",
+  "DatabasePort": 3306,
+  "DatabaseUser": "root",
+  "Packages": {
+    "Example": [
+      "grant user {0} some.permission",
+      "grant user {0} another.permission"
+    ],
+    "VIP": [
+      "grant user {0} some.permission",
+      "grant user {0} another.permission"
+    ]
+  }
+}

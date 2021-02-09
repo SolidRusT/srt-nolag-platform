@@ -1,0 +1,7 @@
+{
+  "Kit Names & Cooldowns - Cooldowns (minutes)": {
+    "kitname1": 5.0,
+    "kitname2": 5.0
+  },
+  "Use GUI Kits (true/false)": false
+}

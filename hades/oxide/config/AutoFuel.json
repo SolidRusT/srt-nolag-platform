@@ -1,0 +1,24 @@
+{
+  "Settings": {
+    "Allowed objects": [
+      "bbq.deployed",
+      "campfire",
+      "ceilinglight.deployed",
+      "fireplace.deployed",
+      "furnace",
+      "furnace.large",
+      "jackolantern.angry",
+      "jackolantern.happy",
+      "lantern.deployed",
+      "refinery_small_deployed",
+      "searchlight.deployed",
+      "skull_fire_pit",
+      "tunalight.deployed",
+      "fogmachine",
+      "snowmachine",
+      "chineselantern.deployed",
+      "small_fuel_generator.deployed"
+    ],
+    "Don't use fuel": false
+  }
+}
