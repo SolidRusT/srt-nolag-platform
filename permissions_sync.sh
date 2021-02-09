@@ -1,7 +1,7 @@
 #!/bin/bash
 ## Configuration
 # example crontab
-#echo "* *    * * *   modded  /home/modded/solidrust.net/permissions_sync.sh" | sudo tee -a /etc/crontab
+#echo "*/3 *    * * *   ${USER}  ${HOME}/solidrust.net/permissions_sync.sh" | sudo tee -a /etc/crontab
 # Say my name
 export MYNAME=$(hostname)
 # root of where the game server is installed
