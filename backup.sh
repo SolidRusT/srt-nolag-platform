@@ -7,7 +7,7 @@ export COMMAND="$1"
 # Say my name
 export MYNAME=$(hostname)
 # root of where the game server is installed
-export GAME_ROOT="/home/modded"
+export GAME_ROOT=${HOME}
 # Amazon s3 destination for backups
 export S3_BUCKET="s3://solidrust.net-backups/${MYNAME}"
 # Github source for configs
