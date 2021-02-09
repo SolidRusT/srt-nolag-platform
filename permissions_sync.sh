@@ -48,6 +48,7 @@ ${GAME_ROOT}/rcon -c ${RCON_CFG} "o.load *"
 echo "Snoozing..."
 sleep 10
 
+echo "Starting s3 push-pull..."
 # TODO: Figure out global economics
 #(M) Economics.json
 #(M) ServerRewards/*
@@ -61,6 +62,7 @@ PLAYER_DATA=(
 )
 
 # Sync Push-Pull
+echo "Sync player data folders..."
 for data in ${PLAYER_DATA[@]}; do
     aws s3 sync --quiet  \
     ${S3_BUCKET}/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
@@ -83,6 +85,7 @@ PLAYER_JSON=(
 )
 
 # Sync Push-Pull
+echo "Sync player data files..."
 for data in ${PLAYER_JSON[@]}; do
     aws s3 cp --quiet\
     ${S3_BUCKET}/oxide/data/$data ${GAME_ROOT}/oxide/data/$data
