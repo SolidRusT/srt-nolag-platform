@@ -4,10 +4,8 @@
 #echo "* *    * * *   modded  /home/modded/solidrust.net/permissions_sync.sh" | sudo tee -a /etc/crontab
 # Say my name
 export MYNAME=$(hostname)
-# My user
-export MYUSER="modded"
 # root of where the game server is installed
-export GAME_ROOT="/home/modded"
+export GAME_ROOT=${HOME}
 # Amazon s3 destination for backups
 export S3_BUCKET="s3://solidrust.net-backups/defaults"
 # Github source for configs
@@ -19,9 +17,9 @@ export RCON_CFG="${GAME_ROOT}/solidrust.net/servers/rcon.yaml"
 
 # Update the app repo
 cd ${GAME_ROOT}/solidrust.net && git pull
-sudo chown -R ${MYUSER}:${MYUSER} ${GAME_ROOT}/oxide/data
-sudo chown -R ${MYUSER}:${MYUSER} ${GAME_ROOT}/oxide/config
-sudo chown -R ${MYUSER}:${MYUSER} ${GAME_ROOT}/server/solidrust/cfg
+sudo chown -R ${$USER}:${$USER} ${GAME_ROOT}/oxide/data
+sudo chown -R ${$USER}:${$USER} ${GAME_ROOT}/oxide/config
+sudo chown -R ${$USER}:${$USER} ${GAME_ROOT}/server/solidrust/cfg
 
 # update global config from github repo
 rsync -ar ${GLOBAL_CONFIG}/oxide/config  ${GAME_ROOT}/oxide/
