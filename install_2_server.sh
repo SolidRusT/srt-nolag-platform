@@ -36,12 +36,14 @@ steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 +quit
 steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +quit
 
 ssh-keygen -b 4096
-cat /home/modded/.ssh/id_rsa.pub
+cat ${HOME}/.ssh/id_rsa.pub
 
 git config --global user.email "smoke@solidrust.net"
 git config --global user.name "SmokeQc"
 
 git clone git@github.com:suparious/solidrust.net.git
-echo "7 *    * * *   modded  /home/modded/solidrust.net/backup.sh" | sudo tee -a /etc/crontab
+echo "11 *    * * *   ${STEAMUSER}  ${HOME}/solidrust.net/backup.sh" | sudo tee -a /etc/crontab
+
+
 
 #https://just-wiped.net/rust-maps/procedural-map-3500-973546

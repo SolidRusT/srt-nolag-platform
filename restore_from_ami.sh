@@ -26,8 +26,12 @@ wget https://umod.org/extensions/discord/download -O ~/RustDedicated_Data/Manage
 sudo su - ${STEAMUSER}
 export MYNAME=$(hostname)
 export DEST_S3="s3://solidrust.net-backups/${MYNAME}"
-export INSTALL_DIR="/home/modded"
+export INSTALL_DIR=${HOME}
 cd ${INSTALL_DIR}/solidrust.net && git pull
+mkdir -p ${INSTALL_DIR}/oxide/plugins
+mkdir -p ${INSTALL_DIR}/oxide/data
+mkdir -p ${INSTALL_DIR}/oxide/config
+
 mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
 rsync -r ${INSTALL_DIR}/server/solidrust/cfg ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
 mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
