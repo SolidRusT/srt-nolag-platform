@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rsync -ar --exclude 'Bundles' /game/${USER}  /home/
+rsync -ar --exclude={'Bundles','solidrust.net'} /game/${USER}  /home/
 
 ${HOME}/solidrust.net/backup.sh
 
