@@ -29,7 +29,6 @@ for folder in ${OXIDE[@]}; do
 done
 
 mkdir -p "${GAME_ROOT}/oxide/plugins"
-rsync -r --delete "${SERVER_GLOBAL}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins"
+rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins"
 
-# TODO: Figure out inventory sync
-#(M) Backpacks/*
+${GAME_ROOT}/rcon -c ${RCON_CFG} "o.load *"

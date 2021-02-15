@@ -1,38 +1,33 @@
 #!/bin/bash
-GAME_DIR="/game"
-# ${HOSTNAME}
-# ${USER}
-# ${HOME}
+## crontab example:
+#        M H    D ? Y
+#echo "*/3 *    * * *   ${USER}  ${HOME}/solidrust.net/permissions_sync.sh" | sudo tee -a /etc/crontab
 
-cd ${HOME}
-rm -rf solidrust.net
-git clone git@github.com:suparious/solidrust.net.git
+## Configuration
+# root of where the game server is installed
+export GAME_ROOT="/game"
+# Amazon s3 destination for backups
+export S3_BUCKET="s3://solidrust.net-backups/defaults"
+# Github source for configs
+export GITHUB_ROOT="${HOME}/solidrust.net"
+# Default configs
+export SERVER_GLOBAL="${GITHUB_ROOT}/defaults"
+# Customized config
+export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
+# local RCON CLI config
+export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
 
+OXIDE=(
+    oxide/data
+    oxide/config
+)
 
-# do the oxide/config and oxide/data customized for this ${HOSTNAME}
-#mkdir -p ${GAME_DIR}/server/solidrust/cfg
-#cp solidrust.net/servers/${HOSTNAME}/server/solidrust/cfg/server.cfg ${GAME_DIR}/server/solidrust/cfg/server.cfg
+for folder in ${OXIDE[@]}; do
+    echo "sync ${SERVER_CUSTOM}/$folder/ to ${GAME_ROOT}/$folder"
+    rsync -r "${SERVER_CUSTOM}/$folder/" "${GAME_ROOT}/$folder"
+done
 
-# Game Node: Bootstrap
-sudo su - ${STEAMUSER}
-export MYNAME=$(hostname)
-export DEST_S3="s3://solidrust.net-backups/${MYNAME}"
-export INSTALL_DIR=${HOME}
-cd ${INSTALL_DIR}/solidrust.net && git pull
-mkdir -p ${INSTALL_DIR}/oxide/plugins
-mkdir -p ${INSTALL_DIR}/oxide/data
-mkdir -p ${INSTALL_DIR}/oxide/config
-
-mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
-rsync -r ${INSTALL_DIR}/server/solidrust/cfg ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
-mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
-rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
-mkdir -p ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/data
-
-rsync -r ${INSTALL_DIR}/oxide/data/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/data
-rsync -r ${INSTALL_DIR}/server/solidrust/cfg/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/server/solidrust/cfg
-rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxide/config
-
-
-# TODO: Figure out inventory sync
-#(M) Backpacks/*
+# custom plugins are not yet available
+#rsync -rv --delete "${SERVER_CUSTOM}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins"
+#
+#${GAME_ROOT}/rcon -c ${RCON_CFG} "o.load *"

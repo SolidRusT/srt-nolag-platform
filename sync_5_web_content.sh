@@ -17,7 +17,6 @@ export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
 # local RCON CLI config
 export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
 
-# Delete and refresh SolidRusT repo
-cd ${HOME}
-rm -rf solidrust.net
-git clone git@github.com:suparious/solidrust.net.git
+aws s3 sync --delete --acl public-read ${GITHUB_ROOT}/web/ s3://solidrust.net --exclude maps*
+
+#aws s3 cp --acl public-read ${GAME_ROOT}/server/solidrust/Stellarium4.map s3://solidrust.net/maps/Stellarium4.map

@@ -1,6 +1,8 @@
 #!/bin/bash
 # This is SUPERBAD, please don't run this
-GAME_ROOT="${HOME}"
+GAME_ROOT="/game"
+
+# delete all non-player data
 
 # nuke folders
 rm -rf ${GAME_ROOT}/steam*

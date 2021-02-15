@@ -1,3 +1,8 @@
+### BROKEN WIP
+## DO NOT USE
+
+
+
 #!/bin/bash
 ## crontab example:
 #        M H    D ? Y
@@ -17,7 +22,8 @@ export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
 # local RCON CLI config
 export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
 
-
+# TODO: Figure out inventory sync
+#(M) Backpacks/*
 
 
 # Update the app repo
