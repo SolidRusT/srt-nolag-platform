@@ -1,7 +1,13 @@
-#!/bin/bash
-GAME_DIR="/game/${USER}"
+## Offline server update
+GAME_DIR="/game"
 cd ${GAME_DIR}
 LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
+
+# refresh OS packages
+echo "===> Buffing-up Debian Distribution..."
+sudo apt update
+sudo apt -y dist-upgrade
+# TODO: output a message to reboot if kernel or initrd was updated
 
 # Refresh Steam installation
 echo "===> Validating installed Steam components..."
@@ -24,22 +30,9 @@ echo "===> Downloading RustEdit.io binary..."
 wget https://github.com/k1lly0u/Oxide.Ext.RustEdit/raw/master/Oxide.Ext.RustEdit.dll -O \
     ${GAME_DIR}/RustDedicated_Data/Managed/Oxide.Ext.RustEdit.dll
 
+# Integrate Rust:IO binary
+wget http://playrust.io/latest -O \
+    ${GAME_DIR}/RustDedicated_Data/Managed/Oxide.Ext.RustIO.dll
+
 # Update custom maps
-aws s3 cp s3://solidrust.net/maps/Stellarium4.map ${GAME_DIR}/server/solidrust/
-
-# Launch game server
-echo "===> Touching my peepee..."
-sudo ./RustDedicated -batchmode -nographics -silent-crashes \
-    -server.ip 0.0.0.0 \
-    -rcon.ip 0.0.0.0 \
-    -server.port 28015 \
-    -rcon.port 28016 \
-    -app.port 28082 \
-    -rcon.web 1 \
-    -rcon.password "NOFAGS" \
-    -server.identity "solidrust" \
-    -logfile 2>&1 "RustDedicated-${LOG_DATE}.log"
-
-echo "I'm done! (finished)"
-
-exit 0
+aws s3 sync s3://solidrust.net/maps ${GAME_DIR}/server/solidrust

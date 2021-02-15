@@ -1,18 +1,28 @@
 ## THIS IS NOT A SCRIPT
 # these are just shitty notes
-# If installed from AMI
-NEW_NAME="nine"
+
+# Set the relevant hostname and logout for the changes to properly affect your console
+NEW_NAME="data"
 echo ${NEW_NAME} | sudo tee /etc/hostname
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/hosts
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
 sudo hostnamectl set-hostname ${NEW_NAME}
 
-## if running
+# Data Node: Check that everything is already working, easy-mode here
+sudo systemctl status mariadb
+cat /etc/hosts
+netstat -an | grep 3306
+
+# Console Node:
+
+
+
+# Game Node: if game service is still running
 ./rcon -c solidrust.net/rcon.yaml "server.save"
 ./rcon -c solidrust.net/rcon.yaml "server.writecfg"
 ./rcon -c solidrust.net/rcon.yaml "quit"
 
-# Apply steam upates
+# Game Node: Apply steam upates
 steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 +quit
 steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +quit
 wget https://umod.org/games/rust/download/develop -O Oxide.Rust.zip
@@ -22,7 +32,7 @@ wget https://umod.org/extensions/discord/download -O ~/RustDedicated_Data/Manage
 
 
 
-# Bootstrap
+# Game Node: Bootstrap
 sudo su - ${STEAMUSER}
 export MYNAME=$(hostname)
 export DEST_S3="s3://solidrust.net-backups/${MYNAME}"
@@ -45,3 +55,4 @@ rsync -r ${INSTALL_DIR}/oxide/config/ ${INSTALL_DIR}/solidrust.net/${MYNAME}/oxi
 
 # TODO: Figure out inventory sync
 #(M) Backpacks/*
+

@@ -62,14 +62,27 @@ sudo apt-get -y install \
     bsdmainutils \
     build-essential
 
-sudo apt remove awscli
-
 echo "PATH=\$PATH:$HOME/.local/bin" >> ".bashrc"
 
 # early pre-maintenance maintenance maintenance
-sudo apt install -f
+sudo apt -y install -f
 sudo apt -y autoremove
 sudo apt clean
 sudo apt autoclean
 
+#!/bin/bash
+STEAMUSER="modded"
+
+# Install Steam client
+sudo apt -y install steamcmd
+
+# Install statistics server
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt update && sudo apt install -y nodejs
+sudo npm install gamedig -g
+
+# Install xfs for the ephemeral disk
+sudo apt -y install xfsprogs
+
+# Reboot to load the kernel storage module for XFS
 sudo reboot

@@ -1,5 +1,7 @@
 #!/bin/bash
+# This is SUPERBAD, please don't run this
 GAME_ROOT="${HOME}"
+
 # nuke folders
 rm -rf ${GAME_ROOT}/steam*
 rm -rf ${GAME_ROOT}/.steam
@@ -7,6 +9,7 @@ rm -rf ${GAME_ROOT}/RustDedicated*
 rm -rf ${GAME_ROOT}/HarmonyMods
 rm -rf ${GAME_ROOT}/Bundles
 rm -rf ${GAME_ROOT}/.mono
+
 # nuke files
 rm ${GAME_ROOT}/LinuxPlayer_s.debug
 rm ${GAME_ROOT}/server/solidrust/*.map

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-sudo chown -R ${USER}:${USER} /game/${USER}/oxide/data
-sudo chown -R ${USER}:${USER} /game/${USER}/oxide/config
-sudo chown -R ${USER}:${USER} /game/${USER}/server/solidrust/cfg
 
+sudo chmod ugo+rwx -R /game
 rsync -ar --exclude={'Bundles','solidrust.net'} /game/${USER}  /home/
+
+sudo chown -R ${USER}:${USER} /home/${USER}
 
 ${HOME}/solidrust.net/backup.sh
 
