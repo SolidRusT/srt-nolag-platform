@@ -1,19 +1,24 @@
 #!/bin/bash
-## Configuration
-# example crontab
+## crontab example:
+#        M H    D ? Y
 #echo "*/3 *    * * *   ${USER}  ${HOME}/solidrust.net/permissions_sync.sh" | sudo tee -a /etc/crontab
-# Say my name
-export MYNAME=$(hostname)
+
+## Configuration
 # root of where the game server is installed
-export GAME_ROOT=${HOME}
+export GAME_ROOT="/game"
 # Amazon s3 destination for backups
 export S3_BUCKET="s3://solidrust.net-backups/defaults"
 # Github source for configs
-export GITHUB_ROOT="${GAME_ROOT}/solidrust.net/servers/${MYNAME}"
+export GITHUB_ROOT="${HOME}/solidrust.net"
 # Default configs
-export GLOBAL_CONFIG="${GAME_ROOT}/solidrust.net/defaults"
+export SERVER_GLOBAL="${GITHUB_ROOT}/defaults"
+# Customized config
+export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
 # local RCON CLI config
-export RCON_CFG="${GAME_ROOT}/solidrust.net/servers/rcon.yaml"
+export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
+
+
+
 
 # Update the app repo
 cd ${GAME_ROOT}/solidrust.net && git pull
