@@ -2,8 +2,7 @@
 GAME_DIR="/game/${USER}"
 cd ${GAME_DIR}
 LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
-
-
+LOG_FILE="RustDedicated-${LOG_DATE}.log"
 
 # Launch game server
 echo "===> Touching my peepee..."
@@ -16,8 +15,8 @@ sudo ./RustDedicated -batchmode -nographics -silent-crashes \
     -rcon.web 1 \
     -rcon.password "NOFAGS" \
     -server.identity "solidrust" \
-    -logfile 2>&1 "RustDedicated-${LOG_DATE}.log"
+    -logfile 2>&1 ${LOG_FILE}
 
-echo "I'm done! (finished)"
+echo "I'm done! (finished): ${LOG_FILE}"
 
 exit 0

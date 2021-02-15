@@ -3,6 +3,11 @@ GAME_DIR="/game"
 cd ${GAME_DIR}
 LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 
+# Game Node: if game service is still running
+./rcon -c solidrust.net/rcon.yaml "server.save"
+./rcon -c solidrust.net/rcon.yaml "server.writecfg"
+./rcon -c solidrust.net/rcon.yaml "quit"
+
 # refresh OS packages
 echo "===> Buffing-up Debian Distribution..."
 sudo apt update
