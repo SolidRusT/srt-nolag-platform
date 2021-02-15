@@ -103,3 +103,4 @@ for data in ${PLAYER_JSON[@]}; do
 done
 
 ${GAME_ROOT}/rcon -c ${RCON_CFG} "o.reload PermissionGroupSync"
+

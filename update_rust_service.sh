@@ -46,3 +46,5 @@ wget http://playrust.io/latest -O \
 
 # Update custom maps
 aws s3 sync s3://solidrust.net/maps ${GAME_DIR}/server/solidrust
+
+

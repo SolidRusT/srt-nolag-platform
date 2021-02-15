@@ -11,3 +11,4 @@ git config --global user.email "smoke@solidrust.net"
 git config --global user.name "SmokeQc"
 
 git clone git@github.com:suparious/solidrust.net.git
+

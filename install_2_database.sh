@@ -102,3 +102,5 @@ exit
 # Tweak the config a bit, then restart
 sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
 sudo systemctl restart mariadb
+
+

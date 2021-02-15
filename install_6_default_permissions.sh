@@ -81,3 +81,4 @@ for perm in ${DEFAULT_PERMS[@]}; do
 done
 
 ./rcon -c rcon.yaml "o.reload PermissionGroupSync"
+
