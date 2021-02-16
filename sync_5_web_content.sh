@@ -1,7 +1,10 @@
 #!/bin/bash
+## Install on:
+# - Admin Console
+#
 ## crontab example:
-#        M H    D ? Y
-#echo "*/3 *    * * *   ${USER}  ${HOME}/solidrust.net/permissions_sync.sh" | sudo tee -a /etc/crontab
+#      M H    D ? Y
+#echo "5 *    * * *   ${USER}  ${HOME}/solidrust.net/sync_5_web_content.sh" | sudo tee -a /etc/crontab
 
 ## Configuration
 # root of where the game server is installed

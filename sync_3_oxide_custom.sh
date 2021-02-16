@@ -1,7 +1,10 @@
 #!/bin/bash
+## Install on:
+# - Game Server
+#
 ## crontab example:
-#        M H    D ? Y
-#echo "*/3 *    * * *   ${USER}  ${HOME}/solidrust.net/permissions_sync.sh" | sudo tee -a /etc/crontab
+#      M H    D ? Y
+#echo "5 *    * * *   ${USER}  ${HOME}/solidrust.net/sync_3_oxide_custom.sh" | sudo tee -a /etc/crontab
 
 ## Configuration
 # root of where the game server is installed
@@ -16,6 +19,9 @@ export SERVER_GLOBAL="${GITHUB_ROOT}/defaults"
 export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
 # local RCON CLI config
 export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
+
+# pull repo updates from s3
+aws s3 sync --quiet --delete s3://solidrust.net-backups/repo ${GITHUB_ROOT}
 
 OXIDE=(
     oxide/data

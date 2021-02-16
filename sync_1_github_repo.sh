@@ -1,4 +1,7 @@
 #!/bin/bash
+## Install on:
+# - Admin Console
+#
 ## crontab example:
 #      M H    D ? Y
 #echo "1 *    * * *   ${USER}  ${HOME}/solidrust.net/sync_1_github_repo.sh" | sudo tee -a /etc/crontab
