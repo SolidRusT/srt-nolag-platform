@@ -1,3 +1,3 @@
-3 *    * * *   admin  /home/admin/solidrust.net/defaults/database/3_sync_repo_pull.sh
-15 *    * * *   admin  /home/admin/solidrust.net/defaults/database/15_backup_database.sh
+ 3 *    * * *   admin  /bin/bash /home/admin/solidrust.net/defaults/database/3_sync_repo_pull.sh
+15 *    * * *   admin  /bin/bash /home/admin/solidrust.net/defaults/database/15_backup_database.sh
 50 *    * * *   admin  /usr/sbin/logrotate /home/admin/solidrust.net/defaults/database/logrotate.conf --state /home/admin/logrotate-state

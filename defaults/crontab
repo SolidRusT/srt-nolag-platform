@@ -1,6 +1,6 @@
-2 *    * * *   root  /root/solidrust.net/defaults/2_sync_repo_pull.sh
-3 *    * * *   root  /root/solidrust.net/defaults/3_sync_oxide_global.sh
-4 *    * * *   root  /root/solidrust.net/defaults/4_sync_server_config.sh
-5 *    * * *   root  /root/solidrust.net/defaults/5_sync_oxide_custom.sh
-9 *    * * *   root  /root/solidrust.net/defaults/9_backup_oxide.sh
+2 *    * * *   root  /bin/bash /root/solidrust.net/defaults/2_sync_repo_pull.sh
+3 *    * * *   root  /bin/bash /root/solidrust.net/defaults/3_sync_oxide_global.sh
+4 *    * * *   root  /bin/bash /root/solidrust.net/defaults/4_sync_server_config.sh
+5 *    * * *   root  /bin/bash /root/solidrust.net/defaults/5_sync_oxide_custom.sh
+9 *    * * *   root  /bin/bash /root/solidrust.net/defaults/9_backup_oxide.sh
 50 *    * * *   root  /usr/sbin/logrotate /root/solidrust.net/defaults/logrotate.conf --state /root/logrotate-state
