@@ -7,10 +7,10 @@
 #echo "3 *    * * *   ${USER}  ${HOME}/solidrust.net/defaults/console/3_push_web_content.sh" | sudo tee -a /etc/crontab
 
 # Pull global env vars
-source ${HOME}/solidrust.net/defaults/env_vars.sh
+source ${HOME}/solidrust.net/defaults/env_vars.sh | tee -a ${LOGS}
 
 # publish web contents
-aws s3 sync --delete --acl public-read ${GITHUB_ROOT}/web ${S3_WEB} --exclude maps*
+aws s3 sync --delete --acl public-read ${GITHUB_ROOT}/web ${S3_WEB} --exclude maps* | tee -a ${LOGS}
 
 # publish custom maps
-aws s3 sync --delete --acl public-read ${S3_BACKUPS}/maps ${S3_WEB}/maps
+aws s3 sync --delete --acl public-read ${S3_BACKUPS}/maps ${S3_WEB}/maps | tee -a ${LOGS}
