@@ -6,19 +6,8 @@
 #      M H    D ? Y
 #echo "5 *    * * *   ${USER}  ${HOME}/solidrust.net/sync_5_web_content.sh" | sudo tee -a /etc/crontab
 
-## Configuration
-# root of where the game server is installed
-export GAME_ROOT="/game"
-# Amazon s3 destination for backups
-export S3_BUCKET="s3://solidrust.net-backups/defaults"
-# Github source for configs
-export GITHUB_ROOT="${HOME}/solidrust.net"
-# Default configs
-export SERVER_GLOBAL="${GITHUB_ROOT}/defaults"
-# Customized config
-export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
-# local RCON CLI config
-export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
+# Pull global env vars
+source ${HOME}/solidrust.net/defaults/env_vars.sh
 
 aws s3 sync --delete --acl public-read ${GITHUB_ROOT}/web/ s3://solidrust.net --exclude maps*
 
