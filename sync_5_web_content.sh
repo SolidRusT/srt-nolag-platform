@@ -9,6 +9,8 @@
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 
-aws s3 sync --delete --acl public-read ${GITHUB_ROOT}/web/ s3://solidrust.net --exclude maps*
+# publish web contents
+aws s3 sync --delete --acl public-read ${GITHUB_ROOT}/web ${S3_WEB} --exclude maps*
 
-#aws s3 cp --acl public-read ${GAME_ROOT}/server/solidrust/Stellarium4.map s3://solidrust.net/maps/Stellarium4.map
+# publish custom maps
+aws s3 sync --delete --acl public-read ${S3_BACKUPS}/maps ${S3_WEB}/maps

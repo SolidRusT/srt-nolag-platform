@@ -3,6 +3,8 @@
 export GAME_ROOT="/game"
 # Amazon s3 destination for backups
 export S3_BACKUPS="s3://solidrust.net-backups"
+# Amazon s3 destination for backups
+export S3_WEB="s3://solidrust.net"
 # Github source for configs
 export GITHUB_ROOT="${HOME}/solidrust.net"
 # Default configs

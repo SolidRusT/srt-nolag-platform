@@ -9,14 +9,14 @@
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 
-OXIDE=(
-    oxide/data
-    oxide/config
-    oxide/data
+CONTENTS=(
+    oxide
+    server
+    backup
 )
 
-for folder in ${OXIDE[@]}; do
-    echo "sync ${GAME_ROOT}/$folder/ to ${S3_BACKUPS}/${HOSTNAME}/$folder"
-    aws s3 sync --quiet --delete ${GAME_ROOT}/$folder ${S3_BACKUPS}/${HOSTNAME}/$folder
+for folder in ${CONTENTS[@]}; do
+    echo "sync ${GAME_ROOT}/$folder to ${S3_BACKUPS}/servers/${HOSTNAME}/$folder"
+    aws s3 sync --quiet --delete ${GAME_ROOT}/$folder ${S3_BACKUPS}/servers/${HOSTNAME}/$folder
     sleep 1
 done

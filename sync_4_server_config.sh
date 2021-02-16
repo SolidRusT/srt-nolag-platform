@@ -15,4 +15,4 @@ rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/server.cfg ${GAME_ROOT}/server/so
 rsync -a ${SERVER_GLOBAL}/cfg/server.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg
 
 # Update custom maps
-aws s3 sync s3://solidrust.net/maps ${GAME_DIR}/server/solidrust
+aws s3 sync ${S3_WEB}/maps ${GAME_ROOT}/server/solidrust
