@@ -14,5 +14,15 @@ rm -rf ${GITHUB_ROOT}
 cd ${HOME} && \
 git clone git@github.com:suparious/solidrust.net.git | tee -a ${LOGS}
 
-# Push repo updates to s3
-aws s3 sync --quiet --delete ${GITHUB_ROOT} ${S3_BACKUPS}/repo  | tee -a ${LOGS}
+plugins=$(ls -1 "${SERVER_GLOBAL}/oxide/plugins")
+
+for plugin in ${plugins[@]}; do
+    echo "updating $plugin" | tee -a ${LOGS}
+    echo wget -N "https://umod.org/plugins/$plugin" -O  "${SERVER_GLOBAL}/oxide/plugins/$plugin" | tee -a ${LOGS}
+    sleep 3
+done
+
+# commit any updates
+git add . && \
+git commit -m "auto plugin update" && \
+git push  | tee -a ${LOGS}
