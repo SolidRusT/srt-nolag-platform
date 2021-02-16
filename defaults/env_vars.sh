@@ -11,3 +11,9 @@ export SERVER_GLOBAL="${GITHUB_ROOT}/defaults"
 export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
 # local RCON CLI config
 export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
+# logging format
+export LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
+# log file location
+export LOG_FILE="SolidRusT-${LOG_DATE}.log"
+# construct full log output endpoint
+export LOGS="${GAME_ROOT}/${LOG_FILE}"

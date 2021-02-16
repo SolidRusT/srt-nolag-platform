@@ -1,11 +1,17 @@
 #!/bin/bash
-GAME_DIR="/game/${USER}"
-cd ${GAME_DIR}
-LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
-LOG_FILE="RustDedicated-${LOG_DATE}.log"
+## Start SolidRusT
+
+# Pull global env vars
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+
+# construct server logging endpoint
+export SERVER_LOGS="${GAME_ROOT}/RustDedicated-${LOG_DATE}.log"
+
+# enter game root
+cd ${GAME_ROOT}
 
 # Launch game server
-echo "===> Touching my peepee..."
+echo "===> Touching my peepee..." | tee -a ${LOGS}
 sudo ./RustDedicated -batchmode -nographics -silent-crashes \
     -server.ip 0.0.0.0 \
     -rcon.ip 0.0.0.0 \
@@ -15,8 +21,10 @@ sudo ./RustDedicated -batchmode -nographics -silent-crashes \
     -rcon.web 1 \
     -rcon.password "NOFAGS" \
     -server.identity "solidrust" \
-    -logfile 2>&1 ${LOG_FILE}
+    -logfile 2>&1 ${SERVER_LOGS}
 
-echo "I'm done! (finished): ${LOG_FILE}"
+# Stamp log with quit time
+echo "I'm done! (finished): ${SERVER_LOGS}" | tee -a ${LOGS}
 
+# exit cleanly
 exit 0
