@@ -9,9 +9,6 @@
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 
-# pull repo updates from s3
-aws s3 sync --quiet --delete s3://solidrust.net-backups/repo ${GITHUB_ROOT}
-
 OXIDE=(
     oxide/data
     oxide/config
