@@ -1,4 +1,6 @@
 #!/bin/bash
+## Global default environments
+
 # root of where the game server is installed
 export GAME_ROOT="/game"
 # Amazon s3 destination for backups
