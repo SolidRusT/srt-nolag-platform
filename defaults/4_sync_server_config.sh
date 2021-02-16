@@ -7,7 +7,7 @@
 #echo "4 *    * * *   ${USER}  ${HOME}/solidrust.net/defaults/4_sync_server_config.sh" | sudo tee -a /etc/crontab
 
 # Pull global env vars
-source ${HOME}/solidrust.net/defaults/env_vars.sh | tee -a ${LOGS}
+source ${HOME}/solidrust.net/defaults/env_vars.sh
 
 # Update Rust server config
 mkdir -p ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}

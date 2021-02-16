@@ -7,7 +7,7 @@
 #echo "3 *    * * *   ${USER}  ${HOME}/solidrust.net/defaults/3_sync_oxide_global.sh" | sudo tee -a /etc/crontab
 
 # Pull global env vars
-source ${HOME}/solidrust.net/defaults/env_vars.sh | tee -a ${LOGS}
+source ${HOME}/solidrust.net/defaults/env_vars.sh
 
 OXIDE=(
     oxide/data

@@ -7,7 +7,7 @@
 #echo "1 *    * * *   ${USER}  ${HOME}/solidrust.net/defaults/console/1_github_repo_pull.sh" | sudo tee -a /etc/crontab
 
 # Pull global env vars
-source ${HOME}/solidrust.net/defaults/env_vars.sh | tee -a ${LOGS}
+source ${HOME}/solidrust.net/defaults/env_vars.sh
 
 # Delete and refresh SolidRusT repo
 rm -rf ${GITHUB_ROOT}

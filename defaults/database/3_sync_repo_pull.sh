@@ -7,7 +7,7 @@
 #echo "3 *    * * *   ${USER}  ${HOME}/solidrust.net/defaults/database/3_sync_repo_pull.sh" | sudo tee -a /etc/crontab
 
 # Pull global env vars
-source ${HOME}/solidrust.net/defaults/env_vars.sh | tee -a ${LOGS}
+source ${HOME}/solidrust.net/defaults/env_vars.sh
 
 # pull repo updates from s3
 mkdir -p ${GITHUB_ROOT}

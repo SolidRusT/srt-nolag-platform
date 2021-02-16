@@ -3,7 +3,7 @@
 # - Game Server
 #
 # Pull global env vars
-source ${HOME}/solidrust.net/defaults/env_vars.sh | tee -a ${LOGS}
+source ${HOME}/solidrust.net/defaults/env_vars.sh
 
 # Game Node: if game service is still running
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.save"

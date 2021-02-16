@@ -21,3 +21,5 @@ export LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 export LOG_FILE="SolidRusT-${LOG_DATE}.log"
 # construct full log output endpoint
 export LOGS="${GAME_ROOT}/${LOG_FILE}"
+# instantiate the log file
+touch ${LOGS}

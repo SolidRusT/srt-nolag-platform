@@ -2,7 +2,7 @@
 ## Start SolidRusT
 
 # Pull global env vars
-source ${HOME}/solidrust.net/defaults/env_vars.sh  | tee -a ${LOGS}
+source ${HOME}/solidrust.net/defaults/env_vars.sh
 
 # construct server logging endpoint
 export SERVER_LOGS="${GAME_ROOT}/RustDedicated-${LOG_DATE}.log"
