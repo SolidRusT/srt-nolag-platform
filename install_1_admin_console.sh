@@ -13,3 +13,4 @@ git config --global user.name "SmokeQc"
 
 git clone git@github.com:suparious/solidrust.net.git
 
+echo "50 *    * * *   ${USER}  /usr/sbin/logrotate ${HOME}/solidrust.net/defaults/console/logrotate.conf --state ${HOME}/logrotate-state" | sudo tee -a /etc/crontab

@@ -46,3 +46,5 @@ sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
 sudo systemctl restart mariadb
 
 
+
+echo "50 *    * * *   ${USER}  /usr/sbin/logrotate ${HOME}/solidrust.net/defaults/database/logrotate.conf --state ${HOME}/logrotate-state" | sudo tee -a /etc/crontab
