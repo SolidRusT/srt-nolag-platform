@@ -5,7 +5,8 @@ tar xzvf rcon-0.9.0-amd64_linux.tar.gz
 mv rcon-0.9.0-amd64_linux/rcon* .
 rm -rf rcon-0.9.0-amd64_linux* rcon.yaml
 ssh-keygen -b 4096 && \
-cat ${HOME}/.ssh/id_rsa.pub
+PUB_KEY=$(cat ${HOME}/.ssh/id_rsa.pub)
+echo ${PUB_KEY}
 
 git config --global user.email "smoke@solidrust.net"
 git config --global user.name "SmokeQc"
