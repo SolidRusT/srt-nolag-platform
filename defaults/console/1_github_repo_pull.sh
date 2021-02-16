@@ -19,7 +19,7 @@ cd ${GITHUB_ROOT} | tee -a ${LOGS}
 plugins=$(ls -1 "${GITHUB_ROOT}/oxide/plugins")
 
 for plugin in ${plugins[@]}; do
-    echo wget -N "https://umod.org/plugins/$plugin" -O  "${GITHUB_ROOT}/oxide/plugins/$plugin" | tee -a ${LOGS}
+    echo wget -N "https://umod.org/plugins/$plugin" -O  "${SERVER_GLOBAL}/oxide/plugins/$plugin" | tee -a ${LOGS}
     sleep 3
 done
 
