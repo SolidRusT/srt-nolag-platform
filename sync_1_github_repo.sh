@@ -1,7 +1,7 @@
 #!/bin/bash
 ## crontab example:
-#        M H    D ? Y
-#echo "*/3 *    * * *   ${USER}  ${HOME}/solidrust.net/permissions_sync.sh" | sudo tee -a /etc/crontab
+#      M H    D ? Y
+#echo "1 *    * * *   ${USER}  ${HOME}/solidrust.net/sync_1_github_repo.sh" | sudo tee -a /etc/crontab
 
 ## Configuration
 # root of where the game server is installed
@@ -21,3 +21,6 @@ export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
 cd ${HOME}
 rm -rf solidrust.net
 git clone git@github.com:suparious/solidrust.net.git
+
+# push repo updates to s3
+aws s3 sync --quiet --delete ${GITHUB_ROOT} s3://solidrust.net-backups/repo

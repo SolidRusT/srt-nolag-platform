@@ -17,6 +17,9 @@ export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
 # local RCON CLI config
 export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
 
+# pull repo updates from s3
+aws s3 sync --quiet --delete s3://solidrust.net-backups/repo ${GITHUB_ROOT}
+
 OXIDE=(
     oxide/data
     oxide/config
