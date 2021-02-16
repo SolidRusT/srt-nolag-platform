@@ -3,6 +3,8 @@
 
 # root of where the game server is installed
 export GAME_ROOT="/game"
+# automation lock
+export SOLID_LCK="$HOME/SolidRusT.lock"
 # Amazon s3 destination for backups
 export S3_BACKUPS="s3://solidrust.net-backups"
 # Amazon s3 destination for backups

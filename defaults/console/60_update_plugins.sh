@@ -9,6 +9,9 @@
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 
+# lock the repo from being updated while we complete this job
+touch ${SOLID_LCK}
+
 # Delete and refresh SolidRusT repo
 rm -rf ${GITHUB_ROOT}
 cd ${HOME} && \
@@ -26,3 +29,6 @@ done
 git add . && \
 git commit -m "auto plugin update" && \
 git push  | tee -a ${LOGS}
+
+# unlock the repo
+rm ${SOLID_LCK}
