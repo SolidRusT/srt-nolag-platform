@@ -20,6 +20,6 @@ export LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 # log file location
 export LOG_FILE="SolidRusT-${LOG_DATE}.log"
 # construct full log output endpoint
-export LOGS="${GAME_ROOT}/${LOG_FILE}"
+export LOGS="${HOME}/${LOG_FILE}"
 # instantiate the log file
 touch ${LOGS}
