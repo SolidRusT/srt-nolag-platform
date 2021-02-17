@@ -5,7 +5,7 @@
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 
 # construct server logging endpoint
-export SERVER_LOGS="${GAME_ROOT}/RustDedicated-${LOG_DATE}.log"
+export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
 
 # enter game root
 cd ${GAME_ROOT}
