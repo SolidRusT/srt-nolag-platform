@@ -20,7 +20,7 @@ export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
 # logging format
 export LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 # log file location
-export LOG_FILE="SolidRusT-${LOG_DATE}.log"
+export LOG_FILE="SolidRusT.log"
 # construct full log output endpoint
 export LOGS="${HOME}/${LOG_FILE}"
 # instantiate the log file
