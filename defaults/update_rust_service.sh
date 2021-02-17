@@ -8,6 +8,16 @@ source ${HOME}/solidrust.net/defaults/env_vars.sh
 me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
+if [ -f "${GAME_ROOT}/rcon" ]; then
+    echo "rcon binary found" # no need to log this
+else
+    echo "No rcon found here, downloading it..." | tee -a ${LOGS}
+    wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.0/rcon-0.9.0-amd64_linux.tar.gz
+    tar xzvf rcon-0.9.0-amd64_linux.tar.gz
+    mv rcon-0.9.0-amd64_linux/rcon ${GAME_ROOT}/rcon
+    rm -rf rcon-0.9.0-amd64_linux*
+fi
+
 # Game Node: if game service is still running
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.save"
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.writecfg"
