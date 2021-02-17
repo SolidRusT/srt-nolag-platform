@@ -69,7 +69,8 @@ heal.self \
 heal.player \
 blueprintshare.toggle \
 blueprintshare.share \
-recyclerspeed.use
+recyclerspeed.use \
+autopickup.use
 )
 
 ./rcon -c rcon.yaml "o.load *"
