@@ -8,5 +8,7 @@
 
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=`basename "$0"`
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
 echo "Do some database shit here." | tee -a ${LOGS}

@@ -8,6 +8,8 @@
 
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=`basename "$0"`
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
 if [ -f "${SOLID_LCK}" ]; then
     echo "Repo is locked, aborting..." | tee -a ${LOGS}

@@ -8,6 +8,8 @@
 
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=`basename "$0"`
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
 # pull repo updates from s3
 mkdir -p ${GITHUB_ROOT}
