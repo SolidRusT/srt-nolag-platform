@@ -23,8 +23,5 @@ terraform.tfstate.backup
 *.tar
 *.zip
 oxide/logs/*
-
-
-rcon-default.log
-
+*.log
 .vscode
