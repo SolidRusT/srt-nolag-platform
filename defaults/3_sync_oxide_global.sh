@@ -25,4 +25,14 @@ done
 mkdir -p "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
 rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
 
+if [ -f "${GAME_ROOT}/rcon" ]; then
+    echo "rcon binary found" # no need to log this
+else
+    echo "No rcon found here, downloading it..." | tee -a ${LOGS}
+    wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.0/rcon-0.9.0-amd64_linux.tar.gz
+    tar xzvf rcon-0.9.0-amd64_linux.tar.gz
+    mv rcon-0.9.0-amd64_linux/rcon ${GAME_ROOT}/rcon
+    rm -rf rcon-0.9.0-amd64_linux*
+fi
+
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *"

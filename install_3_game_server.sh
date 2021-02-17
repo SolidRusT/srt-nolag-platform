@@ -84,7 +84,7 @@ sudo npm install gamedig -g
 # Install xfs for the ephemeral disk
 sudo apt -y install xfsprogs
 
-echo "50 *    * * *   ${USER}  /usr/sbin/logrotate ${HOME}/solidrust.net/defaults/logrotate.conf --state ${HOME}/logrotate-state" | sudo tee -a /etc/crontab
+echo "0 *    * * *   ${USER}  /usr/sbin/logrotate -f ${HOME}/solidrust.net/defaults/logrotate.conf --state ${HOME}/logrotate-state" | sudo tee -a /etc/crontab
 
 
 # Reboot to load the kernel storage module for XFS
