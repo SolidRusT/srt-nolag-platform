@@ -25,3 +25,10 @@ export LOG_FILE="SolidRusT.log"
 export LOGS="${HOME}/${LOG_FILE}"
 # instantiate the log file
 touch ${LOGS}
+# Build root
+export BUILD_ROOT="${HOME}/build-solidrust"
+rm -rf ${BUILD_ROOT}
+mkdir -p ${BUILD_ROOT}
+
+# end of env_vars
+echo "++++++= Initialized SolidRust =++++++" | tee -a ${LOGS}

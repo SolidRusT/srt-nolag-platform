@@ -17,14 +17,24 @@ OXIDE=(
 )
 
 for folder in ${OXIDE[@]}; do
+    # Sync global Oxide defaults
     echo "sync ${SERVER_GLOBAL}/$folder/ to ${GAME_ROOT}/$folder" | tee -a ${LOGS}
     mkdir -p "${GAME_ROOT}/$folder" | tee -a ${LOGS}
     rsync -r "${SERVER_GLOBAL}/$folder/" "${GAME_ROOT}/$folder" | tee -a ${LOGS}
+    # Sync custom Oxide overrides
+    echo "sync ${SERVER_CUSTOM}/$folder/ to ${GAME_ROOT}/$folder" | tee -a ${LOGS}
+    mkdir -p "${GAME_ROOT}/$folder" | tee -a ${LOGS}
+    rsync -r "${SERVER_CUSTOM}/$folder/" "${GAME_ROOT}/$folder" | tee -a ${LOGS}
 done
 
-mkdir -p "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
-rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
+# Plugin merge + sync
+mkdir -p "${BUILD_ROOT}/oxide/plugins"
 
+rsync -ra "${SERVER_GLOBAL}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rsync -ra "${SERVER_CUSTOM}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rsync -ra --delete "${BUILD_ROOT}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
+
+# Check for RCON
 if [ -f "${GAME_ROOT}/rcon" ]; then
     echo "rcon binary found" # no need to log this
 else
