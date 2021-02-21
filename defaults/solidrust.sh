@@ -3,6 +3,7 @@
 
 # Example launch:
 # screen -dmS game /bin/bash "${HOME}/solidrust.net/defaults/solidrust.sh"
+# tail -n 20 -F "${HOME}/SolidRusT.log" "${GAME_ROOT}/RustDedicated.log"
 
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
