@@ -12,3 +12,5 @@ me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
 /usr/sbin/logrotate -f ${SERVER_GLOBAL}/logrotate.conf --state ${HOME}/logrotate-state | tee -a ${LOGS}
+
+echo "Finished ${me}"   | tee -a ${LOGS}

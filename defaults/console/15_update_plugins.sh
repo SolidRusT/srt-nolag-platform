@@ -40,3 +40,5 @@ git push  | tee -a ${LOGS}
 # unlock the repo
 echo "=====> unlocking repo <=====" | tee -a ${LOGS}
 rm ${SOLID_LCK}
+
+echo "Finished ${me}"   | tee -a ${LOGS}

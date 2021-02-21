@@ -17,3 +17,5 @@ aws s3 sync --delete --acl public-read ${GITHUB_ROOT}/web ${S3_WEB} --exclude ma
 
 # publish custom maps
 aws s3 sync --delete --acl public-read ${S3_BACKUPS}/maps ${S3_WEB}/maps | tee -a ${LOGS}
+
+echo "Finished ${me}"   | tee -a ${LOGS}

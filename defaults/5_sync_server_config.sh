@@ -19,3 +19,5 @@ rsync -a ${SERVER_GLOBAL}/cfg/bans.cfg ${GAME_ROOT}/server/solidrust/cfg/bans.cf
 
 # Update custom maps
 aws s3 sync ${S3_WEB}/maps ${GAME_ROOT}/server/solidrust | tee -a ${LOGS}
+
+echo "Finished ${me}"   | tee -a ${LOGS}

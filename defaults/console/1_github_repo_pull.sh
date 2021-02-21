@@ -24,3 +24,5 @@ else
     echo "Pushing repo to s3" | tee -a ${LOGS}
     aws s3 sync --quiet --delete ${GITHUB_ROOT} ${S3_BACKUPS}/repo  | tee -a ${LOGS}
 fi
+
+echo "Finished ${me}"   | tee -a ${LOGS}

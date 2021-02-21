@@ -18,3 +18,5 @@ for server in ${SERVERS[@]}; do
     scp $server.solidrust.net:~/*.log* $HOME/logs/$server/
     scp $server.solidrust.net:/game/*.log* $HOME/logs/$server/
 done
+
+echo "Finished ${me}"   | tee -a ${LOGS}

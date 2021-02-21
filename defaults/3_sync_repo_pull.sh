@@ -14,3 +14,5 @@ echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 # pull repo updates from s3
 mkdir -p ${GITHUB_ROOT}
 aws s3 sync --quiet --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT} | tee -a ${LOGS}
+
+echo "Finished ${me}"   | tee -a ${LOGS}

@@ -46,3 +46,5 @@ else
 fi
 
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *"
+
+echo "Finished ${me}"   | tee -a ${LOGS}

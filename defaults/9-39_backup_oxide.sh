@@ -40,3 +40,5 @@ for folder in ${CONTENTS[@]}; do
     aws s3 sync --quiet --delete ${GAME_ROOT}/$folder ${S3_BACKUPS}/servers/${HOSTNAME}/$folder | tee -a ${LOGS}
     sleep 1
 done
+
+echo "Finished ${me}"   | tee -a ${LOGS}
