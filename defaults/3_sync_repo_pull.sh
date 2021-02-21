@@ -4,7 +4,7 @@
 #
 ## crontab example:
 #      M H    D ? Y
-#echo "2 *    * * *   ${USER}  ${HOME}/solidrust.net/defaults/2_sync_repo_pull.sh" | sudo tee -a /etc/crontab
+#echo "3 *    * * *   ${USER}  /bin/sh -c ${HOME}/solidrust.net/defaults/3_sync_repo_pull.sh" | sudo tee -a /etc/crontab
 
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
