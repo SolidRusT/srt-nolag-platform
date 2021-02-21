@@ -166,18 +166,6 @@
           "mods": []
         },
         {
-          "itemid": -2069578888,
-          "container": "belt",
-          "amount": 1,
-          "skinid": 0,
-          "weapon": true,
-          "blueprintTarget": 0,
-          "mods": [
-            -1850571427,
-            -132516482
-          ]
-        },
-        {
           "itemid": -41440462,
           "container": "belt",
           "amount": 1,
@@ -197,6 +185,18 @@
           "weapon": false,
           "blueprintTarget": 0,
           "mods": []
+        },
+        {
+          "itemid": -2069578888,
+          "container": "belt",
+          "amount": 1,
+          "skinid": 1831294069,
+          "weapon": true,
+          "blueprintTarget": 0,
+          "mods": [
+            -1850571427,
+            -132516482
+          ]
         }
       ]
     },
