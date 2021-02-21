@@ -979,7 +979,7 @@
     "40mm Shotgun Round": {
       "DisplayName": "40mm Shotgun Round",
       "Shortname": "ammo.grenadelauncher.buckshot",
-      "EnableBuy": false,
+      "EnableBuy": true,
       "EnableSell": true,
       "Image": "https://rustlabs.com/img/items180/ammo.grenadelauncher.buckshot.png",
       "SellPrice": 10.0,
