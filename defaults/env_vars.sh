@@ -16,7 +16,7 @@ export SERVER_GLOBAL="${GITHUB_ROOT}/defaults"
 # Customized config
 export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
 # local RCON CLI config
-export RCON_CFG="${GITHUB_ROOT}/servers/rcon.yaml"
+export RCON_CFG="${GITHUB_ROOT}/defaults/rcon.yaml"
 # logging format
 export LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
 # log file location
