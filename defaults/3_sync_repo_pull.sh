@@ -11,8 +11,19 @@ source ${HOME}/solidrust.net/defaults/env_vars.sh
 me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
-# pull repo updates from s3
-mkdir -p ${GITHUB_ROOT}
-aws s3 sync --quiet --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT} | tee -a ${LOGS}
+
+echo "nothing todo"   | tee -a ${LOGS}
+
+## MOVED TO:
+#source ${HOME}/solidrust.net/defaults/env_vars.sh
+#echo "3 *    * * *   ${USER} \
+#    rm -rf ${GITHUB_ROOT} | tee -a ${LOGS}; \
+#    mkdir -p ${GITHUB_ROOT}; | tee -a ${LOGS}; \
+#    aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT} | tee -a ${LOGS}; \
+#    chmod +x ${SERVER_GLOBAL}/*.sh | tee -a ${LOGS}" \
+#    | sudo tee -a /etc/crontab
+
+
+
 
 echo "Finished ${me}"   | tee -a ${LOGS}
