@@ -1,6 +1,9 @@
 #!/bin/bash
 ## Start SolidRusT
 
+# Example launch:
+# screen -dmS game /bin/bash "${HOME}/solidrust.net/defaults/solidrust.sh"
+
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 me=$(basename -- "$0")

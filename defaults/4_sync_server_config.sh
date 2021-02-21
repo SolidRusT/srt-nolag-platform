@@ -14,7 +14,8 @@ echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 # Update Rust server config
 mkdir -p ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}
 rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/server.cfg ${GAME_ROOT}/server/solidrust/cfg/server.cfg | tee -a ${LOGS}
-rsync -a ${SERVER_GLOBAL}/cfg/server.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg | tee -a ${LOGS}
+rsync -a ${SERVER_GLOBAL}/cfg/users.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg | tee -a ${LOGS}
+rsync -a ${SERVER_GLOBAL}/cfg/bans.cfg ${GAME_ROOT}/server/solidrust/cfg/bans.cfg | tee -a ${LOGS}
 
 # Update custom maps
 aws s3 sync ${S3_WEB}/maps ${GAME_ROOT}/server/solidrust | tee -a ${LOGS}
