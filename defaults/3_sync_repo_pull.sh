@@ -17,13 +17,10 @@ echo "nothing todo"   | tee -a ${LOGS}
 ## MOVED TO:
 #source ${HOME}/solidrust.net/defaults/env_vars.sh
 #echo "3 *    * * *   ${USER} \
-#    rm -rf ${GITHUB_ROOT} | tee -a ${LOGS}; \
-#    mkdir -p ${GITHUB_ROOT}; | tee -a ${LOGS}; \
-#    aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT} | tee -a ${LOGS}; \
-#    chmod +x ${SERVER_GLOBAL}/*.sh | tee -a ${LOGS}" \
+#    rm -rf ${GITHUB_ROOT}; \
+#    mkdir -p ${GITHUB_ROOT}; \
+#    aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT}; \
+#    chmod +x ${SERVER_GLOBAL}/*.sh" \
 #    | sudo tee -a /etc/crontab
-
-
-
 
 echo "Finished ${me}"   | tee -a ${LOGS}
