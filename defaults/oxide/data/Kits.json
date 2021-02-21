@@ -768,6 +768,15 @@
       "building": null,
       "items": [
         {
+          "itemid": 20489901,
+          "container": "wear",
+          "amount": 1,
+          "skinid": 0,
+          "weapon": false,
+          "blueprintTarget": 0,
+          "mods": []
+        },
+        {
           "itemid": -1101924344,
           "container": "wear",
           "amount": 1,
@@ -777,7 +786,7 @@
           "mods": []
         },
         {
-          "itemid": -1478212975,
+          "itemid": -1108136649,
           "container": "wear",
           "amount": 1,
           "skinid": 0,
@@ -786,7 +795,16 @@
           "mods": []
         },
         {
-          "itemid": -702051347,
+          "itemid": 1850456855,
+          "container": "wear",
+          "amount": 1,
+          "skinid": 2350090284,
+          "weapon": false,
+          "blueprintTarget": 0,
+          "mods": []
+        },
+        {
+          "itemid": -1569700847,
           "container": "wear",
           "amount": 1,
           "skinid": 0,
@@ -795,7 +813,7 @@
           "mods": []
         },
         {
-          "itemid": -1549739227,
+          "itemid": -1000573653,
           "container": "wear",
           "amount": 1,
           "skinid": 0,
@@ -804,7 +822,7 @@
           "mods": []
         },
         {
-          "itemid": 1366282552,
+          "itemid": -1163532624,
           "container": "wear",
           "amount": 1,
           "skinid": 0,
@@ -813,52 +831,25 @@
           "mods": []
         },
         {
-          "itemid": 980333378,
-          "container": "wear",
-          "amount": 1,
-          "skinid": 0,
-          "weapon": false,
-          "blueprintTarget": 0,
-          "mods": []
-        },
-        {
-          "itemid": 832133926,
-          "container": "wear",
-          "amount": 1,
-          "skinid": 0,
-          "weapon": false,
-          "blueprintTarget": 0,
-          "mods": []
-        },
-        {
-          "itemid": 215754713,
-          "container": "main",
-          "amount": 99,
-          "skinid": 0,
-          "weapon": false,
-          "blueprintTarget": 0,
-          "mods": []
-        },
-        {
-          "itemid": -2067472972,
+          "itemid": -1302129395,
           "container": "main",
           "amount": 1,
-          "skinid": 0,
+          "skinid": 904296143,
           "weapon": false,
           "blueprintTarget": 0,
           "mods": []
         },
         {
-          "itemid": -850982208,
+          "itemid": -1211166256,
           "container": "main",
-          "amount": 1,
+          "amount": 32,
           "skinid": 0,
           "weapon": false,
           "blueprintTarget": 0,
           "mods": []
         },
         {
-          "itemid": -1848736516,
+          "itemid": 785728077,
           "container": "main",
           "amount": 20,
           "skinid": 0,
@@ -867,9 +858,39 @@
           "mods": []
         },
         {
-          "itemid": 254522515,
-          "container": "main",
+          "itemid": 818877484,
+          "container": "belt",
           "amount": 1,
+          "skinid": 0,
+          "weapon": true,
+          "blueprintTarget": 0,
+          "mods": [
+            -1850571427,
+            952603248
+          ]
+        },
+        {
+          "itemid": 1079279582,
+          "container": "belt",
+          "amount": 2,
+          "skinid": 0,
+          "weapon": false,
+          "blueprintTarget": 0,
+          "mods": []
+        },
+        {
+          "itemid": -2072273936,
+          "container": "belt",
+          "amount": 2,
+          "skinid": 0,
+          "weapon": false,
+          "blueprintTarget": 0,
+          "mods": []
+        },
+        {
+          "itemid": -1848736516,
+          "container": "belt",
+          "amount": 20,
           "skinid": 0,
           "weapon": false,
           "blueprintTarget": 0,
@@ -877,66 +898,24 @@
         },
         {
           "itemid": -1252059217,
-          "container": "main",
+          "container": "belt",
           "amount": 1,
-          "skinid": 0,
+          "skinid": 892263562,
           "weapon": false,
           "blueprintTarget": 0,
           "mods": []
         },
         {
-          "itemid": -196667575,
+          "itemid": -904863145,
           "container": "belt",
           "amount": 1,
-          "skinid": 0,
-          "weapon": false,
-          "blueprintTarget": 0,
-          "mods": []
-        },
-        {
-          "itemid": 1602646136,
-          "container": "belt",
-          "amount": 1,
-          "skinid": 0,
-          "weapon": false,
-          "blueprintTarget": 0,
-          "mods": []
-        },
-        {
-          "itemid": 1443579727,
-          "container": "belt",
-          "amount": 1,
-          "skinid": 0,
+          "skinid": 1129722099,
           "weapon": true,
           "blueprintTarget": 0,
-          "mods": []
-        },
-        {
-          "itemid": -2072273936,
-          "container": "belt",
-          "amount": 3,
-          "skinid": 0,
-          "weapon": false,
-          "blueprintTarget": 0,
-          "mods": []
-        },
-        {
-          "itemid": 1079279582,
-          "container": "belt",
-          "amount": 5,
-          "skinid": 0,
-          "weapon": false,
-          "blueprintTarget": 0,
-          "mods": []
-        },
-        {
-          "itemid": -1302129395,
-          "container": "belt",
-          "amount": 1,
-          "skinid": 0,
-          "weapon": false,
-          "blueprintTarget": 0,
-          "mods": []
+          "mods": [
+            -132516482,
+            -1850571427
+          ]
         }
       ]
     },
