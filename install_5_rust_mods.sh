@@ -19,3 +19,11 @@ wget https://github.com/k1lly0u/Oxide.Ext.RustEdit/raw/master/Oxide.Ext.RustEdit
 
 mkdir -p oxide/plugins && cd oxide/plugins
 wget https://umod.org/plugins/PermissionGroupSync.cs
+
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+echo "3 *    * * *   ${USER} \
+    rm -rf ${GITHUB_ROOT}; \
+    mkdir -p ${GITHUB_ROOT}; \
+    aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT}; \
+    chmod +x ${SERVER_GLOBAL}/*.sh" \
+    | sudo tee -a /etc/crontab

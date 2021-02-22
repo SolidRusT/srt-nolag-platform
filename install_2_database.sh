@@ -48,3 +48,11 @@ sudo systemctl restart mariadb
 
 
 echo "50 *    * * *   ${USER}  /usr/sbin/logrotate ${HOME}/solidrust.net/defaults/database/logrotate.conf --state ${HOME}/logrotate-state" | sudo tee -a /etc/crontab
+
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+echo "3 *    * * *   ${USER} \
+    rm -rf ${GITHUB_ROOT}; \
+    mkdir -p ${GITHUB_ROOT}; \
+    aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT}; \
+    chmod +x ${SERVER_GLOBAL}/*.sh" \
+    | sudo tee -a /etc/crontab
