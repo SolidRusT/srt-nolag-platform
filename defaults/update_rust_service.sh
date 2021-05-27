@@ -12,10 +12,10 @@ if [ -f "${GAME_ROOT}/rcon" ]; then
     echo "rcon binary found" # no need to log this
 else
     echo "No rcon found here, downloading it..." | tee -a ${LOGS}
-    wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.0/rcon-0.9.0-amd64_linux.tar.gz
-    tar xzvf rcon-0.9.0-amd64_linux.tar.gz
-    mv rcon-0.9.0-amd64_linux/rcon ${GAME_ROOT}/rcon
-    rm -rf rcon-0.9.0-amd64_linux*
+    wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.1/rcon-0.9.1-amd64_linux.tar.gz
+    tar xzvf rcon-0.9.1-amd64_linux.tar.gz
+    mv rcon-0.9.1-amd64_linux/rcon ${GAME_ROOT}/rcon
+    rm -rf rcon-0.9.1-amd64_linux*
 fi
 
 # Game Node: if game service is still running
@@ -31,7 +31,7 @@ sudo apt -y dist-upgrade | tee -a ${LOGS}
 
 # Refresh Steam installation
 echo "===> Validating installed Steam components..." | tee -a ${LOGS}
-steamcmd +login anonymous +force_install_dir ${GAME_ROOT}/ +app_update 258550 validate +quit | tee -a ${LOGS}
+/usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT}/ +app_update 258550 validate +quit | tee -a ${LOGS}
 
 # Update uMod platform
 echo "===> Updating uMod..." | tee -a ${LOGS}
