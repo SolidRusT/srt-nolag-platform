@@ -13,21 +13,17 @@ echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
 # Check for RCON
 if [ -f "${GAME_ROOT}/rcon" ]; then
-    echo "rcon binary found" # no need to log this
+    echo "rcon binary found, saving world..." # no need to log this
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.writecfg"
+    sleep 1
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.save"
+    sleep 5
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.backup"
+    sleep 10
 else
-    echo "No rcon found here, downloading it..." | tee -a ${LOGS}
-    wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.0/rcon-0.9.0-amd64_linux.tar.gz
-    tar xzvf rcon-0.9.0-amd64_linux.tar.gz
-    mv rcon-0.9.0-amd64_linux/rcon ${GAME_ROOT}/rcon
-    rm -rf rcon-0.9.0-amd64_linux*
+    echo "No rcon found here..." | tee -a ${LOGS}
+    exit 1
 fi
-
-${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.writecfg"
-sleep 1
-${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.save"
-sleep 5
-${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.backup"
-sleep 10
 
 CONTENTS=(
     oxide
@@ -42,3 +38,4 @@ for folder in ${CONTENTS[@]}; do
 done
 
 echo "Finished ${me}"   | tee -a ${LOGS}
+exit 0
