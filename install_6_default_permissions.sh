@@ -1,3 +1,4 @@
+# for perm in ${DEFAULT_PERMS[@]}; do ./rcon -c ~/solidrust.net/defaults/rcon.yaml "o.grant group default $perm"; done
 DEFAULT_PERMS=(
 skins.use  \
 craftchassis.2  \
@@ -69,7 +70,29 @@ heal.player  \
 blueprintshare.toggle  \
 blueprintshare.share  \
 recyclerspeed.use  \
-discordrewards.use
+discordrewards.use \
+dance.use \
+securitycameras.use \
+simpletime.use \
+whoknocks.message \
+whoknocks.knock \
+eventrandomizer.check \
+cctvutilities.help \
+cctvutilities.status.me \
+cctvutilities.status.server \
+cctvutilities.clear \
+cctvutilities.rename \
+cctvutilities.add.me \
+cctvutilities.add.server \
+cctvutilities.add.clear \
+cctvutilities.autoname \
+cctvutilities.autoadd \
+cctvutilities.autoadd.on \
+cctvutilities.autoadd.off \
+cctvutilities.autoadd.toggle \
+cctvutilities.autoadd.me \
+cctvutilities.autoadd.server \
+chute.allowed
 )
 
 ./rcon -c rcon.yaml "o.load *"

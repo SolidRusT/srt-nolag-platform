@@ -48,6 +48,16 @@ echo "Update game service and integrations" | tee -a ${LOGS}
 
 echo "Start RustDedicated game service" | tee -a ${LOGS}
 /bin/sh -c ${HOME}/solidrust.net/defaults/solidrust.sh &
+sleep 300
+
+echo "Updating Map API data" | tee -a ${LOGS}
+${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_regenerate" | tee -a ${LOGS}
+sleep 10
+echo "Uploading Map to Imgur" | tee -a ${LOGS}
+${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_upload default 2000 1 1" | tee -a ${LOGS}
+sleep 10
+IMGUR_URL=$(tail -n 1000 ${GAME_ROOT}/RustDedicated.log | grep "imgur.com" | tail -n 1 | awk '{print $4}')
+echo "Successfully uploaded: ${IMGUR_URL}" | tee -a ${LOGS}
 
 echo "Finished ${me}"   | tee -a ${LOGS}
 exit 0

@@ -1,3 +1,10 @@
- 3 *    * * *   admin  /bin/bash /home/admin/solidrust.net/defaults/database/3_sync_repo_pull.sh
-15 *    * * *   admin  /bin/bash /home/admin/solidrust.net/defaults/database/15_backup_database.sh
- 0 *    * * *   admin  /usr/sbin/logrotate -f /home/admin/solidrust.net/defaults/database/logrotate.conf --state /home/admin/logrotate-state
+## SolidRusT server backups. Final step after going live.
+15 *    * * *   admin  /bin/sh -c /home/admin/solidrust.net/defaults/database/15_backup_database.sh
+
+## SolidRusT server specific. Enable only after server is configured, running and healthy
+#40 *    * * *   root  /bin/sh -c /root/solidrust.net/defaults/40_sync_oxide_mods.sh
+#44 *    * * *   root  /bin/sh -c /root/solidrust.net/defaults/44_sync_server_config.sh
+
+# SolidRusT defaults
+45 *    * * *   admin   /bin/sh -c /root/solidrust.net/defaults/database/45_logrotate.sh
+50 *    * * *   admin   rm -rf /home/admin/solidrust.net; mkdir -p /home/admin/solidrust.net; aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo/ /home/admin/solidrust.net/;     chmod +x /home/admin/solidrust.net/defaults/*.sh;     chmod +x /home/admin/solidrust.net/defaults/database/*.sh
