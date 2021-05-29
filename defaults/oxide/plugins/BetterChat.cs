@@ -21,7 +21,7 @@ using CompanionServer;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat", "LaserHydra", "5.2.5")]
+    [Info("Better Chat", "LaserHydra", "5.2.6")]
     [Description("Allows to manage chat groups, customize colors and add titles.")]
     internal class BetterChat : CovalencePlugin
     {
@@ -754,7 +754,7 @@ namespace Oxide.Plugins
 #if RUST
                 BasePlayer bPlayer = BasePlayer.Find(player.Id);
 
-                if (bPlayer?.IsDeveloper ?? false)
+                if (bPlayer.IsValid() && DeveloperList.Contains(bPlayer.userID))
                     groups.Add(_rustDeveloperGroup);
 #endif
 

@@ -1,0 +1,14 @@
+{
+  "Settings": {
+    "Can target murderers?": "true",
+    "Can target scientists?": "true",
+    "Helicopter speed to fly at": "30",
+    "How long in minutes can PatrolHelicopter patrol?": "15",
+    "Interval in seconds at which to scan for targets": "5",
+    "Max distance at which guns can shoot": "300",
+    "Max distance at which victims become targets": "100",
+    "Max health when helicopter is spawned": "10000.0",
+    "Notify Players when Helicopter is inbound?": "true",
+    "Number of rockets available": "12"
+  }
+}

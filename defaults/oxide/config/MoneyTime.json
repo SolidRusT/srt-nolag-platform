@@ -1,4 +1,7 @@
 {
+  "Enable Economics as default currency": true,
+  "Enable Server Rewards as default currency": false,
+  "Enable AFK API plugin support": false,
   "Base payout amount": 100,
   "Payout interval (seconds)": 600,
   "Time alive bonus": false,

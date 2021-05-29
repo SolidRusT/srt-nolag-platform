@@ -1,4 +1,5 @@
 {
+  "Use Kits": false,
   "Glowing Eyes": true,
   "Murderer Health": 100,
   "Attire Headwear": [
@@ -76,6 +77,10 @@
     "salvaged.cleaver",
     "salvaged.sword"
   ],
+  "Murderer Kits": [
+    "murderer-kit1",
+    "murderer-kit2"
+  ],
   "Glowing Eyes (Scarecrow)": true,
   "Scarecrow Health": 500,
   "Attire Headwear (Scarecrow)": [],
@@ -85,5 +90,9 @@
   "Attire Legs (Scarecrow)": [],
   "Attire Feet (Scarecrow)": [],
   "Attire Hands (Scarecrow)": [],
-  "Melee Weapon (Scarecrow)": []
+  "Melee Weapon (Scarecrow)": [],
+  "Scarecrow Kits": [
+    "scarecrow-kit1",
+    "scarecrow-kit2"
+  ]
 }

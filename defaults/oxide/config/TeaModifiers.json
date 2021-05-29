@@ -1,141 +1,221 @@
 {
-  "Item Modifiers": {
+  "Global Duration Multiplier": {
+    "teamodifiers.use": 1.0
+  },
+  "Global Amount Multiplier": {
+    "teamodifiers.use": 1.0
+  },
+  "Global Modifier Type Amount Multiplier": {
+    "Wood_Yield": {
+      "teamodifiers.use": 1.0
+    },
+    "Ore_Yield": {
+      "teamodifiers.use": 1.0
+    },
+    "Radiation_Resistance": {
+      "teamodifiers.use": 1.0
+    },
+    "Radiation_Exposure_Resistance": {
+      "teamodifiers.use": 1.0
+    },
+    "Max_Health": {
+      "teamodifiers.use": 1.0
+    },
+    "Scrap_Yield": {
+      "teamodifiers.use": 1.0
+    }
+  },
+  "Item List Modifiers": {
     "maxhealthtea.advanced": [
       {
-        "Buff duration (Seconds)": 1200.0,
-        "Buff amount": 0.125,
-        "Buff source": "Tea",
-        "Buff type": "Max_Health"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1200.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.125
+        },
+        "Modifer Type": "Max_Health"
       }
     ],
     "maxhealthtea": [
       {
-        "Buff duration (Seconds)": 1200.0,
-        "Buff amount": 0.05,
-        "Buff source": "Tea",
-        "Buff type": "Max_Health"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1200.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.05
+        },
+        "Modifer Type": "Max_Health"
       }
     ],
     "maxhealthtea.pure": [
       {
-        "Buff duration (Seconds)": 1200.0,
-        "Buff amount": 0.2,
-        "Buff source": "Tea",
-        "Buff type": "Max_Health"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1200.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.2
+        },
+        "Modifer Type": "Max_Health"
       }
     ],
     "oretea.advanced": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 0.35,
-        "Buff source": "Tea",
-        "Buff type": "Ore_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.35
+        },
+        "Modifer Type": "Ore_Yield"
       }
     ],
     "oretea": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 0.2,
-        "Buff source": "Tea",
-        "Buff type": "Ore_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.2
+        },
+        "Modifer Type": "Ore_Yield"
       }
     ],
     "oretea.pure": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 0.5,
-        "Buff source": "Tea",
-        "Buff type": "Ore_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.5
+        },
+        "Modifer Type": "Ore_Yield"
       }
     ],
     "radiationresisttea.advanced": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 0.15,
-        "Buff source": "Tea",
-        "Buff type": "Radiation_Resistance"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.15
+        },
+        "Modifer Type": "Radiation_Resistance"
       },
       {
-        "Buff duration (Seconds)": 0.0,
-        "Buff amount": 0.5,
-        "Buff source": "Tea",
-        "Buff type": "Radiation_Exposure_Resistance"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 0.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.5
+        },
+        "Modifer Type": "Radiation_Exposure_Resistance"
       }
     ],
     "radiationresisttea": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 0.05,
-        "Buff source": "Tea",
-        "Buff type": "Radiation_Resistance"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.05
+        },
+        "Modifer Type": "Radiation_Resistance"
       },
       {
-        "Buff duration (Seconds)": 300.0,
-        "Buff amount": 0.5,
-        "Buff source": "Tea",
-        "Buff type": "Radiation_Exposure_Resistance"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 300.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.5
+        },
+        "Modifer Type": "Radiation_Exposure_Resistance"
       }
     ],
     "radiationresisttea.pure": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 0.25,
-        "Buff source": "Tea",
-        "Buff type": "Radiation_Resistance"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.25
+        },
+        "Modifer Type": "Radiation_Resistance"
       },
       {
-        "Buff duration (Seconds)": 300.0,
-        "Buff amount": 0.5,
-        "Buff source": "Tea",
-        "Buff type": "Radiation_Exposure_Resistance"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 300.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.5
+        },
+        "Modifer Type": "Radiation_Exposure_Resistance"
       }
     ],
     "scraptea.advanced": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 1.0,
-        "Buff source": "Tea",
-        "Buff type": "Scrap_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 1.0
+        },
+        "Modifer Type": "Scrap_Yield"
       }
     ],
     "scraptea": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 0.5,
-        "Buff source": "Tea",
-        "Buff type": "Scrap_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.5
+        },
+        "Modifer Type": "Scrap_Yield"
       }
     ],
     "scraptea.pure": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 2.0,
-        "Buff source": "Tea",
-        "Buff type": "Scrap_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 2.0
+        },
+        "Modifer Type": "Scrap_Yield"
       }
     ],
     "woodtea.advanced": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 1.0,
-        "Buff source": "Tea",
-        "Buff type": "Wood_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 1.0
+        },
+        "Modifer Type": "Wood_Yield"
       }
     ],
     "woodtea": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 0.5,
-        "Buff source": "Tea",
-        "Buff type": "Wood_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 0.5
+        },
+        "Modifer Type": "Wood_Yield"
       }
     ],
     "woodtea.pure": [
       {
-        "Buff duration (Seconds)": 1800.0,
-        "Buff amount": 2.0,
-        "Buff source": "Tea",
-        "Buff type": "Wood_Yield"
+        "Modifier Duration (Seconds)": {
+          "teamodifiers.use": 1800.0
+        },
+        "Modifier Amount": {
+          "teamodifiers.use": 2.0
+        },
+        "Modifer Type": "Wood_Yield"
       }
     ]
   }

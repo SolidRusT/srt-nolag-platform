@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Farm Tools", "Clearshot", "1.0.3")]
+    [Info("Farm Tools", "Clearshot", "1.0.4")]
     [Description("Farming made easy")]
     class FarmTools : CovalencePlugin
     {
@@ -72,7 +72,7 @@ namespace Oxide.Plugins
             BasePlayer pl = player.Object as BasePlayer;
             if (pl == null) return;
 
-            if (player.HasPermission(PERM_CLONE))
+            if (!player.HasPermission(PERM_CLONE))
             {
                 SendChatMsg(pl, string.Format(lang.GetMessage("NoPerms", this, pl.UserIDString), command));
                 return;

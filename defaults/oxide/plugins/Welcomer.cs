@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Oxide.Plugins
 {
-    [Info("Welcomer", "Dana", "1.5.4")]
+    [Info("Welcomer", "Dana", "1.5.6")]
     [Description("Provides welcome, join and leave messages.")]
     public class Welcomer : RustPlugin
     {
@@ -43,7 +43,7 @@ namespace Oxide.Plugins
                 new CustomMessage
                 {
                     PlayerId = 123,
-                    Message = "SolidRusT"
+                    Message = "Welcome\r\nThere're currently {0} players online"
                 }
             };
         }
@@ -80,7 +80,7 @@ namespace Oxide.Plugins
             CustomWelcomeMessages = new List<CustomMessage> {
                 new CustomMessage {
                     PlayerId = 123,
-                    Message = "Welcome"
+                    Message = "Welcome\r\nThere're currently {0} players online"
                 }
             }
         };
@@ -108,7 +108,7 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["WelcomeMessage"] = "SolidRusT sees you.",
+                ["WelcomeMessage"] = "Welcome to uMod\r\nThere're currently {0} players online",
                 ["JoinMessage"] = "Player {0} has joined the server from {1}",
                 ["JoinMessageUnknown"] = "Player {0} has joined the server",
                 ["LeaveMessage"] = "Player {0} has left the server. Reason {1}"
@@ -118,6 +118,7 @@ namespace Oxide.Plugins
 
         #region Collection
         List<ulong> connected = new List<ulong>();
+
         #endregion
 
         #region OnPlayerHooks
@@ -175,13 +176,15 @@ namespace Oxide.Plugins
                 return;
 
             var customMessage = config.CustomWelcomeMessages?.FirstOrDefault(x => x.PlayerId == player.userID);
+            var onlinePlayers = BasePlayer.activePlayerList.Count;
             if (customMessage != null)
             {
-                Message(player, customMessage.Message);
+                Message(player, string.Format(customMessage.Message, onlinePlayers));
             }
             else
             {
-                Message(player, Lang("WelcomeMessage", player.UserIDString));
+                //Message(player, Lang("WelcomeMessage", player.UserIDString));
+                Message(player, Lang("WelcomeMessage", null, onlinePlayers)); //to fix language based messages issue
             }
 
             connected.Remove(player.userID);

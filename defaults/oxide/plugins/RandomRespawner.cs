@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -10,71 +11,39 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Random Respawner", "Egor Blagov/Arainrr", "1.2.3")]
+    [Info("Random Respawner", "Egor Blagov/Arainrr", "1.2.4")]
     [Description("Plugin respawns player in random place")]
     internal class RandomRespawner : RustPlugin
     {
         private const string PERMISSION_USE = "randomrespawner.use";
-        private const int MASK_BIOME = (int)(TerrainBiome.Enum.Arid | TerrainBiome.Enum.Temperate | TerrainBiome.Enum.Tundra | TerrainBiome.Enum.Arctic);
-        private const int MASK_SPLAT = (int)(TerrainSplat.Enum.Dirt | TerrainSplat.Enum.Snow | TerrainSplat.Enum.Sand | TerrainSplat.Enum.Rock | TerrainSplat.Enum.Grass | TerrainSplat.Enum.Forest | TerrainSplat.Enum.Stones | TerrainSplat.Enum.Gravel);
-
         private Coroutine findSpawnPosCoroutine;
+        private readonly List<Collider> colliders = new List<Collider>();
         private readonly List<Vector3> spawnPositionCache = new List<Vector3>();
-
-        private List<Collider> colliders;
-        private List<BaseEntity> entities;
-        private List<BasePlayer> players;
 
         #region Oxide Hooks
 
         private void Init()
         {
-            colliders = Pool.GetList<Collider>();
-            entities = Pool.GetList<BaseEntity>();
-            players = Pool.GetList<BasePlayer>();
             permission.RegisterPermission(PERMISSION_USE, this);
         }
 
         private void OnServerInitialized()
         {
+            UpdateConfig();
             findSpawnPosCoroutine = ServerMgr.Instance.StartCoroutine(FindSpawnPositions(5000));
         }
 
         private void Unload()
         {
-            Pool.Free(ref entities);
-            Pool.Free(ref colliders);
-            Pool.Free(ref players);
             if (findSpawnPosCoroutine != null)
             {
                 ServerMgr.Instance.StopCoroutine(findSpawnPosCoroutine);
             }
         }
 
-        private IEnumerator FindSpawnPositions(int attempts = 1500)
-        {
-            List<Vector3> list = Pool.GetList<Vector3>();
-            float mapSizeX = TerrainMeta.Size.x / 2;
-            float mapSizeZ = TerrainMeta.Size.z / 2;
-            Vector3 randomPos = Vector3.zero;
-            for (int i = 0; i < attempts; i++)
-            {
-                randomPos.x = UnityEngine.Random.Range(-mapSizeX, mapSizeX);
-                randomPos.z = UnityEngine.Random.Range(-mapSizeZ, mapSizeZ);
-                if (TestPos(ref randomPos))
-                {
-                    list.Add(randomPos);
-                }
-                if (i % 20 == 0) yield return CoroutineEx.waitForEndOfFrame;
-            }
-            spawnPositionCache.AddRange(list);
-            PrintWarning($"Successfully found {list.Count} spawn positions.");
-            Pool.FreeList(ref list);
-            findSpawnPosCoroutine = null;
-        }
-
         private object OnPlayerRespawn(BasePlayer player)
         {
+            if (player == null || !player.userID.IsSteamId()) return null;
             if (!permission.UserHasPermission(player.UserIDString, PERMISSION_USE))
             {
                 return null;
@@ -99,6 +68,34 @@ namespace Oxide.Plugins
         }
 
         #endregion Oxide Hooks
+
+        #region Methods
+
+        private IEnumerator FindSpawnPositions(int attempts = 1500)
+        {
+            List<Vector3> list = Pool.GetList<Vector3>();
+            float mapSizeX = TerrainMeta.Size.x / 2;
+            float mapSizeZ = TerrainMeta.Size.z / 2;
+            Vector3 randomPos = Vector3.zero;
+            for (int i = 0; i < attempts; i++)
+            {
+                randomPos.x = UnityEngine.Random.Range(-mapSizeX, mapSizeX);
+                randomPos.z = UnityEngine.Random.Range(-mapSizeZ, mapSizeZ);
+                if (TestPos(ref randomPos))
+                {
+                    list.Add(randomPos);
+                }
+
+                if (i % 20 == 0)
+                {
+                    yield return CoroutineEx.waitForEndOfFrame;
+                }
+            }
+            spawnPositionCache.AddRange(list);
+            PrintWarning($"Successfully found {list.Count} spawn positions.");
+            Pool.FreeList(ref list);
+            findSpawnPosCoroutine = null;
+        }
 
         private Vector3? GetRandomSpawnPos()
         {
@@ -136,15 +133,21 @@ namespace Oxide.Plugins
                 return false;
             }
 
-            bool flag;
+            bool enabled;
             var biome = GetPosBiome(randomPos);
-            if (configData.biomes.TryGetValue(biome, out flag) && !flag)
+            if (configData.biomes.TryGetValue(biome, out enabled) && !enabled)
             {
                 return false;
             }
 
             var splat = GetPosSplat(randomPos);
-            if (configData.splats.TryGetValue(splat, out flag) && !flag)
+            if (configData.splats.TryGetValue(splat, out enabled) && !enabled)
+            {
+                return false;
+            }
+
+            var topology = GetPosTopology(randomPos);
+            if (configData.topologies.TryGetValue(topology, out enabled) && !enabled)
             {
                 return false;
             }
@@ -205,33 +208,61 @@ namespace Oxide.Plugins
 
             if (configData.radiusFromPlayers > 0)
             {
-                players.Clear();
+                var players = Pool.GetList<BasePlayer>();
                 Vis.Entities(spawnPos, configData.radiusFromPlayers, players, Layers.Mask.Player_Server);
                 foreach (var player in players)
                 {
                     if (!player.IsSleeping())
                     {
+                        Pool.FreeList(ref players);
                         return false;
                     }
                 }
+                Pool.FreeList(ref players);
             }
             if (configData.radiusFromBuilding > 0)
             {
-                entities.Clear();
+                var entities = Pool.GetList<BaseEntity>();
                 Vis.Entities(spawnPos, configData.radiusFromBuilding, entities, Layers.PlayerBuildings);
-                if (entities.Any()) return false;
+                if (entities.Any())
+                {
+                    Pool.FreeList(ref entities);
+                    return false;
+                }
+                Pool.FreeList(ref entities);
             }
 
             return true;
         }
 
+        private void UpdateConfig()
+        {
+            foreach (TerrainBiome.Enum value in Enum.GetValues(typeof(TerrainBiome.Enum)))
+            {
+                configData.biomes.TryAdd(value, true);
+            }
+            foreach (TerrainSplat.Enum value in Enum.GetValues(typeof(TerrainSplat.Enum)))
+            {
+                configData.splats.TryAdd(value, true);
+            }
+            foreach (TerrainTopology.Enum value in Enum.GetValues(typeof(TerrainTopology.Enum)))
+            {
+                configData.topologies.TryAdd(value, true);
+            }
+            SaveConfig();
+        }
+
+        #endregion Methods
+
         #region Helpers
 
-        private static TerrainBiome.Enum GetPosBiome(Vector3 position) => (TerrainBiome.Enum)TerrainMeta.BiomeMap.GetBiomeMaxType(position, MASK_BIOME);
-
-        private static TerrainSplat.Enum GetPosSplat(Vector3 position) => (TerrainSplat.Enum)TerrainMeta.SplatMap.GetSplatMaxType(position, MASK_SPLAT);
-
         private static float GetPosSlope(Vector3 position) => TerrainMeta.HeightMap.GetSlope(position);
+
+        private static TerrainBiome.Enum GetPosBiome(Vector3 position) => (TerrainBiome.Enum)TerrainMeta.BiomeMap.GetBiomeMaxType(position);
+
+        private static TerrainSplat.Enum GetPosSplat(Vector3 position) => (TerrainSplat.Enum)TerrainMeta.SplatMap.GetSplatMaxType(position);
+
+        private static TerrainTopology.Enum GetPosTopology(Vector3 position) => (TerrainTopology.Enum)TerrainMeta.TopologyMap.GetTopology(position);
 
         #endregion Helpers
 
@@ -266,26 +297,13 @@ namespace Oxide.Plugins
             public float maxSlope = 60f;
 
             [JsonProperty(PropertyName = "Biome Settings")]
-            public Dictionary<TerrainBiome.Enum, bool> biomes = new Dictionary<TerrainBiome.Enum, bool>
-            {
-                [TerrainBiome.Enum.Arid] = true,
-                [TerrainBiome.Enum.Temperate] = true,
-                [TerrainBiome.Enum.Tundra] = true,
-                [TerrainBiome.Enum.Arctic] = true,
-            };
+            public Dictionary<TerrainBiome.Enum, bool> biomes = new Dictionary<TerrainBiome.Enum, bool>();
 
             [JsonProperty(PropertyName = "Splat Settings")]
-            public Dictionary<TerrainSplat.Enum, bool> splats = new Dictionary<TerrainSplat.Enum, bool>
-            {
-                [TerrainSplat.Enum.Dirt] = true,
-                [TerrainSplat.Enum.Snow] = true,
-                [TerrainSplat.Enum.Sand] = true,
-                [TerrainSplat.Enum.Rock] = true,
-                [TerrainSplat.Enum.Grass] = true,
-                [TerrainSplat.Enum.Forest] = true,
-                [TerrainSplat.Enum.Stones] = true,
-                [TerrainSplat.Enum.Gravel] = true,
-            };
+            public Dictionary<TerrainSplat.Enum, bool> splats = new Dictionary<TerrainSplat.Enum, bool>();
+
+            [JsonProperty(PropertyName = "Topology Settings")]
+            public Dictionary<TerrainTopology.Enum, bool> topologies = new Dictionary<TerrainTopology.Enum, bool>();
         }
 
         protected override void LoadConfig()
@@ -297,9 +315,9 @@ namespace Oxide.Plugins
                 if (configData == null)
                     LoadDefaultConfig();
             }
-            catch
+            catch (Exception ex)
             {
-                PrintError("The configuration file is corrupted");
+                PrintError($"The configuration file is corrupted. \n{ex}");
                 LoadDefaultConfig();
             }
 

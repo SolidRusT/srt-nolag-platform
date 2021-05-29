@@ -1,0 +1,10 @@
+{
+  "Block Damage to Player with Parachute On : ": true,
+  "Cooldown - After using a chute, seconds player must wait to use another : ": 600.0,
+  "Cooldown - Use chute cooldown ? ": true,
+  "Cooldown VIP - After using a chute, seconds VIP player must wait to use another : ": 600.0,
+  "Cooldown VIP - Use chute cooldown for VIP's ? ": true,
+  "Parachute Downward Speed : ": 5.0,
+  "Parachute from Height using ChuteUp : ": 1000.0,
+  "Parachute Movement Speed : ": 9.0
+}

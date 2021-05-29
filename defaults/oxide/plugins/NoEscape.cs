@@ -15,7 +15,7 @@ using Rust;
 
 namespace Oxide.Plugins
 {
-    [Info ("No Escape", "Calytic", "2.1.31")]
+    [Info ("No Escape", "Calytic", "2.1.33")]
     [Description ("Prevent commands/actions while raid and/or combat is occuring")]
     class NoEscape : RustPlugin
     {
@@ -996,6 +996,22 @@ namespace Oxide.Plugins
             }
         }
 
+        object CanLootEntity(BasePlayer player, StorageContainer container)
+        {
+            if(container?.GetEntity() is Recycler)
+            {
+                object reply = CanDo("recycle", player);
+
+                if (reply != null && IsBlocked(player))
+                {
+                    player.ChatMessage((string)reply);
+                    return true;
+                }
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Block Handling
@@ -1706,7 +1722,7 @@ namespace Oxide.Plugins
             var result = CanDo ("mailbox", player);
             if (result is string) {
                 SendReply (player, result.ToString ());
-                return false;
+                return true;
             }
 
             return null;
@@ -1803,7 +1819,7 @@ namespace Oxide.Plugins
                 var result = CanDo ("craft", player);
                 if (result is string) {
                     SendReply (player, result.ToString ());
-                    return false;
+                    return true;
                 }
             }
 

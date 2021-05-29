@@ -5,6 +5,8 @@
     "api.facepunch.com/api/public/manifest/",
     "Checking for new Steam Item Definitions..",
     "Floating point textures aren't supported on this device",
+    "Calling 'CanBeTargeted' on ",
+    "Calling 'CanHelicopterTarget' on ",
     "HDR Render Texture not supported, disabling HDR on reflection probe",
     "Image Effects are not supported on this platform",
     "Loading Prefab Bundle",

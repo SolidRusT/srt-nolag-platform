@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Turret Loadouts", "WhiteThunder", "1.0.1")]
+    [Info("Turret Loadouts", "WhiteThunder", "1.0.2")]
     [Description("Automatically fills turrets with weapons, attachments and ammo, using configurable loadouts.")]
     internal class TurretLoadouts : CovalencePlugin
     {
@@ -107,14 +107,15 @@ namespace Oxide.Plugins
                 if (loadout.peacekeeper)
                     turret.SetPeacekeepermode(true);
 
-                var weaponItem = AddWeapon(turret, ownerPlayer, loadout);
-                if (weaponItem != null)
+                var heldItem = AddHeldEntity(turret, ownerPlayer, loadout);
+                if (heldItem != null)
                 {
                     AddReserveAmmo(turret, loadout, ownerPlayer);
                     turret.UpdateTotalAmmo();
                     turret.EnsureReloaded();
 
-                    if (GetTotalAmmo(turret) > 0 && HasPermissionAny(ownerPlayer, Permission_AutoToggle))
+                    var isInstrument = (heldItem.GetHeldEntity() as HeldEntity)?.IsInstrument() ?? false;
+                    if ((isInstrument || GetTotalAmmo(turret) > 0) && HasPermissionAny(ownerPlayer, Permission_AutoToggle))
                     {
                         turret.SetOnline();
                         var turretSwitch = turret.GetComponentInChildren<ElectricSwitch>();
@@ -124,7 +125,7 @@ namespace Oxide.Plugins
 
                     if (pluginConfig.lockAutoFilledTurrets)
                     {
-                        weaponItem.contents.SetLocked(true);
+                        heldItem.contents.SetLocked(true);
                         turret.inventory.SetLocked(true);
                         turret.dropChance = 0;
                         turret.pickup.requireEmptyInv = false;
@@ -392,7 +393,7 @@ namespace Oxide.Plugins
         {
             if (!VerifyPermissionAny(player, Permission_ManageCustom))
                 return;
-            
+
             if (args.Length < 1)
             {
                 ReplyToPlayer(player, "Command.Update.Error.Syntax");
@@ -682,8 +683,8 @@ namespace Oxide.Plugins
 
         private TurretLoadout CreateLoadout(AutoTurret turret)
         {
-            var weapon = turret.GetAttachedWeapon();
-            if (weapon == null)
+            var heldEntity = turret.AttachedWeapon;
+            if (heldEntity == null)
                 return null;
 
             var weaponItem = turret.inventory.GetSlot(0);
@@ -697,18 +698,22 @@ namespace Oxide.Plugins
                 peacekeeper = turret.PeacekeeperMode()
             };
 
-            var attachments = new List<string>();
-            for (var slot = 0; slot < weaponItem.contents.capacity; slot++)
+            if (weaponItem.contents != null)
             {
-                var attachmentItem = weaponItem.contents.GetSlot(slot);
-                if (attachmentItem != null)
-                    attachments.Add(attachmentItem.info.shortname);
+                var attachments = new List<string>();
+                for (var slot = 0; slot < weaponItem.contents.capacity; slot++)
+                {
+                    var attachmentItem = weaponItem.contents.GetSlot(slot);
+                    if (attachmentItem != null)
+                        attachments.Add(attachmentItem.info.shortname);
+                }
+
+                if (attachments.Count > 0)
+                    loadout.attachments = attachments;
             }
 
-            if (attachments.Count > 0)
-                loadout.attachments = attachments;
-
-            if (weapon.primaryMagazine.contents > 0)
+            var weapon = heldEntity as BaseProjectile;
+            if (weapon != null && weapon.primaryMagazine.contents > 0)
             {
                 loadout.ammo = new AmmoAmount
                 {
@@ -737,10 +742,10 @@ namespace Oxide.Plugins
             return loadout;
         }
 
-        private Item AddWeapon(AutoTurret turret, BasePlayer ownerPlayer, TurretLoadout loadout)
+        private Item AddHeldEntity(AutoTurret turret, BasePlayer ownerPlayer, TurretLoadout loadout)
         {
-            var weaponItem = ItemManager.CreateByName(loadout.weapon, 1, loadout.skin);
-            if (weaponItem == null)
+            var heldItem = ItemManager.CreateByName(loadout.weapon, 1, loadout.skin);
+            if (heldItem == null)
             {
                 LogError($"Weapon '{loadout.weapon}' is not a valid item. Unable to add weapon to turret for player {ownerPlayer.userID}.");
                 return null;
@@ -755,7 +760,7 @@ namespace Oxide.Plugins
                     {
                         LogError($"Attachment '{attachmentName}' is not a valid item. Unable to add to turret weapon for player {ownerPlayer.userID}.");
                     }
-                    else if (!attachmentItem.MoveToContainer(weaponItem.contents))
+                    else if (!attachmentItem.MoveToContainer(heldItem.contents))
                     {
                         LogError($"Unable to move attachment item '{attachmentName}' to weapon for player {ownerPlayer.userID}.");
                         attachmentItem.Remove();
@@ -763,34 +768,36 @@ namespace Oxide.Plugins
                 }
             }
 
-            if (!weaponItem.MoveToContainer(turret.inventory, 0))
+            if (!heldItem.MoveToContainer(turret.inventory, 0))
             {
-                LogError($"Unable to move weapon {weaponItem.info.shortname} to turret inventory for player {ownerPlayer.userID}.");
-                weaponItem.Remove();
+                LogError($"Unable to move weapon {heldItem.info.shortname} to turret inventory for player {ownerPlayer.userID}.");
+                heldItem.Remove();
                 return null;
             }
 
-            var weapon = weaponItem.GetHeldEntity() as BaseProjectile;
-
-            // Must unload the weapon first or the turret will unload it and the ammo will temporarily take up inventory space
-            weapon.primaryMagazine.contents = 0;
-            turret.UpdateAttachedWeapon();
-            turret.CancelInvoke(turret.UpdateAttachedWeapon);
-
-            if (loadout.ammo != null)
+            var weapon = heldItem.GetHeldEntity() as BaseProjectile;
+            if (weapon != null)
             {
-                var loadedAmmoItemDefinition = ItemManager.itemDictionaryByName[loadout.ammo.name];
-                if (loadedAmmoItemDefinition == null)
-                {
-                    LogError($"Ammo type '{loadout.ammo.name}' is not a valid item. Unable to add ammo to turret for player {ownerPlayer.userID}.");
-                    return weaponItem;
-                }
+                // Must unload the weapon first or the turret will unload it and the ammo will temporarily take up inventory space
+                weapon.primaryMagazine.contents = 0;
+                turret.UpdateAttachedWeapon();
+                turret.CancelInvoke(turret.UpdateAttachedWeapon);
 
-                weapon.primaryMagazine.ammoType = loadedAmmoItemDefinition;
-                weapon.primaryMagazine.contents = Math.Min(weapon.primaryMagazine.capacity, loadout.ammo.amount);
+                if (loadout.ammo != null)
+                {
+                    ItemDefinition loadedAmmoItemDefinition;
+                    if (!ItemManager.itemDictionaryByName.TryGetValue(loadout.ammo.name, out loadedAmmoItemDefinition))
+                    {
+                        LogError($"Ammo type '{loadout.ammo.name}' is not a valid item. Unable to add ammo to turret for player {ownerPlayer.userID}.");
+                        return heldItem;
+                    }
+
+                    weapon.primaryMagazine.ammoType = loadedAmmoItemDefinition;
+                    weapon.primaryMagazine.contents = Math.Min(weapon.primaryMagazine.capacity, loadout.ammo.amount);
+                }
             }
 
-            return weaponItem;
+            return heldItem;
         }
 
         private void AddReserveAmmo(AutoTurret turret, TurretLoadout loadout, BasePlayer ownerPlayer)
@@ -944,7 +951,7 @@ namespace Oxide.Plugins
                 {
                     var loadout = loadouts[i];
                     var validationResult = ValidateAndPossiblyReduceLoadout(loadout, ruleset);
-                    
+
                     if (validationResult == ValidationResult.InvalidWeapon)
                         pluginInstance.LogWarning($"Removed turret loadout '{loadout.name}' for player '{ownerId}' because weapon '{loadout.weapon}' is not a valid item.");
                     else if (validationResult == ValidationResult.DisallowedWeapon)
@@ -1184,7 +1191,7 @@ namespace Oxide.Plugins
                     return loadout;
                 }
             }
-            
+
             // Player doesn't have permission to use custom loadouts, or they have not set an active one
             return GetPlayerDefaultLoadout(userIdString);
         }

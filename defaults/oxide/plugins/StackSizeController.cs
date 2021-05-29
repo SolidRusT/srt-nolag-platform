@@ -1,537 +1,908 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 using Oxide.Core;
+using Oxide.Core.Libraries.Covalence;
+using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Size Controller", "Canopy Sheep", "2.0.4", ResourceId = 2320)]
-    [Description("Allows you to set the max stack size of every item.")]
-    public class StackSizeController : RustPlugin
+    [Info("Stack Size Controller", "AnExiledGod", "3.4.1")]
+    [Description("Allows configuration of most items max stack size.")]
+    class StackSizeController : CovalencePlugin
     {
-        #region Data
+        private ConfigData _config;
+        private ItemIndex _data;
+        private Dictionary<string, int> _vanillaDefaults;
 
-        private bool pluginLoaded = false;
-        Items items;
-        class Items
+        private readonly List<string> _ignoreList = new List<string>
         {
-            public Dictionary<string, int> itemlist = new Dictionary<string, int>();
-        }
+            "water",
+            "water.salt",
+            "cardtable",
+            "hat.bunnyhat",
+            "rustige_egg_e"
+        };
 
-        private bool LoadData()
+        private void Init()
         {
-            var itemsdatafile = Interface.Oxide.DataFileSystem.GetFile("StackSizeController");
-            try
+            _config = Config.ReadObject<ConfigData>();
+            _data = Interface.Oxide.DataFileSystem.ReadObject<ItemIndex>(nameof(StackSizeController));
+            _vanillaDefaults =
+                Interface.Oxide.DataFileSystem.ReadObject<Dictionary<string, int>>(nameof(StackSizeController) +
+                    "_vanilla-defaults");
+            
+            if (_config.IsNull<ConfigData>())
             {
-                items = itemsdatafile.ReadObject<Items>();
-                return true;
+                Puts("Generating Default Config File.");
+                
+                LoadDefaultConfig();
             }
-            catch (Exception ex)
+            
+            EnsureConfigIntegrity();
+            
+            if (_data.IsUnityNull() || _data.ItemCategories.IsUnityNull())
             {
-                PrintWarning("Error: Data file is corrupt. Debug info: " + ex.Message);
-                return false;
+                Puts("Generating Data File.");
+                
+                CreateItemIndex();
+                _data.VersionNumber = Version;
+                
+                SaveData();
             }
-        }
-
-        private void UpdateItems()
-        {
-            var gameitemList = ItemManager.itemList;
-            List<string> itemCategories = new List<string>();
-            int stacksize;
-
-            foreach (var item in gameitemList)
+            
+            // Data File Migrations - TODO: Setup full implementation
+            if (_data.VersionNumber <= new VersionNumber(3, 1, 2))
             {
-                if (!itemCategories.Contains(item.category.ToString()))
+                Puts("Datafile version number is less than or equal to v3.1.2. Migration necessary. " + 
+                     "Backing up old datafile...");
+                
+                Interface.Oxide.DataFileSystem.WriteObject(nameof(StackSizeController) + "_backup",
+                    _data);
+
+                if (Interface.Oxide.DataFileSystem.ExistsDatafile(nameof(StackSizeController)))
                 {
-                    if (!(configData.Settings.CategoryDefaultStack.ContainsKey(item.category.ToString())))
+                    foreach (KeyValuePair<string, List<ItemInfo>> items in _data.ItemCategories)
                     {
-                        configData.Settings.CategoryDefaultStack[item.category.ToString()] = configData.Settings.NewCategoryDefaultSetting;
-                        Puts("Added item category: '" + item.category.ToString() + "' to the config.");
+                        foreach (ItemInfo itemInfo in items.Value)
+                        {
+                            if (itemInfo.VanillaStackSize == itemInfo.CustomStackSize)
+                            {
+                                itemInfo.CustomStackSize = 0;
+                            }
+                        }
                     }
-                    itemCategories.Add(item.category.ToString());
-                }
 
-                if (!(items.itemlist.ContainsKey(item.displayName.english)))
-                {
-                    stacksize = DetermineStack(item);
-                    items.itemlist.Add(item.displayName.english, stacksize);
-                }
-            }
-
-            List<string> KeysToRemove = new List<string>();
-
-            foreach (KeyValuePair<string ,int> category in configData.Settings.CategoryDefaultStack)
-            {
-                if (!itemCategories.Contains(category.Key)) { KeysToRemove.Add(category.Key); }
-            }
-
-            if (KeysToRemove.Count > 0)
-            {
-                Puts("Cleaning config categories...");
-                foreach (string Key in KeysToRemove)
-                {
-                    configData.Settings.CategoryDefaultStack.Remove(Key);
-                }
-            }
-
-            SaveConfig();
-
-            KeysToRemove = new List<string>();
-            bool foundItem = false;
-
-            foreach (KeyValuePair<string, int> item in items.itemlist)
-            {
-                foreach (var itemingamelist in gameitemList)
-                {
-                    if (itemingamelist.displayName.english == item.Key)
-                    {
-                        foundItem = true;
-                        break;
-                    }
-                }
-                if (!(foundItem)) { KeysToRemove.Add(item.Key); }
-                foundItem = false;
-            }
-
-            if (KeysToRemove.Count > 0)
-            {
-                Puts("Cleaning data file...");
-                foreach (string key in KeysToRemove)
-                {
-                    items.itemlist.Remove(key);
-                }
-            }
-
-            SaveData();
-            LoadStackSizes();
-        }
-
-        private int DetermineStack(ItemDefinition item)
-        {
-            if (item.condition.enabled && item.condition.max > 0 && (!configData.Settings.StackHealthItems))
-            {
-                return 1;
-            }
-            else
-            {
-                if (configData.Settings.DefaultStack != 0 && (!configData.Settings.CategoryDefaultStack.ContainsKey(item.category.ToString())))
-                {
-                    return configData.Settings.DefaultStack;
-                }
-                else if (configData.Settings.CategoryDefaultStack.ContainsKey(item.category.ToString()) && configData.Settings.CategoryDefaultStack[item.category.ToString()] != 0)
-                {
-                    return configData.Settings.CategoryDefaultStack[item.category.ToString()];
-                }
-                else if (configData.Settings.DefaultStack != 0 && configData.Settings.CategoryDefaultStack[item.category.ToString()] == 0)
-                {
-                    return configData.Settings.DefaultStack;
+                    _data.VersionNumber = Version;
+                
+                    SaveData();
+                
+                    Puts("Datafile migration complete. Notice: Backup files must be manually deleted.");
                 }
                 else
                 {
-                    return item.stackable;
+                    Puts("Datafile backup failed. Migration failed, report to developer.");
                 }
             }
+
+            AddCovalenceCommand("stacksizecontroller.regendatafile", nameof(RegenerateDataFileCommand),
+                "stacksizecontroller.regendatafile");
+            AddCovalenceCommand("stacksizecontroller.setstack", nameof(SetStackCommand),
+                "stacksizecontroller.setstack");
+            AddCovalenceCommand("stacksizecontroller.setstackcat", nameof(SetStackCategoryCommand),
+                "stacksizecontroller.setstackcat");
+            AddCovalenceCommand("stacksizecontroller.setallstacks", nameof(SetAllStacksCommand),
+                "stacksizecontroller.setallstacks");
+            AddCovalenceCommand("stacksizecontroller.itemsearch", nameof(ItemSearchCommand),
+                "stacksizecontroller.itemsearch");
+            AddCovalenceCommand("stacksizecontroller.listcategories", nameof(ListCategoriesCommand),
+                "stacksizecontroller.listcategories");
+            AddCovalenceCommand("stacksizecontroller.listcategoryitems", nameof(ListCategoryItemsCommand),
+                "stacksizecontroller.listcategoryitems");
+        }
+        
+        private void OnServerInitialized()
+        {
+            if (_vanillaDefaults.IsUnityNull() || _vanillaDefaults.Count == 0)
+            {
+                MaintainVanillaStackSizes();
+            }
+            
+            SetStackSizes();
         }
 
-        private void LoadStackSizes()
+        private void OnTerrainInitialized()
         {
-            var gameitemList = ItemManager.itemList;
+            Puts("Ensuring VanillaStackSize integrity.");
 
-            foreach (var item in gameitemList)
+            MaintainVanillaStackSizes(true);
+            UpdateItemIndex();
+        }
+
+        private void Unloaded()
+        {
+            if (_config.RevertStackSizesToVanillaOnUnload)
             {
-                item.stackable = items.itemlist[item.displayName.english];
+                RevertStackSizes();
             }
         }
 
-        private void SaveData()
+        #region Configuration
+        
+        private class ConfigData
         {
-            Interface.Oxide.DataFileSystem.WriteObject("StackSizeController", items);
+            public bool RevertStackSizesToVanillaOnUnload = true;
+            public bool AllowStackingItemsWithDurability = true;
+            public bool PreventStackingDifferentSkins;
+            public bool HidePrefixWithPluginNameInMessages;
+            public bool DisableDupeFixAndLeaveWeaponMagsAlone;
+
+            public float GlobalStackMultiplier = 1;
+            public Dictionary<string, float> CategoryStackMultipliers = GetCategoriesAndDefaults(1)
+                .ToDictionary(k => k.Key, 
+                    k => Convert.ToSingle(k.Value));
+            public Dictionary<string, float> IndividualItemStackMultipliers = new Dictionary<string, float>();
+            
+            public Dictionary<string, int> CategoryStackHardLimits = GetCategoriesAndDefaults(0)
+                    .ToDictionary(x => x.Key, 
+                        x => Convert.ToInt32(x.Value));
+            public Dictionary<string, int> IndividualItemStackHardLimits = new Dictionary<string, int>();
+            
+            public VersionNumber VersionNumber;
         }
 
-        #endregion
-
-        #region Config
-
-        ConfigData configData;
-        class ConfigData
+        protected override void SaveConfig()
         {
-            public SettingsData Settings { get; set; }
-        }
-
-        class SettingsData
-        {
-            public int DefaultStack { get; set; }
-            public int NewCategoryDefaultSetting { get; set; }
-            public bool StackHealthItems { get; set; }
-            public Dictionary<string, int> CategoryDefaultStack { get; set; }
-        }
-
-        private void TryConfig()
-        {
-            try
-            {
-                configData = Config.ReadObject<ConfigData>();
-            }
-            catch (Exception ex)
-            {
-                PrintWarning("Corrupt config detected, debug: " + ex.Message);
-                LoadDefaultConfig();
-            }
+            Config.WriteObject(_config);
         }
 
         protected override void LoadDefaultConfig()
         {
-            Puts("Generating a new config file...");
-
-            Config.WriteObject(new ConfigData
-            {
-                Settings = new SettingsData
-                {
-                    DefaultStack = 0,
-                    NewCategoryDefaultSetting = 0,
-                    StackHealthItems = true,
-                    CategoryDefaultStack = new Dictionary<string, int>()
-                    {
-                        { "Ammunition", 0 },
-                        { "Weapon", 0 },
-                    },
-                },
-            }, true);
+            ConfigData defaultConfig = GetDefaultConfig();
+            defaultConfig.VersionNumber = Version;
+            
+            Config.WriteObject(defaultConfig);
+            
+            _config = Config.ReadObject<ConfigData>();
         }
 
-        private void SaveConfig()
+        private void EnsureConfigIntegrity()
         {
-            Config.WriteObject(configData);
+            ConfigData configDefault = new ConfigData();
+
+            if (_config.RevertStackSizesToVanillaOnUnload.IsNull<bool>())
+            {
+                _config.RevertStackSizesToVanillaOnUnload = configDefault.RevertStackSizesToVanillaOnUnload;
+            }
+            
+            if (_config.AllowStackingItemsWithDurability.IsNull<bool>())
+            {
+                _config.AllowStackingItemsWithDurability = configDefault.AllowStackingItemsWithDurability;
+            }
+
+            if (_config.PreventStackingDifferentSkins.IsNull<bool>())
+            {
+                _config.PreventStackingDifferentSkins = configDefault.PreventStackingDifferentSkins;
+            }
+
+            if (_config.HidePrefixWithPluginNameInMessages.IsNull<bool>())
+            {
+                _config.HidePrefixWithPluginNameInMessages = configDefault.HidePrefixWithPluginNameInMessages;
+            }
+
+            if (_config.DisableDupeFixAndLeaveWeaponMagsAlone.IsNull<bool>())
+            {
+                _config.DisableDupeFixAndLeaveWeaponMagsAlone = configDefault.DisableDupeFixAndLeaveWeaponMagsAlone;
+            }
+            
+            if (_config.GlobalStackMultiplier.IsNull<bool>())
+            {
+                _config.GlobalStackMultiplier = configDefault.GlobalStackMultiplier;
+            }
+            
+            if (_config.CategoryStackMultipliers.IsNull<Dictionary<string, float>>())
+            {
+                _config.CategoryStackMultipliers = configDefault.CategoryStackMultipliers;
+            }
+            
+            if (_config.IndividualItemStackMultipliers.IsNull<Dictionary<string, int>>())
+            {
+                _config.IndividualItemStackMultipliers = configDefault.IndividualItemStackMultipliers;
+            }
+            
+            if (_config.CategoryStackHardLimits.IsNull<Dictionary<string, float>>())
+            {
+                _config.IndividualItemStackHardLimits = configDefault.IndividualItemStackHardLimits;
+            }
+            
+            if (_config.IndividualItemStackHardLimits.IsNull<Dictionary<string, int>>())
+            {
+                _config.IndividualItemStackHardLimits = configDefault.IndividualItemStackHardLimits;
+            }
+
+            _config.VersionNumber = Version;
+            SaveConfig();
         }
+
+        private ConfigData GetDefaultConfig()
+        {
+            return new ConfigData();
+        }
+
+        private void UpdateIndividualItemStackMultiplier(int itemId, float multiplier)
+        {
+            if (_config.IndividualItemStackMultipliers.ContainsKey(itemId.ToString()))
+            {
+                _config.IndividualItemStackMultipliers[itemId.ToString()] = multiplier;
+                    
+                SaveConfig();
+
+                return;
+            }
+                
+            _config.IndividualItemStackMultipliers.Add(GetIndexedItem(itemId).Shortname, multiplier);
+            
+            SaveConfig();
+        }
+        
+        private void UpdateIndividualItemStackMultiplier(string shortname, float multiplier)
+        {
+            if (_config.IndividualItemStackMultipliers.ContainsKey(shortname))
+            {
+                _config.IndividualItemStackMultipliers[shortname] = multiplier;
+                    
+                SaveConfig();
+
+                return;
+            }
+                
+            _config.IndividualItemStackMultipliers.Add(shortname, multiplier);
+            
+            SaveConfig();
+        }
+
+        private void UpdateIndividualItemHardLimit(int itemId, int stackLimit)
+        {
+            if (_config.IndividualItemStackHardLimits.ContainsKey(itemId.ToString()))
+            {
+                _config.IndividualItemStackHardLimits[itemId.ToString()] = stackLimit;
+                    
+                SaveConfig();
+
+                return;
+            }
+                
+            _config.IndividualItemStackHardLimits.Add(GetIndexedItem(itemId).Shortname, stackLimit);
+            
+            SaveConfig();
+        }
+        
+        private void UpdateIndividualItemHardLimit(string shortname, int stackLimit)
+        {
+            if (_config.IndividualItemStackHardLimits.ContainsKey(shortname))
+            {
+                _config.IndividualItemStackHardLimits[shortname] = stackLimit;
+                    
+                SaveConfig();
+
+                return;
+            }
+                
+            _config.IndividualItemStackHardLimits.Add(shortname, stackLimit);
+            
+            SaveConfig();
+        }
+        
+        #endregion
+        
+        #region Localization
+        
+        protected override void LoadDefaultMessages()
+        {
+            lang.RegisterMessages(new Dictionary<string, string>
+            {
+                ["NotEnoughArguments"] = "This command requires {0} arguments.",
+                ["InvalidItemShortnameOrId"] =
+                    "Item shortname or id is incorrect. Try stacksizecontroller.itemsearch [partial item name]",
+                ["InvalidCategory"] = "Category not found. Try stacksizecontroller.listcategories",
+                ["OperationSuccessful"] = "Operation completed successfully.",
+            }, this);
+        }
+
+        private string GetMessage(string key, string playerId)
+        {
+            if (_config.HidePrefixWithPluginNameInMessages || playerId == "server_console")
+            {
+                return lang.GetMessage(key, this, playerId);
+            }
+            
+            return $"<color=#ff760d><b>[{nameof(StackSizeController)}]</b></color> " +
+                   lang.GetMessage(key, this, playerId);
+        }
+
+        #endregion
+        
+        #region Data Handling
+
+        private class ItemIndex
+        {
+            public Dictionary<string, List<ItemInfo>> ItemCategories;
+            public VersionNumber VersionNumber;
+        }
+
+        private class ItemInfo
+        {
+            public int ItemId;
+            public string Shortname;
+            public bool HasDurability;
+            public int VanillaStackSize;
+            public int CustomStackSize;
+        }
+
+        private void SaveData()
+        {
+            Interface.Oxide.DataFileSystem.WriteObject(nameof(StackSizeController), _data);
+        }
+        
+        private void CreateItemIndex()
+        {
+            _data = new ItemIndex
+            {
+                ItemCategories = new Dictionary<string, List<ItemInfo>>()
+            };
+
+            // Create categories
+            foreach (string category in Enum.GetNames(typeof(ItemCategory)))
+            {
+                if (category == "All") { continue; }
+
+                _data.ItemCategories.Add(category, new List<ItemInfo>());
+            }
+            
+            // Iterate and categorize items
+            foreach (ItemDefinition itemDefinition in ItemManager.GetItemDefinitions())
+            {
+                _data.ItemCategories[itemDefinition.category.ToString()].Add(
+                    new ItemInfo
+                    {
+                        ItemId = itemDefinition.itemid,
+                        Shortname = itemDefinition.shortname,
+                        HasDurability = itemDefinition.condition.enabled,
+                        VanillaStackSize = GetVanillaStackSize(itemDefinition),
+                        CustomStackSize = 0
+                    });
+            }
+
+            _data.VersionNumber = Version;
+            
+            SaveData();
+        }
+
+        private void UpdateItemIndex()
+        {
+            foreach (ItemDefinition itemDefinition in ItemManager.GetItemDefinitions())
+            {
+                if (!_data.ItemCategories[itemDefinition.category.ToString()]
+                    .Exists(itemInfo => itemInfo.ItemId == itemDefinition.itemid))
+                {
+                    _data.ItemCategories[itemDefinition.category.ToString()].Add(
+                        new ItemInfo
+                        {
+                            ItemId = itemDefinition.itemid,
+                            Shortname = itemDefinition.shortname,
+                            HasDurability = itemDefinition.condition.enabled,
+                            VanillaStackSize = GetVanillaStackSize(itemDefinition),
+                            CustomStackSize = 0
+                        });
+                }
+            }
+
+            SaveData();
+        }
+        
+        private ItemInfo AddItemToIndex(int itemId)
+        {
+            ItemDefinition itemDefinition = ItemManager.FindItemDefinition(itemId);
+            
+            ItemInfo item = new ItemInfo
+            {
+                ItemId = itemId,
+                Shortname = itemDefinition.shortname,
+                HasDurability = itemDefinition.condition.enabled,
+                VanillaStackSize = GetVanillaStackSize(itemDefinition),
+                CustomStackSize = 0
+            };
+            
+            _data.ItemCategories[itemDefinition.category.ToString()].Add(item);
+
+            SaveData();
+
+            return item;
+        }
+
+        private ItemInfo GetIndexedItem(int itemId)
+        {
+            ItemInfo indexedItem = null;
+            foreach (List<ItemInfo> itemInfo in _data.ItemCategories.Values)
+            {
+                indexedItem = itemInfo.Find(x => x.ItemId == itemId);
+
+                if (indexedItem != null)
+                {
+                    break;
+                }
+            }
+
+            return indexedItem;
+        }
+        
+        private ItemInfo GetIndexedItem(ItemCategory itemCategory, int itemId)
+        {
+            ItemInfo itemInfo = _data.ItemCategories[itemCategory.ToString()].First(item => item.ItemId == itemId) ??
+                                AddItemToIndex(itemId);
+
+            return itemInfo;
+        }
+
+        private void MaintainVanillaStackSizes(bool refreshDataFile = false)
+        {
+            SortedDictionary<string, int> vanillaStackSizes = new SortedDictionary<string, int>();
+
+            foreach (ItemDefinition itemDefinition in ItemManager.GetItemDefinitions())
+            {
+                vanillaStackSizes.Add(itemDefinition.shortname, itemDefinition.stackable);
+
+                if (refreshDataFile)
+                {
+                    ItemInfo existingItemInfo = _data.ItemCategories[itemDefinition.category.ToString()]
+                        .Find(itemInfo => itemInfo.ItemId == itemDefinition.itemid);
+                
+                    existingItemInfo.VanillaStackSize = GetVanillaStackSize(itemDefinition);
+                    
+                    SaveData();
+                }
+            }
+            
+            Interface.Oxide.DataFileSystem.WriteObject(nameof(StackSizeController) + "_vanilla-defaults",
+                vanillaStackSizes);
+
+            _vanillaDefaults = new Dictionary<string, int>(vanillaStackSizes);
+        }
+
+        #endregion
+        
+        #region Commands
+        
+        /*
+         * dumpitemlist command
+         */
+        private void RegenerateDataFileCommand(IPlayer player, string command, string[] args)
+        {
+            CreateItemIndex();
+            
+            player.Reply(GetMessage("OperationSuccessful", player.Id));
+        }
+
+        private void SetStackCommand(IPlayer player, string command, string[] args)
+        {
+            if (args.Length != 2)
+            {
+                player.Reply(
+                    string.Format(GetMessage("NotEnoughArguments", player.Id), 2));
+
+                return;
+            }
+            
+            ItemDefinition itemDefinition = ItemManager.FindItemDefinition(args[0]);
+            string stackSizeString = args[1];
+
+            if (itemDefinition == null)
+            {
+                player.Reply(GetMessage("InvalidItemShortnameOrId", player.Id));
+
+                return;
+            }
+
+            if (stackSizeString.Substring(stackSizeString.Length - 1) == "x")
+            {
+                UpdateIndividualItemStackMultiplier(itemDefinition.itemid,
+                    Convert.ToSingle(stackSizeString.TrimEnd('x')));
+                SetStackSizes();
+                player.Reply(GetMessage("OperationSuccessful", player.Id));
+
+                return;
+            }
+
+            UpdateIndividualItemHardLimit(itemDefinition.shortname, Convert.ToInt32(stackSizeString.TrimEnd('x')));
+            SetStackSizes();
+            player.Reply(GetMessage("OperationSuccessful", player.Id));
+        }
+
+        private void SetAllStacksCommand(IPlayer player, string command, string[] args)
+        {
+            if (args.Length != 1)
+            {
+                player.Reply(
+                    string.Format(GetMessage("NotEnoughArguments", player.Id), 1));
+            }
+
+            foreach (string category in _config.CategoryStackMultipliers.Keys.ToList())
+            {
+                _config.CategoryStackMultipliers[category] = Convert.ToInt32(args[0]);
+            }
+
+            SaveConfig();
+            SetStackSizes();
+            
+            player.Reply(GetMessage("OperationSuccessful", player.Id));
+        }
+
+        private void SetStackCategoryCommand(IPlayer player, string command, string[] args)
+        {
+            if (args.Length != 2)
+            {
+                player.Reply(
+                    string.Format(GetMessage("NotEnoughArguments", player.Id), 2));
+            }
+
+            ItemCategory itemCategory = (ItemCategory) Enum.Parse(typeof(ItemCategory), args[0], true);
+
+            if (itemCategory.IsNull<ItemCategory>())
+            {
+                player.Reply(GetMessage("InvalidCategory", player.Id));
+            }
+            
+            _config.CategoryStackMultipliers[itemCategory.ToString()] = Convert.ToInt32(args[1].TrimEnd('x'));
+
+            SaveConfig();
+            SetStackSizes();
+            
+            player.Reply(GetMessage("OperationSuccessful", player.Id));
+        }
+
+        private void ItemSearchCommand(IPlayer player, string command, string[] args)
+        {
+            if (args.Length != 1)
+            {
+                player.Reply(
+                    string.Format(GetMessage("NotEnoughArguments", player.Id), 1));
+            }
+            
+            List<ItemDefinition> itemDefinitions = ItemManager.itemList.Where(itemDefinition =>
+                    itemDefinition.displayName.english.Contains(args[0]) ||
+                    itemDefinition.displayDescription.english.Contains(args[0]) ||
+                    itemDefinition.shortname.Equals(args[0]) ||
+                    itemDefinition.shortname.Contains(args[0]))
+                .ToList();
+            
+            TextTable output = new TextTable();
+            output.AddColumns("Unique Id", "Shortname", "Category", "Vanilla Stack", "Custom Stack");
+
+            foreach (ItemDefinition itemDefinition in itemDefinitions)
+            {
+                ItemInfo itemInfo = GetIndexedItem(itemDefinition.category, itemDefinition.itemid);
+                
+                output.AddRow(itemDefinition.itemid.ToString(), itemDefinition.shortname, 
+                    itemDefinition.category.ToString(), itemInfo.VanillaStackSize.ToString("N0"), 
+                    Mathf.Clamp(GetStackSize(itemDefinition), 0, int.MaxValue).ToString("N0"));
+            }
+            
+            player.Reply(output.ToString());
+        }
+
+        private void ListCategoriesCommand(IPlayer player, string command, string[] args)
+        {
+            TextTable output = new TextTable();
+            output.AddColumns("Category Name", "Items In Category");
+
+            foreach (string category in Enum.GetNames(typeof(ItemCategory)))
+            {
+                output.AddRow(category, _data.ItemCategories[category].Count.ToString());
+            }
+            
+            player.Reply(output.ToString());
+        }
+        
+        private void ListCategoryItemsCommand(IPlayer player, string command, string[] args)
+        {
+            if (args.Length != 1)
+            {
+                player.Reply(string.Format(GetMessage("NotEnoughArguments", player.Id), 1));
+            }
+
+            ItemCategory itemCategory = (ItemCategory) Enum.Parse(typeof(ItemCategory), args[0]);
+
+            if (itemCategory.IsNull<ItemCategory>())
+            {
+                player.Reply(GetMessage("InvalidCategory", player.Id));
+            }
+            
+            TextTable output = new TextTable();
+            output.AddColumns("Unique Id", "Shortname", "Category", "Vanilla Stack", "Custom Stack", "Multiplier");
+
+            foreach (ItemDefinition itemDefinition in ItemManager.GetItemDefinitions()
+                .Where(itemDefinition => itemDefinition.category == itemCategory))
+            {
+                ItemInfo itemInfo = GetIndexedItem(itemDefinition.category, itemDefinition.itemid);
+                
+                output.AddRow(itemDefinition.itemid.ToString(), itemDefinition.shortname, 
+                    itemDefinition.category.ToString(), itemInfo.VanillaStackSize.ToString("N0"), 
+                    Mathf.Clamp(GetStackSize(itemDefinition), 0, int.MaxValue).ToString("N0"),
+                    _config.CategoryStackMultipliers[itemDefinition.category.ToString()].ToString());
+            }
+            
+            player.Reply(output.ToString());
+        }
+
         #endregion
 
         #region Hooks
-        private void OnServerInitialized()
+
+        object CanMoveItem(Item item, PlayerInventory playerLoot, uint targetContainer, int targetSlot, int amount)
         {
-            TryConfig();
-            pluginLoaded = LoadData();
-
-            if (pluginLoaded) 
+            if (_config.DisableDupeFixAndLeaveWeaponMagsAlone)
             {
-                if (!configData.Settings.StackHealthItems) { Unsubscribe(); }
-                UpdateItems(); 
+                return null;
             }
-            else { Puts("Stack Sizes could not be changed due to a corrupt data file."); }
 
-            permission.RegisterPermission("stacksizecontroller.canChangeStackSize", this);
-        }
+            ItemContainer container = playerLoot.FindContainer(targetContainer) ?? null;
+            Item targetItem = container.GetSlot(targetSlot) ?? null;
 
-        private bool hasPermission(BasePlayer player, string perm)
-        {
-            if (player.net.connection.authLevel > 1)
+            if (targetItem.IsNull<Item>() || container.IsNull<ContainerIOEntity>())
             {
-                return true;
+                return null;
             }
-            return permission.UserHasPermission(player.userID.ToString(), perm);
+
+            if (item.contents?.itemList.Count > 0)
+            {
+                foreach (Item containedItem in item.contents.itemList)
+                {
+                    if (containedItem.info.itemType == ItemContainer.ContentsType.Liquid) { continue; }
+
+                    container.AddItem(containedItem.info, containedItem.amount, containedItem.skin);
+                    containedItem.Remove();
+                }
+            }
+
+            // Return contents
+            if (targetItem.info.itemid == item.info.itemid && targetItem.contents?.itemList.Count > 0)
+            {
+                foreach (Item containedItem in targetItem.contents.itemList)
+                {
+                    if (containedItem.info.itemType == ItemContainer.ContentsType.Liquid) { continue; }
+
+                    container.AddItem(containedItem.info, containedItem.amount, containedItem.skin);
+                    containedItem.Remove();
+                }
+            }
+
+            BaseProjectile.Magazine itemMag =
+                item.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
+
+            // Return ammo
+            if (itemMag != null)
+            {
+                if (itemMag.contents > 0)
+                {
+                    container.AddItem(itemMag.ammoType, itemMag.contents);
+
+                    itemMag.contents = 0;
+                }
+            }
+
+            if (targetItem.GetHeldEntity() is FlameThrower)
+            {
+                FlameThrower flameThrower = item.GetHeldEntity().GetComponent<FlameThrower>();
+
+                if (flameThrower.ammo > 0)
+                {
+                    container.AddItem(flameThrower.fuelType, flameThrower.ammo);
+
+                    flameThrower.ammo = 0;
+                }
+            }
+
+            if (targetItem.GetHeldEntity() is Chainsaw)
+            {
+                Chainsaw chainsaw = item.GetHeldEntity().GetComponent<Chainsaw>();
+
+                if (chainsaw.ammo > 0)
+                {
+                    container.AddItem(chainsaw.fuelType, chainsaw.ammo);
+
+                    chainsaw.ammo = 0;
+                }
+            }
+
+            return null;
         }
         
-        private object CanStackItem(Item item, Item targetItem)
+        private Item OnItemSplit(Item item, int amount)
         {
-            if (item.info.shortname != targetItem.info.shortname) { return null; }
-            if (item.contents != targetItem.contents) { return false; }
-
-            FlameThrower flamethrower = item.GetHeldEntity() as FlameThrower;
-            if (flamethrower != null)
+            if (_config.DisableDupeFixAndLeaveWeaponMagsAlone)
             {
-                if (flamethrower.ammo != (targetItem.GetHeldEntity() as FlameThrower).ammo) { return false; }
+                return null;
             }
-			return null;
-        }
 
-        private void Unsubscribe()
-        {
-            Unsubscribe(nameof(CanStackItem));
+            Item newItem = ItemManager.CreateByItemID(item.info.itemid, amount, item.skin);
+            BaseProjectile.Magazine newItemMag =
+                newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
+
+            if (newItem.contents?.itemList.Count == 0 && 
+                (_config.DisableDupeFixAndLeaveWeaponMagsAlone || (newItem.contents?.itemList.Count == 0 && newItemMag?.contents == 0)))
+            {
+                return null;
+            }
+
+            item.amount -= amount;
+            newItem.name = item.name;
+            newItem.skin = item.skin;
+
+            if (item.IsBlueprint())
+            {
+                newItem.blueprintTarget = item.blueprintTarget;
+            }
+            
+            if (item.info.amountType == ItemDefinition.AmountType.Genetics && item.instanceData != null &&
+                item.instanceData.dataInt != 0)
+            {
+                newItem.instanceData = new ProtoBuf.Item.InstanceData()
+                {
+                    dataInt = item.instanceData.dataInt,
+                    ShouldPool = false
+                };
+            }
+            
+            // Remove default contents (fuel, etc)
+            if (newItem.contents?.itemList.Count > 0)
+            {
+                foreach (Item containedItem in item.contents.itemList)
+                {
+                    if (containedItem.info.itemType == ItemContainer.ContentsType.Liquid) { continue; }
+
+                    containedItem.Remove();
+                }
+            }
+            
+            item.MarkDirty();
+
+            // Remove default ammo
+            if (newItemMag != null)
+            {
+                newItemMag.contents = 0;
+            }
+
+            if (newItem.GetHeldEntity() is FlameThrower)
+            {
+                newItem.GetHeldEntity().GetComponent<FlameThrower>().ammo = 0;
+            }
+            
+            if (newItem.GetHeldEntity() is Chainsaw)
+            {
+                newItem.GetHeldEntity().GetComponent<Chainsaw>().ammo = 0;
+            }
+
+            return newItem;
         }
 
         #endregion
 
-        #region Commands
-        [ChatCommand("stack")]
-        private void StackCommand(BasePlayer player, string command, string[] args)
+        #region Helpers
+
+        private int GetStackSize(int itemId)
         {
-            if (!hasPermission(player, "stacksizecontroller.canChangeStackSize"))
-            {
-                SendReply(player, "You don't have permission to use this command.");
-                return;
-            }
-
-            if (!pluginLoaded)
-            {
-                SendReply(player, "StackSizeController has encountered an error while trying to read the data file. Please contact your server administrator to fix the issue.");
-                return;
-            }
-
-            if (args.Length < 2)
-            {
-                SendReply(player, "Syntax Error: Requires 2 arguments. Syntax Example: /stack ammo.rocket.hv 64 (Use shortname)");
-                return;
-            }
-
-            int stackAmount = 0;
-
-            List<ItemDefinition> gameitems = ItemManager.itemList.FindAll(x => x.shortname.Equals(args[0]));
-
-            if (gameitems.Count == 0)
-            {
-                SendReply(player, "Syntax Error: That is an incorrect item name. Please use a valid shortname.");
-                return;
-            }
-
-            string replymessage = "";
-            switch (args[1].ToLower())
-            {
-                case "default":
-                {
-                    stackAmount = DetermineStack(gameitems[0]);
-                    replymessage = "Updated Stack Size for " + gameitems[0].displayName.english + " (" + gameitems[0].shortname + ") to " + stackAmount + " (Default value based on config).";
-                    break;
-                }
-                default:
-                {
-                    if (int.TryParse(args[1], out stackAmount) == false)
-                    {
-                        SendReply(player, "Syntax Error: Stack Amount is not a number. Syntax Example: /stack ammo.rocket.hv 64 (Use shortname)");
-                        return;
-                    }
-                    replymessage = "Updated Stack Size for " + gameitems[0].displayName.english + " (" + gameitems[0].shortname + ") to " + stackAmount + ".";
-                    break;
-                }
-            }
-
-            if (gameitems[0].condition.enabled && gameitems[0].condition.max > 0)
-            {
-                if (!(configData.Settings.StackHealthItems))
-                {
-                    SendReply(player, "Error: Stacking health items is disabled in the config.");
-                    return;
-                }
-            }
-
-            items.itemlist[gameitems[0].displayName.english] = Convert.ToInt32(stackAmount);
-                
-            gameitems[0].stackable = Convert.ToInt32(stackAmount);
-
-            SaveData();
-
-            SendReply(player, replymessage);
+            return GetStackSize(ItemManager.FindItemDefinition(itemId));
         }
 
-        [ChatCommand("stackall")]
-        private void StackAllCommand(BasePlayer player, string command, string[] args)
+        private int GetStackSize(ItemDefinition itemDefinition)
         {
-            if (!hasPermission(player, "stacksizecontroller.canChangeStackSize"))
+            ItemInfo customStackInfo = _data.ItemCategories[itemDefinition.category.ToString()]
+                .Find(itemInfo => itemInfo.ItemId == itemDefinition.itemid);
+
+            if (customStackInfo.IsNull<ItemInfo>())
             {
-                SendReply(player, "You don't have permission to use this command.");
-                return;
+                customStackInfo = AddItemToIndex(itemDefinition.itemid);
             }
 
-            if (!pluginLoaded)
+            if (_ignoreList.Contains(itemDefinition.shortname))
             {
-                SendReply(player, "StackSizeController has encountered an error while trying to read the data file. Please contact your server administrator to fix the issue.");
-                return;
+                return GetVanillaStackSize(itemDefinition);
+            }
+            
+            // Individual Limit set by shortname
+            if (_config.IndividualItemStackHardLimits.ContainsKey(itemDefinition.shortname))
+            {
+                return _config.IndividualItemStackHardLimits[itemDefinition.shortname];
+            }
+            
+            // Individual Limit set by item id
+            if (_config.IndividualItemStackHardLimits.ContainsKey(itemDefinition.itemid.ToString()))
+            {
+                return _config.IndividualItemStackHardLimits[itemDefinition.itemid.ToString()];
+            }
+            
+            // Custom stack exists
+            if (customStackInfo.CustomStackSize > 0)
+            {
+                return Mathf.RoundToInt(customStackInfo.CustomStackSize * _config.GlobalStackMultiplier);
+            }
+            
+            // Individual Multiplier set by shortname
+            int stackable = _vanillaDefaults.ContainsKey(itemDefinition.shortname) ? _vanillaDefaults[itemDefinition.shortname] : itemDefinition.stackable;
+            if (_config.IndividualItemStackMultipliers.ContainsKey(itemDefinition.shortname))
+            {
+                return Mathf.RoundToInt(stackable * _config.IndividualItemStackMultipliers[itemDefinition.shortname]);
+            }
+            
+            // Individual Multiplier set by item id
+            if (_config.IndividualItemStackMultipliers.ContainsKey(itemDefinition.itemid.ToString()))
+            {
+                return Mathf.RoundToInt(stackable * _config.IndividualItemStackMultipliers[itemDefinition.itemid.ToString()]);
+            }
+            
+            // Category stack limit defined
+            if (_config.CategoryStackHardLimits.ContainsKey(itemDefinition.category.ToString()) &&
+                _config.CategoryStackHardLimits[itemDefinition.category.ToString()] > 0)
+            {
+                return _config.CategoryStackHardLimits[itemDefinition.category.ToString()];
+            }
+            
+            // Category stack multiplier defined
+            if (_config.CategoryStackMultipliers.ContainsKey(itemDefinition.category.ToString()) &&
+                _config.CategoryStackMultipliers[itemDefinition.category.ToString()] > 1.0f)
+            {
+                return Mathf.RoundToInt(
+                    stackable * _config.CategoryStackMultipliers[itemDefinition.category.ToString()]);
             }
 
-            if (args.Length < 1)
-            {
-                SendReply(player, "Syntax Error: Requires 1 argument. Syntax Example: /stackall 65000");
-                return;
-            }
-
-            int stackAmount = 0;
-            string replymessage = "";
-
-            var itemList = ItemManager.itemList;
-
-            foreach (var gameitem in itemList)
-            {
-                switch (args[0].ToLower())
-                {
-                    case "default":
-                    {
-                        stackAmount = DetermineStack(gameitem);
-                        replymessage = "The Stack Size of all stackable items has been set to their default values (specified in config).";
-                        break;
-                    }
-                    default:
-                    {
-                        if (int.TryParse(args[0], out stackAmount) == false)
-                        {
-                            SendReply(player, "Syntax Error: Stack Amount is not a number. Syntax Example: /stackall 65000");
-                            return;
-                        }
-                        replymessage = "The Stack Size of all stackable items has been set to " + stackAmount.ToString() + ".";
-                        break;
-                    }
-                }
-
-                if (gameitem.condition.enabled && gameitem.condition.max > 0 && !(configData.Settings.StackHealthItems)) { continue; }
-                if (gameitem.displayName.english.ToString() == "Salt Water" || gameitem.displayName.english.ToString() == "Water") { continue; }
-
-                items.itemlist[gameitem.displayName.english] = Convert.ToInt32(stackAmount);
-                gameitem.stackable = Convert.ToInt32(stackAmount);
-            }
-
-            SaveData();
-
-            SendReply(player, replymessage);
+            return Mathf.RoundToInt(stackable * _config.GlobalStackMultiplier);
         }
 
-        [ConsoleCommand("stack")]
-        private void StackConsoleCommand(ConsoleSystem.Arg arg)
+        private int GetVanillaStackSize(ItemDefinition itemDefinition)
         {
-            if (arg.IsAdmin != true) 
-            {
-                if ((arg.Connection.userid.ToString() != null) && !(permission.UserHasPermission(arg.Connection.userid.ToString(), "stacksizecontroller.canChangeStackSize")))
-                {
-                    arg.ReplyWith("[StackSizeController] You don't have permission to use this command.");
-                    return;
-                }
-            }
-
-            if (!pluginLoaded)
-            {
-                arg.ReplyWith("[StackSizeController] StackSizeController has encountered an error while trying to read the data file. Please contact your server administrator to fix the issue.");
-                return;
-            }
-
-            if (arg.Args != null)
-            {
-                if (arg.Args.Length < 2)
-                {
-                    arg.ReplyWith("[StackSizeController] Syntax Error: Requires 2 arguments. Syntax Example: stack ammo.rocket.hv 64 (Use shortname)");
-                    return;
-                }
-            }
-            else
-            {
-                arg.ReplyWith("[StackSizeController] Syntax Error: Requires 2 arguments. Syntax Example: stack ammo.rocket.hv 64 (Use shortname)");
-                return;
-            }
-
-            int stackAmount = 0;
-            List<ItemDefinition> gameitems = ItemManager.itemList.FindAll(x => x.shortname.Equals(arg.Args[0]));
-
-            if (gameitems.Count == 0)
-            {
-                arg.ReplyWith("[StackSizeController] Syntax Error: That is an incorrect item name. Please use a valid shortname.");
-                return;
-            }
-
-            string replymessage = "";
-            switch (arg.Args[1].ToLower())
-            {
-                case "default":
-                {
-                    stackAmount = DetermineStack(gameitems[0]);
-                    replymessage = "[StackSizeController] Updated Stack Size for " + gameitems[0].displayName.english + " (" + gameitems[0].shortname + ") to " + stackAmount + " (Default value based on config).";
-                    break;
-                }
-                default:
-                {
-                    if (int.TryParse(arg.Args[1], out stackAmount) == false)
-                    {
-                        arg.ReplyWith("[StackSizeController] Syntax Error: Stack Amount is not a number. Syntax Example: /stack ammo.rocket.hv 64 (Use shortname)");
-                        return;
-                    }
-                    replymessage = "[StackSizeController] Updated Stack Size for " + gameitems[0].displayName.english + " (" + gameitems[0].shortname + ") to " + stackAmount + ".";
-                    break;
-                }
-            }
-
-            if (gameitems[0].condition.enabled && gameitems[0].condition.max > 0)
-            {
-                if (!(configData.Settings.StackHealthItems))
-                {
-                    arg.ReplyWith("[StackSizeController] Error: Stacking health items is disabled in the config.");
-                    return;
-                }
-            }
-
-            items.itemlist[gameitems[0].displayName.english] = Convert.ToInt32(stackAmount);
-
-            gameitems[0].stackable = Convert.ToInt32(stackAmount);
-
-            SaveData();
-
-            arg.ReplyWith(replymessage);
+            return _vanillaDefaults.ContainsKey(itemDefinition.shortname)
+                ? _vanillaDefaults[itemDefinition.shortname]
+                : itemDefinition.stackable;
         }
 
-        [ConsoleCommand("stackall")]
-        private void StackAllConsoleCommand(ConsoleSystem.Arg arg)
+        private void SetStackSizes()
         {
-            if (arg.IsAdmin != true)
+            foreach (ItemDefinition itemDefinition in ItemManager.GetItemDefinitions())
             {
-                if ((arg.Connection.userid.ToString() != null) && !(permission.UserHasPermission(arg.Connection.userid.ToString(), "stacksizecontroller.canChangeStackSize")))
+                if (itemDefinition.condition.enabled && !_config.AllowStackingItemsWithDurability)
                 {
-                    arg.ReplyWith("[StackSizeController] You don't have permission to use this command.");
-                    return;
-                }
-            }
-
-            if (!pluginLoaded)
-            {
-                arg.ReplyWith("[StackSizeController] StackSizeController has encountered an error while trying to read the data file. Please contact your server administrator to fix the issue.");
-                return;
-            }
-
-            if (arg.Args != null)
-            {
-                if (arg.Args.Length < 1)
-                {
-                    arg.ReplyWith("[StackSizeController] Syntax Error: Requires 1 argument. Syntax Example: stackall 65000");
-                    return;
-                }
-            }
-            else
-            {
-                arg.ReplyWith("[StackSizeController] Syntax Error: Requires 1 argument. Syntax Example: stackall 65000");
-                return;
-            }
-
-            int stackAmount = 0;
-            string replymessage = "";
-
-            var itemList = ItemManager.itemList;
-
-            foreach (var gameitem in itemList)
-            {
-                if (gameitem.condition.enabled && gameitem.condition.max > 0 && (!(configData.Settings.StackHealthItems))) { continue; }
-                if (gameitem.displayName.english.ToString() == "Salt Water" ||
-                gameitem.displayName.english.ToString() == "Water") { continue; }
-
-                switch (arg.Args[0].ToLower())
-                {
-                    case "default":
-                    {
-                        stackAmount = DetermineStack(gameitem);
-                        replymessage = "[StackSizeController] The Stack Size of all stackable items has been set to their default values (specified in config).";
-                        break;
-                    }
-                    default:
-                    {
-                        if (int.TryParse(arg.Args[0], out stackAmount) == false)
-                        {
-                            arg.ReplyWith("[StackSizeController] Syntax Error: Stack Amount is not a number. Syntax Example: /stackall 65000");
-                            return;
-                        }
-                        replymessage = "[StackSizeController] The Stack Size of all stackable items has been set to " + stackAmount.ToString() + ".";
-                        break;
-                    }
+                    continue;
                 }
 
-                items.itemlist[gameitem.displayName.english] = Convert.ToInt32(stackAmount);
-                gameitem.stackable = Convert.ToInt32(stackAmount);
+                if (_ignoreList.Contains(itemDefinition.shortname))
+                {
+                    continue;
+                }
+
+                itemDefinition.stackable = Mathf.Clamp(GetStackSize(itemDefinition), 1, int.MaxValue);
             }
-
-            SaveData();
-
-            arg.ReplyWith(replymessage);
         }
+
+        private void RevertStackSizes()
+        {
+            foreach (ItemDefinition itemDefinition in ItemManager.GetItemDefinitions())
+            {
+                itemDefinition.stackable = GetVanillaStackSize(itemDefinition);
+            }
+        }
+
+        private static Dictionary<string, object> GetCategoriesAndDefaults(object defaultValue)
+        {
+            Dictionary<string, object> categoryDefaults = new Dictionary<string, object>();
+            
+            foreach (string category in Enum.GetNames(typeof(ItemCategory)))
+            {
+                categoryDefaults.Add(category, defaultValue);
+            }
+
+            return categoryDefaults;
+        }
+
         #endregion
     }
 }

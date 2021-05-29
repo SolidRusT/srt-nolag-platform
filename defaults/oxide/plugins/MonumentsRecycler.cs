@@ -7,14 +7,18 @@ using Rust;
 
 namespace Oxide.Plugins
 {
-    [Info("MonumentsRecycler", "Dana", "0.2.2")]
+    [Info("Monuments Recycler", "Dana", "0.2.3")]
     [Description("Adds recyclers to monuments including the cargo ship.")]
     internal class MonumentsRecycler : RustPlugin
     {
+        private bool _serverInitialized = false;
         private const string RecyclerPrefab = "assets/bundled/prefabs/static/recycler_static.prefab";
         private const string SmallOilRigKey = "oil_rig_small";
         private const string LargeOilRigKey = "large_oil_rig";
         private const string DomeKey = "dome_monument_name";
+        const string FishingVillageLargePrefab = "assets/bundled/prefabs/autospawn/monument/harbor/fishing_village_a.prefab";
+        const string FishingVillageSmallBPrefab = "assets/bundled/prefabs/autospawn/monument/harbor/fishing_village_b.prefab";
+        const string FishingVillageSmallAPrefab = "assets/bundled/prefabs/autospawn/monument/harbor/fishing_village_c.prefab";
 
         private List<BaseEntity> _recyclers = new List<BaseEntity>();
         private SpawnData _domeSpawnData = new SpawnData(new Vector3(19.9f, 32.23f, 16.57f), new Vector3(0, 235, 0));
@@ -27,6 +31,12 @@ namespace Oxide.Plugins
         {
             {"4",  new SpawnData(new Vector3(20.57f, 27.1f, -44.52f),new Vector3(0, 0, 0) )},
             {"6",new SpawnData(new Vector3(-13.6f, 36.1f, -3.4f),new Vector3(0, 180, 0)) }
+        };
+        private readonly Dictionary<string, SpawnData> _fishingVillageRecyclerPositions = new Dictionary<string, SpawnData>
+        {
+            {"smallB", new SpawnData(new Vector3(-21f,0.3f,6.5f),new Vector3(0f,130f,0f)) },
+            {"smallA", new SpawnData(new Vector3(-8.5f,2f,16.06067f),new Vector3(0,90f,0)) },
+            {"large", new SpawnData(new Vector3(-20.7f,0.2f,-9.6f), new Vector3(0,45f,0)) }
         };
         private Configuration _config;
 
@@ -53,6 +63,15 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Small Oil Rig - Recycler Position - Level 4")]
             public bool SmallOilRigRecyclerPositionLevel4 = true;
 
+            [JsonProperty(PropertyName = "Fishing Village - Recycler - Large")]
+            public bool FishingVillageRecyclerLarge { get; set; } = true;
+
+            [JsonProperty(PropertyName = "Fishing Village - Recycler - Small A")]
+            public bool FishingVillageRecyclerSmallA { get; set; } = true;
+
+            [JsonProperty(PropertyName = "Fishing Village - Recycler - Small B")]
+            public bool FishingVillageRecyclerSmallB { get; set; } = true;
+
             [JsonProperty(PropertyName = "Dome - Recycler")]
             public bool DomeRecycler = true;
         }
@@ -60,10 +79,13 @@ namespace Oxide.Plugins
         protected override void LoadConfig()
         {
             base.LoadConfig();
-
             try
             {
                 _config = Config.ReadObject<Configuration>();
+                //if (_config != null && _serverInitialized)
+                //{
+                //    ShowRecyclers();
+                //}
             }
             catch
             {
@@ -80,7 +102,8 @@ namespace Oxide.Plugins
             var pluginEnabled = _config.RecyclerPositionFront || _config.RecyclerPositionBack || _config.RecyclerPositionBottom ||
                                 _config.LargeOilRigRecyclerPositionLevel4 || _config.LargeOilRigRecyclerPositionLevel6 ||
                                 _config.SmallOilRigRecyclerPositionLevel3 || _config.SmallOilRigRecyclerPositionLevel4 ||
-                                _config.DomeRecycler;
+                                _config.DomeRecycler || _config.FishingVillageRecyclerLarge || _config.FishingVillageRecyclerSmallA
+                                || _config.FishingVillageRecyclerSmallB;
             if (!pluginEnabled)
             {
                 PrintWarning("No Recycler Position Found");
@@ -151,8 +174,14 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
+            _serverInitialized = true;
+            ShowRecyclers();
+        }
+        private void ShowRecyclers()
+        {
             var oilRigEnabled = _config.LargeOilRigRecyclerPositionLevel4 || _config.LargeOilRigRecyclerPositionLevel6 ||
-                                _config.SmallOilRigRecyclerPositionLevel3 || _config.SmallOilRigRecyclerPositionLevel4;
+                               _config.SmallOilRigRecyclerPositionLevel3 || _config.SmallOilRigRecyclerPositionLevel4;
+            var fishingVillageEnabled = _config.FishingVillageRecyclerLarge || _config.FishingVillageRecyclerSmallA || _config.FishingVillageRecyclerSmallB;
             if (oilRigEnabled)
             {
 
@@ -208,10 +237,62 @@ namespace Oxide.Plugins
                     }
                 }
             }
+            if (fishingVillageEnabled)
+            {
+                SpawnData spawnData;
+                var monuments = TerrainMeta.Path.Monuments?.Where(x => x.shouldDisplayOnMap && x.displayPhrase.english.ToLower().Contains("fishing")).ToList() ?? new List<MonumentInfo>();
+                foreach (var monument in monuments)
+                {
+                    if (monument.name == FishingVillageLargePrefab)
+                    {
+                        if (_config.FishingVillageRecyclerLarge)
+                        {
+                            if (_fishingVillageRecyclerPositions.TryGetValue("large", out spawnData))
+                            {
+                                SpawnFishingVillageRecycler(monument.transform, spawnData.Position, spawnData.Rotation);
+                            }
+                        }
+                    }
+                    else if (monument.name == FishingVillageSmallAPrefab)
+                    {
+                        if (_config.FishingVillageRecyclerSmallA)
+                        {
+                            if (_fishingVillageRecyclerPositions.TryGetValue("smallA", out spawnData))
+                            {
+                                SpawnFishingVillageRecycler(monument.transform, spawnData.Position, spawnData.Rotation);
+                            }
+                        }
+                    }
+                    else if (monument.name == FishingVillageSmallBPrefab)
+                    {
+                        if (_config.FishingVillageRecyclerSmallB)
+                        {
+                            if (_fishingVillageRecyclerPositions.TryGetValue("smallB", out spawnData))
+                            {
+                                SpawnFishingVillageRecycler(monument.transform, spawnData.Position, spawnData.Rotation);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
+        private void SpawnFishingVillageRecycler(Transform objTransform, Vector3 spawnOffset, Vector3 rotationOffset)
+        {
+
+            var mtx = objTransform.localToWorldMatrix;
+            var finalPos = mtx.MultiplyPoint3x4(spawnOffset);
+            var rotation = mtx.rotation * Quaternion.Euler(rotationOffset);
+            var entity = GameManager.server.CreateEntity(RecyclerPrefab, finalPos, rotation);
+            if (entity != null)
+            {
+                entity.Spawn();
+                _recyclers.Add(entity);
+            }
+        }
         private void SpawnRecycler(Transform objTransform, Vector3 spawnOffset, Vector3 rotationOffset)
         {
+
             var mtx = objTransform.localToWorldMatrix;
             var finalPos = mtx.MultiplyPoint3x4(spawnOffset);
             var oilRot = mtx.rotation * Quaternion.Euler(rotationOffset);
@@ -249,6 +330,7 @@ namespace Oxide.Plugins
 
         private void Unload()
         {
+
             foreach (var recycler in _recyclers)
             {
                 if (recycler is Recycler)

@@ -4,7 +4,7 @@ using System;
 
 namespace Oxide.Plugins
 {
-    [Info("Dynamic Player Limit", "Pho3niX90", "0.0.6")]
+    [Info("Dynamic Player Limit", "Pho3niX90", "0.0.7")]
     [Description("Increases the player limit by demand")]
     class DynamicPlayerLimit : RustPlugin
     {
@@ -27,7 +27,7 @@ namespace Oxide.Plugins
         private void AdjustPlayers() {
             int currentSlots = Admin.ServerInfo().MaxPlayers;
 
-            int slotsOpen = (currentSlots - Admin.ServerInfo().Players);
+            int slotsOpen = (currentSlots - (Admin.ServerInfo().Players + Admin.ServerInfo().Joining));
             if (slotsOpen <= config.incrementSlotsOpen && currentSlots < config.maxPlayerSlots) {
                 int newSlots = Math.Min(config.incrementPlayerSlots + currentSlots, config.maxPlayerSlots);
 

@@ -2,10 +2,15 @@
 
 namespace Oxide.Plugins
 {
-    [Info("Unlimited Drone Range", "WhiteThunder", "1.0.0")]
+    [Info("Unlimited Drone Range", "WhiteThunder", "1.0.1")]
     [Description("Removes the range limit when remote-controlling drones from a computer station.")]
     internal class UnlimitedDroneRange : CovalencePlugin
     {
+        private void OnServerInitialized()
+        {
+            LogWarning("This plugin is no longer necessary. Facepunch fixed the RC drone range issue in the March 2021 update. You may uninstall this plugin.");
+        }
+
         private void Unload()
         {
             foreach (var entity in BaseNetworkable.serverEntities)

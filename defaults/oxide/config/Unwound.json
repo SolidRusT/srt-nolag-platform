@@ -1,0 +1,31 @@
+{
+  "EcoSettings": {
+    "10": 10,
+    "100": 1
+  },
+  "Localization": {
+    "AboutToDie": "You are about to die, use /aid to call for a medic.\n{0}",
+    "DontTrollTheMedic": "How dare you call the medic and then don't wait for him before staying up again!",
+    "MedicAlreadyCalled": "You already called for a medic, just wait for him.",
+    "MedicIncompetent": "This incompetent troll of a medic is just to stupid to get you back up, we will get rid of him!",
+    "MedicToLate": "Seems like your medic found some free beer on the way and won't come in time now ... I think we have to cut his salary!",
+    "NotEnoughMoney": "You don't have enough money, how horrible ... You have {0} and you would need {1} so just wait the full {2} seconds for the medic.",
+    "NotEnoughMoney_ForcedEco": "You don't have enough money, how horrible ... You have {0} and you would need {1}, maybe I'll come to your funeral then.",
+    "NotWounded": "You're not wounded, get your extra shots somewhere else!",
+    "PermissionMissing": "You have no permission to use this command, if you're wounded right now it means you're probably screwed!",
+    "Survived": "The claws of death failed to claim you this time!",
+    "TheMedicIsComing": "The medic is coming for you ... that means if you can survive another {0} seconds."
+  },
+  "Settings": {
+    "CanCallMedicOncePerWounded": true,
+    "ChanceTheMedicSavesYou": 100,
+    "EnableCurrency": false,
+    "EnableEconomics": true,
+    "EnablePopups": false,
+    "EnableServerRewards": false,
+    "ForceCurrency": false,
+    "StartHealth": 50.0,
+    "WaitTillMedic": 10
+  },
+  "Version": "1.0.20"
+}

@@ -14,7 +14,7 @@ using UnityEngine.Networking;
 
 namespace Oxide.Plugins
 {
-    [Info("Image Library", "Absolut & K1lly0u", "2.0.56")]
+    [Info("Image Library", "Absolut & K1lly0u", "2.0.58")]
     [Description("Plugin API for downloading and managing images")]
     class ImageLibrary : RustPlugin
     {
@@ -86,7 +86,6 @@ namespace Oxide.Plugins
         #endregion Oxide Hooks
 
         #region Functions
-
         private IEnumerator ProcessLoadOrders()
         {
             yield return new WaitWhile(() => !isInitialized);
@@ -250,7 +249,6 @@ namespace Oxide.Plugins
         #endregion Functions
 
         #region Workshop Names and Image URLs
-
         private void AddDefaultUrls()
         {
             foreach (ItemDefinition itemDefinition in ItemManager.itemList)
@@ -385,8 +383,11 @@ namespace Oxide.Plugins
         [HookMethod("HasImage")]
         public bool HasImage(string imageName, ulong imageId)
         {
-            if (imageIdentifiers.imageIds.ContainsKey($"{imageName}_{imageId}") && IsInStorage(uint.Parse(imageIdentifiers.imageIds[$"{imageName}_{imageId}"])))
-                return true;
+            string key = $"{imageName}_{imageId}";
+            string value;
+
+            if (imageIdentifiers.imageIds.TryGetValue(key, out value) && IsInStorage(uint.Parse(value)))            
+                return true;            
 
             return false;
         }
@@ -476,7 +477,7 @@ namespace Oxide.Plugins
 
             foreach (KeyValuePair<string, ulong> image in imageList)
             {
-                if (HasImage(image.Key, image.Value))
+                if (HasImage(image.Key, image.Value))                
                     continue;
 
                 string identifier = $"{image.Key}_{image.Value}";
@@ -572,20 +573,20 @@ namespace Oxide.Plugins
         }
 
         private string BuildDetailsString(List<ulong> list, int page)
-        {
-            int start = page * 100;
-            int end = start + 100 > list.Count ? list.Count : start + 100;
+        {            
+            int totalPages = Mathf.CeilToInt((float)list.Count / 100f);
+            int index = page * 100;
+            int limit = Mathf.Min((page + 1) * 100, list.Count);
+            string details = string.Format("?key={0}&itemcount={1}", configData.SteamAPIKey, (limit - index));
 
-            string details = string.Format("?key={0}&itemcount={1}", configData.SteamAPIKey, end - start);
-
-            for (int i = start; i < end; i++)
-                details += string.Format("&publishedfileids[{0}]={1}", i - start, list[i]);
-
+            for (int i = index; i < limit; i++)            
+                details += string.Format("&publishedfileids[{0}]={1}", i - index, list[i]);
+            
             return details;
         }
 
         private string BuildDetailsString(List<ulong> list)
-        {
+        {            
             string details = string.Format("?key={0}&itemcount={1}", configData.SteamAPIKey, list.Count);
 
             for (int i = 0; i < list.Count; i++)
@@ -594,7 +595,7 @@ namespace Oxide.Plugins
             return details;
         }
 
-        private bool IsValid(PublishedFileQueryDetail item)
+        private bool IsValid(PublishedFileDetails item)
         {
             if (string.IsNullOrEmpty(item.preview_url))
                 return false;
@@ -614,17 +615,17 @@ namespace Oxide.Plugins
             GetApprovedItemSkins(BuildApprovedItemList(), 0);
         }
 
-        private void QueueFileQueryRequest(string details, Action<PublishedFileQueryDetail[]> callback)
+        private void QueueFileQueryRequest(string details, Action<PublishedFileDetails[]> callback)
         {
             webrequest.Enqueue(STEAM_API_URL, details, (code, response) =>
             {
                 try
                 {
-                    PublishedFileQueryResponse query = JsonConvert.DeserializeObject<PublishedFileQueryResponse>(response, errorHandling);
+                    QueryResponse query = JsonConvert.DeserializeObject<QueryResponse>(response, errorHandling);
                     if (query == null || query.response == null || query.response.publishedfiledetails.Length == 0)
                     {
                         if (code != 200)
-                            PrintError($"There was a error querying Steam for workshop item data : Code ({code})");
+                            PrintError($"There was a error querying Steam for workshop item data : Code ({code})\n{details}");
                         return;
                     }
                     else
@@ -655,24 +656,24 @@ namespace Oxide.Plugins
 
             string details = BuildDetailsString(itemsToDownload, page);
 
-            QueueFileQueryRequest(details, (PublishedFileQueryDetail[] items) =>
+            QueueFileQueryRequest(details, (PublishedFileDetails[] items) =>
             {
                 ServerMgr.Instance.StartCoroutine(ProcessApprovedBlock(itemsToDownload, items, page, totalPages));
             });
         }
 
-        private IEnumerator ProcessApprovedBlock(List<ulong> itemsToDownload, PublishedFileQueryDetail[] items, int page, int totalPages)
+        private IEnumerator ProcessApprovedBlock(List<ulong> itemsToDownload, PublishedFileDetails[] items, int page, int totalPages)
         {
             PrintWarning($"Processing approved skins; Page {page + 1}/{totalPages + 1}");
 
             Dictionary<string, Dictionary<ulong, string>> loadOrder = new Dictionary<string, Dictionary<ulong, string>>();
 
-            foreach (PublishedFileQueryDetail item in items)
+            foreach (PublishedFileDetails item in items)
             {
                 if (!IsValid(item))
                     continue;
 
-                foreach (PublishedFileQueryDetail.Tag tag in item.tags)
+                foreach (PublishedFileDetails.Tag tag in item.tags)
                 {
                     if (string.IsNullOrEmpty(tag.tag))
                         continue;
@@ -694,7 +695,7 @@ namespace Oxide.Plugins
                                     {"title", item.title },
                                     {"votesup", 0 },
                                     {"votesdown", 0 },
-                                    {"description", item.description },
+                                    {"description", item.file_description },
                                     {"score", 0 },
                                     {"views", 0 },
                                     {"created", new DateTime() },
@@ -740,7 +741,7 @@ namespace Oxide.Plugins
             {
                 webrequest.Enqueue(STEAM_API_URL, details, (code, response) =>
                 {
-                    PublishedFileQueryResponse query = JsonConvert.DeserializeObject<PublishedFileQueryResponse>(response, errorHandling);
+                    QueryResponse query = JsonConvert.DeserializeObject<QueryResponse>(response, errorHandling);
                     if (query == null || query.response == null || query.response.publishedfiledetails.Length == 0)
                     {
                         if (code != 200)
@@ -770,7 +771,7 @@ namespace Oxide.Plugins
                         {
                             Dictionary<string, Dictionary<ulong, string>> loadOrder = new Dictionary<string, Dictionary<ulong, string>>();
 
-                            foreach (PublishedFileQueryDetail item in query.response.publishedfiledetails)
+                            foreach (PublishedFileDetails item in query.response.publishedfiledetails)
                             {
                                 if (!string.IsNullOrEmpty(item.preview_url))
                                 {
@@ -793,7 +794,7 @@ namespace Oxide.Plugins
                                             {"title", item.title },
                                             {"votesup",  0 },
                                             {"votesdown", 0 },
-                                            {"description", item.description },
+                                            {"description", item.file_description },
                                             {"score", 0 },
                                             {"views", item.views },
                                             {"created", new DateTime(item.time_created) },
@@ -838,47 +839,85 @@ namespace Oxide.Plugins
         }
 
         #region JSON Response Classes
-        public class PublishedFileQueryResponse
+        public class QueryResponse
         {
-            public FileResponse response { get; set; }
+            public Response response;
         }
 
-        public class FileResponse
+        public class Response
         {
-            public int result { get; set; }
-            public int resultcount { get; set; }
-            public PublishedFileQueryDetail[] publishedfiledetails { get; set; }
+            public int total;
+            public PublishedFileDetails[] publishedfiledetails;
         }
 
-        public class PublishedFileQueryDetail
+        public class PublishedFileDetails
         {
-            public string publishedfileid { get; set; }
-            public int result { get; set; }
-            public string creator { get; set; }
-            public int creator_app_id { get; set; }
-            public int consumer_app_id { get; set; }
-            public string filename { get; set; }
-            public int file_size { get; set; }
-            public string preview_url { get; set; }
-            public string hcontent_preview { get; set; }
-            public string title { get; set; }
-            public string description { get; set; }
-            public int time_created { get; set; }
-            public int time_updated { get; set; }
-            public int visibility { get; set; }
-            public int banned { get; set; }
-            public string ban_reason { get; set; }
-            public int subscriptions { get; set; }
-            public int favorited { get; set; }
-            public int lifetime_subscriptions { get; set; }
-            public int lifetime_favorited { get; set; }
-            public int views { get; set; }
-            public Tag[] tags { get; set; }
+            public int result;
+            public string publishedfileid;
+            public string creator;
+            public int creator_appid;
+            public int consumer_appid;
+            public int consumer_shortcutid;
+            public string filename;
+            public string file_size;
+            public string preview_file_size;
+            public string file_url;
+            public string preview_url;
+            public string url;
+            public string hcontent_file;
+            public string hcontent_preview;
+            public string title;
+            public string file_description;
+            public int time_created;
+            public int time_updated;
+            public int visibility;
+            public int flags;
+            public bool workshop_file;
+            public bool workshop_accepted;
+            public bool show_subscribe_all;
+            public int num_comments_public;
+            public bool banned;
+            public string ban_reason;
+            public string banner;
+            public bool can_be_deleted;
+            public string app_name;
+            public int file_type;
+            public bool can_subscribe;
+            public int subscriptions;
+            public int favorited;
+            public int followers;
+            public int lifetime_subscriptions;
+            public int lifetime_favorited;
+            public int lifetime_followers;
+            public string lifetime_playtime;
+            public string lifetime_playtime_sessions;
+            public int views;
+            public int num_children;
+            public int num_reports;
+            public Preview[] previews;
+            public Tag[] tags;
+            public int language;
+            public bool maybe_inappropriate_sex;
+            public bool maybe_inappropriate_violence;
 
             public class Tag
             {
-                public string tag { get; set; }
+                public string tag;
+                public bool adminonly;
             }
+
+        }
+
+        public class Preview
+        {
+            public string previewid;
+            public int sortorder;
+            public string url;
+            public int size;
+            public string filename;
+            public int preview_type;
+            public string youtubevideoid;
+            public string external_reference;
         }
         #endregion
         #endregion
@@ -1081,13 +1120,26 @@ namespace Oxide.Plugins
                     yield break;
                 }
 
-                Texture2D texture = new Texture2D(2, 2);
-                texture.LoadImage(www.downloadHandler.data);
-                if (texture != null)
+                if (www?.downloadHandler?.data != null)
                 {
-                    byte[] bytes = texture.EncodeToPNG();
-                    DestroyImmediate(texture);
-                    StoreByteArray(bytes, info.name);
+                    Texture2D texture = new Texture2D(2, 2);
+                    texture.LoadImage(www.downloadHandler.data);
+                    if (texture != null)
+                    {
+                        bool shouldStore = true;
+                        byte[] bytes = texture.EncodeToPNG();
+
+                        if (bytes.Length > 3145728)
+                        {
+                            Debug.Log($"[ImageLibrary] Failed to store image data for image : {info.name} for equest {request}\nURL: {info.url}\n{bytes.Length} bytes is larger then the allowed transferable size of 3145728 bytes");
+                            shouldStore = false;
+                        }
+
+                        DestroyImmediate(texture);
+
+                        if (shouldStore)
+                            StoreByteArray(bytes, info.name);
+                    }
                 }
                 www.Dispose();
             }
@@ -1196,7 +1248,9 @@ namespace Oxide.Plugins
         #region Data Management
 
         private void SaveData() => identifiers.WriteObject(imageIdentifiers);
+
         private void SaveSkinInfo() => skininfo.WriteObject(skinInformation);
+
         private void SaveUrls() => urls.WriteObject(imageUrls);
 
         private void LoadData()

@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Zone Manager", "k1lly0u", "3.0.20")]
+    [Info("Zone Manager", "k1lly0u", "3.0.21")]
     [Description("An advanced management system for creating in-game zones")]
     public class ZoneManager : RustPlugin
     {
@@ -783,7 +783,7 @@ namespace Oxide.Plugins
                 for (int i = entityZones.Count - 1; i >= 0; i--)
                 {
                     Zone zone = entityZones.Zones.ElementAt(i);
-                    if (zone == null)
+                    if (zone == null || !zone.definition.Enabled)
                         continue;
 
                     if (zone.definition.Size != Vector3.zero)
@@ -1859,6 +1859,17 @@ namespace Oxide.Plugins
         private object CheckZoneID(string zoneID) => GetZoneByID(zoneID)?.definition.Id;
 
         private object GetZoneIDs() => zones.Keys.ToArray();
+
+        private bool IsPositionInZone(string zoneID, Vector3 position)
+        {
+            Zone zone = GetZoneByID(zoneID);
+            if (zone == null)
+                return false;
+
+            if (zone.definition.Size != Vector3.zero)
+                return IsInsideBounds(zone, position); 
+            else return Vector3.Distance(position, zone.transform.position) <= zone.definition.Radius;            
+        }
 
         private List<BasePlayer> GetPlayersInZone(string zoneID)
         {

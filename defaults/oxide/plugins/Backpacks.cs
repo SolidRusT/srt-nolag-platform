@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
+using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Backpacks", "LaserHydra", "3.4.0")]
+    [Info("Backpacks", "LaserHydra", "3.5.2")]
     [Description("Allows players to have a Backpack which provides them extra inventory space.")]
     internal class Backpacks : RustPlugin
     {
@@ -48,7 +49,7 @@ namespace Oxide.Plugins
         private StoredData _storedData;
 
         [PluginReference]
-        private RustPlugin EventManager;
+        private Plugin Arena, EventManager;
 
         #endregion
 
@@ -189,22 +190,25 @@ namespace Oxide.Plugins
 
         private object CanAcceptItem(ItemContainer container, Item item)
         {
-            if (!_config.UseBlacklist)
+            Backpack backpack = Backpack.GetForContainer(container);
+            if (backpack == null)
                 return null;
 
-            Backpack backpack = _backpacks.Values.FirstOrDefault(b => b.IsUnderlyingContainer(container));
+            // Prevent erasing items that have since become blacklisted.
+            // Blacklisted items will be dropped when the owner opens the backpack.
+            if (!backpack.Initialized)
+                return null;
 
-            if (backpack != null && !permission.UserHasPermission(backpack.OwnerIdString, NoBlacklistPermission))
+            if (_config.UseBlacklist
+                && !permission.UserHasPermission(backpack.OwnerIdString, NoBlacklistPermission)
+                && _config.BlacklistedItems.Contains(item.info.shortname))
             {
-                // Is the Item blacklisted
-                if (_config.BlacklistedItems.Any(shortName => shortName == item.info.shortname))
-                    return ItemContainer.CanAcceptResult.CannotAccept;
-
-                object hookResult = Interface.CallHook("CanBackpackAcceptItem", backpack.OwnerId, container, item);
-
-                if (hookResult is bool && (bool)hookResult == false)
-                    return ItemContainer.CanAcceptResult.CannotAccept;
+                return ItemContainer.CanAcceptResult.CannotAccept;
             }
+
+            object hookResult = Interface.CallHook("CanBackpackAcceptItem", backpack.OwnerId, container, item);
+            if (hookResult is bool && (bool)hookResult == false)
+                return ItemContainer.CanAcceptResult.CannotAccept;
 
             return null;
         }
@@ -219,30 +223,29 @@ namespace Oxide.Plugins
             }
         }
 
-        private void OnEntityDeath(BaseCombatEntity victim, HitInfo info)
+        // Handle player death by normal means.
+        private void OnEntityDeath(BasePlayer player, HitInfo info) =>
+            OnEntityKill(player);
+
+        // Handle player death while sleeping in a safe zone.
+        private void OnEntityKill(BasePlayer player)
         {
-            if (victim is BasePlayer && !victim.IsNpc)
-            {
-                var player = (BasePlayer) victim;
-                DestroyGUI(player);
+            if (player.IsNpc)
+                return;
 
-                if (Backpack.HasBackpackFile(player.userID))
-                {
-                    var backpack = Backpack.Get(player.userID);
+            DestroyGUI(player);
 
-                    backpack.ForceCloseAllLooters();
+            if (!Backpack.HasBackpackFile(player.userID)
+                || permission.UserHasPermission(player.UserIDString, KeepOnDeathPermission))
+                return;
 
-                    if (permission.UserHasPermission(player.UserIDString, KeepOnDeathPermission))
-                        return;
+            var backpack = Backpack.Get(player.userID);
+            backpack.ForceCloseAllLooters();
 
-                    if (_config.EraseOnDeath)
-                        backpack.EraseContents();
-                    else if (_config.DropOnDeath)
-                    {
-                        DropBackpackWithReducedCorpseCollision(backpack, player.transform.position);
-                    }
-                }
-            }
+            if (_config.EraseOnDeath)
+                backpack.EraseContents();
+            else if (_config.DropOnDeath)
+                DropBackpackWithReducedCorpseCollision(backpack, player.transform.position);
         }
 
         private void OnPlayerCorpseSpawned(BasePlayer player, BaseCorpse corpse)
@@ -355,10 +358,15 @@ namespace Oxide.Plugins
         [ChatCommand("backpack")]
         private void OpenBackpackChatCommand(BasePlayer player, string cmd, string[] args)
         {
-            if (permission.UserHasPermission(player.UserIDString, UsagePermission))
-                timer.Once(0.5f, () => Backpack.Get(player.userID).Open(player));
-            else
+            if (!permission.UserHasPermission(player.UserIDString, UsagePermission))
+            {
                 PrintToChat(player, lang.GetMessage("No Permission", this, player.UserIDString));
+                return;
+            }
+
+            player.EndLooting();
+            // Must delay opening in case the chat is still closing or the loot panel may close instantly.
+            timer.Once(0.5f, () => Backpack.Get(player.userID).Open(player));
         }
 
         [ConsoleCommand("backpack.open")]
@@ -377,13 +385,26 @@ namespace Oxide.Plugins
 
             if (_openBackpacks.ContainsKey(player))
             {
+                player.EndLooting();
                 // HACK: Send empty respawn information to fully close the player inventory (toggle backpack closed)
                 player.ClientRPCPlayer(null, player, "OnRespawnInformation");
                 return;
             }
 
             player.EndLooting();
-            timer.Once(0.1f, () => Backpack.Get(player.userID).Open(player));
+
+            // Key binds automatically pass the "True" argument at the end.
+            if (arg.HasArgs(1) && arg.Args[0] == "True")
+            {
+                // Open instantly when using a key bind.
+                NextTick(() => Backpack.Get(player.userID).Open(player));
+            }
+            else
+            {
+                // Not opening via key bind, so the chat window may be open.
+                // Must delay opening in case the chat is still closing or the loot panel may close instantly.
+                timer.Once(0.1f, () => Backpack.Get(player.userID).Open(player));
+            }
         }
 
         [ConsoleCommand("backpack.fetch")]
@@ -474,6 +495,31 @@ namespace Oxide.Plugins
             }
         }
 
+        [ConsoleCommand("backpack.erase")]
+        private void EraseBackpackServerCommand(ConsoleSystem.Arg arg)
+        {
+            BasePlayer player = arg.Player();
+            if (player != null)
+            {
+                // Only allowed as a server command.
+                return;
+            }
+
+            var args = arg.Args;
+
+            ulong userId;
+            if (!arg.HasArgs(1) || !ulong.TryParse(args[0], out userId))
+            {
+                PrintWarning($"Syntax: {arg.cmd.FullName} <id>");
+                return;
+            }
+
+            if (Backpack.TryEraseForPlayer(userId))
+                PrintWarning($"Erased backpack for player {userId}.");
+            else
+                PrintWarning($"Player {userId} has no backpack to erase.");
+        }
+
         [ChatCommand("viewbackpack")]
         private void ViewBackpack(BasePlayer player, string cmd, string[] args)
         {
@@ -542,6 +588,8 @@ namespace Oxide.Plugins
 
             Dictionary<string, object> data;
             LoadData(out data, fileName);
+            if (data == null)
+                return false;
 
             if (data.ContainsKey("ownerID") && data.ContainsKey("Inventory"))
             {
@@ -637,17 +685,27 @@ namespace Oxide.Plugins
 
         private bool IsPlayingEvent(BasePlayer player)
         {
-            if (EventManager == null)
-                return false;
+            // Multiple event/arena plugins define the isEventPlayer method as a standard.
+            var isPlaying = Interface.Call("isEventPlayer", player);
+            if (isPlaying is bool && (bool)isPlaying)
+                return true;
 
-            // EventManager 3.x
-            var isPlayingResult = EventManager.Call("isPlaying", player);
-            if (isPlayingResult != null)
-                return isPlayingResult is bool && (bool)isPlayingResult;
+            if (EventManager != null)
+            {
+                // EventManager 3.x
+                isPlaying = EventManager.Call("isPlaying", player);
+                if (isPlaying is bool && (bool)isPlaying)
+                    return true;
+            }
 
-            // EventManager 4.x
-            var isEventPlayerResult = EventManager.Call("IsEventPlayer", player);
-            return isEventPlayerResult is bool && (bool)isEventPlayerResult;
+            if (Arena != null)
+            {
+                isPlaying = Arena.Call("IsEventPlayer", player);
+                if (isPlaying is bool && (bool)isPlaying)
+                    return true;
+            }
+
+            return false;
         }
 
         private DroppedItemContainer DropBackpackWithReducedCorpseCollision(Backpack backpack, Vector3 position)
@@ -714,11 +772,11 @@ namespace Oxide.Plugins
             CuiHelper.DestroyUi(player, GUIPanelName);
         }
 
-        private static void LoadData<T>(out T data, string filename = null) =>
-            data = Interface.Oxide.DataFileSystem.ReadObject<T>(filename ?? _instance.Name);
+        private static void LoadData<T>(out T data, string filename) =>
+            data = Interface.Oxide.DataFileSystem.ReadObject<T>(filename);
 
-        private static void SaveData<T>(T data, string filename = null) =>
-            Interface.Oxide.DataFileSystem.WriteObject(filename ?? _instance.Name, data);
+        private static void SaveData<T>(T data, string filename) =>
+            Interface.Oxide.DataFileSystem.WriteObject(filename, data);
 
         #endregion
 
@@ -735,6 +793,7 @@ namespace Oxide.Plugins
                 ["User Name not Found"] = "Could not find player with name '{0}'",
                 ["Multiple Players Found"] = "Multiple matching players found:\n{0}",
                 ["Backpack Over Capacity"] = "Your backpack was over capacity. Overflowing items were added to your inventory or dropped.",
+                ["Blacklisted Items Removed"] = "Your backpack contained blacklisted items. They have been added to your inventory or dropped.",
                 ["Backpack Fetch Syntax"] = "Syntax: backpack.fetch <item short name or id> <amount>",
                 ["Invalid Item"] = "Invalid Item Name or ID.",
                 ["Invalid Item Amount"] = "Item amount must be an integer greater than 0.",
@@ -801,8 +860,11 @@ namespace Oxide.Plugins
             [JsonProperty("Blacklisted Items (Item Shortnames)")]
             public HashSet<string> BlacklistedItems;
 
-            [JsonProperty(PropertyName = "GUI Button")]
+            [JsonProperty("GUI Button")]
             public GUIButton GUI = new GUIButton();
+
+            [JsonProperty("Softcore")]
+            public SoftcoreOptions Softcore = new SoftcoreOptions();
 
             public class GUIButton
             {
@@ -829,6 +891,12 @@ namespace Oxide.Plugins
                     public string OffsetsMax = "245 78";
                 }
             }
+
+            public class SoftcoreOptions
+            {
+                [JsonProperty("Reclaim Fraction")]
+                public float ReclaimFraction = 0.5f;
+            }
         }
 
         #endregion
@@ -839,9 +907,14 @@ namespace Oxide.Plugins
         {
             public static StoredData Load()
             {
-                return Interface.Oxide.DataFileSystem.ExistsDatafile(_instance.Name) ?
-                    Interface.Oxide.DataFileSystem.ReadObject<StoredData>(_instance.Name) :
-                    new StoredData();
+                var data = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(_instance.Name);
+                if (data == null)
+                {
+                    _instance.PrintWarning($"Data file {_instance.Name}.json is invalid. Creating new data file.");
+                    data = new StoredData();
+                    data.Save();
+                }
+                return data;
             }
 
             [JsonProperty("PlayersWithDisabledGUI")]
@@ -855,6 +928,18 @@ namespace Oxide.Plugins
 
         #region Backpack
 
+        #region API
+
+        private Dictionary<ulong, ItemContainer> API_GetExistingBackpacks()
+        {
+            return _backpacks.ToDictionary(x => x.Key, x => x.Value.GetContainer());
+        }
+
+        private void API_EraseBackpack(ulong userId)
+        {
+            Backpack.TryEraseForPlayer(userId);
+        }
+
         private DroppedItemContainer API_DropBackpack(BasePlayer player)
         {
             if (!Backpack.HasBackpackFile(player.userID))
@@ -866,12 +951,17 @@ namespace Oxide.Plugins
             return DropBackpackWithReducedCorpseCollision(backpack, player.transform.position);
         }
 
+        #endregion
+
         private class Backpack
         {
-            private bool _initialized = false;
-
             private ItemContainer _itemContainer = new ItemContainer();
             private List<BasePlayer> _looters = new List<BasePlayer>();
+
+            private bool _processedBlacklist = false;
+
+            [JsonIgnore]
+            public bool Initialized { get; private set; } = false;
 
             [JsonIgnore]
             public string OwnerIdString { get; private set; }
@@ -908,11 +998,13 @@ namespace Oxide.Plugins
                 return _instance._config.BackpackSize;
             }
 
+            public ItemContainer GetContainer() => _itemContainer;
+
             private int GetAllowedCapacity() => GetAllowedSize() * SlotsPerRow;
 
             public void Initialize()
             {
-                if (!_initialized)
+                if (!Initialized)
                 {
                     OwnerIdString = OwnerId.ToString();
                 }
@@ -925,7 +1017,7 @@ namespace Oxide.Plugins
                 var ownerPlayer = FindOwnerPlayer()?.Object as BasePlayer;
                 _itemContainer.entityOwner = ownerPlayer;
 
-                if (_initialized)
+                if (Initialized)
                     return;
 
                 _itemContainer.isServer = true;
@@ -951,12 +1043,12 @@ namespace Oxide.Plugins
                     }
                 }
 
-                _initialized = true;
+                Initialized = true;
             }
 
             public void KillContainer()
             {
-                _initialized = false;
+                Initialized = false;
 
                 _itemContainer.Kill();
                 _itemContainer = null;
@@ -971,7 +1063,7 @@ namespace Oxide.Plugins
 
                 _instance._openBackpacks.Add(looter, this);
 
-                if (!_initialized)
+                if (!Initialized)
                 {
                     Initialize();
                 }
@@ -999,9 +1091,12 @@ namespace Oxide.Plugins
                     return;
                 }
 
-                // Only handle overflow when the owner is opening the backpack
+                // Only drop items when the owner is opening the backpack.
                 if (looter.userID == OwnerId)
+                {
+                    MaybeRemoveBlacklistedItems(looter);
                     MaybeAdjustCapacityAndHandleOverflow(looter);
+                }
 
                 if (!_looters.Contains(looter))
                     _looters.Add(looter);
@@ -1060,6 +1155,43 @@ namespace Oxide.Plugins
                 }
             }
 
+            private void MaybeRemoveBlacklistedItems(BasePlayer receiver)
+            {
+                if (!_instance._config.UseBlacklist)
+                    return;
+
+                if (_instance.permission.UserHasPermission(OwnerIdString, NoBlacklistPermission))
+                {
+                    // Don't process the blacklist while the player has the noblacklist permission.
+                    // This allows the blacklist to be processed again in case the noblacklist permission is revoked.
+                    _processedBlacklist = false;
+                    return;
+                }
+
+                // Optimization: Avoid having to process the blacklist every time the backpack is opened.
+                if (_processedBlacklist)
+                    return;
+
+                _processedBlacklist = true;
+
+                var itemsDroppedOrGivenToPlayer = 0;
+                for (var i = _itemContainer.itemList.Count - 1; i >= 0; i--)
+                {
+                    var item = _itemContainer.itemList[i];
+                    if (_instance._config.BlacklistedItems.Contains(item.info.shortname))
+                    {
+                        itemsDroppedOrGivenToPlayer++;
+                        item.RemoveFromContainer();
+                        receiver.GiveItem(item);
+                    }
+                }
+
+                if (itemsDroppedOrGivenToPlayer > 0)
+                {
+                    _instance.PrintToChat(receiver, _instance.lang.GetMessage("Blacklisted Items Removed", _instance, receiver.UserIDString));
+                }
+            }
+
             public void ForceCloseAllLooters()
             {
                 foreach (BasePlayer looter in _looters.ToArray())
@@ -1097,6 +1229,12 @@ namespace Oxide.Plugins
                 if (hookResult is bool && (bool)hookResult == false)
                     return null;
 
+                if (_itemContainer.itemList.Count == 0)
+                    return null;
+
+                ReclaimItemsForSoftcore();
+
+                // Check again since the items may have all been reclaimed for Softcore.
                 if (_itemContainer.itemList.Count == 0)
                     return null;
 
@@ -1139,12 +1277,32 @@ namespace Oxide.Plugins
                 return container;
             }
 
-            public void EraseContents()
+            private void ReclaimItemsForSoftcore()
             {
-                object hookResult = Interface.CallHook("CanEraseBackpack", OwnerId);
-
-                if (hookResult is bool && (bool)hookResult == false)
+                var softcoreGameMode = BaseGameMode.svActiveGameMode as GameModeSoftcore;
+                if (softcoreGameMode == null || ReclaimManager.instance == null)
                     return;
+
+                List<Item> reclaimItemList = Facepunch.Pool.GetList<Item>();
+                softcoreGameMode.AddFractionOfContainer(_itemContainer, ref reclaimItemList, _instance._config.Softcore.ReclaimFraction);
+                if (reclaimItemList.Count > 0)
+                {
+                    // There's a vanilla bug where accessing the reclaim backpack will erase items in the reclaim entry above 32.
+                    // So we just add a new reclaim entry which can only be accessed at the terminal to avoid this issue.
+                    ReclaimManager.instance.AddPlayerReclaim(OwnerId, reclaimItemList);
+                }
+                Facepunch.Pool.FreeList(ref reclaimItemList);
+            }
+
+            public void EraseContents(bool force = false)
+            {
+                if (!force)
+                {
+                    object hookResult = Interface.CallHook("CanEraseBackpack", OwnerId);
+
+                    if (hookResult is bool && (bool)hookResult == false)
+                        return;
+                }
 
                 foreach (var item in _itemContainer.itemList.ToList())
                 {
@@ -1168,6 +1326,9 @@ namespace Oxide.Plugins
 
                 Backpacks.SaveData(this, $"{_instance.Name}/{OwnerId}");
             }
+
+            public void Cache() =>
+                _instance._backpacks[OwnerId] = this;
 
             public int GetItemQuantity(int itemID) => _itemContainer.FindItemsByItemID(itemID).Sum(item => item.amount);
 
@@ -1219,13 +1380,32 @@ namespace Oxide.Plugins
                 return Interface.Oxide.DataFileSystem.ExistsDatafile(fileName);
             }
 
+            public static Backpack GetForContainer(ItemContainer container)
+            {
+                foreach (var backpack in _instance._backpacks.Values)
+                {
+                    if (backpack.IsUnderlyingContainer(container))
+                        return backpack;
+                }
+                return null;
+            }
+
+            private static Backpack GetCachedBackpack(ulong id)
+            {
+                Backpack backpack;
+                return _instance._backpacks.TryGetValue(id, out backpack)
+                    ? backpack
+                    : null;
+            }
+
             public static Backpack Get(ulong id)
             {
                 if (id == 0)
                     _instance.PrintWarning("Accessing backpack for ID 0! Please report this to the author with as many details as possible.");
 
-                if (_instance._backpacks.ContainsKey(id))
-                    return _instance._backpacks[id];
+                var cachedBackpack = GetCachedBackpack(id);
+                if (cachedBackpack != null)
+                    return cachedBackpack;
 
                 var fileName = $"{_instance.Name}/{id}";
 
@@ -1235,6 +1415,12 @@ namespace Oxide.Plugins
                 if (Interface.Oxide.DataFileSystem.ExistsDatafile(fileName))
                 {
                     LoadData(out backpack, fileName);
+                    if (backpack == null)
+                    {
+                        _instance.PrintWarning($"Data file {fileName}.json is invalid. Creating new data file.");
+                        backpack = new Backpack(id);
+                        Backpacks.SaveData(backpack, fileName);
+                    }
                 }
                 else
                 {
@@ -1247,11 +1433,34 @@ namespace Oxide.Plugins
                     DefaultValueHandling = DefaultValueHandling.Ignore
                 };
 
-                _instance._backpacks.Add(id, backpack);
-
+                backpack.Cache();
                 backpack.Initialize();
 
                 return backpack;
+            }
+
+            public static bool TryEraseForPlayer(ulong id)
+            {
+                Backpack backpack = GetCachedBackpack(id);
+                if (backpack != null)
+                {
+                    backpack.ForceCloseAllLooters();
+                    backpack.EraseContents(force: true);
+                    return true;
+                }
+
+                if (!HasBackpackFile(id))
+                    return false;
+
+                // If the backpack is not in the cache, create an empty one and add it.
+                // In case it isn't saved immediately, this ensures it will be saved as empty on server save.
+                backpack = new Backpack(id);
+                backpack.Cache();
+
+                if (!_instance._config.SaveBackpacksOnServerSave)
+                    backpack.SaveData();
+
+                return true;
             }
         }
 
@@ -1297,8 +1506,20 @@ namespace Oxide.Plugins
                     item.maxCondition = MaxCondition;
 
                 if (Contents != null)
-                    foreach (var contentItem in Contents)
-                        contentItem.ToItem().MoveToContainer(item.contents);
+                {
+                    if (Contents.Count > 0)
+                    {
+                        if (item.contents == null)
+                        {
+                            item.contents = new ItemContainer();
+                            item.contents.ServerInitialize(null, Contents.Count);
+                            item.contents.GiveUID();
+                            item.contents.parent = item;
+                        }
+                        foreach (var contentItem in Contents)
+                            contentItem.ToItem().MoveToContainer(item.contents);
+                    }
+                }
                 else
                     item.contents = null;
 

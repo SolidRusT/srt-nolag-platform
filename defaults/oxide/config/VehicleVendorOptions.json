@@ -1,16 +1,56 @@
 {
   "Vehicles": {
-    "Minicopter": {
-      "FuelAmount": 100
-    },
     "ScrapTransport": {
-      "FuelAmount": 100
+      "FuelAmount": 100,
+      "PricesRequiringPermission": [
+        {
+          "ItemShortName": "scrap",
+          "Amount": 800
+        },
+        {
+          "ItemShortName": "scrap",
+          "Amount": 400
+        }
+      ]
     },
-    "Rowboat": {
-      "FuelAmount": 50
+    "Minicopter": {
+      "FuelAmount": 100,
+      "PricesRequiringPermission": [
+        {
+          "ItemShortName": "scrap",
+          "Amount": 500
+        },
+        {
+          "ItemShortName": "scrap",
+          "Amount": 250
+        }
+      ]
     },
     "RHIB": {
-      "FuelAmount": 50
+      "FuelAmount": 50,
+      "PricesRequiringPermission": [
+        {
+          "ItemShortName": "scrap",
+          "Amount": 200
+        },
+        {
+          "ItemShortName": "scrap",
+          "Amount": 100
+        }
+      ]
+    },
+    "Rowboat": {
+      "FuelAmount": 50,
+      "PricesRequiringPermission": [
+        {
+          "ItemShortName": "scrap",
+          "Amount": 80
+        },
+        {
+          "ItemShortName": "scrap",
+          "Amount": 40
+        }
+      ]
     }
   }
 }

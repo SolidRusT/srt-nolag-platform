@@ -1,27 +1,61 @@
 {
-  "BatchSize": 500,
-  "Categories": {
-    "floor": [
-      "assets/prefabs/building core/floor.frame/floor.frame.prefab",
-      "assets/prefabs/building core/floor.triangle/floor.triangle.prefab",
-      "assets/prefabs/building core/floor/floor.prefab"
-    ],
+  "Settings": {
+    "Use Teams": false,
+    "Use Clans": true,
+    "Use Friends": true,
+    "Use Raid Blocker (Need NoEscape Plugin)": false,
+    "Use Combat Blocker (Need NoEscape Plugin)": false,
+    "Cooldown Exclude Admins": true,
+    "Upgrade/Downgrade Per Frame": 10
+  },
+  "Chat Settings": {
+    "Upgrade Chat Command": "up",
+    "Downgrade Chat Command": "down",
+    "Upgrade All Chat Command": "upall",
+    "Downgrade All Chat Command": "downall",
+    "Chat Prefix": "<color=#00FFFF>[BuildingGrades]</color>: ",
+    "Chat SteamID Icon": 0
+  },
+  "Permission Settings": {
+    "buildinggrades.use": {
+      "Priority": 0,
+      "Distance": 10.0,
+      "Cooldown": 60.0,
+      "Pay": true
+    }
+  },
+  "Building Block Categories": {
     "foundation": [
-      "assets/prefabs/building core/foundation.triangle/foundation.triangle.prefab",
+      "assets/prefabs/building core/foundation/foundation.prefab",
       "assets/prefabs/building core/foundation.steps/foundation.steps.prefab",
-      "assets/prefabs/building core/foundation/foundation.prefab"
-    ],
-    "other": [
-      "assets/prefabs/building core/roof/roof.prefab",
-      "assets/prefabs/building core/stairs.l/block.stair.lshape.prefab",
-      "assets/prefabs/building core/stairs.u/block.stair.ushape.prefab"
+      "assets/prefabs/building core/foundation.triangle/foundation.triangle.prefab"
     ],
     "wall": [
-      "assets/prefabs/building core/wall.frame/wall.frame.prefab",
-      "assets/prefabs/building core/wall.window/wall.window.prefab",
-      "assets/prefabs/building core/wall.doorway/wall.doorway.prefab",
       "assets/prefabs/building core/wall/wall.prefab",
-      "assets/prefabs/building core/wall.half/wall.half.prefab"
+      "assets/prefabs/building core/wall.doorway/wall.doorway.prefab",
+      "assets/prefabs/building core/wall.frame/wall.frame.prefab",
+      "assets/prefabs/building core/wall.half/wall.half.prefab",
+      "assets/prefabs/building core/wall.low/wall.low.prefab",
+      "assets/prefabs/building core/wall.window/wall.window.prefab"
+    ],
+    "floor": [
+      "assets/prefabs/building core/floor/floor.prefab",
+      "assets/prefabs/building core/floor.frame/floor.frame.prefab",
+      "assets/prefabs/building core/floor.triangle/floor.triangle.prefab",
+      "assets/prefabs/building core/floor.triangle.frame/floor.triangle.frame.prefab"
+    ],
+    "stair": [
+      "assets/prefabs/building core/stairs.l/block.stair.lshape.prefab",
+      "assets/prefabs/building core/stairs.spiral/block.stair.spiral.prefab",
+      "assets/prefabs/building core/stairs.spiral.triangle/block.stair.spiral.triangle.prefab",
+      "assets/prefabs/building core/stairs.u/block.stair.ushape.prefab"
+    ],
+    "roof": [
+      "assets/prefabs/building core/roof/roof.prefab",
+      "assets/prefabs/building core/roof.triangle/roof.triangle.prefab"
+    ],
+    "ramp": [
+      "assets/prefabs/building core/ramp/ramp.prefab"
     ]
   }
 }

@@ -1,5 +1,5 @@
 {
-  "DefaultLimitPerCar": 4,
+  "DefaultLimitPerCar": 1,
   "EnableTurretPickup": true,
   "SpawnWithCar": {
     "NaturalCarSpawns": {

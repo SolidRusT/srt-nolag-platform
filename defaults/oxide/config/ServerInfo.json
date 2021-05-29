@@ -1,0 +1,153 @@
+{
+  "settings": {
+    "Tabs": [
+      {
+        "ButtonText": "Commands",
+        "HeaderText": "Commands",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "type <color=red> /al </color>            - Auto-lock doors with a specific code",
+              "type <color=red> /backpack </color>      - Open your backpack storage",
+              "type <color=red> /backpackGUI </color>   - Toggle on/off the Backpack icon",
+              "type <color=red> /bank </color>          - Opens the central bank storage",
+              "type <color=red> /bgrade </color>        - Set the default Resource grade when building",
+              "type <color=red> /br </color>            - Building repair with the hammer tool",
+              "type <color=red> /cctv </color>          - CCTV Security Camera tools",
+              "type <color=red> /chute </color>         - Parachute for landing soft from high places",
+              "type <color=red> /clanhelp </color>      - Clan management commands",
+              "type <color=red> /dc </color>            - Discord Connect - get the SURVIVOR role and free kits",
+              "type <color=red> /down </color>          - Downgrade Structures",
+              "type <color=red> /downall </color>       - Downgrade Whole Base",
+              "type <color=red> /friend </color>        - Manage Friends list",
+              "type <color=red> /fs </color>            - Furnace stack splitter settings"
+            ],
+            "ImageSettings": []
+          },
+          {
+            "TextLines": [
+              " ",
+              "type <color=red> /heal </color>          - Heal yourself",
+              "type <color=red> /healplayer </color>    - Heal another player",
+              "type <color=red> /home </color>          - Set your Home spawn points",
+              "type <color=red> /kit </color>           - Spawn item and loadout kits",
+              "type <color=red> /remove </color>        - Remover Tool for owned structures",
+              "type <color=red> /skin </color>          - Free Steam Workshop skins",
+              "type <color=red> /tpa </color>           - Accept a teleport request",
+              "type <color=red> /tpb </color>           - Teleport back to where you previously teleported from",
+              "type <color=red> /tpr </color>           - Request teleport to another player",
+              "type <color=red> /trade </color>         - Remote trading with other players",
+              "type <color=red> /up </color>            - Upgrade structures",
+              "type <color=red> /upall </color>         - Upgrade Whole Base"
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      },
+      {
+        "ButtonText": "Rules",
+        "HeaderText": "Rules",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "#1 - No hacking, cheating or otherwise being an Asshat",
+              "#2 - "
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      },
+      {
+        "ButtonText": "Features",
+        "HeaderText": "Features",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              " - 5X Resource Gather and Loot++",
+              " - Auto Turret Authorization from Tool Cupboard",
+              " - Improved Auto-Turret controls and placement",
+              " - Useful CCTV Utilities, motion sensors and Dancing emotes",
+              " - Modular Vehicle lifts and Reclyclers at monuments",
+              " - Locks, Storage, Extra Seats and Turrets on Modular Vehicles",
+              " - Improved recycling, recycle anything!",
+              " - Better stack sizes, World Bank and Backpacks",
+              " - Base repair and upgrade tools",
+              " - Escalated Bradley APC combat levels",
+              " - Constant Hackable Crate and Treasure events",
+              " - Blueprint Sharing and Better Box Sorting",
+              " - Parachute for jumping off high places",
+              " - Clans Tools, Team Chats and Rust+ Mobile App enabled",
+              " - NPC Vendors, Safe Zones, night creeps and server votes.",
+              " - Real-time Hit and Damage indicators, Realistic Explosions",
+              " - Improved Weather and heath effects"
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      }
+    ],
+    "ShowInfoOnPlayerInit": true,
+    "ShowInfoOnlyOncePerRuntime": true,
+    "TabToOpenByDefault": 0,
+    "Position": {
+      "MinX": 0.15,
+      "MaxX": 0.9,
+      "MinY": 0.2,
+      "MaxY": 0.9
+    },
+    "BackgroundImage": {
+      "Enabled": false,
+      "Position": {
+        "MinX": 0.0,
+        "MaxX": 1.0,
+        "MinY": 0.0,
+        "MaxY": 1.0
+      },
+      "Url": "http://7-themes.com/data_images/out/35/6889756-black-backgrounds.jpg",
+      "TransparencyInPercent": 100
+    },
+    "ActiveButtonColor": "#0255255255",
+    "InactiveButtonColor": "#128128128255",
+    "CloseButtonColor": "#128128128255",
+    "NextPageButtonColor": "#128128128255",
+    "PrevPageButtonColor": "#128128128255",
+    "BackgroundColor": "#000255",
+    "HelpButton": {
+      "IsEnabled": false,
+      "Text": "Help",
+      "Position": {
+        "MinX": 0.0,
+        "MaxX": 0.05,
+        "MinY": 0.1,
+        "MaxY": 0.14
+      },
+      "Color": "#128128128255",
+      "FontSize": 18
+    },
+    "UpgradedConfig": false
+  }
+}

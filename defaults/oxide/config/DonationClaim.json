@@ -1,17 +1,16 @@
 {
-  "DatabaseHost": "localhost",
+  "DatabaseHost": "data.solidrust.net",
   "DatabaseName": "oxide",
-  "DatabasePassword": "changeme",
+  "DatabasePassword": "Admin408",
   "DatabasePort": 3306,
-  "DatabaseUser": "root",
+  "DatabaseUser": "modded",
   "Packages": {
-    "Example": [
-      "grant user {0} some.permission",
-      "grant user {0} another.permission"
+    "SolidPlayeR": [
+      "usermod.verified {0}"
     ],
-    "VIP": [
-      "grant user {0} some.permission",
-      "grant user {0} another.permission"
+    "Supporter": [
+      "usermod.verified {0}",
+      "usermod.vip {0}"
     ]
   }
 }

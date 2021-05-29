@@ -198,6 +198,12 @@
       "Height": 70,
       "ImageUrl": "https://i.imgur.com/VQjSjzA.png",
       "Show": true
+    },
+    "Train Tunnel": {
+      "Width": 90,
+      "Height": 90,
+      "ImageUrl": "",
+      "Show": false
     }
   },
   "Custom Icons": [

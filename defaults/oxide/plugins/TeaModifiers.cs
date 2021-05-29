@@ -1,18 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace Oxide.Plugins
 {
-    [Info("Tea Modifiers", "MJSU", "1.0.0")]
-    [Description("Allows the modification of the buff from the team recipies")]
+    [Info("Tea Modifiers", "MJSU", "2.0.0")]
+    [Description("Allows the modification of tea buffs on items")]
     internal class TeaModifiers : RustPlugin
     {
         #region Class Fields
         private PluginConfig _pluginConfig; //Plugin Config
         
-        private readonly Hash<int, List<ModifierDefintion>> _defaultModifiers = new Hash<int, List<ModifierDefintion>>();
+        private const string BasePermission = "teamodifiers.";
+        private const string UsePermission = BasePermission + "use";
         #endregion
 
         #region Setup & Loading
@@ -32,11 +35,36 @@ namespace Oxide.Plugins
         private PluginConfig AdditionalConfig(PluginConfig config)
         {
             config.Modifiers = config.Modifiers ?? new Hash<string, List<ModifierData>>();
+            config.GlobalDurationMultiplier = config.GlobalDurationMultiplier ?? new Hash<string, float>
+            {
+                [UsePermission] = 1f
+            };
+            
+            config.GlobalAmountMultiplier = config.GlobalAmountMultiplier ?? new Hash<string, float>
+            {
+                [UsePermission] = 1f
+            };
+            
+            config.GlobalModifierMultiplier = config.GlobalModifierMultiplier ?? new Hash<Modifier.ModifierType, Hash<string, float>>();
+            
+            foreach (Modifier.ModifierType type in Enum.GetValues(typeof(Modifier.ModifierType)).Cast<Modifier.ModifierType>())
+            {
+                if (!config.GlobalModifierMultiplier.ContainsKey(type))
+                {
+                    config.GlobalModifierMultiplier[type] = new Hash<string, float>
+                    {
+                        [UsePermission] = 1f
+                    };
+                }
+            }
+
             return config;
         }
         
         private void OnServerInitialized()
         {
+            permission.RegisterPermission(UsePermission, this);
+            
             bool changed = false;
             foreach (ItemDefinition def in ItemManager.itemList)
             {
@@ -46,41 +74,19 @@ namespace Oxide.Plugins
                     continue;
                 }
 
-                //Backup modifiers
-                _defaultModifiers[def.itemid] = consume.modifiers.Select(m => new ModifierDefintion
-                {
-                    duration = m.duration,
-                    source = m.source,
-                    type = m.type,
-                    value = m.value
-                }).ToList();
-
                 //Load saved modifiers
                 List<ModifierData> modifiers = _pluginConfig.Modifiers[def.shortname];
                 
                 //Currently no modifiers saved. Save them now.
                 if (modifiers == null)
                 {
-                    modifiers = consume.modifiers.Select(m => new ModifierData
+                    _pluginConfig.Modifiers[def.shortname] = consume.modifiers.Select(m => new ModifierData
                     {
-                        Duration = m.duration,
-                        Source = m.source,
+                        Duration = new Hash<string, float> {[UsePermission] = m.duration},
                         Type = m.type,
-                        Amount = m.value
+                        Amount = new Hash<string, float> {[UsePermission] = m.value},
                     }).ToList();
-                    _pluginConfig.Modifiers[def.shortname] = modifiers;
                     changed = true;
-                }
-                //Apply currently configured modifiers
-                else
-                {
-                    consume.modifiers = modifiers.Select(m => new ModifierDefintion
-                    {
-                        duration = m.Duration,
-                        source = m.Source,
-                        type = m.Type,
-                        value = m.Amount
-                    }).ToList();
                 }
             }
 
@@ -89,43 +95,115 @@ namespace Oxide.Plugins
             {
                 Config.WriteObject(_pluginConfig);
             }
-        }
 
-        private void Unload()
-        {
-            foreach (ItemDefinition def in ItemManager.itemList)
+            List<string> perms = Pool.GetList<string>();
+            foreach (List<ModifierData> item in _pluginConfig.Modifiers.Values)
             {
-                ItemModConsumable consume = def.GetComponent<ItemModConsumable>();
-                if (consume == null || consume.modifiers == null || consume.modifiers.Count == 0)
+                foreach (ModifierData modifier in item)
                 {
-                    continue;
+                    perms.AddRange(modifier.Amount.Keys);
+                    perms.AddRange(modifier.Duration.Keys);
                 }
-
-                consume.modifiers = _defaultModifiers[def.itemid];
             }
+            
+            foreach (Hash<string, float> modifier in _pluginConfig.GlobalModifierMultiplier.Values)
+            {
+                perms.AddRange(modifier.Keys);
+            }
+            
+            perms.AddRange(_pluginConfig.GlobalAmountMultiplier.Keys);
+            perms.AddRange(_pluginConfig.GlobalDurationMultiplier.Keys);
+
+            foreach (string perm in perms.Distinct().Where(p => !p.Equals(UsePermission, StringComparison.OrdinalIgnoreCase)))
+            {
+                permission.RegisterPermission(perm, this);  
+            }
+            
+            Pool.FreeList(ref perms);
         }
+        #endregion
+
+        #region Hooks
+        private object OnPlayerAddModifiers(BasePlayer player, Item item, ItemModConsumable consumable)
+        {
+            if (!HasPermission(player, UsePermission))
+            {
+                return null;
+            }
+            
+            List<ModifierData> modifiers = _pluginConfig.Modifiers[item.info.shortname];
+            if (modifiers == null)
+            {
+                return null;
+            }
+
+            float globalDuration = GetPermissionValue(player, _pluginConfig.GlobalDurationMultiplier, 1f);
+            float globalAmount = GetPermissionValue(player, _pluginConfig.GlobalAmountMultiplier, 1f);
+            
+            List<ModifierDefintion> mods = Pool.GetList<ModifierDefintion>();
+
+            for (int index = 0; index < modifiers.Count; index++)
+            {
+                ModifierData modifier = modifiers[index];
+                mods.Add(new ModifierDefintion
+                {
+                    source = Modifier.ModifierSource.Tea,
+                    type = modifier.Type,
+                    duration = globalDuration * GetPermissionValue(player, modifier.Duration, 1f),
+                    value = globalAmount * GetPermissionValue(player, modifier.Amount, 1f) * GetPermissionValue(player, _pluginConfig.GlobalModifierMultiplier[modifier.Type], 1f)
+                });
+            }
+
+            player.modifiers.Add(mods);
+            
+            Pool.FreeList(ref mods);
+            return true;
+        }
+        
+        #endregion
+
+        #region Helper Methods
+        public float GetPermissionValue(BasePlayer player, Hash<string, float> permissions, float defaultValue)
+        {
+            foreach (KeyValuePair<string,float> perm in permissions.OrderByDescending(p => p.Value))
+            {
+                if (HasPermission(player, perm.Key))
+                {
+                    return perm.Value;
+                }
+            }
+
+            return defaultValue;
+        }
+
+        public bool HasPermission(BasePlayer player, string perm) => permission.UserHasPermission(player.UserIDString, perm);
         #endregion
 
         #region Classes
         private class PluginConfig
         {
-            [JsonProperty(PropertyName = "Item Modifiers")]
+            [JsonProperty(PropertyName = "Global Duration Multiplier")]
+            public Hash<string, float> GlobalDurationMultiplier { get; set; }
+            
+            [JsonProperty(PropertyName = "Global Amount Multiplier")]
+            public Hash<string, float> GlobalAmountMultiplier { get; set; }
+            
+            [JsonProperty(PropertyName = "Global Modifier Type Amount Multiplier")]
+            public Hash<Modifier.ModifierType, Hash<string, float>> GlobalModifierMultiplier { get; set; }
+            
+            [JsonProperty(PropertyName = "Item List Modifiers")]
             public Hash<string, List<ModifierData>> Modifiers { get; set; }
         }
 
         private class ModifierData
         {
-            [JsonProperty(PropertyName = "Buff duration (Seconds)")]
-            public float Duration { get; set; }
-            
-            [JsonProperty(PropertyName = "Buff amount")]
-            public float Amount { get; set; }
-            
-            [JsonProperty(PropertyName = "Buff source")]
-            [JsonConverter(typeof(StringEnumConverter))]
-            public Modifier.ModifierSource Source { get; set; }
-            
-            [JsonProperty(PropertyName = "Buff type")]
+            [JsonProperty(PropertyName = "Modifier Duration (Seconds)")]
+            public Hash<string, float> Duration { get; set; }
+
+            [JsonProperty(PropertyName = "Modifier Amount")]
+            public Hash<string, float> Amount { get; set; }
+
+            [JsonProperty(PropertyName = "Modifer Type")]
             [JsonConverter(typeof(StringEnumConverter))]
             public Modifier.ModifierType Type { get; set; }
         }

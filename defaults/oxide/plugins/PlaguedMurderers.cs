@@ -5,7 +5,7 @@ using Oxide.Core;
 
 namespace Oxide.Plugins
 {
-    [Info("Plagued Murderers", "DarkAz", "2.3.2")]
+    [Info("Plagued Murderers", "DarkAz", "2.4.1")]
     [Description("Allows murderers and scarecrows to be customised with health, attire, skins and melee weapons.")]
     class PlaguedMurderers : RustPlugin
     {
@@ -16,6 +16,11 @@ namespace Oxide.Plugins
 
         private class Configuration
         {
+            // begin general config
+            [JsonProperty(PropertyName = "Use Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public bool useKits = false;
+
+            // end general config
             // begin murderers config
             [JsonProperty(PropertyName = "Glowing Eyes")]
             public bool GlowingEyes = true;
@@ -53,6 +58,9 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Melee Weapon", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> MeleeWeapon = new List<string>() { "hatchet", "knife.bone", "knife.butcher", "knife.combat", "longsword", "machete", "paddle", "salvaged.cleaver", "salvaged.sword" };
 
+            [JsonProperty(PropertyName = "Murderer Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> MurdererKits = new List<string>() { "murderer-kit1", "murderer-kit2" };
+
             // end murderers config
             // begin scarecrows config
 
@@ -79,6 +87,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Melee Weapon (Scarecrow)", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> ScarecrowMeleeWeapon = new List<string>() { };
+
+            [JsonProperty(PropertyName = "Scarecrow Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> ScarecrowKits = new List<string>() { "scarecrow-kit1", "scarecrow-kit2" };
 
             // end scarecrows config
 
@@ -119,6 +130,83 @@ namespace Oxide.Plugins
             combatEntity._maxHealth = _config.murdererHealth;
             combatEntity.health = _config.murdererHealth;
 
+            if(_config.useKits)
+            {
+                GiveKitMurderer(murderer, GetKitName(_config.MurdererKits));
+            } else {
+                ClotheMurderer(murderer);
+            }
+
+        }
+
+
+        void OnEntitySpawned(HTNPlayer scarecrow)
+        {
+            
+            var combatEntity = scarecrow as BaseCombatEntity;
+            if(combatEntity.ShortPrefabName != "scarecrow") {
+                return;
+            }
+            combatEntity._maxHealth = _config.scarecrowHealth;
+            combatEntity.health = _config.scarecrowHealth;
+
+            if(_config.useKits)
+            {
+                GiveKitScarecrow(scarecrow, GetKitName(_config.ScarecrowKits));
+            } else {
+                ClotheScarecrow(scarecrow);
+            }
+
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private ulong GetSkinId(List<ulong> Skins) {
+          int index = Core.Random.Range(0, Skins.Count - 1);
+          ulong skinId = (ulong) Skins[index];
+          return skinId;
+        }
+
+        private string GetKitName(List<string> Kits) {
+          if(Kits.Count < 1){
+              Puts("Error in config - Kits not defined or empty");
+              return null;
+          }
+          int index = Core.Random.Range(0, Kits.Count);
+          string kit = (string) Kits[index];
+          return kit;
+        }
+
+        private Item GetItem(List<string> ClothingItems) {
+          if(ClothingItems.Count < 1){
+              return null;
+          }
+          int index = Core.Random.Range(0, ClothingItems.Count - 1);
+          if(ClothingItems[index] == "none") {
+              return null;
+          }
+
+          var chosenItem = ClothingItems[index];
+
+          List<ulong> skinList;
+          Item SelectedItem;
+
+          bool skinsDefined = _config.Skins.TryGetValue(chosenItem, out skinList);
+
+          if(skinsDefined && skinList.Count > 0) {
+              SelectedItem = ItemManager.CreateByName(chosenItem, 1, GetSkinId(skinList));
+          } else {
+              SelectedItem = ItemManager.CreateByName(chosenItem, 1);
+          }
+
+          return SelectedItem;
+        }
+
+        void ClotheMurderer(NPCMurderer murderer)
+        {
+
             var inv_wear = murderer.inventory.containerWear;
             var inv_belt = murderer.inventory.containerBelt;
 
@@ -148,15 +236,8 @@ namespace Oxide.Plugins
 
         }
 
-        void OnEntitySpawned(HTNPlayer scarecrow)
+        void ClotheScarecrow(HTNPlayer scarecrow)
         {
-            
-            var combatEntity = scarecrow as BaseCombatEntity;
-            if(combatEntity.ShortPrefabName != "scarecrow") {
-                return;
-            }
-            combatEntity._maxHealth = _config.scarecrowHealth;
-            combatEntity.health = _config.scarecrowHealth;
 
             var inv_wear = scarecrow.inventory.containerWear;
             var inv_belt = scarecrow.inventory.containerBelt;
@@ -187,39 +268,38 @@ namespace Oxide.Plugins
 
         }
 
-        #endregion
+        private static void GiveKitMurderer(NPCMurderer npc, string kit)
+        {
+            if (kit == null)
+                return;
 
-        #region Helpers
+            Interface.Oxide.CallHook("GiveKit", npc, kit);
 
-        private ulong GetSkinId(List<ulong> Skins) {
-          int index = Core.Random.Range(0, Skins.Count - 1);
-          ulong skinId = (ulong) Skins[index];
-          return skinId;
+            Item item = npc.inventory.containerBelt.GetSlot(0);
+            
+            if (item == null)
+            {
+                return;
+            }
+            
+            npc.UpdateActiveItem(item.uid);
         }
 
-        private Item GetItem(List<string> ClothingItems) {
-          if(ClothingItems.Count < 1){
-              return null;
-          }
-          int index = Core.Random.Range(0, ClothingItems.Count - 1);
-          if(ClothingItems[index] == "none") {
-              return null;
-          }
+        private static void GiveKitScarecrow(HTNPlayer npc, string kit)
+        {
+            if (kit == null)
+                return;
 
-          var chosenItem = ClothingItems[index];
+            Interface.Oxide.CallHook("GiveKit", npc, kit);
 
-          List<ulong> skinList;
-          Item SelectedItem;
-
-          bool skinsDefined = _config.Skins.TryGetValue(chosenItem, out skinList);
-
-          if(skinsDefined && skinList.Count > 0) {
-              SelectedItem = ItemManager.CreateByName(chosenItem, 1, GetSkinId(skinList));
-          } else {
-              SelectedItem = ItemManager.CreateByName(chosenItem, 1);
-          }
-
-          return SelectedItem;
+            Item item = npc.inventory.containerBelt.GetSlot(0);
+            
+            if (item == null)
+            {
+                return;
+            }
+            
+            npc.UpdateActiveItem(item.uid);
         }
 
         #endregion

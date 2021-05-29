@@ -1,6 +1,6 @@
 {
   "Avatars - Store player avatars": true,
-  "Steam API key (get one here https://steamcommunity.com/dev/apikey)": "E646DF0C454DA3DF18E47280E11A42D8",
+  "Steam API key (get one here https://steamcommunity.com/dev/apikey)": "40AE3EA263F455A1DBD87A19A1AE0BEF",
   "URL to web folder containing all item icons": "https://www.rustedit.io/images/imagelibrary/",
   "Progress - Show download progress in console": true,
   "Progress - Time between update notifications": 20,
@@ -8,6 +8,6 @@
   "Version": {
     "Major": 2,
     "Minor": 0,
-    "Patch": 56
+    "Patch": 58
   }
 }

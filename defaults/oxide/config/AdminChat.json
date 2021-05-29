@@ -1,0 +1,4 @@
+{
+  "Prefix (admin chat is used when message starts with this)": "@",
+  "Format (how the message is formatted in chat)": "[#red]Admin Chat[/#] [#grey]{name}[/#]: {message}"
+}

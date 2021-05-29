@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Fuel Gauge", "Oryx", "0.5.2")]
+    [Info("Fuel Gauge", "Oryx", "0.5.5")]
     [Description("HUD for amount of fuel when riding a vehicle")]
     public class FuelGauge : RustPlugin
     {
@@ -49,7 +49,7 @@ namespace Oxide.Plugins
                 {
                     return (entity.GetParentEntity() as MotorRowboat).fuelSystem?.GetFuelAmount() ?? 0;
                 }
-                
+
                 return 0;
             }
         }
@@ -180,8 +180,9 @@ namespace Oxide.Plugins
             {
                 if (!(entity.ShortPrefabName == "miniheliseat" /* MiniCopter */ | entity.ShortPrefabName == "modularcardriverseat" /* ModularCar */
                     | entity.ShortPrefabName == "transporthelipilot" | entity.ShortPrefabName == "transporthelicopilot" /* ScrapTransportHelicopter */
-                    | entity.ShortPrefabName == "driverseat" | entity.ShortPrefabName == "smallboatdriver" /* MotorRowBoat / RHIB */))
+                    | entity.ShortPrefabName == "driverseat" | entity.ShortPrefabName == "smallboatdriver" /* MotorRowBoat*/ | entity.ShortPrefabName == "standingdriver" /* RHIB */))
                 {
+                    Puts(entity.ShortPrefabName);
                     return;
                 }
             }

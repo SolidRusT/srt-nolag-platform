@@ -1,0 +1,104 @@
+{
+  "Sync Nicknames": true,
+  "Update Rate (Seconds)": 2.0,
+  "Use AntiSpamNames On Discord Nickname": false,
+  "Sync Data": [
+    {
+      "Oxide Group": "default",
+      "Discord Role (Name or Id)": "847515430737674310",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": false,
+        "Send Message To Discord": false,
+        "Discord Message Channel (Name or ID)": "general",
+        "Send Message When Added": false,
+        "Send Message When Removed": false,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Oxide Group": "verified",
+      "Discord Role (Name or Id)": "847515654989807666",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": false,
+        "Send Message To Discord": false,
+        "Discord Message Channel (Name or ID)": "general",
+        "Send Message When Added": false,
+        "Send Message When Removed": false,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Oxide Group": "vip",
+      "Discord Role (Name or Id)": "847515819637997629",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": false,
+        "Send Message To Discord": false,
+        "Discord Message Channel (Name or ID)": "general",
+        "Send Message When Added": false,
+        "Send Message When Removed": false,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Oxide Group": "dev",
+      "Discord Role (Name or Id)": "847515954002788352",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": false,
+        "Send Message To Discord": false,
+        "Discord Message Channel (Name or ID)": "general",
+        "Send Message When Added": false,
+        "Send Message When Removed": false,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Oxide Group": "gm",
+      "Discord Role (Name or Id)": "847518858093002812",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": false,
+        "Send Message To Discord": false,
+        "Discord Message Channel (Name or ID)": "general",
+        "Send Message When Added": false,
+        "Send Message When Removed": false,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Oxide Group": "admin",
+      "Discord Role (Name or Id)": "847519198615568425",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": false,
+        "Send Message To Discord": false,
+        "Discord Message Channel (Name or ID)": "",
+        "Send Message When Added": false,
+        "Send Message When Removed": false,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    }
+  ],
+  "Debug Level (None, Error, Warning, Info)": "None"
+}

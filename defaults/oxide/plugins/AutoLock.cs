@@ -1,87 +1,106 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Oxide.Core;
 using Oxide.Core.Plugins;
 using UnityEngine;
+using Object = UnityEngine.Object;
 using Random = Oxide.Core.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Auto Lock", "birthdates", "2.3.2")]
+    [Info("Auto Lock", "birthdates", "2.4.1")]
     [Description("Automatically adds a codelock to a lockable entity with a set pin")]
     public class AutoLock : RustPlugin
     {
         #region Variables
 
-        private const string permission_use = "autolock.use";
-        private readonly Dictionary<BasePlayer, CodeLock> AwaitingResponse = new Dictionary<BasePlayer, CodeLock>();
-        [PluginReference] private Plugin NoEscape;
+        private const string PermissionUse = "autolock.use";
+        private readonly Dictionary<BasePlayer, TimedCodeLock> _awaitingResponse = new Dictionary<BasePlayer, TimedCodeLock>();
+        [UsedImplicitly] [PluginReference("NoEscape")] private Plugin _noEscape;
 
+        private struct TimedCodeLock
+        {
+            public CodeLock CodeLock { get; set; }
+            public DateTime Expiry { get; set; }
+        }
+        
         #endregion
 
         #region Hooks
 
+        [UsedImplicitly]
         private void Init()
         {
             LoadConfig();
-            permission.RegisterPermission(permission_use, this);
+            permission.RegisterPermission(PermissionUse, this);
             _data = Interface.Oxide.DataFileSystem.ReadObject<Data>(Name);
 
             cmd.AddChatCommand("autolock", this, ChatCommand);
             cmd.AddChatCommand("al", this, ChatCommand);
+            if(_config.CodeLockExpiry <= 0f) Unsubscribe(nameof(OnServerInitialized));
         }
 
-        private void OnEntityBuilt(Planner plan, GameObject go)
+        [UsedImplicitly]
+        private void OnServerInitialized()
+        {
+            timer.Every(3f, () =>
+            {
+                for (var i = _awaitingResponse.Count - 1; i > 0; i--)
+                {
+                    var timedLock = _awaitingResponse.ElementAt(i);
+                    if(timedLock.Value.Expiry > DateTime.UtcNow) continue;
+                    _awaitingResponse.Remove(timedLock.Key);
+                }
+            });
+        }
+
+        [UsedImplicitly]
+        private void OnEntityBuilt(HeldEntity plan, GameObject go)
         {
             var player = plan.GetOwnerPlayer();
             if (player == null) return;
-            if (!permission.UserHasPermission(player.UserIDString, permission_use)) return;
-            var Entity = go.ToBaseEntity() as DecayEntity;
-            if (Entity == null || _config.Disabled.Contains(Entity.PrefabName)) return;
-            var S = Entity as StorageContainer;
-            if (S?.inventorySlots < 12) return;
-            if (!S && !(Entity is AnimatedBuildingBlock)) return;
-            if (Entity.IsLocked()) return;
-            if (NoEscape != null)
+            if (!permission.UserHasPermission(player.UserIDString, PermissionUse)) return;
+            var entity = go.ToBaseEntity() as DecayEntity;
+            if (entity == null || _config.Disabled.Contains(entity.PrefabName)) return;
+            var container = entity as StorageContainer;
+            if (entity.IsLocked() || container != null && container.inventorySlots < 12 || !container && !(entity is AnimatedBuildingBlock)) return;
+            if (_noEscape != null)
             {
-                if (_config.NoEscapeSettings.BlockRaid && NoEscape.Call<bool>("IsRaidBlocked", player.UserIDString))
+                if (_config.NoEscapeSettings.BlockRaid && _noEscape.Call<bool>("IsRaidBlocked", player.UserIDString))
                 {
                     player.ChatMessage(lang.GetMessage("RaidBlocked", this, player.UserIDString));
                     return;
                 }
 
-                if (_config.NoEscapeSettings.BlockCombat && NoEscape.Call<bool>("IsCombatBlocked", player.UserIDString))
+                if (_config.NoEscapeSettings.BlockCombat && _noEscape.Call<bool>("IsCombatBlocked", player.UserIDString))
                 {
                     player.ChatMessage(lang.GetMessage("CombatBlocked", this, player.UserIDString));
                     return;
                 }
             }
 
-            if (!_data.Codes.ContainsKey(player.UserIDString))
-                _data.Codes.Add(player.UserIDString, new PlayerData
-                {
-                    Code = GetRandomCode(),
-                    Enabled = true
-                });
-            var pCode = _data.Codes[player.UserIDString];
-            if (!pCode.Enabled || !HasCodeLock(player)) return;
-            var Code = GameManager.server.CreateEntity("assets/prefabs/locks/keypad/lock.code.prefab") as CodeLock;
-			if (Code != null)
+            
+            var playerData = CreateDataIfAbsent(player.UserIDString);
+            if (!playerData.Enabled || !HasCodeLock(player)) return;
+            var code = GameManager.server.CreateEntity("assets/prefabs/locks/keypad/lock.code.prefab") as CodeLock;
+			if (code != null)
 			{
-			    Code.gameObject.Identity();
-			    Code.SetParent(Entity, Entity.GetSlotAnchorName(BaseEntity.Slot.Lock));
-			    Code.Spawn();
-			    Code.code = pCode.Code;
-			    Code.hasCode = true;
-			    Entity.SetSlot(BaseEntity.Slot.Lock, Code);
-			    Effect.server.Run("assets/prefabs/locks/keypad/effects/lock-code-deploy.prefab", Code.transform.position);
-			    Code.whitelistPlayers.Add(player.userID);
-			    Code.SetFlag(BaseEntity.Flags.Locked, true);
+			    code.gameObject.Identity();
+			    code.SetParent(entity, entity.GetSlotAnchorName(BaseEntity.Slot.Lock));
+			    code.Spawn();
+			    code.code = playerData.Code;
+			    code.hasCode = true;
+			    entity.SetSlot(BaseEntity.Slot.Lock, code);
+			    Effect.server.Run("assets/prefabs/locks/keypad/effects/lock-code-deploy.prefab", code.transform.position);
+			    code.whitelistPlayers.Add(player.userID);
+			    code.SetFlag(BaseEntity.Flags.Locked, true);
 			}
             TakeCodeLock(player);
             player.ChatMessage(string.Format(lang.GetMessage("CodeAdded", this, player.UserIDString),
-                player.net.connection.info.GetBool("global.streamermode") ? "****" : pCode.Code));
+                player.net.connection.info.GetBool("global.streamermode") ? "****" : playerData.Code));
         }
 
         private static string GetRandomCode()
@@ -89,6 +108,7 @@ namespace Oxide.Plugins
             return Random.Range(1000, 9999).ToString();
         }
 
+        [UsedImplicitly]
         private void OnServerShutdown()
         {
             Unload();
@@ -97,34 +117,41 @@ namespace Oxide.Plugins
         private void Unload()
         {
             SaveData();
-            foreach (var Lock in AwaitingResponse.Values.Where(Lock => !Lock.IsDestroyed)) Lock.Kill();
+            foreach (var timedLock in _awaitingResponse.Values.Where(timedLock => !timedLock.CodeLock.IsDestroyed)) timedLock.CodeLock.Kill();
+        }
+
+        private PlayerData CreateDataIfAbsent(string id)
+        {
+            PlayerData playerData;
+            if (_data.Codes.TryGetValue(id, out playerData)) return playerData;
+            _data.Codes.Add(id, playerData = new PlayerData
+            {
+                Code = GetRandomCode(),
+                Enabled = true
+            });
+            return playerData;
         }
 
         #endregion
 
         #region Command
 
-        private void ChatCommand(BasePlayer player, string Label, string[] Args)
+        private void ChatCommand(BasePlayer player, string label, string[] args)
         {
-            if (!permission.UserHasPermission(player.UserIDString, permission_use))
+            if (!permission.UserHasPermission(player.UserIDString, PermissionUse))
             {
                 player.ChatMessage(lang.GetMessage("NoPermission", this, player.UserIDString));
                 return;
             }
 
-            if (Args.Length < 1)
+            if (args.Length < 1)
             {
-                player.ChatMessage(string.Format(lang.GetMessage("InvalidArgs", this, player.UserIDString), Label));
+                player.ChatMessage(string.Format(lang.GetMessage("InvalidArgs", this, player.UserIDString), label));
                 return;
             }
 
-            if (!_data.Codes.ContainsKey(player.UserIDString))
-                _data.Codes.Add(player.UserIDString, new PlayerData
-                {
-                    Code = GetRandomCode(),
-                    Enabled = true
-                });
-            switch (Args[0].ToLower())
+            CreateDataIfAbsent(player.UserIDString);
+            switch (args[0].ToLower())
             {
                 case "code":
                     OpenCodeLockUI(player);
@@ -134,47 +161,49 @@ namespace Oxide.Plugins
                         player.UserIDString));
                     break;
                 default:
-                    player.ChatMessage(string.Format(lang.GetMessage("InvalidArgs", this, player.UserIDString), Label));
+                    player.ChatMessage(string.Format(lang.GetMessage("InvalidArgs", this, player.UserIDString), label));
                     break;
             }
         }
 
-        private static bool HasCodeLock(BasePlayer Player)
+        private static bool HasCodeLock(BasePlayer player)
         {
-            return Player.inventory.FindItemID(1159991980) != null;
+            return player.inventory.FindItemID(1159991980) != null;
         }
 
-        private static void TakeCodeLock(BasePlayer Player)
+        private static void TakeCodeLock(BasePlayer player)
         {
-            Player.inventory.Take(null, 1159991980, 1);
+            player.inventory.Take(null, 1159991980, 1);
         }
 
         private void OpenCodeLockUI(BasePlayer player)
         {
-            var Lock = GameManager.server.CreateEntity("assets/prefabs/locks/keypad/lock.code.prefab",
+            var codeLock = GameManager.server.CreateEntity("assets/prefabs/locks/keypad/lock.code.prefab",
                 player.eyes.position + new Vector3(0, -3, 0)) as CodeLock;
-            if (Lock == null) return;
-            Lock.Spawn();
-            Lock.SetFlag(BaseEntity.Flags.Locked, true);
-            Lock.ClientRPCPlayer(null, player, "EnterUnlockCode");
-            if (AwaitingResponse.ContainsKey(player)) AwaitingResponse.Remove(player);
-            AwaitingResponse.Add(player, Lock);
-            if (AwaitingResponse.Count == 1) Subscribe("OnCodeEntered");
+            if (codeLock == null) return;
+            codeLock.Spawn();
+            codeLock.SetFlag(BaseEntity.Flags.Locked, true);
+            codeLock.ClientRPCPlayer(null, player, "EnterUnlockCode");
+            if (_awaitingResponse.ContainsKey(player)) _awaitingResponse.Remove(player);
+            _awaitingResponse.Add(player, new TimedCodeLock(){CodeLock = codeLock, Expiry = DateTime.UtcNow.AddSeconds(_config.CodeLockExpiry)});
+            if (_awaitingResponse.Count == 1) Subscribe("OnCodeEntered");
 
             timer.In(20f, () =>
             {
-                if (!Lock.IsDestroyed) Lock.Kill();
+                if (!codeLock.IsDestroyed) codeLock.Kill();
             });
         }
-
-        private void OnCodeEntered(CodeLock codeLock, BasePlayer player, string code)
+        
+        [UsedImplicitly]
+        private void OnCodeEntered(Object codeLock, BasePlayer player, string code)
         {
-            if (player == null || !AwaitingResponse.ContainsKey(player)) return;
-            var A = AwaitingResponse[player];
-            if (A != codeLock)
+            TimedCodeLock timedCodeLock;
+            if (player == null || !_awaitingResponse.TryGetValue(player, out timedCodeLock)) return;
+            var playerCodeLock = timedCodeLock.CodeLock;
+            if (playerCodeLock != codeLock)
             {
-                if (!A.IsDestroyed) A.Kill();
-                AwaitingResponse.Remove(player);
+                if (!playerCodeLock.IsDestroyed) playerCodeLock.Kill();
+                _awaitingResponse.Remove(player);
                 return;
             }
 
@@ -183,19 +212,19 @@ namespace Oxide.Plugins
             player.ChatMessage(string.Format(lang.GetMessage("CodeUpdated", this, player.UserIDString),
                 player.net.connection.info.GetBool("global.streamermode") ? "****" : code));
 
-            var Prefab = A.effectCodeChanged;
-            if (!A.IsDestroyed) A.Kill();
-            AwaitingResponse.Remove(player);
+            var prefab = playerCodeLock.effectCodeChanged;
+            if (!playerCodeLock.IsDestroyed) playerCodeLock.Kill();
+            _awaitingResponse.Remove(player);
 
-            Effect.server.Run(Prefab.resourcePath, player.transform.position);
-            if (AwaitingResponse.Count < 1) Unsubscribe("OnCodeEntered");
+            Effect.server.Run(prefab.resourcePath, player.transform.position);
+            if (_awaitingResponse.Count < 1) Unsubscribe("OnCodeEntered");
         }
 
         private bool Toggle(BasePlayer player)
         {
-            var Data = _data.Codes[player.UserIDString];
-            var newToggle = !Data.Enabled;
-            Data.Enabled = newToggle;
+            var data = _data.Codes[player.UserIDString];
+            var newToggle = !data.Enabled;
+            data.Enabled = newToggle;
             return newToggle;
         }
 
@@ -238,6 +267,9 @@ namespace Oxide.Plugins
             public List<string> Disabled;
 
             [JsonProperty("No Escape")] public NoEscapeSettings NoEscapeSettings;
+            
+            [JsonProperty("Code Lock Expiry Time (Seconds, put -1 if you want to disable)")]
+            public float CodeLockExpiry;
 
             public static ConfigFile DefaultConfig()
             {
@@ -247,6 +279,7 @@ namespace Oxide.Plugins
                     {
                         "assets/prefabs/deployable/large wood storage/box.wooden.large.prefab"
                     },
+                    CodeLockExpiry = 10f,
                     NoEscapeSettings = new NoEscapeSettings
                     {
                         BlockCombat = true,

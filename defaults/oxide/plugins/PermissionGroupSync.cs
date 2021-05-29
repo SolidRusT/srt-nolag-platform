@@ -9,7 +9,7 @@ using Oxide.Core.Database;
 
 namespace Oxide.Plugins {
 
-    [Info("Permission Group Sync", "OldSpice", "2.0.1")]
+    [Info("Permission Group Sync", "OldSpice", "2.0.3")]
     [Description("Synchronizes sets of Groups and Permissions with customizable Commands across multiple Servers")]
 
     public class PermissionGroupSync : CovalencePlugin {
@@ -17,7 +17,7 @@ namespace Oxide.Plugins {
         #region Globals
 
         private const string PermissionGroupSyncPerm = "permissiongroupsync";
-        private const string PermissionGroupSyncPermAdmin = "permissiongroupsync.admin";
+        private const string PermissionGroupSyncPermAdmin = "permissiongroupsync.globaladmin";
         private const string sql_table = "permissiongroupsync";
         private const string ServerIdAll = "_ALL";
 
@@ -284,8 +284,8 @@ namespace Oxide.Plugins {
 
                         if ((!groupPermission.OverrideServerIdCheck) && (groupPermission.ExtendedPermissionHandling)) {
                             if (groupPermissionDb.ServerId == ServerIdAll) {
-                                foreach (GroupPermissionDb groupPermissionDbTmp in groupPermissionsDb.Where(x => ((x.SteamId == groupPermissionDb.SteamId) && (x.ServerId != ServerIdAll)))) {
-                                    if (_cfg.GroupPermissions.Where(x => ((x.GroupName == groupPermissionDbTmp.GroupName) && (x.ExtendedPermissionHandling) && (x.ExtendedPermissionHandling))).Count() > 0) {
+                                foreach (GroupPermissionDb groupPermissionDbTmp in groupPermissionsDb.Where(x => ((x.SteamId == groupPermissionDb.SteamId) && (x.ServerId != ServerIdAll) && (x.ServerId == _cfg.ServerId)))) {
+                                    if (_cfg.GroupPermissions.Where(x => ((x.GroupName == groupPermissionDbTmp.GroupName) && (x.ExtendedPermissionHandling))).Count() > 0) {
                                         skipPermission = true;
                                         break;
                                     }

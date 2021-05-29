@@ -1,0 +1,16 @@
+{
+  "Check Currently Loaded Plugins When This Plugin Enables?": false,
+  "Blacklisted Plugins (won't check for update)": [],
+  "Blacklisted Authors (won't check for update)": [],
+  "Update Version Settings (which updates to not go through with)": {
+    "Backward": false,
+    "Major": false,
+    "Minor": true,
+    "Patch": true
+  },
+  "Do Routine Checks?": true,
+  "Routine Interval Time (Minutes)": 240.0,
+  "Notify on Blacklisted Update?": false,
+  "Use Discord Webhooks?": false,
+  "Discord Webhook": ""
+}

@@ -1,4 +1,4 @@
-﻿using Network;
+using Network;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,13 +7,16 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("DronePilot", "k1lly0u", "1.0.0"), Description("Allow players with permission to fly drones")]
+    [Info("DronePilot", "k1lly0u", "1.0.2"), Description("Allow players with permission to fly drones")]
     class DronePilot : RustPlugin
     {
         #region Fields  
-        private const string USE_PERMISSION = "dronepilot.use";
+        private Hash<ulong, double> _cooldownTimes = new Hash<ulong, double>();
 
+        private const string USE_PERMISSION = "dronepilot.use";
         private const string CREATE_PERMISSION = "dronepilot.create";
+        private const string IGNORE_COOLDOWN_PERMISSION = "dronepilot.nocooldown";
+        private const string IGNORE_COST_PERMISSION = "dronepilot.nocost";
 
         private const float DRONE_DISABLE_HEALTH_FRACTION = 0.1f;
         #endregion
@@ -23,11 +26,32 @@ namespace Oxide.Plugins
         {
             permission.RegisterPermission(USE_PERMISSION, this);
             permission.RegisterPermission(CREATE_PERMISSION, this);
+            permission.RegisterPermission(IGNORE_COOLDOWN_PERMISSION, this);
+            permission.RegisterPermission(IGNORE_COST_PERMISSION, this);
 
             GetMessage = Message;
         }
 
         protected override void LoadDefaultMessages() => lang.RegisterMessages(Messages, this);
+
+        private object CanBuild(Planner planner, Construction prefab)
+        {
+            BasePlayer player = planner?.GetOwnerPlayer();
+            if (player == null)
+            {
+                return null;
+            }
+
+            if (prefab.fullName == "assets/prefabs/deployable/drone/drone.deployed.prefab")
+            {
+                if (player.GetMountedVehicle() != null || player.GetParentEntity() != null)
+                {
+                    player.ChatMessage(Message("Error.HasMountedOrParented", player.userID));
+                    return false;
+                }
+            }
+            return null;
+        }
 
         private void OnEntityBuilt(Planner planner, GameObject gameObject)
         {
@@ -72,6 +96,8 @@ namespace Oxide.Plugins
 
                 if (damageType != Rust.DamageType.Collision) // Dont do anything is its collision damage because we are managing that in DroneController.OnCollisionEnter
                 {
+                    hitInfo.damageTypes.ScaleAll(Configuration.DamageScale);
+
                     BasePlayer player = droneController.Controller;
 
                     float healthFraction = (drone.Health() - hitInfo.damageTypes.Total()) / drone.MaxHealth();
@@ -155,6 +181,48 @@ namespace Oxide.Plugins
             return null;
         }
 
+        private object CanBeTargeted(BasePlayer player)
+        {
+            for (int i = 0; i < DroneController._allDroneControllers.Count; i++)
+            {
+                DroneController droneController = DroneController._allDroneControllers[i];
+
+                if (droneController.Controller.userID == player.userID)
+                {
+                    return false;
+                }
+            }
+            return null;
+        }
+
+        private object CanBradleyApcTarget(BasePlayer player)
+        {
+            for (int i = 0; i < DroneController._allDroneControllers.Count; i++)
+            {
+                DroneController droneController = DroneController._allDroneControllers[i];
+
+                if (droneController.Controller.userID == player.userID)
+                {
+                    return false;
+                }
+            }
+            return null;
+        }
+
+        private object CanHelicopterTarget(BasePlayer player)
+        {
+            for (int i = 0; i < DroneController._allDroneControllers.Count; i++)
+            {
+                DroneController droneController = DroneController._allDroneControllers[i];
+
+                if (droneController.Controller.userID == player.userID)
+                {
+                    return false;
+                }
+            }
+            return null;
+        }
+
         private void Unload()
         {
             for (int i = DroneController._allDroneControllers.Count - 1; i >= 0; i--)            
@@ -185,6 +253,30 @@ namespace Oxide.Plugins
                 Item item = from.containerWear.itemList[i];
                 item.MoveToContainer(to.containerWear, item.position, false);
             }
+        }
+
+        private string FormatTime(double time)
+        {
+            TimeSpan dateDifference = TimeSpan.FromSeconds(time);
+            int days = dateDifference.Days;
+            int hours = dateDifference.Hours;
+            int mins = dateDifference.Minutes;
+            int secs = dateDifference.Seconds;
+
+            if (days > 0)
+                return string.Format("~{0:00}d:{1:00}h", days, hours);
+            else if (hours > 0)
+                return string.Format("~{0:00}h:{1:00}m", hours, mins, secs);
+            else if (mins > 0)
+                return string.Format("{0:00}m:{1:00}s", mins, secs);
+            else return string.Format("{0}s", secs);
+        }
+
+        private object CanTeleport(BasePlayer player)
+        {
+            if (player.GetMounted()?.GetComponentInParent<DroneController>() != null)
+                return Message("Error.NoTP", player.userID);
+            return null;
         }
         #endregion
 
@@ -238,7 +330,6 @@ namespace Oxide.Plugins
                 if (Controller != null)
                 {
                     StopControllingDrone();
-
                     RestorePlayer();                    
                 }
 
@@ -360,15 +451,18 @@ namespace Oxide.Plugins
                     return;
 
                 float num = Drone.WaterFactor();
-                if (Drone.killInWater && num > 0f)
+                if (Drone.killInWater && num > 0.1f)
                 {
-                    if (num > 0.99f)
+                    if (num > 0.75f)
                     {
                         Controller.ChatMessage(GetMessage("Notification.WaterDamage", Controller.userID));
 
                         _killOnDestroy = true;
                         Destroy(this);
                     }
+
+                    Controller.ChatMessage(GetMessage("Notification.WaterLogged", Controller.userID));
+                    Destroy(this);
                     return;
                 }
 
@@ -395,9 +489,7 @@ namespace Oxide.Plugins
                 Vector3 normalizedLean = (Vector3.up + worldLeanVelocity * Configuration.LeanWeight * leanMagnitude).normalized;
 
                 float leanForce = Mathf.Max(Vector3.Dot(normalizedLean, _tr.up), 0f);
-
-                _avgTerrainHeight = Mathf.Lerp(_avgTerrainHeight, TerrainMeta.HeightMap.GetHeight(_tr.position), Time.fixedDeltaTime * 20f);
-
+                
                 if (!isCollisionDisabled || _isGrounded)
                 {
                     Vector3 descendVector = (_isGrounded && _currentInput.throttle <= 0f) ? Vector3.zero : (-1f * _tr.up * Physics.gravity.y);
@@ -418,10 +510,11 @@ namespace Oxide.Plugins
                                        
                     _rb.AddTorque(force * leanForce, ForceMode.Acceleration);
 
-                    if (_currentInput.throttle == 0 && _currentInput.movement == Vector3.zero)
+                    if (!Configuration.AutoHover && _currentInput.throttle == 0 && _currentInput.movement == Vector3.zero)
                         _rb.AddForce((Physics.gravity * 2f) * Time.fixedDeltaTime, ForceMode.Acceleration);
                 }
 
+                _avgTerrainHeight = Mathf.Lerp(_avgTerrainHeight, TerrainMeta.HeightMap.GetHeight(_tr.position), Time.fixedDeltaTime * 20f);
                 if (_tr.position.y > _avgTerrainHeight + Configuration.MaximumCruiseHeight)
                 {
                     if (_rb.velocity.y > 0)
@@ -503,10 +596,32 @@ namespace Oxide.Plugins
             {
                 player.ChatMessage(Message("Error.NoPermission", player.userID));
                 return;
+            }            
+            
+            double nextUse;
+            if (_cooldownTimes.TryGetValue(player.userID, out nextUse) && nextUse > Time.time)
+            {
+                player.ChatMessage(string.Format(Message("Error.Cooldown", player.userID), FormatTime(nextUse - Time.time)));
+                return;
             }
 
-            const string DRONE_ITEM = "drone";
+            if (Configuration.Cost > 0 && !permission.UserHasPermission(player.UserIDString, IGNORE_COST_PERMISSION))
+            {
+                const int SCRAP_ID = -932201673;
 
+                if (player.inventory.GetAmount(SCRAP_ID) < Configuration.Cost)
+                {
+                    player.ChatMessage(string.Format(Message("Error.InsufficientFunds", player.userID), Configuration.Cost));
+                    return;
+                }
+
+                player.inventory.Take(null, SCRAP_ID, Configuration.Cost);
+            }
+
+            if (!permission.UserHasPermission(player.UserIDString, IGNORE_COOLDOWN_PERMISSION))
+                _cooldownTimes[player.userID] = Time.time + Configuration.CooldownTime;
+
+            const string DRONE_ITEM = "drone";            
             player.GiveItem(ItemManager.CreateByName(DRONE_ITEM), BaseEntity.GiveItemReason.PickedUp);
         }
         #endregion
@@ -546,6 +661,18 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Maximum cruising height above terrain")]
             public float MaximumCruiseHeight { get; set; }
 
+            [JsonProperty(PropertyName = "Drone should autohover and not be affected by gravity when no user input is detected")]
+            public bool AutoHover { get; set; }
+
+            [JsonProperty(PropertyName = "Drone damage scaler (does not affect collision damage)")]
+            public float DamageScale { get; set; }
+
+            [JsonProperty(PropertyName = "The cooldown time on using the /drone command (seconds)")]
+            public int CooldownTime { get; set; }
+
+            [JsonProperty(PropertyName = "The scrap cost associated with using the /drone command")]
+            public int Cost { get; set; }
+
             public Core.VersionNumber Version { get; set; }
         }
 
@@ -576,6 +703,10 @@ namespace Oxide.Plugins
                 HurtDamagePower = 3f,
                 CollisionDisableTime = 0.25f,
                 MaximumCruiseHeight = 30f,
+                AutoHover = false,
+                DamageScale = 5f,
+                CooldownTime = 3600,
+                Cost = 0,
                 Version = Version
             };
         }
@@ -585,6 +716,16 @@ namespace Oxide.Plugins
         private void UpdateConfigValues()
         {
             PrintWarning("Config update detected! Updating config values...");
+
+            ConfigData baseConfig = GetBaseConfig();
+
+            if (Configuration.Version < new Core.VersionNumber(1, 0, 1))
+            {
+                Configuration.AutoHover = false;
+                Configuration.DamageScale = 5f;
+                Configuration.CooldownTime = 3600;
+                Configuration.Cost = 0;
+            }
 
             Configuration.Version = Version;
             PrintWarning("Config update completed!");
@@ -600,10 +741,15 @@ namespace Oxide.Plugins
         {
             ["Notification.TooMuchDamage"] = "This drone is too damaged to fly. Repair it to continue use",
             ["Notification.WaterDamage"] = "Drones can't swim... n00b",
+            ["Notification.WaterLogged"] = "Your drone is water logged and is unable to fly",
             ["Notification.Destroyed"] = "Your drone has been destroyed",
             ["Notification.Controls"] = "<size=18><color=#ffa500>COBALT DRONE</color></size><size=14> - <color=#ce422b>Controls</color></size>\nForward/BackwardLeft/Right - Movement\nSprint/Duck - Ascend/Descend\nJump - Exit controls",
+            ["Error.HasMountedOrParented"] = "You can't place drone while mounted or parented",
             ["Error.NoFlyPermissions"] = "You do not have permission to fly drones",
             ["Error.NoPermission"] = "You do not have permission to use this command",
+            ["Error.NoTP"] = "Teleportation is disabled while flying drones",
+            ["Error.Cooldown"] = "You have a cooldown period of <color=#ce422b>{0}</color> remaining before you can use this ocmmand again",
+            ["Error.InsufficientFunds"] = "This command costs <color=#ce422b>{0} scrap</color> to use"
         };
         #endregion
     }

@@ -1,8 +1,8 @@
 {
   "DatePreset": {
-    "presetDay": 1,
-    "presetMonth": 1,
-    "presetYear": 2020,
+    "presetDay": 16,
+    "presetMonth": 04,
+    "presetYear": 2021,
     "setPresetDate": false
   },
   "Settings": {
@@ -13,7 +13,7 @@
     "dayLength": 30,
     "freezeDate": false,
     "logAutoSkipConsole": true,
-    "nightLength": 30
+    "nightLength": 5
   },
   "TimeFreeze": {
     "freezeTimeOnload": false,
