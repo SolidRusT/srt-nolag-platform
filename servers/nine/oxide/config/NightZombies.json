@@ -1,10 +1,27 @@
 {
-  "Murderer Population": 150,
-  "Scarecrow Population": 300,
-  "Kill Murderers": false,
-  "Play sound": false,
-  "Broadcast Spawn amount": true,
-  "Broadcast murderer and scarecrow count separately": false,
-  "Slow destroy": false,
-  "Slow destroy time (seconds)": 0.3
+  "Spawn Settings": {
+    "Murderer Population": 50.0,
+    "Murderer Health": 100.0,
+    "Scarecrow Population": 50.0,
+    "Scarecrow Health": 200.0,
+    "Reverse Spawn Timings": false,
+    "Chance Settings": {
+      "Chance per cycle": 100.0,
+      "Days betewen spawn": 0
+    }
+  },
+  "Destroy Settings": {
+    "Leave Corpse": true
+  },
+  "Behaviour Settings": {
+    "Count if shortname contains": false,
+    "Ignored entities": [
+      "scientist",
+      "scientistjunkpile"
+    ]
+  },
+  "Broadcast Settings": {
+    "Broadcast spawn amount": false,
+    "Broadcast types separately": false
+  }
 }
