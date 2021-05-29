@@ -1,9 +1,16 @@
+# Basics
+# sudo apt update && sudo apt dist-upgrade -y
+# sudo apt -y install ssh git wget python python-pip
+# ssh-keygen -b 4096
+
+
 # Instal RCON CLI
 # From: https://github.com/gorcon/rcon-cli/releases/latest
-wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.0/rcon-0.9.0-amd64_linux.tar.gz
-tar xzvf rcon-0.9.0-amd64_linux.tar.gz
-mv rcon-0.9.0-amd64_linux/rcon* .
-rm -rf rcon-0.9.0-amd64_linux* rcon.yaml
+wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.1/rcon-0.9.1-amd64_linux.tar.gz
+    tar xzvf rcon-0.9.1-amd64_linux.tar.gz
+    mv rcon-0.9.1-amd64_linux/rcon ${HOME}/rcon
+    rm -rf rcon-0.9.1-amd64_linux*
+
 ssh-keygen -b 4096 && \
 PUB_KEY=$(cat ${HOME}/.ssh/id_rsa.pub)
 echo ${PUB_KEY}

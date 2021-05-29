@@ -1,0 +1,21 @@
+      {
+        "ButtonText": "Rules",
+        "HeaderText": "Rules",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "#1 - No hacking, cheating or otherwise being an Asshat",
+              "#2 - "
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      }
