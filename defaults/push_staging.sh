@@ -42,8 +42,6 @@ for plug in ${PLUGS[@]}; do
 done
 
 # save Rust Oxide installed plugins
-${BASE_BACKUPS_PATH}/staged/plugin
-
 echo "===> Uploading Rust Oxide installed plugins to: ${HOME}/solidrust.net/defaults/oxide/plugins" | tee -a ${LOGS}
 aws s3 sync --quiet --delete ${BASE_BACKUPS_PATH}/staged/plugins ${HOME}/solidrust.net/defaults/oxide/plugins | tee -a ${LOGS}
 
