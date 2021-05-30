@@ -2,11 +2,12 @@
 ## Install on:
 # - Game Server
 #
+SOURCE=$1
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
-export BASE_BACKUPS_PATH="${S3_BACKUPS}/servers/${HOSTNAME}"
+export BASE_BACKUPS_PATH="${S3_BACKUPS}/servers/${SOURCE}"
 
 # save Rust Server configs
 echo "===> Uploading Rust Server Configs configs to: ${HOME}/solidrust.net/defaults/cfg/users.cfg" | tee -a ${LOGS}
