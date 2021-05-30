@@ -18,11 +18,6 @@ else
     rm -rf rcon-0.9.1-amd64_linux*
 fi
 
-# Game Node: if game service is still running
-${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.save"
-${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.writecfg"
-${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "quit"
-
 # refresh OS packages
 echo "===> Buffing-up Debian Distribution..." | tee -a ${LOGS}
 sudo apt update | tee -a ${LOGS}

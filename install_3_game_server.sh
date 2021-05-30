@@ -4,7 +4,7 @@ sudo dpkg --add-architecture i386
 sudo apt update
 sudo apt -y dist-upgrade
 
-NEW_NAME="nine"
+NEW_NAME="one"
 echo ${NEW_NAME} | sudo tee /etc/hostname
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/hosts
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
@@ -57,21 +57,20 @@ sudo apt-get -y install \
     python3 \
     golang \
     python3-pip \
-    linux-headers-$(uname -r) \
     util-linux \
     bsdmainutils \
     build-essential
 
 echo "PATH=\$PATH:$HOME/.local/bin" >> ".bashrc"
 
-# early pre-maintenance maintenance maintenance
+# freshen-up the Debian repo
 sudo apt -y install -f
 sudo apt -y autoremove
 sudo apt clean
 sudo apt autoclean
 
 #!/bin/bash
-STEAMUSER="modded"
+STEAMUSER="root"
 
 # Install Steam client
 sudo apt -y install steamcmd

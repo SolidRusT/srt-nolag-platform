@@ -1,29 +1,37 @@
 #!/bin/bash
-#export STEAMUSER="rusty"
-#export GAME_DIR="/game"
 
-cd ${GAME_DIR}
-wget https://umod.org/games/rust/download/develop -O \
-    Oxide.Rust.zip
-unzip -o Oxide.Rust.zip
-rm Oxide.Rust.zip
+sudo su - ${STEAMUSER}
+pip3 install awscli
+aws configure
+echo "export PATH=\${PATH}:${HOME}/.local/bin" >> ".bashrc"
+mkdir -p /root/.local/bin
+exit 
 
-wget https://umod.org/extensions/discord/download -O \
-    ${GAME_DIR}/RustDedicated_Data/Managed/Oxide.Ext.Discord.dll
+sudo su - ${STEAMUSER}
 
-wget http://playrust.io/latest -O \
-    ${GAME_DIR}/RustDedicated_Data/Managed/Oxide.Ext.RustIO.dll
+rm -rf /${HOME}/solidrust.net
+mkdir -p /${HOME}/solidrust.net
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /${HOME}/solidrust.net
+chmod +x /${HOME}/solidrust.net/defaults/*.sh
 
-wget https://github.com/k1lly0u/Oxide.Ext.RustEdit/raw/master/Oxide.Ext.RustEdit.dll -O \
-    ${GAME_DIR}/RustDedicated_Data/Managed/Oxide.Ext.RustEdit.dll
+${HOME}/solidrust.net/defaults/update_rust_service.sh
 
-mkdir -p oxide/plugins && cd oxide/plugins
-wget https://umod.org/plugins/PermissionGroupSync.cs
-
+# Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
-echo "3 *    * * *   ${USER} \
-    rm -rf ${GITHUB_ROOT}; \
-    mkdir -p ${GITHUB_ROOT}; \
-    aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT}; \
-    chmod +x ${SERVER_GLOBAL}/*.sh" \
-    | sudo tee -a /etc/crontab
+me=$(basename -- "$0")
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+
+mkdir -p ${GAME_DIR}/server/solidrust/cfg
+mkdir -p ${GAME_DIR}/oxide
+ln -s ${HOME}/solidrust.net/defaults/solidrust.sh ${HOME}/.local/bin/solidrust.sh
+
+aws s3 sync --quiet --delete ${S3_BACKUPS}/repo/defaults/oxide ${GAME_DIR}/oxide | tee -a ${LOGS}
+aws s3 sync --quiet ${S3_BACKUPS}/repo/defaults/cfg ${GAME_DIR}/server/solidrust | tee -a ${LOGS}
+mkdir -p ${GAME_DIR}/backup | tee -a ${LOGS}
+sleep 2
+
+aws s3 sync --quiet ${S3_BACKUPS}/repo/servers/${HOSTNAME}/server/solidrust/cfg ${GAME_DIR}/server/solidrust/cfg | tee -a ${LOGS}
+aws s3 sync --quiet ${S3_BACKUPS}/repo/servers/${HOSTNAME}/oxide ${GAME_DIR}/oxide | tee -a ${LOGS}
+
+
+# solidrust.sh &
