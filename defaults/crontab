@@ -9,5 +9,5 @@
 #44 *    * * *   root  /bin/sh -c /root/solidrust.net/defaults/44_sync_server_config.sh
 
 # SolidRusT defaults
-45 *    * * *   root    /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
-50 *    * * *   root    rm -rf /root/solidrust.net;     mkdir -p /root/solidrust.net;     aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /root/solidrust.net;     chmod +x /root/solidrust.net/defaults/*.sh
+15 *    * * *   root    /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
+10 *    * * *   root    rm -rf /root/solidrust.net;     mkdir -p /root/solidrust.net;     aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /root/solidrust.net;     chmod +x /root/solidrust.net/defaults/*.sh
