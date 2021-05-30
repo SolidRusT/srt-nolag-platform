@@ -29,16 +29,16 @@
     "76561198024774727": {
       "_usageData": {
         "SpawnKit": {
-          "TotalUses": 46,
-          "NextUseTime": 1622262938.1323559
+          "TotalUses": 49,
+          "NextUseTime": 1622343684.4647138
         },
         "Bolt & Pistol": {
-          "TotalUses": 6,
-          "NextUseTime": 1622244755.63917
+          "TotalUses": 7,
+          "NextUseTime": 1622343693.171865
         },
         "ALPHATESTING": {
-          "TotalUses": 4,
-          "NextUseTime": 1622184006.5382819
+          "TotalUses": 5,
+          "NextUseTime": 1622332112.385916
         }
       },
       "ClaimAutoKits": true
@@ -95,8 +95,8 @@
     "76561198886543733": {
       "_usageData": {
         "SpawnKit": {
-          "TotalUses": 14,
-          "NextUseTime": 1622167773.526834
+          "TotalUses": 15,
+          "NextUseTime": 1622331906.0990589
         },
         "Bolt & Pistol": {
           "TotalUses": 6,
@@ -108,8 +108,8 @@
     "76561198047495169": {
       "_usageData": {
         "SpawnKit": {
-          "TotalUses": 12,
-          "NextUseTime": 1622238379.31176
+          "TotalUses": 15,
+          "NextUseTime": 1622330180.816483
         }
       },
       "ClaimAutoKits": true
@@ -117,8 +117,8 @@
     "76561198119911899": {
       "_usageData": {
         "SpawnKit": {
-          "TotalUses": 11,
-          "NextUseTime": 1622168610.015409
+          "TotalUses": 21,
+          "NextUseTime": 1622332169.6689248
         }
       },
       "ClaimAutoKits": true
@@ -224,8 +224,8 @@
     "76561198416399632": {
       "_usageData": {
         "SpawnKit": {
-          "TotalUses": 3,
-          "NextUseTime": 1622265238.959178
+          "TotalUses": 4,
+          "NextUseTime": 1622331929.2757928
         }
       },
       "ClaimAutoKits": true
@@ -253,6 +253,15 @@
         "SpawnKit": {
           "TotalUses": 2,
           "NextUseTime": 1622253716.223583
+        }
+      },
+      "ClaimAutoKits": true
+    },
+    "76561198392882182": {
+      "_usageData": {
+        "SpawnKit": {
+          "TotalUses": 2,
+          "NextUseTime": 1622330228.294807
         }
       },
       "ClaimAutoKits": true
