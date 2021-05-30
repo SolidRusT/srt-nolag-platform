@@ -24,3 +24,5 @@ aws s3 sync --quiet --delete ${GAME_ROOT}/oxide/data ${BASE_BACKUPS_PATH}/staged
 # save Rust Oxide installed plugins
 echo "===> Uploading Rust Oxide installed plugins to: ${BASE_BACKUPS_PATH}/staged/plugins" | tee -a ${LOGS}
 aws s3 sync --quiet --delete ${GAME_ROOT}/oxide/plugins ${BASE_BACKUPS_PATH}/staged/plugins | tee -a ${LOGS}
+
+echo "Finished ${me}"   | tee -a ${LOGS}
