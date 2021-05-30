@@ -1,3 +1,13 @@
+#!/bin/bash
+# Once server is finished loading and running
+
+# Pull global env vars
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=$(basename -- "$0")
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+
+cd ${GAME_DIR}
+
 # for perm in ${DEFAULT_PERMS[@]}; do ./rcon -c ~/solidrust.net/defaults/rcon.yaml "o.grant group default $perm"; done
 DEFAULT_PERMS=(
 skins.use  \
