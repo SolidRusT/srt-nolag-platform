@@ -2,7 +2,6 @@
 ## Install on:
 # - Game Server
 #
-
 # Pull global env vars
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 me=$(basename -- "$0")
