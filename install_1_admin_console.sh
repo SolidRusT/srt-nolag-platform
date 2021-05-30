@@ -1,6 +1,6 @@
 # Basics
 # sudo apt update && sudo apt dist-upgrade -y
-# sudo apt -y install ssh git wget python python-pip
+# sudo apt -y install ssh git wget python3 python3-pip
 # ssh-keygen -b 4096
 
 
