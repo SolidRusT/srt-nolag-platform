@@ -59,3 +59,5 @@ wget http://playrust.io/latest -O \
 # Update custom maps
 echo "===> Downloading custom maps..." | tee -a ${LOGS}
 aws s3 sync ${S3_WEB}/maps ${GAME_ROOT}/server/solidrust | tee -a ${LOGS}
+
+echo "Finished ${me}"   | tee -a ${LOGS}

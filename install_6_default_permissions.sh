@@ -92,7 +92,10 @@ cctvutilities.autoadd.off \
 cctvutilities.autoadd.toggle \
 cctvutilities.autoadd.me \
 cctvutilities.autoadd.server \
-chute.allowed
+chute.allowed \
+buildinggrades.use \
+buildinggrades.up.all \
+buildinggrades.down.all
 )
 
 ./rcon -c rcon.yaml "o.load *"
