@@ -31,9 +31,9 @@ done
 echo "Updating Oxide plugins" | tee -a ${LOGS}
 mkdir -p "${BUILD_ROOT}/oxide/plugins"
 
-rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
-rsync -ra "${SERVER_CUSTOM}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
-rsync -ra --delete "${BUILD_ROOT}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rsync -ra "${SERVER_CUSTOM}/oxide/plugins" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rsync -ra --delete "${BUILD_ROOT}/oxide/plugins" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
 
 echo "loading dormant plugins" | tee -a ${LOGS}
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}

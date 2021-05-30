@@ -108,13 +108,13 @@ buildinggrades.up.all \
 buildinggrades.down.all
 )
 
-./rcon -c rcon.yaml "o.load *"
+./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml "o.load *"
 
 for perm in ${DEFAULT_PERMS[@]}; do
-    echo "./rcon -c rcon.yaml \"o.grant default $perm\""
-    ./rcon -c rcon.yaml "o.grant group default $perm"
+    echo "./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml \"o.grant default $perm\""
+    ./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml "o.grant group default $perm"
     sleep 2
 done
 
-./rcon -c rcon.yaml "o.reload PermissionGroupSync"
+./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml "o.reload PermissionGroupSync"
 
