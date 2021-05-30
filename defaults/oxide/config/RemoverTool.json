@@ -149,9 +149,7 @@
     "cactus-3": "cactus-3",
     "codelockedhackablecrate": "codelockedhackablecrate",
     "Stones": "Stones",
-    "Wood": "Wood",
-    "Repair Bench": "Repair Bench",
-    "Work Bench Level 3": "Work Bench Level 3"
+    "Wood": "Wood"
   },
   "GUI": {
     "Enabled": true,
