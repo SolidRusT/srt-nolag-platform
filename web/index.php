@@ -4,22 +4,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-
 <title>SolidRust NoLag Networks</title>
-
-<!-- Google font -->
 <link href="https://fonts.googleapis.com/css?family=Montserrat:200,400,700" rel="stylesheet">
-
-<!-- Custom stlylesheet -->
 <link type="text/css" rel="stylesheet" href="css/main.css" />
 <style type="text/css">
 body {
 	background-image: url(images/SR-Demo-Loot-1.PNG);
 }
 </style>
-
-<!-- Global site tag (gtag.js) - Google Analytics --> 
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188473063-1"></script> 
 <script>
     window.dataLayer = window.dataLayer || [];
@@ -27,22 +19,14 @@ body {
     gtag('js', new Date());
 
     gtag('config', 'UA-188473063-1');
-  </script> 
-<!-- Global site tag (gtag.js) END -->
+  </script>
 </head>
 
 <body>
 <table style="width:100%">
+
   <tr>
-    <th> <h2><b>SolidRusT</b> Sees you.</h2>
-    </th>
-    <th>&nbsp;</th>
-    <th>&nbsp;</th>
-  </tr>
-  <tr>
-    <td><p><a href="https://discord.gg/xgGEdzv2bw">&nbsp;</a></p></td>
-    <td><h3>Servers</h3></td>
-    <td>&nbsp;</td>
+    <p><a href="https://discord.gg/xgGEdzv2bw"><img src="images/SoldRust_Banner_trans.png" alt=""/></a></p>
   </tr>
   <tr>
     <td><iframe src="https://discord.com/widget?id=846525505083670580&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe></td>
@@ -51,10 +35,7 @@ body {
     </td>
   </tr>
 </table>
-
-<!-- IPv6-test.com button BEGIN --> 
 <a href="http://ipv6-test.com/validate.php?url=referer"><img src="http://ipv6-test.com/button-ipv6-80x15.png"
-      alt="ipv6 ready" title="ipv6 ready" border="0" /></a> 
-<!-- IPv6-test.com button END -->
+      alt="ipv6 ready" title="ipv6 ready" border="0" /></a>
 </body>
 </html>
