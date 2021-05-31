@@ -26,7 +26,7 @@ body {
 <table style="width:100%">
 
   <tr>
-    <p><a href="https://discord.gg/xgGEdzv2bw"><img src="images/SoldRust_Banner_trans.png" alt=""/></a></p>
+    <p><a href="https://discord.gg/PpAvPcD46q"><img src="images/SoldRust_Banner_trans.png" alt=""/></a></p>
   </tr>
   <tr>
     
