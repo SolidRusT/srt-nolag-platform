@@ -36,8 +36,10 @@ body {
 	  
 	<object data='https://www.youtube.com/embed/xNlNaO-9jcs?autoplay=1' 
         width='560px' height='315px'>
-    </object></p>
-    </td>
+    </object></p></td>
+	 <td><p>
+		 <iframe src="https://discord.com/widget?id=846525505083670580&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+	</p></td>
 	 
   </tr>
 </table>
