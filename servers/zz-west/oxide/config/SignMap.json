@@ -1,7 +1,0 @@
-{
-  "Chat Command": "sm",
-  "Delay between sign generation (Seconds)": 0.1,
-  "Command cooldown (Seconds)": 120.0,
-  "Max number of signs in generated grid": 16,
-  "Default map to use when non specified": "Icons"
-}

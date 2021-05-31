@@ -1,5 +1,0 @@
-{
-  "ReceivedForPlaying": "You've received $payout.amount for actively playing",
-  "ReceivedForTimeAlive": "You've received $payout.amount for staying alive for $time.alive",
-  "ReceivedWelcomeBonus": "You've received $payout.amount as a welcome bonus"
-}

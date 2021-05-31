@@ -1,6 +1,0 @@
-{
-  "ErrorLocation": "Cannot locate {0} plugin on uMod",
-  "VersionMismatch": "{0} version mismatch current {1} uMod Version {2}",
-  "AlreadyRunning": "Already Checking for updates",
-  "CheckForUpdatesCommand": "CheckforUpdates"
-}

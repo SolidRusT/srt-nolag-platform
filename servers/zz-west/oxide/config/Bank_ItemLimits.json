@@ -1,7 +1,0 @@
-{
-  "explosive.timed": {
-    "enabled": false,
-    "minimum": 0,
-    "maximum": 1
-  }
-}

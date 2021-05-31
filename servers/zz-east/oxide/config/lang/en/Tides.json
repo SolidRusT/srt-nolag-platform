@@ -1,7 +1,0 @@
-{
-  "notauthorized": "You don't have permission to use this command.",
-  "setlevel": "Set ocean level to {0}!",
-  "current": "Ocean level currently {0}.",
-  "hightide": "High tide...",
-  "lowtide": "Low tide..."
-}

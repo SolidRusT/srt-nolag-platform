@@ -1,8 +1,0 @@
-{
-  "NoPermission": "You do not have permission to use this command",
-  "Chat": "<color=#bebebe>[<color=#de8732>Survey Gather</color>] {0}</color>",
-  "Notification": "Throw this survey charge on the ground to spawn a random item",
-  "NoEntity": "You're not looking at an entity. Please try to get closer or from a different angle.",
-  "Add": "You have successfully added <color=#de8732>{0}</color> prefab to the config.",
-  "HelpText": "Allows admins to configure which entities are spawned with the survey charge.\n<color=#de8732>/{0} add</color> - to add the entity you're looking at\n<color=#de8732>/{0}</color> - to view this help text again\n"
-}
