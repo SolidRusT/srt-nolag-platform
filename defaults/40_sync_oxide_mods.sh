@@ -31,12 +31,13 @@ for folder in ${OXIDE[@]}; do
 done
 
 # Plugin merge + sync
+rm -rf ${BUILD_ROOT}
+mkdir -p ${BUILD_ROOT}/oxide/plugins
 echo "Updating Oxide plugins" | tee -a ${LOGS}
-mkdir -p "${BUILD_ROOT}/oxide/plugins"
-
-rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
-rsync -ra "${SERVER_CUSTOM}/oxide/plugins" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
-rsync -ra --delete "${BUILD_ROOT}/oxide/plugins" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rsync -ra "${SERVER_CUSTOM}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rsync -ra --delete "${BUILD_ROOT}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
+rm -rf ${BUILD_ROOT}
 
 echo "loading dormant plugins" | tee -a ${LOGS}
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
