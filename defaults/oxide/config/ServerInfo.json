@@ -2,44 +2,32 @@
   "settings": {
     "Tabs": [
       {
-        "ButtonText": "Commands",
-        "HeaderText": "Commands",
+        "ButtonText": "SolidRust",
+        "HeaderText": "www.SolidRusT.net",
         "Pages": [
           {
             "TextLines": [
               " ",
-              "type <color=red> /al </color>            - Auto-lock doors with a specific code",
-              "type <color=red> /backpack </color>      - Open your backpack storage",
-              "type <color=red> /backpackGUI </color>   - Toggle on/off the Backpack icon",
-              "type <color=red> /bank </color>          - Opens the central bank storage",
-              "type <color=red> /bgrade </color>        - Set the default Resource grade when building",
-              "type <color=red> /br </color>            - Building repair with the hammer tool",
-              "type <color=red> /cctv </color>          - CCTV Security Camera tools",
-              "type <color=red> /chute </color>         - Parachute for landing soft from high places",
-              "type <color=red> /clanhelp </color>      - Clan management commands",
-              "type <color=red> /dc </color>            - Discord Connect - get the SURVIVOR role and free kits",
-              "type <color=red> /down </color>          - Downgrade Structures",
-              "type <color=red> /downall </color>       - Downgrade Whole Base",
-              "type <color=red> /friend </color>        - Manage Friends list",
-              "type <color=red> /fs </color>            - Furnace stack splitter settings"
-            ],
-            "ImageSettings": []
-          },
-          {
-            "TextLines": [
+              "<color=yellow> Welcome to the SolidRusT NOLAG gaming network. </color>",
               " ",
-              "type <color=red> /heal </color>          - Heal yourself",
-              "type <color=red> /healplayer </color>    - Heal another player",
-              "type <color=red> /home </color>          - Set your Home spawn points",
-              "type <color=red> /kit </color>           - Spawn item and loadout kits",
-              "type <color=red> /remove </color>        - Remover Tool for owned structures",
-              "type <color=red> /skin </color>          - Free Steam Workshop skins",
-              "type <color=red> /tpa </color>           - Accept a teleport request",
-              "type <color=red> /tpb </color>           - Teleport back to where you previously teleported from",
-              "type <color=red> /tpr </color>           - Request teleport to another player",
-              "type <color=red> /trade </color>         - Remote trading with other players",
-              "type <color=red> /up </color>            - Upgrade structures",
-              "type <color=red> /upall </color>         - Upgrade Whole Base"
+              " - (3X/5X/10X) Resource Gather and Loot++",
+              " - Auto Turret Authorization from Tool Cupboard",
+              " - Auto Use Fuel and Wood from Tool Cupboard",
+              " - Improved Auto-Turret controls and placement",
+              " - Useful CCTV Utilities, motion sensors and Dancing emotes",
+              " - Modular Vehicle lifts and Reclyclers at monuments",
+              " - Locks, Storage, Extra Seats and Turrets on Modular Vehicles",
+              " - Improved recycling, recycle anything!",
+              " - Better stack sizes, World Bank and Backpacks",
+              " - Base repair and auto upgrade tools",
+              " - Escalated Bradley APC combat levels",
+              " - Constant Hackable Crate and Treasure events",
+              " - Blueprint Sharing and Better Box Sorting",
+              " - Parachute for jumping off high places",
+              " - Clans Tools, Team Chats and Rust+ Mobile App enabled",
+              " - NPC Vendors, Safe Zones, night creeps and server votes.",
+              " - Real-time Hit and Damage indicators, Realistic Explosions",
+              " - Improved Weather and heath effects"
             ],
             "ImageSettings": []
           }
@@ -54,13 +42,23 @@
       },
       {
         "ButtonText": "Rules",
-        "HeaderText": "Rules",
+        "HeaderText": "Server Rules",
         "Pages": [
           {
             "TextLines": [
               " ",
-              "#1 - No hacking, cheating or otherwise being an Asshat",
-              "#2 - "
+              "<color=blue>1</color> - All 3X 5X 10X (Solo/Duo/Trio) have a max group limit of 3 players",
+              " ",
+              "<color=blue>2</color> - No admins, moderators or any other human will censor chat (just bots).",
+              " ",
+              "<color=blue>3</color> - use the in-game chat censor/filter to block unwanted content on your own",
+              " ",
+              "<color=blue>4</color> - Do not call out hackers in chat, report them using <color=yellow> F7</color>.",
+              " ",
+              "<color=blue>5</color> - No cheating, scripting, bug abuse or otherwise exploiting the game.",
+              " ",
+              "<color=blue>6</color> - Griefing / PvP / Raids / Base Takovers is allowed and encouraged.",
+              " "
             ],
             "ImageSettings": []
           }
@@ -74,29 +72,74 @@
         "OxideGroup": ""
       },
       {
-        "ButtonText": "Features",
-        "HeaderText": "Features",
+        "ButtonText": "Commands",
+        "HeaderText": "Chat Commands",
         "Pages": [
           {
             "TextLines": [
               " ",
-              " - 5X Resource Gather and Loot++",
-              " - Auto Turret Authorization from Tool Cupboard",
-              " - Improved Auto-Turret controls and placement",
-              " - Useful CCTV Utilities, motion sensors and Dancing emotes",
-              " - Modular Vehicle lifts and Reclyclers at monuments",
-              " - Locks, Storage, Extra Seats and Turrets on Modular Vehicles",
-              " - Improved recycling, recycle anything!",
-              " - Better stack sizes, World Bank and Backpacks",
-              " - Base repair and upgrade tools",
-              " - Escalated Bradley APC combat levels",
-              " - Constant Hackable Crate and Treasure events",
-              " - Blueprint Sharing and Better Box Sorting",
-              " - Parachute for jumping off high places",
-              " - Clans Tools, Team Chats and Rust+ Mobile App enabled",
-              " - NPC Vendors, Safe Zones, night creeps and server votes.",
-              " - Real-time Hit and Damage indicators, Realistic Explosions",
-              " - Improved Weather and heath effects"
+              "<color=yellow> /al </color>            - Auto-lock doors with a specific code",
+              "<color=yellow> /backpack </color>      - Open your backpack storage",
+              "<color=yellow> /backpackGUI </color>   - Toggle on/off the Backpack icon",
+              "<color=yellow> /bank </color>          - Opens the central bank storage",
+              "<color=yellow> /bgrade </color>        - Set the default Resource grade when building",
+              "<color=yellow> /br </color>            - Building repair with the hammer tool",
+              "<color=yellow> /cctv </color>          - CCTV Security Camera tools",
+              "<color=yellow> /chute </color>         - Parachute for landing soft from high places",
+              "<color=yellow> /clanhelp </color>      - Clan management commands",
+              "<color=yellow> /dc </color>            - Discord Connect - get the SURVIVOR role and free kits",
+              "<color=yellow> /down </color>          - Downgrade Structures",
+              "<color=yellow> /downall </color>       - Downgrade Whole Base",
+              "<color=yellow> /friend </color>        - Manage Friends list",
+              "<color=yellow> /fs </color>            - Furnace stack splitter settings",
+              "<color=yellow> /heal </color>          - Heal yourself",
+              "<color=yellow> /healplayer </color>    - Heal another player",
+              "<color=yellow> /home </color>          - Set your Home spawn points",
+              "<color=yellow> /kit </color>           - Spawn item and loadout kits"
+            ],
+            "ImageSettings": []
+          },
+          {
+            "TextLines": [
+              " ",
+              "<color=yellow> /remove </color>        - Remover Tool for owned structures",
+              "<color=yellow> /skin </color>          - Free Steam Workshop skins",
+              "<color=yellow> /tpa </color>           - Accept a teleport request",
+              "<color=yellow> /tpb </color>           - Teleport back to where you previously teleported from",
+              "<color=yellow> /tpr </color>           - Request teleport to another player",
+              "<color=yellow> /trade </color>         - Remote trading with other players",
+              "<color=yellow> /up </color>            - Upgrade structures",
+              "<color=yellow> /upall </color>         - Upgrade Whole Base"
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      },
+      {
+        "ButtonText": "Ranks/Rewards",
+        "HeaderText": "Player Ranks and Loyalty Rewards",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              " <color=silver> Scavenger </color>    - Default rank for unregistered players and guests",
+              " <color=white> Survivalist </color>   - Registerd players, can be obtained using <color=yellow> /dc </color> command",
+              " <color=green> SolidPlayer </color>   - Registered players that have connected their steam accounts",
+              " <color=aqua> Supporter </color>      - Registered players that have made a donation to the NOLAG network",
+              " <color=purple> Legendary </color>    - Registered players that have subscribed to the NOLAG gaming network",
+              " ",
+              " ",
+              "<color=yellow> Ranks are global throughout all NOLAG servers. Rewards are specific to each server. </color>",
+              " ",
+              "See: <color=orange> solidrust.net/rewards </color> for more details",
+              " "
             ],
             "ImageSettings": []
           }
@@ -120,22 +163,22 @@
       "MaxY": 0.9
     },
     "BackgroundImage": {
-      "Enabled": false,
+      "Enabled": true,
       "Position": {
         "MinX": 0.0,
         "MaxX": 1.0,
         "MinY": 0.0,
         "MaxY": 1.0
       },
-      "Url": "http://7-themes.com/data_images/out/35/6889756-black-backgrounds.jpg",
-      "TransparencyInPercent": 100
+      "Url": "https://solidrust.net/images/6889756-black-backgrounds.jpg",
+      "TransparencyInPercent": 80
     },
     "ActiveButtonColor": "#0255255255",
     "InactiveButtonColor": "#128128128255",
     "CloseButtonColor": "#128128128255",
     "NextPageButtonColor": "#128128128255",
     "PrevPageButtonColor": "#128128128255",
-    "BackgroundColor": "#000255",
+    "BackgroundColor": "#CC000000",
     "HelpButton": {
       "IsEnabled": false,
       "Text": "Help",
@@ -148,6 +191,6 @@
       "Color": "#128128128255",
       "FontSize": 18
     },
-    "UpgradedConfig": false
+    "UpgradedConfig": true
   }
 }

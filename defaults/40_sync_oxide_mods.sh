@@ -11,6 +11,9 @@ source ${HOME}/solidrust.net/defaults/env_vars.sh
 me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
+echo "Updating SolidRusT repo" | tee -a ${LOGS}
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo ${HOME}/solidrust.net;     chmod +x ${HOME}/solidrust.net/defaults/*.sh | tee -a ${LOGS}
+
 OXIDE=(
     oxide/data
     oxide/config
@@ -35,10 +38,6 @@ rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins" "${BUILD_ROOT}/oxide/plugins
 rsync -ra "${SERVER_CUSTOM}/oxide/plugins" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
 rsync -ra --delete "${BUILD_ROOT}/oxide/plugins" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
 
-echo "loading dormant plugins" | tee -a ${LOGS}
-${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
-echo "recycle EventManager" | tee -a ${LOGS}
-${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload EventManager" | tee -a ${LOGS}
 echo "loading dormant plugins" | tee -a ${LOGS}
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
 
