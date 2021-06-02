@@ -3,7 +3,7 @@
   "Auto record for X minutes": 1,
   "Clear report counter after recording?": false,
   "Discord MSG Color": 39423,
-  "Discord Webhook": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
+  "Discord Webhook": "https://discord.com/api/webhooks/849738074123534386/ycvIL7Do3qyMjz3gjMZxLXfTDt_RtLRVgciauoRFUD4OrPFwcJFAi3_meOyxhDFXOXLH",
   "Discord: Include report with end message?": false,
   "Discord: Include report with start message?": true,
   "Discord: Notify if recording is started": false,
