@@ -35,13 +35,31 @@ for folder in ${CONTENTS[@]}; do
     sleep 1
 done
 
+# update repo
+echo "Downloading repo from s3" | tee -a ${LOGS}
+aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
+# Pull global env vars
+echo "Reloading global environment variables" | tee -a ${LOGS}
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+
+# Update Rust server config
+echo "Update Rust Server configs" | tee -a ${LOGS}
+mkdir -p ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}
+rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/server.cfg ${GAME_ROOT}/server/solidrust/cfg/server.cfg | tee -a ${LOGS}
+rsync -a ${SERVER_GLOBAL}/cfg/users.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg | tee -a ${LOGS}
+rsync -a ${SERVER_GLOBAL}/cfg/bans.cfg ${GAME_ROOT}/server/solidrust/cfg/bans.cfg | tee -a ${LOGS}
+
 echo "Wipe out old maps and map data" | tee -a ${LOGS}
 rm -rf ${GAME_ROOT}/server/solidrust/proceduralmap.*
-echo "Generate and install new map seed" | tee -a ${LOGS}
+
+echo "Update custom maps" | tee -a ${LOGS}
+aws s3 sync ${S3_WEB}/maps ${GAME_ROOT}/server/solidrust | tee -a ${LOGS}
+
 export SEED=$(shuf -i 1-2147483648 -n 1)
 echo "New Map Seed generated: ${SEED}" | tee -a ${LOGS}
 sed -i "/server.seed/d" ${GAME_ROOT}/server/solidrust/cfg/server.cfg
 echo "server.seed \"${SEED}\"" >> ${GAME_ROOT}/server/solidrust/cfg/server.cfg
+echo "Installed new map seed to ${GAME_ROOT}/server/solidrust/cfg/server.cfg" | tee -a ${LOGS}
 
 echo "Update game service and integrations" | tee -a ${LOGS}
 /bin/sh -c ${HOME}/solidrust.net/defaults/update_rust_service.sh
@@ -58,6 +76,10 @@ ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_upload default 2000 1 
 sleep 10
 IMGUR_URL=$(tail -n 1000 ${GAME_ROOT}/RustDedicated.log | grep "imgur.com" | tail -n 1 | awk '{print $4}')
 echo "Successfully uploaded: ${IMGUR_URL}" | tee -a ${LOGS}
+
+echo "Uploading to S3"
+wget ${IMGUR_URL} -O ${GAME_ROOT}/${HOSTNAME}.jpg
+aws s3 cp ${GAME_ROOT}/${HOSTNAME}.jpg ${S3_WEB}/maps/
 
 echo "Finished ${me}"   | tee -a ${LOGS}
 exit 0
