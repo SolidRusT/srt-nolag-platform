@@ -1,6 +1,7 @@
 # SolidRusT defaults
 45 *    * * *   admin   /bin/sh -c /root/solidrust.net/defaults/web/45_logrotate.sh
-50 *    * * *   admin   aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /home/admin/solidrust.net;     chmod +x /home/admin/solidrust.net/defaults/*.sh;  chmod +x /home/admin/solidrust.net/defaults/web/*.sh
+*/10 *    * * *   admin  /bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
 
 ## SolidRusT server backups. Final step after going live.
-#*/15 *    * * *   admin  /bin/sh -c /home/admin/solidrust.net/defaults/web/15_web_backups.sh
+*/15 *    * * *   admin  /bin/sh -c /home/admin/solidrust.net/defaults/web/15_web_backups.sh
+
