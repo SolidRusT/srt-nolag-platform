@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Oxide.Core.Plugins;
@@ -6,11 +6,10 @@ using Oxide.Core;
 using Oxide.Core.Configuration;
 using UnityEngine;
 using System.Text;
-using Oxide.Core.Libraries.Covalence;
 
 namespace Oxide.Plugins
 {
-    [Info("Prod", "Quapi", "2.5.1")]
+    [Info("Prod", "Quapi", "2.5.3")]
     class Prod : RustPlugin
     {
         private DynamicConfigFile BuildingData;
@@ -48,6 +47,8 @@ namespace Oxide.Plugins
 
             permission.RegisterPermission("prod.passive.use", this);
 
+            cmd.AddChatCommand(prodCommand, this, "cmdChatProd");
+
             BuildingData = Interface.GetMod().DataFileSystem.GetDatafile("Prod_BuildingData");
 
             eyesAdjust = new Vector3(0f, 1.5f, 0f);
@@ -78,10 +79,12 @@ namespace Oxide.Plugins
 
         private bool isPluginDev;
         private bool dumpAll;
+        private string prodCommand;
         private void LoadVariables()
         {
             printToConsoleInsteadOfChat = Convert.ToBoolean(GetConfig("Prod", "Print to player console instead of chat? ", false));
             prodAuth = Convert.ToInt32(GetConfig("Prod", "authLevel", 1));
+            prodCommand = Convert.ToString(GetConfig("Prod", "Command", "prod"));
             passiveMode = Convert.ToBoolean(GetConfig("Prod", "Passive Mode", false));
             isPluginDev = Convert.ToBoolean(GetConfig("Plugin Dev", "Are you are plugin dev?", false));
             dumpAll = Convert.ToBoolean(GetConfig("Plugin Dev", "Dump all components of all entities that you are looking at? (false will do only the closest one)", false));
@@ -167,7 +170,6 @@ namespace Oxide.Plugins
             return player.net.connection.authLevel >= prodAuth;
         }
 
-        [ChatCommand("prod")]
         void cmdChatProd(BasePlayer player, string command, string[] args)
         {
             if (printToConsoleInsteadOfChat)
@@ -189,8 +191,6 @@ namespace Oxide.Plugins
                             SendReply(player, noTargetfound);
                             return;
                         }
-
-
                        
                         if (target.GetComponentInParent<BuildingBlock>())
                         {
@@ -442,7 +442,7 @@ namespace Oxide.Plugins
                 player.ConsoleMessage(String.Format(format, args));
             } else
             {
-                player.SendMessage(String.Format(format, args));
+                player.ChatMessage(String.Format(format, args));
             }
         }
         #endregion

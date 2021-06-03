@@ -66,7 +66,7 @@ echo "Update game service and integrations" | tee -a ${LOGS}
 
 echo "Start RustDedicated game service" | tee -a ${LOGS}
 /bin/sh -c ${HOME}/solidrust.net/defaults/solidrust.sh &
-sleep 300
+sleep 500
 
 echo "Updating Map API data" | tee -a ${LOGS}
 ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_regenerate" | tee -a ${LOGS}

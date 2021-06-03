@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Base Repair", "MJSU", "1.0.18")]
+    [Info("Base Repair", "MJSU", "1.0.19")]
     [Description("Allows player to repair their entire base")]
     internal class BaseRepair : RustPlugin
     {
@@ -212,8 +212,14 @@ namespace Oxide.Plugins
                 return null;
             }
 
-            PlayerRepairStats stats = new PlayerRepairStats();
             BuildingManager.Building building = priv.GetBuilding();
+
+            if (Interface.CallHook("OnBaseRepair", building, player) != null)
+            {
+                return null;
+            }
+
+            PlayerRepairStats stats = new PlayerRepairStats();
             InvokeHandler.Instance.StartCoroutine(DoBuildingRepair(player, building, stats));
             return true;
         }
@@ -364,7 +370,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (Interface.CallHook("OnStructureRepair", this, player) != null)
+            if (Interface.CallHook("OnStructureRepair", entity, player) != null)
             {
                 return;
             }

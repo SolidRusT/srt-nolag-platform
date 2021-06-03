@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -15,7 +15,7 @@ using Rust.Ai;
 
 namespace Oxide.Plugins
 {
-    [Info("Dangerous Treasures", "nivex", "2.1.8")]
+    [Info("Dangerous Treasures", "nivex", "2.1.9")]
     [Description("Event with treasure chests.")]
     class DangerousTreasures : RustPlugin
     {
@@ -1926,13 +1926,13 @@ namespace Oxide.Plugins
         bool IsOnSameTeam(ulong playerId, ulong targetId)
         {
             RelationshipManager.PlayerTeam team1;
-            if (!RelationshipManager.Instance.playerToTeam.TryGetValue(playerId, out team1))
+            if (!RelationshipManager.ServerInstance.playerToTeam.TryGetValue(playerId, out team1))
             {
                 return false;
             }
 
             RelationshipManager.PlayerTeam team2;
-            if (!RelationshipManager.Instance.playerToTeam.TryGetValue(targetId, out team2))
+            if (!RelationshipManager.ServerInstance.playerToTeam.TryGetValue(targetId, out team2))
             {
                 return false;
             }

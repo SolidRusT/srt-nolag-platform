@@ -29,7 +29,7 @@ Added language messages for each command dynamically
 
 namespace Oxide.Plugins
 {
-    [Info("NTeleportation", "nivex", "1.6.3")]
+    [Info("NTeleportation", "nivex", "1.6.4")]
     [Description("Multiple teleportation systems for admin and players")]
     class NTeleportation : RustPlugin
     {
@@ -3180,13 +3180,13 @@ namespace Oxide.Plugins
         public bool IsOnSameTeam(ulong playerId, ulong targetId)
         {
             RelationshipManager.PlayerTeam team1;
-            if (!RelationshipManager.Instance.playerToTeam.TryGetValue(playerId, out team1))
+            if (!RelationshipManager.ServerInstance.playerToTeam.TryGetValue(playerId, out team1))
             {
                 return false;
             }
 
             RelationshipManager.PlayerTeam team2;
-            if (!RelationshipManager.Instance.playerToTeam.TryGetValue(targetId, out team2))
+            if (!RelationshipManager.ServerInstance.playerToTeam.TryGetValue(targetId, out team2))
             {
                 return false;
             }
@@ -5098,7 +5098,7 @@ namespace Oxide.Plugins
                 Puts("Checking Rust teams...");
 #endif
                 RelationshipManager.PlayerTeam playerTeam;
-                if (RelationshipManager.Instance.playerToTeam.TryGetValue(playerid, out playerTeam))
+                if (RelationshipManager.ServerInstance.playerToTeam.TryGetValue(playerid, out playerTeam))
                 {
                     if (playerTeam.members.Contains(ownerid))
                     {

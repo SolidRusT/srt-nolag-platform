@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Automatic Authorization", "k1lly0u/Arainrr", "1.2.4", ResourceId = 2063)]
+    [Info("Automatic Authorization", "k1lly0u/Arainrr", "1.2.5", ResourceId = 2063)]
     public class AutomaticAuthorization : RustPlugin
     {
         #region Fields
@@ -482,16 +482,16 @@ namespace Oxide.Plugins
         private static IEnumerable<ulong> GetTeamMembers(ulong playerID)
         {
             if (!RelationshipManager.TeamsEnabled()) return null;
-            var playerTeam = RelationshipManager.Instance.FindPlayersTeam(playerID);
+            var playerTeam = RelationshipManager.ServerInstance.FindPlayersTeam(playerID);
             return playerTeam?.members;
         }
 
         private static bool SameTeam(ulong playerID, ulong friendID)
         {
             if (!RelationshipManager.TeamsEnabled()) return false;
-            var playerTeam = RelationshipManager.Instance.FindPlayersTeam(playerID);
+            var playerTeam = RelationshipManager.ServerInstance.FindPlayersTeam(playerID);
             if (playerTeam == null) return false;
-            var friendTeam = RelationshipManager.Instance.FindPlayersTeam(friendID);
+            var friendTeam = RelationshipManager.ServerInstance.FindPlayersTeam(friendID);
             if (friendTeam == null) return false;
             return playerTeam == friendTeam;
         }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
@@ -14,13 +15,13 @@ using Oxide.Ext.Discord.DiscordObjects;
 
 namespace Oxide.Plugins
 {
-    [Info("Discord Core Roles", "MJSU", "1.3.5")]
+    [Info("Discord Core Roles", "MJSU", "1.3.7")]
     [Description("Syncs players oxide group with discord roles")]
     class DiscordCoreRoles : CovalencePlugin
     {
         #region Class Fields
 
-        [PluginReference] private Plugin AntiSpamNames, DiscordCore;
+        [PluginReference] private Plugin AntiSpamNames, Clans, DiscordCore;
 
         private PluginConfig _pluginConfig; //Plugin Config
 
@@ -61,6 +62,7 @@ namespace Oxide.Plugins
             lang.RegisterMessages(new Dictionary<string, string>
             {
                 [LangKeys.Chat] = $"[#BEBEBE][[{AccentColor}]{Title}[/#]] {{0}}[/#]",
+                [LangKeys.ClanTag] = "[{0}] {1}",
                 [LangKeys.ServerMessageOxideGroupAdded] = "{{player.name}} has been added to oxide group {{group.name}}",
                 [LangKeys.ServerMessageOxideGroupRemoved] = "{{player.name}} has been removed to oxide group {{group.name}}",
                 [LangKeys.ServerMessageDiscordRoleAdded] = "{{player.name}} has been added to discord role {{role.name}}",
@@ -328,7 +330,7 @@ namespace Oxide.Plugins
         private void Discord_GuildMemberUpdate(GuildMemberUpdate update, GuildMember oldMember)
         {
             //Don't update if the nick and roles haven't changed
-            if (update.nick == oldMember.nick
+            if ((update.nick == null || update.nick == oldMember.nick)
                 && update.roles.All(r => oldMember.roles.Contains(r))
                 && oldMember.roles.All(r => update.roles.Contains(r)))
             {
@@ -522,6 +524,20 @@ namespace Oxide.Plugins
                 {
                     Debug(DebugEnum.Info, $"Nickname '{player.Name}' was filtered by AntiSpamNames: '{playerName}'");
                 }
+            }
+
+            if (_pluginConfig.AddClanTag)
+            {
+                string tag = Clans?.Call<string>("GetClanOf", player.Id);
+                if (!string.IsNullOrEmpty(tag))
+                {
+                    playerName = Lang(LangKeys.ClanTag, player, tag, playerName);
+                }
+            }
+
+            if (playerName.Length > 32)
+            {
+                playerName = playerName.Substring(0, 32);
             }
             
             return playerName;
@@ -738,6 +754,42 @@ namespace Oxide.Plugins
         }
         #endregion
 
+        #region Clan Hooks
+        private void OnClanCreate(string tag)
+        {
+            HandleClan(tag);
+        }
+
+        private void OnClanUpdate(string tag)
+        {
+            HandleClan(tag);
+        }
+
+        private void HandleClan(string tag)
+        {
+            JObject clan = Clans?.Call<JObject>("GetClan", tag);
+            if (clan == null)
+            {
+                return;
+            }
+            
+            JArray membersObject = clan["members"] as JArray;
+            if (membersObject == null)
+            {
+                return;
+            }
+            
+            foreach (JToken token in membersObject)
+            {
+                string id = token.ToString();
+                _processIds.RemoveAll(p => p.PlayerId == id);
+                _processIds.Insert(0, new PlayerSync(id));
+                Debug(DebugEnum.Info, $"User clan has changed for clan {tag}. Adding {id} to be processed.");
+            }
+        }
+
+        #endregion
+
         #region Helper Methods
         private string GetRoleDisplayName(string role)
         {
@@ -785,6 +837,10 @@ namespace Oxide.Plugins
             [DefaultValue(false)]
             [JsonProperty(PropertyName = "Sync Nicknames")]
             public bool SyncNicknames { get; set; }
+            
+            [DefaultValue(false)]
+            [JsonProperty(PropertyName = "Add Clan Tag To Nicknames")]
+            public bool AddClanTag { get; set; }
 
             [DefaultValue(2f)]
             [JsonProperty(PropertyName = "Update Rate (Seconds)")]
@@ -880,6 +936,7 @@ namespace Oxide.Plugins
         public class LangKeys
         {
             public const string Chat = nameof(Chat);
+            public const string ClanTag = nameof(ClanTag);
             
             public const string ServerMessageOxideGroupAdded = nameof(ServerMessageOxideGroupAdded) + "V1";
             public const string ServerMessageOxideGroupRemoved = nameof(ServerMessageOxideGroupRemoved) + "V1";

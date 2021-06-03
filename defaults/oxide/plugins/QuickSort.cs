@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Quick Sort", "MON@H", "1.5.1")]
+    [Info("Quick Sort", "MON@H", "1.5.2")]
     [Description("Adds a GUI that allows players to quickly sort items into containers")]
     public class QuickSort : CovalencePlugin
     {
@@ -424,7 +424,7 @@ namespace Oxide.Plugins
             }
         }
 
-        void OnPlayerTick(BasePlayer player)
+        private void OnPlayerTick(BasePlayer player)
         {
             if (player.IsConnected && player.IsSleeping() && _guiInfo.ContainsKey(player.userID))
             {
@@ -432,7 +432,7 @@ namespace Oxide.Plugins
             }
         }
 
-        void OnBackpackOpened(BasePlayer player, ulong backpackOwnerID, ItemContainer backpackContainer)
+        private void OnBackpackOpened(BasePlayer player, ulong backpackOwnerID, ItemContainer backpackContainer)
         {
             if (UserHasPerm(player, PermissionUse))
             {
@@ -440,7 +440,7 @@ namespace Oxide.Plugins
             }
         }
 
-        void OnBackpackClosed(BasePlayer player, ulong backpackOwnerID, ItemContainer backpackContainer)
+        private void OnBackpackClosed(BasePlayer player, ulong backpackOwnerID, ItemContainer backpackContainer)
         {
             if (player != null)
             {
@@ -645,7 +645,7 @@ namespace Oxide.Plugins
             ItemContainer playerWear = player.inventory?.containerWear;
             ItemContainer playerBelt = player.inventory?.containerBelt;
 
-            if (container != null && playerMain != null)
+            if (container != null && playerMain != null && !container.HasFlag(ItemContainer.Flag.NoItemInput))
             {
                 List<Item> itemsSelected = new List<Item>();
 

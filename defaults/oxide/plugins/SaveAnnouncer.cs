@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-    [Info("Save Announcer", "Suparious", "1.0.5")]
+    [Info("Save Announcer", "Ryan", "1.0.4")]
     [Description("Announces to all players when the server saves")]
     public class SaveAnnouncer : RustPlugin
     {
@@ -52,8 +52,8 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["AnnouncementMsg"] = "Server is saving, without causing any lag...",
-                ["EntityMsg"] = "Server is saving {0:n0} entities, without causing any lag...",
+                ["AnnouncementMsg"] = "Server saving, expect some lag...",
+                ["EntityMsg"] = "Server is saving {0:n0} entities, expect some lag.",
                 ["ConsoleMsg"] = "Server is saving {0:n0} entities."
             }, this);
         }

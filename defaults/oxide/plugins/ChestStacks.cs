@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("ChestStacks", "MON@H", "1.4.3")]
+    [Info("ChestStacks", "MON@H", "1.4.5")]
     [Description("Higher stack sizes in storage containers.")]
 
     public class ChestStacks : RustPlugin //Hobobarrel_static, item_drop
@@ -13,6 +13,8 @@ namespace Oxide.Plugins
 
         [PluginReference] private RustPlugin WeightSystem;
         private readonly Hash<ulong, float> _multipliersCache = new Hash<ulong, float>();
+        private uint _playerPrefabID;
+        private uint _backpackPrefabID;
 
         #endregion Variables
 
@@ -27,6 +29,20 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
+            _playerPrefabID = StringPool.Get("assets/prefabs/player/player.prefab");
+
+            if (!_configData.StacksSettings.Containers.ContainsKey("Backpack"))
+            {
+                _configData.StacksSettings.Containers["Backpack"] = _configData.GlobalSettings.DefaultContainerMultiplier;
+                SaveConfig();
+            }
+
+            _backpackPrefabID = 1;
+            while (StringPool.toString.ContainsKey(_backpackPrefabID))
+            {
+                _backpackPrefabID += 1;
+            }
+
             CreateMultipliersCache();
             Subscribe(nameof(CanMoveItem));
             Subscribe(nameof(OnItemDropped));
@@ -42,18 +58,18 @@ namespace Oxide.Plugins
         private class ConfigData
         {
             [JsonProperty(PropertyName = "Global settings")]
-            public GlobalSettings globalSettings = new GlobalSettings();
+            public GlobalConfiguration GlobalSettings = new GlobalConfiguration();
 
             [JsonProperty(PropertyName = "Stack settings")]
-            public StackSettings stacksSettings = new StackSettings();
+            public StackConfiguration StacksSettings = new StackConfiguration();
 
-            public class GlobalSettings
+            public class GlobalConfiguration
             {
                 [JsonProperty(PropertyName = "Default Multiplier for new containers")]
                 public float DefaultContainerMultiplier = 1f;
             }
 
-            public class StackSettings
+            public class StackConfiguration
             {
                 [JsonProperty(PropertyName = "Containers list (PrefabName: multiplier)")]
                 public SortedDictionary<string, float> Containers = new SortedDictionary<string, float>()
@@ -162,7 +178,8 @@ namespace Oxide.Plugins
                     {"assets/prefabs/misc/xmas/xmastree/xmas_tree.deployed.prefab", 1f},
                     {"assets/prefabs/npc/autoturret/autoturret_deployed.prefab", 1f},
                     {"assets/prefabs/npc/flame turret/flameturret.deployed.prefab", 1f},
-                    {"assets/prefabs/npc/sam_site_turret/sam_site_turret_deployed.prefab", 1f}
+                    {"assets/prefabs/npc/sam_site_turret/sam_site_turret_deployed.prefab", 1f},
+                    {"Backpack", 1f}
                 };
             }
         }
@@ -231,7 +248,16 @@ namespace Oxide.Plugins
 
             if (item?.parent?.entityOwner != null)
             {
-                float stackMultiplier = GetStackMultiplier(item.parent.entityOwner);
+                float stackMultiplier = 1f;
+                if (item.parent.entityOwner.prefabID == _playerPrefabID && !(item.parent.HasFlag(ItemContainer.Flag.IsPlayer)))
+                {
+                    stackMultiplier = _multipliersCache[_backpackPrefabID];
+                }
+                else
+                {
+                    stackMultiplier = GetStackMultiplier(item.parent.entityOwner);
+                }
+
                 if (stackMultiplier == 1f)
                 {
                     return null;
@@ -451,13 +477,19 @@ namespace Oxide.Plugins
         private void CreateMultipliersCache()
         {
             uint id = 0;
-            foreach (KeyValuePair<string, float> container in _configData.stacksSettings.Containers)
+            foreach (KeyValuePair<string, float> container in _configData.StacksSettings.Containers)
             {
-                id = StringPool.Get(container.Key);
-                if (id > 0)
+                if (container.Key == "Backpack")
                 {
-                    _multipliersCache[id] = container.Value;
-                    id = 0;
+                    _multipliersCache[_backpackPrefabID] = _configData.StacksSettings.Containers["Backpack"];
+                }
+                else
+                {
+                    id = StringPool.Get(container.Key);
+                    if (id > 0)
+                    {
+                        _multipliersCache[id] = container.Value;
+                    }
                 }
             }
         }
@@ -550,13 +582,13 @@ namespace Oxide.Plugins
         private float GetMultiplierByPrefabName(string prefabName)
         {
             float multiplier;
-            if (_configData.stacksSettings.Containers.TryGetValue(prefabName, out multiplier))
+            if (_configData.StacksSettings.Containers.TryGetValue(prefabName, out multiplier))
             {
                 return multiplier;
             }
 
-            multiplier = _configData.globalSettings.DefaultContainerMultiplier;
-            _configData.stacksSettings.Containers[prefabName] = multiplier;
+            multiplier = _configData.GlobalSettings.DefaultContainerMultiplier;
+            _configData.StacksSettings.Containers[prefabName] = multiplier;
             SaveConfig();
             _multipliersCache.Clear();
             CreateMultipliersCache();
