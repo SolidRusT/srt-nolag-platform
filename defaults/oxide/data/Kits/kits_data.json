@@ -8,7 +8,7 @@
       "RequiredAuth": 0,
       "Cooldown": 0,
       "Cost": 0,
-      "IsHidden": false,
+      "IsHidden": true,
       "CopyPasteFile": "",
       "KitImage": "https://solidrust.net/images/mobile_icon.png",
       "MainItems": [
