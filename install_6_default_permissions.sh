@@ -105,7 +105,9 @@ cctvutilities.autoadd.server \
 chute.allowed \
 buildinggrades.use \
 buildinggrades.up.all \
-buildinggrades.down.all
+buildinggrades.down.all \
+hazmattoscientistsuit.use \
+hazmattoscientistsuit.craft
 )
 
 ./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml "o.load *"
