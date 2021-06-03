@@ -1,0 +1,27 @@
+{
+  "Spawn Settings": {
+    "Murderer Population": 0,
+    "Murderer Health": 100.0,
+    "Scarecrow Population": 0,
+    "Scarecrow Health": 200.0,
+    "Reverse Spawn Timings": false,
+    "Chance Settings": {
+      "Chance per cycle": 100.0,
+      "Days betewen spawn": 0
+    }
+  },
+  "Destroy Settings": {
+    "Leave Corpse": true
+  },
+  "Behaviour Settings": {
+    "Count if shortname contains": false,
+    "Ignored entities": [
+      "scientist",
+      "scientistjunkpile"
+    ]
+  },
+  "Broadcast Settings": {
+    "Broadcast spawn amount": false,
+    "Broadcast types separately": false
+  }
+}
