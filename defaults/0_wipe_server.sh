@@ -56,9 +56,14 @@ echo "Update custom maps" | tee -a ${LOGS}
 aws s3 sync ${S3_WEB}/maps ${GAME_ROOT}/server/solidrust | tee -a ${LOGS}
 
 export SEED=$(shuf -i 1-2147483648 -n 1)
+export IP=$(curl -s http://whatismyip.akamai.com/)
 echo "New Map Seed generated: ${SEED}" | tee -a ${LOGS}
+echo ${SEED} > ${GAME_ROOT}/server.seed
+echo ${IP} > ${GAME_ROOT}/app.publicip
 sed -i "/server.seed/d" ${GAME_ROOT}/server/solidrust/cfg/server.cfg
+sed -i "/app.publicip/d" ${GAME_ROOT}/server/solidrust/cfg/server.cfg
 echo "server.seed \"${SEED}\"" >> ${GAME_ROOT}/server/solidrust/cfg/server.cfg
+echo "app.publicip \"${IP}\"" >> ${GAME_ROOT}/server/solidrust/cfg/server.cfg
 echo "Installed new map seed to ${GAME_ROOT}/server/solidrust/cfg/server.cfg" | tee -a ${LOGS}
 
 echo "Update game service and integrations" | tee -a ${LOGS}

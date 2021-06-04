@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Building Grades", "Default/Arainrr", "1.0.3")]
+    [Info("Building Grades", "Default/Arainrr", "1.0.4")]
     [Description("Allows players to easily upgrade or downgrade an entire building")]
     public class BuildingGrades : RustPlugin
     {
@@ -249,9 +249,9 @@ namespace Oxide.Plugins
         private static bool SameTeam(ulong playerID, ulong friendID)
         {
             if (!RelationshipManager.TeamsEnabled()) return false;
-            var playerTeam = RelationshipManager.Instance.FindPlayersTeam(playerID);
+            var playerTeam = RelationshipManager.ServerInstance.FindPlayersTeam(playerID);
             if (playerTeam == null) return false;
-            var friendTeam = RelationshipManager.Instance.FindPlayersTeam(friendID);
+            var friendTeam = RelationshipManager.ServerInstance.FindPlayersTeam(friendID);
             if (friendTeam == null) return false;
             return playerTeam == friendTeam;
         }

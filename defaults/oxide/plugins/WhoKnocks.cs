@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Who Knocks", "Hockeygel23", "0.0.6")]
+    [Info("Who Knocks", "Hockeygel23", "0.0.7")]
     [Description("Get information messages on door knock")]
     class WhoKnocks : RustPlugin
     {
@@ -147,7 +147,7 @@ namespace Oxide.Plugins
             if (door == null || player == null) return;
             BaseEntity DoorItem = door as BaseEntity;
             if (DoorItem == null) return;
-            if (DoorItem.OwnerID.IsUnityNull()) return;
+            if (DoorItem.OwnerID == null || DoorItem.OwnerID.Equals( (object)null ) ) return;
             BasePlayer owner = null;
             foreach(var Player in BasePlayer.allPlayerList)
             {

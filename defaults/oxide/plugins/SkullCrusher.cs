@@ -6,12 +6,16 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("Skull Crusher", "Krungh Crow", "1.1.0")]
+    [Info("Skull Crusher", "Krungh Crow", "1.1.1")]
     [Description("Adds some extra features to the crushing of human skulls")]
 
     /***********************************************************************************************************************
     *
     *    THANKS to redBDGR to creator of this plugin
+    *    
+    *    v1.1.1 :   Patched for Rust junes update
+    *               Fixed scrap reward msg
+    *    
     *
     ************************************************************************************************************************/
     class SkullCrusher : RustPlugin
@@ -225,7 +229,7 @@ namespace Oxide.Plugins
             {
                 {
                     if (sendNotificaitionMessage)
-                        ownerPlayer.ChatMessage(string.Format(msg("ScrapRewards Notice", ownerPlayer.UserIDString), RPPerSkullCrush));
+                        ownerPlayer.ChatMessage(string.Format(msg("ScrapRewards Notice", ownerPlayer.UserIDString), ItemAmount));
                     Item currency = ItemManager.CreateByName(Itemshortname, ItemAmount);
                     currency.MoveToContainer(ownerPlayer.inventory.containerMain);
                 }
@@ -262,7 +266,7 @@ namespace Oxide.Plugins
                 return false;
             if (teamsSupport)
             {
-                RelationshipManager.PlayerTeam team = RelationshipManager.Instance.FindTeam(ownerPlayer.currentTeam);
+                RelationshipManager.PlayerTeam team = RelationshipManager.ServerInstance.FindTeam(ownerPlayer.currentTeam);
                 if (team == null)
                     return false;
                 foreach (ulong entry in team.members)

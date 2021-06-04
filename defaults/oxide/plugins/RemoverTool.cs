@@ -16,7 +16,7 @@ using VLB;
 
 namespace Oxide.Plugins
 {
-    [Info("Remover Tool", "Reneb/Fuji/Arainrr", "4.3.27", ResourceId = 651)]
+    [Info("Remover Tool", "Reneb/Fuji/Arainrr", "4.3.28", ResourceId = 651)]
     [Description("Building and entity removal tool")]
     public class RemoverTool : RustPlugin
     {
@@ -1586,9 +1586,9 @@ namespace Oxide.Plugins
         private static bool SameTeam(ulong playerID, ulong friendID)
         {
             if (!RelationshipManager.TeamsEnabled()) return false;
-            var playerTeam = RelationshipManager.Instance.FindPlayersTeam(playerID);
+            var playerTeam = RelationshipManager.ServerInstance.FindPlayersTeam(playerID);
             if (playerTeam == null) return false;
-            var friendTeam = RelationshipManager.Instance.FindPlayersTeam(friendID);
+            var friendTeam = RelationshipManager.ServerInstance.FindPlayersTeam(friendID);
             if (friendTeam == null) return false;
             return playerTeam == friendTeam;
         }
