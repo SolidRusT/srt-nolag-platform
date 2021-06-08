@@ -123,6 +123,37 @@
         "OxideGroup": ""
       },
       {
+        "ButtonText": "Key Binding",
+        "HeaderText": "Reccomended KeyBinds",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "To enable Key Binds, so you don't have to use the chat commands,",
+              "Open the <color=yellow> F1 </color> client console, Customize the key you want to bind",
+              "(suggested examples below), pressing enter after each line",
+              " ",
+              "<color=yellow> bind b teamping </color> - Ping what you're looking at, to your team",
+              " ",
+              "<color=yellow> bind h heal </color> - Heal yourself",
+              " ",
+              "<color=yellow> bind k kill </color> - Kill yourself",
+              " ",
+              "<color=yellow> bind c chute </color> - Open Parachute",
+              " "
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      },
+      {
         "ButtonText": "Ranks/Rewards",
         "HeaderText": "Player Ranks and Loyalty Rewards",
         "Pages": [
