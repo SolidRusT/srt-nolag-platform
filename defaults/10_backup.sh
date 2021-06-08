@@ -21,8 +21,7 @@ if [ -f "${GAME_ROOT}/rcon" ]; then
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.backup"
     sleep 10
 else
-    echo "No rcon found here..." | tee -a ${LOGS}
-    exit 1
+    echo "No rcon binary found here, unable to save world data" | tee -a ${LOGS}
 fi
 
 CONTENTS=(

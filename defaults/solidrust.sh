@@ -32,5 +32,3 @@ echo "===> Touching my peepee..." | tee -a ${LOGS}
 # Stamp log with quit time
 echo "I'm done! (finished): ${SERVER_LOGS}" | tee -a ${LOGS}
 
-# exit cleanly
-exit 0

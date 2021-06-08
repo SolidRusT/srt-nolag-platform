@@ -30,4 +30,4 @@ export BUILD_ROOT="${HOME}/build-solidrust"
 
 
 # end of env_vars
-echo "++++++= Initialized SolidRust =++++++" | tee -a ${LOGS}
+echo "++++++= Initialized SolidRusT =++++++" | tee -a ${LOGS}
