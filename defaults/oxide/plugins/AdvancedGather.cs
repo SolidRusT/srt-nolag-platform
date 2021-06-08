@@ -6,6 +6,7 @@ using Random = UnityEngine.Random;
 using Oxide.Plugins.AdvancedGatherEx;
 using UnityEngine;
 using System;
+using Oxide.Core.Plugins;
 
 /*
  * This is a full re-write 2.0.2
@@ -16,15 +17,26 @@ using System;
  *
  * This update 2.0.3
  * Added clone support
- * fixed a few default values not being generated. 
+ * fixed a few default values not being generated.
+ *
+ * This update 2.0.4
+ * Added PopupNotifications support for tree drops
+ * Added Chat message support for tree drops
  */
 
 namespace Oxide.Plugins
 {
-    [Info("AdvancedGather", "Khan", "2.0.3")]
+    [Info("AdvancedGather", "Khan", "2.0.4")]
     [Description("Custom gathering with some action's and extension drop")]
     public class AdvancedGather : CovalencePlugin
     {
+        #region Refrences
+        
+        [PluginReference] 
+        private Plugin PopupNotifications;
+
+        #endregion
+        
         #region Fields
         
         private const string UsePerm = "advancedgather.use";
@@ -67,7 +79,10 @@ namespace Oxide.Plugins
         
         private class PluginConfig
         {
-            #region Fields
+            #region 
+            
+            [JsonProperty("ChatPrefix")]
+            public string ChatPrefix = "<color=#32CD32>AdvancedGather</color>: ";
             
             [JsonProperty(PropertyName = "Drop Sound Effect")]
             public string DropSoundEffect;
@@ -103,7 +118,6 @@ namespace Oxide.Plugins
             public Dictionary<string, object> ToDictionary() => JsonConvert.DeserializeObject<Dictionary<string, object>>(ToJson());
 
             #endregion
-
             public BerryConfig GetRandomBerry()
             {
                 List<BerryConfig> berries = new List<BerryConfig>();
@@ -402,6 +416,12 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Enable Apple Drops?")]
             public bool Enable;
             
+            [JsonProperty(PropertyName = "Enable Messages for Tree Drops?")]
+            public bool AppleMsg;
+            
+            [JsonProperty(PropertyName = "Use Popup Message for Apple Drops?")]
+            public bool UsePopup;
+            
             [JsonProperty(PropertyName = "Chance to drop any apples per hit")]
             public int GoodApple;
             
@@ -570,7 +590,7 @@ namespace Oxide.Plugins
                 player.RunEffect(_config.DropSoundEffect);
                 return;
             }
-
+            
             AppleChanceRoll(player)?.DropAndTossUpwards(entity.GetDropPosition());
 
             player.RunEffect(_config.DropSoundEffect);
@@ -697,11 +717,19 @@ namespace Oxide.Plugins
             {
                 if (_config.AppleConfigs.Enable && RollBadOrGood())
                 {
+                    if (_config.AppleConfigs.AppleMsg)
+                    {
+                        PopupMessageArgs(player, "AppleDrops", "Rotten Apple");
+                    }
                     // Bad
                     player.Command("note.inv",352130972, amount.ToString());
                     return ItemManager.CreateByName("apple.spoiled", amount);
                 }
                 // good
+                if (_config.AppleConfigs.AppleMsg)
+                {
+                    PopupMessageArgs(player, "AppleDrops", "Tasty Apple");
+                }
                 player.Command("note.inv",1548091822, amount.ToString());
                 return ItemManager.CreateByName("apple", amount);
             }
@@ -721,6 +749,10 @@ namespace Oxide.Plugins
 
             int amount = Core.Random.Range(randomConfig.RandomAmountMin, randomConfig.RandomAmountMax + 1);
             randomConfig.GiveItem(player, amount);
+            if (_config.AppleConfigs.AppleMsg)
+            {
+                PopupMessageArgs(player, "AppleDrops", randomConfig.DisplayName);
+            }
             player.Command("note.inv", randomConfig.Shortname, amount.ToString(), randomConfig.DisplayName);
         }
         public void BioFuelDropChanceRoll(BasePlayer player, string shortname)
@@ -875,6 +907,31 @@ namespace Oxide.Plugins
             int totalchance = chances + ddc;
             return totalchance;
         }
+
+        #endregion
+
+        #region Lang System
+        public void PopupMessageArgs(BasePlayer player, string key, params object[] args)
+        {
+            if (_config.AppleConfigs.UsePopup)
+            {
+                PopupNotifications?.Call("CreatePopupNotification", _config.ChatPrefix + Lang(key, player.UserIDString, args), player);
+            }
+            else
+            {
+                player.ChatMessage(_config.ChatPrefix + Lang(key, player.UserIDString, args));
+            }
+        }
+        
+        protected override void LoadDefaultMessages()
+        {
+            lang.RegisterMessages(new Dictionary<string, string>
+            {
+                ["AppleDrops"] = "A {0} has fallen from the tree",
+            }, this);
+        }
+        
+        private string Lang(string key, string id = null, params object[] args) => string.Format(lang.GetMessage(key, this, id), args);
 
         #endregion
     }

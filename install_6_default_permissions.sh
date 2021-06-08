@@ -107,7 +107,8 @@ buildinggrades.use \
 buildinggrades.up.all \
 buildinggrades.down.all \
 hazmattoscientistsuit.use \
-hazmattoscientistsuit.craft
+hazmattoscientistsuit.craft \
+teamping.use
 )
 
 ./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml "o.load *"

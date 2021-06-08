@@ -6,7 +6,7 @@ using Physics = UnityEngine.Physics;
 
 namespace Oxide.Plugins
 {
-    [Info("Item Skin Randomizer", "Orange", "1.5.3")]
+    [Info("Item Skin Randomizer", "Orange", "1.5.4")]
     [Description("Simple plugin that will select a random skin for an item when crafting")]
     public class ItemSkinRandomizer : RustPlugin
     {
@@ -83,6 +83,12 @@ namespace Oxide.Plugins
             if (item != null)
             {
                 SetRandomSkin(player, item);
+                return;
+            }
+
+            if (player.CanBuild() == false)
+            {
+                Message(player, "Cant Build");
                 return;
             }
 
@@ -309,7 +315,8 @@ namespace Oxide.Plugins
             {
                 {"Permission", "You don't have permission to use that!"},
                 {"No Object", "You need to hold item or look on object!"},
-                {"Changed To", "Skin was changed to {0}"}
+                {"Changed To", "Skin was changed to {0}"},
+                {"Cant Build", "You need building privilege to use that!"}
             }, this);
         }
 
