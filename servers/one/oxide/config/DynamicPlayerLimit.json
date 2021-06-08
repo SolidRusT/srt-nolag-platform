@@ -1,5 +1,5 @@
 {
-  "Starting Player Slots": 90,
+  "Starting Player Slots": 25,
   "Maximum Player Slots": 500,
   "Increment Player Slots": 25,
   "Increment Interval Minutes": 3,

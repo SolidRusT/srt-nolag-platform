@@ -1,0 +1,585 @@
+13:39 [Info] Loading Oxide Core v2.0.3991...
+13:39 [Info] Loading extensions...
+13:39 [Info] Loaded extension CSharp v2.0.4044 by Oxide Team and Contributors
+13:39 [Info] Loaded extension Discord v1.0.9 by PsychoTea & DylanSMR & Tricky
+13:39 [Info] Loaded extension RustEdit v1.0.34 by k1lly0u
+13:39 [Info] Loaded extension Rust:IO for Oxide v2.17.0 by playrust.io / dcode
+13:39 [Info] Loaded extension MySql v2.0.3760 by Oxide Team and Contributors
+13:39 [Info] Loaded extension Rust v2.0.5057 by Oxide Team and Contributors
+13:39 [Info] Loaded extension SQLite v2.0.3762 by Oxide Team and Contributors
+13:39 [Info] Loaded extension Unity v2.0.3772 by Oxide Team and Contributors
+13:39 [Info] Latest compiler MD5: 8ce6d27e7718e3d164766bba8833537a
+13:39 [Info] Local compiler MD5: 8ce6d27e7718e3d164766bba8833537a
+13:39 [Info] [Discord Extension] [Info]: Using Discord Extension Version: 1.0.9
+13:39 [Info] Using Covalence provider for game 'Rust'
+13:39 [Info] Loading plugins...
+13:39 [Info] Loaded plugin RustEdit Automatic Updater v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Deployable Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit IO Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Vending Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Loot Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Diesel Collectable Spawner v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Desk Keycard Spawner v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Resource Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit JunkPile Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Spawn Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Ocean Path v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit APC Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Vehicle Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit NPC Core v1.0.1 by Chaos
+13:39 [Info] Loaded plugin RustEdit Excavator Rotation Correction v1.0.1 by Chaos
+13:39 [Info] Loaded plugin Rust v2.0.5057 by Oxide Team and Contributors
+13:39 [Info] Loaded plugin Unity v2.0.3772 by Oxide Team and Contributors
+13:41 [Info] Loaded plugin Rust:IO for Oxide v2.17.0 by playrust.io / dcode
+13:41 [Warning] Ignored unnecessary '// Reference: Oxide.Core.MySql' in plugin 'DonationClaim'
+13:42 [Info] Added '// Reference: Facepunch.Sqlite' in plugin 'ImageLibrary'
+13:42 [Info] Added '// Reference: UnityEngine.UnityWebRequestModule' in plugin 'ImageLibrary'
+13:43 [Info] AdminChat, AdvancedGather, Airstrike, AlwaysLootableTurrets, Analytics, Arkan, AutoFuel, AutoLock, AutoPurge, AutoTurretAuth, AutomaticAuthorization, BGrade, Backpacks, Bank, BaseRepair, BetterChat, BetterLoot, BlueprintShare, BoxSorterLite, BradleyCam, BradleyGuards, BuildingGrades, CCTVUtilities, CapacityController, CarLockUI, CarTurrets, CargoWetnessFix, ChestStacks, ChopperSurvival, Chute, Clans, ClearRepair, CompoundOptions, ConsoleFilter, CopyPaste, CraftChassis, Dance, DangerousTreasures, DiscordCore, DiscordCoreRoles, DiscordServerStats, DiscordWipe, DonationClaim, DronePilot, DynamicPlayerLimit, EMInterface, EventManager, EventRandomizer, EventStatistics, ExtraSeating, FarmTools, FastLoot, Friends, FuelGauge, FurnaceSplitter, GatherManager, GuardedCrate, HazmatToScientistSuit, Heal, HeliTargets, HitIcon, IgnoreCollision, ImageLibrary, ImgurApi, Inbound, InstantCraft, ItemSkinRandomizer, KDRGui, KillStreaks, Kits, LargerCarStorage, LighthouseBeacon, LoadingMessages, LootBouncer, MasterKey, MonumentLifts, MonumentsRecycler, MushroomEffects, NPCDropGun, NTeleportation, NoEscape, NoGiveNotices, NoWorkbench, PerformanceUI, PermissionGroupSync, PhonesPlus, PlaceholderAPI, PlayerDatabase, PlayerInformations, PluginUpdateNotifications, Prod, QuickSort, RaidAlarm, RandomRespawner, RealisticExplosions, RealisticTorch, RealisticWeather, Recycle, RecycleBlueprints, RecyclerSpeed, RemoverTool, RespawnProtection, RustMapApi, SAMSiteAuth, SaveAnnouncer, ScientistNames, ScrapHeliStorage, ScraponomicsLite, SecurityCameras, SecurityLights, ServerInfo, SimpleTime, Skins, SkullCrusher, Spawns, StackSizeController, StatisticsDB, TcMapMarkers, TeaModifiers, TeamPing, TemperatureExtender, TimeOfDay, Trade, TurretLoadouts, Vanish, VehicleDeployedLocks, Welcomer, WhoKnocks and ZoneManager were compiled successfully in 0ms
+13:43 [Warning] [DEBUG] ChopperSurvival plugin is waiting for requirements to be loaded: EventManager
+13:43 [Warning] [DEBUG] EMInterface plugin is waiting for requirements to be loaded: EventStatistics
+13:43 [Warning] [DEBUG] EventManager plugin is waiting for requirements to be loaded: EMInterface
+13:43 [Warning] [DEBUG] PerformanceUI plugin is waiting for requirements to be loaded: ImageLibrary
+13:43 [Info] Loaded plugin Admin Chat v2.0.4 by LaserHydra
+13:43 [Info] Loaded plugin AdvancedGather v2.0.4 by Khan
+13:43 [Info] Loaded plugin Airstrike v0.3.6 by k1lly0u
+13:43 [Info] Loaded plugin Always Lootable Turrets v1.0.0 by WhiteThunder
+13:43 [Info] Loaded plugin Analytics v1.1.2 by Wulf/lukespragg
+13:43 [Info] Loaded plugin Arkan v1.0.18 by Antidote
+13:43 [Info] Loaded plugin Auto Fuel v1.2.0 by redBDGR
+13:43 [Info] Loaded plugin Auto Lock v2.4.1 by birthdates
+13:43 [Info] Loaded plugin Auto Purge v2.1.1 by misticos
+13:43 [Info] Loaded plugin Auto Turret Authorization v1.2.1 by haggbart
+13:43 [Info] Loaded plugin Automatic Authorization v1.2.5 by k1lly0u/Arainrr
+13:43 [Info] Loaded plugin BGrade v1.1.3 by Ryan / Rustoria.co
+13:43 [Info] Loaded plugin Backpacks v3.5.2 by LaserHydra
+13:43 [Info] Loaded plugin Bank v1.0.52 by Calytic
+13:43 [Info] Loaded plugin Base Repair v1.0.19 by MJSU
+13:43 [Info] Loaded plugin Better Chat v5.2.6 by LaserHydra
+13:43 [Info] [BetterLoot] No Blacklist found, creating new file...
+13:43 [Info] Loaded plugin BetterLoot v3.5.3 by Default
+13:43 [Info] Loaded plugin Blueprint Share v1.2.6 by c_creep
+13:43 [Info] Loaded plugin Box Sorter Lite v1.0.9 by haggbart
+13:43 [Info] Loaded plugin Bradley Cam v1.0.2 by bearr
+13:43 [Info] Loaded plugin Bradley Guards v1.3.6 by Bazz3l
+13:43 [Info] Loaded plugin Building Grades v1.0.4 by Default/Arainrr
+13:43 [Info] [CCTV Utilities] Created Custom Cameras List using default server cameras.
+13:43 [Info] Loaded plugin CCTV Utilities v1.5.1 by GrumpyGordon
+13:43 [Info] Loaded plugin Capacity Controller v2.0.0 by 2CHEVSKII
+13:43 [Info] Loaded plugin Car Lock UI v1.0.1 by WhiteThunder
+13:43 [Info] Loaded plugin Modular Car Turrets v1.1.1 by WhiteThunder
+13:43 [Info] Loaded plugin Cargo Wetness Fix v1.0.2 by yetzt
+13:43 [Info] Loaded plugin ChestStacks v1.4.5 by MON@H
+13:43 [Info] Loaded plugin Chute v2.0.7 by ColonBlow
+13:43 [Warning] [Clans] Config update detected! Updating config values...
+13:43 [Warning] [Clans] Config update completed!
+13:43 [Info] Loaded plugin Clans v0.2.2 by k1lly0u
+13:43 [Info] Loaded plugin Clear Repair v1.3.0 by Clearshot
+13:43 [Info] Loaded plugin Compound Options v1.1.7 by FastBurst
+13:43 [Info] Loaded plugin Console Filter v0.0.2 by Wulf
+13:43 [Info] Loaded plugin Copy Paste v4.1.27 by misticos
+13:43 [Info] Loaded plugin Craft Car Chassis v1.2.0 by WhiteThunder
+13:43 [Info] Loaded plugin Dance v1.0.4 by senyaa
+13:43 [Info] Loaded plugin Dangerous Treasures v2.2.0 by nivex
+13:43 [Info] Loaded plugin Discord Core v0.17.0 by MJSU
+13:43 [Info] Loaded plugin Discord Core Roles v1.3.7 by MJSU
+13:43 [Info] Loaded plugin Discord Server Stats v2.0.2 by MJSU
+13:43 [Info] Loaded plugin Discord Wipe v2.2.1 by MJSU
+13:43 [Info] Loaded plugin DonationClaim v1.0.2 by Wulf/lukespragg
+13:43 [Info] Loaded plugin DronePilot v1.0.2 by k1lly0u
+13:43 [Info] Loaded plugin Dynamic Player Limit v0.0.7 by Pho3niX90
+13:43 [Info] Loaded plugin Event Randomizer v0.3.4 by mvrb
+13:43 [Info] Loaded plugin Event Statistics v0.1.0 by k1lly0u
+13:43 [Info] Loaded plugin EMInterface v2.0.1 by k1lly0u
+13:43 [Info] Loaded plugin EventManager v4.0.5 by k1lly0u
+13:43 [Info] Loaded plugin ChopperSurvival v3.0.0 by k1lly0u
+13:43 [Info] Loaded plugin Extra Seating v1.0.8 by Pho3niX90
+13:43 [Info] Loaded plugin Farm Tools v1.0.4 by Clearshot
+13:43 [Info] Loaded plugin Fast Loot v0.0.4 by DezLife
+13:43 [Info] Loaded plugin Friends v3.1.2 by Wulf
+13:43 [Info] Loaded plugin Fuel Gauge v0.5.5 by Oryx
+13:43 [Info] Loaded plugin Furnace Splitter v2.3.1 by FastBurst
+13:43 [Info] Loaded plugin Gathering Manager v2.2.75 by Mughisi
+13:43 [Info] Loaded plugin Guarded Crate v1.4.8 by Bazz3l
+13:43 [Info] Loaded plugin Hazmat To Scientist Suit v1.0.1 by Krungh Crow
+13:43 [Info] Loaded plugin Heal v3.1.0 by Wulf
+13:43 [Info] Loaded plugin Heli Targets v0.0.7 by XavierB
+13:43 [Info] Loaded plugin HitIcon v2.0.0 by FastBurst
+13:43 [Warning] [IgnoreCollision] Dropped item limit exceed (300) - collision disabled!
+13:43 [Warning] [IgnoreCollision] Plugin loaded: 
+Disable collision - True
+Dynamic disable collision - True
+Dynamic DC amount - 300
+13:43 [Info] Loaded plugin IgnoreCollision v1.1.1 by 2CHEVSKII
+13:43 [Info] Loaded plugin Image Library v2.0.58 by Absolut & K1lly0u
+13:43 [Info] Loaded plugin Performance UI v1.0.7 by 2CHEVSKII
+13:43 [Info] Loaded plugin Imgur API v1.0.2 by MJSU
+13:43 [Info] Loaded plugin Inbound v0.5.2 by Substrata
+13:43 [Info] Loaded plugin Instant Craft v2.1.5 by Orange
+13:43 [Info] Loaded plugin Item Skin Randomizer v1.5.4 by Orange
+13:43 [Info] Loaded plugin KDR GUI v2.0.3 by Ankawi
+13:43 [Info] Loaded plugin Kill Streaks v0.1.8 by Default
+13:43 [Info] Loaded plugin Kits v4.0.12 by k1lly0u
+13:43 [Info] Loaded plugin Larger Car Storage v2.0.2 by WhiteThunder
+13:43 [Info] Loaded plugin Lighthouse Beacon v1.0.3 by S0N_0F_BISCUIT
+13:43 [Info] Loaded plugin Loading Messages v1.0.6 by CosaNostra/Def
+13:43 [Info] Loaded plugin Loot Bouncer v1.0.7 by Sorrow/Arainrr
+13:43 [Info] Loaded plugin Master Key v0.7.5 by FastBurst
+13:43 [Info] Loaded plugin Monument Lifts v1.0.3 by Mevent
+13:43 [Info] Loaded plugin Monuments Recycler v0.2.3 by Dana
+13:43 [Info] Loaded plugin Mushroom Effects v1.1.0 by supreme
+13:43 [Info] Loaded plugin NPC Drop Gun v2.0.6 by 2CHEVSKII
+13:43 [Info] Loaded plugin NTeleportation v1.6.4 by nivex
+13:43 [Info] Loaded plugin No Escape v2.1.33 by Calytic
+13:43 [Info] Loaded plugin No Give Notices v0.3.0 by Wulf
+13:43 [Info] Loaded plugin NoWorkbench v0.1.51 by k1lly0u
+13:43 [Info] Loaded plugin Permission Group Sync v2.0.3 by OldSpice
+13:43 [Info] Loaded plugin Phones Plus v1.0.2 by mr01sam
+13:43 [Info] Loaded plugin Placeholder API v2.2.0 by misticos
+13:43 [Info] Loaded plugin Player Database v1.6.2 by Reneb / Maintained by FakeNinja
+13:43 [Info] Loaded plugin PlayerInformations v1.2.14 by austinv900
+13:43 [Info] Loaded plugin Plugin Update Notifications v1.1.0 by Whispers88
+13:43 [Info] Loaded plugin Prod v2.5.3 by Quapi
+13:43 [Info] Loaded plugin Quick Sort v1.5.2 by MON@H
+13:43 [Info] Loaded plugin Raid Alarm v0.2.1 by haggbart
+13:43 [Info] Loaded plugin Random Respawner v1.2.4 by Egor Blagov/Arainrr
+13:43 [Info] Loaded plugin Realistic Explosions v0.2.1 by 2CHEVSKII
+13:43 [Info] Loaded plugin Realistic Torch v1.0.3 by Synvy
+13:43 [Info] Loaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+13:43 [Info] Loaded plugin Recycle v3.0.4 by 5Dev24
+13:43 [Info] Loaded plugin Recycle Blueprints v1.0.5 by Zugzwang
+13:43 [Info] Loaded plugin Recycler Speed v2.0.2 by Ryz0r/yetzt
+13:43 [Info] Loaded plugin Remover Tool v4.3.28 by Reneb/Fuji/Arainrr
+13:43 [Info] Loaded plugin Respawn Protection v2.0.2 by Ryz0r
+13:43 [Info] Loaded plugin Rust Map Api v1.3.2 by MJSU
+13:43 [Info] Loaded plugin SAMSiteAuth v2.3.3 by haggbart
+13:43 [Info] Loaded plugin Save Announcer v1.0.4 by Ryan
+13:43 [Info] Loaded plugin Scientist Names v1.2.1 by Ultra
+13:43 [Info] Loaded plugin Scrap Heli Storage v0.0.5 by yetzt
+13:43 [Info] Loaded plugin Scraponomics Lite v0.4.5 by haggbart
+13:43 [Info] Loaded plugin Security Cameras v0.0.9 by Yurii
+13:43 [Info] Loaded plugin SecurityLights v1.1.6 by S0N_0F_BISCUIT
+13:43 [Info] Loaded plugin ServerInfo v0.5.4 by FastBurst
+13:43 [Info] Loaded plugin Simple Time v1.0.1 by MadKingCraig
+13:43 [Info] Loaded plugin Skins v2.1.2 by Iv Misticos
+13:43 [Info] Loaded plugin Skull Crusher v1.1.1 by Krungh Crow
+13:43 [Info] Loaded plugin Spawns v2.0.36 by Reneb / k1lly0u
+13:43 [Info] Loaded plugin Stack Size Controller v3.4.3 by AnExiledGod
+13:43 [Info] Loaded plugin Statistics DB v1.2.6 by Iv Misticos
+13:43 [Info] Loaded plugin TC Map Markers v1.1.2 by 1AK1
+13:43 [Info] Loaded plugin Tea Modifiers v2.0.0 by MJSU
+13:43 [Info] Loaded plugin Team Ping v2.0.1 by Gonzi
+13:43 [Info] Loaded plugin Temperature Extender v1.0.0 by MJSU
+13:43 [Info] Loaded plugin TimeOfDay v2.3.4 by FuJiCuRa
+13:43 [Info] Loaded plugin Trade v1.2.43 by Calytic
+13:43 [Info] Loaded plugin Turret Loadouts v1.0.2 by WhiteThunder
+13:43 [Info] Loaded plugin Vanish v1.5.4 by Whispers88
+13:43 [Info] Loaded plugin Vehicle Deployed Locks v1.1.1 by WhiteThunder
+13:43 [Info] Loaded plugin Welcomer v1.5.6 by Dana
+13:43 [Info] Loaded plugin Who Knocks v0.0.7 by Hockeygel23
+13:43 [Info] Loaded plugin Zone Manager v3.0.21 by k1lly0u
+13:44 [Warning] [RustEdit] - No IO data found in map file
+13:44 [Warning] [RustEdit] - No vending data found in map file
+13:44 [Warning] [RustEdit] - No loot data found in map file
+13:44 [Warning] [RustEdit] - No APC path data found in map file
+13:44 [Warning] [RustEdit] - No vehicle data found in map file
+13:44 [Warning] [RustEdit] - No NPC data found in map file
+13:45 [Warning] [RustEdit] - No ocean patrol path data found in map file
+13:45 [Info] [Stack Size Controller] Ensuring VanillaStackSize integrity.
+13:45 [Warning] Calling 'OnTerrainInitialized' on 'StackSizeController v3.4.3' took 20952ms [GARBAGE COLLECT]
+13:45 [Warning] Calling 'OnTerrainInitialized' on 'StackSizeController v3.4.3' took average 0ms [GARBAGE COLLECT]
+13:46 [Info] IP address from external API: 24.80.116.178
+13:46 [Info] [RustEdit] - Checking for updates...
+13:46 [Info] Updating Rust:IO ...
+13:46 [Info] [Arkan] Arkan Init: map seed: 985129471, map size: 2700, server timestamp: 2021.6.8.13.39
+13:46 [Warning] [Arkan] Error: Discord reports enabled but plugin DiscordMessages not loaded!
+13:46 [Info] [BetterLoot] Using '33' active of '35' supported containertypes
+13:46 [Info] [BetterLoot] Exported 687 items to 'NamesList'
+13:46 [Info] [BetterLoot] Updating internals ...
+13:46 [Warning] Calling 'OnServerInitialized' on 'BetterLoot v3.5.3' took 160ms
+13:46 [Info] [Box Sorter Lite] Generating default values...
+13:46 [Info] [Clans] Initializing Clans...
+13:46 [Info] [Clans] Loaded 0 clans!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for Compound_Extra1
+13:46 [Info] [Compound Options] Added Vending Machine: Compound_Extra1 to data file!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for Tools
+13:46 [Info] [Compound Options] Added Vending Machine: Tools to data file!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for Resources
+13:46 [Info] [Compound Options] Added Vending Machine: Resources to data file!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for Components
+13:46 [Info] [Compound Options] Added Vending Machine: Components to data file!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for Weapons
+13:46 [Info] [Compound Options] Added Vending Machine: Weapons to data file!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for Attire
+13:46 [Info] [Compound Options] Added Vending Machine: Attire to data file!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for Building
+13:46 [Info] [Compound Options] Added Vending Machine: Building to data file!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+13:46 [Info] [Compound Options] Added Vending Machine: BoatVendor to data file!
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+13:46 [Info] [Compound Options] Trying to save default vendingOrders for BoatVendor
+13:46 [Warning] Calling 'OnServerInitialized' on 'CompoundOptions v1.1.7' took 362ms
+13:46 [Warning] Calling 'OnServerInitialized' on 'DangerousTreasures v2.2.0' took 257ms
+13:46 [Warning] [Event Randomizer] Next Patrol Helicopter spawns in 1 Hours 34 Minutes
+13:46 [Warning] [Event Randomizer] Next Chinook Helicopter spawns in 3 Hours 45 Minutes
+13:46 [Warning] [Event Randomizer] Next Cargo Ship spawns in 2 Hours 57 Minutes
+13:46 [Warning] [Event Randomizer] Next Airdrop spawns in 1 Hours 0 Minutes
+13:46 [Warning] Calling 'OnServerInitialized' on 'EventRandomizer v0.3.4' took 102ms
+13:46 [Info] Rust:IO: Update complete
+13:46 [Warning] [HitIcon] Plugin Friends work with HitIcon
+13:46 [Warning] [HitIcon] Plugin Clans work with HitIcon
+13:46 [Warning] [Image Library] Waiting for Steamworks to update item definitions....
+13:46 [Warning] [Kill Streaks] Advanced Airstrike is not found! Disabling advanced airstrike feature.
+13:46 [Warning] [Kill Streaks] Economics is not found! Unable to issue Economics rewards.
+13:46 [Warning] [Kill Streaks] ServerRewards is not found! Unable to issue RP rewards.
+13:46 [Warning] Calling 'OnServerInitialized' on 'KillStreaks v0.1.8' took 222ms
+13:46 [Warning] Calling 'OnServerInitialized' on 'LighthouseBeacon v1.0.3' took 111ms
+13:46 [Info] [NTeleportation] Rust was upgraded or map changed - homes, town, islands, outpost and bandit may be invalid!
+13:46 [Warning] Calling 'OnServerInitialized' on 'NTeleportation v1.6.4' took 418ms
+13:46 [Info] [Permission Group Sync] Connected to Database solidrust_lcy.
+13:46 [Warning] [Permission Group Sync] Permission Group verified didn't existed. Creating it.
+13:46 [Warning] [Permission Group Sync] Permission Group vip didn't existed. Creating it.
+13:46 [Warning] [Permission Group Sync] Permission Group dev didn't existed. Creating it.
+13:46 [Warning] [Permission Group Sync] Permission Group gm didn't existed. Creating it.
+13:46 [Info] [Phones Plus] 4 registered
+13:46 [Warning] Calling 'OnServerInitialized' on 'PhonesPlus v1.0.2' took 185ms
+13:46 [Warning] Calling 'OnServerInitialized' on 'PluginUpdateNotifications v1.1.0' took 638ms
+13:46 [Info] [Rust Map Api] Validating existing images
+13:46 [Info] [Scientist Names] 9105585 renamed to Dr. I. McLaughlin
+13:46 [Info] [Scientist Names] 5667086 renamed to Dr. V. Pittman
+13:46 [Info] [Scientist Names] 3654118 renamed to Dr. M. Wells
+13:46 [Info] [Scientist Names] 2718667 renamed to Dr. H. Reid
+13:46 [Info] [Scientist Names] 3581259 renamed to Dr. C. Delgado
+13:46 [Info] [Scientist Names] 9714624 renamed to Dr. F. Fisher
+13:46 [Info] [Scientist Names] 5529284 renamed to Dr. J. Wise
+13:46 [Info] [Scientist Names] 7358943 renamed to Dr. B. Sims
+13:46 [Info] [Scientist Names] 335136 renamed to Dr. W. Patton
+13:46 [Info] [Scientist Names] 7879731 renamed to Dr. B. Joseph
+13:46 [Info] [Scientist Names] 9540858 renamed to Dr. F. Maldonado
+13:46 [Info] [Scientist Names] 6149782 renamed to Dr. C. Dunn
+13:46 [Info] [Scientist Names] 3121135 renamed to guard A. Steele
+13:46 [Info] [Scientist Names] 8816733 renamed to guard H. Edwards
+13:46 [Info] [Scientist Names] 5781574 renamed to guard I. Pope
+13:46 [Info] [Scientist Names] 6659299 renamed to guard E. Drake
+13:46 [Info] [Scientist Names] 4394668 renamed to guard C. Jacobs
+13:46 [Info] [Scientist Names] 1421526 renamed to guard B. Doyle
+13:46 [Info] [Scientist Names] 3188298 renamed to guard Y. Floyd
+13:46 [Info] [Scientist Names] 5377503 renamed to guard Y. Curry
+13:46 [Info] [Scientist Names] 1699941 renamed to guard Y. Harris
+13:46 [Info] [Scientist Names] 9293116 renamed to guard W. Massey
+13:46 [Info] [Scientist Names] 341157 renamed to guard Z. Harper
+13:46 [Info] [Scientist Names] 246082 renamed to guard U. Goodwin
+13:46 [Info] [Scientist Names] 8964364 renamed to guard J. Coleman
+13:46 [Info] [Scientist Names] 1790556 renamed to guard G. Santiago
+13:46 [Info] [Scientist Names] 937117 renamed to guard P. Fisher
+13:46 [Info] [Scientist Names] 298869 renamed to guard Z. Soto
+13:46 [Info] [Scientist Names] 7348925 renamed to guard U. Bowman
+13:46 [Info] [Scientist Names] 9766158 renamed to guard W. Ballard
+13:46 [Info] [Scientist Names] 6306868 renamed to guard Z. Flores
+13:46 [Info] [Scientist Names] 4908505 renamed to guard D. Warren
+13:46 [Info] [Scientist Names] 2123398 renamed to guard O. Knight
+13:46 [Info] [Scientist Names] 7321179 renamed to guard D. Morton
+13:46 [Info] [Scientist Names] 6460985 renamed to guard U. West
+13:46 [Info] [Scientist Names] 7540348 renamed to guard L. Lee
+13:46 [Info] [Scientist Names] 147496 renamed to guard V. Fernandez
+13:46 [Info] [Scientist Names] 9899805 renamed to guard V. Long
+13:46 [Info] [Scientist Names] 1647905 renamed to guard X. Bennett
+13:46 [Info] [Scientist Names] 6158392 renamed to guard J. Schneider
+13:46 [Info] [Scientist Names] 9812884 renamed to guard V. Byrd
+13:46 [Info] [Scientist Names] 2211901 renamed to guard S. Butler
+13:46 [Info] [Scientist Names] 9306223 renamed to guard O. Barrett
+13:46 [Info] [Scientist Names] 8659839 renamed to guard I. Ballard
+13:46 [Info] [Scientist Names] 880073 renamed to guard M. Curtis
+13:46 [Info] [Scientist Names] 718680 renamed to guard B. Howell
+13:46 [Info] [Scientist Names] 1218782 renamed to guard Y. Green
+13:46 [Info] [Scientist Names] 4428388 renamed to guard Q. Potter
+13:46 [Info] [Scientist Names] 1838627 renamed to guard X. Watts
+13:46 [Info] [Scientist Names] 5474243 renamed to guard K. Benson
+13:46 [Info] [Scientist Names] 6065850 renamed to guard F. McLaughlin
+13:46 [Info] [Scientist Names] 1911473 renamed to guard Z. Jenkins
+13:46 [Info] [Scientist Names] 8551727 renamed to guard S. Hayes
+13:46 [Info] [Scientist Names] 1712166 renamed to guard U. Ramirez
+13:46 [Info] [Scientist Names] 5562914 renamed to guard K. Moody
+13:46 [Info] [Scientist Names] 2943279 renamed to guard Q. Page
+13:46 [Info] [Scientist Names] 6509361 renamed to guard D. Woods
+13:46 [Info] [Scientist Names] 4398044 renamed to guard B. Little
+13:46 [Info] [Scientist Names] 5149729 renamed to guard M. Lloyd
+13:46 [Info] [Scientist Names] 9220828 renamed to guard S. Collier
+13:46 [Info] [Scientist Names] 6165052 renamed to guard Z. Dixon
+13:46 [Info] [Scientist Names] 6388378 renamed to guard L. Harrison
+13:46 [Info] [Scientist Names] 4443564 renamed to guard E. Anderson
+13:46 [Info] [Scientist Names] 9532827 renamed to guard C. Swanson
+13:46 [Info] [Scientist Names] 52744 renamed to guard U. Phillips
+13:46 [Info] [Scientist Names] 8711954 renamed to guard G. Spencer
+13:46 [Info] [Scientist Names] 2792434 renamed to guard T. Stevenson
+13:46 [Info] [Scientist Names] 9450478 renamed to guard L. Bowers
+13:46 [Info] [Scientist Names] 3518861 renamed to guard N. Graves
+13:46 [Info] [Scientist Names] 1713934 renamed to guard M. Ruiz
+13:46 [Info] [Scientist Names] 4370142 renamed to guard U. Russell
+13:46 [Info] [Scientist Names] 7798473 renamed to guard M. Reeves
+13:46 [Info] [Scientist Names] 1017758 renamed to guard X. Castillo
+13:46 [Info] [Scientist Names] 7003573 renamed to guard H. Rodgers
+13:46 [Info] [Scientist Names] 7159460 renamed to guard A. Myers
+13:46 [Info] [Scientist Names] 7480019 renamed to guard H. Wilkins
+13:46 [Info] [Scientist Names] 2295686 renamed to Dr. W. Wheeler
+13:46 [Info] [Scientist Names] 461915 renamed to Dr. R. Lamb
+13:46 [Info] [Scientist Names] 163908 renamed to Dr. L. Goodwin
+13:46 [Info] [Scientist Names] 4397919 renamed to Dr. Z. Salazar
+13:46 [Info] [Scientist Names] 9720376 renamed to Dr. C. Moore
+13:46 [Info] [Scientist Names] 339574 renamed to Dr. I. Black
+13:46 [Info] [Scientist Names] 2329377 renamed to Dr. O. Daniels
+13:46 [Info] [Scientist Names] 3896364 renamed to Dr. W. Stanley
+13:46 [Info] [Scientist Names] 9055146 renamed to Dr. U. Evans
+13:46 [Info] [Scientist Names] 5124593 renamed to Dr. X. Bass
+13:46 [Info] [Scientist Names] 7146407 renamed to Dr. M. Ray
+13:46 [Info] [Scientist Names] 119383 renamed to Dr. F. Conner
+13:46 [Info] [Scientist Names] 7402754 renamed to Dr. U. Townsend
+13:46 [Info] [Scientist Names] 6559780 renamed to Dr. I. Rowe
+13:46 [Info] [Scientist Names] 6844387 renamed to Dr. S. Carpenter
+13:46 [Info] [Scientist Names] 6440750 renamed to Dr. T. Hale
+13:46 [Info] [Scientist Names] 996060 renamed to Dr. U. Robertson
+13:46 [Info] [Scientist Names] 8826994 renamed to Dr. L. Willis
+13:46 [Info] [Scientist Names] 8401520 renamed to Dr. A. Gilbert
+13:46 [Info] [Scientist Names] 4511687 renamed to Dr. N. Conner
+13:46 [Info] [Scientist Names] 9718861 renamed to Dr. O. Malone
+13:46 [Info] [Scientist Names] 1840709 renamed to Dr. H. Ortega
+13:46 [Info] [Scientist Names] 2068020 renamed to Dr. W. Washington
+13:46 [Info] [Scientist Names] 2835479 renamed to Dr. D. Santiago
+13:46 [Info] [Scientist Names] 7207383 renamed to Dr. N. Sherman
+13:46 [Info] [Scientist Names] 5270136 renamed to Dr. Y. Clayton
+13:46 [Info] [Scientist Names] 5250108 renamed to Dr. H. Carpenter
+13:46 [Info] [Scientist Names] 2123378 renamed to Dr. N. Herrera
+13:46 [Info] [Scientist Names] 3423040 renamed to Dr. F. McCormick
+13:46 [Info] [Scientist Names] 4989962 renamed to Dr. D. Tate
+13:46 [Info] [Scientist Names] 3380033 renamed to Dr. L. Gomez
+13:46 [Info] [Scientist Names] 7645003 renamed to Dr. Y. Aguilar
+13:46 [Info] [Scientist Names] 8124677 renamed to Dr. H. Walton
+13:46 [Info] [Scientist Names] 5469286 renamed to Dr. M. Wells
+13:46 [Info] [Scientist Names] 993936 renamed to Dr. W. Soto
+13:46 [Info] [Scientist Names] 5051160 renamed to Dr. L. Rose
+13:46 [Info] [Scientist Names] 916206 renamed to Dr. P. Howard
+13:46 [Info] [Scientist Names] 9978881 renamed to Dr. J. Cummings
+13:46 [Info] [Scientist Names] 8603181 renamed to Dr. B. Fernandez
+13:46 [Info] [Scientist Names] 8760826 renamed to Dr. Y. Steele
+13:46 [Info] [Scientist Names] 7835910 renamed to Dr. P. Garner
+13:46 [Info] [Scientist Names] 8687935 renamed to Dr. F. Roy
+13:46 [Info] [Scientist Names] 118 scientists (bandits, murderers, scarecrows, tunnel dwellers) renamed
+13:46 [Warning] Calling 'OnServerInitialized' on 'ScientistNames v1.2.1' took 2046ms
+13:46 [Warning] Calling 'OnServerInitialized' on 'ScientistNames v1.2.1' took average 43ms
+13:46 [Info] [SecurityLights] Implemented 0 saved security lights.
+13:46 [Info] [TC Map Markers] Spawned 0 map markers
+13:46 [Info] [BetterLoot] Removed 5 stacked LootContainer
+13:46 [Info] [BetterLoot] Populated '828' supported containers.
+13:46 [Error] [Image Library] There was a error querying Steam for workshop item data : Code (400)
+13:46 [Info] [Dangerous Treasures] Next automated event in 01h 48m 28s at 06/08/2021 15:34:48
+13:46 [Info] [Rust Map Api] Validating config has latest monuments
+13:46 [Error] [RustEdit] - Successfully downloaded latest release (v.1.0.35). Restarting Server in 5 seconds!
+13:46 [Warning] [Discord Extension] [Warning]: Discord socket opened!
+13:46 [Info] [RustEdit] - No custom vending machines found in map
+13:46 [Info] [RustEdit] - 0 loot containers processed!
+13:46 [Info] [RustEdit] - 0 resource entities processed!
+13:46 [Info] [RustEdit] - 0 junkpiles processed!
+13:46 [Warning] [Discord Extension] [Warning]: Your bot was found in 1 Guilds!
+13:46 [Info] [Discord Core] Connected to bot: SolidRustBot
+13:46 [Info] [Discord Core] Discord connected to server: SolidRust Networks
+13:46 [Info] [Discord Core] 7 Guild Discord Members Loaded
+13:46 [Info] Installing Rust:IO ...
+13:46 [Info] Rust:IO> Setting up Rust:IO 2.3.7608.42166 ...
+13:46 [Info] Rust:IO> Creating directories ...
+13:46 [Info] Rust:IO> Applying config ...
+13:46 [Info] Rust:IO> Initializing database ...
+13:46 [Info] Rust:IO> Generating map image (this may take a while) ...
+13:46 [Info] Rust:IO> Generation complete
+--------- Summary --------
+Render       :  1382.248ms
+Postprocess  :  1207.858ms
+  Shadows    :   197.139ms
+  FXAA       :   998.407ms
+Encoding     :    26.792ms
+Other        :     6.679ms
+--------------------------
+Total        :  2623.577ms
+13:46 [Info] Rust:IO> Starting HTTP server on *:28015 ...
+13:46 [Info] Rust:IO> Installed.
+13:46 [Info] Rust:IO> Now ticking
+13:46 [Warning] Calling 'OnTick' on 'RustIO v2.17.0' took 2973ms [GARBAGE COLLECT]
+13:46 [Info] Rust:IO> External IP address obtained from lookup: 24.80.116.178
+13:46 [Info] [Scientist Names] 3084259 renamed to guard L. Moody
+13:46 [Info] [Scientist Names] 3380124 renamed to guard H. Richards
+13:46 [Info] [Scientist Names] 1422225 renamed to guard U. Jefferson
+13:46 [Info] [Scientist Names] 1593530 renamed to guard D. Reed
+13:46 [Info] [Scientist Names] 5111695 renamed to guard I. Blake
+13:46 [Info] [Scientist Names] 6585797 renamed to guard I. Rose
+13:46 [Info] [Scientist Names] 1713625 renamed to guard V. Shelton
+13:46 [Info] [Scientist Names] 3778748 renamed to guard M. Parker
+13:46 [Info] [Scientist Names] 6899040 renamed to guard R. Holloway
+13:46 [Info] [Scientist Names] 1789909 renamed to guard T. Summers
+13:46 [Info] [Image Library] Starting order Kits
+13:46 [Info] [Discord Core] 0 Chunk Discord Members Loaded
+13:46 [Info] [Discord Core] 7 Total Discord Members Loaded
+13:46 [Info] [Discord Core] Discord Core Ready
+13:46 [Info] [Image Library] Starting order Kits
+13:46 [Warning] Calling 'OnTick' on 'RustIO v2.17.0' took average 2984ms
+13:46 [Info] [Discord Core Roles] Message: Starting sync for 0 linked players
+13:46 [Error] [Plugin Update Notifications] waiting 30 seconds for rate limit
+13:46 [Info] [Rust Map Api] Loaded image icons
+13:46 [Info] [Rust Map Api] Map Render Took: 0.69 Seconds
+13:46 [Info] [Rust Map Api] Icon Render Took: 0.25 Seconds
+13:46 [Info] [Rust Map Api] Default Encoding Took: 0.04 Seconds
+13:46 [Info] [Rust Map Api] Icons Encoding Took: 0.04 Seconds
+13:46 [Info] [Rust Map Api] Default 2x2 Split Took: 0.05 Seconds
+13:46 [Info] [Rust Map Api] Icons 2x2 Split Took: 0.06 Seconds
+13:46 [Info] [Rust Map Api] Default 3x3 Split Took: 0.10 Seconds
+13:46 [Info] Uninstalling Rust:IO ...
+13:46 [Info] Rust:IO> Uninstalling ...
+13:46 [Info] Rust:IO> No longer ticking
+13:46 [Info] Rust:IO> Stopping server ...
+13:46 [Info] Rust:IO> Removing listeners ...
+13:46 [Info] Rust:IO> Performing maintenance ...
+13:46 [Info] Rust:IO> Closing database ...
+13:46 [Info] Rust:IO> Uninstalled.
+13:46 [Info] Unloaded plugin Rust:IO for Oxide v2.17.0 by playrust.io / dcode
+13:46 [Info] Unloaded plugin Admin Chat v2.0.4 by LaserHydra
+13:46 [Info] Unloaded plugin AdvancedGather v2.0.4 by Khan
+13:46 [Info] Unloaded plugin Airstrike v0.3.6 by k1lly0u
+13:46 [Info] Unloaded plugin Always Lootable Turrets v1.0.0 by WhiteThunder
+13:46 [Info] Unloaded plugin Analytics v1.1.2 by Wulf/lukespragg
+13:46 [Info] Unloaded plugin Arkan v1.0.18 by Antidote
+13:46 [Warning] Calling 'Unload' on 'AutoFuel v1.2.0' took 110ms
+13:46 [Info] Unloaded plugin Auto Fuel v1.2.0 by redBDGR
+13:46 [Info] Unloaded plugin Auto Lock v2.4.1 by birthdates
+13:46 [Info] Unloaded plugin Auto Purge v2.1.1 by misticos
+13:46 [Info] Unloaded plugin Auto Turret Authorization v1.2.1 by haggbart
+13:46 [Info] Unloaded plugin Automatic Authorization v1.2.5 by k1lly0u/Arainrr
+13:46 [Info] Unloaded plugin BGrade v1.1.3 by Ryan / Rustoria.co
+13:46 [Info] Unloaded plugin Backpacks v3.5.2 by LaserHydra
+13:46 [Info] Unloaded plugin Bank v1.0.52 by Calytic
+13:46 [Info] Unloaded plugin Base Repair v1.0.19 by MJSU
+13:46 [Info] Unloaded plugin Better Chat v5.2.6 by LaserHydra
+13:46 [Info] Unloaded plugin BetterLoot v3.5.3 by Default
+13:46 [Info] Unloaded plugin Blueprint Share v1.2.6 by c_creep
+13:46 [Info] Unloaded plugin Box Sorter Lite v1.0.9 by haggbart
+13:46 [Info] Unloaded plugin Bradley Cam v1.0.2 by bearr
+13:46 [Info] Unloaded plugin Bradley Guards v1.3.6 by Bazz3l
+13:46 [Info] Unloaded plugin Building Grades v1.0.4 by Default/Arainrr
+13:46 [Info] Unloaded plugin CCTV Utilities v1.5.1 by GrumpyGordon
+13:46 [Info] Unloaded plugin Capacity Controller v2.0.0 by 2CHEVSKII
+13:46 [Info] Unloaded plugin Car Lock UI v1.0.1 by WhiteThunder
+13:46 [Info] Unloaded plugin Modular Car Turrets v1.1.1 by WhiteThunder
+13:46 [Info] Unloaded plugin Cargo Wetness Fix v1.0.2 by yetzt
+13:46 [Info] Unloaded plugin ChestStacks v1.4.5 by MON@H
+13:46 [Warning] Calling 'Unload' on 'Chute v2.0.7' took 108ms
+13:46 [Info] Unloaded plugin Chute v2.0.7 by ColonBlow
+13:46 [Info] Unloaded plugin Clans v0.2.2 by k1lly0u
+13:46 [Info] Unloaded plugin Clear Repair v1.3.0 by Clearshot
+13:46 [Info] [Compound Options] Restoring default orders for npcvendingmachine_farming
+13:46 [Info] [Compound Options] Restoring default orders for npcvendingmachine_tools
+13:46 [Info] [Compound Options] Restoring default orders for npcvendingmachine_resources
+13:46 [Info] [Compound Options] Restoring default orders for npcvendingmachine_components
+13:46 [Info] [Compound Options] Restoring default orders for npcvendingmachine_weapons
+13:46 [Info] [Compound Options] Restoring default orders for npcvendingmachine_attire
+13:46 [Info] [Compound Options] Restoring default orders for npcvendingmachine_building
+13:46 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+13:46 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+13:46 [Info] [Compound Options] Restoring default orders for shopkeeper_vm_invis
+13:46 [Info] Unloaded plugin Compound Options v1.1.7 by FastBurst
+13:46 [Info] Unloaded plugin Console Filter v0.0.2 by Wulf
+13:46 [Info] Unloaded plugin Copy Paste v4.1.27 by misticos
+13:46 [Info] Unloaded plugin Craft Car Chassis v1.2.0 by WhiteThunder
+13:46 [Info] Unloaded plugin Dance v1.0.4 by senyaa
+13:46 [Info] Unloaded plugin Dangerous Treasures v2.2.0 by nivex
+13:46 [Info] Unloaded plugin Discord Core v0.17.0 by MJSU
+13:46 [Info] Unloaded plugin Discord Core Roles v1.3.7 by MJSU
+13:46 [Info] Unloaded plugin Discord Server Stats v2.0.2 by MJSU
+13:46 [Info] Unloaded plugin Discord Wipe v2.2.1 by MJSU
+13:46 [Info] Unloaded plugin DonationClaim v1.0.2 by Wulf/lukespragg
+13:46 [Info] Unloaded plugin DronePilot v1.0.2 by k1lly0u
+13:46 [Info] Unloaded plugin Dynamic Player Limit v0.0.7 by Pho3niX90
+13:46 [Info] Unloaded plugin Event Randomizer v0.3.4 by mvrb
+13:46 [Info] Unloaded plugin ChopperSurvival v3.0.0 by k1lly0u
+13:46 [Info] Unloaded plugin EventManager v4.0.5 by k1lly0u
+13:46 [Info] Unloaded plugin EMInterface v2.0.1 by k1lly0u
+13:46 [Info] Unloaded plugin Event Statistics v0.1.0 by k1lly0u
+13:46 [Info] Unloaded plugin Extra Seating v1.0.8 by Pho3niX90
+13:46 [Info] Unloaded plugin Farm Tools v1.0.4 by Clearshot
+13:46 [Info] Unloaded plugin Fast Loot v0.0.4 by DezLife
+13:46 [Info] Unloaded plugin Friends v3.1.2 by Wulf
+13:46 [Info] Unloaded plugin Fuel Gauge v0.5.5 by Oryx
+13:46 [Info] Unloaded plugin Furnace Splitter v2.3.1 by FastBurst
+13:46 [Info] Unloaded plugin Gathering Manager v2.2.75 by Mughisi
+13:46 [Info] Unloaded plugin Guarded Crate v1.4.8 by Bazz3l
+13:46 [Info] Unloaded plugin Hazmat To Scientist Suit v1.0.1 by Krungh Crow
+13:46 [Info] Unloaded plugin Heal v3.1.0 by Wulf
+13:46 [Info] Unloaded plugin Heli Targets v0.0.7 by XavierB
+13:46 [Info] Unloaded plugin HitIcon v2.0.0 by FastBurst
+13:46 [Warning] [IgnoreCollision] Plugin is being unloaded, all items collision enabled!
+13:46 [Info] Unloaded plugin IgnoreCollision v1.1.1 by 2CHEVSKII
+13:46 [Info] Unloaded plugin Performance UI v1.0.7 by 2CHEVSKII
+13:46 [Info] Unloaded plugin Image Library v2.0.58 by Absolut & K1lly0u
+13:46 [Info] Unloaded plugin Imgur API v1.0.2 by MJSU
+13:46 [Info] Unloaded plugin Inbound v0.5.2 by Substrata
+13:46 [Info] Unloaded plugin Instant Craft v2.1.5 by Orange
+13:46 [Info] Unloaded plugin Item Skin Randomizer v1.5.4 by Orange
+13:46 [Info] Unloaded plugin KDR GUI v2.0.3 by Ankawi
+13:46 [Info] Unloaded plugin Kill Streaks v0.1.8 by Default
+13:46 [Info] Unloaded plugin Kits v4.0.12 by k1lly0u
+13:46 [Info] Unloaded plugin Larger Car Storage v2.0.2 by WhiteThunder
+13:46 [Info] Unloaded plugin Lighthouse Beacon v1.0.3 by S0N_0F_BISCUIT
+13:46 [Info] Unloaded plugin Loading Messages v1.0.6 by CosaNostra/Def
+13:46 [Info] Unloaded plugin Loot Bouncer v1.0.7 by Sorrow/Arainrr
+13:46 [Info] Unloaded plugin Master Key v0.7.5 by FastBurst
+13:46 [Info] Unloaded plugin Monument Lifts v1.0.3 by Mevent
+13:46 [Info] Unloaded plugin Monuments Recycler v0.2.3 by Dana
+13:46 [Info] Unloaded plugin Mushroom Effects v1.1.0 by supreme
+13:46 [Info] Unloaded plugin NPC Drop Gun v2.0.6 by 2CHEVSKII
+13:46 [Info] Unloaded plugin NTeleportation v1.6.4 by nivex
+13:46 [Warning] Calling 'Unload' on 'NoEscape v2.1.33' took 109ms
+13:46 [Info] Unloaded plugin No Escape v2.1.33 by Calytic
+13:46 [Info] Unloaded plugin No Give Notices v0.3.0 by Wulf
+13:46 [Info] Unloaded plugin NoWorkbench v0.1.51 by k1lly0u
+13:46 [Info] Unloaded plugin Permission Group Sync v2.0.3 by OldSpice
+13:46 [Info] Unloaded plugin Phones Plus v1.0.2 by mr01sam
+13:46 [Info] Unloaded plugin Placeholder API v2.2.0 by misticos
+13:46 [Info] Unloaded plugin Player Database v1.6.2 by Reneb / Maintained by FakeNinja
+13:46 [Info] Unloaded plugin PlayerInformations v1.2.14 by austinv900
+13:46 [Info] Unloaded plugin Plugin Update Notifications v1.1.0 by Whispers88
+13:46 [Info] Unloaded plugin Prod v2.5.3 by Quapi
+13:46 [Info] Unloaded plugin Quick Sort v1.5.2 by MON@H
+13:46 [Info] Unloaded plugin Raid Alarm v0.2.1 by haggbart
+13:46 [Info] Unloaded plugin Random Respawner v1.2.4 by Egor Blagov/Arainrr
+13:46 [Info] Unloaded plugin Realistic Explosions v0.2.1 by 2CHEVSKII
+13:46 [Info] Unloaded plugin Realistic Torch v1.0.3 by Synvy
+13:46 [Info] Unloaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+13:46 [Info] Unloaded plugin Recycle v3.0.4 by 5Dev24
+13:46 [Info] Unloaded plugin Recycle Blueprints v1.0.5 by Zugzwang
+13:46 [Info] Unloaded plugin Recycler Speed v2.0.2 by Ryz0r/yetzt
+13:46 [Info] Unloaded plugin Remover Tool v4.3.28 by Reneb/Fuji/Arainrr
+13:46 [Info] Unloaded plugin Respawn Protection v2.0.2 by Ryz0r
+13:46 [Info] Unloaded plugin Rust Map Api v1.3.2 by MJSU
+13:46 [Info] Unloaded plugin SAMSiteAuth v2.3.3 by haggbart
+13:46 [Info] Unloaded plugin Save Announcer v1.0.4 by Ryan
+13:46 [Info] Unloaded plugin Scientist Names v1.2.1 by Ultra
+13:46 [Info] Unloaded plugin Scrap Heli Storage v0.0.5 by yetzt
+13:46 [Info] Unloaded plugin Scraponomics Lite v0.4.5 by haggbart
+13:46 [Info] Unloaded plugin Security Cameras v0.0.9 by Yurii
+13:46 [Info] Unloaded plugin SecurityLights v1.1.6 by S0N_0F_BISCUIT
+13:46 [Info] Unloaded plugin ServerInfo v0.5.4 by FastBurst
+13:46 [Info] Unloaded plugin Simple Time v1.0.1 by MadKingCraig
+13:46 [Info] Unloaded plugin Skins v2.1.2 by Iv Misticos
+13:46 [Info] Unloaded plugin Skull Crusher v1.1.1 by Krungh Crow
+13:46 [Info] Unloaded plugin Spawns v2.0.36 by Reneb / k1lly0u
+13:46 [Info] Unloaded plugin Stack Size Controller v3.4.3 by AnExiledGod
+13:46 [Info] Unloaded plugin Statistics DB v1.2.6 by Iv Misticos
+13:46 [Info] Unloaded plugin TC Map Markers v1.1.2 by 1AK1
+13:46 [Info] Unloaded plugin Tea Modifiers v2.0.0 by MJSU
+13:46 [Info] Unloaded plugin Team Ping v2.0.1 by Gonzi
+13:46 [Info] Unloaded plugin Temperature Extender v1.0.0 by MJSU
+13:46 [Info] Unloaded plugin TimeOfDay v2.3.4 by FuJiCuRa
+13:46 [Info] Unloaded plugin Trade v1.2.43 by Calytic
+13:46 [Info] Unloaded plugin Turret Loadouts v1.0.2 by WhiteThunder
+13:46 [Info] Unloaded plugin Vanish v1.5.4 by Whispers88
+13:46 [Info] Unloaded plugin Vehicle Deployed Locks v1.1.1 by WhiteThunder
+13:46 [Info] Unloaded plugin Welcomer v1.5.6 by Dana
+13:46 [Info] Unloaded plugin Who Knocks v0.0.7 by Hockeygel23
+13:46 [Info] Unloaded plugin Zone Manager v3.0.21 by k1lly0u
+13:46 [Info] [Discord Extension] [Info]: Disconnected all clients - server shutdown.

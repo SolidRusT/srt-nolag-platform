@@ -1,0 +1,11 @@
+{
+  "AlarmTitle": "You're getting raided!",
+  "AlarmBody": "{0} destroyed at {1}",
+  "AlarmHelp": "To receive Raid Alarm notifications, you need the official Rust+ companion app on your mobile device and pair it this server. To do this, press Esc and click \"Rust+\" in main menu.\n\nUse /raidalarm test to test your alarm. To do disable, use /raidalarm disable",
+  "AlarmHelpCommands": "Available commands: \n/raidalarm status|enable|disable|test",
+  "AlarmStatusEnabled": "Raid Alarm is enabled.",
+  "AlarmStatusDisabled": "Raid Alarm is disabled.",
+  "AlarmTestSent": "Test notification sent. If you don't receive it, make sure you're paired with the server.",
+  "AlarmTestDestroyedItem": "chair",
+  "NoPermission": "You don't have the permission to use this command."
+}

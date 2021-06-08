@@ -1,0 +1,12 @@
+{
+  "Chat": "[#BEBEBE][[#de8732]Discord Core Roles[/#]] {0}[/#]",
+  "ClanTag": "[{0}] {1}",
+  "ServerMessageOxideGroupAddedV1": "{{player.name}} has been added to oxide group {{group.name}}",
+  "ServerMessageOxideGroupRemovedV1": "{{player.name}} has been removed to oxide group {{group.name}}",
+  "ServerMessageDiscordRoleAddedV1": "{{player.name}} has been added to discord role {{role.name}}",
+  "ServerMessageDiscordRoleRemovedV1": "{{player.name}} has been removed to discord role {{role.name}}",
+  "DiscordMessageOxideGroupAddedV1": "{{discord.name}} has been added to oxide group {{group.name}}",
+  "DiscordMessageOxideGroupRemovedV1": "{{discord.name}} has been removed to oxide group {{group.name}}",
+  "DiscordMessageDiscordRoleAddedV1": "{{discord.name}} has been added to discord role {{role.name}}",
+  "DiscordMessageDiscordRoleRemovedV1": "{{discord.name}} has been removed to discord role {{role.name}}"
+}

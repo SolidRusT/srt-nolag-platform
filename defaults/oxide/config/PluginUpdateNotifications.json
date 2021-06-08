@@ -1,10 +1,10 @@
 {
   "Frequency to check for updates (hours)": 12.0,
   "Ignore lower versions (ignores when the official version is a lower version number)": true,
-  "Check Unloaded Plugins": false,
-  "Enable Discord Notifications": false,
-  "Discord Webhook URL": "https://discordapp.com/api/webhooks",
-  "Avatar URL": "https://i.imgur.com/poRMpyf.png",
+  "Check Unloaded Plugins": true,
+  "Enable Discord Notifications": true,
+  "Discord Webhook URL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+  "Avatar URL": "https://solidrust.net/images/SoldRust_Logo.png",
   "Discord Username": "Plugin Update Notifications",
   "Automatic Blacklist": true,
   "Blacklist of plugins names not to check": [

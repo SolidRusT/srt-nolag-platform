@@ -1,5 +1,6 @@
 {
   "Sync Nicknames": true,
+  "Add Clan Tag To Nicknames": false,
   "Update Rate (Seconds)": 2.0,
   "Use AntiSpamNames On Discord Nickname": false,
   "Sync Data": [

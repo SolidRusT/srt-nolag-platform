@@ -19,6 +19,7 @@
   },
   "Prod": {
     "authLevel": 1,
+    "Command": "prod",
     "Passive Mode": false,
     "Print to player console instead of chat? ": false
   }

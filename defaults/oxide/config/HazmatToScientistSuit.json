@@ -1,0 +1,14 @@
+{
+  "Chat Settings": {
+    "ChatColor": "#a0ffb5",
+    "Prefix": "[Hazmat] ",
+    "PrefixColor": "#47ff6f",
+    "SteamIDIcon": 76561199090290915
+  },
+  "Suit Name": {
+    "Blue scientist suit": "Revised Blue HazmatSuit",
+    "Green scientist suit": "Revised Green HazmatSuit",
+    "Heavy scientist suit": "Revised Heavy HazmatSuit",
+    "Space suit": "Revised Space Suit"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "ChatPrefix": "<color=#00a7fe>[Clear Repair]</color>",
+  "RepairItemName": "<line-height=20>{0}",
+  "InsufficientRes": "<size=12>Unable to repair: Insufficient resources.</size><line-indent=5>",
+  "ItemAmount": "<size=12>{0}: <color={1}>{2}</color></size>",
+  "DefaultChatNotification": "Unable to repair: Insufficient resources.",
+  "minicopter.entity": "Minicopter",
+  "rowboat": "Row Boat",
+  "rhib": "RHIB",
+  "scraptransporthelicopter": "Scrap Transport Helicopter"
+}

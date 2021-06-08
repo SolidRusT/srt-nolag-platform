@@ -1,0 +1,5 @@
+{
+  "saving": "Saving...",
+  "configchange": "Config has changed.",
+  "failedload": "Falied to load, creating new config."
+}

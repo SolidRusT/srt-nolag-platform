@@ -1,0 +1,14 @@
+{
+  "NextHeliIn": "Next Patrol Helicopter spawns in {0}",
+  "NextChinookIn": "Next Chinook Helicopter spawns in {0}",
+  "NextCargoIn": "Next Cargo Ship spawns in {0}",
+  "NextAirdropIn": "Next Airdrop spawns in {0}",
+  "CargoSpawned": "A Cargo Ship has been spawned.",
+  "PatrolHelicopterSpawned": "A Patrol Helicopter has been spawned.",
+  "ChinookSpawned": "A Chinook Helicopter has been spawned.",
+  "AirdropSpawned": "An Airdrop has been spawned.",
+  "FormatTime": "{0} Hours {1} Minutes",
+  "EventNotEnabled": "The Min and Max timer for {0} is less than or equal to 0 so this event has been disabled.",
+  "Warning: MinGreaterThanMax": "The minimum value ({0}) for {1} is greater than the maximum value ({2})!",
+  "Error: NoPermission": "You do not have permission to use this command."
+}

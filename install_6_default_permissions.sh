@@ -108,7 +108,7 @@ buildinggrades.up.all \
 buildinggrades.down.all \
 hazmattoscientistsuit.use \
 hazmattoscientistsuit.craft \
-teamping.use
+advancedgather.use
 )
 
 ./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml "o.load *"

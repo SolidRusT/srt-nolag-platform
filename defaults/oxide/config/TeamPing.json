@@ -1,0 +1,7 @@
+{
+  "requiresPermission": false,
+  "pingCooldown": 15,
+  "timeToShow": 10,
+  "maxDistance": 250,
+  "pluginChatPrefix": "<color=#5af>[TEAM PING]</color>"
+}

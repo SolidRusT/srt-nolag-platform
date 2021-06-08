@@ -1,0 +1,10 @@
+{
+  "CodeAdded": "Codelock placed with code {0}.",
+  "Disabled": "You have disabled auto locks.",
+  "Enabled": "You have enabled auto locks.",
+  "CodeUpdated": "Your new code is {0}.",
+  "NoPermission": "You don't have permission.",
+  "InvalidArgs": "/{0} code|toggle|hide",
+  "RaidBlocked": "The codelock wasn't automatically locked due to you being raid blocked!",
+  "CombatBlocked": "The codelock wasn't automatically locked due to you being combat blocked!"
+}

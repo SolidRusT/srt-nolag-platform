@@ -1,0 +1,16 @@
+{
+  "BradleyAPC": "Bradley APC inbound{0}",
+  "CargoPlane": "Cargo Plane inbound{0}{1}",
+  "CargoShip": "Cargo Ship inbound{0}",
+  "CH47": "Chinook inbound{0}{1}",
+  "Excavator": "The Excavator has been activated{0}",
+  "HackableCrate": "Hackable Crate has spawned{0}",
+  "PatrolHeli": "Patrol Helicopter inbound{0}{1}",
+  "HackingCrate": "{0} is hacking a locked crate{1}",
+  "SupplySignal": "{0} has deployed a supply signal{1}",
+  "SupplyDrop": "Supply Drop has dropped{0}",
+  "SupplyDropLanded": "Supply Drop has landed{0}",
+  "Location": " at {0}",
+  "LocationDestination": " and headed to {0}",
+  "DiscordMessage": ":arrow_lower_right:  **{0}**"
+}

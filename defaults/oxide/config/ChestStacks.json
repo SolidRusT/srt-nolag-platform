@@ -109,7 +109,8 @@
       "assets/prefabs/misc/xmas/xmastree/xmas_tree.deployed.prefab": 1.0,
       "assets/prefabs/npc/autoturret/autoturret_deployed.prefab": 1.0,
       "assets/prefabs/npc/flame turret/flameturret.deployed.prefab": 1.0,
-      "assets/prefabs/npc/sam_site_turret/sam_site_turret_deployed.prefab": 1.0
+      "assets/prefabs/npc/sam_site_turret/sam_site_turret_deployed.prefab": 1.0,
+      "Backpack": 1.0
     }
   }
 }
