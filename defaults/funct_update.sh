@@ -1,6 +1,10 @@
 function update_repo () {
     echo "Downloading repo from s3" | tee -a ${LOGS}
     aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
+    echo "Setting execution bits" | tee -a ${LOGS}
+    chmod +x ${HOME}/solidrust.net/defaults/*.sh
+    chmod +x ${HOME}/solidrust.net/defaults/database/*.sh
+    chmod +x ${HOME}/solidrust.net/defaults/web/*.sh
 }
 
 function update_mods () {
@@ -8,7 +12,6 @@ function update_mods () {
         oxide/data
         oxide/config
     )
-
     for folder in ${OXIDE[@]}; do
         # Sync global Oxide defaults
         echo "sync ${SERVER_GLOBAL}/$folder/ to ${GAME_ROOT}/$folder" | tee -a ${LOGS}
@@ -19,8 +22,6 @@ function update_mods () {
         mkdir -p "${GAME_ROOT}/$folder" | tee -a ${LOGS}
         rsync -r "${SERVER_CUSTOM}/$folder/" "${GAME_ROOT}/$folder" | tee -a ${LOGS}
     done
-
-    # Plugin merge + sync
     rm -rf ${BUILD_ROOT}
     mkdir -p ${BUILD_ROOT}/oxide/plugins
     echo "Updating Oxide plugins" | tee -a ${LOGS}
@@ -28,7 +29,6 @@ function update_mods () {
     rsync -ra "${SERVER_CUSTOM}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra --delete "${BUILD_ROOT}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rm -rf ${BUILD_ROOT}
-
     echo "loading dormant plugins" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
 }
@@ -78,9 +78,7 @@ function update_server () {
 function update_umod () {
     echo "Download fresh plugins from uMod"
     cd ${GAME_DIR}/oxide/plugins
-
     plugins=$(ls -1 *.cs)
-
     for plugin in ${plugins[@]}; do
         echo "Attempting to replace $plugin from umod" | tee -a ${LOGS}
         wget "https://umod.org/plugins/$plugin" -O $plugin | tee -a ${LOGS}
@@ -96,6 +94,14 @@ function update_ip () {
     echo "app.publicip \"${IP}\"" >> ${GAME_ROOT}/server/solidrust/cfg/server.cfg
 }
 
+function update_seed () {
+    export SEED=$(cat ${GAME_ROOT}/server.seed)
+    echo "Using current server seed: ${SEED}" | tee -a ${LOGS}
+    sed -i "/server.seed/d" ${GAME_ROOT}/server/solidrust/cfg/server.cfg
+    echo "server.seed \"${SEED}\"" >> ${GAME_ROOT}/server/solidrust/cfg/server.cfg
+    echo "Installed \"${SEED}\" map seed to ${GAME_ROOT}/server/solidrust/cfg/server.cfg" | tee -a ${LOGS}
+}
+
 function update_map_api () {
     echo "Updating Map API data" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_regenerate" | tee -a ${LOGS}
@@ -108,6 +114,56 @@ function update_map_api () {
     echo "Uploading to S3"
     wget ${IMGUR_URL} -O ${GAME_ROOT}/${HOSTNAME}.jpg
     aws s3 cp ${GAME_ROOT}/${HOSTNAME}.jpg ${S3_WEB}/maps/
+}
+
+function update_staging () {
+    echo "plugin is broken, and therfore currently disabled"
+    #SOURCE=$1
+    ## Pull global env vars
+    #source ${HOME}/solidrust.net/defaults/env_vars.sh
+    #me=$(basename -- "$0")
+    #echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+    #export BASE_BACKUPS_PATH="${S3_BACKUPS}/servers/${SOURCE}"
+    #
+    ## save Rust Server configs
+    #echo "===> Uploading Rust Server Configs configs to: ${HOME}/solidrust.net/defaults/cfg/users.cfg" | tee -a ${LOGS}
+    #aws s3 cp --quiet ${BASE_BACKUPS_PATH}/staged/server/users.cfg ${HOME}/solidrust.net/defaults/cfg/users.cfg | tee -a ${LOGS}
+    ## bans.cfg
+    #
+    ## save Rust Oxide plugin configs
+    #echo "===> Uploading Rust Oxide plugin configs to: ${HOME}/solidrust.net/defaults/oxide/config" | tee -a ${LOGS}
+    #aws s3 sync --quiet --delete ${BASE_BACKUPS_PATH}/staged/config ${HOME}/solidrust.net/defaults/oxide/config | tee -a ${LOGS}
+    #
+    ## save Rust Oxide plugin data
+    #echo "===> Uploading Rust Oxide plugin configs to: ${HOME}/solidrust.net/defaults/oxide/data" | tee -a ${LOGS}
+    #
+    #PLUGS=(
+    #    EventManager \
+    #    Kits \
+    #    ZoneManager \
+    #    BetterChat \
+    #    CompoundOptions \
+    #    GuardedCrate \
+    #    KillStreak-Zones.json \
+    #    Kits_Data \
+    #    NTeleportationDisabledCommands \
+    #    StackSizeController \
+    #    killstreak_data \
+    #    death \
+    #    hit
+    #)
+    #
+    #for plug in ${PLUGS[@]}; do
+    #    aws s3 sync --quiet --delete ${BASE_BACKUPS_PATH}/staged/data/$plug ${HOME}/solidrust.net/defaults/oxide/data/$plug | tee -a ${LOGS}
+    #done
+    #
+    ## save Rust Oxide installed plugins
+    #echo "===> Uploading Rust Oxide installed plugins to: ${HOME}/solidrust.net/defaults/oxide/plugins" | tee -a ${LOGS}
+    #aws s3 sync --quiet --delete ${BASE_BACKUPS_PATH}/staged/plugins ${HOME}/solidrust.net/defaults/oxide/plugins | tee -a ${LOGS}
+    #
+    ## nuke staging area
+    #echo "===> Nuking the stagin area: ${BASE_BACKUPS_PATH}/staged" | tee -a ${LOGS}
+    #aws s3 rm --quiet --recursive ${BASE_BACKUPS_PATH}/staged | tee -a ${LOGS}
 }
 
 echo "SRT Update Functions initialized"

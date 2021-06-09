@@ -16,13 +16,11 @@ function backup_s3 () {
     else
         echo "No rcon binary found here, unable to save world data" | tee -a ${LOGS}
     fi
-
     CONTENTS=(
         oxide
         server
         backup
     )
-
     for folder in ${CONTENTS[@]}; do
         echo "sync ${GAME_ROOT}/$folder to ${S3_BACKUPS}/servers/${HOSTNAME}/$folder" | tee -a ${LOGS}
         aws s3 sync --quiet --delete ${GAME_ROOT}/$folder ${S3_BACKUPS}/servers/${HOSTNAME}/$folder | tee -a ${LOGS}
@@ -32,6 +30,7 @@ function backup_s3 () {
 
 function start_rust () {
     echo "Start RustDedicated game service" | tee -a ${LOGS}
+    chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
     /bin/sh -c ${HOME}/solidrust.net/defaults/solidrust.sh &
     echo "Delaying for about 8mins while service loads" | tee -a ${LOGS}
     sleep 500
@@ -46,6 +45,10 @@ function stop_rust () {
 function stop_rust_now () {
     echo "Stop RustDedicated game service" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "restart 1"
+}
+
+function show_logs () {
+    tail -n 20 -F "${HOME}/SolidRusT.log" "${GAME_ROOT}/RustDedicated.log" "${GAME_ROOT}/rcon-default.log"
 }
 
 echo "SRT Common Functions initialized"

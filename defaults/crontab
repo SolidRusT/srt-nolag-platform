@@ -1,5 +1,5 @@
 ## SolidRusT wipe schedule
-# 0 10 * * THU   root  /bin/sh -c /root/solidrust.net/defaults/0_wipe_server.sh
+# 0 10 * * MON,THU   root  /bin/sh -c /root/solidrust.net/defaults/0_wipe_server.sh
 
 ## SolidRusT server backups. Final step after going live.
 #*/10 *  * * *   root  /bin/sh -c /root/solidrust.net/defaults/10_backup.sh
