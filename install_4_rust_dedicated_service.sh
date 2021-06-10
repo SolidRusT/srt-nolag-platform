@@ -25,3 +25,7 @@ echo "export GAME_DIR=\"${GAME_DIR}\"" >> ~/.bashrc
 /usr/games/steamcmd +login anonymous +force_install_dir ${GAME_DIR} +app_update 258550 +quit
 /usr/games/steamcmd +login anonymous +force_install_dir ${GAME_DIR} +app_update 258550 validate +quit
 
+# VBox on Hyper-V only
+#/usr/games/steamcmd +login anonymous +app_update 258550 +quit
+#/usr/games/steamcmd +login anonymous +app_update 258550 validate +quit
+# OR, 

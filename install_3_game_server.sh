@@ -14,7 +14,7 @@ echo "en_US.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
 sudo locale-gen
 
 sudo dpkg-reconfigure tzdata
-#America/Los_Angeles or America/New_York
+# America/Los_Angeles or America/New_York or America/Vancouver
 
 sudo dd if=/dev/zero of=/swapfile bs=128M count=128
 sudo chmod 600 /swapfile
@@ -62,6 +62,8 @@ sudo apt-get -y install \
     build-essential
 
 echo "PATH=\$PATH:$HOME/.local/bin" >> ".bashrc"
+
+# ls -s ${HOME}/solidrust.net/defaults/solidrust.sh ${HOME}/.local/bin/solidrust.sh
 
 # freshen-up the Debian repo
 sudo apt -y install -f

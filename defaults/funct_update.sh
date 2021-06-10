@@ -47,6 +47,7 @@ function update_configs () {
 }
 
 function update_server () {
+    echo "updating ${GAME_ROOT}"
     echo "No rcon found here, downloading it..." | tee -a ${LOGS}
     wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.1/rcon-0.9.1-amd64_linux.tar.gz
     tar xzvf rcon-0.9.1-amd64_linux.tar.gz
