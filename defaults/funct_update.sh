@@ -79,7 +79,7 @@ function update_server () {
 
 function update_umod () {
     echo "Download fresh plugins from uMod"
-    cd ${GAME_DIR}/oxide/plugins
+    cd ${GAME_ROOT}/oxide/plugins
     plugins=$(ls -1 *.cs)
     for plugin in ${plugins[@]}; do
         echo "Attempting to replace $plugin from umod" | tee -a ${LOGS}

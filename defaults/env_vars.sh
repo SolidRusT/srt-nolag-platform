@@ -28,6 +28,5 @@ touch ${LOGS}
 # Build root
 export BUILD_ROOT="${HOME}/build-solidrust"
 
-
 # end of env_vars
 echo "++++++= Initialized SolidRusT =++++++" | tee -a ${LOGS}

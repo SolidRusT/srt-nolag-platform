@@ -1,7 +1,7 @@
 #!/bin/bash
 export NEW_NAME="eleven"
 
-mkdir -p ${GAME_DIR}
+mkdir -p ${GAME_ROOT}
 mkfs -t xfs /dev/nvme0n1
 
 sed -i "/nine/d" /etc/hosts /etc/cloud/templates/hosts.debian.tmpl

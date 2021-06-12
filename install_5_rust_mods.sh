@@ -21,17 +21,17 @@ source ${HOME}/solidrust.net/defaults/env_vars.sh
 me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
-mkdir -p ${GAME_DIR}/server/solidrust/cfg
-mkdir -p ${GAME_DIR}/oxide
+mkdir -p ${GAME_ROOT}/server/solidrust/cfg
+mkdir -p ${GAME_ROOT}/oxide
 ln -s ${HOME}/solidrust.net/defaults/solidrust.sh ${HOME}/.local/bin/solidrust.sh
 
-aws s3 sync --quiet --delete ${S3_BACKUPS}/repo/defaults/oxide ${GAME_DIR}/oxide | tee -a ${LOGS}
-aws s3 sync --quiet ${S3_BACKUPS}/repo/defaults/cfg ${GAME_DIR}/server/solidrust/cfg | tee -a ${LOGS}
-mkdir -p ${GAME_DIR}/backup | tee -a ${LOGS}
+aws s3 sync --quiet --delete ${S3_BACKUPS}/repo/defaults/oxide ${GAME_ROOT}/oxide | tee -a ${LOGS}
+aws s3 sync --quiet ${S3_BACKUPS}/repo/defaults/cfg ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}
+mkdir -p ${GAME_ROOT}/backup | tee -a ${LOGS}
 sleep 2
 
-aws s3 sync --quiet ${S3_BACKUPS}/repo/servers/${HOSTNAME}/server/solidrust/cfg ${GAME_DIR}/server/solidrust/cfg | tee -a ${LOGS}
-aws s3 sync --quiet ${S3_BACKUPS}/repo/servers/${HOSTNAME}/oxide ${GAME_DIR}/oxide | tee -a ${LOGS}
+aws s3 sync --quiet ${S3_BACKUPS}/repo/servers/${HOSTNAME}/server/solidrust/cfg ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}
+aws s3 sync --quiet ${S3_BACKUPS}/repo/servers/${HOSTNAME}/oxide ${GAME_ROOT}/oxide | tee -a ${LOGS}
 
 
 # solidrust.sh &

@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Furnace Splitter", "FastBurst", "2.3.1")]
+    [Info("Furnace Splitter", "FastBurst", "2.3.2")]
     [Description("Splits up resources in furnaces automatically and shows useful furnace information")]
     public class FurnaceSplitter : RustPlugin
     {
@@ -640,7 +640,7 @@ namespace Oxide.Plugins
                 neededFuelStr = ovenInfo.FuelNeeded.ToString("##,###");
             }
 
-            float uiScale = UIScaleManager == null ? 1.0f : UIScaleManager.Call<float>("API_CheckPlayerUISize", player.UserIDString);
+            float uiScale = UIScaleManager?.Call<float>("API_CheckPlayerUISize", player.UserIDString) ?? 1.0f;
             string contentColor = "0.7 0.7 0.7 1.0";
             int contentSize = Convert.ToInt32(10 * uiScale);
             string toggleStateStr = (!options.Enabled).ToString();

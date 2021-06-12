@@ -1,9 +1,9 @@
 export STEAMUSER="root"
-export GAME_DIR="/game"
+export GAME_ROOT="/game"
 # example: .local/bin/solidrust.sh -> /root/solidrust.net/defaults/solidrust.sh
 export PATH=${PATH}:/root/.local/bin
 source ${HOME}/solidrust.net/defaults/env_vars.sh
 source ${HOME}/solidrust.net/defaults/funct_common.sh
 source ${HOME}/solidrust.net/defaults/funct_wipe.sh
 source ${HOME}/solidrust.net/defaults/funct_update.sh
-alias rcon="${GAME_DIR}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
+alias rcon="${GAME_ROOT}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
