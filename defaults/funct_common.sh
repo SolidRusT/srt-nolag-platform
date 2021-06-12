@@ -34,7 +34,17 @@ function start_rust () {
     chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
     /bin/sh -c ${HOME}/solidrust.net/defaults/solidrust.sh &
     echo "Delaying for about 8mins while service loads" | tee -a ${LOGS}
-    sleep 500
+    sleep 120
+    echo "Delaying for 6mins while service loads"  | tee -a ${LOGS}
+    sleep 120
+    echo "Delaying for 4mins while service loads"  | tee -a ${LOGS}
+    sleep 60
+    echo "Delaying for 3mins while service loads"  | tee -a ${LOGS}
+    sleep 60
+    echo "Delaying for 2mins while service loads"  | tee -a ${LOGS}
+    sleep 60
+    echo "Delaying for 1mins while service loads"  | tee -a ${LOGS}
+    sleep 60
     echo "Should be ready for action" | tee -a ${LOGS}
 }
 

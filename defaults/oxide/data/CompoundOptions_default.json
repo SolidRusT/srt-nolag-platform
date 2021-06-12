@@ -1181,6 +1181,44 @@
         "refillAmount": 100,
         "refillDelay": 10.0
       }
+    ],
+    "stables": [
+      {
+        "_comment": "Sell Horse Saddle x 1 for Scrap x 75",
+        "sellId": -1997543660,
+        "sellAmount": 75,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 1,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Roadsign Horse Armor x 1 for Scrap x 100",
+        "sellId": 60528587,
+        "sellAmount": 100,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 1,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell High Quality Horse Shoes x 1 for Scrap x 40",
+        "sellId": 1989785143,
+        "sellAmount": 40,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 1,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      }
     ]
   }
 }
