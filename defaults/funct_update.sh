@@ -118,7 +118,7 @@ function update_map_api () {
     aws s3 cp ${GAME_ROOT}/${HOSTNAME}.jpg ${S3_WEB}/maps/
 }
 
-function update_staging () {
+function staging_push () {
     echo "plugin is broken, and therfore currently disabled" | tee -a ${LOGS}
     #SOURCE=$1
     ## Pull global env vars
@@ -166,6 +166,13 @@ function update_staging () {
     ## nuke staging area
     #echo "===> Nuking the stagin area: ${BASE_BACKUPS_PATH}/staged" | tee -a ${LOGS}
     #aws s3 rm --quiet --recursive ${BASE_BACKUPS_PATH}/staged | tee -a ${LOGS}
+}
+
+function staging_link () {
+    echo "Mapping running mods to the SRT github repo" | tee -a ${LOGS}
+    chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
+    rm -rf ${GAME_ROOT}/oxide
+    ln -s ${SERVER_GLOBAL}/oxide ${GAME_ROOT}/oxide
 }
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

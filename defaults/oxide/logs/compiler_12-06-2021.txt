@@ -3,15 +3,15 @@
 [SERVER v1.0.20] Got Message: Ready
 [SERVER v1.0.20] Got Message: Compile
 [SERVER v1.0.20] Console: Chute.cs(52,14): warning CS0114: `Oxide.Plugins.Chute.LoadDefaultConfig()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadDefaultConfig()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
-/game/Oxide.Core.dll (Location of the symbol related to previous warning)
+/root/.steamapps/common/rust_dedicated/Oxide.Core.dll (Location of the symbol related to previous warning)
 DonationClaim.cs(58,14): warning CS0114: `Oxide.Plugins.DonationClaim.LoadDefaultMessages()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadDefaultMessages()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
-/game/Oxide.Core.dll (Location of the symbol related to previous warning)
+/root/.steamapps/common/rust_dedicated/Oxide.Core.dll (Location of the symbol related to previous warning)
 EventRandomizer.cs(41,22): warning CS0114: `Oxide.Plugins.EventRandomizer.LoadDefaultMessages()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadDefaultMessages()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
-/game/Oxide.Core.dll (Location of the symbol related to previous warning)
+/root/.steamapps/common/rust_dedicated/Oxide.Core.dll (Location of the symbol related to previous warning)
 HazmatToScientistSuit.cs(67,14): warning CS0114: `Oxide.Plugins.HazmatToScientistSuit.LoadDefaultMessages()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadDefaultMessages()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
-/game/Oxide.Core.dll (Location of the symbol related to previous warning)
+/root/.steamapps/common/rust_dedicated/Oxide.Core.dll (Location of the symbol related to previous warning)
 PlayerInformations.cs(213,14): warning CS0114: `Oxide.Plugins.PlayerInformations.LoadDefaultMessages()' hides inherited member `Oxide.Core.Plugins.Plugin.LoadDefaultMessages()'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword
-/game/Oxide.Core.dll (Location of the symbol related to previous warning)
+/root/.steamapps/common/rust_dedicated/Oxide.Core.dll (Location of the symbol related to previous warning)
 Arkan.cs(1162,26): warning CS0472: The result of comparing value type `uint' with null is always `false'
 Arkan.cs(1162,43): warning CS0162: Unreachable code detected
 Arkan.cs(1358,14): warning CS0219: The variable `lengthLastSegmentProjectileTrajectory' is assigned but its value is never used

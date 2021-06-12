@@ -1,0 +1,218 @@
+06:46 [Info] Loading Oxide Core v2.0.3991...
+06:46 [Info] Loading extensions...
+06:46 [Info] Loaded extension CSharp v2.0.4044 by Oxide Team and Contributors
+06:46 [Info] Loaded extension Discord v1.0.9 by PsychoTea & DylanSMR & Tricky
+06:46 [Info] Loaded extension RustEdit v1.0.35 by k1lly0u
+06:46 [Info] Loaded extension Rust:IO for Oxide v2.17.0 by playrust.io / dcode
+06:46 [Info] Loaded extension MySql v2.0.3760 by Oxide Team and Contributors
+06:46 [Info] Loaded extension Rust v2.0.5064 by Oxide Team and Contributors
+06:46 [Info] Loaded extension SQLite v2.0.3762 by Oxide Team and Contributors
+06:46 [Info] Loaded extension Unity v2.0.3772 by Oxide Team and Contributors
+06:46 [Info] Latest compiler MD5: 8ce6d27e7718e3d164766bba8833537a
+06:46 [Info] Local compiler MD5: 0
+06:46 [Info] Compiler MD5 hash did not match, downloading latest
+06:46 [Info] Downloading Compiler.x86_x64 for .cs (C#) plugin compilation
+06:46 [Info] Local MD5 hash did not match remote MD5 hash for Compiler.x86_x64, attempting download again
+06:46 [Info] Latest compiler MD5: 8ce6d27e7718e3d164766bba8833537a
+06:46 [Info] Local compiler MD5: 8ce6d27e7718e3d164766bba8833537a
+06:46 [Info] [Discord Extension] [Info]: Using Discord Extension Version: 1.0.9
+06:46 [Info] Using Covalence provider for game 'Rust'
+06:46 [Info] Loading plugins...
+06:46 [Info] Loaded plugin RustEdit Automatic Updater v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Deployable Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit IO Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Vending Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Loot Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Diesel Collectable Spawner v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Desk Keycard Spawner v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Resource Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit JunkPile Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Spawn Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Ocean Path v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit APC Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Vehicle Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit NPC Core v1.0.1 by Chaos
+06:46 [Info] Loaded plugin RustEdit Excavator Rotation Correction v1.0.1 by Chaos
+06:46 [Info] Loaded plugin Rust v2.0.5064 by Oxide Team and Contributors
+06:46 [Info] Loaded plugin Unity v2.0.3772 by Oxide Team and Contributors
+06:46 [Info] Loaded plugin Rust:IO for Oxide v2.17.0 by playrust.io / dcode
+06:46 [Warning] Ignored unnecessary '// Reference: Oxide.Core.MySql' in plugin 'DonationClaim'
+06:46 [Info] Added '// Reference: Facepunch.Sqlite' in plugin 'ImageLibrary'
+06:46 [Info] Added '// Reference: UnityEngine.UnityWebRequestModule' in plugin 'ImageLibrary'
+06:46 [Info] AdminChat, AdvancedGather, Airstrike, AlwaysLootableTurrets, Analytics, Arkan, AutoFuel, AutoLock, AutoPurge, AutoTurretAuth, AutomaticAuthorization, BGrade, Backpacks, Bank, BaseRepair, BetterChat, BetterLoot, BlueprintShare, BoxSorterLite, BradleyCam, BradleyGuards, BuildingGrades, CCTVUtilities, CapacityController, CarLockUI, CarTurrets, CargoWetnessFix, ChestStacks, ChopperSurvival, Chute, Clans, ClearRepair, CompoundOptions, ConsoleFilter, CopyPaste, CraftChassis, Dance, DangerousTreasures, DiscordCore, DiscordCoreRoles, DiscordServerStats, DiscordWipe, DonationClaim, DronePilot, DynamicPlayerLimit, EMInterface, EventManager, EventRandomizer, EventStatistics, ExtraSeating, FarmTools, FastLoot, Friends, FuelGauge, FurnaceSplitter, GatherManager, GuardedCrate, HazmatToScientistSuit, Heal, HeliTargets, HitIcon, IgnoreCollision, ImageLibrary, ImgurApi, Inbound, InstantCraft, ItemSkinRandomizer, KDRGui, KillStreaks, Kits, LargerCarStorage, LighthouseBeacon, LoadingMessages, LootBouncer, MasterKey, MonumentLifts, MonumentsRecycler, MushroomEffects, NPCDropGun, NTeleportation, NoEscape, NoGiveNotices, NoWorkbench, PerformanceUI, PermissionGroupSync, PhonesPlus, PlaceholderAPI, PlayerDatabase, PlayerInformations, PluginUpdateNotifications, Prod, QuickSort, RaidAlarm, RandomRespawner, RealisticExplosions, RealisticTorch, RealisticWeather, Recycle, RecycleBlueprints, RecyclerSpeed, RemoverTool, RespawnProtection, RustMapApi, SAMSiteAuth, SaveAnnouncer, ScientistNames, ScrapHeliStorage, ScraponomicsLite, SecurityCameras, SecurityLights, ServerInfo, SimpleTime, Skins, SkullCrusher, Spawns, StackSizeController, StatisticsDB, TcMapMarkers, TeaModifiers, TeamPing, TemperatureExtender, TimeOfDay, Trade, TurretLoadouts, Vanish, VehicleDeployedLocks, Welcomer, WhoKnocks and ZoneManager were compiled successfully in 0ms
+06:46 [Warning] [DEBUG] ChopperSurvival plugin is waiting for requirements to be loaded: EventManager
+06:46 [Warning] [DEBUG] EMInterface plugin is waiting for requirements to be loaded: EventStatistics
+06:46 [Warning] [DEBUG] EventManager plugin is waiting for requirements to be loaded: EMInterface
+06:46 [Warning] [DEBUG] PerformanceUI plugin is waiting for requirements to be loaded: ImageLibrary
+06:46 [Info] Loaded plugin Admin Chat v2.0.4 by LaserHydra
+06:46 [Info] Loaded plugin AdvancedGather v2.0.4 by Khan
+06:46 [Info] Loaded plugin Airstrike v0.3.6 by k1lly0u
+06:46 [Info] Loaded plugin Always Lootable Turrets v1.0.0 by WhiteThunder
+06:46 [Info] Loaded plugin Analytics v1.1.2 by Wulf/lukespragg
+06:46 [Info] Loaded plugin Arkan v1.0.18 by Antidote
+06:46 [Info] Loaded plugin Auto Fuel v1.2.0 by redBDGR
+06:46 [Info] Loaded plugin Auto Lock v2.4.1 by birthdates
+06:46 [Info] Loaded plugin Auto Purge v2.1.1 by misticos
+06:46 [Info] Loaded plugin Auto Turret Authorization v1.2.1 by haggbart
+06:46 [Info] Loaded plugin Automatic Authorization v1.2.5 by k1lly0u/Arainrr
+06:46 [Info] Loaded plugin BGrade v1.1.3 by Ryan / Rustoria.co
+06:46 [Info] Loaded plugin Backpacks v3.5.2 by LaserHydra
+06:46 [Info] Loaded plugin Bank v1.0.52 by Calytic
+06:46 [Info] Loaded plugin Base Repair v1.0.19 by MJSU
+06:46 [Info] Loaded plugin Better Chat v5.2.6 by LaserHydra
+06:46 [Info] Loaded plugin BetterLoot v3.5.3 by Default
+06:46 [Info] Loaded plugin Blueprint Share v1.2.6 by c_creep
+06:46 [Info] Loaded plugin Box Sorter Lite v1.0.9 by haggbart
+06:46 [Info] Loaded plugin Bradley Cam v1.0.2 by bearr
+06:46 [Info] Loaded plugin Bradley Guards v1.3.6 by Bazz3l
+06:46 [Info] Loaded plugin Building Grades v1.0.4 by Default/Arainrr
+06:46 [Info] Loaded plugin CCTV Utilities v1.5.1 by GrumpyGordon
+06:46 [Info] Loaded plugin Capacity Controller v2.0.0 by 2CHEVSKII
+06:46 [Info] Loaded plugin Car Lock UI v1.0.1 by WhiteThunder
+06:46 [Info] Loaded plugin Modular Car Turrets v1.1.1 by WhiteThunder
+06:46 [Info] Loaded plugin Cargo Wetness Fix v1.0.2 by yetzt
+06:46 [Info] Loaded plugin ChestStacks v1.4.5 by MON@H
+06:46 [Info] Loaded plugin Chute v2.0.7 by ColonBlow
+06:46 [Info] Loaded plugin Clans v0.2.2 by k1lly0u
+06:46 [Info] [Clear Repair] registered language: en (9)
+06:46 [Info] Loaded plugin Clear Repair v1.3.0 by Clearshot
+06:46 [Info] Loaded plugin Compound Options v1.1.7 by FastBurst
+06:46 [Info] Loaded plugin Console Filter v0.0.2 by Wulf
+06:46 [Info] Loaded plugin Copy Paste v4.1.27 by misticos
+06:46 [Info] Loaded plugin Craft Car Chassis v1.2.0 by WhiteThunder
+06:46 [Info] Loaded plugin Dance v1.0.4 by senyaa
+06:46 [Info] Loaded plugin Dangerous Treasures v2.2.0 by nivex
+06:46 [Info] Loaded plugin Discord Core v0.17.0 by MJSU
+06:46 [Info] Loaded plugin Discord Core Roles v1.3.7 by MJSU
+06:46 [Info] Loaded plugin Discord Server Stats v2.0.2 by MJSU
+06:46 [Info] Loaded plugin Discord Wipe v2.2.1 by MJSU
+06:46 [Info] Loaded plugin DonationClaim v1.0.2 by Wulf/lukespragg
+06:46 [Info] Loaded plugin DronePilot v1.0.2 by k1lly0u
+06:46 [Info] Loaded plugin Dynamic Player Limit v0.0.7 by Pho3niX90
+06:46 [Info] Loaded plugin Event Randomizer v0.3.4 by mvrb
+06:46 [Info] Loaded plugin Event Statistics v0.1.0 by k1lly0u
+06:46 [Info] Loaded plugin EMInterface v2.0.1 by k1lly0u
+06:46 [Info] Loaded plugin EventManager v4.0.5 by k1lly0u
+06:46 [Info] Loaded plugin ChopperSurvival v3.0.0 by k1lly0u
+06:46 [Info] Loaded plugin Extra Seating v1.0.8 by Pho3niX90
+06:46 [Info] Loaded plugin Farm Tools v1.0.4 by Clearshot
+06:46 [Info] Loaded plugin Fast Loot v0.0.4 by DezLife
+06:46 [Info] Loaded plugin Friends v3.1.2 by Wulf
+06:46 [Info] Loaded plugin Fuel Gauge v0.5.5 by Oryx
+06:46 [Info] Loaded plugin Furnace Splitter v2.3.2 by FastBurst
+06:46 [Info] Loaded plugin Gathering Manager v2.2.75 by Mughisi
+06:46 [Info] Loaded plugin Guarded Crate v1.4.8 by Bazz3l
+06:46 [Info] Loaded plugin Hazmat To Scientist Suit v1.0.1 by Krungh Crow
+06:46 [Info] Loaded plugin Heal v3.1.0 by Wulf
+06:46 [Info] Loaded plugin Heli Targets v0.0.7 by XavierB
+06:46 [Info] Loaded plugin HitIcon v2.0.0 by FastBurst
+06:46 [Warning] [IgnoreCollision] Dropped item limit exceed (300) - collision disabled!
+06:46 [Warning] [IgnoreCollision] Plugin loaded: 
+Disable collision - True
+Dynamic disable collision - True
+Dynamic DC amount - 300
+06:46 [Info] Loaded plugin IgnoreCollision v1.1.1 by 2CHEVSKII
+06:46 [Info] Loaded plugin Image Library v2.0.58 by Absolut & K1lly0u
+06:46 [Info] Loaded plugin Performance UI v1.0.7 by 2CHEVSKII
+06:46 [Info] Loaded plugin Imgur API v1.0.2 by MJSU
+06:46 [Info] Loaded plugin Inbound v0.5.2 by Substrata
+06:46 [Info] Loaded plugin Instant Craft v2.1.5 by Orange
+06:46 [Info] Loaded plugin Item Skin Randomizer v1.5.4 by Orange
+06:46 [Info] Loaded plugin KDR GUI v2.0.3 by Ankawi
+06:46 [Info] Loaded plugin Kill Streaks v0.1.8 by Default
+06:46 [Info] Loaded plugin Kits v4.0.12 by k1lly0u
+06:46 [Info] Loaded plugin Larger Car Storage v2.0.2 by WhiteThunder
+06:46 [Info] Loaded plugin Lighthouse Beacon v1.0.3 by S0N_0F_BISCUIT
+06:46 [Info] Loaded plugin Loading Messages v1.0.6 by CosaNostra/Def
+06:46 [Info] Loaded plugin Loot Bouncer v1.0.7 by Sorrow/Arainrr
+06:46 [Info] Loaded plugin Master Key v0.7.5 by FastBurst
+06:46 [Info] Loaded plugin Monument Lifts v1.0.3 by Mevent
+06:46 [Info] Loaded plugin Monuments Recycler v0.2.3 by Dana
+06:46 [Info] Loaded plugin Mushroom Effects v1.1.0 by supreme
+06:46 [Info] Loaded plugin NPC Drop Gun v2.0.6 by 2CHEVSKII
+06:46 [Info] Loaded plugin NTeleportation v1.6.4 by nivex
+06:46 [Info] Loaded plugin No Escape v2.1.33 by Calytic
+06:46 [Info] Loaded plugin No Give Notices v0.3.0 by Wulf
+06:46 [Info] Loaded plugin NoWorkbench v0.1.51 by k1lly0u
+06:46 [Info] Loaded plugin Permission Group Sync v2.0.3 by OldSpice
+06:46 [Info] Loaded plugin Phones Plus v1.0.2 by mr01sam
+06:46 [Info] Loaded plugin Placeholder API v2.2.0 by misticos
+06:46 [Info] Loaded plugin Player Database v1.6.2 by Reneb / Maintained by FakeNinja
+06:46 [Info] Loaded plugin PlayerInformations v1.2.14 by austinv900
+06:46 [Info] Loaded plugin Plugin Update Notifications v1.1.0 by Whispers88
+06:46 [Info] Loaded plugin Prod v2.5.3 by Quapi
+06:46 [Info] Loaded plugin Quick Sort v1.5.2 by MON@H
+06:46 [Info] Loaded plugin Raid Alarm v0.2.1 by haggbart
+06:46 [Info] Loaded plugin Random Respawner v1.2.4 by Egor Blagov/Arainrr
+06:46 [Info] Loaded plugin Realistic Explosions v0.2.1 by 2CHEVSKII
+06:46 [Info] Loaded plugin Realistic Torch v1.0.3 by Synvy
+06:46 [Info] Loaded plugin Realistic Weather v1.3.4 by OuTSMoKE, deano79, CaptainNebulous
+06:46 [Info] Loaded plugin Recycle v3.0.4 by 5Dev24
+06:46 [Info] Loaded plugin Recycle Blueprints v1.0.5 by Zugzwang
+06:46 [Info] Loaded plugin Recycler Speed v2.0.2 by Ryz0r/yetzt
+06:46 [Info] Loaded plugin Remover Tool v4.3.28 by Reneb/Fuji/Arainrr
+06:46 [Info] Loaded plugin Respawn Protection v2.0.2 by Ryz0r
+06:46 [Info] Loaded plugin Rust Map Api v1.3.2 by MJSU
+06:46 [Info] Loaded plugin SAMSiteAuth v2.3.3 by haggbart
+06:46 [Info] Loaded plugin Save Announcer v1.0.4 by Ryan
+06:46 [Info] Loaded plugin Scientist Names v1.2.1 by Ultra
+06:46 [Info] Loaded plugin Scrap Heli Storage v0.0.5 by yetzt
+06:46 [Info] Loaded plugin Scraponomics Lite v0.4.5 by haggbart
+06:46 [Info] Loaded plugin Security Cameras v0.0.9 by Yurii
+06:46 [Info] Loaded plugin SecurityLights v1.1.6 by S0N_0F_BISCUIT
+06:46 [Info] Loaded plugin ServerInfo v0.5.4 by FastBurst
+06:46 [Info] Loaded plugin Simple Time v1.0.1 by MadKingCraig
+06:46 [Info] Loaded plugin Skins v2.1.2 by Iv Misticos
+06:46 [Info] Loaded plugin Skull Crusher v1.1.1 by Krungh Crow
+06:46 [Info] Loaded plugin Spawns v2.0.36 by Reneb / k1lly0u
+06:46 [Info] Loaded plugin Stack Size Controller v3.4.3 by AnExiledGod
+06:46 [Info] Loaded plugin Statistics DB v1.2.6 by Iv Misticos
+06:46 [Info] Loaded plugin TC Map Markers v1.1.2 by 1AK1
+06:46 [Info] Loaded plugin Tea Modifiers v2.0.0 by MJSU
+06:46 [Info] Loaded plugin Team Ping v2.0.1 by Gonzi
+06:46 [Info] Loaded plugin Temperature Extender v1.0.0 by MJSU
+06:46 [Info] Loaded plugin TimeOfDay v2.3.4 by FuJiCuRa
+06:46 [Info] Loaded plugin Trade v1.2.43 by Calytic
+06:46 [Info] Loaded plugin Turret Loadouts v1.0.2 by WhiteThunder
+06:46 [Info] Loaded plugin Vanish v1.5.4 by Whispers88
+06:46 [Info] Loaded plugin Vehicle Deployed Locks v1.1.1 by WhiteThunder
+06:46 [Info] Loaded plugin Welcomer v1.5.6 by Dana
+06:46 [Info] Loaded plugin Who Knocks v0.0.7 by Hockeygel23
+06:46 [Info] Loaded plugin Zone Manager v3.0.21 by k1lly0u
+06:47 [Error] MySql handle raised an exception in 'PlayerDatabase v1.6.2' plugin (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <7a75fa05cbc04391919cf072f240bf30>:0 
+06:47 [Error] MySql handle raised an exception in 'PlayerDatabase v1.6.2' plugin (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <7a75fa05cbc04391919cf072f240bf30>:0 
+06:47 [Error] MySql handle raised an exception in 'PlayerDatabase v1.6.2' plugin (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <7a75fa05cbc04391919cf072f240bf30>:0 
+06:47 [Error] Couldn't get columns. Database might be corrupted.
+06:47 [Info] Unloaded plugin Player Database v1.6.2 by Reneb / Maintained by FakeNinja
+06:47 [Error] MySql handle raised an exception (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <7a75fa05cbc04391919cf072f240bf30>:0 
+06:47 [Warning] [RustEdit] - No IO data found in map file
+06:47 [Warning] [RustEdit] - No vending data found in map file
+06:47 [Warning] [RustEdit] - No loot data found in map file
+06:47 [Warning] [RustEdit] - No APC path data found in map file
+06:47 [Warning] [RustEdit] - No vehicle data found in map file
+06:47 [Warning] [RustEdit] - No NPC data found in map file
+06:49 [Warning] [RustEdit] - No ocean patrol path data found in map file
+06:49 [Info] [Stack Size Controller] Ensuring VanillaStackSize integrity.
+06:49 [Warning] Calling 'OnTerrainInitialized' on 'StackSizeController v3.4.3' took 12049ms [GARBAGE COLLECT]
+06:49 [Warning] Calling 'OnTerrainInitialized' on 'StackSizeController v3.4.3' took average 0ms [GARBAGE COLLECT]

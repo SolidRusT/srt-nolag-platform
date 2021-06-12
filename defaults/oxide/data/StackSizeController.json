@@ -2518,7 +2518,7 @@
         "ItemId": -586342290,
         "Shortname": "blueberries",
         "HasDurability": false,
-        "VanillaStackSize": 1000000,
+        "VanillaStackSize": 20,
         "CustomStackSize": 0
       },
       {

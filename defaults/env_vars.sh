@@ -1,10 +1,12 @@
 #!/bin/bash
 ## Global default environments
 
-# root of where the game server is installed
-export GAME_ROOT="/game"
 # automation lock
-export SOLID_LCK="$HOME/SolidRusT.lock"
+export SOLID_LCK="${HOME}/SolidRusT.lock"
+# default root of where the game server is installed
+export GAME_ROOT="/game"
+# construct default server logging endpoint
+export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
 # Amazon s3 destination for backups
 export S3_BACKUPS="s3://solidrust.net-backups"
 # Amazon s3 destination for backups
