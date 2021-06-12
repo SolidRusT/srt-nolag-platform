@@ -1108,3 +1108,21 @@ Total        :  5145.251ms
 07:52 [Info] [Scientist Names] 1153388 renamed to guard I. Park
 07:52 [Info] [Scientist Names] 2721465 renamed to guard L. Crawford
 07:52 [Info] [Scientist Names] 7005328 renamed to guard Z. Lambert
+07:52 [Info] [Scientist Names] 954260 renamed to guard Y. Walters
+07:52 [Info] [Scientist Names] 3949785 renamed to guard U. Martinez
+07:52 [Info] [Scientist Names] 3646583 renamed to guard M. Bass
+07:52 [Info] [Scientist Names] 8891254 renamed to guard B. Maldonado
+07:52 [Info] [Scientist Names] 2753478 renamed to guard B. Gross
+07:53 [Info] [Scientist Names] 7352470 renamed to Dr. T. Powell
+07:53 [Info] [Scientist Names] 6192669 renamed to Dr. X. Ray
+07:53 [Info] [Scientist Names] 601983 renamed to Dr. H. Franklin
+07:53 [Info] [Scientist Names] 4871473 renamed to Dr. S. Schneider
+07:53 [Info] [Scientist Names] 839174 renamed to Dr. O. Houston
+07:53 [Info] [Scientist Names] 4422283 renamed to Dr. H. Sanchez
+07:53 [Error] MySql handle raised an exception (MySqlException: Unable to connect to any of the specified MySQL hosts.)
+  at MySql.Data.MySqlClient.NativeDriver.Open () [0x00057] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Open () [0x0000b] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.Driver.Create (MySql.Data.MySqlClient.MySqlConnectionStringBuilder settings) [0x0004d] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at MySql.Data.MySqlClient.MySqlConnection.Open () [0x0016c] in <8d7380b3d3cf4bd8be324c584f371b44>:0 
+  at Oxide.Core.MySql.Libraries.MySql+MySqlQuery.Handle () [0x00059] in <7a75fa05cbc04391919cf072f240bf30>:0 
+07:54 [Info] [Scientist Names] 3462348 renamed to Dr. Y. Little

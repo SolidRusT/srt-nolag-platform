@@ -490,3 +490,15 @@
 [07:52:25] INFO > 1153388 renamed to guard I. Park
 [07:52:25] INFO > 2721465 renamed to guard L. Crawford
 [07:52:25] INFO > 7005328 renamed to guard Z. Lambert
+[07:52:27] INFO > 954260 renamed to guard Y. Walters
+[07:52:27] INFO > 3949785 renamed to guard U. Martinez
+[07:52:27] INFO > 3646583 renamed to guard M. Bass
+[07:52:30] INFO > 8891254 renamed to guard B. Maldonado
+[07:52:30] INFO > 2753478 renamed to guard B. Gross
+[07:53:06] INFO > 7352470 renamed to Dr. T. Powell
+[07:53:06] INFO > 6192669 renamed to Dr. X. Ray
+[07:53:06] INFO > 601983 renamed to Dr. H. Franklin
+[07:53:06] INFO > 4871473 renamed to Dr. S. Schneider
+[07:53:07] INFO > 839174 renamed to Dr. O. Houston
+[07:53:07] INFO > 4422283 renamed to Dr. H. Sanchez
+[07:54:13] INFO > 3462348 renamed to Dr. Y. Little
