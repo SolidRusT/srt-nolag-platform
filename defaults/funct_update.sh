@@ -104,6 +104,18 @@ function update_seed () {
     echo "Installed \"${SEED}\" map seed to ${GAME_ROOT}/server/solidrust/cfg/server.cfg" | tee -a ${LOGS}
 }
 
+function update_permissions () {
+    echo "Updating Map API data" | tee -a ${LOGS}
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
+    sleep 3
+    for perm in ${DEFAULT_PERMS[@]}; do
+        echo "./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml \"o.grant default $perm\""
+        ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.grant group default $perm" | tee -a ${LOGS}
+        sleep 2
+    done
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload PermissionGroupSync"| tee -a ${LOGS}
+}
+
 function update_map_api () {
     echo "Updating Map API data" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_regenerate" | tee -a ${LOGS}
@@ -174,5 +186,108 @@ function staging_link () {
     rm -rf ${GAME_ROOT}/oxide
     ln -s ${SERVER_GLOBAL}/oxide ${GAME_ROOT}/oxide
 }
+
+# Data
+DEFAULT_PERMS=(
+skins.use  \
+craftchassis.2  \
+removertool.normal  \
+baserepair.use  \
+autolock.use  \
+backpacks.gui  \
+backpacks.use  \
+kits.defaultspawn  \
+bank.use  \
+buildinggrades.cangrade  \
+buildinggrades.down  \
+bgrade.all  \
+vehicledeployedlocks.codelock.allvehicles  \
+vehicledeployedlocks.keylock.allvehicles  \
+carlockui.use.codelock  \
+carturrets.limit.2  \
+carturrets.allmodules  \
+trade.use  \
+trade.accept  \
+recycle.use  \
+discordcalladmin.use  \
+carturrets.deploy.command  \
+carturrets.deploy.inventory  \
+nteleportation.home  \
+nteleportation.deletehome  \
+nteleportation.homehomes  \
+nteleportation.importhomes  \
+nteleportation.radiushome  \
+nteleportation.tpr  \
+nteleportation.tpb  \
+nteleportation.tphome  \
+nteleportation.tptown  \
+nteleportation.tpoutpost  \
+nteleportation.tpbandit  \
+nteleportation.wipehomes  \
+securitylights.use  \
+vehiclevendoroptions.ownership.allvehicles  \
+autodoors.use  \
+automaticauthorization.use  \
+largercarstorage.size.4  \
+barrelpoints.default  \
+discordcore.use  \
+itemskinrandomizer.use  \
+itemskinrandomizer.reskin  \
+instantcraft.use  \
+randomrespawner.use  \
+furnacesplitter.use  \
+tcmapmarkers.use  \
+realistictorch.use  \
+fastloot.use  \
+boxsorterlite.use  \
+raidalarm.use  \
+clearrepair.use  \
+mushroomeffects.use  \
+treeplanter.use  \
+bounty.use  \
+dronepilot.use  \
+farmtools.clone  \
+farmtools.clone.all  \
+farmtools.harvest.all  \
+turretloadouts.autoauth  \
+turretloadouts.autotoggle  \
+turretloadouts.manage  \
+turretloadouts.manage.custom  \
+claimrewards.use  \
+heal.self  \
+heal.player  \
+blueprintshare.toggle  \
+blueprintshare.share  \
+recyclerspeed.use  \
+discordrewards.use \
+dance.use \
+securitycameras.use \
+simpletime.use \
+whoknocks.message \
+whoknocks.knock \
+eventrandomizer.check \
+cctvutilities.help \
+cctvutilities.status.me \
+cctvutilities.status.server \
+cctvutilities.clear \
+cctvutilities.rename \
+cctvutilities.add.me \
+cctvutilities.add.server \
+cctvutilities.add.clear \
+cctvutilities.autoname \
+cctvutilities.autoadd \
+cctvutilities.autoadd.on \
+cctvutilities.autoadd.off \
+cctvutilities.autoadd.toggle \
+cctvutilities.autoadd.me \
+cctvutilities.autoadd.server \
+chute.allowed \
+buildinggrades.use \
+buildinggrades.up.all \
+buildinggrades.down.all \
+hazmattoscientistsuit.use \
+hazmattoscientistsuit.craft \
+advancedgather.use
+)
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

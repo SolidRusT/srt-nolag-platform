@@ -41,5 +41,6 @@ case "$1" in
         update_server
         start_rust
         update_map_api
+        update_permissions
         ;;
 esac
