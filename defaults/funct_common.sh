@@ -52,4 +52,4 @@ function show_logs () {
     tail -n 20 -F "${HOME}/SolidRusT.log" "${GAME_ROOT}/RustDedicated.log" "${GAME_ROOT}/rcon-default.log"
 }
 
-echo "SRT Common Functions initialized"
+echo "SRT Common Functions initialized" | tee -a ${LOGS}

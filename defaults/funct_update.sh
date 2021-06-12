@@ -48,7 +48,7 @@ function update_configs () {
 }
 
 function update_server () {
-    echo "updating ${GAME_ROOT}"
+    echo "updating ${GAME_ROOT}" | tee -a ${LOGS}
     echo "No rcon found here, downloading it..." | tee -a ${LOGS}
     wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.1/rcon-0.9.1-amd64_linux.tar.gz
     tar xzvf rcon-0.9.1-amd64_linux.tar.gz
@@ -78,7 +78,7 @@ function update_server () {
 }
 
 function update_umod () {
-    echo "Download fresh plugins from uMod"
+    echo "Download fresh plugins from uMod" | tee -a ${LOGS}
     cd ${GAME_ROOT}/oxide/plugins
     plugins=$(ls -1 *.cs)
     for plugin in ${plugins[@]}; do
@@ -119,7 +119,7 @@ function update_map_api () {
 }
 
 function update_staging () {
-    echo "plugin is broken, and therfore currently disabled"
+    echo "plugin is broken, and therfore currently disabled" | tee -a ${LOGS}
     #SOURCE=$1
     ## Pull global env vars
     #source ${HOME}/solidrust.net/defaults/env_vars.sh
@@ -168,4 +168,4 @@ function update_staging () {
     #aws s3 rm --quiet --recursive ${BASE_BACKUPS_PATH}/staged | tee -a ${LOGS}
 }
 
-echo "SRT Update Functions initialized"
+echo "SRT Update Functions initialized" | tee -a ${LOGS}

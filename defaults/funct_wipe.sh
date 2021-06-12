@@ -25,4 +25,4 @@ function change_seed () {
     echo "Installed new map seed to ${GAME_ROOT}/server/solidrust/cfg/server.cfg" | tee -a ${LOGS}
 }
 
-echo "SRT Wipe Functions initialized"
+echo "SRT Wipe Functions initialized" | tee -a ${LOGS}
