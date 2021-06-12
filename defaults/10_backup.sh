@@ -8,7 +8,6 @@
 
 # Load SRT functions
 source ${HOME}/solidrust.net/defaults/funct_common.sh
-source ${HOME}/solidrust.net/defaults/funct_update.sh
 me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
