@@ -26,6 +26,7 @@ function update_mods () {
     mkdir -p ${BUILD_ROOT}/oxide/plugins
     echo "Updating Oxide plugins" | tee -a ${LOGS}
     rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
+    rsync -ra "${SERVER_GLOBAL}/oxide/custom/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra "${SERVER_CUSTOM}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra --delete "${BUILD_ROOT}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rm -rf ${BUILD_ROOT}

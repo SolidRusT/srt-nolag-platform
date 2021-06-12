@@ -30,12 +30,16 @@ body {
   </tr>
   <tr><td valign="top"><p>
 
-<script type="application/javascript">window.addEventListener('message',function(e){if(e.data.uid&&e.data.type==='sizeUpdate'){var i = document.querySelector('iframe[name="'+e.data.uid+'"]');i.style.width = e.data.payload.width;i.style.height = e.data.payload.height;}});</script><iframe src="https://cdn.battlemetrics.com/b/standardVertical/11593491.html?_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InN0YW5kYXJkVmVydGljYWwiLCJzZXJ2ZXIiOjExNTkzNDkxLCJvcHRpb25zIjp7ImZvcmVncm91bmQiOiIjRUVFRUVFIiwibGlua0NvbG9yIjoiIzExODVlYyIsImxpbmVzIjoiIzMzMzMzMyIsImJhY2tncm91bmQiOiIjMjIyMjIyIiwiY2hhcnQiOiJwbGF5ZXJzOjI0SCIsImNoYXJ0Q29sb3IiOiIjRkYwNzAwIiwibWF4UGxheWVyc0hlaWdodCI6IjMwMCJ9LCJsaXZlVXBkYXRlcyI6dHJ1ZSwidXNlcl9pZCI6MzU4MjIwLCJpYXQiOjE2MjI0MzgyMDJ9.ZIbPPKf3ffySsBE6wBfC2vFlfUkOtzeFh7sgnPli4fE" frameborder=0 style="border:0" name="jaydo"></iframe></p></td>
+<iframe src="https://cache.gametracker.com/components/html0/?host=35.82.55.97:28015&bgColor=333333&fontColor=cccccc&titleBgColor=222222&titleColor=ff9900&borderColor=555555&linkColor=ffcc00&borderLinkColor=222222&showMap=1&showCurrPlayers=0&showTopPlayers=0&showBlogs=0&width=240" frameborder="0" scrolling="no" width="240" height="288"></iframe></p></td>
     <td valign="top"><p><a href="https://rust-servers.net/server/162953/"><img src="https://rust-servers.net/server/162953/banners/banner-1.png" border="0"></a>
-  </p></td></tr>
+  </p>
+	<p>
+		
+	</p></td></tr>
 
 <tr><td valign="top"><p>
-<script type="application/javascript">window.addEventListener('message',function(e){if(e.data.uid&&e.data.type==='sizeUpdate'){var i = document.querySelector('iframe[name="'+e.data.uid+'"]');i.style.width = e.data.payload.width;i.style.height = e.data.payload.height;}});</script><iframe src="https://cdn.battlemetrics.com/b/standardVertical/11594431.html?_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InN0YW5kYXJkVmVydGljYWwiLCJzZXJ2ZXIiOjExNTk0NDMxLCJvcHRpb25zIjp7ImZvcmVncm91bmQiOiIjRUVFRUVFIiwibGlua0NvbG9yIjoiIzExODVlYyIsImxpbmVzIjoiIzMzMzMzMyIsImJhY2tncm91bmQiOiIjMjIyMjIyIiwiY2hhcnQiOiJwbGF5ZXJzOjI0SCIsImNoYXJ0Q29sb3IiOiIjRkYwNzAwIiwibWF4UGxheWVyc0hlaWdodCI6IjMwMCJ9LCJsaXZlVXBkYXRlcyI6dHJ1ZSwidXNlcl9pZCI6MzU4MjIwLCJpYXQiOjE2MjI0MzgxMzR9.HEt0ybLFScNR-iiz5WmNj83euv55HxW7NX0fYwVztPc" frameborder=0 style="border:0" name="fzzgs"></iframe></p></td>
+<iframe src="https://cache.gametracker.com/components/html0/?host=18.200.188.127:28015&bgColor=333333&fontColor=cccccc&titleBgColor=222222&titleColor=ff9900&borderColor=555555&linkColor=ffcc00&borderLinkColor=222222&showMap=1&currentPlayersHeight=100&showCurrPlayers=1&topPlayersHeight=100&showTopPlayers=1&showBlogs=0&width=240" frameborder="0" scrolling="no" width="240" height="536"></iframe>
+	</p></td>
 	  <td valign="top"><p><a href="https://rust-servers.net/server/162954/"><img src="https://rust-servers.net/server/162954/banners/banner-1.png" border="0"></a>
 </p></td></tr>
 </table>

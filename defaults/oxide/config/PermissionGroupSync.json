@@ -363,7 +363,8 @@
         "whoknocks.admin",
         "adminchat.use",
         "eventmanager.admin",
-        "airstrike.ignorecooldown"
+        "airstrike.ignorecooldown",
+        "removertool.admin"
       ],
       "AdditionalCommands": []
     }
