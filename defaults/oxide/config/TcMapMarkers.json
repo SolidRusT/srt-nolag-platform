@@ -2,9 +2,9 @@
   "Map Marker Options": {
     "Prefab Path": "assets/prefabs/tools/map/genericradiusmarker.prefab",
     "Show to all? (true/false)": true,
-    "Enable Teams? (true/false)": false,
+    "Enable Teams? (true/false)": true,
     "Enable Friends? (true/false)": true,
-    "Enable Clans? (true/false)": false
+    "Enable Clans? (true/false)": true
   },
   "Owned Markers Options": {
     "Color1 (hex)": "#00FF00",

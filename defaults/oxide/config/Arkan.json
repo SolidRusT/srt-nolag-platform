@@ -21,9 +21,9 @@
   "Enable Discord No Recoil Notifications": true,
   "Enable Discord AIMBOT Notifications": true,
   "Enable Discord In Rock Notifications": true,
-  "Discord No Recoil Webhook URL": "https://discord.com/api/webhooks/849738074123534386/ycvIL7Do3qyMjz3gjMZxLXfTDt_RtLRVgciauoRFUD4OrPFwcJFAi3_meOyxhDFXOXLH",
-  "Discord AIMBOT Webhook URL": "https://discord.com/api/webhooks/849738074123534386/ycvIL7Do3qyMjz3gjMZxLXfTDt_RtLRVgciauoRFUD4OrPFwcJFAi3_meOyxhDFXOXLH",
-  "Discord In Rock Webhook URL": "https://discord.com/api/webhooks/849738074123534386/ycvIL7Do3qyMjz3gjMZxLXfTDt_RtLRVgciauoRFUD4OrPFwcJFAi3_meOyxhDFXOXLH",
+  "Discord No Recoil Webhook URL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+  "Discord AIMBOT Webhook URL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+  "Discord In Rock Webhook URL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
   "AIMBodyParts": [
     "head",
     "chest"

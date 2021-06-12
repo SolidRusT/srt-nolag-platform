@@ -374,7 +374,7 @@
   "Unlock Time": {
     "Min Seconds": 300.0,
     "Max Seconds": 480.0,
-    "Unlock When Npcs Die": false,
+    "Unlock When Npcs Die": true,
     "Require All Npcs Die Before Unlocking": false
   },
   "Unlooted Announcements": {

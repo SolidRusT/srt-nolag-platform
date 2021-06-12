@@ -42,7 +42,7 @@
     ]
   },
   "Loot": {
-    "enableHammerLootCycle": false,
+    "enableHammerLootCycle": true,
     "hammerLootCycleTime": 3,
     "lootMultiplier": 1,
     "scrapMultiplier": 1

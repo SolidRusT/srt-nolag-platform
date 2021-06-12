@@ -1,93 +1,93 @@
 {
   "Global settings": {
-    "Log to console?": false
+    "Log to console?": true
   },
   "Bradley settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Cargo Ship settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Cargo Plane settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Chat settings": {
-    "WebhookURL": "https://discord.com/api/webhooks/804099330939158559/IJhKfkLlm_wOxywNF4dxpPV9iIL7spYCZG3lViycnsGkTgsFDTe8pfc1K4CsVOETACvT",
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
     "Enabled?": true
   },
   "Chat (Team) settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "CH47 Helicopter settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Christmas settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Dangerous Treasures settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Duel settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Easter settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Hackable Locked Crate settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Halloween settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Helicopter settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Player death settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Player DeathNotes settings": {
-    "WebhookURL": "https://discord.com/api/webhooks/804914766237270028/1SmwGIc0_8QNep3B1kL-ZSlz2qSNJ5iCRL9cpGK6NKrwPLVnuhyOQtQNqIVq05MlfplX",
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
     "Enabled?": true
   },
   "Player connect advanced info settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Player connect settings": {
-    "WebhookURL": "https://discord.com/api/webhooks/804915117413105664/yrpsyVxGP91rPwMG3JauK22Hj8qbARlrYPTJJOe8f5ugSmyEdBuOVxyLZJxNa38PxLSZ",
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
     "Enabled?": true
   },
   "Player disconnect settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Raidable Bases settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "SantaSleigh settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   },
   "Server state settings": {
-    "WebhookURL": "https://discord.com/api/webhooks/804915479436722207/tHhjh4mxP6-ObVzAy_2LZJEcsnUZX7xMxJYd0Y1BgVqZNosNFlXxv4cy-bworQ2V5GM1",
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
     "Enabled?": true
   },
   "Supply Drop settings": {
-    "WebhookURL": "",
-    "Enabled?": false
+    "WebhookURL": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Enabled?": true
   }
 }

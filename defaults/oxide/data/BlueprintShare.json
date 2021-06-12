@@ -1,3 +1,8 @@
 {
-  "Players": {}
+  "Players": {
+    "76561198024774727": {
+      "SharingEnabled": true,
+      "LearntBlueprints": []
+    }
+  }
 }

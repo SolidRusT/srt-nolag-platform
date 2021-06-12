@@ -11,6 +11,6 @@
   "Do Routine Checks?": true,
   "Routine Interval Time (Minutes)": 240.0,
   "Notify on Blacklisted Update?": false,
-  "Use Discord Webhooks?": false,
-  "Discord Webhook": ""
+  "Use Discord Webhooks?": true,
+  "Discord Webhook": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe"
 }

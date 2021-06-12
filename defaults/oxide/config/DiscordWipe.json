@@ -7,9 +7,9 @@
     "File Type (Jpg, Png": "Jpg"
   },
   "Send wipe message when server wipes": true,
-  "Wipe Webhook url": "https://discord.com/api/webhooks/848637325591838761/TjtIXzZrrPJ45q46j0R2un8ryEe-H7e5tq9fyjXGrQFkBKJAtO59CHg_SHS7q3fKn0jP",
+  "Wipe Webhook url": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
   "Send protocol message when server protocol changes": true,
-  "Protocol Webhook url": "https://discord.com/api/webhooks/848637325591838761/TjtIXzZrrPJ45q46j0R2un8ryEe-H7e5tq9fyjXGrQFkBKJAtO59CHg_SHS7q3fKn0jP",
+  "Protocol Webhook url": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
   "Wipe messages": [
     {
       "Content": "@everyone",

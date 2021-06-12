@@ -5,7 +5,7 @@
   "Tracking Radius - Player": 30,
   "Detection Radius - Helicopter": 100,
   "Tracking Radius - Helicopter": 100,
-  "Auto Convert Lights When Placed": false,
+  "Auto Convert Lights When Placed": true,
   "Require Power": true,
   "Night Only Operation": false,
   "Target Acquired Sound": true,

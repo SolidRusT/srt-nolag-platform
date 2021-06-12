@@ -2,7 +2,7 @@
   "ChatPrefix": "<color=#32CD32>AdvancedGather</color>: ",
   "Drop Sound Effect": "assets/bundled/prefabs/fx/notice/loot.drag.itemdrop.fx.prefab",
   "Enable Berry Drops from Hemp": true,
-  "Enable Random Tree drop Items?": false,
+  "Enable Random Tree drop Items?": true,
   "Switch to direct inventory Drops?": false,
   "List of all chance modifiers": {
     "Enable Global Default Drop Chance?": true,
