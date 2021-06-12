@@ -26,7 +26,7 @@ echo "===> Touching my peepee..." | tee -a ${LOGS}
     +app.port 28082 \
     +rcon.web 1 \
     +rcon.password "NOFAGS" \
-    +server.identity "solidrust" \
+    +server.identity "solidrust"
 
 # Stamp log with quit time
 echo "I'm done! (finished): ${SERVER_LOGS}" | tee -a ${LOGS}
