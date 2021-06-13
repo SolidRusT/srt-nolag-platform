@@ -14,15 +14,16 @@ function notification () {
 function wipe_map () {
     echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
     rm -rf ${GAME_ROOT}/server/solidrust/proceduralmap.*
+    echo "Wipe out custom maps and related data" | tee -a ${LOGS}
+    rm -rf ${GAME_ROOT}/server/solidrust/*.map
 }
 
 function change_seed () {
     export SEED=$(shuf -i 1-2147483648 -n 1)
     echo "New Map Seed generated: ${SEED}" | tee -a ${LOGS}
+    cp ${GAME_ROOT}/server.seed ${GAME_ROOT}/server.seed.old
     echo ${SEED} > ${GAME_ROOT}/server.seed
-    sed -i "/server.seed/d" ${GAME_ROOT}/server/solidrust/cfg/server.cfg
-    echo "server.seed \"${SEED}\"" >> ${GAME_ROOT}/server/solidrust/cfg/server.cfg
-    echo "Installed new map seed to ${GAME_ROOT}/server/solidrust/cfg/server.cfg" | tee -a ${LOGS}
+    echo "Installed new map seed to ${GAME_ROOT}/server.seed" | tee -a ${LOGS}
 }
 
 echo "SRT Wipe Functions initialized" | tee -a ${LOGS}

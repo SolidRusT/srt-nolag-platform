@@ -26,6 +26,7 @@ if [ ${CUSTOM_MAP} = "enabled" ]; then
     +rcon.ip 0.0.0.0 \
     +rcon.port 28016 \
     +server.tickrate 30 \
+    +app.publicip ${SERVER_IP} \
     +app.port 28082 \
     +rcon.web 1 \
     +rcon.password "NOFAGS" \
@@ -40,6 +41,7 @@ else
     +rcon.ip 0.0.0.0 \
     +rcon.port 28016 \
     +server.tickrate 30 \
+    +app.publicip ${SERVER_IP} \
     +app.port 28082 \
     +rcon.web 1 \
     +rcon.password "NOFAGS" \

@@ -15,14 +15,12 @@ case "$1" in
         echo "performing a Quick Wipe"
         initialize_srt
         stop_rust_now
+        update_server
         update_repo
         update_mods
-        update_maps
         update_configs
         wipe_map
         change_seed
-        update_ip
-        update_server
         start_rust
         update_map_api
         ;;
@@ -31,14 +29,12 @@ case "$1" in
         initialize_srt
         notification
         backup_s3
+        update_server
         update_repo
         update_mods
-        update_maps
         update_configs
         wipe_map
         change_seed
-        update_ip
-        update_server
         start_rust
         update_map_api
         update_permissions

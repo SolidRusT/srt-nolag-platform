@@ -34,11 +34,6 @@ function update_mods () {
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
 }
 
-function update_maps () {
-    echo "Update custom maps" | tee -a ${LOGS}
-    aws s3 sync ${S3_WEB}/maps ${GAME_ROOT}/server/solidrust | tee -a ${LOGS}
-}
-
 function update_configs () {
     echo "Update Rust Server configs" | tee -a ${LOGS}
     mkdir -p ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}
@@ -86,22 +81,6 @@ function update_umod () {
         wget "https://umod.org/plugins/$plugin" -O $plugin | tee -a ${LOGS}
         sleep 3 | tee -a ${LOGS}
     done
-}
-
-function update_ip () {
-    export IP=$(curl -s http://whatismyip.akamai.com/)
-    echo ${IP} > ${GAME_ROOT}/app.publicip
-    sed -i "/app.publicip/d" ${GAME_ROOT}/server/solidrust/cfg/server.cfg
-    echo "Updating public IP to: \"${IP}\" " | tee -a ${LOGS}
-    echo "app.publicip \"${IP}\"" >> ${GAME_ROOT}/server/solidrust/cfg/server.cfg
-}
-
-function update_seed () {
-    export SEED=$(cat ${GAME_ROOT}/server.seed)
-    echo "Using current server seed: ${SEED}" | tee -a ${LOGS}
-    sed -i "/server.seed/d" ${GAME_ROOT}/server/solidrust/cfg/server.cfg
-    echo "server.seed \"${SEED}\"" >> ${GAME_ROOT}/server/solidrust/cfg/server.cfg
-    echo "Installed \"${SEED}\" map seed to ${GAME_ROOT}/server/solidrust/cfg/server.cfg" | tee -a ${LOGS}
 }
 
 function update_permissions () {

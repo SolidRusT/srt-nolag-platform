@@ -31,20 +31,64 @@ function backup_s3 () {
 
 function start_rust () {
     echo "Start RustDedicated game service" | tee -a ${LOGS}
-    chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
-    /bin/sh -c ${HOME}/solidrust.net/defaults/solidrust.sh &
+    # enter game root
+    cd ${GAME_ROOT}
+
+    if [ ${CUSTOM_MAP} = "enabled" ]; then
+        echo "Custom Maps enabled: ${CUSTOM_MAP_URL}" | tee -a ${LOGS}
+        sleep 2
+        ./RustDedicated -batchmode -nographics -silent-crashes -logfile 2>&1 ${SERVER_LOGS} \
+        +server.ip 0.0.0.0 \
+        +server.port 28015 \
+        +rcon.ip 0.0.0.0 \
+        +rcon.port 28016 \
+        +server.tickrate 30 \
+        +app.publicip ${SERVER_IP} \
+        +app.port 28082 \
+        +rcon.web 1 \
+        +rcon.password "NOFAGS" \
+        +server.identity "solidrust" \
+        +server.levelurl ${CUSTOM_MAP_URL} &
+    else
+        echo "Using ${WORLD_SIZE} Procedural map with seed: ${SEED} " | tee -a ${LOGS}
+        sleep 2
+        ./RustDedicated -batchmode -nographics -silent-crashes -logfile 2>&1 ${SERVER_LOGS} \
+        +server.ip 0.0.0.0 \
+        +server.port 28015 \
+        +rcon.ip 0.0.0.0 \
+        +rcon.port 28016 \
+        +server.tickrate 30 \
+        +app.publicip ${SERVER_IP} \
+        +app.port 28082 \
+        +rcon.web 1 \
+        +rcon.password "NOFAGS" \
+        +server.identity "solidrust" \
+        +server.level "Procedural Map" \
+        +server.seed ${SEED} \
+        +server.worldsize ${WORLD_SIZE} &
+    fi
+    # Launch game server
+    echo "===> Touching my peepee..." | tee -a ${LOGS}
+    sleep 3
+    tail -n 10 ${SERVER_LOGS}
     echo "Delaying for about 8mins while service loads" | tee -a ${LOGS}
     sleep 120
+    tail -n 10 ${SERVER_LOGS}
     echo "Delaying for 6mins while service loads"  | tee -a ${LOGS}
     sleep 120
+    tail -n 10 ${SERVER_LOGS}
     echo "Delaying for 4mins while service loads"  | tee -a ${LOGS}
     sleep 60
+    tail -n 10 ${SERVER_LOGS}
     echo "Delaying for 3mins while service loads"  | tee -a ${LOGS}
     sleep 60
+    tail -n 10 ${SERVER_LOGS}
     echo "Delaying for 2mins while service loads"  | tee -a ${LOGS}
     sleep 60
+    tail -n 10 ${SERVER_LOGS}
     echo "Delaying for 1mins while service loads"  | tee -a ${LOGS}
     sleep 60
+    tail -n 10 ${SERVER_LOGS}
     echo "Should be ready for action" | tee -a ${LOGS}
 }
 

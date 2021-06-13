@@ -220,7 +220,7 @@
       "RequiredPermission": "",
       "MaximumUses": 0,
       "RequiredAuth": 0,
-      "Cooldown": 0,
+      "Cooldown": 120,
       "Cost": 0,
       "IsHidden": false,
       "CopyPasteFile": "",
@@ -229,7 +229,7 @@
         {
           "Shortname": "ammo.pistol",
           "Skin": 0,
-          "Amount": 184,
+          "Amount": 64,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
@@ -242,7 +242,7 @@
         {
           "Shortname": "ammo.rifle.hv",
           "Skin": 0,
-          "Amount": 192,
+          "Amount": 64,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
@@ -255,7 +255,7 @@
         {
           "Shortname": "syringe.medical",
           "Skin": 0,
-          "Amount": 15,
+          "Amount": 10,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
@@ -1149,7 +1149,7 @@
       "RequiredPermission": "",
       "MaximumUses": 0,
       "RequiredAuth": 0,
-      "Cooldown": 0,
+      "Cooldown": 300,
       "Cost": 0,
       "IsHidden": false,
       "CopyPasteFile": "",
@@ -1158,7 +1158,7 @@
         {
           "Shortname": "lowgradefuel",
           "Skin": 0,
-          "Amount": 49,
+          "Amount": 50,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
@@ -1249,7 +1249,7 @@
         {
           "Shortname": "metal.fragments",
           "Skin": 0,
-          "Amount": 1000,
+          "Amount": 400,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
@@ -1262,7 +1262,7 @@
         {
           "Shortname": "metal.refined",
           "Skin": 0,
-          "Amount": 100,
+          "Amount": 30,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
@@ -1275,7 +1275,7 @@
         {
           "Shortname": "wood",
           "Skin": 0,
-          "Amount": 1000,
+          "Amount": 300,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
