@@ -204,6 +204,12 @@
       "Height": 90,
       "ImageUrl": "",
       "Show": false
+    },
+    "assets/bundled/prefabs/modding/monument_marker.prefab": {
+      "Width": 90,
+      "Height": 90,
+      "ImageUrl": "",
+      "Show": false
     }
   },
   "Custom Icons": [

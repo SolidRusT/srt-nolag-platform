@@ -18,7 +18,8 @@ cd ${GAME_ROOT}
 
 # Custom map check
 if [ ${CUSTOM_MAP} = "enabled" ]; then
-    echo "Custom Maps enabled" | tee -a ${LOGS}
+    echo "Custom Maps enabled: ${CUSTOM_MAP_URL}" | tee -a ${LOGS}
+    sleep 2
     ./RustDedicated -batchmode -nographics -silent-crashes -logfile 2>&1 ${SERVER_LOGS} \
     +server.ip 0.0.0.0 \
     +server.port 28015 \
@@ -31,7 +32,8 @@ if [ ${CUSTOM_MAP} = "enabled" ]; then
     +server.identity "solidrust" \
     +server.levelurl ${CUSTOM_MAP_URL}
 else
-    echo "Using Procedural maps" | tee -a ${LOGS}
+    echo "Using ${WORLD_SIZE} Procedural map with seed: ${SEED} " | tee -a ${LOGS}
+    sleep 2
     ./RustDedicated -batchmode -nographics -silent-crashes -logfile 2>&1 ${SERVER_LOGS} \
     +server.ip 0.0.0.0 \
     +server.port 28015 \
@@ -41,7 +43,10 @@ else
     +app.port 28082 \
     +rcon.web 1 \
     +rcon.password "NOFAGS" \
-    +server.identity "solidrust" 
+    +server.identity "solidrust" \
+    +server.level "Procedural Map" \
+    +server.seed ${SEED} \
+    +server.worldsize ${WORLD_SIZE}
 fi
 
 # Launch game server
