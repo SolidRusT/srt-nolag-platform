@@ -30,18 +30,16 @@ body {
   </tr>
   <tr><td valign="top"><p>
 
-<iframe src="https://cache.gametracker.com/components/html0/?host=35.82.55.97:28015&bgColor=333333&fontColor=cccccc&titleBgColor=222222&titleColor=ff9900&borderColor=555555&linkColor=ffcc00&borderLinkColor=222222&showMap=1&showCurrPlayers=0&showTopPlayers=0&showBlogs=0&width=240" frameborder="0" scrolling="no" width="240" height="288"></iframe></p></td>
-    <td valign="top"><p><a href="https://rust-servers.net/server/162953/"><img src="https://rust-servers.net/server/162953/banners/banner-1.png" border="0"></a>
+<script type="application/javascript">window.addEventListener('message',function(e){if(e.data.uid&&e.data.type==='sizeUpdate'){var i = document.querySelector('iframe[name="'+e.data.uid+'"]');i.style.width = e.data.payload.width;i.style.height = e.data.payload.height;}});</script><iframe src="https://cdn.battlemetrics.com/b/standardVertical/11593491.html?_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InN0YW5kYXJkVmVydGljYWwiLCJzZXJ2ZXIiOjExNTkzNDkxLCJvcHRpb25zIjp7ImZvcmVncm91bmQiOiIjRUVFRUVFIiwibGlua0NvbG9yIjoiIzExODVlYyIsImxpbmVzIjoiIzMzMzMzMyIsImJhY2tncm91bmQiOiIjMjIyMjIyIiwiY2hhcnQiOiJwbGF5ZXJzOjI0SCIsImNoYXJ0Q29sb3IiOiIjZmZlMzAwIiwibWF4UGxheWVyc0hlaWdodCI6IjMwMCJ9LCJsaXZlVXBkYXRlcyI6dHJ1ZSwidXNlcl9pZCI6MzU4MjIwLCJpYXQiOjE2MjM2MDczNDJ9.qSJwO7aWxvO1Em5B3kVOV-ZGo6ekYJ5rNswjPvzx4tM" frameborder=0 style="border:0" name="iulef"></iframe></p></td>
+    <td valign="top"><p>Nothing Yet
   </p>
-	<p>
-		
-	</p></td></tr>
+</td></tr>
 
 <tr><td valign="top"><p>
-<iframe src="https://cache.gametracker.com/components/html0/?host=18.200.188.127:28015&bgColor=333333&fontColor=cccccc&titleBgColor=222222&titleColor=ff9900&borderColor=555555&linkColor=ffcc00&borderLinkColor=222222&showMap=1&currentPlayersHeight=100&showCurrPlayers=1&topPlayersHeight=100&showTopPlayers=1&showBlogs=0&width=240" frameborder="0" scrolling="no" width="240" height="536"></iframe>
-	</p></td>
-	  <td valign="top"><p><a href="https://rust-servers.net/server/162954/"><img src="https://rust-servers.net/server/162954/banners/banner-1.png" border="0"></a>
-</p></td></tr>
+<script type="application/javascript">window.addEventListener('message',function(e){if(e.data.uid&&e.data.type==='sizeUpdate'){var i = document.querySelector('iframe[name="'+e.data.uid+'"]');i.style.width = e.data.payload.width;i.style.height = e.data.payload.height;}});</script><iframe src="https://cdn.battlemetrics.com/b/standardVertical/11594431.html?_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InN0YW5kYXJkVmVydGljYWwiLCJzZXJ2ZXIiOjExNTk0NDMxLCJvcHRpb25zIjp7ImZvcmVncm91bmQiOiIjRUVFRUVFIiwibGlua0NvbG9yIjoiIzExODVlYyIsImxpbmVzIjoiIzMzMzMzMyIsImJhY2tncm91bmQiOiIjMjIyMjIyIiwiY2hhcnQiOiJwbGF5ZXJzOjI0SCIsImNoYXJ0Q29sb3IiOiIjZmZlMzAwIiwibWF4UGxheWVyc0hlaWdodCI6IjMwMCJ9LCJsaXZlVXBkYXRlcyI6dHJ1ZSwidXNlcl9pZCI6MzU4MjIwLCJpYXQiOjE2MjM2MDc0NTZ9.Ojl7v149-ib0ww3JqBu7w9kUYwIP1Eh0UZSPT3MY2_Y" frameborder=0 style="border:0" name="muzwh"></iframe></p></td>
+	  <td valign="top"><p>Nothing Yet
+	 </p>
+	</td></tr>
 </table>
 <a href="https://ipv6-test.com/validate.php?url=referer"><img src="https://ipv6-test.com/button-ipv6-80x15.png"
       alt="ipv6 ready" title="ipv6 ready" border="0" /></a>

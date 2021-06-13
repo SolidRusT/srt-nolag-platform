@@ -9,19 +9,42 @@ function update_repo () {
 
 function update_mods () {
     OXIDE=(
-        oxide/data
-        oxide/config
+        oxide/data/BetterLoot/LootTables.json
+        oxide/data/ImageLibrary/image_data.json
+        oxide/data/ImageLibrary/image_urls.json
+        oxide/data/ImageLibrary/skin_data.json
+        oxide/data/Kits/kits_data.json
+        oxide/data/BetterChat.json
+        oxide/data/CompoundOptions.json
+        oxide/data/death.png
+        oxide/data/hit.png
+        oxide/data/GuardedCrate.json
+        oxide/data/killstreak_data.json
+        oxide/data/StackSizeController.json
     )
-    for folder in ${OXIDE[@]}; do
-        # Sync global Oxide defaults
-        echo "sync ${SERVER_GLOBAL}/$folder/ to ${GAME_ROOT}/$folder" | tee -a ${LOGS}
-        mkdir -p "${GAME_ROOT}/$folder" | tee -a ${LOGS}
-        rsync -r "${SERVER_GLOBAL}/$folder/" "${GAME_ROOT}/$folder" | tee -a ${LOGS}
-        # Sync custom Oxide overrides
-        echo "sync ${SERVER_CUSTOM}/$folder/ to ${GAME_ROOT}/$folder" | tee -a ${LOGS}
-        mkdir -p "${GAME_ROOT}/$folder" | tee -a ${LOGS}
-        rsync -r "${SERVER_CUSTOM}/$folder/" "${GAME_ROOT}/$folder" | tee -a ${LOGS}
+    echo "Updating plugin data" | tee -a ${LOGS}
+    for data in ${OXIDE[@]}; do
+        echo "=> $data" | tee -a ${LOGS}
+        rsync "${SERVER_GLOBAL}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}
+        if [[ -f "${SERVER_CUSTOM}/$data" ]]; then
+            rsync "${SERVER_CUSTOM}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}
+        fi
     done
+    echo "=> oxide/data/copypaste" | tee -a ${LOGS}
+    rsync -r "${SERVER_GLOBAL}/oxide/data/copypaste/" "${GAME_ROOT}/oxide/data/copypaste" | tee -a ${LOGS}
+    if [[ -d "${SERVER_CUSTOM}/oxide/data/copypaste" ]]; then
+        rsync -r "${SERVER_CUSTOM}/oxide/data/copypaste/" "${GAME_ROOT}/oxide/data/copypaste" | tee -a ${LOGS}
+    fi
+    echo "Updating plugin configurations" | tee -a ${LOGS}
+    # Sync global Oxide defaults
+    echo "sync ${SERVER_GLOBAL}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    mkdir -p "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    rsync -r "${SERVER_GLOBAL}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    # Sync custom Oxide overrides
+    echo "sync ${SERVER_CUSTOM}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    mkdir -p "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    rsync -r "${SERVER_CUSTOM}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    # Build out the customized plugin list
     rm -rf ${BUILD_ROOT}
     mkdir -p ${BUILD_ROOT}/oxide/plugins
     echo "Updating Oxide plugins" | tee -a ${LOGS}
@@ -160,6 +183,13 @@ function staging_push () {
 }
 
 function staging_link () {
+    echo "Mapping running mods to the SRT github repo" | tee -a ${LOGS}
+    chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
+    rm -rf ${GAME_ROOT}/oxide
+    ln -s ${SERVER_GLOBAL}/oxide ${GAME_ROOT}/oxide
+}
+
+function srt_install () {
     echo "Mapping running mods to the SRT github repo" | tee -a ${LOGS}
     chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
     rm -rf ${GAME_ROOT}/oxide

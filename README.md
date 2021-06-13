@@ -1,6 +1,7 @@
 # SolidRusT Server Configuration
 
  - no lag gameplay
+ - #ffe300
 
 ## Install Rust Server
 
