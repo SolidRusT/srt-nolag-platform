@@ -22,99 +22,102 @@ function update_mods () {
         oxide/data/killstreak_data.json
         oxide/data/StackSizeController.json
     )
-    echo "Updating plugin data" | tee -a ${LOGS}
+    echo "=> Updating plugin data" | tee -a ${LOGS}
     for data in ${OXIDE[@]}; do
-        echo "=> $data" | tee -a ${LOGS}
+        echo " - $data" | tee -a ${LOGS}
         rsync "${SERVER_GLOBAL}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}
         if [[ -f "${SERVER_CUSTOM}/$data" ]]; then
             rsync "${SERVER_CUSTOM}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}
         fi
     done
-    echo "=> oxide/data/copypaste" | tee -a ${LOGS}
+    echo " - oxide/data/copypaste" | tee -a ${LOGS}
     rsync -r "${SERVER_GLOBAL}/oxide/data/copypaste/" "${GAME_ROOT}/oxide/data/copypaste" | tee -a ${LOGS}
     if [[ -d "${SERVER_CUSTOM}/oxide/data/copypaste" ]]; then
         rsync -r "${SERVER_CUSTOM}/oxide/data/copypaste/" "${GAME_ROOT}/oxide/data/copypaste" | tee -a ${LOGS}
     fi
-    echo "Updating plugin configurations" | tee -a ${LOGS}
+    echo "=> Updating plugin configurations" | tee -a ${LOGS}
     # Sync global Oxide defaults
-    echo "sync ${SERVER_GLOBAL}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    echo " - sync ${SERVER_GLOBAL}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     mkdir -p "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     rsync -r "${SERVER_GLOBAL}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     # Sync custom Oxide overrides
-    echo "sync ${SERVER_CUSTOM}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    echo " - sync ${SERVER_CUSTOM}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     mkdir -p "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     rsync -r "${SERVER_CUSTOM}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     # Build out the customized plugin list
     rm -rf ${BUILD_ROOT}
     mkdir -p ${BUILD_ROOT}/oxide/plugins
-    echo "Updating Oxide plugins" | tee -a ${LOGS}
+    echo "=> Updating Oxide plugins" | tee -a ${LOGS}
     rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra "${SERVER_GLOBAL}/oxide/custom/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra "${SERVER_CUSTOM}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra --delete "${BUILD_ROOT}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rm -rf ${BUILD_ROOT}
-    echo "loading dormant plugins" | tee -a ${LOGS}
+    echo "=> loading dormant plugins" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
 }
 
 function update_configs () {
-    echo "Update Rust Server configs" | tee -a ${LOGS}
+    echo "=> Update Rust Server configs" | tee -a ${LOGS}
     mkdir -p ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}
+    rm ${GAME_ROOT}/server/solidrust/cfg/serverauto.cfg
     rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/server.cfg ${GAME_ROOT}/server/solidrust/cfg/server.cfg | tee -a ${LOGS}
     rsync -a ${SERVER_GLOBAL}/cfg/users.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg | tee -a ${LOGS}
     rsync -a ${SERVER_GLOBAL}/cfg/bans.cfg ${GAME_ROOT}/server/solidrust/cfg/bans.cfg | tee -a ${LOGS}
 }
 
 function update_server () {
-    echo "updating ${GAME_ROOT}" | tee -a ${LOGS}
-    echo "No rcon found here, downloading it..." | tee -a ${LOGS}
+    echo "=> Updating server: ${GAME_ROOT}" | tee -a ${LOGS}
+    echo " - No rcon found here, downloading it..." | tee -a ${LOGS}
     wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.1/rcon-0.9.1-amd64_linux.tar.gz
     tar xzvf rcon-0.9.1-amd64_linux.tar.gz
     mv rcon-0.9.1-amd64_linux/rcon ${GAME_ROOT}/rcon
     rm -rf rcon-0.9.1-amd64_linux*
-    echo "===> Buffing-up Debian Distribution..." | tee -a ${LOGS}
+    echo " - Buffing-up Debian Distribution..." | tee -a ${LOGS}
     sudo apt update | tee -a ${LOGS}
     sudo apt -y dist-upgrade | tee -a ${LOGS}
     # TODO: output a message to reboot if kernel or initrd was updated
-    echo "===> Validating installed Steam components..." | tee -a ${LOGS}
+    echo "=> Validating installed Steam components..." | tee -a ${LOGS}
     /usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT}/ +app_update 258550 validate +quit | tee -a ${LOGS}
-    echo "===> Updating uMod..." | tee -a ${LOGS}
+    echo "=> Updating uMod..." | tee -a ${LOGS}
     cd ${GAME_ROOT}
     wget https://umod.org/games/rust/download/develop -O \
         Oxide.Rust.zip && \
         unzip -o Oxide.Rust.zip && \
         rm Oxide.Rust.zip | tee -a ${LOGS}
-    echo "===> Downloading discord binary..." | tee -a ${LOGS}
+    echo "=> Downloading discord binary..." | tee -a ${LOGS}
     wget https://umod.org/extensions/discord/download -O \
         ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.Discord.dll | tee -a ${LOGS}
-    echo "===> Downloading RustEdit.io binary..." | tee -a ${LOGS}
+    echo "=> Downloading RustEdit.io binary..." | tee -a ${LOGS}
     wget https://github.com/k1lly0u/Oxide.Ext.RustEdit/raw/master/Oxide.Ext.RustEdit.dll -O \
         ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.RustEdit.dll | tee -a ${LOGS}
-    echo "===> Downloading Rust:IO binary..." | tee -a ${LOGS}
+    echo "=> Downloading Rust:IO binary..." | tee -a ${LOGS}
     wget http://playrust.io/latest -O \
         ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.RustIO.dll | tee -a ${LOGS}
 }
 
 function update_umod () {
-    echo "Download fresh plugins from uMod" | tee -a ${LOGS}
+    echo "=> Download fresh plugins from uMod" | tee -a ${LOGS}
     cd ${GAME_ROOT}/oxide/plugins
     plugins=$(ls -1 *.cs)
     for plugin in ${plugins[@]}; do
-        echo "Attempting to replace $plugin from umod" | tee -a ${LOGS}
+        echo " - Attempting to replace $plugin from umod" | tee -a ${LOGS}
         wget "https://umod.org/plugins/$plugin" -O $plugin | tee -a ${LOGS}
         sleep 3 | tee -a ${LOGS}
     done
 }
 
 function update_permissions () {
-    echo "Updating Map API data" | tee -a ${LOGS}
+    echo "=> Updating plugin permissions" | tee -a ${LOGS}
+    echo " - \"o.load *\"" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
     sleep 3
     for perm in ${DEFAULT_PERMS[@]}; do
-        echo "./rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml \"o.grant default $perm\""
+        echo " - \"o.grant default $perm\""
         ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.grant group default $perm" | tee -a ${LOGS}
         sleep 2
     done
+    echo "=> Reload permissions sync" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload PermissionGroupSync"| tee -a ${LOGS}
 }
 
@@ -187,6 +190,7 @@ function staging_link () {
     chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
     rm -rf ${GAME_ROOT}/oxide
     ln -s ${SERVER_GLOBAL}/oxide ${GAME_ROOT}/oxide
+    #  scp -i ${SSH_KEY} -r ${SSH_USER}@${SRT_HOST}:${SRT_HOST_GAME_ROOT}/oxide/data/copypaste/*.json ${GAME_ROOT}/oxide/data/copypaste/
 }
 
 function srt_install () {
