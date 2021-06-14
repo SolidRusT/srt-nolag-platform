@@ -15,7 +15,7 @@ namespace Oxide.Plugins
 {
     using ClansEx;
 
-    [Info("Clans", "k1lly0u", "0.2.2")]
+    [Info("Clans", "k1lly0u", "0.2.3")]
     class Clans : CovalencePlugin
     {
         #region Fields        
@@ -1135,7 +1135,17 @@ namespace Oxide.Plugins
         
         private string GetClanOf(string playerId) => storedData.FindClanByID(playerId)?.Tag ?? null;
 
+        private string GetClanOf(ulong playerId) => GetClanOf(playerId.ToString());
+
         private string GetClanOf(IPlayer player) => GetClanOf(player?.Id ?? string.Empty);
+
+        #if RUST
+        private string GetClanOf(BasePlayer player) => GetClanOf(player?.UserIDString ?? string.Empty);
+        #endif
+
+        #if HURTWORLD
+        private string GetClanOf(PlayerSession session) => GetClanOf(session?.SteamId ?? string.Empty);
+        #endif
 
         private List<string> GetClanMembers(string playerId) => storedData.FindClanByID(playerId)?.ClanMembers.Keys.Select(x => x.ToString()).ToList() ?? new List<string>();
                
@@ -1205,9 +1215,9 @@ namespace Oxide.Plugins
 
             return new List<string>(clan.Alliances);
         }
-        #endregion
+#endregion
 
-        #region Clan
+#region Clan
         [Serializable]
         public class Clan
         {
@@ -1263,7 +1273,7 @@ namespace Oxide.Plugins
                 OnPlayerConnected(player);
             }
 
-            #region Connection
+#region Connection
             internal void OnPlayerConnected(IPlayer player)
             {
                 if (player == null)
@@ -1295,9 +1305,9 @@ namespace Oxide.Plugins
 
                 MarkDirty();
             }
-            #endregion
+#endregion
 
-            #region Clan Management
+#region Clan Management
             internal bool InvitePlayer(IPlayer inviter, IPlayer invitee)
             {
                 if (!IsOwner(inviter.Id) && !IsModerator(inviter.Id))
@@ -1594,9 +1604,9 @@ namespace Oxide.Plugins
                 membersOnline = string.Empty;
                 serializedClanObject = null;
             }
-            #endregion
+#endregion
 
-            #region Clan Chat
+#region Clan Chat
             internal void Broadcast(string message)
             {
                 foreach (Member member in ClanMembers.Values)
@@ -1608,9 +1618,9 @@ namespace Oxide.Plugins
                 foreach (Member member in ClanMembers.Values)
                     member.Player?.Reply(string.Format(Message(key, member.Player.Id), args));
             }
-            #endregion
+#endregion
 
-            #region Clan Info
+#region Clan Info
             [JsonIgnore]
             private string cachedClanInfo = string.Empty;
 
@@ -1682,9 +1692,9 @@ namespace Oxide.Plugins
                 }
                 return membersOnline;
             }
-            #endregion
+#endregion
 
-            #region Roles
+#region Roles
             internal bool IsOwner(string playerId) => ClanMembers[playerId].Role == Member.MemberRole.Owner;
 
             internal bool IsModerator(string playerId) => ClanMembers[playerId].Role == Member.MemberRole.Moderator;
@@ -1705,7 +1715,7 @@ namespace Oxide.Plugins
 
                 return configData.Colors.Member;
             }
-            #endregion
+#endregion
 
             [Serializable]
             public class Member
@@ -1811,9 +1821,9 @@ namespace Oxide.Plugins
                 return string.Empty;
             }
         }
-        #endregion
+#endregion
 
-        #region Config        
+#region Config        
         internal static ConfigData configData;
 
         internal class ConfigData
@@ -2029,9 +2039,9 @@ namespace Oxide.Plugins
             configData.Version = Version;
             PrintWarning("Config update completed!");
         }
-        #endregion
+#endregion
 
-        #region Data Management
+#region Data Management
         internal StoredData storedData;
 
         private DynamicConfigFile data;
@@ -2208,9 +2218,9 @@ namespace Oxide.Plugins
                     playerInvites.Remove(target);
             }
         }
-        #endregion
+#endregion
 
-        #region Data Conversion
+#region Data Conversion
         public class OldClan
         {
             public string clanTag = string.Empty;
@@ -2224,9 +2234,9 @@ namespace Oxide.Plugins
             public List<string> invitedAllies = new List<string>();
             public List<string> pendingInvites = new List<string>();
         }
-        #endregion
+#endregion
 
-        #region Localization
+#region Localization
         private static string Message(string key, string playerId = null) => string.Format(COLORED_LABEL, configData.Colors.TextColor, Instance.lang.GetMessage(key, Instance, playerId));
 
         private readonly Dictionary<string, string> Messages = new Dictionary<string, string>
@@ -2354,7 +2364,7 @@ namespace Oxide.Plugins
             ["Chat.Clan.Prefix"] = "[#a1ff46][CLAN CHAT][/#]: {0}",
             ["Chat.Alliance.Format"] = "[{0}] [{1}]{2}[/#]: {3}",
         };
-        #endregion
+#endregion
     }
 
     namespace ClansEx

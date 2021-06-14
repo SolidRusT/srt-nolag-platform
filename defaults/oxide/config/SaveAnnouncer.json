@@ -1,6 +1,6 @@
 {
     "Entity Settings": {
-      "Amount To Trigger Entity Message": 150000,
+      "Amount To Trigger Entity Message": 30000,
       "Enable Entity Message": true
     },
     "GUIAnnouncements Settings": {
@@ -9,7 +9,7 @@
       "Text Color": "White"
     },
     "Settings": {
-      "Enable Console Notice": false
+      "Enable Console Notice": true
     }
   }
   

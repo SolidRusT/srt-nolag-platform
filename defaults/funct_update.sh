@@ -35,14 +35,15 @@ function update_mods () {
     if [[ -d "${SERVER_CUSTOM}/oxide/data/copypaste" ]]; then
         rsync -r "${SERVER_CUSTOM}/oxide/data/copypaste/" "${GAME_ROOT}/oxide/data/copypaste" | tee -a ${LOGS}
     fi
-    echo "=> Updating plugin configurations" | tee -a ${LOGS}
+    echo " - oxide/data/LustyMap" | tee -a ${LOGS}
+    rsync -r "${SERVER_GLOBAL}/oxide/data/LustyMap/" "${GAME_ROOT}/oxide/data/LustyMap" | tee -a ${LOGS}
     # Sync global Oxide defaults
-    echo " - sync ${SERVER_GLOBAL}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    echo "=> Updating plugin configurations" | tee -a ${LOGS}
     mkdir -p "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
+    echo " - sync ${SERVER_GLOBAL}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     rsync -r "${SERVER_GLOBAL}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     # Sync custom Oxide overrides
     echo " - sync ${SERVER_CUSTOM}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
-    mkdir -p "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     rsync -r "${SERVER_CUSTOM}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     # Build out the customized plugin list
     rm -rf ${BUILD_ROOT}
@@ -127,13 +128,15 @@ function update_map_api () {
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_regenerate" | tee -a ${LOGS}
     sleep 10
     echo "Uploading Map to Imgur" | tee -a ${LOGS}
-    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_upload default 2000 1 1" | tee -a ${LOGS}
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "rma_upload default 1800 1 1" | tee -a ${LOGS}
     sleep 10
     IMGUR_URL=$(tail -n 1000 ${GAME_ROOT}/RustDedicated.log | grep "imgur.com" | tail -n 1 | awk '{print $4}')
     echo "Successfully uploaded: ${IMGUR_URL}" | tee -a ${LOGS}
-    echo "Uploading to S3"
-    wget ${IMGUR_URL} -O ${GAME_ROOT}/${HOSTNAME}.jpg
-    aws s3 cp ${GAME_ROOT}/${HOSTNAME}.jpg ${S3_WEB}/maps/
+    wget ${IMGUR_URL} -O ${GAME_ROOT}/oxide/data/LustyMap/current.jpg
+    echo "Installed new map graphic: ${GAME_ROOT}/oxide/data/LustyMap/current.jpg" | tee -a ${LOGS}
+    echo "Uploading to S3" | tee -a ${LOGS}
+    aws s3 cp ${GAME_ROOT}/oxide/data/LustyMap/current.jpg ${S3_WEB}/maps/${HOSTNAME}.jpg
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload LustyMap" | tee -a ${LOGS}
 }
 
 function staging_push () {

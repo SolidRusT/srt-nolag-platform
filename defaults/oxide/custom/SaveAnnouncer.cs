@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-    [Info("Save Announcer", "Suparious", "1.0.5")]
+    [Info("Save Announcer", "Suparious", "1.0.6")]
     [Description("Announces to all players when the server saves")]
     public class SaveAnnouncer : RustPlugin
     {
@@ -14,7 +14,7 @@ namespace Oxide.Plugins
         protected override void LoadDefaultConfig()
         {
             PrintWarning("Creating a new configuration file.");
-            Config["Settings", "Enable Console Notice"] = false;
+            Config["Settings", "Enable Console Notice"] = true;
             Config["Entity Settings", "Enable Entity Message"] = true;
             Config["Entity Settings", "Amount To Trigger Entity Message"] = 30000;
             Config["GUIAnnouncements Settings", "Enable GUI Announcements"] = false;
@@ -52,8 +52,8 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["AnnouncementMsg"] = "SolidRusT is saving, enjoy no lag...",
-                ["EntityMsg"] = "SolidRusT is saving {0:n0} entities, enjoy no lag.",
+                ["AnnouncementMsg"] = "SolidRusT is saving, without causing any lag.",
+                ["EntityMsg"] = "SolidRusT is saving {0:n0} entities, enjoy no lag!",
                 ["ConsoleMsg"] = "Server is saving {0:n0} entities."
             }, this);
         }
