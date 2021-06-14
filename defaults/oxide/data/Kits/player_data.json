@@ -21,6 +21,10 @@
         "ALPHATESTING": {
           "TotalUses": 1,
           "NextUseTime": 1623631258.0627098
+        },
+        "Legend": {
+          "TotalUses": 11,
+          "NextUseTime": 1623661509.3084459
         }
       },
       "ClaimAutoKits": true
