@@ -60,6 +60,7 @@
         "supporter"
       ],
       "PermissionsOxide": [
+        "kits.survivor",
         "kits.solidplayer"
       ],
       "AdditionalCommands": []
@@ -78,6 +79,8 @@
         "legend"
       ],
       "PermissionsOxide": [
+        "kits.survivor",
+        "kits.solidplayer",
         "kits.supporter",
         "craftchassis.4",
         "craftchassis.free",
@@ -112,6 +115,9 @@
         "developer"
       ],
       "PermissionsOxide": [
+        "kits.survivor",
+        "kits.solidplayer",
+        "kits.supporter",
         "kits.legend"
       ],
       "AdditionalCommands": []
@@ -132,6 +138,10 @@
         "survivor"
       ],
       "PermissionsOxide": [
+        "kits.survivor",
+        "kits.solidplayer",
+        "kits.supporter",
+        "kits.legend",
         "kits.developer",
         "economics.balance",
         "eminterface.admin",
@@ -185,6 +195,11 @@
       ],
       "PermissionsRust": 1,
       "PermissionsOxide": [
+        "kits.survivor",
+        "kits.solidplayer",
+        "kits.supporter",
+        "kits.legend",
+        "kits.developer",
         "kits.gm",
         "economics.balance",
         "eminterface.admin",
@@ -250,7 +265,12 @@
         "survivor"
       ],
       "PermissionsOxide": [
-        "kits.admin",
+        "kits.survivor",
+        "kits.solidplayer",
+        "kits.supporter",
+        "kits.legend",
+        "kits.developer",
+        "kits.gm",
         "bounty.use",
         "craftchassis.3",
         "airstrike.signal.strike",

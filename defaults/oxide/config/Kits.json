@@ -8,7 +8,6 @@
   "Show kits with permissions assigned to players without the permission": true,
   "Players with the admin permission ignore usage restrictions": false,
   "Autokits ordered by priority": [
-    "Admin",
     "GM",
     "Developer",
     "Legend",

@@ -8,6 +8,7 @@
   "Discord Username": "Plugin Update Notifications",
   "Automatic Blacklist": true,
   "Blacklist of plugins names not to check": [
-    "RustIO"
+    "RustIO",
+    "PermissionsManager"
   ]
 }
