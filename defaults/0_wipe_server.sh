@@ -28,7 +28,6 @@ case "$1" in
         echo "performing a Standard Wipe"
         initialize_srt
         notification
-        backup_s3
         update_server
         update_repo
         update_mods

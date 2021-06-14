@@ -13,8 +13,8 @@ me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
 initialize_srt
-update_repo
 update_mods
-update_map_api
+update_permissions
+
 
 echo "Finished ${me}"   | tee -a ${LOGS}

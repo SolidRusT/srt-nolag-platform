@@ -13,5 +13,6 @@ echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
 initialize_srt
 backup_s3
+update_repo
 
 echo "Finished ${me}"   | tee -a ${LOGS}

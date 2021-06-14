@@ -1,13 +1,14 @@
 ## SolidRusT wipe schedule
-# 0 10 * * MON,THU   root  /bin/sh -c /root/solidrust.net/defaults/0_wipe_server.sh
+0 10 * * MON,THU   root  /bin/sh -c /root/solidrust.net/defaults/0_wipe_server.sh
 
 ## SolidRusT server backups. Final step after going live.
-#*/10 *  * * *   root  /bin/sh -c /root/solidrust.net/defaults/10_backup.sh
+*/10 *  * * *   root  /bin/sh -c /root/solidrust.net/defaults/10_backup.sh
 
 ## SolidRusT server specific. Enable only after server is configured, running and healthy
-#40 *    * * *   root  /bin/sh -c /root/solidrust.net/defaults/40_sync_oxide_mods.sh
+40 *    * * *   root  /bin/sh -c /root/solidrust.net/defaults/40_sync_oxide_mods.sh
 #44 *    * * *   root  /bin/sh -c /root/solidrust.net/defaults/44_sync_server_config.sh
 
 # SolidRusT defaults
 15 *    * * *   root    /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
-10 *    * * *   root    rm -rf /root/solidrust.net;     mkdir -p /root/solidrust.net;     aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /root/solidrust.net;     chmod +x /root/solidrust.net/defaults/*.sh
+#10 *    * * *   root    rm -rf /root/solidrust.net;     mkdir -p /root/solidrust.net;     aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /root/solidrust.net;     chmod +x /root/solidrust.net/defaults/*.sh
+
