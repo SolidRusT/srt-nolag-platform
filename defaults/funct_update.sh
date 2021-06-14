@@ -118,6 +118,7 @@ function update_permissions () {
         sleep 2
     done
     echo "=> Reload permissions sync" | tee -a ${LOGS}
+    
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload PermissionGroupSync"| tee -a ${LOGS}
 }
 

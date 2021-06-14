@@ -1,3 +1,29 @@
 {
-  "_players": {}
+  "_players": {
+    "76561198024774727": {
+      "_usageData": {
+        "SpawnKit": {
+          "TotalUses": 1,
+          "NextUseTime": 1623619473.6772909
+        },
+        "Guest": {
+          "TotalUses": 9,
+          "NextUseTime": 1623632274.469857
+        },
+        "Bolt & Pistol": {
+          "TotalUses": 2,
+          "NextUseTime": 1623622522.0458848
+        },
+        "Survivor": {
+          "TotalUses": 1,
+          "NextUseTime": 1623629198.472997
+        },
+        "ALPHATESTING": {
+          "TotalUses": 1,
+          "NextUseTime": 1623631258.0627098
+        }
+      },
+      "ClaimAutoKits": true
+    }
+  }
 }

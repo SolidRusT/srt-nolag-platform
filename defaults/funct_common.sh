@@ -1,6 +1,7 @@
 function initialize_srt () {
     source ${HOME}/solidrust.net/defaults/env_vars.sh
     source ${HOME}/solidrust.net/servers/${HOSTNAME}/env_vars.sh
+    alias rcon="${GAME_ROOT}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
     me=$(basename -- "$0")
     echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 }
@@ -105,6 +106,5 @@ function stop_rust_now () {
 function show_logs () {
     tail -n 20 -F "${HOME}/SolidRusT.log" "${GAME_ROOT}/RustDedicated.log" "${GAME_ROOT}/rcon-default.log"
 }
-
 
 echo "SRT Common Functions initialized" | tee -a ${LOGS}

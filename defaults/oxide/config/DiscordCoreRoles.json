@@ -5,7 +5,7 @@
   "Use AntiSpamNames On Discord Nickname": false,
   "Sync Data": [
     {
-      "Oxide Group": "default",
+      "Oxide Group": "survivor",
       "Discord Role (Name or Id)": "847515430737674310",
       "Sync Source (Server or Discord)": "Server",
       "Sync Notification Settings": {
@@ -21,7 +21,7 @@
       }
     },
     {
-      "Oxide Group": "verified",
+      "Oxide Group": "solidplayer",
       "Discord Role (Name or Id)": "847515654989807666",
       "Sync Source (Server or Discord)": "Server",
       "Sync Notification Settings": {
@@ -37,7 +37,7 @@
       }
     },
     {
-      "Oxide Group": "vip",
+      "Oxide Group": "supporter",
       "Discord Role (Name or Id)": "847515819637997629",
       "Sync Source (Server or Discord)": "Server",
       "Sync Notification Settings": {
@@ -53,7 +53,23 @@
       }
     },
     {
-      "Oxide Group": "dev",
+      "Oxide Group": "legend",
+      "Discord Role (Name or Id)": "847518858093002812",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": false,
+        "Send Message To Discord": false,
+        "Discord Message Channel (Name or ID)": "general",
+        "Send Message When Added": false,
+        "Send Message When Removed": false,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Oxide Group": "developer",
       "Discord Role (Name or Id)": "847515954002788352",
       "Sync Source (Server or Discord)": "Server",
       "Sync Notification Settings": {
@@ -70,7 +86,7 @@
     },
     {
       "Oxide Group": "gm",
-      "Discord Role (Name or Id)": "847518858093002812",
+      "Discord Role (Name or Id)": "847519198615568425",
       "Sync Source (Server or Discord)": "Server",
       "Sync Notification Settings": {
         "Send message to Server": false,
@@ -86,12 +102,12 @@
     },
     {
       "Oxide Group": "admin",
-      "Discord Role (Name or Id)": "847519198615568425",
+      "Discord Role (Name or Id)": "853782175396134912",
       "Sync Source (Server or Discord)": "Server",
       "Sync Notification Settings": {
         "Send message to Server": false,
         "Send Message To Discord": false,
-        "Discord Message Channel (Name or ID)": "",
+        "Discord Message Channel (Name or ID)": "general",
         "Send Message When Added": false,
         "Send Message When Removed": false,
         "Server Message Added Override Message": "",

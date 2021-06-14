@@ -2,14 +2,20 @@
   "Kit chat command": "kit",
   "Currency used for purchase costs (Scrap, Economics, ServerRewards)": "Scrap",
   "Log kits given": false,
-  "Wipe player data when the server is wiped": false,
+  "Wipe player data when the server is wiped": true,
   "Use the Kits UI menu": true,
   "Allow players to toggle auto-kits on spawn": false,
-  "Show kits with permissions assigned to players without the permission": false,
+  "Show kits with permissions assigned to players without the permission": true,
   "Players with the admin permission ignore usage restrictions": false,
   "Autokits ordered by priority": [
-    "SpawnKit",
-    "OtherKitName"
+    "Admin",
+    "GM",
+    "Developer",
+    "Legend",
+    "Supporter",
+    "SolidPlayer",
+    "Survivor",
+    "Guest"
   ],
   "Post wipe cooldowns (kit name | seconds)": {
     "ExampleKitName": 3600,

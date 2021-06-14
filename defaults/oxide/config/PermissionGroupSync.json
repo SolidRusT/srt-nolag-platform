@@ -1,5 +1,5 @@
 {
-  "ServerId": "nine",
+  "ServerId": "one",
   "PollIntervalSeconds": 120,
   "DatabaseConfiguration": {
     "Host": "data.solidrust.net",
@@ -10,19 +10,22 @@
   },
   "GroupPermissions": [
     {
-      "CommandName": "usermod.verified",
-      "GroupName": "verified",
+      "CommandName": "usermod.survivor",
+      "GroupName": "survivor",
       "ExtendedPermissionHandling": true,
       "PermissionUse": true,
       "ProtectedGroup": false,
       "OverrideServerIdCheck": true,
       "GroupsRemove": [
         "admin",
-        "dev",
         "gm",
-        "vip"
+        "developer",
+        "legend",
+        "supporter",
+        "solidplayer"
       ],
       "PermissionsOxide": [
+        "kits.survivor",
         "bounty.use",
         "craftchassis.3",
         "airstrike.signal.strike",
@@ -43,18 +46,39 @@
       "AdditionalCommands": []
     },
     {
-      "CommandName": "usermod.vip",
-      "GroupName": "vip",
+      "CommandName": "usermod.solidplayer",
+      "GroupName": "solidplayer",
       "ExtendedPermissionHandling": true,
       "PermissionUse": true,
       "ProtectedGroup": false,
       "OverrideServerIdCheck": true,
       "GroupsRemove": [
         "admin",
-        "dev",
-        "gm"
+        "gm",
+        "developer",
+        "legend",
+        "supporter"
       ],
       "PermissionsOxide": [
+        "kits.solidplayer"
+      ],
+      "AdditionalCommands": []
+    },
+    {
+      "CommandName": "usermod.supporter",
+      "GroupName": "supporter",
+      "ExtendedPermissionHandling": true,
+      "PermissionUse": true,
+      "ProtectedGroup": false,
+      "OverrideServerIdCheck": true,
+      "GroupsRemove": [
+        "admin",
+        "gm",
+        "developer",
+        "legend"
+      ],
+      "PermissionsOxide": [
+        "kits.supporter",
         "craftchassis.4",
         "craftchassis.free",
         "craftchassis.fuel",
@@ -76,17 +100,39 @@
       "AdditionalCommands": []
     },
     {
-      "CommandName": "usermod.dev",
-      "GroupName": "dev",
+      "CommandName": "usermod.legend",
+      "GroupName": "legend",
       "ExtendedPermissionHandling": true,
       "PermissionUse": true,
       "ProtectedGroup": false,
       "OverrideServerIdCheck": true,
       "GroupsRemove": [
         "admin",
-        "gm"
+        "gm",
+        "developer"
       ],
       "PermissionsOxide": [
+        "kits.legend"
+      ],
+      "AdditionalCommands": []
+    },
+    {
+      "CommandName": "usermod.developer",
+      "GroupName": "developer",
+      "ExtendedPermissionHandling": true,
+      "PermissionUse": true,
+      "ProtectedGroup": false,
+      "OverrideServerIdCheck": true,
+      "GroupsRemove": [
+        "admin",
+        "gm",
+        "legend",
+        "supporter",
+        "solidplayer",
+        "survivor"
+      ],
+      "PermissionsOxide": [
+        "kits.developer",
         "economics.balance",
         "eminterface.admin",
         "skins.admin",
@@ -131,10 +177,15 @@
       "OverrideServerIdCheck": true,
       "GroupsRemove": [
         "admin",
-        "dev"
+        "developer",
+        "legend",
+        "supporter",
+        "solidplayer",
+        "survivor"
       ],
       "PermissionsRust": 1,
       "PermissionsOxide": [
+        "kits.gm",
         "economics.balance",
         "eminterface.admin",
         "kits.admin",
@@ -191,12 +242,15 @@
       "OverrideServerIdCheck": true,
       "PermissionsRust" : 2,
       "GroupsRemove": [
-        "verified",
-        "vip",
         "gm",
-        "dev"
+        "developer",
+        "legend",
+        "supporter",
+        "solidplayer",
+        "survivor"
       ],
       "PermissionsOxide": [
+        "kits.admin",
         "bounty.use",
         "craftchassis.3",
         "airstrike.signal.strike",

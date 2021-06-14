@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Modular Car Turrets", "WhiteThunder", "1.1.1")]
+    [Info("Modular Car Turrets", "WhiteThunder", "1.2.0")]
     [Description("Allows players to deploy auto turrets onto modular cars.")]
     internal class CarTurrets : CovalencePlugin
     {
@@ -23,6 +23,7 @@ namespace Oxide.Plugins
         private const string Permission_DeployCommand = "carturrets.deploy.command";
         private const string Permission_DeployInventory = "carturrets.deploy.inventory";
         private const string Permission_Free = "carturrets.free";
+        private const string Permission_RemoveAll = "carturrets.removeall";
 
         private const string Permission_Limit_2 = "carturrets.limit.2";
         private const string Permission_Limit_3 = "carturrets.limit.3";
@@ -54,6 +55,7 @@ namespace Oxide.Plugins
             permission.RegisterPermission(Permission_DeployCommand, this);
             permission.RegisterPermission(Permission_DeployInventory, this);
             permission.RegisterPermission(Permission_Free, this);
+            permission.RegisterPermission(Permission_RemoveAll, this);
 
             permission.RegisterPermission(Permission_Limit_2, this);
             permission.RegisterPermission(Permission_Limit_3, this);
@@ -468,6 +470,25 @@ namespace Oxide.Plugins
 
             if (DeployAutoTurretForPlayer(car, vehicleModule, position, basePlayer, conditionFraction) != null && !isFree && autoTurretItem != null)
                 UseItem(basePlayer, autoTurretItem);
+        }
+
+        [Command("carturrets.removeall")]
+        private void CommandRemoveAllCarTurrets(IPlayer player, string cmd, string[] args)
+        {
+            if (!player.IsServer && !VerifyPermissionAny(player, Permission_RemoveAll))
+                return;
+
+            var turretsRemoved = 0;
+            foreach (var turret in BaseNetworkable.serverEntities.OfType<AutoTurret>().ToArray())
+            {
+                if (turret.GetParentEntity() is BaseVehicleModule)
+                {
+                    turret.Kill();
+                    turretsRemoved++;
+                }
+            }
+
+            ReplyToPlayer(player, "RemoveAll.Success", turretsRemoved);
         }
 
         #endregion
@@ -1084,7 +1105,8 @@ namespace Oxide.Plugins
                 ["Deploy.Error.TurretLimit"] = "Error: That car may only have {0} turret(s).",
                 ["Deploy.Error.NoSuitableModule"] = "Error: No suitable module found.",
                 ["Deploy.Error.NoTurret"] = "Error: You need an auto turret to do that.",
-                ["Remove.Error.TurretHasItems"] = "Error: That module's turret must be empty."
+                ["Remove.Error.TurretHasItems"] = "Error: That module's turret must be empty.",
+                ["RemoveAll.Success"] = "Removed all {0} car turrets.",
             }, this, "en");
         }
 
