@@ -5,7 +5,7 @@
     "Allows automatic closing of unowned doors": false,
     "Exclude door controller": true,
     "Cancel on player dead": false,
-    "Default enabled": true,
+    "Default enabled": false,
     "Default delay": 5.0,
     "Maximum delay": 10.0,
     "Minimum delay": 5.0

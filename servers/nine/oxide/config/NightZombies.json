@@ -31,7 +31,7 @@
     ]
   },
   "Broadcast Settings": {
-    "Broadcast spawn amount": false,
+    "Broadcast spawn amount": true,
     "Broadcast types separately": false
   }
 }
