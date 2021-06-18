@@ -34,11 +34,11 @@ body {
 	
 	<script type="application/javascript">window.addEventListener('message',function(e){if(e.data.uid&&e.data.type==='sizeUpdate'){var i = document.querySelector('iframe[name="'+e.data.uid+'"]');i.style.width = e.data.payload.width;i.style.height = e.data.payload.height;}});</script><iframe src="https://cdn.battlemetrics.com/b/horizontal500x80px/11594431.html?_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Imhvcml6b250YWw1MDB4ODBweCIsInNlcnZlciI6MTE1OTQ0MzEsIm9wdGlvbnMiOnsiZm9yZWdyb3VuZCI6IiNFRUVFRUUiLCJiYWNrZ3JvdW5kIjoiIzIyMjIyMiIsImxpbmVzIjoiIzMzMzMzMyIsImxpbmtDb2xvciI6IiNmZmUzMDAiLCJjaGFydENvbG9yIjoiI0ZGMDcwMCJ9LCJsaXZlVXBkYXRlcyI6dHJ1ZSwidXNlcl9pZCI6MzU4MjIwLCJpYXQiOjE2MjM2MDU4NTh9.bVYKTdUOSgdUV8dZ8OPIO43F9akNrkGXX0fUhic6m48" frameborder=0 style="border:0" name="ioqcb"></iframe>
 	  
-	<object data='https://www.youtube.com/embed/xNlNaO-9jcs?autoplay=1' 
+	<object data='https://www.youtube.com/embed/rVZktA3WwE4?autoplay=1' 
         width='560px' height='315px'>
     </object></p></td>
 	 <td><p>
-		 Some Widget
+		 widgets go here
 	</p></td>
 	 
   </tr>
