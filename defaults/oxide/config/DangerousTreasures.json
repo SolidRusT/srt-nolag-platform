@@ -160,7 +160,7 @@
   },
   "Ranked Ladder": {
     "Award Top X Players On Wipe": 3,
-    "Enabled": true,
+    "Enabled": false,
     "Group Name": "treasurehunter",
     "Permission Name": "dangeroustreasures.th"
   },
@@ -185,45 +185,45 @@
     "Loot": [
       {
         "shortname": "ammo.pistol",
-        "amount": 40,
+        "amount": 140,
         "skin": 0,
-        "amountMin": 40
+        "amountMin": 80
       },
       {
         "shortname": "ammo.pistol.fire",
-        "amount": 40,
+        "amount": 140,
         "skin": 0,
-        "amountMin": 40
+        "amountMin": 80
       },
       {
         "shortname": "ammo.pistol.hv",
-        "amount": 40,
+        "amount": 140,
         "skin": 0,
-        "amountMin": 40
+        "amountMin": 80
       },
       {
         "shortname": "ammo.rifle",
-        "amount": 60,
+        "amount": 160,
         "skin": 0,
-        "amountMin": 60
+        "amountMin": 90
       },
       {
         "shortname": "ammo.rifle.explosive",
-        "amount": 60,
+        "amount": 160,
         "skin": 0,
-        "amountMin": 60
+        "amountMin": 90
       },
       {
         "shortname": "ammo.rifle.hv",
-        "amount": 60,
+        "amount": 160,
         "skin": 0,
-        "amountMin": 60
+        "amountMin": 90
       },
       {
         "shortname": "ammo.rifle.incendiary",
-        "amount": 60,
+        "amount": 160,
         "skin": 0,
-        "amountMin": 60
+        "amountMin": 90
       },
       {
         "shortname": "ammo.shotgun",
@@ -238,40 +238,16 @@
         "amountMin": 40
       },
       {
-        "shortname": "surveycharge",
-        "amount": 20,
-        "skin": 0,
-        "amountMin": 20
-      },
-      {
         "shortname": "metal.refined",
-        "amount": 150,
+        "amount": 500,
         "skin": 0,
         "amountMin": 150
       },
       {
-        "shortname": "bucket.helmet",
-        "amount": 1,
+        "shortname": "charcoal",
+        "amount": 500,
         "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "cctv.camera",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "coffeecan.helmet",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "explosive.timed",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
+        "amountMin": 100
       },
       {
         "shortname": "metal.facemask",
@@ -286,62 +262,14 @@
         "amountMin": 1
       },
       {
-        "shortname": "mining.quarry",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "pistol.m92",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "rifle.ak",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "rifle.bolt",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "rifle.lr300",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "smg.2",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "smg.mp5",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
-        "shortname": "smg.thompson",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1
-      },
-      {
         "shortname": "supply.signal",
-        "amount": 1,
+        "amount": 2,
         "skin": 0,
         "amountMin": 1
       },
       {
         "shortname": "targeting.computer",
-        "amount": 1,
+        "amount": 5,
         "skin": 0,
         "amountMin": 1
       }

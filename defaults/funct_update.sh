@@ -304,7 +304,10 @@ buildinggrades.up.all \
 buildinggrades.down.all \
 hazmattoscientistsuit.use \
 hazmattoscientistsuit.craft \
-advancedgather.use
+advancedgather.use \
+deathhistory.use \
+teamping.use \
+spawnmini.mini
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

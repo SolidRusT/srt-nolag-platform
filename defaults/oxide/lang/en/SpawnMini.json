@@ -1,0 +1,15 @@
+{
+  "mini_destroyed": "Your minicopter has been destroyed!",
+  "mini_perm": "You do not have permission to use this command!",
+  "mini_current": "You already have a minicopter!",
+  "mini_notcurrent": "You do not have a minicopter!",
+  "mini_buildingblocked": "Cannot do that while building blocked!",
+  "mini_timeleft_new": "You have <color=red>{0}</color> until your cooldown ends",
+  "mini_sdistance": "You're trying to spawn the minicopter too far away!",
+  "mini_terrain": "Trying to spawn minicopter outside of terrain!",
+  "mini_mounted": "A player is currenty mounted on the minicopter!",
+  "mini_current_distance": "The minicopter is too far!",
+  "mini_canmount": "You are not the owner of this Minicopter or in the owner's team!",
+  "mini_unlimited_fuel": "That minicopter doesn't need fuel!",
+  "mini_location_restricted": "You cannot do that here!"
+}

@@ -16,7 +16,7 @@ using VLB;
 
 namespace Oxide.Plugins
 {
-    [Info("Remover Tool", "Reneb/Fuji/Arainrr", "4.3.28", ResourceId = 651)]
+    [Info("Remover Tool", "Reneb/Fuji/Arainrr", "4.3.29", ResourceId = 651)]
     [Description("Building and entity removal tool")]
     public class RemoverTool : RustPlugin
     {
@@ -807,8 +807,15 @@ namespace Oxide.Plugins
                     }
                     else
                     {
-                        if (!player.serverInput.IsDown(removeButton)) return;
-                        if (removeMode == RemoveMode.SpecificTool && !IsSpecificTool(player)) return;
+                        if (!player.serverInput.IsDown(removeButton))
+                        {
+                            return;
+                        }
+                        if (removeMode == RemoveMode.SpecificTool && !IsSpecificTool(player))
+                        {
+                            //rt.Print(player,rt.Lang("UsageOfRemove",player.UserIDString));
+                            return;
+                        }
                         GetTargetEntity();
                     }
                     if (rt.TryRemove(player, targetEntity, removeType, pay, refund))
@@ -1051,7 +1058,12 @@ namespace Oxide.Plugins
                 shortPrefabNameToDeployable.TryGetValue(targetEntity.ShortPrefabName, out shortname);
                 if (itemShortNameToItemID.TryGetValue(entry.Key, out itemID))
                 {
-                    var item = ItemManager.CreateByItemID(itemID, entry.Value, entry.Key == shortname ? targetEntity.skinID : 0);
+                    var isOriginalItem = entry.Key == shortname;
+                    var item = ItemManager.CreateByItemID(itemID, entry.Value, isOriginalItem ? targetEntity.skinID : 0);
+                    if (isOriginalItem && item.hasCondition)
+                    {
+                        item.condition = item.maxCondition * (targetEntity.Health() / targetEntity.MaxHealth());
+                    }
                     player.GiveItem(item);
                 }
                 else
@@ -1353,7 +1365,7 @@ namespace Oxide.Plugins
         private bool CanRemoveEntity(BasePlayer player, RemoveType removeType, BaseEntity targetEntity, bool shouldPay, out string reason)
         {
             if (targetEntity.IsDestroyed || !IsRemovableEntity(targetEntity) ||
-                (removeType == RemoveType.Normal && ((targetEntity as BaseCombatEntity)?.IsDead() ?? false)))
+                removeType == RemoveType.Normal && ((targetEntity as BaseCombatEntity)?.IsDead() ?? false))
             {
                 reason = Lang("InvalidEntity", player.UserIDString);
                 return false;
@@ -1553,11 +1565,13 @@ namespace Oxide.Plugins
 
         private static bool IsDamagedEntity(BaseEntity entity)
         {
-            if (configData.damagedEntityS.excludeBuildingBlocks && (entity is BuildingBlock || entity is SimpleBuildingBlock)) return false;
             var baseCombatEntity = entity as BaseCombatEntity;
             if (baseCombatEntity == null || !baseCombatEntity.repair.enabled) return false;
-            if (!(entity is BuildingBlock) && (baseCombatEntity.repair.itemTarget == null || baseCombatEntity.repair.itemTarget.Blueprint == null))//Quarry
+            if (configData.damagedEntityS.excludeBuildingBlocks && (baseCombatEntity is BuildingBlock || baseCombatEntity is SimpleBuildingBlock)) return false;
+            if (configData.damagedEntityS.excludeQuarries && !(baseCombatEntity is BuildingBlock) && baseCombatEntity.repair.itemTarget?.Blueprint == null) //Quarry
+            {
                 return false;
+            }
             if (baseCombatEntity.Health() / baseCombatEntity.MaxHealth() * 100f >= configData.damagedEntityS.percentage) return false;
             return true;
         }
@@ -2542,6 +2556,9 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Enabled")]
             public bool enabled = false;
 
+            [JsonProperty(PropertyName = "Exclude Quarries")]
+            public bool excludeQuarries = true;
+
             [JsonProperty(PropertyName = "Exclude Building Blocks")]
             public bool excludeBuildingBlocks = true;
 
@@ -3398,6 +3415,7 @@ namespace Oxide.Plugins
                 ["EntityTimeLimit"] = "Can't remove: The entity was built more than {0} seconds ago.",
                 //["Can'tOpenAllLocks"] = "Can't remove: There is a lock in the building that you cannot open.",
                 ["CantPay"] = "Can't remove: Paying system crashed! Contact an administrator with the time and date to help him understand what happened.",
+                //["UsageOfRemove"] = "You have to hold a hammer in your hand and press the left mouse button.",
 
                 ["Refund"] = "Refund:",
                 ["Nothing"] = "Nothing",

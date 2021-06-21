@@ -1,6 +1,13 @@
 {
   "Clear Share Data On Map Wipe": false,
-  "Team Share Settings": {
+  "Chat Settings": {
+    "Send Authorization Success Message": true,
+    "Chat Command": "autoauth",
+    "Chat UI Command": "autoauthui",
+    "Chat Prefix": "<color=#00FFFF>[AutoAuth]</color>: ",
+    "Chat SteamID Icon": 0
+  },
+  "Teams Share Settings": {
     "Enabled": true,
     "Share Cupboard": true,
     "Share Turret": true,
@@ -34,7 +41,7 @@
       "Share Other Locked Entities": true
     }
   },
-  "Clan Share Settings": {
+  "Clans Share Settings": {
     "Enabled": true,
     "Share Cupboard": true,
     "Share Turret": true,
@@ -51,16 +58,62 @@
       "Share Other Locked Entities": true
     }
   },
-  "Chat Settings": {
-    "Send Authorization Success Message": true,
-    "Chat Command": "autoauth",
-    "Chat UI Command": "autoauthui",
-    "Chat Prefix": "<color=#00FFFF>[AutoAuth]</color>: ",
-    "Chat SteamID Icon": 0
+  "Default Share Settings": {
+    "Teams": {
+      "Enabled": true,
+      "Share Cupboard": true,
+      "Share Turret": true,
+      "Key Lock Settings": {
+        "Enabled": true,
+        "Share Door": true,
+        "Share Box": true,
+        "Share Other Locked Entities": true
+      },
+      "Code Lock Settings": {
+        "Enabled": true,
+        "Share Door": true,
+        "Share Box": true,
+        "Share Other Locked Entities": true
+      }
+    },
+    "Friends": {
+      "Enabled": true,
+      "Share Cupboard": true,
+      "Share Turret": true,
+      "Key Lock Settings": {
+        "Enabled": true,
+        "Share Door": true,
+        "Share Box": true,
+        "Share Other Locked Entities": true
+      },
+      "Code Lock Settings": {
+        "Enabled": true,
+        "Share Door": true,
+        "Share Box": true,
+        "Share Other Locked Entities": true
+      }
+    },
+    "Clans": {
+      "Enabled": true,
+      "Share Cupboard": true,
+      "Share Turret": true,
+      "Key Lock Settings": {
+        "Enabled": true,
+        "Share Door": true,
+        "Share Box": true,
+        "Share Other Locked Entities": true
+      },
+      "Code Lock Settings": {
+        "Enabled": true,
+        "Share Door": true,
+        "Share Box": true,
+        "Share Other Locked Entities": true
+      }
+    }
   },
   "Version": {
     "Major": 1,
-    "Minor": 2,
-    "Patch": 5
+    "Minor": 3,
+    "Patch": 0
   }
 }

@@ -438,7 +438,8 @@
         "adminchat.use",
         "eventmanager.admin",
         "airstrike.ignorecooldown",
-        "removertool.admin"
+        "removertool.admin",
+        "freebuild.allow"
       ],
       "AdditionalCommands": []
     }

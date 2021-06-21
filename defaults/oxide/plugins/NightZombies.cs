@@ -18,7 +18,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("Night Zombies", "0x89A", "3.0.2")]
+    [Info("Night Zombies", "0x89A", "3.0.6")]
     [Description("Spawns and kills zombies at set times")]
     class NightZombies : RustPlugin
     {
@@ -282,6 +282,8 @@ namespace Oxide.Plugins
 
             public void SpawnZombies()
             {
+                ServerMgr.Instance.StopCoroutine(RemoveZombies());
+
                 if (zombiesConfig.murdererPoluation > 0)
                 {
                     murdererTimer?.Destroy();
@@ -290,19 +292,21 @@ namespace Oxide.Plugins
                     {
                         Spawn(murdererPrefab, zombiesConfig.murdererHealth, true);
 
-                        if (zombies.Count > zombiesConfig.murdererPoluation + zombiesConfig.scarecrowPopulation) murdererTimer.Destroy();
+                        if (zombies.Count > zombiesConfig.murdererPoluation + zombiesConfig.scarecrowPopulation)
+                            murdererTimer?.Destroy();
                     });
                 }
                 
                 if (zombiesConfig.scarecrowPopulation > 0)
                 {
-                    scarecrowTimer.Destroy();
+                    scarecrowTimer?.Destroy();
 
                     scarecrowTimer = instance.timer.Repeat(spawnConfig.spawnDelay, zombiesConfig.scarecrowPopulation, () =>
                     {
                         Spawn(scarecrowPrefab, zombiesConfig.scarecrowHealth, false);
 
-                        if (zombies.Count > zombiesConfig.murdererPoluation + zombiesConfig.scarecrowPopulation) murdererTimer.Destroy();
+                        if (zombies.Count > zombiesConfig.murdererPoluation + zombiesConfig.scarecrowPopulation) 
+                            scarecrowTimer?.Destroy();
                     });
                 }
 
@@ -325,8 +329,9 @@ namespace Oxide.Plugins
                     BaseCombatEntity entity = array[i];
                     if (entity == null) continue;
 
-                    if (instance.config.Destroy.leaveCorpse && !configOverride) entity.DieInstantly();
-                    else entity.AdminKill();
+                    if (instance.config.Destroy.leaveCorpse && !configOverride) instance.CreateCorpse(entity as BasePlayer);
+
+                    entity.AdminKill();
                 }
 
                 zombies.Clear();
@@ -339,8 +344,8 @@ namespace Oxide.Plugins
 
             public void TimeTick()
             {
-                if (!spawned && CanSpawn()) ServerMgr.Instance.StopCoroutine(RemoveZombies(false, SpawnZombies));
-                else if (isDestroyTime)
+                if (!spawned && CanSpawn()) ServerMgr.Instance.StartCoroutine(RemoveZombies(false, SpawnZombies));
+                else if (spawned && isDestroyTime)
                 {
                     StopTimers();
                     ServerMgr.Instance.StartCoroutine(RemoveZombies());
@@ -411,12 +416,24 @@ namespace Oxide.Plugins
 
                 float maxDist = spawnConfig.maxDistance;
 
+                int attempts = 0;
+
                 for (int i = 0; i < 2; i++)
                 {
+                    if (attempts >= 4)
+                    {
+                        position = GetRandomPosition();
+                        break;
+                    }
+
                     position = new Vector3(Random.Range(playerPos.x - maxDist, playerPos.x + maxDist), 0, Random.Range(playerPos.z - maxDist, playerPos.z + maxDist));
                     position.y = TerrainMeta.HeightMap.GetHeight(position);
 
-                    if (IsInObject(position) || IsInOcean(position) || Vector3.Distance(playerPos, position) < spawnConfig.minDistance) i = 0;
+                    if (IsInObject(position) || IsInOcean(position) || Vector3.Distance(playerPos, position) < spawnConfig.minDistance)
+                    {
+                        i = 0;
+                        attempts++;
+                    }
                     else break;
                 }
 
