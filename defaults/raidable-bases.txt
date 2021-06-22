@@ -1,0 +1,11 @@
+rb.config add "Easy Bases" chad Hemp1 home
+rb.config remove RaidBase1
+rb.config list
+
+rb.populate 0
+rb.populate 1
+rb.populate 3
+
+rb.populate all
+
+rb.config remove RaidBases RaidBase1 RaidBase2 RaidBase3 RaidBase4 RaidBase5

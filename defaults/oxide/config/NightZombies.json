@@ -8,10 +8,10 @@
     "Destroy Time": 7.3,
     "Spawn delay (seconds)": 0.35,
     "Zombie Settings": {
-      "Murderer Population (total amount)": 50,
+      "Murderer Population (total amount)": 25,
       "Murderer Health": 100.0,
-      "Scarecrow Population (total amount)": 50,
-      "Scarecrow Health": 200.0
+      "Scarecrow Population (total amount)": 25,
+      "Scarecrow Health": 100.0
     },
     "Chance Settings": {
       "Chance per cycle": 100.0,

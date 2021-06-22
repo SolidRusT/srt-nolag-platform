@@ -71,11 +71,8 @@
     "knife.bone",
     "knife.butcher",
     "knife.combat",
-    "longsword",
     "machete",
-    "paddle",
-    "salvaged.cleaver",
-    "salvaged.sword"
+    "paddle"
   ],
   "Murderer Kits": [
     "murderer-kit1",

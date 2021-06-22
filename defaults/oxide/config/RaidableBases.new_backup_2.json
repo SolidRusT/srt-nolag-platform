@@ -164,6 +164,7 @@
     "Icon Name": "rbevent",
     "Icon Rotation": 0.0
   },
+  "Raidable Bases": {},
   "Ranked Ladder": {
     "Award Top X Players On Wipe": 3,
     "Enabled": true
@@ -216,6 +217,19 @@
       "skull.wolf"
     ],
     "Use Day Of Week Loot": false,
+    "Day Of Week Loot Monday": [],
+    "Day Of Week Loot Tuesday": [],
+    "Day Of Week Loot Wednesday": [],
+    "Day Of Week Loot Thursday": [],
+    "Day Of Week Loot Friday": [],
+    "Day Of Week Loot Saturday": [],
+    "Day Of Week Loot Sunday": [],
+    "Loot (Easy Difficulty)": [],
+    "Loot (Medium Difficulty)": [],
+    "Loot (Hard Difficulty)": [],
+    "Loot (Expert Difficulty)": [],
+    "Loot (Nightmare Difficulty)": [],
+    "Loot": [],
     "Do Not Duplicate Base Loot": false,
     "Do Not Duplicate Difficulty Loot": false,
     "Do Not Duplicate Default Loot": false,
