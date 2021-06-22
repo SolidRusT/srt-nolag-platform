@@ -14,7 +14,7 @@
   "PermissionCooldowns": {
     "spawnmini.tier1": 43200.0,
     "spawnmini.tier2": 21600.0,
-    "spawnmini.tier3": 10800.0
+    "spawnmini.tier3": 0
   },
   "SpawnHealth": 750.0,
   "DestroyOnDisconnect": false

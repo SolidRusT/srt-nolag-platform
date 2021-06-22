@@ -440,7 +440,8 @@
         "airstrike.ignorecooldown",
         "removertool.admin",
         "freebuild.allow",
-        "adminhammer.allow"
+        "adminhammer.allow",
+        "spawnmini.tier3"
       ],
       "AdditionalCommands": []
     }

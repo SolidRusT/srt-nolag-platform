@@ -315,7 +315,13 @@ warcopter.cooldown \
 warcopter.fighter \
 warcopter.drone \
 suicidevest.use \
-suicidevest.give
+suicidevest.give \
+spawnmini.nomini \
+signartist.url \
+signartist.text \
+signartist.restore \
+signartist.raw \
+signartist.restoreall
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

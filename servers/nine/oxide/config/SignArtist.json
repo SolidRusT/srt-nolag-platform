@@ -7,8 +7,8 @@
   "JPG image quality (0-100)": 85,
   "Enable logging file": false,
   "Enable logging console": false,
-  "Enable discord logging": false,
-  "Discord Webhook": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+  "Enable discord logging": true,
+  "Discord Webhook": "https://discord.com/api/webhooks/856992878063517746/7c_hPGQISo1Y4ljljm62fYGVNPttEzOxbe4qg2krEeZhtgkBKDUJ2cL7fs8BQgRsFsjd",
   "Avatar URL": "https://i.imgur.com/dH7V1Dh.png",
   "Discord Username": "Sign Artist"
 }

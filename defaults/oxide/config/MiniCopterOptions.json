@@ -1,10 +1,10 @@
 {
-  "Add auto turret to heli": true,
+  "Add auto turret to heli": false,
   "Allow Minis to Land on Cargo": true,
   "Auto turret uses battery": true,
   "Drop Storage Loot On Death": true,
   "Fuel per Second": 0.25,
-  "Large Storage Containers": 0,
+  "Large Storage Containers": 1,
   "Large Storage Lockable": true,
   "Large Storage Size (Max 42)": 42,
   "Lift Fraction": 0.25,
