@@ -8,7 +8,7 @@
     "Webhook URL": ""
   },
   "Chat Icon": {
-    "Steam ID": 0
+    "Steam ID": 76561199182551125 
   },
   "Alerts (true/false)": {
     "Bradley APC Alerts": true,
@@ -20,8 +20,8 @@
     "Patrol Helicopter Alerts": false,
     "Player Hacking Crate Alerts": true,
     "Player Supply Signal Alerts": true,
-    "Supply Drop Alerts": true,
-    "Supply Drop Landed Alerts": true
+    "Supply Drop Alerts": false,
+    "Supply Drop Landed Alerts": false
   },
   "Grid (true/false)": {
     "Show Grid": true,
