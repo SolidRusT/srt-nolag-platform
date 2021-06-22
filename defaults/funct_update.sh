@@ -1,6 +1,6 @@
 function update_repo () {
     echo "Downloading repo from s3" | tee -a ${LOGS}
-    aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
+    aws s3 sync --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
     echo "Setting execution bits" | tee -a ${LOGS}
     chmod +x ${HOME}/solidrust.net/defaults/*.sh
     chmod +x ${HOME}/solidrust.net/defaults/database/*.sh
@@ -307,7 +307,8 @@ hazmattoscientistsuit.craft \
 advancedgather.use \
 deathhistory.use \
 teamping.use \
-spawnmini.mini
+spawnmini.mini \
+customgenetics.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

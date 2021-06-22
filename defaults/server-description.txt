@@ -1,5 +1,12 @@
-server.description "SolidRusT Networks NoLag technology\n
- - Wipe every MONDAY,THURSDAY 10PM-PST\n
+server.description "SolidRusT Networks NOLAG™ game hosting technology\n
+  \n
+Don't settle for a mediocre server, join SolidRusT, Where Chads are Made!\n
+  \n
+This server is a fast paced 5x with lots of custom mods for quality of life.\n
+  \n
+Map Wipe every MONDAY,THURSDAY 10PM-PST\n
+Backpack and Bank wipe on the last THURSDAY of the month.\n
+  \n
  - Max group size of 3 players, including alliances\n
  - Discord link using /dc in-game: http://discord.gg/PpAvPcD46q\n
  - Community website: http://solidrust.net\n

@@ -23,7 +23,7 @@
     "Leave Corpse, when killed by player": true
   },
   "Behaviour Settings": {
-    "Attack sleeping players": true,
+    "Attack sleeping players": false,
     "Zombies attacked by outpost sentries": true,
     "Ignore Human NPCs": true,
     "Ignored entities (full entity shortname)": [
@@ -31,7 +31,7 @@
     ]
   },
   "Broadcast Settings": {
-    "Broadcast spawn amount": false,
+    "Broadcast spawn amount": true,
     "Broadcast types separately": false
   }
 }

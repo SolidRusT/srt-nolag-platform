@@ -245,9 +245,9 @@
       },
       {
         "shortname": "charcoal",
-        "amount": 500,
+        "amount": 10000,
         "skin": 0,
-        "amountMin": 100
+        "amountMin": 5000
       },
       {
         "shortname": "metal.facemask",

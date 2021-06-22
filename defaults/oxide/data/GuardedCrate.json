@@ -49,7 +49,7 @@
       "NpcCount (number of guards to spawn)": 10,
       "NpcHealth (health guards spawn with)": 200.0,
       "NpcRadius (max distance guards will roam)": 50.0,
-      "NpcAggression (max aggression distance guards will target)": 150.0,
+      "NpcAggression (max aggression distance guards will target)": 120.0,
       "MarkerColor (marker color)": "#3060d9",
       "MarkerBorderColor (marker border color)": "#000000",
       "MarkerOpacity (marker opacity)": 0.9,
@@ -73,7 +73,7 @@
       "MarkerBorderColor (marker border color)": "#000000",
       "MarkerOpacity (marker opacity)": 0.9,
       "UseLoot (use custom loot table)": false,
-      "MaxLootItems (max items to spawn in crate)": 6,
+      "MaxLootItems (max items to spawn in crate)": 7,
       "CustomLoot (items to spawn in crate)": []
     }
   ]

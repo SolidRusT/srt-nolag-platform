@@ -2,7 +2,7 @@
   "Drop on Death (true/false)": true,
   "Erase on Death (true/false)": false,
   "Use Blacklist (true/false)": false,
-  "Clear Backpacks on Map-Wipe (true/false)": false,
+  "Clear Backpacks on Map-Wipe (true/false)": true,
   "Only Save Backpacks on Server-Save (true/false)": false,
   "Blacklisted Items (Item Shortnames)": [
     "autoturret",
