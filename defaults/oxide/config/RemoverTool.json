@@ -30,6 +30,7 @@
   },
   "Remove Damaged Entities": {
     "Enabled": false,
+    "Exclude Quarries": true,
     "Exclude Building Blocks": true,
     "Percentage (Can be removed when (health / max health * 100) is not less than it)": 90.0
   },
@@ -3209,6 +3210,6 @@
   "Version": {
     "Major": 4,
     "Minor": 3,
-    "Patch": 28
+    "Patch": 29
   }
 }

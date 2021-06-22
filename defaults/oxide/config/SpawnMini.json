@@ -4,7 +4,7 @@
   "CanFetchWhileOccupied": false,
   "CanSpawnBuildingBlocked": false,
   "CanFetchBuildingBlocked": true,
-  "FuelAmount": 0,
+  "FuelAmount": 10,
   "FuelAmountsRequiringPermission": [],
   "MaxNoMiniDistance": -1.0,
   "MaxSpawnDistance": 5.0,

@@ -207,8 +207,11 @@
     "ActiveButtonColor": "#0255255255",
     "InactiveButtonColor": "#128128128255",
     "CloseButtonColor": "#128128128255",
+    "CloseButtonText": "Close",
     "NextPageButtonColor": "#128128128255",
+    "NextPageText": "Next Page",
     "PrevPageButtonColor": "#128128128255",
+    "PrevPageText": "Prev Page",
     "BackgroundColor": "#CC000000",
     "HelpButton": {
       "IsEnabled": false,

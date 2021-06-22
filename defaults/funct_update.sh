@@ -308,7 +308,13 @@ advancedgather.use \
 deathhistory.use \
 teamping.use \
 spawnmini.mini \
-customgenetics.use
+customgenetics.use \
+warcopter.spawn \
+warcopter.cooldown \
+warcopter.fighter \
+warcopter.drone \
+suicidevest.use \
+suicidevest.give
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

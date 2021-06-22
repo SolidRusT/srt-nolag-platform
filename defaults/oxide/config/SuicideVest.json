@@ -1,0 +1,19 @@
+{
+  "Vest armed sound (prefab)": "assets/prefabs/locks/keypad/effects/lock.code.updated.prefab",
+  "Bleeding Damage": 10.0,
+  "Count down after armed (seconds)": 10,
+  "Explode when a user dies with an armed vest?": true,
+  "Explode when a user shoots the vest?": true,
+  "Explosion Damage": 150.0,
+  "Effect prefabs": [
+    "assets/bundled/prefabs/fx/gas_explosion_small.prefab",
+    "assets/bundled/prefabs/fx/explosions/explosion_03.prefab"
+  ],
+  "Explosion Radius": 3.0,
+  "Vest Item (Shortname)": "metal.plate.torso",
+  "Vest Name": "Suicide Vest",
+  "Vest Skin ID": 0,
+  "Ability to unarm": false,
+  "Unarm Cooldown (seconds)": 3,
+  "Vest unarmed sound (prefab)": "assets/prefabs/locks/keypad/effects/lock.code.denied.prefab"
+}

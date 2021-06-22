@@ -3,7 +3,7 @@
     "Chat Command Color": "#FFFF00",
     "Chat Command Argument Color": "#FFA500",
     "Interrupt TP": {
-      "Above Water": true,
+      "Above Water": false,
       "Balloon": true,
       "Boats": false,
       "Cargo Ship": true,
@@ -20,7 +20,7 @@
       "Safe Zone": true,
       "Swimming": false
     },
-    "Block Teleport (NoEscape)": false,
+    "Block Teleport (NoEscape)": true,
     "Block Teleport (ZoneManager)": false,
     "Chat Name": "<color=red>Teleportation</color> \n\n",
     "Chat Steam64ID": 76561199056025689,

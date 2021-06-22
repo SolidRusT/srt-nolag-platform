@@ -1,0 +1,7 @@
+{
+  "GenesSet": "La genética de tus semillas se ha configurado para ",
+  "NoPermmision": "no tienes permitido usar este comando",
+  "WrongFormat": "Error de sintaxis, el formato correcto es \"/setgenes GGGGYY\"",
+  "WrongGene": "Error de sintaxis, tipo de gen no válido",
+  "WrongItem": "el artículo que tienes no es una semilla válida"
+}

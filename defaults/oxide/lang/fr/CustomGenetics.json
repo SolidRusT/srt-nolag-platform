@@ -1,0 +1,7 @@
+{
+  "GenesSet": "La génétique de vos graines a été réglée sur ",
+  "NoPermmision": "vous n'êtes pas autorisé à utiliser cette commande",
+  "WrongFormat": "Erreur de syntaxe, le format correct est \"/setgenes GGGGYY\"",
+  "WrongGene": "Erreur de syntaxe,type de gène non valide",
+  "WrongItem": "l'article que vous tenez n'est pas une graine valide"
+}
