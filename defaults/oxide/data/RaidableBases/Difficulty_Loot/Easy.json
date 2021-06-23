@@ -1,0 +1,23 @@
+[
+  {
+    "shortname": "sulfur",
+    "amount": 7500,
+    "skin": 0,
+    "amountMin": 2500,
+    "weight": 1.0
+  },
+  {
+    "shortname": "metal.fragments",
+    "amount": 7500,
+    "skin": 0,
+    "amountMin": 2500,
+    "weight": 1.0
+  },
+  {
+    "shortname": "charcoal",
+    "amount": 5000,
+    "skin": 0,
+    "amountMin": 1000,
+    "weight": 1.0
+  }
+]

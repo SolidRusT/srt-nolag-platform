@@ -1,4 +1,5 @@
 {
+  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 0,
   "Entities Not Allowed To Be Picked Up": [
     "generator.small",
     "generator.static",
@@ -16,7 +17,7 @@
       },
       {
         "Option": "height",
-        "Value": "1.5"
+        "Value": "2.5"
       }
     ],
     "Base2": [
@@ -47,20 +48,6 @@
         "Value": "1.5"
       }
     ],
-    "Garage1": [
-      {
-        "Option": "stability",
-        "Value": "false"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "false"
-      },
-      {
-        "Option": "height",
-        "Value": "2"
-      }
-    ],
     "SRT1": [
       {
         "Option": "stability",
@@ -68,11 +55,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "height",
-        "Value": "5"
+        "Value": "3"
       }
     ]
   },
@@ -91,18 +78,18 @@
     }
   ],
   "Arena Walls": {
-    "Enabled": true,
+    "Enabled": false,
     "Extra Stacks": 1,
     "Use Stone Walls": false,
     "Use Iced Walls": true,
     "Use Least Amount Of Walls": true,
     "Use UFO Walls": false,
-    "Radius": 25.0
+    "Radius": 27.0
   },
   "NPC Levels": {
     "Level 1 - Play With Fire": {
       "Amount (0 = disabled)": 0,
-      "Chance To Play": 0
+      "Chance To Play": 0.0
     },
     "Level 2 - Final Death": false
   },
@@ -145,14 +132,20 @@
     "Player Traps And Turrets Ignore Npcs": false
   },
   "Rewards": {
+    "Custom Currency": {
+      "Enabled": false,
+      "Item Shortname": "scrap",
+      "Amount": 0
+    },
     "Economics Money": 0.0,
-    "ServerRewards Points": 0
+    "ServerRewards Points": 0,
+    "Do Not Reward Buyable Events": false
   },
   "Change Building Material Tier To": {
     "Wooden": false,
     "Stone": false,
-    "Metal": true,
-    "HQM": false
+    "Metal": false,
+    "HQM": true
   },
   "Auto Turrets": {
     "Aim Cone": 5.0,
@@ -173,13 +166,14 @@
   "Add Code Lock To Tool Cupboards": false,
   "Add Code Lock To Boxes": false,
   "Close Open Doors With No Door Controller Installed": true,
-  "Allow Duplicate Items": false,
+  "Allow Bases To Spawn On The Seabed": false,
+  "Allow Duplicate Items": true,
   "Allow Players To Pickup Deployables": false,
   "Allow Players To Deploy A Cupboard": true,
   "Allow PVP": true,
   "Allow Friendly Fire (Teams)": true,
   "Minimum Amount Of Items To Spawn (0 = Use Max Value)": 0,
-  "Amount Of Items To Spawn": 30,
+  "Amount Of Items To Spawn": 300,
   "Flame Turret Health": 300.0,
   "Block Plugins Which Prevent Item Durability Loss": false,
   "Block Damage Outside Of The Dome To Players Inside": false,
@@ -194,12 +188,14 @@
   "Create Dome Around Event Using Spheres (0 = disabled, recommended = 5)": 5,
   "Empty All Containers Before Spawning Loot": true,
   "Eject Corpses From Enemy Raids (Advanced Users Only)": true,
+  "Eject Enemies From Purchased PVE Raids": true,
+  "Eject Enemies From Purchased PVP Raids": false,
   "Eject Enemies From Locked PVE Raids": true,
   "Eject Enemies From Locked PVP Raids": false,
   "Explosion Damage Modifier (0-999)": 100.0,
   "Force All Boxes To Have Same Skin": true,
   "Ignore Containers That Spawn With Loot Already": false,
-  "Loot Amount Multiplier": 1.0,
+  "Loot Amount Multiplier": 10.0,
   "Maximum Respawn Npc X Seconds After Death": 0.0,
   "Minimum Respawn Npc X Seconds After Death": 0.0,
   "Protection Radius": 50.0,
