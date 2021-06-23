@@ -1,5 +1,9 @@
-rb.config add "Easy Bases" chad Hemp1 home
-rb.config remove RaidBase1
+rb.config add "Easy Bases" Base1 Base2 Base3 Garage1 SRT1
+rb.config add "Medium Bases" Base1 Base2 Base3 Garage1 SRT1
+rb.config add "Hard Bases" Base1 Base2 Base3 Garage1 SRT1
+rb.config add "Expert Bases" Base1 Base2 Base3 Garage1 SRT1
+rb.config add "Nightmare Bases" Base1 Base2 Base3 Garage1 SRT1
+rb.config remove chad Hemp1 home
 rb.config list
 
 rb.populate 0
