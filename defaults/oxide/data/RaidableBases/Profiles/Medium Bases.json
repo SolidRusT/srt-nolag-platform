@@ -5,7 +5,7 @@
     "autoturret_deployed"
   ],
   "Additional Bases For This Difficulty": {
-    "chad": [
+    "Base1": [
       {
         "Option": "stability",
         "Value": "false"
@@ -16,10 +16,10 @@
       },
       {
         "Option": "height",
-        "Value": "1.0"
+        "Value": "1.5"
       }
     ],
-    "Hemp1": [
+    "Base2": [
       {
         "Option": "stability",
         "Value": "false"
@@ -30,10 +30,10 @@
       },
       {
         "Option": "height",
-        "Value": "1.0"
+        "Value": "1.5"
       }
     ],
-    "home": [
+    "Base3": [
       {
         "Option": "stability",
         "Value": "false"
@@ -44,7 +44,35 @@
       },
       {
         "Option": "height",
-        "Value": "1.0"
+        "Value": "1.5"
+      }
+    ],
+    "Garage1": [
+      {
+        "Option": "stability",
+        "Value": "false"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "2"
+      }
+    ],
+    "SRT1": [
+      {
+        "Option": "stability",
+        "Value": "false"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "5"
       }
     ]
   },
@@ -65,8 +93,8 @@
   "Arena Walls": {
     "Enabled": true,
     "Extra Stacks": 1,
-    "Use Stone Walls": true,
-    "Use Iced Walls": false,
+    "Use Stone Walls": false,
+    "Use Iced Walls": true,
     "Use Least Amount Of Walls": true,
     "Use UFO Walls": false,
     "Radius": 25.0
@@ -74,7 +102,7 @@
   "NPC Levels": {
     "Level 1 - Play With Fire": {
       "Amount (0 = disabled)": 0,
-      "Chance To Play": 0.5
+      "Chance To Play": 0
     },
     "Level 2 - Final Death": false
   },
