@@ -1,0 +1,30 @@
+{
+  "fullMoonDates": [
+    "01/25/2024",
+    "02/24/2024",
+    "03/25/2024",
+    "04/23/2024",
+    "05/23/2024",
+    "06/21/2024",
+    "07/21/2024",
+    "08/19/2024",
+    "09/17/2024",
+    "10/17/2024",
+    "11/15/2024",
+    "12/15/2024"
+  ],
+  "weatherAtNight": {
+    "weather.atmosphere_brightness": "1",
+    "weather.atmosphere_contrast": "1.5",
+    "weather.cloud_coverage": "0",
+    "weather.cloud_size": "0",
+    "weather.fog": "0",
+    "weather.fog_chance": "0"
+  },
+  "syncWeather": true,
+  "randomizeDates": false,
+  "freezeMoon": false,
+  "playSoundAtSunset": false,
+  "sound": "assets/bundled/prefabs/fx/player/howl.prefab",
+  "syncInterval": 5.0
+}

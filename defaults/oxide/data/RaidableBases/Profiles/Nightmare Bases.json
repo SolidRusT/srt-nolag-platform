@@ -1,5 +1,5 @@
 {
-  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 0,
+  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 4,
   "Entities Not Allowed To Be Picked Up": [
     "generator.small",
     "generator.static",
@@ -9,7 +9,7 @@
     "Base1": [
       {
         "Option": "stability",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "autoheight",
@@ -23,7 +23,7 @@
     "Base2": [
       {
         "Option": "stability",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "autoheight",
@@ -37,7 +37,7 @@
     "Base3": [
       {
         "Option": "stability",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "autoheight",
@@ -51,7 +51,7 @@
     "SRT1": [
       {
         "Option": "stability",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "autoheight",
@@ -66,7 +66,7 @@
   "Paste Options": [
     {
       "Option": "stability",
-      "Value": "false"
+      "Value": "true"
     },
     {
       "Option": "autoheight",
@@ -195,7 +195,7 @@
   "Explosion Damage Modifier (0-999)": 100.0,
   "Force All Boxes To Have Same Skin": true,
   "Ignore Containers That Spawn With Loot Already": false,
-  "Loot Amount Multiplier": 10.0,
+  "Loot Amount Multiplier": 1.0,
   "Maximum Respawn Npc X Seconds After Death": 0.0,
   "Minimum Respawn Npc X Seconds After Death": 0.0,
   "Protection Radius": 50.0,

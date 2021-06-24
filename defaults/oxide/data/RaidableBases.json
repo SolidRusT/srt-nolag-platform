@@ -1,7 +1,13 @@
 {
   "Lockouts": {},
   "Players": {},
-  "UI": {},
-  "RaidTime": "06/22/2021 14:48:27",
-  "TotalEvents": 0
+  "UI": {
+    "76561198024774727": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
+    }
+  },
+  "RaidTime": "06/23/2021 12:50:50",
+  "TotalEvents": 71
 }

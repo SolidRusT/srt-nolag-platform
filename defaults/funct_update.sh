@@ -221,8 +221,6 @@ backpacks.gui  \
 backpacks.use  \
 kits.defaultspawn  \
 bank.use  \
-buildinggrades.cangrade  \
-buildinggrades.down  \
 bgrade.all  \
 vehicledeployedlocks.codelock.allvehicles  \
 vehicledeployedlocks.keylock.allvehicles  \

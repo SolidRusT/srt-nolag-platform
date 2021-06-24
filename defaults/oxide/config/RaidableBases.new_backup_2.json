@@ -216,7 +216,7 @@
       "Include PVP Bases": true,
       "Ignore Safe Checks": false,
       "Ignore Player Entities At Custom Spawn Locations": false,
-      "Max Scheduled Events": 1,
+      "Max Scheduled Events": 10,
       "Max To Spawn At Once (0 = Use Max Scheduled Events Amount)": 0,
       "Minimum Required Players Online": 1,
       "Spawn Bases X Distance Apart": 50.0,

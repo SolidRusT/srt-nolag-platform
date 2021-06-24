@@ -1,8 +1,8 @@
-rb.config add "Easy Bases" Base1 Base2 Base3 Garage1 SRT1
-rb.config add "Medium Bases" Base1 Base2 Base3 Garage1 SRT1
-rb.config add "Hard Bases" Base1 Base2 Base3 Garage1 SRT1
-rb.config add "Expert Bases" Base1 Base2 Base3 Garage1 SRT1
-rb.config add "Nightmare Bases" Base1 Base2 Base3 Garage1 SRT1
+rb.config add "Easy Bases" Base1 Base2 Base3 SRT1
+rb.config add "Medium Bases" Base1 Base2 Base3 SRT1
+rb.config add "Hard Bases" Base1 Base2 Base3 SRT1
+rb.config add "Expert Bases" Base1 Base2 Base3 SRT1
+rb.config add "Nightmare Bases" Base1 Base2 Base3 SRT1
 rb.config remove chad Hemp1 home
 rb.config list
 
@@ -13,3 +13,13 @@ rb.populate 3
 rb.populate all
 
 rb.config remove RaidBases RaidBase1 RaidBase2 RaidBase3 RaidBase4 RaidBase5
+
+
+
+
+
+rcon "rb.config add \"Easy Bases\" Base1 Base2 Base3 SRT1"
+rcon "rb.config add \"Medium Bases\" Base1 Base2 Base3 SRT1"
+rcon "rb.config add \"Hard Bases\" Base1 Base2 Base3 SRT1"
+rcon "rb.config add \"Expert Bases\" Base1 Base2 Base3 SRT1"
+rcon "rb.config add \"Nightmare Bases\" Base1 Base2 Base3 SRT1"

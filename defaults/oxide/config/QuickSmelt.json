@@ -5,7 +5,7 @@
     "furnace.shortname": 1.0
   },
   "Fuel Usage Speed Multipliers": {
-    "global": 10.0,
+    "global": 1.0,
     "furnace.shortname": 1.0
   },
   "Fuel Usage Multipliers": {

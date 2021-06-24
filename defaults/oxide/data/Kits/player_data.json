@@ -25,6 +25,10 @@
         "Legend": {
           "TotalUses": 12,
           "NextUseTime": 1623976053.6658258
+        },
+        "GM": {
+          "TotalUses": 1,
+          "NextUseTime": 1624474930.679487
         }
       },
       "ClaimAutoKits": true

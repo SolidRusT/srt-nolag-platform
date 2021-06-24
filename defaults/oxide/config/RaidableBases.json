@@ -151,7 +151,7 @@
       "Wait To Start Despawn Timer When Base Takes Damage From Player": false
     },
     "Map Markers": {
-      "Marker Name": "Raidable Base Event",
+      "Marker Name": "Raidable SRT Base",
       "Radius": 0.25,
       "Use Vending Map Marker": true,
       "Use Explosion Map Marker": false,
