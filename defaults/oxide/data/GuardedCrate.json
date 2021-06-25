@@ -70,7 +70,7 @@
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": false,
       "Kits (custom kits)": [
-        "scielite"
+        "sciexpert"
       ],
       "NpcName (custom name)": "SRT Elite",
       "NpcCount (number of guards to spawn)": 12,
