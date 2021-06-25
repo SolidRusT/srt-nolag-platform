@@ -2,13 +2,15 @@
   "Events": [
     {
       "EventDuration (duration the event will be active for)": 800.0,
-      "EventName (event name)": "Low Level",
+      "EventName (event name)": "SRT Easy Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
-      "UseKits (use custom kits plugin)": false,
-      "Kits (custom kits)": [],
-      "NpcName (custom name)": "Easy Guard",
-      "NpcCount (number of guards to spawn)": 6,
+      "UseKits (use custom kits plugin)": true,
+      "Kits (custom kits)": [
+        "SolidPlayer"
+      ],
+      "NpcName (custom name)": "SRT Easy",
+      "NpcCount (number of guards to spawn)": 6, 
       "NpcHealth (health guards spawn with)": 100.0,
       "NpcRadius (max distance guards will roam)": 15.0,
       "NpcAggression (max aggression distance guards will target)": 120.0,
@@ -21,12 +23,15 @@
     },
     {
       "EventDuration (duration the event will be active for)": 800.0,
-      "EventName (event name)": "Medium Level",
+      "EventName (event name)": "SRT Medium Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": false,
-      "Kits (custom kits)": [],
-      "NpcName (custom name)": "Medium Guard",
+      "Kits (custom kits)": [
+        "SolidPlayer",
+        "Supporter"
+      ],
+      "NpcName (custom name)": "SRT Medium",
       "NpcCount (number of guards to spawn)": 8,
       "NpcHealth (health guards spawn with)": 150.0,
       "NpcRadius (max distance guards will roam)": 15.0,
@@ -40,12 +45,15 @@
     },
     {
       "EventDuration (duration the event will be active for)": 1800.0,
-      "EventName (event name)": "Hard Level",
+      "EventName (event name)": "SRT Hard Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": false,
-      "Kits (custom kits)": [],
-      "NpcName (custom name)": "Hard Guard",
+      "Kits (custom kits)": [
+        "Supporter",
+        "Legend"
+      ],
+      "NpcName (custom name)": "SRT Hard",
       "NpcCount (number of guards to spawn)": 10,
       "NpcHealth (health guards spawn with)": 200.0,
       "NpcRadius (max distance guards will roam)": 50.0,
@@ -59,12 +67,14 @@
     },
     {
       "EventDuration (duration the event will be active for)": 1800.0,
-      "EventName (event name)": "Elite Level",
+      "EventName (event name)": "SRT Elite Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": false,
-      "Kits (custom kits)": [],
-      "NpcName (custom name)": "Elite Guard",
+      "Kits (custom kits)": [
+        "Legend"
+      ],
+      "NpcName (custom name)": "SRT Elite",
       "NpcCount (number of guards to spawn)": 12,
       "NpcHealth (health guards spawn with)": 350.0,
       "NpcRadius (max distance guards will roam)": 50.0,
