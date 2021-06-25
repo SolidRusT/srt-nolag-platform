@@ -258,16 +258,11 @@
       "machete"
     ],
     "Scientist Items": [
-      "hazmatsuit_scientist",
-      "rifle.ak"
+      "syringe.medical"
     ],
-    "Murderer Kits": [
-      "murderer_kit_1",
-      "murderer_kit_2"
-    ],
+    "Murderer Kits": [],
     "Scientist Kits": [
-      "scientist_kit_1",
-      "scientist_kit_2"
+      "scieasy"
     ],
     "Random Names": [],
     "Amount To Spawn": 8,
