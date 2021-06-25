@@ -14,7 +14,7 @@
     "Upgrade All Chat Command": "upall",
     "Downgrade All Chat Command": "downall",
     "Chat Prefix": "<color=#00FFFF>[BuildingGrades]</color>: ",
-    "Chat SteamID Icon": 0
+    "Chat SteamID Icon": 76561199182551125
   },
   "Permission Settings": {
     "buildinggrades.use": {

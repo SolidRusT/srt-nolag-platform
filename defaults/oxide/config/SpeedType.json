@@ -3,7 +3,7 @@
   "Event Frequency (Run Event Every X Seconds)": 300.0,
   "Event Length (Ends After X Seconds)": 60.0,
   "Minimum number of players to start a event": 10,
-  "Chat Icon (SteamID64)": 0,
+  "Chat Icon (SteamID64)": 76561199182551125,
   "Tier 1 Letters/Numbers count": 6,
   "Enable Tier 2 Events": false,
   "Tier 2 Event Frequency (Every X events it will be a tier 2 event)": 10,

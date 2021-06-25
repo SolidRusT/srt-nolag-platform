@@ -37,7 +37,7 @@
   "Chat Settings": {
     "Chat Command": "remove",
     "Chat Prefix": "<color=#00FFFF>[RemoverTool]</color>: ",
-    "Chat SteamID Icon": 0
+    "Chat SteamID Icon": 76561199182551125
   },
   "Permission Settings (Just for normal type)": {
     "removertool.normal": {
