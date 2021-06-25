@@ -7,7 +7,7 @@
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": true,
       "Kits (custom kits)": [
-        "scientisteasy"
+        "scieasy"
       ],
       "NpcName (custom name)": "SRT Easy",
       "NpcCount (number of guards to spawn)": 6, 
@@ -28,7 +28,7 @@
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": false,
       "Kits (custom kits)": [
-        "scientistmed"
+        "scimed"
       ],
       "NpcName (custom name)": "SRT Medium",
       "NpcCount (number of guards to spawn)": 8,
@@ -49,7 +49,7 @@
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": false,
       "Kits (custom kits)": [
-        "scientisthard"
+        "scihard"
       ],
       "NpcName (custom name)": "SRT Hard",
       "NpcCount (number of guards to spawn)": 10,
@@ -70,7 +70,7 @@
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": false,
       "Kits (custom kits)": [
-        "scientistelite"
+        "scielite"
       ],
       "NpcName (custom name)": "SRT Elite",
       "NpcCount (number of guards to spawn)": 12,

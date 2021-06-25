@@ -3316,6 +3316,429 @@
           "Contents": null
         }
       ]
+    },
+    "sciexpert": {
+      "Name": "sciexpert",
+      "Description": "scientist kit",
+      "RequiredPermission": "",
+      "MaximumUses": 0,
+      "RequiredAuth": 1,
+      "Cooldown": 0,
+      "Cost": 0,
+      "IsHidden": true,
+      "CopyPasteFile": "",
+      "KitImage": "",
+      "MainItems": [
+        {
+          "Shortname": "ammo.rifle",
+          "Skin": 0,
+          "Amount": 256,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "WearItems": [
+        {
+          "Shortname": "hazmatsuit",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 450.0,
+          "MaxCondition": 450.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "BeltItems": [
+        {
+          "Shortname": "rifle.m39",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 20,
+          "Ammotype": "ammo.rifle",
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        },
+        {
+          "Shortname": "rifle.lr300",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 150.0,
+          "MaxCondition": 150.0,
+          "Ammo": 30,
+          "Ammotype": "ammo.rifle",
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        }
+      ]
+    },
+    "scihard": {
+      "Name": "scihard",
+      "Description": "scientist kit",
+      "RequiredPermission": "",
+      "MaximumUses": 0,
+      "RequiredAuth": 1,
+      "Cooldown": 0,
+      "Cost": 0,
+      "IsHidden": true,
+      "CopyPasteFile": "",
+      "KitImage": "",
+      "MainItems": [
+        {
+          "Shortname": "ammo.rifle",
+          "Skin": 0,
+          "Amount": 256,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "WearItems": [
+        {
+          "Shortname": "attire.ninja.suit",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "BeltItems": [
+        {
+          "Shortname": "rifle.m39",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 20,
+          "Ammotype": "ammo.rifle",
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        },
+        {
+          "Shortname": "rifle.semiauto",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 16,
+          "Ammotype": "ammo.rifle",
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        }
+      ]
+    },
+    "scimed": {
+      "Name": "scimed",
+      "Description": "scientist kit",
+      "RequiredPermission": "",
+      "MaximumUses": 0,
+      "RequiredAuth": 1,
+      "Cooldown": 0,
+      "Cost": 0,
+      "IsHidden": true,
+      "CopyPasteFile": "",
+      "KitImage": "",
+      "MainItems": [
+        {
+          "Shortname": "ammo.shotgun.fire",
+          "Skin": 0,
+          "Amount": 128,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 8,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.shotgun.slug",
+          "Skin": 0,
+          "Amount": 64,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 9,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.pistol",
+          "Skin": 0,
+          "Amount": 256,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 10,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.pistol.fire",
+          "Skin": 0,
+          "Amount": 256,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 11,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.shotgun",
+          "Skin": 0,
+          "Amount": 128,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 7,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.rifle",
+          "Skin": 0,
+          "Amount": 256,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 6,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.pistol.hv",
+          "Skin": 0,
+          "Amount": 256,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "WearItems": [
+        {
+          "Shortname": "jumpsuit.suit",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "BeltItems": [
+        {
+          "Shortname": "shotgun.spas12",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 4,
+          "Ammotype": "ammo.shotgun",
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        },
+        {
+          "Shortname": "smg.mp5",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 8,
+          "Ammotype": "ammo.pistol",
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        }
+      ]
+    },
+    "scieasy": {
+      "Name": "scieasy",
+      "Description": "",
+      "RequiredPermission": "",
+      "MaximumUses": 0,
+      "RequiredAuth": 1,
+      "Cooldown": 0,
+      "Cost": 0,
+      "IsHidden": true,
+      "CopyPasteFile": "",
+      "KitImage": "",
+      "MainItems": [
+        {
+          "Shortname": "ammo.shotgun.slug",
+          "Skin": 0,
+          "Amount": 64,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 6,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.pistol",
+          "Skin": 0,
+          "Amount": 247,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.pistol.fire",
+          "Skin": 0,
+          "Amount": 256,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 8,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.shotgun",
+          "Skin": 0,
+          "Amount": 126,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.pistol.hv",
+          "Skin": 0,
+          "Amount": 256,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 7,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "WearItems": [
+        {
+          "Shortname": "attire.bunny.onesie",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "hat.bunnyhat",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "BeltItems": [
+        {
+          "Shortname": "shotgun.spas12",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 6,
+          "Ammotype": "ammo.shotgun",
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        },
+        {
+          "Shortname": "pistol.m92",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 15,
+          "Ammotype": "ammo.pistol",
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        }
+      ]
     }
   }
 }
