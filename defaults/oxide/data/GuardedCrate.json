@@ -26,7 +26,7 @@
       "EventName (event name)": "SRT Medium Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
-      "UseKits (use custom kits plugin)": false,
+      "UseKits (use custom kits plugin)": true,
       "Kits (custom kits)": [
         "scimed"
       ],
@@ -47,7 +47,7 @@
       "EventName (event name)": "SRT Hard Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
-      "UseKits (use custom kits plugin)": false,
+      "UseKits (use custom kits plugin)": true,
       "Kits (custom kits)": [
         "scihard"
       ],
@@ -68,7 +68,7 @@
       "EventName (event name)": "SRT Elite Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
-      "UseKits (use custom kits plugin)": false,
+      "UseKits (use custom kits plugin)": true,
       "Kits (custom kits)": [
         "sciexpert"
       ],
