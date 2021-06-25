@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vanish", "Whispers88", "1.5.4")]
+    [Info("Vanish", "Whispers88", "1.5.5")]
     [Description("Allows players with permission to become invisible")]
     public class Vanish : CovalencePlugin
     {
@@ -411,6 +411,12 @@ namespace Oxide.Plugins
 
             CuiHelper.DestroyUi(player, "VanishUI");
             CuiHelper.DestroyUi(player, "VanishColliderUI");
+        }
+
+        private object OnPlayerViolation(BasePlayer player, AntiHackType antiHackType)
+        {
+            if (antiHackType == AntiHackType.InsideTerrain && IsInvisible(player)) return false;
+            return null;
         }
         #endregion Hooks
 

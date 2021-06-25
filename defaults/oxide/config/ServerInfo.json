@@ -8,12 +8,12 @@
           {
             "TextLines": [
               " ",
-              "<color=yellow> Welcome to the SolidRusT NOLAG gaming network. </color>",
+              "<color=yellow> SolidRusT Networks NOLAG™ game hosting. </color>",
               " ",
-              " - (3X/5X/10X) Resource Gather and Loot++",
-              " - Auto Turret Authorization from Tool Cupboard",
-              " - Auto Use Fuel and Wood from Tool Cupboard",
-              " - Improved Auto-Turret controls and placement",
+              " - 5x Resource Gather and customized loot tables",
+              " - Raidable NPC bases and Crate Hunting events",
+              " - Faster smelting, auto-sort loot in boxes",
+              " - Auto-use Fuel and Wood from Tool Cupboard",
               " - Useful CCTV Utilities, motion sensors and Dancing emotes",
               " - Modular Vehicle lifts and Reclyclers at monuments",
               " - Locks, Storage, Extra Seats and Turrets on Modular Vehicles",
@@ -79,6 +79,8 @@
             "TextLines": [
               " ",
               "<color=yellow> /al </color>            - Auto-lock doors with a specific code",
+              "<color=yellow> /ad </color>            - Auto-close doors after opening them",
+              "<color=yellow> /autoauthui </color>    - Auto-add friends / clan / team to Tool Cupboard",
               "<color=yellow> /backpack </color>      - Open your backpack storage",
               "<color=yellow> /backpackGUI </color>   - Toggle on/off the Backpack icon",
               "<color=yellow> /bank </color>          - Opens the central bank storage",
@@ -154,22 +156,26 @@
         "OxideGroup": ""
       },
       {
-        "ButtonText": "Ranks/Rewards",
-        "HeaderText": "Player Ranks and Loyalty Rewards",
+        "ButtonText": "Roles/Rewards",
+        "HeaderText": "Player Roles and Loyalty Rewards",
         "Pages": [
           {
             "TextLines": [
               " ",
-              " <color=silver> Scavenger </color>    - Default rank for unregistered players and guests",
-              " <color=white> Survivalist </color>   - Registerd players, can be obtained using <color=yellow> /dc </color> command",
-              " <color=green> SolidPlayer </color>   - Registered players that have connected their steam accounts",
-              " <color=aqua> Supporter </color>      - Registered players that have made a donation to the NOLAG network",
-              " <color=purple> Legendary </color>    - Registered players that have subscribed to the NOLAG gaming network",
+              "Each SRT Rank will give you a unique spawn kit, grant bank and backpack space and many other quality of life improvements. ",
+              " ",
+              " <color=silver> Scavenger </color>    - Default rank for unregistered players and guests.",
+              " <color=white> Survivor </color>      - Registered player. can be obtained using <color=yellow> /dc </color> command",
+              " <color=green> SolidPlayer </color>   - Verified player. Have connected their steam accounts to <color=orange> solidrust.net </color>",
+              " <color=aqua> Supporter </color>      - Contributing Member. Have made a donation, or contributed time to the NOLAG™ network",
+              " <color=purple> Legendary </color>    - Team Member. Monthly subscriber or NOLAG™ Staff member.",
               " ",
               " ",
-              "<color=yellow> Ranks are global throughout all NOLAG servers. Rewards are specific to each server. </color>",
+              "<color=yellow> Roles are global throughout all NOLAG™ servers and Discord. Rewards are specific to each server. </color>",
               " ",
-              "See: <color=orange> solidrust.net/rewards </color> for more details",
+              "See: <color=orange> solidrust.net/rewards </color> for more details on server rewards.",
+              " ",
+              "See: <color=orange> discord.gg/PpAvPcD46q </color> for community support, Rust news and server updates",
               " "
             ],
             "ImageSettings": []

@@ -221,7 +221,7 @@
       "Max Scheduled Events": 10,
       "Max To Spawn At Once (0 = Use Max Scheduled Events Amount)": 0,
       "Minimum Required Players Online": 1,
-      "Spawn Bases X Distance Apart": 50.0,
+      "Spawn Bases X Distance Apart": 100.0,
       "Spawns Database File (Optional)": "none",
       "Time To Wait Between Spawns": 15.0
     },

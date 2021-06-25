@@ -15,7 +15,7 @@ namespace Oxide.Plugins
 {
     using ClansEx;
 
-    [Info("Clans", "k1lly0u", "0.2.3")]
+    [Info("Clans", "k1lly0u", "0.2.4")]
     class Clans : CovalencePlugin
     {
         #region Fields        
@@ -308,12 +308,12 @@ namespace Oxide.Plugins
 
             foreach (KeyValuePair<string, Clan.MemberInvite> invite in clan.MemberInvites)
             {
-                if (partialNameOrID.Equals(invite.Key) || invite.Value.Name.Contains(partialNameOrID))
+                if (partialNameOrID.Equals(invite.Key) || invite.Value.DisplayName.Contains(partialNameOrID))
                 {
                     storedData.RevokePlayerInvite(partialNameOrID, clan.Tag);
 
                     clan.MemberInvites.Remove(invite.Key);
-                    clan.Broadcast("Notification.WithdrawInvite.Success", player.Name, invite.Value.Name);
+                    clan.Broadcast("Notification.WithdrawInvite.Success", player.Name, invite.Value.DisplayName);
                     return true;
                 }
             }
@@ -1217,7 +1217,7 @@ namespace Oxide.Plugins
         }
 #endregion
 
-#region Clan
+        #region Clan
         [Serializable]
         public class Clan
         {
@@ -1429,7 +1429,7 @@ namespace Oxide.Plugins
                     OwnerID = newOwner.Key;
                     ClanMembers[OwnerID].Role = Member.MemberRole.Owner;
 
-                    Broadcast("Notification.Leave.NewOwner", ClanMembers[OwnerID].Name);
+                    Broadcast("Notification.Leave.NewOwner", ClanMembers[OwnerID].DisplayName);
                 }
 
                 Interface.Oxide.CallHook("OnClanMemberGone", player.Id, ClanMembers.Keys.ToList());
@@ -1480,14 +1480,14 @@ namespace Oxide.Plugins
                 ClanMembers.Remove(targetId);
                 Instance.storedData.UnregisterPlayer(targetId);
 
-                Broadcast("Notification.Kick.Reply", player.Name, member.Name);
+                Broadcast("Notification.Kick.Reply", player.Name, member.DisplayName);
 
                 Interface.Oxide.CallHook("OnClanMemberGone", targetId, ClanMembers.Keys.ToList());
                 Interface.Oxide.CallHook("OnClanMemberGone", targetId, Tag);
                 Interface.Oxide.CallHook("OnClanUpdate", Tag);
 
                 if (configData.Options.LogChanges)
-                    Instance.LogToFile(Instance.Title, $"{member.Name} was kicked from [{Tag}] by {player.Name}", Instance);
+                    Instance.LogToFile(Instance.Title, $"{member.DisplayName} was kicked from [{Tag}] by {player.Name}", Instance);
 
                 return true;
             }
@@ -1523,11 +1523,11 @@ namespace Oxide.Plugins
 
                 MarkDirty();
 
-                Broadcast("Notification.Promotion.Reply", member.Name, string.Format(COLORED_LABEL, GetRoleColor(member.Role), member.Role), string.Format(COLORED_LABEL, GetRoleColor(promoter.Id), promoter.Name));
+                Broadcast("Notification.Promotion.Reply", member.DisplayName, string.Format(COLORED_LABEL, GetRoleColor(member.Role), member.Role), string.Format(COLORED_LABEL, GetRoleColor(promoter.Id), promoter.Name));
                 Interface.Oxide.CallHook("OnClanUpdate", Tag);
 
                 if (configData.Options.LogChanges)
-                    Instance.LogToFile(Instance.Title, $"{member.Name} was promototed to {member.Role} by {promoter.Name}", Instance);
+                    Instance.LogToFile(Instance.Title, $"{member.DisplayName} was promototed to {member.Role} by {promoter.Name}", Instance);
 
                 return true;
             }
@@ -1543,7 +1543,7 @@ namespace Oxide.Plugins
                 Member member = ClanMembers[targetId];
                 if (IsMember(targetId))
                 {
-                    demoter.Reply(string.Format(Message("Notification.Demotion.IsMember", demoter.Id), member.Name));
+                    demoter.Reply(string.Format(Message("Notification.Demotion.IsMember", demoter.Id), member.DisplayName));
                     return false;
                 }
 
@@ -1551,12 +1551,12 @@ namespace Oxide.Plugins
 
                 MarkDirty();
 
-                Broadcast("Notification.Demotion.Reply", member.Name, string.Format(COLORED_LABEL, GetRoleColor(member.Role), member.Role), string.Format(COLORED_LABEL, GetRoleColor(demoter.Id), demoter.Name));
+                Broadcast("Notification.Demotion.Reply", member.DisplayName, string.Format(COLORED_LABEL, GetRoleColor(member.Role), member.Role), string.Format(COLORED_LABEL, GetRoleColor(demoter.Id), demoter.Name));
 
                 Interface.Oxide.CallHook("OnClanUpdate", Tag);
 
                 if (configData.Options.LogChanges)
-                    Instance.LogToFile(Instance.Title, $"{member.Name} was demoted to {member.Role} by {demoter.Name}", Instance);
+                    Instance.LogToFile(Instance.Title, $"{member.DisplayName} was demoted to {member.Role} by {demoter.Name}", Instance);
                 return true;
             }
 
@@ -1604,29 +1604,32 @@ namespace Oxide.Plugins
                 membersOnline = string.Empty;
                 serializedClanObject = null;
             }
-#endregion
+            #endregion
 
-#region Clan Chat
-            internal void Broadcast(string message)
-            {
-                foreach (Member member in ClanMembers.Values)
-                    member.Player?.Reply(message);
-            }
+            #region Clan Chat
+                        internal void Broadcast(string message)
+                        {
+                            foreach (Member member in ClanMembers.Values)
+                                member.Player?.Reply(message);
+                        }
 
-            internal void Broadcast(string key, params object[] args)
-            {
-                foreach (Member member in ClanMembers.Values)
-                    member.Player?.Reply(string.Format(Message(key, member.Player.Id), args));
-            }
-#endregion
+                        internal void Broadcast(string key, params object[] args)
+                        {
+                            foreach (Member member in ClanMembers.Values)
+                                member.Player?.Reply(string.Format(Message(key, member.Player.Id), args));
+                        }
+            #endregion
 
-#region Clan Info
+            #region Clan Info
             [JsonIgnore]
             private string cachedClanInfo = string.Empty;
 
             [JsonIgnore]
             private string membersOnline = string.Empty;
 
+#if RUST
+            internal void PrintClanInfo(BasePlayer player) => PrintClanInfo(player.IPlayer);
+#endif
             internal void PrintClanInfo(IPlayer player)
             {
                 if (string.IsNullOrEmpty(cachedClanInfo))
@@ -1643,7 +1646,7 @@ namespace Oxide.Plugins
 
                     foreach (KeyValuePair<string, Member> kvp in ClanMembers)
                     {
-                        string member = string.Format(COLORED_LABEL, GetRoleColor(kvp.Key), kvp.Value.Name);
+                        string member = string.Format(COLORED_LABEL, GetRoleColor(kvp.Key), kvp.Value.DisplayName);
 
                         if (kvp.Value.IsConnected)
                             online.Add(member);
@@ -1681,7 +1684,7 @@ namespace Oxide.Plugins
                     {
                         if (kvp.Value.IsConnected)
                         {
-                            string member = string.Format(COLORED_LABEL, GetRoleColor(kvp.Key), kvp.Value.Name);
+                            string member = string.Format(COLORED_LABEL, GetRoleColor(kvp.Key), kvp.Value.DisplayName);
                             list.Add(member);
                         }
                     }
@@ -1695,9 +1698,17 @@ namespace Oxide.Plugins
 #endregion
 
 #region Roles
+            internal bool IsOwner(ulong playerId) => IsOwner(playerId.ToString());
+
             internal bool IsOwner(string playerId) => ClanMembers[playerId].Role == Member.MemberRole.Owner;
 
+            internal bool IsModerator(ulong playerId) => IsModerator(playerId.ToString());
+
             internal bool IsModerator(string playerId) => ClanMembers[playerId].Role == Member.MemberRole.Moderator;
+
+            internal bool IsCouncil(ulong playerId) => false;
+
+            internal bool IsMember(ulong playerId) => IsMember(playerId.ToString());
 
             internal bool IsMember(string playerId) => ClanMembers[playerId].Role == Member.MemberRole.Member;
 
@@ -1723,19 +1734,26 @@ namespace Oxide.Plugins
                 [JsonIgnore]
                 public IPlayer Player { get; set; }
 
-                public string Name { get; set; } = string.Empty;
+                [JsonProperty("Name")]
+                public string DisplayName { get; set; } = string.Empty;
 
                 public MemberRole Role { get; set; }
 
                 [JsonIgnore]
                 internal bool IsConnected => Player != null ? Player.IsConnected : false;
 
+                [JsonIgnore]
+                public bool MemberFFEnabled { get; set; } = false;
+
+                [JsonIgnore]
+                public bool AllyFFEnabled { get; set; } = false;
+
                 public Member() { }
 
                 public Member(MemberRole role, string name)
                 {
                     this.Role = role;
-                    this.Name = name;
+                    this.DisplayName = name;
                 }
 
                 public enum MemberRole { Owner, Moderator, Member }
@@ -1744,7 +1762,8 @@ namespace Oxide.Plugins
             [Serializable]
             public class MemberInvite
             {
-                public string Name { get; set; }
+                [JsonProperty("Name")]
+                public string DisplayName { get; set; }
 
                 public double ExpiryTime { get; set; }
 
@@ -1752,13 +1771,13 @@ namespace Oxide.Plugins
 
                 public MemberInvite(IPlayer player)
                 {
-                    Name = player.Name;
+                    DisplayName = player.Name;
                     ExpiryTime = UnixTimeStampUTC();
                 }
 
                 public MemberInvite(string name)
                 {
-                    Name = name;
+                    DisplayName = name;
                     ExpiryTime = UnixTimeStampUTC();
                 }
             }
@@ -1814,7 +1833,7 @@ namespace Oxide.Plugins
                     if (kvp.Key.Equals(partialNameOrID))
                         return kvp.Key;
 
-                    if (kvp.Value.Name.Contains(partialNameOrID, CompareOptions.OrdinalIgnoreCase))
+                    if (kvp.Value.DisplayName.Contains(partialNameOrID, CompareOptions.OrdinalIgnoreCase))
                         return kvp.Key;
                 }
 
@@ -1857,6 +1876,12 @@ namespace Oxide.Plugins
                 [JsonProperty(PropertyName = "Invite Options")]
                 public InviteOptions Invites { get; set; }
 
+                [JsonIgnore]
+                public bool MemberFF => false;
+
+                [JsonIgnore]
+                public bool OwnerFF => false;
+
                 public class AllianceOptions
                 {
                     [JsonProperty(PropertyName = "Enable clan alliances")]
@@ -1864,6 +1889,13 @@ namespace Oxide.Plugins
 
                     [JsonProperty(PropertyName = "Alliance limit")]
                     public int AllianceLimit { get; set; }
+
+                    [JsonIgnore]
+                    public bool AllyFF => false;
+
+                    [JsonIgnore]
+                    public bool OwnerFF => false;
+
                 }
 
                 public class InviteOptions
@@ -2144,6 +2176,8 @@ namespace Oxide.Plugins
                 return null;
             }
 
+            internal Clan FindClanByID(ulong playerId) => FindClanByID(playerId.ToString());
+
             internal Clan FindClanByID(string playerId)
             {
                 string tag;
@@ -2152,6 +2186,8 @@ namespace Oxide.Plugins
 
                 return FindClan(tag);
             }
+
+            internal Clan.Member FindMemberByID(ulong playerId) => FindMemberByID(playerId.ToString());
 
             internal Clan.Member FindMemberByID(string playerId)
             {
@@ -2364,6 +2400,38 @@ namespace Oxide.Plugins
             ["Chat.Clan.Prefix"] = "[#a1ff46][CLAN CHAT][/#]: {0}",
             ["Chat.Alliance.Format"] = "[{0}] [{1}]{2}[/#]: {3}",
         };
+#endregion
+
+#region ClansUI  
+        #if RUST
+        public bool HasFFEnabled(ulong playerID) => false;
+
+        public void ToggleFF(ulong playerID) { }
+
+        internal bool PromotePlayer(BasePlayer promoter, ulong targetId) => PromotePlayer(promoter.IPlayer, targetId.ToString());
+
+        internal bool DemotePlayer(BasePlayer demoter, ulong targetId) => DemotePlayer(demoter.IPlayer, targetId.ToString());
+
+        internal bool KickPlayer(BasePlayer player, ulong targetId) => KickPlayer(player.IPlayer, targetId.ToString());
+
+        internal bool InvitePlayer(BasePlayer player, ulong targetId) => InvitePlayer(player.IPlayer, targetId.ToString());
+
+        internal bool WithdrawInvite(BasePlayer player, string partialNameOrID) => WithdrawInvite(player.IPlayer, partialNameOrID);
+
+        internal bool OfferAlliance(BasePlayer player, string tag) => OfferAlliance(player.IPlayer, tag);
+
+        internal bool RevokeAlliance(BasePlayer player, string tag) => RevokeAlliance(player.IPlayer, tag);
+
+        internal bool WithdrawAlliance(BasePlayer player, string tag) => WithdrawAlliance(player.IPlayer, tag);
+
+        internal bool RejectAlliance(BasePlayer player, string tag) => RejectAlliance(player.IPlayer, tag);
+
+        internal bool AcceptAlliance(BasePlayer player, string tag) => AcceptAlliance(player.IPlayer, tag);
+
+        internal bool LeaveClan(BasePlayer player) => LeaveClan(player.IPlayer);
+
+        internal bool DisbandClan(BasePlayer player) => DisbandClan(player.IPlayer);
+        #endif
 #endregion
     }
 
