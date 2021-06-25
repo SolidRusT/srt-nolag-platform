@@ -6,49 +6,49 @@
     "autoturret_deployed"
   ],
   "Additional Bases For This Difficulty": {
-    "Base1": [
+    "raidnightmare1": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "height",
-        "Value": "2.5"
+        "Value": "0"
       }
     ],
-    "Base2": [
+    "raidnightmare2": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "height",
-        "Value": "1.5"
+        "Value": "0"
       }
     ],
-    "Base3": [
+    "raidnightmare3": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "height",
-        "Value": "1.5"
+        "Value": "0"
       }
     ],
-    "SRT1": [
+    "raidnightmare4": [
       {
         "Option": "stability",
         "Value": "true"
@@ -59,7 +59,91 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
+      }
+    ],
+    "raidnightmare5": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "raidnightmare6": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "raidnightmare7": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "raidnightmare8": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "raidnightmare9": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "raidnightmare10": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
       }
     ]
   },

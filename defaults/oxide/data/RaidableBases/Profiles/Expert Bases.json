@@ -48,7 +48,161 @@
         "Value": "1.5"
       }
     ],
+    "Base4": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
     "SRT1": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert1": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert2": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert3": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert4": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert5": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert6": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert7": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert8": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert9": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert10": [
       {
         "Option": "stability",
         "Value": "true"

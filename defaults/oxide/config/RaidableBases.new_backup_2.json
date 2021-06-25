@@ -75,7 +75,9 @@
         "Saturday": true,
         "Sunday": true
       },
-      "Additional Containers To Include As Boxes": [],
+      "Additional Containers To Include As Boxes": [
+        "locker"
+      ],
       "Difficulty Colors (Border)": {
         "Easy": "000000",
         "Medium": "000000",
@@ -98,7 +100,7 @@
       "Allow Player Bags To Be Lootable At PVE Bases": true,
       "Allow Traps To Drop Loot": false,
       "Allow Players To Loot Traps": false,
-      "Allow Raid Bases On Roads": true,
+      "Allow Raid Bases On Roads": false,
       "Allow Raid Bases On Rivers": true,
       "Allow Raid Bases On Building Topology": true,
       "Allow Vending Machines To Broadcast": false,
@@ -116,7 +118,7 @@
       "Bypass Lock Treasure To First Attacker For PVP Bases": false,
       "Delay Between Entity Death While Despawning Base": 0.002,
       "Despawn Spawned Mounts": true,
-      "Do Not Destroy Player Built Deployables": false,
+      "Do Not Destroy Player Built Deployables": true,
       "Do Not Destroy Player Built Structures": true,
       "Divide Rewards Among All Raiders": true,
       "Draw Corpse Time (Seconds)": 300.0,
@@ -125,7 +127,7 @@
       "Maximum Elevation Level": 2.5,
       "Move Cookables Into Ovens": true,
       "Move Food Into BBQ Or Fridge": true,
-      "Move Resources Into Tool Cupboard": false,
+      "Move Resources Into Tool Cupboard": true,
       "Move Items Into Lockers": true,
       "Lock Treasure To First Attacker": false,
       "Lock Treasure Max Inactive Time (Minutes)": 10.0,
@@ -151,7 +153,7 @@
       "Wait To Start Despawn Timer When Base Takes Damage From Player": false
     },
     "Map Markers": {
-      "Marker Name": "Raidable Base Event",
+      "Marker Name": "SRT Base Event",
       "Radius": 0.25,
       "Use Vending Map Marker": true,
       "Use Explosion Map Marker": false,
@@ -268,7 +270,11 @@
       "pvp",
       "99999999"
     ],
-    "Blacklisted Commands": [],
+    "Blacklisted Commands": [
+      "remove",
+      "up",
+      "down"
+    ],
     "Amount Of Entities To Undo Per Batch (1 = Slowest But Better Performance)": 5,
     "Automatically Teleport Admins To Their Map Marker Positions": false,
     "Block Wizardry Plugin At Events": false,
@@ -282,7 +288,7 @@
     "Server Console Command": "rbevent"
   },
   "Event Messages": {
-    "Announce Raid Unlocked": true,
+    "Announce Raid Unlocked": false,
     "Announce Buy Base Messages": false,
     "Announce Thief Message": true,
     "Announce PVE/PVP Enter/Exit Messages": true,
@@ -308,11 +314,11 @@
     "Award Top X Players On Wipe": 3,
     "Enabled": true,
     "Assign Rank After X Completions": {
-      "Easy": 0,
-      "Medium": 0,
-      "Hard": 0,
-      "Expert": 0,
-      "Nightmare": 0,
+      "Easy": 15,
+      "Medium": 10,
+      "Hard": 5,
+      "Expert": 3,
+      "Nightmare": 1,
       "Assign To Owner Of Raid Only": false
     },
     "Difficulty Points": {

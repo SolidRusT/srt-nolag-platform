@@ -48,7 +48,161 @@
         "Value": "1.5"
       }
     ],
+    "Base4": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
     "SRT1": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard1": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard2": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard3": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard4": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard5": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard6": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard7": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard8": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard9": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidhard10": [
       {
         "Option": "stability",
         "Value": "true"
