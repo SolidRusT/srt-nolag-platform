@@ -131,11 +131,7 @@
       "OverrideServerIdCheck": true,
       "GroupsRemove": [
         "admin",
-        "gm",
-        "legend",
-        "supporter",
-        "solidplayer",
-        "survivor"
+        "gm"
       ],
       "PermissionsOxide": [
         "kits.survivor",
