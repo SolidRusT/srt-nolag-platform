@@ -1247,6 +1247,142 @@
       "WearItems": [],
       "BeltItems": []
     },
+    "Diver": {
+      "Name": "Diver",
+      "Description": "Water world kit for scuba diving and underwater looting.",
+      "RequiredPermission": "",
+      "MaximumUses": 0,
+      "RequiredAuth": 0,
+      "Cooldown": 900,
+      "Cost": 0,
+      "IsHidden": false,
+      "CopyPasteFile": "",
+      "KitImage": "https://solidrust.net/images/Kit-Diver.jpg",
+      "MainItems": [
+        {
+          "Shortname": "tool.instant_camera",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 30.0,
+          "MaxCondition": 30.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "bucket.water",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 150.0,
+          "MaxCondition": 150.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": []
+        }
+      ],
+      "WearItems": [
+        {
+          "Shortname": "diving.mask",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 200.0,
+          "MaxCondition": 200.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "diving.tank",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 600.0,
+          "MaxCondition": 600.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "diving.fins",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 2,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "diving.wetsuit",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 3,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ],
+      "BeltItems": [
+        {
+          "Shortname": "flashlight.held",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 50.0,
+          "MaxCondition": 50.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "waterjug",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": [
+            {
+              "Shortname": "water",
+              "Skin": 0,
+              "Amount": 500,
+              "Condition": 0.0,
+              "MaxCondition": 0.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
+        }
+      ]
+    },
     "Guest": {
       "Name": "Guest",
       "Description": "Default player spawn kit",
