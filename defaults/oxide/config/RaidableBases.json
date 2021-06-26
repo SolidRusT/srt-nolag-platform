@@ -16,8 +16,8 @@
         "Allow Max Amount Increase From Difficulties Disabled On A Specific Day Of The Week": false,
         "Easy": 0,
         "Medium": 0,
-        "Hard": 0,
-        "Expert": 3,
+        "Hard": 3,
+        "Expert": 2,
         "Nightmare": 1
       },
       "Player Lockouts (0 = ignore)": {
@@ -221,8 +221,8 @@
       "Include PVP Bases": true,
       "Ignore Safe Checks": false,
       "Ignore Player Entities At Custom Spawn Locations": false,
-      "Max Scheduled Events": 10,
-      "Max To Spawn At Once (0 = Use Max Scheduled Events Amount)": 2,
+      "Max Scheduled Events": 12,
+      "Max To Spawn At Once (0 = Use Max Scheduled Events Amount)": 1,
       "Minimum Required Players Online": 1,
       "Spawn Bases X Distance Apart": 100.0,
       "Spawns Database File (Optional)": "none",
