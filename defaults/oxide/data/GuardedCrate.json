@@ -2,7 +2,7 @@
   "Events": [
     {
       "EventDuration (duration the event will be active for)": 900.0,
-      "EventName (event name)": "SRT Easy Crate",
+      "EventName (event name)": "SRT Easy",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": true,
@@ -23,7 +23,7 @@
     },
     {
       "EventDuration (duration the event will be active for)": 1800.0,
-      "EventName (event name)": "SRT Medium Crate",
+      "EventName (event name)": "SRT Medium",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": true,
@@ -44,7 +44,7 @@
     },
     {
       "EventDuration (duration the event will be active for)": 3600.0,
-      "EventName (event name)": "SRT Hard Crate",
+      "EventName (event name)": "SRT Hard",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": true,
@@ -65,14 +65,14 @@
     },
     {
       "EventDuration (duration the event will be active for)": 7200.0,
-      "EventName (event name)": "SRT Elite Crate",
+      "EventName (event name)": "SRT Expert",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
       "UseKits (use custom kits plugin)": true,
       "Kits (custom kits)": [
         "sciexpert"
       ],
-      "NpcName (custom name)": "SRT Elite",
+      "NpcName (custom name)": "SRT Expert",
       "NpcCount (number of guards to spawn)": 12,
       "NpcHealth (health guards spawn with)": 350.0,
       "NpcRadius (max distance guards will roam)": 50.0,
