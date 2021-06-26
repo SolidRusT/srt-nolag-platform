@@ -17,8 +17,8 @@
         "Easy": 0,
         "Medium": 0,
         "Hard": 0,
-        "Expert": 0,
-        "Nightmare": 0
+        "Expert": 3,
+        "Nightmare": 1
       },
       "Player Lockouts (0 = ignore)": {
         "Time Between Raids In Minutes (Easy)": 0.0,
@@ -76,7 +76,10 @@
         "Sunday": true
       },
       "Additional Containers To Include As Boxes": [
-        "locker"
+        "locker",
+        "vendingmachine",
+        "bbq",
+        "fridge"
       ],
       "Difficulty Colors (Border)": {
         "Easy": "000000",
