@@ -6,62 +6,6 @@
     "autoturret_deployed"
   ],
   "Additional Bases For This Difficulty": {
-    "Base1": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "false"
-      },
-      {
-        "Option": "height",
-        "Value": "2.5"
-      }
-    ],
-    "Base2": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "false"
-      },
-      {
-        "Option": "height",
-        "Value": "1.5"
-      }
-    ],
-    "Base3": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "false"
-      },
-      {
-        "Option": "height",
-        "Value": "1.5"
-      }
-    ],
-    "Base4": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
     "raidmed1": [
       {
         "Option": "stability",
@@ -210,11 +154,11 @@
     },
     {
       "Option": "autoheight",
-      "Value": "false"
+      "Value": "true"
     },
     {
       "Option": "height",
-      "Value": "1.0"
+      "Value": "0"
     }
   ],
   "Arena Walls": {

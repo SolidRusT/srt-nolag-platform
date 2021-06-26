@@ -1,54 +1,54 @@
 {
-  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 2,
+  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 1,
   "Entities Not Allowed To Be Picked Up": [
     "generator.small",
     "generator.static",
     "autoturret_deployed"
   ],
   "Additional Bases For This Difficulty": {
-    "raidhard1": [
+    "Base1": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "2.5"
       }
     ],
-    "raidhard2": [
+    "Base2": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "1.5"
       }
     ],
-    "raidhard3": [
+    "Base3": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "1.5"
       }
     ],
-    "raidhard4": [
+    "Base4": [
       {
         "Option": "stability",
         "Value": "true"
@@ -59,10 +59,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard5": [
+    "raidmed1": [
       {
         "Option": "stability",
         "Value": "true"
@@ -73,10 +73,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard6": [
+    "raidmed2": [
       {
         "Option": "stability",
         "Value": "true"
@@ -87,10 +87,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard7": [
+    "raidmed3": [
       {
         "Option": "stability",
         "Value": "true"
@@ -101,10 +101,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard8": [
+    "raidmed4": [
       {
         "Option": "stability",
         "Value": "true"
@@ -115,10 +115,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard9": [
+    "raidmed5": [
       {
         "Option": "stability",
         "Value": "true"
@@ -129,10 +129,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard10": [
+    "raidmed6": [
       {
         "Option": "stability",
         "Value": "true"
@@ -143,7 +143,63 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
+      }
+    ],
+    "raidmed7": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "raidmed8": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "raidmed9": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "raidmed10": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
       }
     ]
   },
@@ -192,7 +248,7 @@
     ],
     "Murderer Kits": [],
     "Scientist Kits": [
-      "scihard"
+      "scimed"
     ],
     "Random Names": [],
     "Amount To Spawn": 8,
@@ -222,8 +278,8 @@
   },
   "Change Building Material Tier To": {
     "Wooden": false,
-    "Stone": false,
-    "Metal": true,
+    "Stone": true,
+    "Metal": false,
     "HQM": false
   },
   "Auto Turrets": {

@@ -1,12 +1,12 @@
 {
-  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 2,
+  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 4,
   "Entities Not Allowed To Be Picked Up": [
     "generator.small",
     "generator.static",
     "autoturret_deployed"
   ],
   "Additional Bases For This Difficulty": {
-    "raidhard1": [
+    "raidnightmare1": [
       {
         "Option": "stability",
         "Value": "true"
@@ -17,10 +17,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard2": [
+    "raidnightmare2": [
       {
         "Option": "stability",
         "Value": "true"
@@ -31,10 +31,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard3": [
+    "raidnightmare3": [
       {
         "Option": "stability",
         "Value": "true"
@@ -45,10 +45,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard4": [
+    "raidnightmare4": [
       {
         "Option": "stability",
         "Value": "true"
@@ -59,10 +59,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard5": [
+    "raidnightmare5": [
       {
         "Option": "stability",
         "Value": "true"
@@ -73,10 +73,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard6": [
+    "raidnightmare6": [
       {
         "Option": "stability",
         "Value": "true"
@@ -87,10 +87,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard7": [
+    "raidnightmare7": [
       {
         "Option": "stability",
         "Value": "true"
@@ -101,10 +101,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard8": [
+    "raidnightmare8": [
       {
         "Option": "stability",
         "Value": "true"
@@ -115,10 +115,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard9": [
+    "raidnightmare9": [
       {
         "Option": "stability",
         "Value": "true"
@@ -129,10 +129,10 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
-    "raidhard10": [
+    "raidnightmare10": [
       {
         "Option": "stability",
         "Value": "true"
@@ -143,7 +143,7 @@
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ]
   },
@@ -188,11 +188,16 @@
       "machete"
     ],
     "Scientist Items": [
-      "syringe.medical"
+      "hazmatsuit_scientist",
+      "rifle.ak"
     ],
-    "Murderer Kits": [],
+    "Murderer Kits": [
+      "murderer_kit_1",
+      "murderer_kit_2"
+    ],
     "Scientist Kits": [
-      "scihard"
+      "scientist_kit_1",
+      "scientist_kit_2"
     ],
     "Random Names": [],
     "Amount To Spawn": 8,
@@ -223,8 +228,8 @@
   "Change Building Material Tier To": {
     "Wooden": false,
     "Stone": false,
-    "Metal": true,
-    "HQM": false
+    "Metal": false,
+    "HQM": true
   },
   "Auto Turrets": {
     "Aim Cone": 5.0,

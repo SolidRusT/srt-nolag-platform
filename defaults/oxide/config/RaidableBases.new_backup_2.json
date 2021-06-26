@@ -17,8 +17,8 @@
         "Easy": 0,
         "Medium": 0,
         "Hard": 0,
-        "Expert": 0,
-        "Nightmare": 0
+        "Expert": 3,
+        "Nightmare": 1
       },
       "Player Lockouts (0 = ignore)": {
         "Time Between Raids In Minutes (Easy)": 0.0,
@@ -76,7 +76,10 @@
         "Sunday": true
       },
       "Additional Containers To Include As Boxes": [
-        "locker"
+        "locker",
+        "vendingmachine",
+        "bbq",
+        "fridge"
       ],
       "Difficulty Colors (Border)": {
         "Easy": "000000",
@@ -100,17 +103,17 @@
       "Allow Player Bags To Be Lootable At PVE Bases": true,
       "Allow Traps To Drop Loot": false,
       "Allow Players To Loot Traps": false,
-      "Allow Raid Bases On Roads": false,
+      "Allow Raid Bases On Roads": true,
       "Allow Raid Bases On Rivers": true,
       "Allow Raid Bases On Building Topology": true,
-      "Allow Vending Machines To Broadcast": false,
+      "Allow Vending Machines To Broadcast": true,
       "Allow Bases To Float Above Water": false,
       "Prevent Bases From Floating Above Water By Also Checking Surrounding Area": false,
       "Maximum Water Depth Level Used For Float Above Water Option": 1.0,
       "Backpacks Can Be Opened At PVE Bases": true,
       "Backpacks Can Be Opened At PVP Bases": true,
-      "Backpacks Drop At PVE Bases": false,
-      "Backpacks Drop At PVP Bases": false,
+      "Backpacks Drop At PVE Bases": true,
+      "Backpacks Drop At PVP Bases": true,
       "Block Mounted Damage To Bases And Players": false,
       "Block RestoreUponDeath Plugin For PVP Bases": false,
       "Block RestoreUponDeath Plugin For PVE Bases": false,
@@ -118,8 +121,8 @@
       "Bypass Lock Treasure To First Attacker For PVP Bases": false,
       "Delay Between Entity Death While Despawning Base": 0.002,
       "Despawn Spawned Mounts": true,
-      "Do Not Destroy Player Built Deployables": true,
-      "Do Not Destroy Player Built Structures": true,
+      "Do Not Destroy Player Built Deployables": false,
+      "Do Not Destroy Player Built Structures": false,
       "Divide Rewards Among All Raiders": true,
       "Draw Corpse Time (Seconds)": 300.0,
       "Eject Sleepers Before Spawning Base": true,
@@ -144,13 +147,13 @@
       "Prevent Fire From Spreading": true,
       "Prevent Players From Hogging Raids": true,
       "Require Cupboard To Be Looted Before Despawning": false,
-      "Destroying The Cupboard Completes The Raid": false,
-      "Require All Bases To Spawn Before Respawning An Existing Base": false,
+      "Destroying The Cupboard Completes The Raid": true,
+      "Require All Bases To Spawn Before Respawning An Existing Base": true,
       "Turn Lights On At Night": true,
       "Turn Lights On Indefinitely": false,
       "Traps And Turrets Ignore Users Using NOCLIP": false,
       "Use Random Codes On Code Locks": true,
-      "Wait To Start Despawn Timer When Base Takes Damage From Player": false
+      "Wait To Start Despawn Timer When Base Takes Damage From Player": true
     },
     "Map Markers": {
       "Marker Name": "SRT Base Event",
@@ -196,7 +199,7 @@
       "Ignore Player Entities At Custom Spawn Locations": false,
       "Minimum Required Players Online": 1,
       "Max Maintained Events": 1,
-      "Spawn Bases X Distance Apart": 50.0,
+      "Spawn Bases X Distance Apart": 100.0,
       "Spawns Database File (Optional)": "none",
       "Time To Wait Between Spawns": 15.0
     },
@@ -219,7 +222,7 @@
       "Ignore Safe Checks": false,
       "Ignore Player Entities At Custom Spawn Locations": false,
       "Max Scheduled Events": 10,
-      "Max To Spawn At Once (0 = Use Max Scheduled Events Amount)": 0,
+      "Max To Spawn At Once (0 = Use Max Scheduled Events Amount)": 2,
       "Minimum Required Players Online": 1,
       "Spawn Bases X Distance Apart": 100.0,
       "Spawns Database File (Optional)": "none",

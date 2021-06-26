@@ -1,12 +1,68 @@
 {
-  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 2,
+  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 3,
   "Entities Not Allowed To Be Picked Up": [
     "generator.small",
     "generator.static",
     "autoturret_deployed"
   ],
   "Additional Bases For This Difficulty": {
-    "raidhard1": [
+    "Base1": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "2.5"
+      }
+    ],
+    "Base2": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "1.5"
+      }
+    ],
+    "Base3": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "false"
+      },
+      {
+        "Option": "height",
+        "Value": "1.5"
+      }
+    ],
+    "Base4": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "0"
+      }
+    ],
+    "SRT1": [
       {
         "Option": "stability",
         "Value": "true"
@@ -20,7 +76,7 @@
         "Value": "3"
       }
     ],
-    "raidhard2": [
+    "raidexpert1": [
       {
         "Option": "stability",
         "Value": "true"
@@ -34,7 +90,7 @@
         "Value": "3"
       }
     ],
-    "raidhard3": [
+    "raidexpert2": [
       {
         "Option": "stability",
         "Value": "true"
@@ -48,7 +104,7 @@
         "Value": "3"
       }
     ],
-    "raidhard4": [
+    "raidexpert3": [
       {
         "Option": "stability",
         "Value": "true"
@@ -62,7 +118,7 @@
         "Value": "3"
       }
     ],
-    "raidhard5": [
+    "raidexpert4": [
       {
         "Option": "stability",
         "Value": "true"
@@ -76,7 +132,7 @@
         "Value": "3"
       }
     ],
-    "raidhard6": [
+    "raidexpert5": [
       {
         "Option": "stability",
         "Value": "true"
@@ -90,7 +146,7 @@
         "Value": "3"
       }
     ],
-    "raidhard7": [
+    "raidexpert6": [
       {
         "Option": "stability",
         "Value": "true"
@@ -104,7 +160,7 @@
         "Value": "3"
       }
     ],
-    "raidhard8": [
+    "raidexpert7": [
       {
         "Option": "stability",
         "Value": "true"
@@ -118,7 +174,7 @@
         "Value": "3"
       }
     ],
-    "raidhard9": [
+    "raidexpert8": [
       {
         "Option": "stability",
         "Value": "true"
@@ -132,7 +188,21 @@
         "Value": "3"
       }
     ],
-    "raidhard10": [
+    "raidexpert9": [
+      {
+        "Option": "stability",
+        "Value": "true"
+      },
+      {
+        "Option": "autoheight",
+        "Value": "true"
+      },
+      {
+        "Option": "height",
+        "Value": "3"
+      }
+    ],
+    "raidexpert10": [
       {
         "Option": "stability",
         "Value": "true"
@@ -188,11 +258,16 @@
       "machete"
     ],
     "Scientist Items": [
-      "syringe.medical"
+      "hazmatsuit_scientist",
+      "rifle.ak"
     ],
-    "Murderer Kits": [],
+    "Murderer Kits": [
+      "murderer_kit_1",
+      "murderer_kit_2"
+    ],
     "Scientist Kits": [
-      "scihard"
+      "scientist_kit_1",
+      "scientist_kit_2"
     ],
     "Random Names": [],
     "Amount To Spawn": 8,

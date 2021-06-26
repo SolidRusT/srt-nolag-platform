@@ -1,7 +1,7 @@
 {
   "Events": [
     {
-      "EventDuration (duration the event will be active for)": 800.0,
+      "EventDuration (duration the event will be active for)": 900.0,
       "EventName (event name)": "SRT Easy Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
@@ -22,7 +22,7 @@
       "CustomLoot (items to spawn in crate)": []
     },
     {
-      "EventDuration (duration the event will be active for)": 800.0,
+      "EventDuration (duration the event will be active for)": 1800.0,
       "EventName (event name)": "SRT Medium Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
@@ -43,7 +43,7 @@
       "CustomLoot (items to spawn in crate)": []
     },
     {
-      "EventDuration (duration the event will be active for)": 1800.0,
+      "EventDuration (duration the event will be active for)": 3600.0,
       "EventName (event name)": "SRT Hard Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
@@ -64,7 +64,7 @@
       "CustomLoot (items to spawn in crate)": []
     },
     {
-      "EventDuration (duration the event will be active for)": 1800.0,
+      "EventDuration (duration the event will be active for)": 7200.0,
       "EventName (event name)": "SRT Elite Crate",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
