@@ -365,6 +365,19 @@
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
+        },
+        {
+          "Shortname": "metal.fragments",
+          "Skin": 0,
+          "Amount": 1000,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 10,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
         }
       ],
       "WearItems": [],

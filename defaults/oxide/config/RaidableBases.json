@@ -58,20 +58,20 @@
         "Sunday": true
       },
       "Expert Raids Can Spawn On": {
-        "Monday": true,
+        "Monday": false,
         "Tuesday": true,
         "Wednesday": true,
-        "Thursday": true,
+        "Thursday": false,
         "Friday": true,
         "Saturday": true,
         "Sunday": true
       },
       "Nightmare Raids Can Spawn On": {
-        "Monday": true,
-        "Tuesday": true,
+        "Monday": false,
+        "Tuesday": false,
         "Wednesday": true,
-        "Thursday": true,
-        "Friday": true,
+        "Thursday": false,
+        "Friday": false,
         "Saturday": true,
         "Sunday": true
       },
@@ -119,7 +119,7 @@
       "Block RestoreUponDeath Plugin For PVE Bases": false,
       "Bypass Lock Treasure To First Attacker For PVE Bases": false,
       "Bypass Lock Treasure To First Attacker For PVP Bases": false,
-      "Delay Between Entity Death While Despawning Base": 0.002,
+      "Delay Between Entity Death While Despawning Base": 0.02,
       "Despawn Spawned Mounts": true,
       "Do Not Destroy Player Built Deployables": false,
       "Do Not Destroy Player Built Structures": false,
