@@ -3,6 +3,6 @@
     "Kits what bots use": "default"
   },
   "NPC": {
-    "Time to respawn after death": "80"
+    "Time to respawn after death": "0"
   }
 }
