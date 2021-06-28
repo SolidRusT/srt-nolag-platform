@@ -1,5 +1,5 @@
 #!/bin/bash
-export NEW_NAME="eleven"
+export NEW_NAME="nine"
 
 mkdir -p ${GAME_ROOT}
 mkfs -t xfs /dev/nvme0n1

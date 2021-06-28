@@ -1,0 +1,9 @@
+{
+  "Invalid source": "Invalid furnace",
+  "Multiple ores": "You have multiple ores.\nYou must either add sulfur, metal or HQM to define what you want to burn",
+  "Nothing to burn": "There is nothing to burn",
+  "Invalid items": "Please remove invalid items first",
+  "No wood": "You don't have wood",
+  "Cannot optimize": "Cannot define an optimal burn",
+  "In use": "The furnace is in use"
+}

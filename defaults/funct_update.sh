@@ -279,6 +279,7 @@ heal.self  \
 heal.player  \
 blueprintshare.toggle  \
 blueprintshare.share  \
+blueprintshare.use \
 recyclerspeed.use  \
 discordrewards.use \
 dance.use \
@@ -320,6 +321,7 @@ warcopter.drone \
 suicidevest.use \
 suicidevest.give \
 spawnmini.nomini \
+spawnmini.fmini \
 signartist.url \
 signartist.text \
 signartist.restore \
@@ -329,7 +331,22 @@ fishing.allowed \
 fishing.makepole \
 visualcupboard.allowed \
 chillnightvision.use \
-chillnightvision.modify
+chillnightvision.modify \
+dronestorage.deploy \
+dronestorage.viewitems \
+dronestorage.dropitems \
+dronestorage.capacity.6 \
+optimalburn.use \
+dronepilot.create \
+dronelights.searchlight.autodeploy \
+dronelights.searchlight.move \
+fuelgauge.allow \
+phonesplus.use \
+privatemessages.allow \
+quicksmelt.use \
+quicksort.use \
+quicksort.lootall \
+quicksort.autolootall
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

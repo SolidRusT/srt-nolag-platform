@@ -1,7 +1,12 @@
 source ${HOME}/solidrust.net/defaults/funct_common.sh
 source ${HOME}/solidrust.net/defaults/funct_wipe.sh
 source ${HOME}/solidrust.net/defaults/funct_update.sh
-alias rcon="${GAME_ROOT}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
-export STEAMUSER="root"
-export GAME_ROOT="/game"
+
 initialize_srt
+
+alias rcon="${GAME_ROOT}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
+
+export STEAMUSER="root"
+#export GAME_ROOT="/game"
+
+sudo mount /dev/nvme0n1 ${GAME_ROOT}

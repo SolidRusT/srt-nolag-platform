@@ -1,5 +1,5 @@
 {
   "EnableExtraHorseSeat": true,
   "EnableMiniBackSeat": true,
-  "EnableMiniSideSeats": true
+  "EnableMiniSideSeats": false
 }

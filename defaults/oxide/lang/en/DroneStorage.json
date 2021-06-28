@@ -1,0 +1,11 @@
+{
+  "UI.Button.ViewItems": "View Items",
+  "UI.Button.DropItems": "Drop Items",
+  "Tip.DeployCommand": "Tip: Look at the drone and run <color=yellow>/dronestash</color> to deploy a stash.",
+  "Error.NoPermission": "You don't have permission to do that.",
+  "Error.NoDroneFound": "Error: No drone found.",
+  "Error.NoStashItem": "Error: You need a stash to do that.",
+  "Error.AlreadyHasStorage": "Error: That drone already has a stash.",
+  "Error.IncompatibleAttachment": "Error: That drone has an incompatible attachment.",
+  "Error.DeployFailed": "Error: Failed to deploy stash."
+}

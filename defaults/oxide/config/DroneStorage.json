@@ -1,0 +1,30 @@
+{
+  "TipChance": 25,
+  "CapacityAmounts": [
+    6,
+    12,
+    18,
+    24,
+    30,
+    36,
+    42
+  ],
+  "DisallowedItems": [],
+  "DisallowedSkins": [],
+  "UISettings": {
+    "AnchorMin": "0.5 1",
+    "AnchorMax": "0.5 1",
+    "OffsetMin": "0 -75",
+    "OffsetMax": "0 -75",
+    "Buttons": {
+      "Spacing": 25,
+      "Width": 85,
+      "Height": 26,
+      "TextSize": 13,
+      "ViewButtonColor": "0.44 0.54 0.26 1",
+      "ViewButtonTextColor": "0.97 0.92 0.88 1",
+      "DropButtonColor": "0.77 0.24 0.16 1",
+      "DropButtonTextColor": "0.97 0.92 0.88 1"
+    }
+  }
+}

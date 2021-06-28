@@ -31,6 +31,7 @@
     "[CustomProbe]",
     "[Manifest] URI IS",
     "[SpawnHandler] populationCounts",
-    ", disk("
+    ", disk(",
+    "Bone error in SkeletonPropertie"
   ]
 }

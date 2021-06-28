@@ -34,14 +34,15 @@
         "removertool.all",
         "backpacks.use.5",
         "backpacks.keeponwipe",
-        "kits.DiscordSpawn",
         "blueprintshare.toggle",
         "blueprintshare.share",
         "recycle.bypass",
         "carturrets.limit.3",
         "largercarstorage.size.5",
         "playtimesupplysignal.bonus",
-        "copypaste.*"
+        "copypaste.*",
+        "dronestorage.capacity.12",
+        "hazmattoscientistsuit.craftsuit"
       ],
       "AdditionalCommands": []
     },
@@ -61,7 +62,8 @@
       ],
       "PermissionsOxide": [
         "kits.survivor",
-        "kits.solidplayer"
+        "kits.solidplayer",
+        "dronestorage.capacity.24"
       ],
       "AdditionalCommands": []
     },
@@ -90,15 +92,17 @@
         "airstrike.chat.squad",
         "backpacks.use.7",
         "backpacks.keepondeath",
-        "kits.VipSpawn",
         "vehicledeployedlocks.keylock.free",
         "vehicledeployedlocks.codelock.free",
         "carturrets.limit.4",
-        "arkan.*",
         "largercarstorage.size.7",
         "barrelpoints.vip",
         "dronepilot.create",
-        "whoknocks.knock"
+        "whoknocks.knock",
+        "dronestorage.capacity.30",
+        "hazmattoscientistsuit.craftgreensuit",
+        "hazmattoscientistsuit.craftheavy",
+        "hazmattoscientistsuit.craftspacesuit"
       ],
       "AdditionalCommands": []
     },
@@ -118,7 +122,8 @@
         "kits.survivor",
         "kits.solidplayer",
         "kits.supporter",
-        "kits.legend"
+        "kits.legend",
+        "dronestorage.capacity.36"
       ],
       "AdditionalCommands": []
     },
@@ -170,7 +175,16 @@
         "guishop.use",
         "guishop.vip",
         "whoknocks.admin",
-        "adminchat.use"
+        "adminchat.use",
+        "dronestorage.deploy.free",
+        "dronestorage.autodeploy",
+        "dronestorage.capacity.42",
+        "dronepilot.nocooldown",
+        "dronepilot.nocost",
+        "hazmattoscientistsuit.craftgreensuit",
+        "hazmattoscientistsuit.craftheavy",
+        "hazmattoscientistsuit.craftspacesuit",
+        "playtimesupplysignal.bonus"
       ],
       "AdditionalCommands": []
     },
@@ -240,7 +254,16 @@
         "guishop.use",
         "guishop.vip",
         "whoknocks.admin",
-        "adminchat.use"
+        "adminchat.use",
+        "dronestorage.deploy.free",
+        "dronestorage.autodeploy",
+        "dronestorage.capacity.42",
+        "dronepilot.nocooldown",
+        "dronepilot.nocost",
+        "hazmattoscientistsuit.craftgreensuit",
+        "hazmattoscientistsuit.craftheavy",
+        "hazmattoscientistsuit.craftspacesuit",
+        "playtimesupplysignal.bonus"
       ],
       "AdditionalCommands": []
     },
@@ -439,7 +462,16 @@
         "adminhammer.allow",
         "spawnmini.tier3",
         "inventorycleaner.allowed",
-        "visualcupboard.admin"
+        "visualcupboard.admin",
+        "dronestorage.deploy.free",
+        "dronestorage.autodeploy",
+        "dronestorage.capacity.42",
+        "dronepilot.nocooldown",
+        "dronepilot.nocost",
+        "hazmattoscientistsuit.craftgreensuit",
+        "hazmattoscientistsuit.craftheavy",
+        "hazmattoscientistsuit.craftspacesuit",
+        "phonesplus.admin"
       ],
       "AdditionalCommands": []
     }

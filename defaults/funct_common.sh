@@ -36,6 +36,11 @@ function save_ebs () {
     rsync -ra --delete "${GAME_ROOT}/" "${HOME}/game_root" | tee -a ${LOGS}
 }
 
+function restore_ebs () {
+    echo "save current game folder to instance EBS" | tee -a ${LOGS}
+    rsync -ra --delete "${HOME}/game_root/" "${GAME_ROOT}"
+}
+
 function start_rust () {
     echo "Start RustDedicated game service" | tee -a ${LOGS}
     # enter game root
