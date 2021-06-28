@@ -3,6 +3,22 @@
     "assets/bundled/prefabs/autospawn/resource/loot/loot-barrel-1.prefab": {
       "Enabled": true,
       "ItemList": {
+        "fuse": {
+          "Max": 1,
+          "Min": 0
+        },
+        "propanetank": {
+          "Max": 3,
+          "Min": 0
+        },
+        "roadsigns": {
+          "Max": 5,
+          "Min": 4
+        },
+        "rope": {
+          "Max": 3,
+          "Min": 2
+        },
         "sewingkit": {
           "Max": 5,
           "Min": 3
@@ -10,22 +26,6 @@
         "tarp": {
           "Max": 3,
           "Min": 3
-        },
-        "rope": {
-          "Max": 3,
-          "Min": 2
-        },
-        "roadsigns": {
-          "Max": 5,
-          "Min": 4
-        },
-        "propanetank": {
-          "Max": 3,
-          "Min": 0
-        },
-        "fuse": {
-          "Max": 1,
-          "Min": 0
         }
       },
       "ItemsMax": 6,
@@ -52,13 +52,13 @@
           "Max": 3,
           "Min": 2
         },
-        "sheetmetal": {
-          "Max": 6,
-          "Min": 3
-        },
         "semibody": {
           "Max": 2,
           "Min": 0
+        },
+        "sheetmetal": {
+          "Max": 6,
+          "Min": 3
         }
       },
       "ItemsMax": 6,
@@ -102,11 +102,11 @@
     "assets/bundled/prefabs/radtown/crate_basic.prefab": {
       "Enabled": true,
       "ItemList": {
-        "arrow.wooden": {
-          "Max": 5,
-          "Min": 3
-        },
         "arrow.bone": {
+          "Max": 2,
+          "Min": 2
+        },
+        "arrow.fire": {
           "Max": 2,
           "Min": 2
         },
@@ -114,11 +114,11 @@
           "Max": 5,
           "Min": 3
         },
-        "arrow.fire": {
-          "Max": 2,
-          "Min": 2
+        "arrow.wooden": {
+          "Max": 5,
+          "Min": 3
         },
-        "crossbow": {
+        "bow.compound": {
           "Max": 1,
           "Min": 1
         },
@@ -126,11 +126,7 @@
           "Max": 1,
           "Min": 1
         },
-        "bow.compound": {
-          "Max": 1,
-          "Min": 1
-        },
-        "tool.binoculars": {
+        "crossbow": {
           "Max": 1,
           "Min": 1
         },
@@ -139,6 +135,10 @@
           "Min": 1
         },
         "knife.combat": {
+          "Max": 1,
+          "Min": 1
+        },
+        "tool.binoculars": {
           "Max": 1,
           "Min": 1
         }
@@ -151,83 +151,11 @@
     "assets/bundled/prefabs/radtown/crate_elite.prefab": {
       "Enabled": true,
       "ItemList": {
-        "autoturret": {
-          "Max": 1,
-          "Min": 1
-        },
-        "explosive.timed": {
-          "Max": 1,
-          "Min": 1
-        },
-        "metal.refined": {
-          "Max": 100,
-          "Min": 50
-        },
-        "rifle.ak": {
-          "Max": 1,
-          "Min": 1
-        },
-        "smg.mp5": {
-          "Max": 1,
-          "Min": 1
-        },
-        "ammo.rocket.basic": {
-          "Max": 1,
-          "Min": 1
-        },
         "ammo.rifle.explosive": {
           "Max": 18,
           "Min": 16
         },
-        "rifle.lr300": {
-          "Max": 1,
-          "Min": 1
-        },
-        "explosive.satchel": {
-          "Max": 3,
-          "Min": 2
-        },
-        "nightvisiongoggles": {
-          "Max": 1,
-          "Min": 1
-        },
-        "riflebody": {
-          "Max": 2,
-          "Min": 1
-        },
-        "smgbody": {
-          "Max": 2,
-          "Min": 1
-        },
-        "weapon.mod.small.scope": {
-          "Max": 1,
-          "Min": 1
-        },
-        "rifle.bolt": {
-          "Max": 1,
-          "Min": 1
-        },
-        "smg.2": {
-          "Max": 1,
-          "Min": 1
-        },
-        "smg.thompson": {
-          "Max": 1,
-          "Min": 1
-        },
-        "pistol.m92": {
-          "Max": 1,
-          "Min": 1
-        },
-        "grenade.f1": {
-          "Max": 1,
-          "Min": 1
-        },
-        "rifle.m39": {
-          "Max": 1,
-          "Min": 1
-        },
-        "rocket.launcher": {
+        "ammo.rocket.basic": {
           "Max": 1,
           "Min": 1
         },
@@ -235,7 +163,79 @@
           "Max": 1,
           "Min": 1
         },
+        "autoturret": {
+          "Max": 1,
+          "Min": 1
+        },
+        "explosive.satchel": {
+          "Max": 3,
+          "Min": 2
+        },
+        "explosive.timed": {
+          "Max": 1,
+          "Min": 1
+        },
+        "grenade.f1": {
+          "Max": 1,
+          "Min": 1
+        },
+        "metal.refined": {
+          "Max": 100,
+          "Min": 50
+        },
+        "nightvisiongoggles": {
+          "Max": 1,
+          "Min": 1
+        },
+        "pistol.m92": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.ak": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.bolt": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.lr300": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.m39": {
+          "Max": 1,
+          "Min": 1
+        },
+        "riflebody": {
+          "Max": 2,
+          "Min": 1
+        },
+        "rocket.launcher": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smg.2": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smg.mp5": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smg.thompson": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smgbody": {
+          "Max": 2,
+          "Min": 1
+        },
         "supply.signal": {
+          "Max": 1,
+          "Min": 1
+        },
+        "weapon.mod.small.scope": {
           "Max": 1,
           "Min": 1
         }
@@ -260,25 +260,17 @@
           "Max": 2,
           "Min": 1
         },
-        "targeting.computer": {
-          "Max": 2,
+        "flamethrower": {
+          "Max": 1,
+          "Min": 1
+        },
+        "grenade.beancan": {
+          "Max": 3,
           "Min": 1
         },
         "metal.refined": {
           "Max": 40,
           "Min": 20
-        },
-        "riflebody": {
-          "Max": 2,
-          "Min": 1
-        },
-        "smgbody": {
-          "Max": 2,
-          "Min": 1
-        },
-        "flamethrower": {
-          "Max": 1,
-          "Min": 1
         },
         "pistol.python": {
           "Max": 1,
@@ -288,8 +280,16 @@
           "Max": 1,
           "Min": 1
         },
-        "grenade.beancan": {
-          "Max": 3,
+        "riflebody": {
+          "Max": 2,
+          "Min": 1
+        },
+        "smgbody": {
+          "Max": 2,
+          "Min": 1
+        },
+        "targeting.computer": {
+          "Max": 2,
           "Min": 1
         },
         "wall.frame.garagedoor": {
@@ -305,7 +305,7 @@
     "assets/bundled/prefabs/radtown/crate_normal_2.prefab": {
       "Enabled": true,
       "ItemList": {
-        "flameturret": {
+        "bbq": {
           "Max": 1,
           "Min": 1
         },
@@ -313,11 +313,15 @@
           "Max": 1,
           "Min": 1
         },
-        "fridge": {
+        "flameturret": {
           "Max": 1,
           "Min": 1
         },
-        "bbq": {
+        "floor.ladder.hatch": {
+          "Max": 1,
+          "Min": 1
+        },
+        "fridge": {
           "Max": 1,
           "Min": 1
         },
@@ -325,7 +329,11 @@
           "Max": 1,
           "Min": 1
         },
-        "small.oil.refinery": {
+        "gates.external.high.stone": {
+          "Max": 1,
+          "Min": 0
+        },
+        "ladder.wooden.wall": {
           "Max": 1,
           "Min": 1
         },
@@ -337,6 +345,22 @@
           "Max": 1,
           "Min": 1
         },
+        "shutter.metal.embrasure.a": {
+          "Max": 1,
+          "Min": 1
+        },
+        "shutter.metal.embrasure.b": {
+          "Max": 1,
+          "Min": 1
+        },
+        "small.oil.refinery": {
+          "Max": 1,
+          "Min": 1
+        },
+        "techparts": {
+          "Max": 8,
+          "Min": 6
+        },
         "tunalight": {
           "Max": 1,
           "Min": 1
@@ -344,18 +368,6 @@
         "wall.external.high.stone": {
           "Max": 1,
           "Min": 0
-        },
-        "gates.external.high.stone": {
-          "Max": 1,
-          "Min": 0
-        },
-        "floor.ladder.hatch": {
-          "Max": 1,
-          "Min": 1
-        },
-        "ladder.wooden.wall": {
-          "Max": 1,
-          "Min": 1
         },
         "wall.frame.shopfront.metal": {
           "Max": 1,
@@ -368,18 +380,6 @@
         "wall.window.glass.reinforced": {
           "Max": 1,
           "Min": 1
-        },
-        "shutter.metal.embrasure.a": {
-          "Max": 1,
-          "Min": 1
-        },
-        "shutter.metal.embrasure.b": {
-          "Max": 1,
-          "Min": 1
-        },
-        "techparts": {
-          "Max": 8,
-          "Min": 6
         }
       },
       "ItemsMax": 6,
@@ -439,6 +439,10 @@
     "assets/bundled/prefabs/radtown/crate_normal_2_medical.prefab": {
       "Enabled": true,
       "ItemList": {
+        "antiradpills": {
+          "Max": 2,
+          "Min": 1
+        },
         "bandage": {
           "Max": 5,
           "Min": 3
@@ -450,10 +454,6 @@
         "syringe.medical": {
           "Max": 1,
           "Min": 0
-        },
-        "antiradpills": {
-          "Max": 2,
-          "Min": 1
         },
         "waterjug": {
           "Max": 1,
@@ -1234,6 +1234,22 @@
     "assets/bundled/prefabs/radtown/loot_barrel_1.prefab": {
       "Enabled": true,
       "ItemList": {
+        "fuse": {
+          "Max": 1,
+          "Min": 0
+        },
+        "propanetank": {
+          "Max": 3,
+          "Min": 0
+        },
+        "roadsigns": {
+          "Max": 5,
+          "Min": 3
+        },
+        "rope": {
+          "Max": 3,
+          "Min": 2
+        },
         "sewingkit": {
           "Max": 5,
           "Min": 3
@@ -1241,22 +1257,6 @@
         "tarp": {
           "Max": 3,
           "Min": 3
-        },
-        "rope": {
-          "Max": 3,
-          "Min": 2
-        },
-        "roadsigns": {
-          "Max": 5,
-          "Min": 3
-        },
-        "propanetank": {
-          "Max": 3,
-          "Min": 0
-        },
-        "fuse": {
-          "Max": 1,
-          "Min": 0
         }
       },
       "ItemsMax": 6,
@@ -1271,25 +1271,25 @@
           "Max": 2,
           "Min": 0
         },
-        "metalpipe": {
-          "Max": 3,
-          "Min": 2
-        },
         "metalblade": {
           "Max": 4,
+          "Min": 2
+        },
+        "metalpipe": {
+          "Max": 3,
           "Min": 2
         },
         "metalspring": {
           "Max": 3,
           "Min": 2
         },
-        "sheetmetal": {
-          "Max": 6,
-          "Min": 4
-        },
         "semibody": {
           "Max": 2,
           "Min": 0
+        },
+        "sheetmetal": {
+          "Max": 6,
+          "Min": 4
         }
       },
       "ItemsMax": 6,
@@ -1321,15 +1321,15 @@
     "assets/bundled/prefabs/radtown/minecart.prefab": {
       "Enabled": true,
       "ItemList": {
-        "jackhammer": {
-          "Max": 1,
-          "Min": 1
-        },
         "chainsaw": {
           "Max": 1,
           "Min": 1
         },
         "hat.miner": {
+          "Max": 1,
+          "Min": 1
+        },
+        "jackhammer": {
           "Max": 1,
           "Min": 1
         }
@@ -1392,6 +1392,14 @@
           "Max": 1,
           "Min": 1
         },
+        "metal.facemask": {
+          "Max": 1,
+          "Min": 1
+        },
+        "metal.plate.torso": {
+          "Max": 1,
+          "Min": 1
+        },
         "rifle.ak": {
           "Max": 1,
           "Min": 1
@@ -1416,11 +1424,200 @@
           "Max": 1,
           "Min": 1
         },
+        "weapon.mod.holosight": {
+          "Max": 1,
+          "Min": 1
+        },
         "weapon.mod.lasersight": {
           "Max": 1,
           "Min": 1
         },
         "weapon.mod.small.scope": {
+          "Max": 1,
+          "Min": 1
+        }
+      },
+      "ItemsMax": 10,
+      "ItemsMin": 10,
+      "MaxBPs": 1,
+      "Scrap": 0
+    },
+    "assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate_oilrig.prefab": {
+      "Enabled": true,
+      "ItemList": {
+        "autoturret": {
+          "Max": 1,
+          "Min": 1
+        },
+        "axe.salvaged": {
+          "Max": 1,
+          "Min": 1
+        },
+        "barricade.concrete": {
+          "Max": 1,
+          "Min": 1
+        },
+        "barricade.metal": {
+          "Max": 1,
+          "Min": 1
+        },
+        "cctv.camera": {
+          "Max": 1,
+          "Min": 1
+        },
+        "chainsaw": {
+          "Max": 1,
+          "Min": 1
+        },
+        "coffeecan.helmet": {
+          "Max": 1,
+          "Min": 1
+        },
+        "computerstation": {
+          "Max": 1,
+          "Min": 1
+        },
+        "door.double.hinged.toptier": {
+          "Max": 1,
+          "Min": 1
+        },
+        "door.hinged.toptier": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.andswitch": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.battery.rechargable.large": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.battery.rechargable.medium": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.counter": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.fuelgenerator.small": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.hbhfsensor": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.laserdetector": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.random.switch": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.rf.broadcaster": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.rf.receiver": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electric.teslacoil": {
+          "Max": 1,
+          "Min": 1
+        },
+        "electrical.memorycell": {
+          "Max": 1,
+          "Min": 1
+        },
+        "elevator": {
+          "Max": 1,
+          "Min": 1
+        },
+        "explosive.timed": {
+          "Max": 1,
+          "Min": 1
+        },
+        "explosives": {
+          "Max": 1,
+          "Min": 1
+        },
+        "flamethrower": {
+          "Max": 1,
+          "Min": 1
+        },
+        "floor.ladder.hatch": {
+          "Max": 1,
+          "Min": 1
+        },
+        "floor.triangle.ladder.hatch": {
+          "Max": 1,
+          "Min": 1
+        },
+        "furnace.large": {
+          "Max": 1,
+          "Min": 1
+        },
+        "gates.external.high.stone": {
+          "Max": 1,
+          "Min": 1
+        },
+        "generator.wind.scrap": {
+          "Max": 1,
+          "Min": 1
+        },
+        "grenade.f1": {
+          "Max": 1,
+          "Min": 1
+        },
+        "grenade.smoke": {
+          "Max": 1,
+          "Min": 1
+        },
+        "hazmatsuit": {
+          "Max": 1,
+          "Min": 1
+        },
+        "heavy.plate.helmet": {
+          "Max": 1,
+          "Min": 1
+        },
+        "heavy.plate.jacket": {
+          "Max": 1,
+          "Min": 1
+        },
+        "heavy.plate.pants": {
+          "Max": 1,
+          "Min": 1
+        },
+        "hoodie": {
+          "Max": 1,
+          "Min": 1
+        },
+        "horse.armor.roadsign": {
+          "Max": 1,
+          "Min": 1
+        },
+        "horse.shoes.advanced": {
+          "Max": 1,
+          "Min": 1
+        },
+        "icepick.salvaged": {
+          "Max": 1,
+          "Min": 1
+        },
+        "largemedkit": {
+          "Max": 1,
+          "Min": 1
+        },
+        "locker": {
+          "Max": 1,
+          "Min": 1
+        },
+        "longsword": {
           "Max": 1,
           "Min": 1
         },
@@ -1432,22 +1629,218 @@
           "Max": 1,
           "Min": 1
         },
+        "metal.refined": {
+          "Max": 25,
+          "Min": 15
+        },
+        "metalpipe": {
+          "Max": 6,
+          "Min": 5
+        },
+        "modularcarlift": {
+          "Max": 1,
+          "Min": 1
+        },
+        "nightvisiongoggles": {
+          "Max": 1,
+          "Min": 1
+        },
+        "pistol.python": {
+          "Max": 1,
+          "Min": 1
+        },
+        "pistol.semiauto": {
+          "Max": 1,
+          "Min": 1
+        },
+        "powered.water.purifier": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rf.detonator": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rf_pager": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.ak": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.bolt": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.semiauto": {
+          "Max": 1,
+          "Min": 1
+        },
+        "riflebody": {
+          "Max": 1,
+          "Min": 1
+        },
+        "roadsign.gloves": {
+          "Max": 1,
+          "Min": 1
+        },
+        "roadsign.jacket": {
+          "Max": 1,
+          "Min": 1
+        },
+        "roadsign.kilt": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rocket.launcher": {
+          "Max": 1,
+          "Min": 1
+        },
+        "searchlight": {
+          "Max": 1,
+          "Min": 1
+        },
+        "shoes.boots": {
+          "Max": 1,
+          "Min": 1
+        },
+        "shotgun.pump": {
+          "Max": 1,
+          "Min": 1
+        },
+        "shutter.metal.embrasure.a": {
+          "Max": 1,
+          "Min": 1
+        },
+        "shutter.metal.embrasure.b": {
+          "Max": 1,
+          "Min": 1
+        },
+        "small.oil.refinery": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smart.alarm": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smart.switch": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smg.2": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smg.mp5": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smg.thompson": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smgbody": {
+          "Max": 1,
+          "Min": 1
+        },
+        "storage.monitor": {
+          "Max": 1,
+          "Min": 1
+        },
+        "supply.signal": {
+          "Max": 1,
+          "Min": 1
+        },
+        "syringe.medical": {
+          "Max": 1,
+          "Min": 1
+        },
+        "targeting.computer": {
+          "Max": 1,
+          "Min": 1
+        },
+        "techparts": {
+          "Max": 4,
+          "Min": 2
+        },
+        "trap.landmine": {
+          "Max": 1,
+          "Min": 1
+        },
+        "wall.external.high.stone": {
+          "Max": 1,
+          "Min": 1
+        },
+        "wall.frame.cell": {
+          "Max": 1,
+          "Min": 1
+        },
+        "wall.frame.cell.gate": {
+          "Max": 1,
+          "Min": 1
+        },
+        "wall.frame.garagedoor": {
+          "Max": 1,
+          "Min": 1
+        },
+        "wall.window.bars.toptier": {
+          "Max": 1,
+          "Min": 1
+        },
+        "wall.window.glass.reinforced": {
+          "Max": 1,
+          "Min": 1
+        },
+        "water.catcher.large": {
+          "Max": 1,
+          "Min": 1
+        },
+        "waterpump": {
+          "Max": 1,
+          "Min": 1
+        },
         "weapon.mod.holosight": {
+          "Max": 1,
+          "Min": 1
+        },
+        "weapon.mod.lasersight": {
+          "Max": 1,
+          "Min": 1
+        },
+        "weapon.mod.muzzleboost": {
+          "Max": 1,
+          "Min": 1
+        },
+        "weapon.mod.muzzlebrake": {
+          "Max": 1,
+          "Min": 1
+        },
+        "weapon.mod.small.scope": {
           "Max": 1,
           "Min": 1
         }
       },
-      "ItemsMax": 10,
-      "ItemsMin": 10,
+      "ItemsMax": 9,
+      "ItemsMin": 9,
       "MaxBPs": 1,
       "Scrap": 0
     },
     "assets/prefabs/misc/supply drop/supply_drop.prefab": {
       "Enabled": true,
       "ItemList": {
+        "ammo.rifle": {
+          "Max": 128,
+          "Min": 128
+        },
         "charcoal": {
           "Max": 5000,
           "Min": 5000
+        },
+        "metal.fragments": {
+          "Max": 5000,
+          "Min": 3000
         },
         "metal.refined": {
           "Max": 50,
@@ -1456,14 +1849,6 @@
         "rifle.semiauto": {
           "Max": 1,
           "Min": 1
-        },
-        "ammo.rifle": {
-          "Max": 128,
-          "Min": 128
-        },
-        "metal.fragments": {
-          "Max": 5000,
-          "Min": 3000
         }
       },
       "ItemsMax": 7,
@@ -1474,11 +1859,23 @@
     "assets/prefabs/npc/m2bradley/bradley_crate.prefab": {
       "Enabled": true,
       "ItemList": {
+        "ammo.rocket.basic": {
+          "Max": 2,
+          "Min": 1
+        },
         "explosive.timed": {
           "Max": 1,
           "Min": 1
         },
         "lmg.m249": {
+          "Max": 1,
+          "Min": 1
+        },
+        "metal.facemask": {
+          "Max": 1,
+          "Min": 1
+        },
+        "metal.plate.torso": {
           "Max": 1,
           "Min": 1
         },
@@ -1509,18 +1906,6 @@
         "weapon.mod.8x.scope": {
           "Max": 1,
           "Min": 1
-        },
-        "metal.plate.torso": {
-          "Max": 1,
-          "Min": 1
-        },
-        "metal.facemask": {
-          "Max": 1,
-          "Min": 1
-        },
-        "ammo.rocket.basic": {
-          "Max": 2,
-          "Min": 1
         }
       },
       "ItemsMax": 4,
@@ -1535,11 +1920,23 @@
           "Max": 1,
           "Min": 1
         },
+        "ammo.rocket.hv": {
+          "Max": 2,
+          "Min": 2
+        },
         "explosive.timed": {
           "Max": 1,
           "Min": 1
         },
         "lmg.m249": {
+          "Max": 1,
+          "Min": 1
+        },
+        "metal.facemask": {
+          "Max": 1,
+          "Min": 1
+        },
+        "metal.plate.torso": {
           "Max": 1,
           "Min": 1
         },
@@ -1554,18 +1951,6 @@
         "weapon.mod.8x.scope": {
           "Max": 1,
           "Min": 1
-        },
-        "metal.facemask": {
-          "Max": 1,
-          "Min": 1
-        },
-        "metal.plate.torso": {
-          "Max": 1,
-          "Min": 1
-        },
-        "ammo.rocket.hv": {
-          "Max": 2,
-          "Min": 2
         }
       },
       "ItemsMax": 3,

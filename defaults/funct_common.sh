@@ -30,6 +30,12 @@ function backup_s3 () {
     done
 }
 
+function save_ebs () {
+    echo "save current game folder to instance EBS" | tee -a ${LOGS}
+    mkdir -p ${HOME}/game_root
+    rsync -ra --delete "${GAME_ROOT}/" "${HOME}/game_root" | tee -a ${LOGS}
+}
+
 function start_rust () {
     echo "Start RustDedicated game service" | tee -a ${LOGS}
     # enter game root

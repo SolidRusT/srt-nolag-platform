@@ -1,0 +1,26 @@
+{
+  "Lower Range Color Value": {
+    "Bar Color": "#bce8df",
+    "Font Color": "#FFFFFFFF"
+  },
+  "Middle Range": {
+    "Starting Value": 300,
+    "Bar Color": "#80e8d3",
+    "Font Color": "#FFFFFFFF"
+  },
+  "Higher Range": {
+    "Starting Value": 600,
+    "Bar Color": "#34ebc6",
+    "Font Color": "#FFFFFFFF"
+  },
+  "Alert 1": 0,
+  "Show picture": true,
+  "Picture URL": "https://i.imgur.com/eZdRSQU.png",
+  "Show info (All, Bar, Value)": "All",
+  "Postition": {
+    "X-axis": 0.035,
+    "Y-axis": 0.007
+  },
+  "Maximum Player Alerts": 6,
+  "Remove after offline days": 0
+}

@@ -1311,7 +1311,7 @@
       "RequiredPermission": "",
       "MaximumUses": 0,
       "RequiredAuth": 0,
-      "Cooldown": 60,
+      "Cooldown": 0,
       "Cost": 0,
       "IsHidden": false,
       "CopyPasteFile": "",
@@ -3661,7 +3661,20 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 0,
+          "Position": 18,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "ammo.shotgun",
+          "Skin": 0,
+          "Amount": 128,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 20,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -3694,7 +3707,21 @@
           "Position": 1,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": []
+          "Contents": [
+            {
+              "Shortname": "weapon.mod.flashlight",
+              "Skin": 0,
+              "Amount": 1,
+              "Condition": 300.0,
+              "MaxCondition": 300.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
         },
         {
           "Shortname": "rifle.lr300",
@@ -3707,7 +3734,87 @@
           "Position": 0,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": []
+          "Contents": [
+            {
+              "Shortname": "weapon.mod.flashlight",
+              "Skin": 0,
+              "Amount": 1,
+              "Condition": 300.0,
+              "MaxCondition": 300.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
+        },
+        {
+          "Shortname": "flashlight.held",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 50.0,
+          "MaxCondition": 50.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 3,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "shotgun.spas12",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 6,
+          "Ammotype": "ammo.shotgun",
+          "Position": 2,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": [
+            {
+              "Shortname": "weapon.mod.flashlight",
+              "Skin": 0,
+              "Amount": 1,
+              "Condition": 300.0,
+              "MaxCondition": 300.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
+        },
+        {
+          "Shortname": "syringe.medical",
+          "Skin": 0,
+          "Amount": 10,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 4,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "grenade.f1",
+          "Skin": 0,
+          "Amount": 5,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 5,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
         }
       ]
     },
@@ -3724,6 +3831,19 @@
       "KitImage": "https://solidrust.net/images/Kit-scihard.jpg",
       "MainItems": [
         {
+          "Shortname": "ammo.shotgun",
+          "Skin": 0,
+          "Amount": 128,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 19,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
           "Shortname": "ammo.rifle",
           "Skin": 0,
           "Amount": 256,
@@ -3731,7 +3851,7 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 0,
+          "Position": 18,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -3739,7 +3859,7 @@
       ],
       "WearItems": [
         {
-          "Shortname": "attire.ninja.suit",
+          "Shortname": "halloween.surgeonsuit",
           "Skin": 0,
           "Amount": 1,
           "Condition": 0.0,
@@ -3761,23 +3881,90 @@
           "MaxCondition": 100.0,
           "Ammo": 20,
           "Ammotype": "ammo.rifle",
-          "Position": 1,
+          "Position": 0,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": []
+          "Contents": [
+            {
+              "Shortname": "weapon.mod.flashlight",
+              "Skin": 0,
+              "Amount": 1,
+              "Condition": 300.0,
+              "MaxCondition": 300.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
         },
         {
-          "Shortname": "rifle.semiauto",
+          "Shortname": "shotgun.spas12",
           "Skin": 0,
           "Amount": 1,
           "Condition": 100.0,
           "MaxCondition": 100.0,
-          "Ammo": 16,
-          "Ammotype": "ammo.rifle",
-          "Position": 0,
+          "Ammo": 4,
+          "Ammotype": "ammo.shotgun",
+          "Position": 1,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": []
+          "Contents": [
+            {
+              "Shortname": "weapon.mod.flashlight",
+              "Skin": 0,
+              "Amount": 1,
+              "Condition": 300.0,
+              "MaxCondition": 300.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
+        },
+        {
+          "Shortname": "flashlight.held",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 50.0,
+          "MaxCondition": 50.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 2,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "grenade.smoke",
+          "Skin": 0,
+          "Amount": 3,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 3,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "syringe.medical",
+          "Skin": 0,
+          "Amount": 10,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 4,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
         }
       ]
     },
@@ -3794,32 +3981,6 @@
       "KitImage": "https://solidrust.net/images/Kit-scimed.jpg",
       "MainItems": [
         {
-          "Shortname": "ammo.shotgun.fire",
-          "Skin": 0,
-          "Amount": 128,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 8,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "ammo.shotgun.slug",
-          "Skin": 0,
-          "Amount": 64,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 9,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
           "Shortname": "ammo.pistol",
           "Skin": 0,
           "Amount": 256,
@@ -3827,20 +3988,7 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 10,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "ammo.pistol.fire",
-          "Skin": 0,
-          "Amount": 256,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 11,
+          "Position": 19,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -3853,33 +4001,7 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 7,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "ammo.rifle",
-          "Skin": 0,
-          "Amount": 256,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 6,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "ammo.pistol.hv",
-          "Skin": 0,
-          "Amount": 256,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 0,
+          "Position": 18,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -3902,30 +4024,97 @@
       ],
       "BeltItems": [
         {
-          "Shortname": "shotgun.spas12",
+          "Shortname": "flashlight.held",
           "Skin": 0,
+          "Amount": 1,
+          "Condition": 50.0,
+          "MaxCondition": 50.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 2,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "shotgun.pump",
+          "Skin": 849997025,
           "Amount": 1,
           "Condition": 100.0,
           "MaxCondition": 100.0,
-          "Ammo": 4,
+          "Ammo": 6,
           "Ammotype": "ammo.shotgun",
           "Position": 0,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": []
+          "Contents": [
+            {
+              "Shortname": "weapon.mod.flashlight",
+              "Skin": 0,
+              "Amount": 1,
+              "Condition": 300.0,
+              "MaxCondition": 300.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
         },
         {
-          "Shortname": "smg.mp5",
-          "Skin": 0,
+          "Shortname": "pistol.semiauto",
+          "Skin": 1113544521,
           "Amount": 1,
           "Condition": 100.0,
           "MaxCondition": 100.0,
-          "Ammo": 8,
+          "Ammo": 10,
           "Ammotype": "ammo.pistol",
           "Position": 1,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": []
+          "Contents": [
+            {
+              "Shortname": "weapon.mod.flashlight",
+              "Skin": 0,
+              "Amount": 1,
+              "Condition": 300.0,
+              "MaxCondition": 300.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
+        },
+        {
+          "Shortname": "grenade.f1",
+          "Skin": 936182773,
+          "Amount": 5,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 3,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "syringe.medical",
+          "Skin": 0,
+          "Amount": 10,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 4,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
         }
       ]
     },
@@ -3942,66 +4131,27 @@
       "KitImage": "https://solidrust.net/images/Kit-scieasy.jpg",
       "MainItems": [
         {
-          "Shortname": "ammo.shotgun.slug",
+          "Shortname": "ammo.handmade.shell",
           "Skin": 0,
-          "Amount": 64,
+          "Amount": 128,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 6,
+          "Position": 22,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
         },
         {
-          "Shortname": "ammo.pistol",
+          "Shortname": "ammo.nailgun.nails",
           "Skin": 0,
-          "Amount": 247,
+          "Amount": 128,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 1,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "ammo.pistol.fire",
-          "Skin": 0,
-          "Amount": 256,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 8,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "ammo.shotgun",
-          "Skin": 0,
-          "Amount": 126,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 0,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "ammo.pistol.hv",
-          "Skin": 0,
-          "Amount": 256,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 7,
+          "Position": 20,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -4029,6 +4179,32 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
+          "Position": 2,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "burlap.gloves.new",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 3,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "shoes.boots",
+          "Skin": 1441308562,
+          "Amount": 1,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
           "Position": 1,
           "Frequency": -1,
           "BlueprintShortname": null,
@@ -4037,30 +4213,69 @@
       ],
       "BeltItems": [
         {
-          "Shortname": "shotgun.spas12",
+          "Shortname": "paddle",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 300.0,
+          "MaxCondition": 300.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 3,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "flashlight.held",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 50.0,
+          "MaxCondition": 50.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "grenade.beancan",
+          "Skin": 0,
+          "Amount": 25,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "pistol.nailgun",
           "Skin": 0,
           "Amount": 1,
           "Condition": 100.0,
           "MaxCondition": 100.0,
           "Ammo": 6,
-          "Ammotype": "ammo.shotgun",
-          "Position": 0,
+          "Ammotype": "ammo.nailgun.nails",
+          "Position": 2,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": []
+          "Contents": null
         },
         {
-          "Shortname": "pistol.m92",
+          "Shortname": "pistol.eoka",
           "Skin": 0,
           "Amount": 1,
-          "Condition": 100.0,
-          "MaxCondition": 100.0,
-          "Ammo": 15,
-          "Ammotype": "ammo.pistol",
-          "Position": 1,
+          "Condition": 50.0,
+          "MaxCondition": 50.0,
+          "Ammo": 1,
+          "Ammotype": "ammo.handmade.shell",
+          "Position": 4,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": []
+          "Contents": null
         }
       ]
     },

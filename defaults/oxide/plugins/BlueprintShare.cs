@@ -11,14 +11,14 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Blueprint Share", "c_creep", "1.2.6")]
+    [Info("Blueprint Share", "c_creep", "1.2.7")]
     [Description("Allows players to share researched blueprints with their friends, clan or team")]
 
     class BlueprintShare : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin Clans, ClansReborn, Friends;
+        [PluginReference] private Plugin Clans, Friends;
 
         private StoredData storedData;
 
@@ -37,19 +37,18 @@ namespace Oxide.Plugins
                 ["ToggleOff"] = "You have <color=#ff0000>disabled</color> sharing blueprints.",
                 ["NoPermission"] = "You don't have permission to use this command!",
                 ["CannotShare"] = "You cannot share blueprints with this player because they aren't a friend or in the same clan or team!",
-                ["NoTarget"] = "You didn't specifiy a player to share with!",
+                ["NoTarget"] = "You didn't specify a player to share with!",
                 ["TargetEqualsPlayer"] = "You cannot share blueprints with your self!",
                 ["PlayerNotFound"] = "Couldn't find a player with that name!",
                 ["MultiplePlayersFound"] = "Found multiple players with a similar name: {0}",
                 ["SharerSuccess"] = "You shared <color=#ffff00>{0}</color> blueprints with <color=#ffff00>{1}</color>.",
                 ["ShareReceieve"] = "<color=#ffff00>{0}</color> has shared <color=#ffff00>{1}</color> blueprints with you.",
                 ["NoBlueprintsToShare"] = "You don't have any new blueprints to share with {0}",
-                ["NoOneLearntBlueprint"] = "The blueprint was not shared because no one learn the blueprint.",
-                ["LearntBlueprintsIsNull"] = "The list of learnt blueprints is null.",
                 ["SharerLearntBlueprint"] = "You have learned the <color=#ffff00>{0}</color> blueprint and have shared it with <color=#ffff00>{1}</color> players!",
-                ["RecipientLearntBlueprint"] = "<color=#ffff00>{0}</color> has shared the <color=#ffff00>{1}</color> blueprint with you!",
+                ["TargetLearntBlueprint"] = "<color=#ffff00>{0}</color> has shared the <color=#ffff00>{1}</color> blueprint with you!",
                 ["BlueprintBlocked"] = "The server has blocked the <color=#ffff00>{0}</color> blueprint from being shared but you will still learn the blueprint.",
-                ["ManualSharingDisabled"] = "Manual sharing of blueprints has been disabled on this server."
+                ["ManualSharingDisabled"] = "Manual sharing of blueprints has been disabled on this server.",
+                ["TargetSharingDisabled"] = "Unable to share blueprints with <color=#ffff00>{0}</color> because they have disabled their sharing"
             }, this);
         }
 
@@ -99,7 +98,7 @@ namespace Oxide.Plugins
                 {
                     if (action == "study")
                     {
-                        if (CanShareBlueprint(item.blueprintTargetDef.shortname, item.blueprintTargetDef.displayName.translated, player))
+                        if (CanShareBlueprint(item.blueprintTargetDef, player))
                         {
                             item.Remove();
                         }
@@ -118,28 +117,62 @@ namespace Oxide.Plugins
                     {
                         if (player != null)
                         {
-                            CanShareBlueprint(node.itemDef.shortname, node.itemDef.displayName.translated, player);
+                            CanShareBlueprint(node.itemDef, player);
                         }
                     }
                 }
             }
         }
 
+        private void OnTeamAcceptInvite(RelationshipManager.PlayerTeam team, BasePlayer player)
+        {
+            if (config.ShareBlueprintsOnJoin)
+            {
+                NextTick(() =>
+                {
+                    if (team != null && player != null)
+                    {
+                        if (team.members.Contains(player.userID))
+                        {
+                            ShareWithPlayer(team.GetLeader(), player);
+                        }
+                    }
+                });
+            }
+        }
+
         #endregion
 
-        #region General Methods
+        #region Plugin Hooks
 
-        private bool CanShareBlueprint(string itemShortName, string itemName, BasePlayer player)
+        private void OnFriendAdded(string playerID, string friendID)
         {
-            if (player == null) return false;
-            if (string.IsNullOrEmpty(itemShortName)) return false;
+            if (config.ShareBlueprintsOnJoin)
+            {
+                var player = RustCore.FindPlayerByIdString(playerID);
+                var friend = RustCore.FindPlayerByIdString(friendID);
+
+                if (player != null && friend != null)
+                {
+                    ShareWithPlayer(player, friend);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Core
+
+        private bool CanShareBlueprint(ItemDefinition item, BasePlayer player)
+        {
+            if (item == null || player == null) return false;
             if (!permission.UserHasPermission(player.UserIDString, "blueprintshare.use")) return false;
 
             var playerUID = player.UserIDString;
 
-            if (config.BlockedItems.Contains(itemShortName))
+            if (config.BlockedItems.Contains(item.shortname))
             {
-                player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("BlueprintBlocked", playerUID));
+                player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("BlueprintBlocked", playerUID, item.displayName.translated));
 
                 return false;
             }
@@ -148,185 +181,177 @@ namespace Oxide.Plugins
             {
                 if (InTeam(player.userID) || InClan(player.userID) || HasFriends(player.userID))
                 {
-                    if (SomeoneWillLearnBlueprint(player, itemShortName))
+                    if (SomeoneWillLearnBlueprint(player, item))
                     {
-                        ShareWithPlayers(player, itemShortName, itemName);
-                        HandleAdditionalBlueprints(player, itemShortName);
+                        ShareWithPlayers(player, item);
+                        HandleAdditionalBlueprints(player, item);
 
                         return true;
                     }
-                    else
-                    {
-                        player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("NoOneLearntBlueprint", playerUID));
-                    }
                 }
-            }
-
-            if (config.ManualSharingEnable)
-            {
-                TryInsertBlueprint(player, itemShortName);
             }
 
             return false;
         }
 
-        private void HandleAdditionalBlueprints(BasePlayer player, string itemShortName)
+        private void HandleAdditionalBlueprints(BasePlayer player, ItemDefinition item)
         {
-            var additionalBlueprints = GetItemDefinition(itemShortName).Blueprint.additionalUnlocks;
+            var additionalBlueprints = item.Blueprint.additionalUnlocks;
 
             if (additionalBlueprints.Count > 0)
             {
                 foreach (var blueprint in additionalBlueprints)
                 {
-                    var additionalItemShortName = blueprint.shortname;
+                    UnlockBlueprint(player, blueprint.itemid);
 
-                    if (!string.IsNullOrEmpty(additionalItemShortName))
-                    {
-                        if (SomeoneWillLearnBlueprint(player, additionalItemShortName))
-                        {
-                            ShareWithPlayers(player, additionalItemShortName, blueprint.displayName.translated);
-                        }
-                    }
+                    ShareWithPlayers(player, blueprint);
                 }
             }
         }
 
-        private void ShareWithPlayers(BasePlayer sharer, string itemShortName, string itemName)
+        private bool UnlockBlueprint(BasePlayer player, int blueprint)
         {
-            if (sharer == null || string.IsNullOrEmpty(itemShortName)) return;
+            if (player == null) return false;
 
-            var recipients = SelectSharePlayers(sharer);
+            var playerInfo = player.PersistantPlayerInfo;
+
+            var unlockedBlueprints = playerInfo.unlockedItems;
+
+            if (!unlockedBlueprints.Contains(blueprint))
+            {
+                unlockedBlueprints.Add(blueprint);
+
+                player.PersistantPlayerInfo = playerInfo;
+                player.SendNetworkUpdateImmediate();
+                player.ClientRPCPlayer(null, player, "UnlockedBlueprint", 0);
+
+                PlaySoundEffect(player);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private void ShareWithPlayers(BasePlayer player, ItemDefinition item)
+        {
+            if (player == null || item == null) return;
+
+            var targets = SelectSharePlayers(player);
 
             var successfulUnlocks = 0;
 
-            foreach (var recipient in recipients)
+            foreach (var target in targets)
             {
-                if (recipient != null)
+                if (target != null)
                 {
-                    if (UnlockBlueprint(recipient, itemShortName))
+                    if (SharingEnabled(target.UserIDString))
                     {
-                        recipient.ChatMessage(GetLangValue("Prefix", sharer.UserIDString) + GetLangValue("RecipientLearntBlueprint", recipient.UserIDString, sharer.displayName, itemName));
+                        if (UnlockBlueprint(target, item.itemid))
+                        {
+                            target.ChatMessage(GetLangValue("Prefix", player.UserIDString) + GetLangValue("TargetLearntBlueprint", target.UserIDString, player.displayName, item.displayName.translated));
 
-                        successfulUnlocks++;
+                            successfulUnlocks++;
+                        }
                     }
                 }
             }
 
-            sharer.ChatMessage(GetLangValue("Prefix", sharer.UserIDString) + GetLangValue("SharerLearntBlueprint", sharer.UserIDString, itemName, successfulUnlocks));
+            if (successfulUnlocks > 0)
+            {
+                player.ChatMessage(GetLangValue("Prefix", player.UserIDString) + GetLangValue("SharerLearntBlueprint", player.UserIDString, item.displayName.translated, successfulUnlocks));
+            }
         }
 
-        private void ShareWithPlayer(BasePlayer sharer, BasePlayer recipient)
+        private void ShareWithPlayer(BasePlayer player, BasePlayer target)
         {
-            if (sharer == null || recipient == null) return;
+            if (player == null || target == null) return;
 
-            var sharerUID = sharer.UserIDString;
-            var recipientUID = recipient.UserIDString;
+            var playerUID = player.UserIDString;
+            var targetUID = target.UserIDString;
 
-            if (SameTeam(sharer, recipient) || SameClan(sharerUID, recipientUID) || AreFriends(sharerUID, recipientUID))
+            if (SharingEnabled(targetUID))
             {
-                var itemShortNames = GetLearntBlueprints(sharerUID);
-
-                if (itemShortNames != null)
+                if (SameTeam(player, target) || SameClan(playerUID, targetUID) || AreFriends(playerUID, targetUID))
                 {
-                    if (itemShortNames.Count > 0)
+                    var learnedBlueprints = UnlockBlueprints(target, player.PersistantPlayerInfo.unlockedItems);
+
+                    if (learnedBlueprints > 0)
                     {
-                        var learnedBlueprints = 0;
+                        player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("SharerSuccess", playerUID, learnedBlueprints, target.displayName));
 
-                        foreach (var itemShortName in itemShortNames)
-                        {
-                            if (string.IsNullOrEmpty(itemShortName)) return;
-
-                            if (UnlockBlueprint(recipient, itemShortName))
-                            {
-                                learnedBlueprints++;
-                            }
-                        }
-
-                        if (learnedBlueprints > 0)
-                        {
-                            sharer.ChatMessage(GetLangValue("Prefix", sharerUID) + GetLangValue("SharerSuccess", sharerUID, learnedBlueprints, recipient.displayName));
-
-                            recipient.ChatMessage(GetLangValue("Prefix", recipientUID) + GetLangValue("ShareReceieve", recipientUID, sharer.displayName, learnedBlueprints));
-                        }
-                        else
-                        {
-                            sharer.ChatMessage(GetLangValue("Prefix", sharerUID) + GetLangValue("NoBlueprintsToShare", sharerUID, recipient.displayName));
-                        }
+                        target.ChatMessage(GetLangValue("Prefix", targetUID) + GetLangValue("ShareReceieve", targetUID, player.displayName, learnedBlueprints));
                     }
                     else
                     {
-                        sharer.ChatMessage(GetLangValue("Prefix", sharerUID) + GetLangValue("NoBlueprintsToShare", sharerUID, recipient.displayName));
+                        player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("NoBlueprintsToShare", playerUID, target.displayName));
                     }
                 }
                 else
                 {
-                    sharer.ChatMessage(GetLangValue("Prefix", sharerUID) + GetLangValue("LearntBlueprintsIsNull", sharerUID));
+                    player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("CannotShare", playerUID));
                 }
             }
             else
             {
-                sharer.ChatMessage(GetLangValue("Prefix", sharerUID) + GetLangValue("CannotShare", sharerUID));
+                player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("TargetSharingDisabled", playerUID, target.displayName));
             }
         }
 
-        private bool UnlockBlueprint(BasePlayer player, string itemShortName)
+        private int UnlockBlueprints(BasePlayer player, List<int> blueprints)
         {
-            if (player == null || string.IsNullOrEmpty(itemShortName)) return false;
-
-            var playerBlueprints = player.blueprints;
-
-            if (playerBlueprints == null) return false;
-
-            var itemDefinition = GetItemDefinition(itemShortName);
-
-            if (itemDefinition == null) return false;
-
-            if (playerBlueprints.HasUnlocked(itemDefinition)) return false;
-
-            var soundEffect = new Effect("assets/prefabs/deployable/research table/effects/research-success.prefab", player.transform.position, Vector3.zero);
-
-            if (soundEffect != null)
+            if (player != null)
             {
-                EffectNetwork.Send(soundEffect, player.net.connection);
-            }
+                var playerInfo = player.PersistantPlayerInfo;
 
-            playerBlueprints.Unlock(itemDefinition);
+                var unlockedBlueprints = playerInfo.unlockedItems;
 
-            if (config.ManualSharingEnable)
-            {
-                TryInsertBlueprint(player, itemShortName);
-            }
+                var successfulUnlocks = 0;
 
-            return true;
-        }
-
-        private bool SomeoneWillLearnBlueprint(BasePlayer sharer, string itemShortName)
-        {
-            if (sharer == null || string.IsNullOrEmpty(itemShortName)) return false;
-
-            var players = SelectSharePlayers(sharer);
-
-            if (players.Count > 0)
-            {
-                var blueprintItem = GetItemDefinition(itemShortName);
-
-                if (blueprintItem != null)
+                foreach (var blueprint in blueprints)
                 {
-                    var counter = 0;
-
-                    foreach (var player in players)
+                    if (!unlockedBlueprints.Contains(blueprint))
                     {
-                        if (player != null)
+                        unlockedBlueprints.Add(blueprint);
+
+                        successfulUnlocks++;
+                    }
+                }
+
+                player.PersistantPlayerInfo = playerInfo;
+                player.SendNetworkUpdateImmediate();
+                player.ClientRPCPlayer(null, player, "UnlockedBlueprint", 0);
+
+                PlaySoundEffect(player);
+
+                return successfulUnlocks;
+            }
+
+            return 0;
+        }
+
+        private bool SomeoneWillLearnBlueprint(BasePlayer player, ItemDefinition item)
+        {
+            if (player == null || item == null) return false;
+
+            var targets = SelectSharePlayers(player);
+
+            if (targets.Count > 0)
+            {
+                var counter = 0;
+
+                foreach (var target in targets)
+                {
+                    if (target != null)
+                    {
+                        if (!target.blueprints.HasUnlocked(item))
                         {
-                            if (!player.blueprints.HasUnlocked(blueprintItem))
-                            {
-                                counter++;
-                            }
+                            counter++;
                         }
                     }
-
-                    return counter > 0;
                 }
+
+                return counter > 0;
             }
 
             return false;
@@ -338,7 +363,7 @@ namespace Oxide.Plugins
 
             var playerUID = player.userID;
 
-            if (config.ClansEnabled && (Clans != null || ClansReborn != null) && InClan(playerUID))
+            if (config.ClansEnabled && Clans != null && InClan(playerUID))
             {
                 playersToShareWith.AddRange(GetClanMembers(playerUID));
             }
@@ -354,51 +379,6 @@ namespace Oxide.Plugins
             }
 
             return playersToShareWith;
-        }
-
-        private List<string> GetLearntBlueprints(string playerUID)
-        {
-            if (PlayerDataExists(playerUID))
-            {
-                return storedData.Players[playerUID].LearntBlueprints;
-            }
-            else
-            {
-                CreateNewPlayerData(playerUID);
-
-                if (storedData.Players[playerUID].LearntBlueprints == null)
-                {
-                    return storedData.Players[playerUID].LearntBlueprints = new List<string>();
-                }
-                else
-                {
-                    return storedData.Players[playerUID].LearntBlueprints;
-                }
-            }
-        }
-
-        private void TryInsertBlueprint(BasePlayer player, string itemShortName)
-        {
-            var playerUID = player.UserIDString;
-
-            if (!PlayerDataExists(playerUID))
-            {
-                CreateNewPlayerData(playerUID);
-            }
-
-            InsertBlueprint(playerUID, itemShortName);
-        }
-
-        private void InsertBlueprint(string playerUID, string itemShortName)
-        {
-            if (string.IsNullOrEmpty(playerUID) || string.IsNullOrEmpty(itemShortName)) return;
-
-            if (!storedData.Players[playerUID].LearntBlueprints.Contains(itemShortName))
-            {
-                storedData.Players[playerUID].LearntBlueprints.Add(itemShortName);
-
-                SaveData();
-            }
         }
 
         #endregion
@@ -426,6 +406,9 @@ namespace Oxide.Plugins
 
             [JsonProperty("Allow Manual Sharing of Blueprints")]
             public bool ManualSharingEnable = true;
+
+            [JsonProperty("Share Blueprints On Join")]
+            public bool ShareBlueprintsOnJoin = false;
 
             [JsonProperty("Clear Data File on Wipe")]
             public bool ClearDataOnWipe = true;
@@ -463,7 +446,7 @@ namespace Oxide.Plugins
             }
             catch
             {
-                PrintError($"Configuration file {Name}.json is invalid; Resetting config to default values");
+                PrintError($"Configuration file {Name}.json is invalid; Resetting configuration to default values");
 
                 LoadDefaultConfig();
             }
@@ -471,13 +454,13 @@ namespace Oxide.Plugins
 
         #endregion
 
-        #region Friends Methods
+        #region Friends
 
         private bool HasFriends(ulong playerUID)
         {
             if (Friends == null) return false;
 
-            var friendsList = Friends.Call<ulong[]>("GetFriends", playerUID);
+            var friendsList = Friends?.Call<ulong[]>("GetFriends", playerUID);
 
             return friendsList != null && friendsList.Length != 0;
         }
@@ -486,7 +469,7 @@ namespace Oxide.Plugins
         {
             var friendsList = new List<BasePlayer>();
 
-            var friends = this.Friends.Call<ulong[]>("GetFriends", playerUID);
+            var friends = Friends?.Call<ulong[]>("GetFriends", playerUID);
 
             foreach (var friendUID in friends)
             {
@@ -501,15 +484,15 @@ namespace Oxide.Plugins
             return friendsList;
         }
 
-        private bool AreFriends(string sharerUID, string playerUID) => Friends == null ? false : Friends.Call<bool>("AreFriends", sharerUID, playerUID);
+        private bool AreFriends(string playerUID, string targetUID) => Friends == null ? false : Friends.Call<bool>("AreFriends", playerUID, targetUID);
 
         #endregion
 
-        #region Clan Methods
+        #region Clan
 
         private bool InClan(ulong playerUID)
         {
-            if (ClansReborn == null && Clans == null) return false;
+            if (Clans == null) return false;
 
             var clanName = Clans?.Call<string>("GetClanOf", playerUID);
 
@@ -520,6 +503,15 @@ namespace Oxide.Plugins
         {
             var membersList = new List<BasePlayer>();
 
+            // Clans and Clans Reborn
+            var clanMembers = Clans?.Call<List<string>>("GetClanMembers", playerUID);
+
+            if (clanMembers != null)
+            {
+                return GetMemberObjects(clanMembers, playerUID);
+            }
+
+            // Rust:IO Clans
             var clanName = Clans?.Call<string>("GetClanOf", playerUID);
 
             if (!string.IsNullOrEmpty(clanName))
@@ -552,11 +544,54 @@ namespace Oxide.Plugins
             return membersList;
         }
 
-        private bool SameClan(string sharerUID, string playerUID) => ClansReborn == null && Clans == null ? false : (bool)Clans?.Call<bool>("IsClanMember", sharerUID, playerUID);
+        private List<BasePlayer> GetMemberObjects(List<string> members, ulong playerUID)
+        {
+            var membersList = new List<BasePlayer>();
+
+            foreach (var member in members)
+            {
+                ulong clanMemberUID;
+
+                if (!ulong.TryParse(member, out clanMemberUID)) continue;
+
+                var clanMember = RustCore.FindPlayerById(clanMemberUID);
+
+                if (clanMember != null && clanMemberUID != playerUID)
+                {
+                    membersList.Add(clanMember);
+                }
+            }
+
+            return membersList;
+        }
+
+        private bool SameClan(string playerUID, string targetUID)
+        {
+            if (Clans == null) return false;
+
+            // Clans and Clans Reborn
+            var isClanMember = Clans?.Call("IsClanMember", playerUID, targetUID);
+
+            if (isClanMember != null)
+            {
+                return (bool)isClanMember;
+            }
+
+            // Rust:IO Clans
+            var playerClan = Clans?.Call("GetClanOf", playerUID);
+
+            if (playerClan == null) return false;
+
+            var targetClan = Clans?.Call("GetClanOf", targetUID);
+
+            if (targetClan == null) return false;
+
+            return (string)targetClan == (string)playerClan;
+        }
 
         #endregion
 
-        #region Team Methods
+        #region Team
 
         private bool InTeam(ulong playerUID)
         {
@@ -586,11 +621,11 @@ namespace Oxide.Plugins
             return membersList;
         }
 
-        private bool SameTeam(BasePlayer sharer, BasePlayer player) => sharer.currentTeam == player.currentTeam;
+        private bool SameTeam(BasePlayer player, BasePlayer target) => player.currentTeam == target.currentTeam;
 
         #endregion
 
-        #region Utility Methods
+        #region Utility
 
         private BasePlayer FindPlayer(string playerName, BasePlayer player, string playerUID)
         {
@@ -620,13 +655,17 @@ namespace Oxide.Plugins
             return BasePlayer.allPlayerList.Where(p => p && p.UserIDString == playerName || p.displayName.Contains(playerName, CompareOptions.OrdinalIgnoreCase)).ToList();
         }
 
-        private ItemDefinition GetItemDefinition(string itemShortName)
+        private void PlaySoundEffect(BasePlayer player)
         {
-            if (string.IsNullOrEmpty(itemShortName)) return null;
+            if (player != null)
+            {
+                var soundEffect = new Effect("assets/prefabs/deployable/research table/effects/research-success.prefab", player.transform.position, Vector3.zero);
 
-            var itemDefinition = ItemManager.FindItemDefinition(itemShortName.ToLower());
-
-            return itemDefinition;
+                if (soundEffect != null)
+                {
+                    EffectNetwork.Send(soundEffect, player.net.connection);
+                }
+            }
         }
 
         #endregion
@@ -641,8 +680,6 @@ namespace Oxide.Plugins
         private class PlayerData
         {
             public bool SharingEnabled;
-
-            public List<string> LearntBlueprints;
         }
 
         private void CreateData()
@@ -672,8 +709,7 @@ namespace Oxide.Plugins
         {
             storedData.Players.Add(playerUID, new PlayerData
             {
-                SharingEnabled = true,
-                LearntBlueprints = new List<string>()
+                SharingEnabled = true
             });
 
             SaveData();
@@ -754,11 +790,15 @@ namespace Oxide.Plugins
                         else
                         {
                             player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("NoPermission", playerUID));
+
+                            return;
                         }
                     }
                     else
                     {
                         player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("ManualSharingDisabled", playerUID));
+
+                        return;
                     }
 
                     break;

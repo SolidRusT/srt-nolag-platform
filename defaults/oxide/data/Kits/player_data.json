@@ -1,37 +1,3 @@
 {
-  "_players": {
-    "76561198024774727": {
-      "_usageData": {
-        "SpawnKit": {
-          "TotalUses": 1,
-          "NextUseTime": 1623619473.6772909
-        },
-        "Guest": {
-          "TotalUses": 12,
-          "NextUseTime": 1623636881.166738
-        },
-        "Bolt & Pistol": {
-          "TotalUses": 2,
-          "NextUseTime": 1623622522.0458848
-        },
-        "Survivor": {
-          "TotalUses": 1,
-          "NextUseTime": 1623629198.472997
-        },
-        "ALPHATESTING": {
-          "TotalUses": 1,
-          "NextUseTime": 1623631258.0627098
-        },
-        "Legend": {
-          "TotalUses": 12,
-          "NextUseTime": 1623976053.6658258
-        },
-        "GM": {
-          "TotalUses": 1,
-          "NextUseTime": 1624474930.679487
-        }
-      },
-      "ClaimAutoKits": true
-    }
-  }
+  "_players": {}
 }

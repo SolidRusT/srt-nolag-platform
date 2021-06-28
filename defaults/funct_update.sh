@@ -324,7 +324,12 @@ signartist.url \
 signartist.text \
 signartist.restore \
 signartist.raw \
-signartist.restoreall
+signartist.restoreall \
+fishing.allowed \
+fishing.makepole \
+visualcupboard.allowed \
+chillnightvision.use \
+chillnightvision.modify
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

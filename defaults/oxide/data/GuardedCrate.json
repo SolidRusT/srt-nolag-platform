@@ -1,7 +1,7 @@
 {
   "Events": [
     {
-      "EventDuration (duration the event will be active for)": 900.0,
+      "EventDuration (duration the event will be active for)": 2700.0,
       "EventName (event name)": "SRT Easy",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
@@ -43,7 +43,7 @@
       "CustomLoot (items to spawn in crate)": []
     },
     {
-      "EventDuration (duration the event will be active for)": 3600.0,
+      "EventDuration (duration the event will be active for)": 900.0,
       "EventName (event name)": "SRT Hard",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
@@ -52,7 +52,7 @@
         "scihard"
       ],
       "NpcName (custom name)": "SRT Hard",
-      "NpcCount (number of guards to spawn)": 10,
+      "NpcCount (number of guards to spawn)": 8,
       "NpcHealth (health guards spawn with)": 200.0,
       "NpcRadius (max distance guards will roam)": 50.0,
       "NpcAggression (max aggression distance guards will target)": 120.0,
@@ -60,11 +60,11 @@
       "MarkerBorderColor (marker border color)": "#000000",
       "MarkerOpacity (marker opacity)": 0.9,
       "UseLoot (use custom loot table)": false,
-      "MaxLootItems (max items to spawn in crate)": 6,
+      "MaxLootItems (max items to spawn in crate)": 7,
       "CustomLoot (items to spawn in crate)": []
     },
     {
-      "EventDuration (duration the event will be active for)": 7200.0,
+      "EventDuration (duration the event will be active for)": 900.0,
       "EventName (event name)": "SRT Expert",
       "AutoHack (enables auto hacking of crates when an event is finished)": true,
       "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
@@ -81,7 +81,7 @@
       "MarkerBorderColor (marker border color)": "#000000",
       "MarkerOpacity (marker opacity)": 0.9,
       "UseLoot (use custom loot table)": false,
-      "MaxLootItems (max items to spawn in crate)": 7,
+      "MaxLootItems (max items to spawn in crate)": 10,
       "CustomLoot (items to spawn in crate)": []
     }
   ]

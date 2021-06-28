@@ -142,6 +142,10 @@
               "<color=yellow> bind k kill </color> - Kill yourself",
               " ",
               "<color=yellow> bind c chute </color> - Open Parachute",
+              " ",
+              "<color=yellow> bind f2 \"consoletoggle;combatlog\" </color> - open combat log with <color=yellow> F2 </color> key",
+              " ",
+              "<color=yellow> bind Mouse1 +lighttoggle;+attack2 </color> - turn on weapon light, when aiming down sights",
               " "
             ],
             "ImageSettings": []

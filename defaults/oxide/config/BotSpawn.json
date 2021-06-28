@@ -1,0 +1,25 @@
+{
+  "DataPrefix": "default",
+  "Global": {
+    "AddSpawn_Show_Seconds": 10,
+    "DayStartHour": 8,
+    "NightStartHour": 20,
+    "PeaceKeepers_Ignore_Melee": false,
+    "NPCs_Attack_BotSpawn": false,
+    "HTNs_Attack_BotSpawn": false,
+    "BotSpawn_Attacks_NPCs": true,
+    "APC_Safe": true,
+    "Turret_Safe": true,
+    "Animal_Safe": true,
+    "Supply_Enabled": false,
+    "Staggered_Despawn": true,
+    "Remove_BackPacks_Percent": 20,
+    "Remove_KeyCard": true,
+    "Ignore_HumanNPC": true,
+    "Ignore_HTN": true,
+    "Ignore_Sleepers": true,
+    "Pve_Safe": true,
+    "Max_Chute_Wind_Speed": 100,
+    "Max_Chute_Fall_Speed": 100
+  }
+}

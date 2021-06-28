@@ -1,0 +1,13 @@
+{
+  "Create reports every (seconds)": 0,
+  "Create plugins report": true,
+  "Create entities report": true,
+  "Excluded entities": [
+    "shortname here",
+    "another here"
+  ],
+  "Excluded plugins": [
+    "name here",
+    "another name"
+  ]
+}

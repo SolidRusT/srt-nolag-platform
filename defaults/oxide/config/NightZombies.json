@@ -1,7 +1,7 @@
 {
   "Spawn Settings": {
     "Spawn near players": true,
-    "Minimum pop for near player spawn": 0,
+    "Minimum pop for near player spawn": 5,
     "Min distance from player": 30.0,
     "Max distance from player": 60.0,
     "Spawn Time": 19.8,
@@ -15,11 +15,11 @@
     },
     "Chance Settings": {
       "Chance per cycle": 100.0,
-      "Days betewen spawn": 0
+      "Days betewen spawn": 2
     }
   },
   "Destroy Settings": {
-    "Leave Corpse, when destroyed": true,
+    "Leave Corpse, when destroyed": false,
     "Leave Corpse, when killed by player": true
   },
   "Behaviour Settings": {
@@ -27,11 +27,15 @@
     "Zombies attacked by outpost sentries": true,
     "Ignore Human NPCs": true,
     "Ignored entities (full entity shortname)": [
-      "scarecrow.prefab"
+      "scarecrow.prefab",
+      "murderer.prefab",
+      "chicken.prefab",
+      "zombie.prefab",
+      "scientistjunkpile.prefab"
     ]
   },
   "Broadcast Settings": {
-    "Broadcast spawn amount": true,
+    "Broadcast spawn amount": false,
     "Broadcast types separately": false
   }
 }

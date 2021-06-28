@@ -437,7 +437,9 @@
         "removertool.admin",
         "freebuild.allow",
         "adminhammer.allow",
-        "spawnmini.tier3"
+        "spawnmini.tier3",
+        "inventorycleaner.allowed",
+        "visualcupboard.admin"
       ],
       "AdditionalCommands": []
     }

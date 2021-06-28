@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("FancyDrop", "FastBurst", "2.9.2")]
+    [Info("FancyDrop", "FastBurst", "2.9.3")]
     [Description("The Next Level of a fancy airdrop-toolset")]
     class FancyDrop : RustPlugin
     {
@@ -970,10 +970,14 @@ namespace Oxide.Plugins
                 DropNotifier(dropToPos, dropType, staticList, notificationInfo);
         }
 
-        private string GetGridString(Vector3 position)
+
+        private static string GetGridString(Vector3 position)
         {
-            Vector2 adjPosition = new Vector2((World.Size / 2) + position.x, (World.Size / 2) - position.z);
-            return $"{NumberToString((int)(adjPosition.x / 145))}{((int)(adjPosition.y / 145))}";
+            Vector2 r = new Vector2(World.Size / 2 + position.x, World.Size / 2 + position.z);
+            float x = Mathf.Floor(r.x / 146.3f) % 26;
+            float z = Mathf.Floor(World.Size / 146.3f) - Mathf.Floor(r.y / 146.3f);
+
+            return $"{(char)('A' + x)}{z - 1}";
         }
 
         private static string NumberToString(int number)
