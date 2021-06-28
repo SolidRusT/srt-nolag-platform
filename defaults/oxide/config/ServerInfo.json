@@ -3,7 +3,7 @@
     "Tabs": [
       {
         "ButtonText": "SolidRust",
-        "HeaderText": "www.SolidRusT.net",
+        "HeaderText": "SolidRusT (SRT)",
         "Pages": [
           {
             "TextLines": [
@@ -248,7 +248,7 @@
         "MinY": 0.0,
         "MaxY": 1.0
       },
-      "Url": "https://solidrust.net/images/6889756-black-backgrounds.jpg",
+      "Url": "",
       "TransparencyInPercent": 80
     },
     "ActiveButtonColor": "#0255255255",
