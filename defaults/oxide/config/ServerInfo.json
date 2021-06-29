@@ -47,17 +47,17 @@
           {
             "TextLines": [
               " ",
-              "<color=blue>1</color> - All 3X 5X 10X (Solo/Duo/Trio) have a max group limit of 3 players",
+              "<color=yellow>1</color> - All 3X 5X 10X (Solo/Duo/Trio) have a max group limit of 3 players",
               " ",
-              "<color=blue>2</color> - No admins, moderators or any other human will censor chat (just bots).",
+              "<color=yellow>2</color> - No admins, moderators or any other human will censor chat (just bots).",
               " ",
-              "<color=blue>3</color> - use the in-game chat censor/filter to block unwanted content on your own",
+              "<color=yellow>3</color> - use the in-game chat censor/filter to block unwanted content on your own",
               " ",
-              "<color=blue>4</color> - Do not call out hackers in chat, report them using <color=yellow> F7</color>.",
+              "<color=yellow>4</color> - Do not call out hackers in chat, report them using <color=yellow> F7</color>.",
               " ",
-              "<color=blue>5</color> - No cheating, scripting, bug abuse or otherwise exploiting the game.",
+              "<color=yellow>5</color> - No cheating, scripting, bug abuse or otherwise exploiting the game.",
               " ",
-              "<color=blue>6</color> - Griefing / PvP / Raids / Base Takovers is allowed and encouraged.",
+              "<color=yellow>6</color> - Griefing / PvP / Raids / Base Takovers is allowed and encouraged.",
               " "
             ],
             "ImageSettings": []
@@ -180,7 +180,7 @@
               " ",
               "<color=yellow> bind c chute </color> - Open Parachute",
               " ",
-              "<color=yellow> bind f2 \"consoletoggle;combatlog\" </color> - open combat log with <color=yellow> F2 </color> key",
+              "<color=yellow> bind f2 ''consoletoggle;combatlog'' </color> - open combat log with <color=yellow> F2 </color> key",
               " ",
               "<color=yellow> bind Mouse1 +lighttoggle;+attack2 </color> - turn on weapon light, when aiming down sights",
               " "
@@ -248,7 +248,7 @@
         "MinY": 0.0,
         "MaxY": 1.0
       },
-      "Url": "",
+      "Url": "https://solidrust.net/images/background-black.jpg",
       "TransparencyInPercent": 80
     },
     "ActiveButtonColor": "#0255255255",

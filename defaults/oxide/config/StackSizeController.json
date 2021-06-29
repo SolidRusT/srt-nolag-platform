@@ -1,6 +1,6 @@
 {
-  "RevertStackSizesToVanillaOnUnload": true,
-  "AllowStackingItemsWithDurability": true,
+  "RevertStackSizesToVanillaOnUnload": false,
+  "AllowStackingItemsWithDurability": false,
   "PreventStackingDifferentSkins": true,
   "HidePrefixWithPluginNameInMessages": false,
   "DisableDupeFixAndLeaveWeaponMagsAlone": true,

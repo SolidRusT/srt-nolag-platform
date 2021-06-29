@@ -346,7 +346,9 @@ privatemessages.allow \
 quicksmelt.use \
 quicksort.use \
 quicksort.lootall \
-quicksort.autolootall
+quicksort.autolootall \
+carcommanderlite.use \
+vehicledecayprotection.nodecay.allvehicles
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

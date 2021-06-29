@@ -1,0 +1,7 @@
+{
+  "NotAllowed": "You do not have permission to use this command!",
+  "OnCoolDown": "You are on cooldown!",
+  "AlreadyHaveCar": "You already have a police sedan. To destroy it type /destroyps",
+  "SedanDestroyed": "Your police sedan have been destroyed.",
+  "DoNotOwnSedan": "You do not own police sedan."
+}

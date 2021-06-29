@@ -42,7 +42,8 @@
         "playtimesupplysignal.bonus",
         "copypaste.*",
         "dronestorage.capacity.12",
-        "hazmattoscientistsuit.craftsuit"
+        "hazmattoscientistsuit.craftsuit",
+        "carcommanderlite.canspawn"
       ],
       "AdditionalCommands": []
     },
@@ -188,7 +189,10 @@
         "murderers.kill",
         "murderers.point",
         "murderers.spawn",
-        "murderers.remove"
+        "murderers.remove",
+        "adminnoloot.bypass",
+        "carcommanderlite.canspawn",
+        "policesedan.spawn"
       ],
       "AdditionalCommands": []
     },
@@ -267,7 +271,11 @@
         "hazmattoscientistsuit.craftgreensuit",
         "hazmattoscientistsuit.craftheavy",
         "hazmattoscientistsuit.craftspacesuit",
-        "playtimesupplysignal.bonus"
+        "playtimesupplysignal.bonus",
+        "adminnoloot.bypass",
+        "carcommanderlite.canspawn",
+        "carcommanderlite.admin",
+        "policesedan.spawn"
       ],
       "AdditionalCommands": []
     },
@@ -475,7 +483,11 @@
         "hazmattoscientistsuit.craftgreensuit",
         "hazmattoscientistsuit.craftheavy",
         "hazmattoscientistsuit.craftspacesuit",
-        "phonesplus.admin"
+        "phonesplus.admin",
+        "adminnoloot.bypass",
+        "carcommanderlite.canspawn",
+        "carcommanderlite.admin",
+        "policesedan.spawn"
       ],
       "AdditionalCommands": []
     }

@@ -3949,21 +3949,21 @@
         "Shortname": "riflebody",
         "HasDurability": false,
         "VanillaStackSize": 10,
-        "CustomStackSize": 0
+        "CustomStackSize": 1
       },
       {
         "ItemId": 573926264,
         "Shortname": "semibody",
         "HasDurability": false,
         "VanillaStackSize": 10,
-        "CustomStackSize": 0
+        "CustomStackSize": 1
       },
       {
         "ItemId": 1230323789,
         "Shortname": "smgbody",
         "HasDurability": false,
         "VanillaStackSize": 10,
-        "CustomStackSize": 0
+        "CustomStackSize": 1
       },
       {
         "ItemId": -44066600,

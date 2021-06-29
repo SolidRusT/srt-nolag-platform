@@ -1,0 +1,7 @@
+{
+  "NotAllowed": "Nemas opravneni na to, aby si mohl pouzit tento prikaz!",
+  "OnCoolDown": "Musis pockat jeste ",
+  "AlreadyHaveCar": "Jiz vlastnis policejni auto. Muzes ho znicit pomoci /destroyps",
+  "SedanDestroyed": "Tve policejni vozidlo bylo zniceno.",
+  "DoNotOwnSedan": "Nevlastnis policejni vozidlo."
+}

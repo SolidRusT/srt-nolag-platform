@@ -5,7 +5,7 @@
   "BanSettings": {
     "Color": "3329330",
     "Enabled": true,
-    "WebhookUrl": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe"
+    "WebhookUrl": "https://discord.com/api/webhooks/859159248978444289/NwIEiAy2pBAjq_u6fvfRIpfAUW_OGbTW-bwkw836-cdPFaP1rkawFKrDeszFaHFJTI6T"
   },
   "ReportSettings": {
     "LogToConsole": true,
@@ -13,7 +13,7 @@
     "Cooldown": 30,
     "Color": "3329330",
     "Enabled": true,
-    "WebhookUrl": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe"
+    "WebhookUrl": "https://discord.com/api/webhooks/859159248978444289/NwIEiAy2pBAjq_u6fvfRIpfAUW_OGbTW-bwkw836-cdPFaP1rkawFKrDeszFaHFJTI6T"
   },
   "MessageSettings": {
     "LogToConsole": true,
@@ -22,16 +22,16 @@
     "Cooldown": 30,
     "Color": "3329330",
     "Enabled": true,
-    "WebhookUrl": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe"
+    "WebhookUrl": "https://discord.com/api/webhooks/859159248978444289/NwIEiAy2pBAjq_u6fvfRIpfAUW_OGbTW-bwkw836-cdPFaP1rkawFKrDeszFaHFJTI6T"
   },
   "ChatSettings": {
     "TextToSpeech": false,
     "Enabled": false,
-    "WebhookUrl": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe"
+    "WebhookUrl": "https://discord.com/api/webhooks/859159248978444289/NwIEiAy2pBAjq_u6fvfRIpfAUW_OGbTW-bwkw836-cdPFaP1rkawFKrDeszFaHFJTI6T"
   },
   "MuteSettings": {
     "Color": "3329330",
     "Enabled": true,
-    "WebhookUrl": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe"
+    "WebhookUrl": "https://discord.com/api/webhooks/859159248978444289/NwIEiAy2pBAjq_u6fvfRIpfAUW_OGbTW-bwkw836-cdPFaP1rkawFKrDeszFaHFJTI6T"
   }
 }
