@@ -17,8 +17,8 @@
       "Min": 0
     },
     "Helicopter": {
-      "Max": 0,
-      "Min": 0
+      "Max": 7200,
+      "Min": 7200
     }
   }
 }
