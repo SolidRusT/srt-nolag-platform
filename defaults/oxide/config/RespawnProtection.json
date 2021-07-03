@@ -1,5 +1,5 @@
 {
-  "Respawn Protection Timer": 30.0,
+  "Respawn Protection Timer": 60.0,
   "Disable Protection If Raid Blocked": false,
   "Protect From PVE": true
 }

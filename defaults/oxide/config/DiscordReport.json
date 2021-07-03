@@ -1,0 +1,18 @@
+{
+    "Webhook URL": "https://discord.com/api/webhooks/859159248978444289/NwIEiAy2pBAjq_u6fvfRIpfAUW_OGbTW-bwkw836-cdPFaP1rkawFKrDeszFaHFJTI6TE",
+    "Embed Title": "Rat Report",
+    "Embed Description": "Report sent by a player",
+    "Embed Color": 1484265,
+    "Set Author Icon From Player Profile": true,
+    "Use Reporter (True) Or Suspect (False) As Author": false,
+    "Allow Reporting Admins": false,
+    "Report Commands": [
+        "report"
+    ],
+    "Allow Only Online Suspects Reports": true,
+    "Threshold Before Sending Reports": 2,
+    "Show Recent Suspect Combatlog": true,
+    "Recent Combatlog Entries": 3,
+    "Cooldown In Seconds": 300,
+    "Old User Cache Purge In Seconds": 86400
+}

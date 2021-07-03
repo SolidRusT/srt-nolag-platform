@@ -8,7 +8,7 @@ function initialize_srt () {
 
 function backup_s3 () {
     if [ -f "${GAME_ROOT}/rcon" ]; then
-        echo "rcon binary found, saving world..." # no need to log this
+        echo "rcon binary found, saving world..." | tee -a ${LOGS}
         ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.writecfg"
         sleep 1
         ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.save"

@@ -348,7 +348,8 @@ quicksort.use \
 quicksort.lootall \
 quicksort.autolootall \
 carcommanderlite.use \
-vehicledecayprotection.nodecay.allvehicles
+vehicledecayprotection.nodecay.allvehicles \
+unwound.canuse
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

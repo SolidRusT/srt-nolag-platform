@@ -1,0 +1,5 @@
+{
+  "Command On Cooldown - Minutes": "This command is on cooldown for another {0} minutes.",
+  "Command On Cooldown - Hours": "This command is on cooldwon for another {0} hours.",
+  "Max Uses Reached": "You have reached the maximum of {0} uses for this command."
+}
