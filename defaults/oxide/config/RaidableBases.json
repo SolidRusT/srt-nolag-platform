@@ -95,6 +95,7 @@
         "Expert": "0000FF",
         "Nightmare": "000000"
       },
+      "Anti Terrain Clipping Distance (Advanced Users Only)": 50.0,
       "Allow Teleport": false,
       "Allow Cupboard Loot To Drop": true,
       "Allow Players To Build": true,
@@ -182,6 +183,8 @@
       "Convert PVE To PVP": false,
       "Convert PVP To PVE": false,
       "Distance To Spawn Bought Raids From Player": 500.0,
+      "Ignore Safe Checks": false,
+      "Ignore Player Entities At Custom Spawn Locations": false,
       "Lock Raid To Buyer And Friends": true,
       "Max Buyable Events": 1,
       "Reset Purchased Owner After X Minutes Offline": 10.0,
@@ -453,6 +456,7 @@
     "Fog Machine Allows Motion Toggle": true,
     "Fog Machine Requires A Power Source": true,
     "SamSite Repairs Every X Minutes (0.0 = disabled)": 5.0,
-    "SamSite Range (350.0 = Rust default)": 75.0
+    "SamSite Range (350.0 = Rust default)": 75.0,
+    "Test Generator Power": 100.0
   }
 }

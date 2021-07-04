@@ -178,6 +178,11 @@
     "Level 2 - Final Death": false
   },
   "NPCs": {
+    "Spawn Inside Bases": {
+      "Spawn On Floors": false,
+      "Spawn On Beds": false,
+      "Spawn On Rugs": false
+    },
     "Murderer Items": [
       "metal.facemask",
       "metal.plate.torso",
@@ -223,6 +228,11 @@
   "Change Building Material Tier To": {
     "Wooden": false,
     "Stone": true,
+    "Metal": false,
+    "HQM": false
+  },
+  "Change Door Type To": {
+    "Wooden": false,
     "Metal": false,
     "HQM": false
   },

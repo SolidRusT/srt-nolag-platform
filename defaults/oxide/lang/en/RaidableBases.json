@@ -153,7 +153,6 @@
   "BuyCooldown": "<color=#FF0000>You must wait {0} seconds to use this command!</color>",
   "LoadedBuyable": "Loaded {0} buyable spawns.",
   "NotifyPlayerFormat": "<color=#ADD8E6>{rank}</color>. <color=#C0C0C0>{name}</color> (raided <color=#FFFF00>{value}</color> bases for <color=#FFFF00>{points}</color> points)",
-  "RaidPVEWarning": "Configuration is set to block PVP raids from being bought, and no PVE raids are configured. Therefore players cannot buy raids until you add a PVE raid.",
   "DifficultyNotSet": "Difficulty has not been configured for this profile! This profile will not be available for use until this has been configured.",
   "DifficultySetTo": "Difficulty set to: {0}",
   "UIFormatLockoutMinutes": "{0}m",
@@ -163,5 +162,9 @@
   "BuyableServerSaving": "You cannot buy a raid while the server is saving.",
   "BuyableAlreadyOwner": "You cannot buy multiple raids.",
   "RemovedLockFor": "Removed lockout for {0} ({1})",
-  "Buy Raids": "Buy Raids"
+  "Buy Raids": "Buy Raids",
+  "NoBuyableEventsCostsConfigured": "No difficulty has a purchase price configured.",
+  "NoBuyableEventsToday": "No difficulty is enabled in the configuration today.",
+  "NoBuyableEventsEnabled": "All difficulties are disabled in the configuration.",
+  "NoBuyableEventsPVP": "Buyable Events is configured to not allow PVP purchases, and no PVE profiles exist. Therefore players cannot purchase anything until a PVE profile is created, or by setting Allow PVP to false in a profile."
 }

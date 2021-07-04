@@ -178,6 +178,11 @@
     "Level 2 - Final Death": false
   },
   "NPCs": {
+    "Spawn Inside Bases": {
+      "Spawn On Floors": false,
+      "Spawn On Beds": false,
+      "Spawn On Rugs": false
+    },
     "Murderer Items": [
       "metal.facemask",
       "metal.plate.torso",
@@ -227,6 +232,11 @@
     "Stone": false,
     "Metal": false,
     "HQM": true
+  },
+  "Change Door Type To": {
+    "Wooden": false,
+    "Metal": false,
+    "HQM": false
   },
   "Auto Turrets": {
     "Aim Cone": 5.0,
