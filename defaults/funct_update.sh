@@ -348,8 +348,8 @@ quicksort.use \
 quicksort.lootall \
 quicksort.autolootall \
 carcommanderlite.use \
-vehicledecayprotection.nodecay.allvehicles \
-unwound.canuse
+unwound.canuse \
+cctvutilities.status.all
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
