@@ -45,10 +45,10 @@ using static NPCPlayerApex;
 
 namespace Oxide.Plugins
 {
-    [Info("Raidable Bases", "nivex", "2.1.2")]
+    [Info("Raidable Bases", "nivex", "2.1.3")]
     [Description("Create fully automated raidable bases with npcs.")]
     class RaidableBases : RustPlugin
-    {
+    {        
         [PluginReference]
         private Plugin DangerousTreasures, Vanish, LustyMap, ZoneManager, Economics, ServerRewards, Map, GUIAnnouncements, CopyPaste, Friends, Clans, Kits, TruePVE, Spawns, NightLantern, Wizardry, NextGenPVE, Imperium, Backpacks, BaseRepair;
 
@@ -57,6 +57,7 @@ namespace Oxide.Plugins
         protected RotationCycle Cycle { get; set; } = new RotationCycle();
         public Dictionary<int, List<BaseEntity>> Bases { get; } = new Dictionary<int, List<BaseEntity>>();
         public Dictionary<int, RaidableBase> Raids { get; } = new Dictionary<int, RaidableBase>();
+        public Dictionary<BaseEntity, MountInfo> MountEntities { get; } = new Dictionary<BaseEntity, MountInfo>();
         public Dictionary<BaseEntity, RaidableBase> RaidEntities { get; } = new Dictionary<BaseEntity, RaidableBase>();
         public Dictionary<ulong, RaidableBase> Npcs { get; set; } = new Dictionary<ulong, RaidableBase>();
         protected Dictionary<ulong, DelaySettings> PvpDelay { get; } = new Dictionary<ulong, DelaySettings>();
@@ -187,6 +188,12 @@ namespace Oxide.Plugins
             Expert,
             Nightmare,
             Default
+        }
+
+        public class MountInfo
+        {
+            public Vector3 position;
+            public float radius;
         }
 
         public class BuyableInfo
@@ -1298,7 +1305,7 @@ namespace Oxide.Plugins
             public Dictionary<string, float> lastActive { get; set; } = Pool.Get<Dictionary<string, float>>();
             public List<string> ids { get; set; } = Pool.GetList<string>();
             private List<Locker> lockers { get; set; } = Pool.GetList<Locker>();
-            private List<Vector3> _decorDeployables { get; set; } = Pool.GetList<Vector3>();
+            private List<BaseEntity> _decorDeployables { get; set; } = Pool.GetList<BaseEntity>();
             private Dictionary<string, ulong> skins { get; set; } = Pool.Get<Dictionary<string, ulong>>();
             private Dictionary<uint, ulong> skinIds { get; set; } = Pool.Get<Dictionary<uint, ulong>>();
             private Dictionary<TriggerBase, BaseEntity> triggers { get; set; } = Pool.Get<Dictionary<TriggerBase, BaseEntity>>();
@@ -1831,7 +1838,7 @@ namespace Oxide.Plugins
                 if (!IsUnloading)
                 {
                     //ServerMgr.Instance.StartCoroutine(Backbone.Plugin.UndoRoutine_OLD(BaseIndex, Location, Entities.ToList()));
-                    Backbone.Plugin.UndoPaste(BaseIndex, Location, Options.ProtectionRadius, Entities.ToList());
+                    Backbone.Plugin.UndoPaste(BaseIndex, Location, Entities.ToList());
                 }
 
                 foreach (var raider in raiders)
@@ -3327,9 +3334,9 @@ namespace Oxide.Plugins
                         SetupPickup(e as BaseCombatEntity);
                     }
 
-                    if (e is DecorDeployable)
+                    if (e is DecorDeployable && !_decorDeployables.Contains(e))
                     {
-                        _decorDeployables.Add(e.transform.position);
+                        _decorDeployables.Add(e);
                     }
 
                     if (e is IOEntity)
@@ -3997,11 +4004,11 @@ namespace Oxide.Plugins
                 }
             }
 
-            private void ChangeTier(Door door)
+            private bool ChangeTier(Door door)
             {
                 if (door.isSecurityDoor)
                 {
-                    return;
+                    return false;
                 }
 
                 switch (door.prefabID)
@@ -4009,42 +4016,42 @@ namespace Oxide.Plugins
                     case Constants.DOOR_HINGED_TOPTIER:
                         if (Options.Doors.Metal)
                         {
-                            SetDoorType(door, Constants.DOOR_HINGED_METAL);
+                            return SetDoorType(door, Constants.DOOR_HINGED_METAL);
                         }
                         else if (Options.Doors.Wooden)
                         {
-                            SetDoorType(door, Constants.DOOR_HINGED_WOOD);
+                            return SetDoorType(door, Constants.DOOR_HINGED_WOOD);
                         }
                         break;
                     case Constants.DOOR_HINGED_METAL:
                     case Constants.INDUSTRIAL_DOOR_A:
                         if (Options.Doors.HQM)
                         {
-                            SetDoorType(door, Constants.DOOR_HINGED_TOPTIER);
+                            return SetDoorType(door, Constants.DOOR_HINGED_TOPTIER);
                         }
                         else if (Options.Doors.Wooden)
                         {
-                            SetDoorType(door, Constants.DOOR_HINGED_WOOD);
+                            return SetDoorType(door, Constants.DOOR_HINGED_WOOD);
                         }
                         break;
                     case Constants.DOOR_HINGED_WOOD:
                         if (Options.Doors.HQM)
                         {
-                            SetDoorType(door, Constants.DOOR_HINGED_TOPTIER);
+                            return SetDoorType(door, Constants.DOOR_HINGED_TOPTIER);
                         }
                         else if (Options.Doors.Metal)
                         {
-                            SetDoorType(door, Constants.DOOR_HINGED_METAL);
+                            return SetDoorType(door, Constants.DOOR_HINGED_METAL);
                         }
                         break;
                     case Constants.DOOR_DOUBLE_HINGED_TOPTIER:
                         if (Options.Doors.Metal)
                         {
-                            SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_METAL);
+                            return SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_METAL);
                         }
                         else if (Options.Doors.Wooden)
                         {
-                            SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_WOOD);
+                            return SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_WOOD);
                         }
                         break;
                     
@@ -4052,27 +4059,29 @@ namespace Oxide.Plugins
                     case Constants.WALL_FRAME_GARAGEDOOR:
                         if (Options.Doors.HQM)
                         {
-                            SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_TOPTIER);
+                            return SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_TOPTIER);
                         }
                         else if (Options.Doors.Wooden)
                         {
-                            SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_WOOD);
+                            return SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_WOOD);
                         }
                         break;
                     case Constants.DOOR_DOUBLE_HINGED_WOOD:
                         if (Options.Doors.HQM)
                         {
-                            SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_TOPTIER);
+                            return SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_TOPTIER);
                         }
                         else if (Options.Doors.Metal)
                         {
-                            SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_METAL);
+                            return SetDoorType(door, Constants.DOOR_DOUBLE_HINGED_METAL);
                         }
                         break;
                 }
+
+                return false;
             }
 
-            private void SetDoorType(Door door, uint prefabID)
+            private bool SetDoorType(Door door, uint prefabID)
             {
                 var prefabName = StringPool.Get(prefabID);
                 var position = door.transform.position;
@@ -4090,6 +4099,8 @@ namespace Oxide.Plugins
                     Backbone.Plugin.RaidEntities[e] = this;
                     SetupDoor(e as Door, true);
                 }
+
+                return true;
             }
 
             private void SetupDoor(Door door, bool changed = false)
@@ -4099,9 +4110,8 @@ namespace Oxide.Plugins
                     CreateLock(door);
                 }
 
-                if (!changed && Options.Doors.Any())
+                if (!changed && Options.Doors.Any() && ChangeTier(door))
                 {
-                    ChangeTier(door);
                     return;
                 }
 
@@ -4221,11 +4231,15 @@ namespace Oxide.Plugins
             private void SetupRugs()
             {
                 _rugs.RemoveAll(rug => rug == null || rug.IsDestroyed);
+                _decorDeployables.RemoveAll(x => x == null || x.IsDestroyed);
 
-                foreach (var position in _decorDeployables)
+                foreach (var deployable in _decorDeployables)
                 {
-                    _rugs.RemoveAll(rug => rug.transform.position != position && position.y >= rug.transform.position.y && InRange(rug.transform.position, position, 0.5f, false));
-                }                
+                    _rugs.RemoveAll(rug => 
+                    {
+                        return rug != deployable && deployable.transform.position.y >= rug.transform.position.y && InRange(rug.transform.position, deployable.transform.position, 1f, false);
+                    });
+                }
             }
 
             private void SetupSleepingBag(SleepingBag bag)
@@ -4245,6 +4259,15 @@ namespace Oxide.Plugins
 
             private void SetupMountable(BaseMountable mountable)
             {
+                if (!_config.Settings.Management.DespawnMounts)
+                {
+                    Backbone.Plugin.MountEntities[mountable] = new MountInfo
+                    {
+                        position = Location,
+                        radius = Options.ProtectionRadius
+                    };
+                }
+
                 if (mountable is BaseVehicle)
                 {
                     return;
@@ -4666,10 +4689,10 @@ namespace Oxide.Plugins
             {
                 int index = 0;
 
-                while (Loot.Count > 0 && containers.Count > 0)
+                while (Loot.Count > 0 && containers.Count > 0 && itemAmountSpawned < treasureAmount)
                 {
                     var container = containers[index];
-
+                    
                     if (!container.inventory.IsFull())
                     {
                         var lootItem = Loot.GetRandom();
@@ -4699,7 +4722,7 @@ namespace Oxide.Plugins
                     string shortname = isBlueprint ? ti.shortname.Replace(".bp", string.Empty) : ti.shortname;
                     bool isModified = false;
 
-                    if (!defshortnames.Contains(shortname) && shortname.Contains("_"))
+                    if (shortname.Contains("_") && !defshortnames.Any(value => value.Equals(shortname, StringComparison.OrdinalIgnoreCase)))
                     {
                         shortname = shortname.Substring(shortname.IndexOf("_") + 1);
                         isModified = true;
@@ -4735,7 +4758,6 @@ namespace Oxide.Plugins
                             Loot.Add(new TreasureItem
                             {
                                 amount = stack,
-                                definition = ti.definition,
                                 shortname = shortname,
                                 skin = ti.skin,
                                 modified = isModified,
@@ -4748,7 +4770,6 @@ namespace Oxide.Plugins
                         Loot.Add(new TreasureItem
                         {
                             amount = amount,
-                            definition = ti.definition,
                             shortname = shortname,
                             skin = ti.skin,
                             isBlueprint = isBlueprint,
@@ -4799,15 +4820,6 @@ namespace Oxide.Plugins
                     {
                         continue;
                     }
-
-                    string shortname = ti.shortname.EndsWith(".bp") ? ti.shortname.Replace(".bp", string.Empty) : ti.shortname;
-
-                    if (!defshortnames.Contains(shortname) && shortname.Contains("_"))
-                    {
-                        shortname = shortname.Substring(shortname.IndexOf("_") + 1);
-                    }
-
-                    ti.definition = ItemManager.FindItemDefinition(shortname);
 
                     Collective.Add(ti.Clone()); 
                     from.Add(ti.Clone());
@@ -4944,10 +4956,21 @@ namespace Oxide.Plugins
                 {
                     if (Loot.Count > 0 && Loot.Count < treasureAmount)
                     {
-                        do
+                        var collective = Collective.ToList();
+
+                        while (Loot.Count < treasureAmount && collective.Count > 0)
                         {
-                            Loot.Add(Collective.GetRandom());
-                        } while (Loot.Count < treasureAmount);
+                            var ti = collective.GetRandom();
+
+                            collective.Remove(ti);
+
+                            if (IsUnique(ti))
+                            {
+                                continue;
+                            }
+
+                            Loot.Add(ti);
+                        }
                     }
                 }
             }
@@ -4999,16 +5022,26 @@ namespace Oxide.Plugins
                 }
                 else if (Collective.Count > treasureAmount)
                 {
-                    int index = Collective.Count;
-
-                    while (Loot.Count < treasureAmount && --index >= 0)
+                    var collective = Collective.ToList();
+                    
+                    while (Loot.Count < treasureAmount && collective.Count > 0)
                     {
-                        var ti = Collective.GetRandom();
+                        var ti = collective.GetRandom();
 
-                        if (!Options.AllowDuplicates && !shortNames.Contains(ti.shortname))
+                        collective.Remove(ti);
+
+                        if (IsUnique(ti))
                         {
-                            shortNames.Add(ti.shortname);
-                            Loot.Add(ti);
+                            continue;
+                        }
+
+                        if (!Options.AllowDuplicates)
+                        {
+                            if (!shortNames.Contains(ti.shortname))
+                            {
+                                shortNames.Add(ti.shortname);
+                                Loot.Add(ti);
+                            }
                         }
                         else Loot.Add(ti);
                     }
@@ -5022,22 +5055,77 @@ namespace Oxide.Plugins
             private List<TreasureItem> DefaultLoot { get; set; } = new List<TreasureItem>();
             private List<TreasureItem> Loot { get; set; } = new List<TreasureItem>();
 
-            private SpawnResult SpawnItem(TreasureItem lootItem, StorageContainer container)
+            private bool IsUnique(TreasureItem ti)
             {
-                if (lootItem.amount <= 0)
+                if (!Options.AllowDuplicates)
+                {
+                    foreach (var x in Loot)
+                    {
+                        if (x.shortname == ti.shortname && x.amount == ti.amount && x.skin == ti.skin)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (_config.Treasure.UniqueBaseLoot)
+                {
+                    foreach (var x in BaseLootPermanent)
+                    {
+                        if (x.shortname == ti.shortname && x.amount == ti.amount && x.skin == ti.skin)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (_config.Treasure.UniqueDifficultyLoot)
+                {
+                    foreach (var x in DifficultyLoot)
+                    {
+                        if (x.shortname == ti.shortname && x.amount == ti.amount && x.skin == ti.skin)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (_config.Treasure.UniqueDefaultLoot)
+                {
+                    foreach (var x in DefaultLoot)
+                    {
+                        if (x.shortname == ti.shortname && x.amount == ti.amount && x.skin == ti.skin)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            private SpawnResult SpawnItem(TreasureItem ti, StorageContainer container)
+            {
+                if (ti.amount <= 0)
                 {
                     return SpawnResult.Skipped;
                 }
 
-                ItemDefinition def = lootItem.definition;
-                int amount = lootItem.amount;
+                if (ti.definition == null)
+                {
+                    Puts("Invalid shortname in config: {0}", ti.shortname);
+                    return SpawnResult.Skipped;
+                }
+
+                var def = ti.definition;
+                int amount = ti.amount;
                 ulong skin = 0;
 
                 if (_config.Skins.Loot.RandomSkins && def.shortname != "explosive.satchel" && def.shortname != "grenade.f1")
                 {
                     if (!skins.TryGetValue(def.shortname, out skin)) // apply same skin once randomly chosen so items with skins can stack properly
                     {
-                        skin = lootItem.skin;
+                        skin = ti.skin;
                     }
 
                     if (skin == 0)
@@ -5062,7 +5150,7 @@ namespace Oxide.Plugins
 
                 Item item;
 
-                if (lootItem.isBlueprint)
+                if (ti.isBlueprint)
                 {
                     item = ItemManager.CreateByItemID(-996920608, 1, 0);
 
@@ -6579,7 +6667,7 @@ namespace Oxide.Plugins
 
                     foreach (var e in entities)
                     {
-                        if (e.IsDestroyed || e.transform.position == block.position || e.prefabID == Constants.RUG)
+                        if (e.IsDestroyed || e.transform.position == block.position || e.prefabID == Constants.RUG || e is Door)
                         {
                             continue;
                         }
@@ -6664,9 +6752,21 @@ namespace Oxide.Plugins
                     }
 
                     Shuffle(_randomSpots);
+                    _beds.RemoveAll(x => x == null || x.IsDestroyed);
+                    _decorDeployables.RemoveAll(x => x == null || x.IsDestroyed);
 
                     foreach (var position in _randomSpots)
                     {
+                        if (Options.NPC.Inside.SpawnOnRugs && _decorDeployables.Any(x => x.prefabID == Constants.RUG && InRange(x.transform.position, position, 1f, false)))
+                        {
+                            continue;
+                        }
+
+                        if (Options.NPC.Inside.SpawnOnBeds && _beds.Any(x => InRange(x.transform.position, position, 1f, false)))
+                        {
+                            continue;
+                        }
+
                         if (!IsNpcNearSpot(position))
                         {
                             return position;
@@ -7255,7 +7355,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            timer.Repeat(30f, 0, () => RaidableBase.UpdateAllMarkers());
+            timer.Repeat(30f, 0, RaidableBase.UpdateAllMarkers);
 
             LoadData();
             SetupMonuments();
@@ -7429,7 +7529,7 @@ namespace Oxide.Plugins
 
                 var zoneName = Convert.ToString(ZoneManager.Call("GetZoneName", zoneId));
 
-                if (_config.Settings.Inclusions.Any(zone => zone == zoneId || !string.IsNullOrEmpty(zoneName) && zoneName.Contains(zone, CompareOptions.OrdinalIgnoreCase)))
+                if (_config.Settings.Inclusions.Any(zone => zone == "*" || zone == zoneId || !string.IsNullOrEmpty(zoneName) && zoneName.Contains(zone, CompareOptions.OrdinalIgnoreCase)))
                 {
                     continue;
                 }
@@ -9875,7 +9975,7 @@ namespace Oxide.Plugins
             });
         }
 
-        private void UndoPaste(int baseIndex, Vector3 position, float radius, List<BaseEntity> entities)
+        private void UndoPaste(int baseIndex, Vector3 position, List<BaseEntity> entities)
         {
             float num = 0f;
             float time = Mathf.Clamp(_config.Settings.Management.InvokeTime, 0.001f, 0.25f);
@@ -9884,7 +9984,7 @@ namespace Oxide.Plugins
             {
                 if (e != null && !e.IsDestroyed)
                 {
-                    if (!_config.Settings.Management.DespawnMounts && e is BaseMountable && KeepMountable(e as BaseMountable, position, radius))
+                    if (!_config.Settings.Management.DespawnMounts && KeepMountable(e))
                     {
                         continue;
                     }
@@ -9911,9 +10011,22 @@ namespace Oxide.Plugins
             Interface.CallHook("OnRaidableBaseDespawned", position);
         }
 
-        private bool KeepMountable(BaseMountable mountable, Vector3 position, float radius)
+        private bool KeepMountable(BaseEntity entity)
         {
-            return mountable.GetMounted() != null || !InRange(mountable.transform.position, position, radius);
+            if (_config.Settings.Management.DespawnMounts)
+            {
+                return false;
+            }
+
+            MountInfo mi;
+            if (!MountEntities.TryGetValue(entity, out mi) || !MountEntities.Remove(entity))
+            {
+                return false;
+            }
+
+            var mountable = entity as BaseMountable;
+
+            return mountable.GetMounted() != null || !InRange(mountable.transform.position, mi.position, mi.radius);
         }
 
         private static List<Vector3> GetCircumferencePositions(Vector3 center, float radius, float next, bool spawnHeight, float y = 0f)
@@ -10257,7 +10370,7 @@ namespace Oxide.Plugins
 
             return Backbone.GetMessageEx("CannotFindPosition", id);
         }
-
+                
         private RaidableSpawns GetSpawns(RaidableType type, out bool checkTerrain)
         {
             RaidableSpawns spawns;
@@ -10456,31 +10569,31 @@ namespace Oxide.Plugins
             {
                 case DayOfWeek.Monday:
                     {
-                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Monday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Monday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Monday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Monday : mode == RaidableMode.Nightmare ? _config.Settings.Management.Nightmare.Monday : false;
+                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Monday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Monday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Monday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Monday : mode == RaidableMode.Nightmare && _config.Settings.Management.Nightmare.Monday;
                     }
                 case DayOfWeek.Tuesday:
                     {
-                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Tuesday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Tuesday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Tuesday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Tuesday : mode == RaidableMode.Nightmare ? _config.Settings.Management.Nightmare.Tuesday : false;
+                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Tuesday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Tuesday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Tuesday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Tuesday : mode == RaidableMode.Nightmare && _config.Settings.Management.Nightmare.Tuesday;
                     }
                 case DayOfWeek.Wednesday:
                     {
-                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Wednesday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Wednesday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Wednesday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Wednesday : mode == RaidableMode.Nightmare ? _config.Settings.Management.Nightmare.Wednesday : false;
+                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Wednesday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Wednesday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Wednesday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Wednesday : mode == RaidableMode.Nightmare && _config.Settings.Management.Nightmare.Wednesday;
                     }
                 case DayOfWeek.Thursday:
                     {
-                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Thursday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Thursday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Thursday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Thursday : mode == RaidableMode.Nightmare ? _config.Settings.Management.Nightmare.Thursday : false;
+                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Thursday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Thursday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Thursday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Thursday : mode == RaidableMode.Nightmare && _config.Settings.Management.Nightmare.Thursday;
                     }
                 case DayOfWeek.Friday:
                     {
-                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Friday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Friday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Friday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Friday : mode == RaidableMode.Nightmare ? _config.Settings.Management.Nightmare.Friday : false;
+                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Friday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Friday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Friday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Friday : mode == RaidableMode.Nightmare && _config.Settings.Management.Nightmare.Friday;
                     }
                 case DayOfWeek.Saturday:
                     {
-                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Saturday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Saturday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Saturday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Saturday : mode == RaidableMode.Nightmare ? _config.Settings.Management.Nightmare.Saturday : false;
+                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Saturday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Saturday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Saturday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Saturday : mode == RaidableMode.Nightmare && _config.Settings.Management.Nightmare.Saturday;
                     }
                 default:
                     {
-                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Sunday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Sunday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Sunday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Sunday : mode == RaidableMode.Nightmare ? _config.Settings.Management.Nightmare.Sunday : false;
+                        return mode == RaidableMode.Easy ? _config.Settings.Management.Easy.Sunday : mode == RaidableMode.Medium ? _config.Settings.Management.Medium.Sunday : mode == RaidableMode.Hard ? _config.Settings.Management.Hard.Sunday : mode == RaidableMode.Expert ? _config.Settings.Management.Expert.Sunday : mode == RaidableMode.Nightmare && _config.Settings.Management.Nightmare.Sunday;
                     }
             }
         }
@@ -10611,8 +10724,8 @@ namespace Oxide.Plugins
             }
 
             string value = args[0].ToLower();
-            RaidableMode mode = IsEasy(value) ? RaidableMode.Easy : IsMedium(value) ? RaidableMode.Medium : IsHard(value) ? RaidableMode.Hard : IsExpert(value) ? RaidableMode.Expert : IsNightmare(value) ? RaidableMode.Nightmare : RaidableMode.Random;
-
+            RaidableMode mode = GetRaidableMode(value);
+            
             if (!CanSpawnDifficultyToday(mode))
             {
                 Backbone.Message(buyer, "BuyDifficultyNotAvailableToday", value);
@@ -11058,6 +11171,55 @@ namespace Oxide.Plugins
             ladder.Clear();
         }
 
+        private void GetRaidableMode(string[] args, out RaidableMode mode, out string baseName)
+        {
+            mode = RaidableMode.Random;
+            baseName = null;
+
+            if (args.Length > 0)
+            {
+                for (int i = 0; i < args.Length; i++)
+                {
+                    string value = args[i].ToLower();
+
+                    if (string.IsNullOrEmpty(baseName) && FileExists(value))
+                    {
+                        baseName = value;
+                    }
+                    else if (mode == RaidableMode.Random)
+                    {
+                        mode = GetRaidableMode(value);
+                    }                    
+                }
+            }
+        }
+
+        private RaidableMode GetRaidableMode(string value)
+        {
+            if (IsEasy(value))
+            {
+                return RaidableMode.Easy;
+            }
+            else if (IsMedium(value))
+            {
+                return RaidableMode.Medium;
+            }
+            else if (IsHard(value))
+            {
+                return RaidableMode.Hard;
+            }
+            else if (IsExpert(value))
+            {
+                return RaidableMode.Expert;
+            }
+            else if (IsNightmare(value))
+            {
+                return RaidableMode.Nightmare;
+            }
+
+            return RaidableMode.Random;
+        }
+
         protected void ShowGrid(BasePlayer player)
         {
             bool isAdmin = player.IsAdmin;
@@ -11257,22 +11419,7 @@ namespace Oxide.Plugins
 
             RaidableMode mode = RaidableMode.Random;
             string baseName = null;
-
-            if (args.Length > 0)
-            {
-                for (int i = 0; i < args.Length; i++)
-                {
-                    string value = args[i].ToLower();
-
-                    if (IsEasy(value)) mode = RaidableMode.Easy;
-                    else if (IsMedium(value)) mode = RaidableMode.Medium;
-                    else if (IsHard(value)) mode = RaidableMode.Hard;
-                    else if (IsExpert(value)) mode = RaidableMode.Expert;
-                    else if (IsNightmare(value)) mode = RaidableMode.Nightmare;
-                    else if (string.IsNullOrEmpty(baseName) && FileExists(args[i])) baseName = args[i];
-                }
-            }
-
+            GetRaidableMode(args, out mode, out baseName);
             var profile = GetBuilding(RaidableType.Manual, mode, baseName);
 
             if (IsProfileValid(profile))
@@ -11327,24 +11474,9 @@ namespace Oxide.Plugins
                 return;
             }
 
-            RaidableMode mode = RaidableMode.Random;
-            string baseName = null;
-
-            if (args.Length > 0)
-            {
-                for (int i = 0; i < args.Length; i++)
-                {
-                    string value = args[i].ToLower();
-
-                    if (IsEasy(value)) mode = RaidableMode.Easy;
-                    else if (IsMedium(value)) mode = RaidableMode.Medium;
-                    else if (IsHard(value)) mode = RaidableMode.Hard;
-                    else if (IsExpert(value)) mode = RaidableMode.Expert;
-                    else if (IsNightmare(value)) mode = RaidableMode.Nightmare;
-                    else if (string.IsNullOrEmpty(baseName) && FileExists(args[i])) baseName = args[i];
-                }
-            }
-
+            RaidableMode mode;
+            string baseName;
+            GetRaidableMode(args, out mode, out baseName);
             string message;
             var position = SpawnRandomBase(out message, RaidableType.Manual, mode, baseName, isAdmin);
 
@@ -11883,7 +12015,7 @@ namespace Oxide.Plugins
 
         private static bool IsEasy(string value) => value == "0" || value.Equals("easy", StringComparison.OrdinalIgnoreCase);
 
-        private static bool IsMedium(string value) => value == "1" || value.Equals("med", StringComparison.OrdinalIgnoreCase);
+        private static bool IsMedium(string value) => value == "1" || value.Equals("med", StringComparison.OrdinalIgnoreCase) || value.Equals("medium", StringComparison.OrdinalIgnoreCase);
 
         private static bool IsHard(string value) => value == "2" || value.Equals("hard", StringComparison.OrdinalIgnoreCase);
 
@@ -11910,14 +12042,7 @@ namespace Oxide.Plugins
 
         private bool IsInvisible(BasePlayer player)
         {
-            if (!player || Vanish == null || !Vanish.IsLoaded)
-            {
-                return false;
-            }
-
-            var success = Vanish?.Call("IsInvisible", player);
-
-            return success is bool ? (bool)success : false;
+            return Vanish != null && Convert.ToBoolean(Vanish?.Call("IsInvisible", player));
         }
 
         private static void NullifyDamage(HitInfo hitInfo)
@@ -12021,30 +12146,10 @@ namespace Oxide.Plugins
             if (args.Length > 2)
             {
                 string str = values.Last();
+                mode = GetRaidableMode(str);
 
-                if (IsEasy(str))
+                if (mode != RaidableMode.Random)
                 {
-                    mode = RaidableMode.Easy;
-                    values.Remove(str);
-                }
-                else if (IsMedium(str))
-                {
-                    mode = RaidableMode.Medium;
-                    values.Remove(str);
-                }
-                else if (IsHard(str))
-                {
-                    mode = RaidableMode.Hard;
-                    values.Remove(str);
-                }
-                else if (IsExpert(str))
-                {
-                    mode = RaidableMode.Expert;
-                    values.Remove(str);
-                }
-                else if (IsNightmare(str))
-                {
-                    mode = RaidableMode.Nightmare;
                     values.Remove(str);
                 }
             }
@@ -15570,7 +15675,28 @@ namespace Oxide.Plugins
             public float probability { get; set; } = 1.0f;
 
             [JsonIgnore]
-            public ItemDefinition definition { get; set; }
+            private ItemDefinition _def { get; set; }
+
+            [JsonIgnore]
+            public ItemDefinition definition
+            {
+                get
+                {
+                    if (_def == null)
+                    {
+                        string _shortname = shortname.EndsWith(".bp") ? shortname.Replace(".bp", string.Empty) : shortname;
+
+                        if (shortname.Contains("_") && !defshortnames.Any(value => value.Equals(_shortname, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            _shortname = _shortname.Substring(_shortname.IndexOf("_") + 1);
+                        }
+
+                        _def = ItemManager.FindItemDefinition(_shortname);
+                    }
+
+                    return _def;
+                }
+            }
 
             [JsonIgnore]
             public bool isBlueprint { get; set; }
@@ -15583,7 +15709,6 @@ namespace Oxide.Plugins
                 var ti = MemberwiseClone() as TreasureItem;
 
                 ti.isBlueprint = isBlueprint; 
-                ti.definition = definition;
                 ti.modified = modified;
 
                 return ti;
@@ -16241,7 +16366,7 @@ namespace Oxide.Plugins
                 }
                 else
                 {
-                    if (!_config.Settings.Costs.Any(kvp => kvp.Value.IsValid()) && !_config.Settings.ServerRewards.Any && !!_config.Settings.Economics.Any)
+                    if (!_config.Settings.Costs.Any(kvp => kvp.Value.IsValid()) && !_config.Settings.ServerRewards.Any && !_config.Settings.Economics.Any)
                     {
                         Backbone.Message(player, "NoBuyableEventsCostsConfigured");
                     }
@@ -16270,18 +16395,24 @@ namespace Oxide.Plugins
                     return false;
                 }
 
-                switch (mode)
+                RaidableBaseCustomCostOptions options;
+                if (_config.Settings.Costs.TryGetValue(mode, out options) && options.IsValid())
                 {
-                    case RaidableMode.Easy:
-                        return _config.Settings.Management.Amounts.Easy != -1;
-                    case RaidableMode.Medium:
-                        return _config.Settings.Management.Amounts.Medium != -1;
-                    case RaidableMode.Hard:
-                        return _config.Settings.Management.Amounts.Hard != -1;
-                    case RaidableMode.Expert:
-                        return _config.Settings.Management.Amounts.Expert != -1;
-                    case RaidableMode.Nightmare:
-                        return _config.Settings.Management.Amounts.Nightmare != -1;
+                    return true;
+                }
+
+                var money = mode == RaidableMode.Easy ? _config.Settings.Economics.Easy : mode == RaidableMode.Medium ? _config.Settings.Economics.Medium : mode == RaidableMode.Hard ? _config.Settings.Economics.Hard : mode == RaidableMode.Expert ? _config.Settings.Economics.Expert : mode == RaidableMode.Nightmare ? _config.Settings.Economics.Nightmare : 0;
+
+                if (money > 0)
+                {
+                    return true;
+                }
+
+                int points = mode == RaidableMode.Easy ? _config.Settings.ServerRewards.Easy : mode == RaidableMode.Medium ? _config.Settings.ServerRewards.Medium : mode == RaidableMode.Hard ? _config.Settings.ServerRewards.Hard : mode == RaidableMode.Expert ? _config.Settings.ServerRewards.Expert : mode == RaidableMode.Nightmare ? _config.Settings.ServerRewards.Nightmare : 0;
+
+                if (points > 0)
+                {
+                    return true;
                 }
 
                 return false;
