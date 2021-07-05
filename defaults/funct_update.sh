@@ -10,9 +10,6 @@ function update_repo () {
 function update_mods () {
     OXIDE=(
         oxide/data/BetterLoot/LootTables.json
-        oxide/data/ImageLibrary/image_data.json
-        oxide/data/ImageLibrary/image_urls.json
-        oxide/data/ImageLibrary/skin_data.json
         oxide/data/FancyDrop.json
         oxide/data/Kits/kits_data.json
         oxide/data/BetterChat.json
@@ -20,8 +17,7 @@ function update_mods () {
         oxide/data/death.png
         oxide/data/hit.png
         oxide/data/GuardedCrate.json
-        oxide/data/killstreak_data.json
-        oxide/data/StackSizeController.json
+        oxide/data/CustomChatCommands.json
     )
     echo "=> Updating plugin data" | tee -a ${LOGS}
     for data in ${OXIDE[@]}; do

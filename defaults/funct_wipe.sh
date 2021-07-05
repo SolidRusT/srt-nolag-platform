@@ -1,7 +1,17 @@
 function notification () {
     echo "Notifying players with 1 hour warning" | tee -a ${LOGS}
-    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "restart 3600 \"Scheduled map wipe is about to begin.\""
-    sleep 3574
+    #3600
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "say \"Scheduled map wipe is about to begin, in 1 hour.\""
+    sleep 900
+    #2700
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "say \"Scheduled map wipe is about to begin, in 45 minutes.\""
+    sleep 900
+    #1800
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "say \"Scheduled map wipe is about to begin, in 30 minutes.\""
+    sleep 900
+    #900
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "restart 900 \"Scheduled map wipe is about to begin.\""
+    sleep 874
     backup_s3
 }
 
@@ -13,15 +23,18 @@ function wipe_map () {
 }
 
 function wipe_kits () {
-    echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
+    echo "Wipe out all saved kits" | tee -a ${LOGS}
+    echo "oxide/data/Kits/kits_data.json"
 }
 
 function wipe_bank () {
     echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
+    echo "oxide/data/banks/*.json"
 }
 
 function wipe_backpacks () {
     echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
+    echo "oxide/data/Backpacks/*.json"
 }
 
 function wipe_leaderboards () {
