@@ -1,88 +1,23 @@
 {
-  "Events": [
-    {
-      "EventDuration (duration the event will be active for)": 2700.0,
-      "EventName (event name)": "SRT Easy",
-      "AutoHack (enables auto hacking of crates when an event is finished)": true,
-      "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
-      "UseKits (use custom kits plugin)": true,
-      "Kits (custom kits)": [
-        "scieasy"
-      ],
-      "NpcName (custom name)": "SRT Easy",
-      "NpcCount (number of guards to spawn)": 6, 
-      "NpcHealth (health guards spawn with)": 100.0,
-      "NpcRadius (max distance guards will roam)": 15.0,
-      "NpcAggression (max aggression distance guards will target)": 120.0,
-      "MarkerColor (marker color)": "#32a844",
-      "MarkerBorderColor (marker border color)": "#000000",
-      "MarkerOpacity (marker opacity)": 0.9,
-      "UseLoot (use custom loot table)": false,
-      "MaxLootItems (max items to spawn in crate)": 6,
-      "CustomLoot (items to spawn in crate)": []
-    },
-    {
-      "EventDuration (duration the event will be active for)": 1800.0,
-      "EventName (event name)": "SRT Medium",
-      "AutoHack (enables auto hacking of crates when an event is finished)": true,
-      "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
-      "UseKits (use custom kits plugin)": true,
-      "Kits (custom kits)": [
-        "scimed"
-      ],
-      "NpcName (custom name)": "SRT Medium",
-      "NpcCount (number of guards to spawn)": 8,
-      "NpcHealth (health guards spawn with)": 150.0,
-      "NpcRadius (max distance guards will roam)": 15.0,
-      "NpcAggression (max aggression distance guards will target)": 120.0,
-      "MarkerColor (marker color)": "#eddf45",
-      "MarkerBorderColor (marker border color)": "#000000",
-      "MarkerOpacity (marker opacity)": 0.9,
-      "UseLoot (use custom loot table)": false,
-      "MaxLootItems (max items to spawn in crate)": 6,
-      "CustomLoot (items to spawn in crate)": []
-    },
-    {
-      "EventDuration (duration the event will be active for)": 900.0,
-      "EventName (event name)": "SRT Hard",
-      "AutoHack (enables auto hacking of crates when an event is finished)": true,
-      "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
-      "UseKits (use custom kits plugin)": true,
-      "Kits (custom kits)": [
-        "scihard"
-      ],
-      "NpcName (custom name)": "SRT Hard",
-      "NpcCount (number of guards to spawn)": 8,
-      "NpcHealth (health guards spawn with)": 200.0,
-      "NpcRadius (max distance guards will roam)": 50.0,
-      "NpcAggression (max aggression distance guards will target)": 120.0,
-      "MarkerColor (marker color)": "#3060d9",
-      "MarkerBorderColor (marker border color)": "#000000",
-      "MarkerOpacity (marker opacity)": 0.9,
-      "UseLoot (use custom loot table)": false,
-      "MaxLootItems (max items to spawn in crate)": 7,
-      "CustomLoot (items to spawn in crate)": []
-    },
-    {
-      "EventDuration (duration the event will be active for)": 900.0,
-      "EventName (event name)": "SRT Expert",
-      "AutoHack (enables auto hacking of crates when an event is finished)": true,
-      "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
-      "UseKits (use custom kits plugin)": true,
-      "Kits (custom kits)": [
-        "sciexpert"
-      ],
-      "NpcName (custom name)": "SRT Expert",
-      "NpcCount (number of guards to spawn)": 12,
-      "NpcHealth (health guards spawn with)": 350.0,
-      "NpcRadius (max distance guards will roam)": 50.0,
-      "NpcAggression (max aggression distance guards will target)": 180.0,
-      "MarkerColor (marker color)": "#e81728",
-      "MarkerBorderColor (marker border color)": "#000000",
-      "MarkerOpacity (marker opacity)": 0.9,
-      "UseLoot (use custom loot table)": false,
-      "MaxLootItems (max items to spawn in crate)": 10,
-      "CustomLoot (items to spawn in crate)": []
-    }
-  ]
+    "Events": [{
+        "EventDuration (duration the event will be active for)": 1800.0,
+        "EventName (event name)": "SRT Easy",
+        "AutoHack (enables auto hacking of crates when an event is finished)": true,
+        "AutoHackSeconds (countdown for crate to unlock in seconds)": 60.0,
+        "UseKits (use custom kits plugin)": true,
+        "Kits (custom kits)": [
+            "scieasy"
+        ],
+        "NpcName (custom name)": "SRT Easy",
+        "NpcCount (number of guards to spawn)": 6,
+        "NpcHealth (health guards spawn with)": 100.0,
+        "NpcRadius (max distance guards will roam)": 15.0,
+        "NpcAggression (max aggression distance guards will target)": 120.0,
+        "MarkerColor (marker color)": "#32a844",
+        "MarkerBorderColor (marker border color)": "#000000",
+        "MarkerOpacity (marker opacity)": 0.9,
+        "UseLoot (use custom loot table)": false,
+        "MaxLootItems (max items to spawn in crate)": 6,
+        "CustomLoot (items to spawn in crate)": []
+    }]
 }
