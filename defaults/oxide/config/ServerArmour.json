@@ -1,65 +1,65 @@
 {
-  "Auto Kick": {
-    "Bans on your network": true,
-    "Enable Total bans (server + game + vac) kick": false,
-    "Enabled": false,
-    "Max allowed previous bans": 3,
-    "Max allowed total bans (server + game + vac)": 30,
-    "Steam": {
-      "Family share accounts": false,
-      "Family share accounts that are dirty": false,
-      "Max allowed Game bans": 2,
-      "Max allowed VAC bans": 1,
-      "Min age of VAC ban allowed": 90,
-      "Min Allowed Steam Level (-1 disables)": -1,
-      "Private Steam Profiles": false,
-      "Profiles that do no conform to the Steam64 IDs (Highly recommended)": true,
-      "When Steam Level Hidden": false
+    "Auto Kick": {
+        "Bans on your network": true,
+        "Enable Total bans (server + game + vac) kick": false,
+        "Enabled": false,
+        "Max allowed previous bans": 3,
+        "Max allowed total bans (server + game + vac)": 30,
+        "Steam": {
+            "Family share accounts": false,
+            "Family share accounts that are dirty": false,
+            "Max allowed Game bans": 2,
+            "Max allowed VAC bans": 1,
+            "Min age of VAC ban allowed": 90,
+            "Min Allowed Steam Level (-1 disables)": -1,
+            "Private Steam Profiles": false,
+            "Profiles that do no conform to the Steam64 IDs (Highly recommended)": true,
+            "When Steam Level Hidden": false
+        },
+        "Users that have been banned on rusthackreport": true,
+        "VPN": {
+            "Enabled": true,
+            "Ignore nVidia Cloud Gaming": true
+        }
     },
-    "Users that have been banned on rusthackreport": true,
-    "VPN": {
-      "Enabled": true,
-      "Ignore nVidia Cloud Gaming": true
-    }
-  },
-  "Better Chat: Tag for dirty users": "Sus",
-  "Broadcast": {
-    "Kicks": true,
-    "New bans": true,
-    "Player Reports": true,
-    "RCON": false,
-    "When VAC is younger than": 120
-  },
-  "Clan Ban": {
-    "Ban Native Team Members": true,
-    "Reason Prefix": "Assoc Ban -> {playerId}: {reason}"
-  },
-  "Discord": {
-    "Bans Webhook URL": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT",
-    "Notify when a player has received a game ban": true,
-    "Send Ban Report": true,
-    "Send Kick Report": true,
-    "Send Only Dirty Player Reports": true,
-    "Show Quick Connect On report": true,
-    "Webhook URL": "https://discord.com/api/webhooks/859159248978444289/NwIEiAy2pBAjq_u6fvfRIpfAUW_OGbTW-bwkw836-cdPFaP1rkawFKrDeszFaHFJTI6T"
-  },
-  "General": {
-    "Debug: Show additional debug console logs": false,
-    "Ignore Admins": true
-  },
-  "io.serverarmour.com": {
-    "Owner Email": "suparious@solidrust.net",
-    "Owner Real Name": "Shaun Prince",
-    "Owner Steam64 ID": "76561198024774727",
-    "Server Key": "772a5fcf5c9b2e590a036e9068.1625088959093",
-    "Share details with other server owners": true,
-    "Submit Arkan Data": true
-  },
-  "Server Info": {
-    "Game Port": "28015",
-    "Query Port": "28015",
-    "RCON Port": "28016",
-    "Your Server IP": "35.82.55.97"
-  },
-  "Show Protected MSG": true
+    "Better Chat: Tag for dirty users": "Sus",
+    "Broadcast": {
+        "Kicks": true,
+        "New bans": true,
+        "Player Reports": true,
+        "RCON": false,
+        "When VAC is younger than": 120
+    },
+    "Clan Ban": {
+        "Ban Native Team Members": true,
+        "Reason Prefix": "Assoc Ban -> {playerId}: {reason}"
+    },
+    "Discord": {
+        "Bans Webhook URL": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT",
+        "Notify when a player has received a game ban": true,
+        "Send Ban Report": true,
+        "Send Kick Report": true,
+        "Send Only Dirty Player Reports": true,
+        "Show Quick Connect On report": false,
+        "Webhook URL": "https://discord.com/api/webhooks/859159248978444289/NwIEiAy2pBAjq_u6fvfRIpfAUW_OGbTW-bwkw836-cdPFaP1rkawFKrDeszFaHFJTI6T"
+    },
+    "General": {
+        "Debug: Show additional debug console logs": false,
+        "Ignore Admins": true
+    },
+    "io.serverarmour.com": {
+        "Owner Email": "suparious@solidrust.net",
+        "Owner Real Name": "Shaun Prince",
+        "Owner Steam64 ID": "76561198024774727",
+        "Server Key": "772a5fcf5c9b2e590a036e9068.1625088959093",
+        "Share details with other server owners": true,
+        "Submit Arkan Data": true
+    },
+    "Server Info": {
+        "Game Port": "28015",
+        "Query Port": "28015",
+        "RCON Port": "28016",
+        "Your Server IP": "35.82.55.97"
+    },
+    "Show Protected MSG": true
 }

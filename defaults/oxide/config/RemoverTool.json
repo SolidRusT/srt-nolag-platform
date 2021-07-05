@@ -3204,6 +3204,70 @@
         "Refund": {
           "rustige_egg_e": 1
         }
+      },
+      "boombox.deployed": {
+        "Remove Allowed": true,
+        "Display Name": "Boom Box",
+        "Price": {},
+        "Refund": {
+          "boombox": 1
+        }
+      },
+      "discoball.deployed": {
+        "Remove Allowed": true,
+        "Display Name": "Disco Ball",
+        "Price": {},
+        "Refund": {
+          "discoball": 1
+        }
+      },
+      "discofloor.deployed": {
+        "Remove Allowed": true,
+        "Display Name": "Disco Floor",
+        "Price": {},
+        "Refund": {
+          "discofloor": 1
+        }
+      },
+      "discofloor.largetiles.deployed": {
+        "Remove Allowed": true,
+        "Display Name": "Disco Floor",
+        "Price": {},
+        "Refund": {
+          "discofloor.largetiles": 1
+        }
+      },
+      "connectedspeaker.deployed": {
+        "Remove Allowed": true,
+        "Display Name": "Connected Speaker",
+        "Price": {},
+        "Refund": {
+          "connected.speaker": 1
+        }
+      },
+      "laserlight.deployed": {
+        "Remove Allowed": true,
+        "Display Name": "Laser Light",
+        "Price": {},
+        "Refund": {
+          "laserlight": 1
+        }
+      },
+      "microphonestand.deployed": {
+        "Remove Allowed": true,
+        "Display Name": "Microphone Stand",
+        "Price": {},
+        "Refund": {
+          "microphonestand": 1
+        }
+      },
+      "soundlight.deployed": {
+        "Remove Allowed": true,
+        "Display Name": "Sound Light",
+        "Price": {},
+        "Refund": {
+          "soundlight": 1
+        }
       }
     }
   },
