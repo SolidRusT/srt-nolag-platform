@@ -96,20 +96,20 @@
         "Nightmare": "000000"
       },
       "Anti Terrain Clipping Distance (Advanced Users Only)": 50.0,
-      "Allow Teleport": false,
+      "Allow Teleport": true,
       "Allow Cupboard Loot To Drop": true,
       "Allow Players To Build": true,
       "Allow Players To Use Ladders": true,
       "Allow Player Bags To Be Lootable At PVP Bases": true,
       "Allow Player Bags To Be Lootable At PVE Bases": true,
-      "Allow Traps To Drop Loot": false,
-      "Allow Players To Loot Traps": false,
+      "Allow Traps To Drop Loot": true,
+      "Allow Players To Loot Traps": true,
       "Allow Raid Bases On Roads": true,
       "Allow Raid Bases On Rivers": true,
       "Allow Raid Bases On Building Topology": true,
       "Allow Vending Machines To Broadcast": true,
       "Allow Bases To Float Above Water": false,
-      "Prevent Bases From Floating Above Water By Also Checking Surrounding Area": false,
+      "Prevent Bases From Floating Above Water By Also Checking Surrounding Area": true,
       "Maximum Water Depth Level Used For Float Above Water Option": 1.0,
       "Backpacks Can Be Opened At PVE Bases": true,
       "Backpacks Can Be Opened At PVP Bases": true,
@@ -120,15 +120,15 @@
       "Block RestoreUponDeath Plugin For PVE Bases": false,
       "Bypass Lock Treasure To First Attacker For PVE Bases": false,
       "Bypass Lock Treasure To First Attacker For PVP Bases": false,
-      "Delay Between Entity Death While Despawning Base": 0.02,
+      "Delay Between Entity Death While Despawning Base": 0.05,
       "Despawn Spawned Mounts": true,
       "Do Not Destroy Player Built Deployables": false,
       "Do Not Destroy Player Built Structures": false,
       "Divide Rewards Among All Raiders": true,
       "Draw Corpse Time (Seconds)": 300.0,
       "Eject Sleepers Before Spawning Base": true,
-      "Extra Distance To Spawn From Monuments": 0.0,
-      "Maximum Elevation Level": 2.5,
+      "Extra Distance To Spawn From Monuments": 0.5,
+      "Maximum Elevation Level": 5.5,
       "Move Cookables Into Ovens": true,
       "Move Food Into BBQ Or Fridge": true,
       "Move Resources Into Tool Cupboard": true,
@@ -145,7 +145,7 @@
       "Players With PVP Delay Can Damage Anything Inside Zone": false,
       "Players With PVP Delay Can Damage Other Players With PVP Delay Anywhere": false,
       "PVP Delay Between Zone Hopping": 10.0,
-      "Prevent Fire From Spreading": true,
+      "Prevent Fire From Spreading": false,
       "Prevent Players From Hogging Raids": true,
       "Require Cupboard To Be Looted Before Despawning": false,
       "Destroying The Cupboard Completes The Raid": true,
@@ -159,11 +159,11 @@
     "Map Markers": {
       "Marker Name": "SRT Base Event",
       "Radius": 0.25,
-      "Use Vending Map Marker": true,
+      "Use Vending Map Marker": false,
       "Use Explosion Map Marker": false,
       "Create Markers For Buyable Events": true,
-      "Create Markers For Maintained Events": true,
-      "Create Markers For Scheduled Events": true,
+      "Create Markers For Maintained Events": false,
+      "Create Markers For Scheduled Events": false,
       "Create Markers For Manual Events": true
     },
     "Buyable Events": {
@@ -174,12 +174,12 @@
         "Normal Users": 600.0
       },
       "Refunds": {
-        "Refund Despawned Bases": false,
+        "Refund Despawned Bases": true,
         "Block Refund If Base Is Damaged": true,
-        "Refund Percentage": 100.0,
-        "Refund Resets Cooldown Timer": false
+        "Refund Percentage": 80.0,
+        "Refund Resets Cooldown Timer": true
       },
-      "Allow Players To Buy PVP Raids": false,
+      "Allow Players To Buy PVP Raids": true,
       "Convert PVE To PVP": false,
       "Convert PVP To PVE": false,
       "Distance To Spawn Bought Raids From Player": 500.0,
@@ -247,27 +247,27 @@
     },
     "Custom Buy Raid Costs": {
       "Easy": {
-        "Enabled": false,
+        "Enabled": true,
         "Item Shortname": "scrap",
         "Amount": 50
       },
       "Medium": {
-        "Enabled": false,
+        "Enabled": true,
         "Item Shortname": "scrap",
         "Amount": 100
       },
       "Hard": {
-        "Enabled": false,
+        "Enabled": true,
         "Item Shortname": "scrap",
         "Amount": 150
       },
       "Expert": {
-        "Enabled": false,
+        "Enabled": true,
         "Item Shortname": "scrap",
         "Amount": 200
       },
       "Nightmare": {
-        "Enabled": false,
+        "Enabled": true,
         "Item Shortname": "scrap",
         "Amount": 250
       }
@@ -281,7 +281,7 @@
       "up",
       "down"
     ],
-    "Amount Of Entities To Undo Per Batch (1 = Slowest But Better Performance)": 5,
+    "Amount Of Entities To Undo Per Batch (1 = Slowest But Better Performance)": 1,
     "Automatically Teleport Admins To Their Map Marker Positions": false,
     "Block Wizardry Plugin At Events": false,
     "Chat Steam64ID": 0,
@@ -444,7 +444,7 @@
     "Panel Color": "#000000",
     "PVP Color": "#FF0000",
     "PVE Color": "#008000",
-    "Show Containers Left": false,
+    "Show Containers Left": true,
     "Show Time Left": true
   },
   "Weapons": {

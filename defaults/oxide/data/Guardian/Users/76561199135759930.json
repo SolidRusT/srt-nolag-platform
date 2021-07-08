@@ -1,0 +1,34 @@
+{
+  "userid": 76561199135759930,
+  "name": "Ratchet",
+  "names": [
+    "Ratchet"
+  ],
+  "address": "10.0.2.2",
+  "addresses": [
+    "10.0.2.2"
+  ],
+  "time_connected": "2021-07-08T05:02:10.695271Z",
+  "time_disconnected": "0001-01-01T00:00:00",
+  "time_played": "00:00:00",
+  "ban_count": 0,
+  "ban_reason": "",
+  "ban_time": "9999-12-31T23:59:59.9999999",
+  "ban_timer": "0001-01-01T00:00:00",
+  "is_banned": false,
+  "cripple_count": 0,
+  "cripple_reason": "",
+  "cripple_time": "9999-12-31T23:59:59.9999999",
+  "cripple_timer": "0001-01-01T00:00:00",
+  "is_crippled": false,
+  "l_position": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "v_position": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  }
+}

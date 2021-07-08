@@ -39,6 +39,15 @@
         }
       },
       "ClaimAutoKits": true
+    },
+    "76561199135759930": {
+      "_usageData": {
+        "Bolty & Pistol": {
+          "TotalUses": 1,
+          "NextUseTime": 1625720906.1654069
+        }
+      },
+      "ClaimAutoKits": true
     }
   }
 }

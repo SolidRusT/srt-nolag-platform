@@ -21,8 +21,13 @@
       "Enabled": true,
       "Lockouts": true,
       "Status": true
+    },
+    "76561199135759930": {
+      "Enabled": true,
+      "Lockouts": true,
+      "Status": true
     }
   },
-  "RaidTime": "07/07/2021 14:32:58",
-  "TotalEvents": 98
+  "RaidTime": "07/07/2021 22:11:41",
+  "TotalEvents": 109
 }
