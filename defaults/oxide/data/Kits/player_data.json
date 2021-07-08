@@ -1,3 +1,44 @@
 {
-  "_players": {}
+  "_players": {
+    "76561198272757534": {
+      "_usageData": {
+        "Guest": {
+          "TotalUses": 2,
+          "NextUseTime": 1625518897.44274
+        }
+      },
+      "ClaimAutoKits": true
+    },
+    "76561198416399632": {
+      "_usageData": {
+        "Survivor": {
+          "TotalUses": 1,
+          "NextUseTime": 1625553545.867815
+        }
+      },
+      "ClaimAutoKits": true
+    },
+    "76561197996782220": {
+      "_usageData": {
+        "SolidPlayer": {
+          "TotalUses": 3,
+          "NextUseTime": 1625674306.1096809
+        },
+        "Builder": {
+          "TotalUses": 1,
+          "NextUseTime": 1625668169.406194
+        }
+      },
+      "ClaimAutoKits": true
+    },
+    "76561198024774727": {
+      "_usageData": {
+        "Guest": {
+          "TotalUses": 1,
+          "NextUseTime": 1625683513.9812849
+        }
+      },
+      "ClaimAutoKits": true
+    }
+  }
 }

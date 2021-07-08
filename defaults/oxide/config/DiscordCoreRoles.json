@@ -117,5 +117,5 @@
       }
     }
   ],
-  "Debug Level (None, Error, Warning, Info)": "None"
+  "Debug Level (None, Error, Warning, Info)": "Error"
 }

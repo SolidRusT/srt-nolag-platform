@@ -1,0 +1,34 @@
+{
+  "userid": 76561198416399632,
+  "name": "Kronikus",
+  "names": [
+    "Kronikus"
+  ],
+  "address": "10.0.2.2",
+  "addresses": [
+    "10.0.2.2"
+  ],
+  "time_connected": "2021-07-06T07:06:33.563796Z",
+  "time_disconnected": "2021-07-06T07:18:35.800928Z",
+  "time_played": "00:36:21.0929180",
+  "ban_count": 0,
+  "ban_reason": "",
+  "ban_time": "9999-12-31T23:59:59.9999999",
+  "ban_timer": "0001-01-01T00:00:00",
+  "is_banned": false,
+  "cripple_count": 0,
+  "cripple_reason": "",
+  "cripple_time": "9999-12-31T23:59:59.9999999",
+  "cripple_timer": "0001-01-01T00:00:00",
+  "is_crippled": false,
+  "l_position": {
+    "x": 180.357452,
+    "y": 0.330507755,
+    "z": 334.582672
+  },
+  "v_position": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  }
+}

@@ -94,9 +94,9 @@ function update_server () {
     echo "=> Downloading RustEdit.io binary..." | tee -a ${LOGS}
     wget https://github.com/k1lly0u/Oxide.Ext.RustEdit/raw/master/Oxide.Ext.RustEdit.dll -O \
         ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.RustEdit.dll | tee -a ${LOGS}
-    echo "=> Downloading Rust:IO binary..." | tee -a ${LOGS}
-    wget http://playrust.io/latest -O \
-        ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.RustIO.dll | tee -a ${LOGS}
+    #echo "=> Downloading Rust:IO binary..." | tee -a ${LOGS}
+    #wget http://playrust.io/latest -O \
+    #    ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.RustIO.dll | tee -a ${LOGS}
 }
 
 function update_umod () {
@@ -345,7 +345,8 @@ quicksort.lootall \
 quicksort.autolootall \
 carcommanderlite.use \
 unwound.canuse \
-cctvutilities.status.all
+cctvutilities.status.all \
+quicksmelt.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

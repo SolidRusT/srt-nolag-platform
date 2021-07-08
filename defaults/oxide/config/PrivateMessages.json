@@ -1,6 +1,6 @@
 {
   "CooldownTime": 3,
-  "EnableHistory": false,
+  "EnableHistory": true,
   "EnableLogging": true,
   "PmCommand": "pm",
   "UseBetterChatMute": false,

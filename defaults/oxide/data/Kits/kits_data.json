@@ -4144,9 +4144,9 @@
           "Contents": null
         },
         {
-          "Shortname": "ammo.nailgun.nails",
+          "Shortname": "ammo.pistol",
           "Skin": 0,
-          "Amount": 128,
+          "Amount": 256,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
@@ -4252,19 +4252,6 @@
           "Contents": null
         },
         {
-          "Shortname": "pistol.nailgun",
-          "Skin": 0,
-          "Amount": 1,
-          "Condition": 100.0,
-          "MaxCondition": 100.0,
-          "Ammo": 6,
-          "Ammotype": "ammo.nailgun.nails",
-          "Position": 2,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
           "Shortname": "pistol.eoka",
           "Skin": 0,
           "Amount": 1,
@@ -4273,6 +4260,46 @@
           "Ammo": 1,
           "Ammotype": "ammo.handmade.shell",
           "Position": 4,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "pistol.revolver",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 4,
+          "Ammotype": "ammo.pistol",
+          "Position": 2,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": [
+            {
+              "Shortname": "weapon.mod.silencer",
+              "Skin": 0,
+              "Amount": 1,
+              "Condition": 100.0,
+              "MaxCondition": 100.0,
+              "Ammo": 0,
+              "Ammotype": null,
+              "Position": 0,
+              "Frequency": -1,
+              "BlueprintShortname": null,
+              "Contents": null
+            }
+          ]
+        },
+        {
+          "Shortname": "weapon.mod.lasersight",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 300.0,
+          "MaxCondition": 300.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 5,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null

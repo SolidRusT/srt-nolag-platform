@@ -118,4 +118,11 @@ function show_logs () {
     tail -n 20 -F "${HOME}/SolidRusT.log" "${GAME_ROOT}/RustDedicated.log" "${GAME_ROOT}/rcon-default.log"
 }
 
+function hot_plugs () {
+    export REPORTS="${GAME_ROOT}/oxide/data/PerformanceMonitor/Reports"
+    export LATEST_REPORT=$(ls -1tr ${REPORTS}/*/* | tail -n 1)
+
+
+}
+
 echo "SRT Common Functions initialized" | tee -a ${LOGS}

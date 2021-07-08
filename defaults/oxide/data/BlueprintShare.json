@@ -1,3 +1,16 @@
 {
-  "Players": {}
+  "Players": {
+    "76561198272757534": {
+      "SharingEnabled": true
+    },
+    "76561198416399632": {
+      "SharingEnabled": true
+    },
+    "76561197996782220": {
+      "SharingEnabled": true
+    },
+    "76561198024774727": {
+      "SharingEnabled": true
+    }
+  }
 }

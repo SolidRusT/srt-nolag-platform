@@ -6,7 +6,7 @@
         "Port": 3306,
         "Username": "modded",
         "Password": "Admin408",
-        "Database": "solidrust_lcy"
+        "Database": "solidrust_demo"
     },
     "GroupPermissions": [{
             "CommandName": "usermod.survivor",
