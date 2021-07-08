@@ -9,8 +9,8 @@
     "10.0.2.2"
   ],
   "time_connected": "2021-07-08T05:02:10.695271Z",
-  "time_disconnected": "0001-01-01T00:00:00",
-  "time_played": "00:00:00",
+  "time_disconnected": "2021-07-08T05:13:38.959734Z",
+  "time_played": "00:11:28.2644630",
   "ban_count": 0,
   "ban_reason": "",
   "ban_time": "9999-12-31T23:59:59.9999999",
@@ -22,9 +22,9 @@
   "cripple_timer": "0001-01-01T00:00:00",
   "is_crippled": false,
   "l_position": {
-    "x": 0.0,
-    "y": 0.0,
-    "z": 0.0
+    "x": 358.485748,
+    "y": 6.543939,
+    "z": 389.555969
   },
   "v_position": {
     "x": 0.0,

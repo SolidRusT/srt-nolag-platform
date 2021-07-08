@@ -45,6 +45,10 @@
         "Bolty & Pistol": {
           "TotalUses": 1,
           "NextUseTime": 1625720906.1654069
+        },
+        "Guest": {
+          "TotalUses": 1,
+          "NextUseTime": 1625721160.37429
         }
       },
       "ClaimAutoKits": true
