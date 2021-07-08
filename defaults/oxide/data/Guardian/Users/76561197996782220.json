@@ -8,9 +8,9 @@
   "addresses": [
     "10.0.2.2"
   ],
-  "time_connected": "2021-07-07T17:23:04.43423Z",
-  "time_disconnected": "2021-07-07T21:36:09.730557Z",
-  "time_played": "05:30:03.3867370",
+  "time_connected": "2021-07-08T17:14:28.306523Z",
+  "time_disconnected": "2021-07-08T17:07:01.056143Z",
+  "time_played": "05:57:15.4891940",
   "ban_count": 0,
   "ban_reason": "",
   "ban_time": "9999-12-31T23:59:59.9999999",
@@ -22,9 +22,9 @@
   "cripple_timer": "0001-01-01T00:00:00",
   "is_crippled": false,
   "l_position": {
-    "x": -266.86264,
-    "y": 9.710003,
-    "z": 443.929382
+    "x": 442.9731,
+    "y": -35.5392151,
+    "z": 685.6192
   },
   "v_position": {
     "x": 0.0,

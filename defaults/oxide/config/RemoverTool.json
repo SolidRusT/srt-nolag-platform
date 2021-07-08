@@ -153,7 +153,8 @@
     "Wood": "Wood",
     "High Quality Metal": "High Quality Metal",
     "oak_d": "oak_d",
-    "Shotgun Trap": "Shotgun Trap"
+    "Shotgun Trap": "Shotgun Trap",
+    "Tool Cupboard": "Tool Cupboard"
   },
   "GUI": {
     "Enabled": true,
