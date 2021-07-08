@@ -14,6 +14,10 @@
         "Survivor": {
           "TotalUses": 1,
           "NextUseTime": 1625553545.867815
+        },
+        "Guest": {
+          "TotalUses": 2,
+          "NextUseTime": 1625758945.4403858
         }
       },
       "ClaimAutoKits": true
