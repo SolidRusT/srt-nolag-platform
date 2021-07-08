@@ -285,7 +285,7 @@
     "Automatically Teleport Admins To Their Map Marker Positions": false,
     "Block Wizardry Plugin At Events": false,
     "Chat Steam64ID": 0,
-    "Expansion Mode (Dangerous Treasures)": true,
+    "Expansion Mode (Dangerous Treasures)": false,
     "Remove Admins From Raiders List": false,
     "Show X Z Coordinates": false,
     "Buy Raid Command": "buyraid",
