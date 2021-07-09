@@ -5,18 +5,18 @@
         "All Controlled Mounts": false,
         "Boats": false,
         "Cars (Basic)": false,
-        "Cars (Modular)": true,
-        "Chinook": true,
+        "Cars (Modular)": false,
+        "Chinook": false,
         "Horses": false,
-        "MiniCopters": true,
-        "Pianos": true,
-        "Scrap Transport Helicopters": true
+        "MiniCopters": false,
+        "Pianos": false,
+        "Scrap Transport Helicopters": false
       },
       "Max Amount Allowed To Automatically Spawn Per Difficulty (0 = infinite, -1 = disabled)": {
         "Allow Max Amount Increase From Difficulties Disabled On A Specific Day Of The Week": false,
         "Easy": 0,
         "Medium": 0,
-        "Hard": 3,
+        "Hard": 2,
         "Expert": 2,
         "Nightmare": 1
       },

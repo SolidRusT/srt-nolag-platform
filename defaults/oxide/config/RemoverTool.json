@@ -154,7 +154,8 @@
     "High Quality Metal": "High Quality Metal",
     "oak_d": "oak_d",
     "Shotgun Trap": "Shotgun Trap",
-    "Tool Cupboard": "Tool Cupboard"
+    "Tool Cupboard": "Tool Cupboard",
+    "corn-collectable": "corn-collectable"
   },
   "GUI": {
     "Enabled": true,

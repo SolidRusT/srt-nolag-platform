@@ -84,6 +84,36 @@
           "MaxCondition": 300.0
         }
       ]
+    },
+    {
+      "ID": -1841918730,
+      "Position": 9,
+      "Amount": 6
+    },
+    {
+      "ID": -1841918730,
+      "Position": 11,
+      "Amount": 955
+    },
+    {
+      "ID": 1638322904,
+      "Position": 12,
+      "Amount": 990
+    },
+    {
+      "ID": 1638322904,
+      "Position": 13,
+      "Amount": 1
+    },
+    {
+      "ID": -742865266,
+      "Position": 14,
+      "Amount": 982
+    },
+    {
+      "ID": -1841918730,
+      "Position": 15,
+      "Amount": 5
     }
   ],
   "OwnerID": 76561197996782220

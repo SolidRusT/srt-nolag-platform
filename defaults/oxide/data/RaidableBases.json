@@ -1,6 +1,33 @@
 {
   "Lockouts": {},
-  "Players": {},
+  "Players": {
+    "76561197996782220": {
+      "Raids": 1,
+      "Points": 1,
+      "Easy": 1,
+      "Medium": 0,
+      "Hard": 0,
+      "Expert": 0,
+      "Nightmare": 0,
+      "TotalRaids": 1,
+      "TotalPoints": 1,
+      "TotalEasy": 1,
+      "TotalMedium": 0,
+      "TotalHard": 0,
+      "TotalExpert": 0,
+      "TotalNightmare": 0,
+      "EasyPoints": 1,
+      "MediumPoints": 0,
+      "HardPoints": 0,
+      "ExpertPoints": 0,
+      "NightmarePoints": 0,
+      "TotalEasyPoints": 1,
+      "TotalMediumPoints": 0,
+      "TotalHardPoints": 0,
+      "TotalExpertPoints": 0,
+      "TotalNightmarePoints": 0
+    }
+  },
   "UI": {
     "76561198024774727": {
       "Enabled": true,
@@ -28,6 +55,6 @@
       "Status": true
     }
   },
-  "RaidTime": "07/08/2021 10:07:03",
-  "TotalEvents": 133
+  "RaidTime": "07/08/2021 15:38:45",
+  "TotalEvents": 154
 }

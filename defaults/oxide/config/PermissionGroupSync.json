@@ -24,6 +24,7 @@
                 "solidplayer"
             ],
             "PermissionsOxide": [
+                "nteleportation.survivor",
                 "kits.survivor",
                 "bounty.use",
                 "craftchassis.3",
@@ -61,6 +62,7 @@
                 "supporter"
             ],
             "PermissionsOxide": [
+                "nteleportation.solidplayer",
                 "kits.survivor",
                 "kits.solidplayer",
                 "dronestorage.capacity.24"
@@ -81,6 +83,7 @@
                 "legend"
             ],
             "PermissionsOxide": [
+                "nteleportation.supporter",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -119,6 +122,7 @@
                 "developer"
             ],
             "PermissionsOxide": [
+                "nteleportation.legend",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -139,6 +143,7 @@
                 "gm"
             ],
             "PermissionsOxide": [
+                "nteleportation.developer",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -214,6 +219,7 @@
             ],
             "PermissionsRust": 1,
             "PermissionsOxide": [
+                "nteleportation.gm",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -299,6 +305,7 @@
                 "survivor"
             ],
             "PermissionsOxide": [
+                "nteleportation.admin",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
