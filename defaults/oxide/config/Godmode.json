@@ -1,0 +1,19 @@
+{
+  "Inform On Attack (true/false)": true,
+  "Inform Interval (Seconds)": 15.0,
+  "Show Name Prefix (true/false)": true,
+  "Name Prefix (Default [God])": "[God] ",
+  "Time Limit (Seconds, 0 to Disable)": 0.0,
+  "Disable godmode after disconnect (true/false)": false,
+  "Chat Prefix": "[Godmode]:",
+  "Chat Prefix color": "#00FFFF",
+  "Chat steamID icon": 0,
+  "God commands": [
+    "god",
+    "godmode"
+  ],
+  "Gods commands": [
+    "gods",
+    "godlist"
+  ]
+}

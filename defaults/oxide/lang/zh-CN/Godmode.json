@@ -1,0 +1,15 @@
+{
+  "GodmodeDisabled": "您的上帝模式 <color=#FF4500>已禁用</color>",
+  "GodmodeDisabledBy": "{0} <color=#FF4500>禁用了</color> 您的上帝模式",
+  "GodmodeDisabledFor": "您 <color=#FF4500>禁用了</color> {0} 的上帝模式",
+  "GodmodeEnabled": "您的上帝模式 <color=#00FF00>已启用</color>",
+  "GodmodeEnabledBy": "{0} <color=#00FF00>启用了</color> 您的上帝模式",
+  "GodmodeEnabledFor": "您 <color=#00FF00>启用了</color> {0} 的上帝模式",
+  "InformAttacker": "{0} 处于上帝模式，您不能伤害他",
+  "InformVictim": "{0} 想伤害您",
+  "CantAttack": "您处于上帝模式，不能伤害 {0}",
+  "NoGods": "当前没有玩家启用上帝模式",
+  "NoLooting": "您不能掠夺处于上帝模式的玩家",
+  "NotAllowed": "您没有权限使用 '{0}' 命令",
+  "PlayerNotFound": "玩家 '{0}' 未找到"
+}

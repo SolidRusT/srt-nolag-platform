@@ -41,7 +41,7 @@
         "Use Cave Topology Check": false,
         "Use Economics": true,
         "Use Server Rewards": false,
-        "Wipe On Upgrade Or Change": false,
+        "Wipe On Upgrade Or Change": true,
         "Auto Generate Outpost Location": true,
         "Auto Generate Bandit Location": true,
         "Show Time As Seconds Instead": false
