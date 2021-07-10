@@ -1,6 +1,6 @@
 {
-    "ServerId": "one",
-    "PollIntervalSeconds": 120,
+    "ServerId": "nine",
+    "PollIntervalSeconds": 115,
     "DatabaseConfiguration": {
         "Host": "data.solidrust.net",
         "Port": 3306,
@@ -24,6 +24,7 @@
                 "solidplayer"
             ],
             "PermissionsOxide": [
+                "nteleportation.survivor",
                 "kits.survivor",
                 "bounty.use",
                 "craftchassis.3",
@@ -61,6 +62,7 @@
                 "supporter"
             ],
             "PermissionsOxide": [
+                "nteleportation.solidplayer",
                 "kits.survivor",
                 "kits.solidplayer",
                 "dronestorage.capacity.24"
@@ -81,6 +83,7 @@
                 "legend"
             ],
             "PermissionsOxide": [
+                "nteleportation.supporter",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -119,6 +122,7 @@
                 "developer"
             ],
             "PermissionsOxide": [
+                "nteleportation.legend",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -139,6 +143,7 @@
                 "gm"
             ],
             "PermissionsOxide": [
+                "nteleportation.developer",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -214,6 +219,7 @@
             ],
             "PermissionsRust": 1,
             "PermissionsOxide": [
+                "nteleportation.gm",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -299,6 +305,7 @@
                 "survivor"
             ],
             "PermissionsOxide": [
+                "nteleportation.admin",
                 "kits.survivor",
                 "kits.solidplayer",
                 "kits.supporter",
@@ -414,9 +421,25 @@
                 "guishop.admin",
                 "buildinggrades.nocost",
                 "bgrade.nores",
+                "vanish.use",
+                "adminpanel.allowed",
+                "adminradar.allowed",
+                "godmode.toggle",
                 "vanish.allow",
                 "vanish.unlock",
                 "vanish.collision",
+                "vanish.damage",
+                "godmode.admin",
+                "godmode.toggle",
+                "godmode.invulnerable",
+                "godmode.lootplayers",
+                "godmode.lootprotection",
+                "godmode.untiring",
+                "godmode.autoenable",
+                "adminradar.allowed",
+                "adminradar.auto",
+                "adminradar.list",
+                "adminradar.bypass.override",
                 "zonemanager.zone",
                 "recycle.admin",
                 "nteleportation.tp",
@@ -456,7 +479,6 @@
                 "vanish.collision",
                 "zonemanager.zone",
                 "recycle.admin",
-                "oxide.grant group default nteleportation.tp",
                 "nteleportation.tp",
                 "nteleportation.tpt",
                 "arkan.*",

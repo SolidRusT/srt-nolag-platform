@@ -1,6 +1,6 @@
 {
     "ServerId": "one",
-    "PollIntervalSeconds": 120,
+    "PollIntervalSeconds": 115,
     "DatabaseConfiguration": {
         "Host": "data.solidrust.net",
         "Port": 3306,
