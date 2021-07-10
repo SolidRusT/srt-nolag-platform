@@ -16,7 +16,7 @@
             "Monument": false,
             "Ignore Monument Marker Prefab": false,
             "Mounted": true,
-            "Oil Rig": false,
+            "Oil Rig": true,
             "Safe Zone": true,
             "Swimming": false
         },
