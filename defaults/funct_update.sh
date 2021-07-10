@@ -347,7 +347,13 @@ quicksort.autolootall \
 carcommanderlite.use \
 unwound.canuse \
 cctvutilities.status.all \
-quicksmelt.use
+quicksmelt.use \
+airstrike.signal.strike \
+airstrike.signal.squad \
+airstrike.purchase.strike \
+airstrike.purchase.squad \
+airstrike.chat.strike \
+airstrike.chat.squad
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Who Knocks", "Hockeygel23", "0.0.7")]
+    [Info("Who Knocks", "Suparious", "0.1.9")]
     [Description("Get information messages on door knock")]
     class WhoKnocks : RustPlugin
     {
@@ -106,10 +106,10 @@ namespace Oxide.Plugins
             {
                 {"KnocksMsg", "{0} is knocking your door at {1}."},
                 {"KnocksMsgNoCoordinates", "{0} is knocking your door."},
-                {"OwnerOnlineMsg", "Owner {0} is online and has been informed."},
-                {"OwnerMsg", "Owner {0} has been informed."},
+                {"OwnerOnlineMsg", "Owner is online and has been informed."},
+                {"OwnerMsg", "Owner has been informed."},
                 {"OwnerDisplay", "You have set the knock display owner status to: {0}"},
-                {"OwnerOfflineMsg", "Owner {0} is actually sleeping !"},
+                {"OwnerOfflineMsg", "Owner is actually sleeping !"},
                 {"TooFast", "{0}, You have a cooldown period of {1} seconds" },
                 {"MissingArgs", "{0}, You are missing  arguments. Ex, /whoknocks cooldown 5" },
                 {"NegativeCooldown", "{0}, The cooldown value has to be greater than 0" },
@@ -117,6 +117,7 @@ namespace Oxide.Plugins
                 {"CorrectColor", "{0}, You have set {1} to {2}" },
                 {"CorrectCooldown", "{0}, You have set {1} to {2} seconds" },
                 {"IsAdmin", "{0}, The server admin, {1}, has knocked on your door!" },
+                {"IsFaggot", "{0}, The server faggot, {1}, has knocked on your door!" },
                 {"CoordOff", "{0}, door coordinates {1} be displayed!" }
             }, this, "en");
 
