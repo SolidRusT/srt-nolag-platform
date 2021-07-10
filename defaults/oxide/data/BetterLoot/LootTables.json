@@ -2151,11 +2151,7 @@
                     "Min": 1
                 },
                 "cctv.camera": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "chainsaw": {
-                    "Max": 1,
+                    "Max": 3,
                     "Min": 1
                 },
                 "computerstation": {
@@ -2170,43 +2166,7 @@
                     "Max": 1,
                     "Min": 1
                 },
-                "electric.battery.rechargable.large": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "electric.battery.rechargable.medium": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "electric.counter": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "electric.fuelgenerator.small": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "electric.hbhfsensor": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "electric.laserdetector": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "electric.random.switch": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "electric.rf.broadcaster": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "electric.rf.receiver": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "electric.teslacoil": {
                     "Max": 1,
                     "Min": 1
                 },
@@ -2219,20 +2179,8 @@
                     "Min": 1
                 },
                 "explosives": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "flamethrower": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "floor.ladder.hatch": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "floor.triangle.ladder.hatch": {
-                    "Max": 1,
-                    "Min": 1
+                    "Max": 10,
+                    "Min": 3
                 },
                 "furnace.large": {
                     "Max": 1,
@@ -2247,7 +2195,7 @@
                     "Min": 1
                 },
                 "grenade.f1": {
-                    "Max": 1,
+                    "Max": 3,
                     "Min": 1
                 },
                 "heavy.plate.helmet": {
@@ -2263,46 +2211,26 @@
                     "Min": 1
                 },
                 "largemedkit": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "locker": {
-                    "Max": 1,
+                    "Max": 3,
                     "Min": 1
                 },
                 "metal.facemask": {
-                    "Max": 1,
+                    "Max": 2,
                     "Min": 1
                 },
                 "metal.plate.torso": {
-                    "Max": 1,
+                    "Max": 2,
                     "Min": 1
                 },
                 "metal.refined": {
-                    "Max": 25,
-                    "Min": 15
+                    "Max": 250,
+                    "Min": 25
                 },
                 "metalpipe": {
                     "Max": 6,
                     "Min": 5
                 },
-                "modularcarlift": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "nightvisiongoggles": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "powered.water.purifier": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "rf.detonator": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "rf_pager": {
                     "Max": 1,
                     "Min": 1
                 },
@@ -2318,27 +2246,7 @@
                     "Max": 1,
                     "Min": 1
                 },
-                "searchlight": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "shotgun.pump": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "small.oil.refinery": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "smart.alarm": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "smgbody": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "storage.monitor": {
                     "Max": 1,
                     "Min": 1
                 },
@@ -2346,13 +2254,9 @@
                     "Max": 1,
                     "Min": 1
                 },
-                "syringe.medical": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "techparts": {
-                    "Max": 4,
-                    "Min": 2
+                    "Max": 15,
+                    "Min": 10
                 },
                 "trap.landmine": {
                     "Max": 1,
@@ -2370,14 +2274,6 @@
                     "Max": 1,
                     "Min": 1
                 },
-                "water.catcher.large": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "waterpump": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "multiplegrenadelauncher": {
                     "Max": 1,
                     "Min": 1
@@ -2386,17 +2282,29 @@
                     "Max": 1,
                     "Min": 1
                 },
-                "water.purifier": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "tool.instant_camera": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "samsite": {
                     "Max": 1,
                     "Min": 1
+                },
+                "gunpowder": {
+                    "Max": 2500,
+                    "Min": 999
+                },
+                "ammo.rocket.hv": {
+                    "Max": 6,
+                    "Min": 3
+                },
+                "ammo.rocket.fire": {
+                    "Max": 6,
+                    "Min": 3
+                },
+                "ammo.rifle.explosive": {
+                    "Max": 256,
+                    "Min": 64
+                },
+                "ammo.pistol.fire": {
+                    "Max": 265,
+                    "Min": 64
                 }
             },
             "ItemsMax": 9,

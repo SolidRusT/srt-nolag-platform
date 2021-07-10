@@ -10,6 +10,7 @@
   "Blacklist of plugins names not to check": [
     "RustIO",
     "PermissionsManager",
-    "BotSpawn"
+    "BotSpawn",
+    "Payback"
   ]
 }

@@ -479,7 +479,6 @@
                 "vanish.collision",
                 "zonemanager.zone",
                 "recycle.admin",
-                "oxide.grant group default nteleportation.tp",
                 "nteleportation.tp",
                 "nteleportation.tpt",
                 "arkan.*",

@@ -56,7 +56,13 @@
   "Home": {
     "Homes Limit": 2,
     "VIP Homes Limits": {
-      "nteleportation.vip": 5
+      "nteleportation.survivor": 5,
+      "nteleportation.solidplayer": 5,
+      "nteleportation.supporter": 5,
+      "nteleportation.legendary": 5,
+      "nteleportation.developer": 5,
+      "nteleportation.gm": 5,
+      "nteleportation.admin": 5
     },
     "Allow Sethome At Specific Monuments": [
       "HQM Quarry",
@@ -69,13 +75,31 @@
     "Countdown": 15,
     "Daily Limit": 5,
     "VIP Daily Limits": {
-      "nteleportation.vip": 5
+      "nteleportation.survivor": 5,
+      "nteleportation.solidplayer": 5,
+      "nteleportation.supporter": 5,
+      "nteleportation.legendary": 5,
+      "nteleportation.developer": 5,
+      "nteleportation.gm": 5,
+      "nteleportation.admin": 5
     },
     "VIP Cooldowns": {
-      "nteleportation.vip": 5
+      "nteleportation.survivor": 5,
+      "nteleportation.solidplayer": 5,
+      "nteleportation.supporter": 5,
+      "nteleportation.legendary": 5,
+      "nteleportation.developer": 5,
+      "nteleportation.gm": 5,
+      "nteleportation.admin": 5
     },
     "VIP Countdowns": {
-      "nteleportation.vip": 5
+      "nteleportation.survivor": 5,
+      "nteleportation.solidplayer": 5,
+      "nteleportation.supporter": 5,
+      "nteleportation.legendary": 5,
+      "nteleportation.developer": 5,
+      "nteleportation.gm": 5,
+      "nteleportation.admin": 5
     },
     "Location Radius": 25,
     "Force On Top Of Foundation": true,
@@ -109,13 +133,31 @@
     "Countdown": 15,
     "Daily Limit": 5,
     "VIP Daily Limits": {
-      "nteleportation.vip": 5
+      "nteleportation.survivor": 5,
+      "nteleportation.solidplayer": 5,
+      "nteleportation.supporter": 5,
+      "nteleportation.legendary": 5,
+      "nteleportation.developer": 5,
+      "nteleportation.gm": 5,
+      "nteleportation.admin": 5
     },
     "VIP Cooldowns": {
-      "nteleportation.vip": 5
+      "nteleportation.survivor": 5,
+      "nteleportation.solidplayer": 5,
+      "nteleportation.supporter": 5,
+      "nteleportation.legendary": 5,
+      "nteleportation.developer": 5,
+      "nteleportation.gm": 5,
+      "nteleportation.admin": 5
     },
     "VIP Countdowns": {
-      "nteleportation.vip": 5
+      "nteleportation.survivor": 5,
+      "nteleportation.solidplayer": 5,
+      "nteleportation.supporter": 5,
+      "nteleportation.legendary": 5,
+      "nteleportation.developer": 5,
+      "nteleportation.gm": 5,
+      "nteleportation.admin": 5
     },
     "Request Duration": 30,
     "Block TPA On Ceiling": true,
@@ -135,13 +177,31 @@
       "Countdown": 15,
       "Daily Limit": 5,
       "VIP Daily Limits": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "VIP Cooldowns": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "VIP Countdowns": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "Location": "0 0 0",
       "Locations": [],
@@ -159,13 +219,31 @@
       "Countdown": 15,
       "Daily Limit": 5,
       "VIP Daily Limits": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "VIP Cooldowns": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "VIP Countdowns": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "Location": "0 0 0",
       "Locations": [],
@@ -183,13 +261,31 @@
       "Countdown": 15,
       "Daily Limit": 5,
       "VIP Daily Limits": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "VIP Cooldowns": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "VIP Countdowns": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "Location": "-296.2904 21.71885 32.78842",
       "Locations": [],
@@ -207,13 +303,31 @@
       "Countdown": 15,
       "Daily Limit": 5,
       "VIP Daily Limits": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "VIP Cooldowns": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "VIP Countdowns": {
-        "nteleportation.vip": 5
+        "nteleportation.survivor": 5,
+        "nteleportation.solidplayer": 5,
+        "nteleportation.supporter": 5,
+        "nteleportation.legendary": 5,
+        "nteleportation.developer": 5,
+        "nteleportation.gm": 5,
+        "nteleportation.admin": 5
       },
       "Location": "-153.691 23.21687 38.17913",
       "Locations": [],
