@@ -1,0 +1,10 @@
+{
+  "ServerUpdated": "Server Update Released!",
+  "DevBlogUpdated": "DevBlog Update Released!",
+  "ClientUpdated": "Client Update Released!",
+  "StagingUpdated": "Staging Update Released!",
+  "OxideUpdated": "Oxide Update Released!",
+  "FailedToCheckUpdates": "Failed to check for RUST updates, if this keeps happening please contact the developer.",
+  "PluginNotFoundGuiAnnouncements": "GUIAnnouncements plugin was not found. Disabled by defaut.",
+  "NoPermission": "You do not have permission to use this command."
+}

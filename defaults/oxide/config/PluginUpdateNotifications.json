@@ -11,6 +11,8 @@
     "RustIO",
     "PermissionsManager",
     "BotSpawn",
-    "Payback"
+    "Payback",
+    "ZombieHorde",
+    "RaidingZombies"
   ]
 }

@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Backpacks", "LaserHydra", "3.5.2")]
+    [Info("Backpacks", "LaserHydra", "3.6.0")]
     [Description("Allows players to have a Backpack which provides them extra inventory space.")]
     internal class Backpacks : RustPlugin
     {
@@ -54,6 +54,18 @@ namespace Oxide.Plugins
         #endregion
 
         #region Hooks
+
+        private void Init()
+        {
+            Unsubscribe(nameof(OnPlayerSleep));
+            Unsubscribe(nameof(OnPlayerSleepEnded));
+        }
+
+        private void OnServerInitialized()
+        {
+            Subscribe(nameof(OnPlayerSleep));
+            Subscribe(nameof(OnPlayerSleepEnded));
+        }
 
         private void Loaded()
         {
@@ -194,14 +206,14 @@ namespace Oxide.Plugins
             if (backpack == null)
                 return null;
 
-            // Prevent erasing items that have since become blacklisted.
-            // Blacklisted items will be dropped when the owner opens the backpack.
+            // Prevent erasing items that have since become restricted.
+            // Restricted items will be dropped when the owner opens the backpack.
             if (!backpack.Initialized)
                 return null;
 
-            if (_config.UseBlacklist
+            if (_config.ItemRestrictionEnabled
                 && !permission.UserHasPermission(backpack.OwnerIdString, NoBlacklistPermission)
-                && _config.BlacklistedItems.Contains(item.info.shortname))
+                && _config.IsRestrictedItem(item))
             {
                 return ItemContainer.CanAcceptResult.CannotAccept;
             }
@@ -283,7 +295,10 @@ namespace Oxide.Plugins
             {
                 foreach (IPlayer player in covalence.Players.Connected.Where(p => permission.UserHasGroup(p.Id, group)))
                 {
-                    DestroyGUI(player.Object as BasePlayer);
+                    if (!permission.UserHasPermission(player.Id, GUIPermission))
+                    {
+                        DestroyGUI(player.Object as BasePlayer);
+                    }
                 }
             }
         }
@@ -296,19 +311,17 @@ namespace Oxide.Plugins
 
         private void OnUserPermissionRevoked(string userId, string perm)
         {
-            if (perm.Equals(GUIPermission))
+            if (perm.Equals(GUIPermission) && !permission.UserHasPermission(userId, GUIPermission))
                 DestroyGUI(BasePlayer.Find(userId));
         }
 
-        private void OnPlayerConnected(BasePlayer player)
-        {
-            CreateGUI(player);
-        }
+        private void OnPlayerConnected(BasePlayer player) => CreateGUI(player);
 
-        private void OnPlayerSleepEnded(BasePlayer player)
-        {
-            CreateGUI(player);
-        }
+        private void OnPlayerRespawned(BasePlayer player) => CreateGUI(player);
+
+        private void OnPlayerSleepEnded(BasePlayer player) => CreateGUI(player);
+
+        private void OnPlayerSleep(BasePlayer player) => DestroyGUI(player);
 
         #endregion
 
@@ -358,6 +371,9 @@ namespace Oxide.Plugins
         [ChatCommand("backpack")]
         private void OpenBackpackChatCommand(BasePlayer player, string cmd, string[] args)
         {
+            if (!player.CanInteract())
+                return;
+
             if (!permission.UserHasPermission(player.UserIDString, UsagePermission))
             {
                 PrintToChat(player, lang.GetMessage("No Permission", this, player.UserIDString));
@@ -374,7 +390,7 @@ namespace Oxide.Plugins
         {
             BasePlayer player = arg.Player();
 
-            if (player == null || !player.IsAlive())
+            if (player == null || !player.CanInteract())
                 return;
 
             if (!permission.UserHasPermission(player.UserIDString, UsagePermission))
@@ -412,7 +428,7 @@ namespace Oxide.Plugins
         {
             BasePlayer player = arg.Player();
 
-            if (player == null || !player.IsAlive())
+            if (player == null || !player.CanInteract())
                 return;
 
             if (!permission.UserHasPermission(player.UserIDString, FetchPermission))
@@ -725,7 +741,7 @@ namespace Oxide.Plugins
 
         private void CreateGUI(BasePlayer player)
         {
-            if (player == null || player.IsNpc || !player.IsAlive())
+            if (player == null || player.IsNpc || !player.IsAlive() || player.IsSleeping())
                 return;
 
             if (!permission.UserHasPermission(player.UserIDString, GUIPermission))
@@ -848,17 +864,26 @@ namespace Oxide.Plugins
             [JsonProperty("Erase on Death (true/false)")]
             public bool EraseOnDeath = false;
 
-            [JsonProperty("Use Blacklist (true/false)")]
-            public bool UseBlacklist = false;
-
             [JsonProperty("Clear Backpacks on Map-Wipe (true/false)")]
             public bool ClearBackpacksOnWipe = false;
 
             [JsonProperty("Only Save Backpacks on Server-Save (true/false)")]
             public bool SaveBackpacksOnServerSave = false;
 
+            [JsonProperty("Use Blacklist (true/false)")]
+            public bool UseBlacklist = false;
+
             [JsonProperty("Blacklisted Items (Item Shortnames)")]
-            public HashSet<string> BlacklistedItems;
+            public HashSet<string> BlacklistedItems = new HashSet<string>();
+
+            [JsonProperty("Use Whitelist (true/false)")]
+            public bool UseWhitelist = false;
+
+            [JsonProperty("Whitelisted Items (Item Shortnames)")]
+            public HashSet<string> WhitelistedItems = new HashSet<string>();
+
+            [JsonProperty("Minimum Despawn Time (Seconds)")]
+            public float MinimumDespawnTime = 300;
 
             [JsonProperty("GUI Button")]
             public GUIButton GUI = new GUIButton();
@@ -896,6 +921,20 @@ namespace Oxide.Plugins
             {
                 [JsonProperty("Reclaim Fraction")]
                 public float ReclaimFraction = 0.5f;
+            }
+
+            [JsonIgnore]
+            public bool ItemRestrictionEnabled => UseWhitelist || UseBlacklist;
+
+            public bool IsRestrictedItem(Item item)
+            {
+                if (UseWhitelist)
+                    return !WhitelistedItems.Contains(item.info.shortname);
+
+                if (UseBlacklist)
+                    return BlacklistedItems.Contains(item.info.shortname);
+
+                return false;
             }
         }
 
@@ -958,7 +997,7 @@ namespace Oxide.Plugins
             private ItemContainer _itemContainer = new ItemContainer();
             private List<BasePlayer> _looters = new List<BasePlayer>();
 
-            private bool _processedBlacklist = false;
+            private bool _processedRestrictedItems = false;
 
             [JsonIgnore]
             public bool Initialized { get; private set; } = false;
@@ -1094,7 +1133,7 @@ namespace Oxide.Plugins
                 // Only drop items when the owner is opening the backpack.
                 if (looter.userID == OwnerId)
                 {
-                    MaybeRemoveBlacklistedItems(looter);
+                    MaybeRemoveRestrictedItems(looter);
                     MaybeAdjustCapacityAndHandleOverflow(looter);
                 }
 
@@ -1155,30 +1194,30 @@ namespace Oxide.Plugins
                 }
             }
 
-            private void MaybeRemoveBlacklistedItems(BasePlayer receiver)
+            private void MaybeRemoveRestrictedItems(BasePlayer receiver)
             {
-                if (!_instance._config.UseBlacklist)
+                if (!_instance._config.ItemRestrictionEnabled)
+                    return;
+
+                // Optimization: Avoid processing item restrictions every time the backpack is opened.
+                if (_processedRestrictedItems)
                     return;
 
                 if (_instance.permission.UserHasPermission(OwnerIdString, NoBlacklistPermission))
                 {
-                    // Don't process the blacklist while the player has the noblacklist permission.
-                    // This allows the blacklist to be processed again in case the noblacklist permission is revoked.
-                    _processedBlacklist = false;
+                    // Don't process item restrictions while the player has the noblacklist permission.
+                    // Setting this flag allows the item restrictions to be processed again in case the noblacklist permission is revoked.
+                    _processedRestrictedItems = false;
                     return;
                 }
 
-                // Optimization: Avoid having to process the blacklist every time the backpack is opened.
-                if (_processedBlacklist)
-                    return;
-
-                _processedBlacklist = true;
+                _processedRestrictedItems = true;
 
                 var itemsDroppedOrGivenToPlayer = 0;
                 for (var i = _itemContainer.itemList.Count - 1; i >= 0; i--)
                 {
                     var item = _itemContainer.itemList[i];
-                    if (_instance._config.BlacklistedItems.Contains(item.info.shortname))
+                    if (_instance._config.IsRestrictedItem(item))
                     {
                         itemsDroppedOrGivenToPlayer++;
                         item.RemoveFromContainer();
@@ -1264,8 +1303,8 @@ namespace Oxide.Plugins
                     }
                 }
 
-                container.ResetRemovalTime();
                 container.Spawn();
+                container.ResetRemovalTime(Math.Max(_instance._config.MinimumDespawnTime, container.CalculateRemovalTime()));
 
                 ItemManager.DoRemoves();
 

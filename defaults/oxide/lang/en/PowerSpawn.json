@@ -1,0 +1,16 @@
+{
+  "No Permission": "nope",
+  "Location: Syntax": "Location Syntax:\nnew (Name) - Create a new location with a specified name\ndelete (ID) - Delete a location with the specified ID\nedit (ID) <Parameter 1> <Value> <...> - Edit a location with the specified ID\nupdate - Apply datafile changes\nlist - Get a list of locations\nvalidate (ID) <Profile Name> - Validate location for buildings and colliders\ndebug <Profile Name> - Print minor debug information\nshow <Profile Name> - Show all positions",
+  "Location: Edit Syntax": "Location Edit Parameters:\nmove (x;y;z / here) - Move a location to the specified position\ngroup (ID / reset) - Set group of a location or reset the group",
+  "Location: Debug": "Currently available pre-generated positions: {amount}",
+  "Location: Unable To Parse Position": "Unable to parse the position",
+  "Location: Unable To Parse Group": "Unable to parse the entered group",
+  "Location: Format": "Location ID: {id}; Group: {group}; Position: {position}; Name: {name}",
+  "Location: Not Found": "Location was not found.",
+  "Location: Profile Not Found": "Profile was not found.",
+  "Location: Edit Finished": "Edit was finished.",
+  "Location: Removed": "Location was removed from our database.",
+  "Location: Updated": "Datafile changes were applied.",
+  "Location: Validation Format": "Buildings valid: {buildings}; Colliders valid: {colliders}; Raycast valid: {raycast}",
+  "Location: Player Only": "This is available only to in-game players."
+}

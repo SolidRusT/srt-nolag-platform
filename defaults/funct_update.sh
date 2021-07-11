@@ -19,6 +19,14 @@ function update_mods () {
         oxide/data/GuardedCrate.json
         oxide/data/CustomChatCommands.json
     )
+    echo "=> Removing unwanted plugins" | tee -a ${LOGS}
+    SHITLIST=(
+        PluginUpdateNotifications.cs
+    )
+    for plugin in ${SHITLIST[@]}; do
+        echo " - $plugin" | tee -a ${LOGS}
+        rm ${HOME}/solidrust.net/defaults/oxide/plugins/$plugin  | tee -a ${LOGS}
+    done
     echo "=> Updating plugin data" | tee -a ${LOGS}
     for data in ${OXIDE[@]}; do
         echo " - $data" | tee -a ${LOGS}
