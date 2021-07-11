@@ -1,0 +1,14 @@
+{
+    "Settings": {
+        "chance": 50,
+        "totalExplosives": 2,
+        "totalRockets": 2,
+        "explosive": "explosive.timed",
+        "targetPlayerOnly": true
+    },
+    "Version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 9
+    }
+}

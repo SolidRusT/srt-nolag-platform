@@ -1,0 +1,68 @@
+{
+  "SellItemList": {
+    "default": {
+      "itemsList": [
+        {
+          "_comment": "Sell High Quality Pistons x 1 for Scrap x 75",
+          "sellId": 1883981800,
+          "sellAmount": 75,
+          "sellAsBP": false,
+          "currencyId": -932201673,
+          "currencyAmount": 1,
+          "currencyAsBP": false,
+          "costskinID": 0,
+          "sellskinID": 0,
+          "sellItemName": null
+        },
+        {
+          "_comment": "Sell High Quality Crankshaft x 1 for Scrap x 120",
+          "sellId": 1158340332,
+          "sellAmount": 120,
+          "sellAsBP": false,
+          "currencyId": -932201673,
+          "currencyAmount": 1,
+          "currencyAsBP": false,
+          "costskinID": 0,
+          "sellskinID": 0,
+          "sellItemName": null
+        },
+        {
+          "_comment": "Sell High Quality Valves x 1 for Scrap x 75",
+          "sellId": -1802083073,
+          "sellAmount": 75,
+          "sellAsBP": false,
+          "currencyId": -932201673,
+          "currencyAmount": 1,
+          "currencyAsBP": false,
+          "costskinID": 0,
+          "sellskinID": 0,
+          "sellItemName": null
+        },
+        {
+          "_comment": "Sell High Quality Spark Plugs x 1 for Scrap x 75",
+          "sellId": 1072924620,
+          "sellAmount": 75,
+          "sellAsBP": false,
+          "currencyId": -932201673,
+          "currencyAmount": 1,
+          "currencyAsBP": false,
+          "costskinID": 0,
+          "sellskinID": 0,
+          "sellItemName": null
+        },
+        {
+          "_comment": "Sell High Quality Carburetor x 1 for Scrap x 120",
+          "sellId": 656371026,
+          "sellAmount": 120,
+          "sellAsBP": false,
+          "currencyId": -932201673,
+          "currencyAmount": 1,
+          "currencyAsBP": false,
+          "costskinID": 0,
+          "sellskinID": 0,
+          "sellItemName": null
+        }
+      ]
+    }
+  }
+}

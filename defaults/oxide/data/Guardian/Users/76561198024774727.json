@@ -1,16 +1,17 @@
 {
   "userid": 76561198024774727,
-  "name": "Suparious",
+  "name": "[God] Suparious",
   "names": [
-    "Suparious"
+    "Suparious",
+    "[God] Suparious"
   ],
   "address": "10.0.2.2",
   "addresses": [
     "10.0.2.2"
   ],
-  "time_connected": "2021-07-07T18:44:57.299449Z",
-  "time_disconnected": "2021-07-07T19:34:04.554257Z",
-  "time_played": "00:49:07.2548080",
+  "time_connected": "2021-07-10T21:03:56.857825Z",
+  "time_disconnected": "2021-07-10T21:15:06.964717Z",
+  "time_played": "01:03:43.1668310",
   "ban_count": 0,
   "ban_reason": "",
   "ban_time": "9999-12-31T23:59:59.9999999",
@@ -22,9 +23,9 @@
   "cripple_timer": "0001-01-01T00:00:00",
   "is_crippled": false,
   "l_position": {
-    "x": -383.2205,
-    "y": 3.64805317,
-    "z": 438.187653
+    "x": 348.508118,
+    "y": 20.8647156,
+    "z": 376.945953
   },
   "v_position": {
     "x": 0.0,
