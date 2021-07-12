@@ -4,6 +4,9 @@ function initialize_srt () {
     alias rcon="${GAME_ROOT}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
     me=$(basename -- "$0")
     echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+    source ${HOME}/solidrust.net/defaults/funct_common.sh
+    source ${HOME}/solidrust.net/defaults/funct_wipe.sh
+    source ${HOME}/solidrust.net/defaults/funct_update.sh
 }
 
 function backup_s3 () {

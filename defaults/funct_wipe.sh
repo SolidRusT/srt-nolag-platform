@@ -53,10 +53,20 @@ function wipe_permissions () {
 }
 
 function change_seed () {
-    export SEED=$(shuf -i 1-2147483648 -n 1)
-    echo "New Map Seed generated: ${SEED}" | tee -a ${LOGS}
-    cp ${GAME_ROOT}/server.seed ${GAME_ROOT}/server.seed.old
-    echo ${SEED} > ${GAME_ROOT}/server.seed
+    if [ -f "${GAME_ROOT}/server.seed.new" ]; then
+        export SEED=$(cat ${GAME_ROOT}/server.seed.new)
+        echo "Staged Map Seed found: ${SEED}" | tee -a ${LOGS}
+        cp ${GAME_ROOT}/server.seed ${GAME_ROOT}/server.seed.old
+        echo ${SEED} > ${GAME_ROOT}/server.seed
+        rm -f ${GAME_ROOT}/server.seed.new
+    else
+        export SEED=$(shuf -i 1-2147483648 -n 1)
+        echo "New Map Seed generated: ${SEED}" | tee -a ${LOGS}
+        cp ${GAME_ROOT}/server.seed ${GAME_ROOT}/server.seed.old
+        echo ${SEED} > ${GAME_ROOT}/server.seed
+    fi
+
+    
     echo "Installed new map seed to ${GAME_ROOT}/server.seed" | tee -a ${LOGS}
 }
 

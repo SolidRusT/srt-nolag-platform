@@ -15,10 +15,6 @@ case "$1" in
         echo "performing a Quick Wipe"
         initialize_srt
         stop_rust_now
-        update_server
-        update_repo
-        update_mods
-        update_configs
         wipe_map
         change_seed
         start_rust
@@ -27,9 +23,10 @@ case "$1" in
     *)
         echo "performing a Standard Wipe"
         initialize_srt
-        notification
-        update_server
         update_repo
+        initialize_srt
+        notification
+        update_server        
         update_mods
         update_configs
         wipe_map
