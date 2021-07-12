@@ -361,7 +361,11 @@ airstrike.signal.squad \
 airstrike.purchase.strike \
 airstrike.purchase.squad \
 airstrike.chat.strike \
-airstrike.chat.squad
+airstrike.chat.squad \
+craftsman.leveling.melee \
+craftsman.leveling.ranged \
+craftsman.leveling.clothing \
+sleep.allow
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

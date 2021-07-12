@@ -1,0 +1,8 @@
+{
+  "Command": "sleep",
+  "Dirty": "You seem to be a bit dirty, go take a dip!",
+  "Hungry": "You seem to be a bit hungry, eat something",
+  "NotAllowed": "You can't go to sleep right now",
+  "Restored": "You have awaken restored and rested!",
+  "Thirsty": "You seem to be a bit thirsty, drink something!"
+}

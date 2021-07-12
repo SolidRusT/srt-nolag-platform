@@ -1,0 +1,18 @@
+{
+  "NoPerm": "You don't have permission for this command",
+  "NoSkill": "There is no skill with that name",
+  "NoItem": "Could not find item",
+  "CraftingSkill": "Crafting Skill",
+  "Level": "Level",
+  "XP": "XP",
+  "Commands": "Commands",
+  "InvalidQuality": "Invalid quality",
+  "InvalidLevel": "Invalid level",
+  "InvalidItem": "Invalid item",
+  "InvalidSkillName": "Invalid skill name",
+  "InvalidUserId": "Invalid user id",
+  "SetQuality": "Set {0} to quality {1}",
+  "SetLevel": "Set {0} level for {1} to {2}",
+  "Levelup": "Your skill in crafting {0} increased from {1} to {2}",
+  "YourCraftingSkills": "Your Crafting Skills"
+}

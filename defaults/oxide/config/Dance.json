@@ -1,3 +1,9 @@
 {
-  "gestureID": 834887525
+    "enableFourthDance": true,
+    "gestureIds": [
+        478760625,
+        1855420636,
+        1702547860,
+        834887525
+    ]
 }

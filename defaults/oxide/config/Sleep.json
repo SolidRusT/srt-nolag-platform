@@ -1,0 +1,8 @@
+{
+  "Cure while sleeping (true/false)": false,
+  "Heal while sleeping (true/false)": true,
+  "Restore while sleeping (true/false)": true,
+  "Curing rate (0 - 100)": 5,
+  "Healing rate (0 - 100)": 5,
+  "Restoration rate (0 - 100)": 5
+}

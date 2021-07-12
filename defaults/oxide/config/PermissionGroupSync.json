@@ -523,7 +523,8 @@
                 "cctvutilities.status.all",
                 "stashtraps.use",
                 "stashtraps.notice",
-                "stashtraps.ignore"
+                "stashtraps.ignore",
+                "craftsman.admin"
             ],
             "AdditionalCommands": []
         }
