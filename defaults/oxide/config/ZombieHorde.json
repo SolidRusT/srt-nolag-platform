@@ -16,7 +16,7 @@
         "Sense nearby gunshots and explosions": true
     },
     "Horde Member Options": {
-        "Can target animals": false,
+        "Can target animals": true,
         "Can be targeted by turrets": true,
         "Can be targeted by turrets set to peacekeeper mode": true,
         "Can be targeted by Bradley APC": false,
