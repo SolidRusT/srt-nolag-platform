@@ -43,7 +43,8 @@
                 "copypaste.*",
                 "dronestorage.capacity.12",
                 "hazmattoscientistsuit.craftsuit",
-                "carcommanderlite.canspawn"
+                "carcommanderlite.canspawn",
+                "spawnmini.survivor"
             ],
             "AdditionalCommands": []
         },
@@ -65,7 +66,8 @@
                 "nteleportation.solidplayer",
                 "kits.survivor",
                 "kits.solidplayer",
-                "dronestorage.capacity.24"
+                "dronestorage.capacity.24",
+                "spawnmini.solidplayer"
             ],
             "AdditionalCommands": []
         },
@@ -105,7 +107,8 @@
                 "dronestorage.capacity.30",
                 "hazmattoscientistsuit.craftgreensuit",
                 "hazmattoscientistsuit.craftheavy",
-                "hazmattoscientistsuit.craftspacesuit"
+                "hazmattoscientistsuit.craftspacesuit",
+                "spawnmini.supporter"
             ],
             "AdditionalCommands": []
         },
@@ -127,7 +130,8 @@
                 "kits.solidplayer",
                 "kits.supporter",
                 "kits.legend",
-                "dronestorage.capacity.36"
+                "dronestorage.capacity.36",
+                "spawnmini.legend"
             ],
             "AdditionalCommands": []
         },
@@ -201,7 +205,8 @@
                 "cctvutilities.status.all",
                 "stashtraps.use",
                 "stashtraps.notice",
-                "stashtraps.ignore"
+                "stashtraps.ignore",
+                "spawnmini.staff"
             ],
             "AdditionalCommands": []
         },
@@ -290,7 +295,8 @@
                 "cctvutilities.status.all",
                 "stashtraps.use",
                 "stashtraps.notice",
-                "stashtraps.ignore"
+                "stashtraps.ignore",
+                "spawnmini.staff"
             ],
             "AdditionalCommands": []
         },
@@ -524,7 +530,8 @@
                 "stashtraps.use",
                 "stashtraps.notice",
                 "stashtraps.ignore",
-                "craftsman.admin"
+                "craftsman.admin",
+                "spawnmini.staff"
             ],
             "AdditionalCommands": []
         }
