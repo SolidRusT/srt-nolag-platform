@@ -1556,32 +1556,6 @@
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
-        },
-        {
-          "Shortname": "bandage",
-          "Skin": 0,
-          "Amount": 15,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 21,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "syringe.medical",
-          "Skin": 0,
-          "Amount": 10,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 20,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
         }
       ],
       "WearItems": [
@@ -1811,32 +1785,6 @@
           "Contents": null
         },
         {
-          "Shortname": "syringe.medical",
-          "Skin": 0,
-          "Amount": 10,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 20,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "bandage",
-          "Skin": 0,
-          "Amount": 15,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 21,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
           "Shortname": "icepick.salvaged",
           "Skin": 911446362,
           "Amount": 1,
@@ -2050,45 +1998,6 @@
       "KitImage": "https://solidrust.net/images/Kit-Supporter.jpg",
       "MainItems": [
         {
-          "Shortname": "ammo.pistol",
-          "Skin": 0,
-          "Amount": 256,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 18,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "bandage",
-          "Skin": 0,
-          "Amount": 15,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 21,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "syringe.medical",
-          "Skin": 0,
-          "Amount": 10,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 20,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
           "Shortname": "jackhammer",
           "Skin": 0,
           "Amount": 1,
@@ -2096,7 +2005,7 @@
           "MaxCondition": 300.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 23,
+          "Position": 22,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -2109,28 +2018,28 @@
           "MaxCondition": 100.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 22,
+          "Position": 23,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
         },
         {
-          "Shortname": "ammo.shotgun.slug",
+          "Shortname": "ammo.pistol",
           "Skin": 0,
-          "Amount": 25,
+          "Amount": 128,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 13,
+          "Position": 18,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
         },
         {
-          "Shortname": "ammo.shotgun",
+          "Shortname": "ammo.rifle",
           "Skin": 0,
-          "Amount": 25,
+          "Amount": 128,
           "Condition": 0.0,
           "MaxCondition": 0.0,
           "Ammo": 0,
@@ -2236,6 +2145,58 @@
       ],
       "BeltItems": [
         {
+          "Shortname": "syringe.medical",
+          "Skin": 0,
+          "Amount": 10,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 2,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "bandage",
+          "Skin": 0,
+          "Amount": 15,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 3,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "longsword",
+          "Skin": 831965423,
+          "Amount": 1,
+          "Condition": 250.0,
+          "MaxCondition": 250.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 4,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "knife.combat",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 5,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
           "Shortname": "pistol.m92",
           "Skin": 0,
           "Amount": 1,
@@ -2276,83 +2237,17 @@
           ]
         },
         {
-          "Shortname": "syringe.medical",
-          "Skin": 0,
-          "Amount": 10,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 2,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "bandage",
-          "Skin": 0,
-          "Amount": 15,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 3,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "longsword",
-          "Skin": 831965423,
-          "Amount": 1,
-          "Condition": 250.0,
-          "MaxCondition": 250.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 4,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "shotgun.pump",
-          "Skin": 1760154042,
+          "Shortname": "rifle.semiauto",
+          "Skin": 828616457,
           "Amount": 1,
           "Condition": 100.0,
           "MaxCondition": 100.0,
-          "Ammo": 0,
-          "Ammotype": "ammo.shotgun",
+          "Ammo": 16,
+          "Ammotype": "ammo.rifle",
           "Position": 1,
           "Frequency": -1,
           "BlueprintShortname": null,
-          "Contents": [
-            {
-              "Shortname": "weapon.mod.flashlight",
-              "Skin": 0,
-              "Amount": 1,
-              "Condition": 300.0,
-              "MaxCondition": 300.0,
-              "Ammo": 0,
-              "Ammotype": null,
-              "Position": 0,
-              "Frequency": -1,
-              "BlueprintShortname": null,
-              "Contents": null
-            }
-          ]
-        },
-        {
-          "Shortname": "knife.combat",
-          "Skin": 0,
-          "Amount": 1,
-          "Condition": 100.0,
-          "MaxCondition": 100.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 5,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
+          "Contents": []
         }
       ]
     },
@@ -2377,32 +2272,6 @@
           "Ammo": 0,
           "Ammotype": null,
           "Position": 18,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "ammo.rifle",
-          "Skin": 0,
-          "Amount": 256,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 12,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "bandage",
-          "Skin": 0,
-          "Amount": 15,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 23,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -2434,19 +2303,6 @@
           "Contents": null
         },
         {
-          "Shortname": "syringe.medical",
-          "Skin": 0,
-          "Amount": 10,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 22,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
           "Shortname": "icepick.salvaged",
           "Skin": 911446362,
           "Amount": 1,
@@ -2454,7 +2310,7 @@
           "MaxCondition": 500.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 4,
+          "Position": 22,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -2467,7 +2323,7 @@
           "MaxCondition": 100.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 5,
+          "Position": 23,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
