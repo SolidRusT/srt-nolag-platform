@@ -1,50 +1,47 @@
 {
-  "Power Spawn Profile Name": "",
-  "Commands": [
-    "stashtraps",
-    "st",
-    "stashes"
-  ],
-  "Generated Stashes": 200,
-  "Delete After Exposed In (Seconds)": -1.0,
-  "Ignore Teammates": true,
-  "Notify Admins": true,
-  "Discord Settings": {
-    "Enabled": false,
-    "Webhook": "",
-    "Setups": [
-      {
-        "Threshold": 1,
-        "Color (HEX)": "ffad60",
-        "Inline": true,
-        "Content": "You could include pings here.",
-        "Title: Player Stash Found": "**Player** stash found",
-        "Title: Generated Stash Found": "**Generated** stash found",
-        "Title: Player Stash Found With Foundation": "**Player** stash found with foundation",
-        "Title: Generated Stash Found With Foundation": "**Generated** stash found with foundation",
-        "Title: Stash": "Stash Information",
-        "Text: Stash": "Network ID: {stash.id}\n`teleportpos \"{stash.position}\"`",
-        "Title: Player": "Player",
-        "Text: Player": "{player.id} ({player.name}) found **{stashtraps.found}** stashes"
-      }
+    "Power Spawn Profile Name": "",
+    "Commands": [
+        "stashtraps",
+        "st",
+        "stashes"
+    ],
+    "Generated Stashes": 200,
+    "Delete After Exposed In (Seconds)": -1.0,
+    "Ignore Teammates": true,
+    "Notify Admins": true,
+    "Discord Settings": {
+        "Enabled": true,
+        "Webhook": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT",
+        "Setups": [{
+            "Threshold": 1,
+            "Color (HEX)": "ffad60",
+            "Inline": true,
+            "Content": "You could include pings here.",
+            "Title: Player Stash Found": "**Player** stash found",
+            "Title: Generated Stash Found": "**Generated** stash found",
+            "Title: Player Stash Found With Foundation": "**Player** stash found with foundation",
+            "Title: Generated Stash Found With Foundation": "**Generated** stash found with foundation",
+            "Title: Stash": "Stash Information",
+            "Text: Stash": "Network ID: {stash.id}\n`teleportpos \"{stash.position}\"`",
+            "Title: Player": "Player",
+            "Text: Player": "{player.id} ({player.name}) found **{stashtraps.found}** stashes"
+        }]
+    },
+    "Spawned Items": 2,
+    "Items": [{
+            "Shortname": "stones",
+            "Minimum Amount": 100,
+            "Maximum Amount": 200
+        },
+        {
+            "Shortname": "arrow.wooden",
+            "Minimum Amount": 6,
+            "Maximum Amount": 12
+        },
+        {
+            "Shortname": "corn",
+            "Minimum Amount": 2,
+            "Maximum Amount": 4
+        }
     ]
-  },
-  "Spawned Items": 2,
-  "Items": [
-    {
-      "Shortname": "stones",
-      "Minimum Amount": 100,
-      "Maximum Amount": 200
-    },
-    {
-      "Shortname": "arrow.wooden",
-      "Minimum Amount": 6,
-      "Maximum Amount": 12
-    },
-    {
-      "Shortname": "corn",
-      "Minimum Amount": 2,
-      "Maximum Amount": 4
-    }
-  ]
 }
