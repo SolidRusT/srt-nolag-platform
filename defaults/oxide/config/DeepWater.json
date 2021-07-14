@@ -1,6 +1,6 @@
 {
-    "_Event - AutoSpawn - Maximum Respawn Time for event  (Every 1000 is approx 1 min) : ": 45000,
-    "_Event - AutoSpawn - Minimum Respawn Time for event  (Every 1000 is approx 1 min) : ": 25000,
+    "_Event - AutoSpawn - Maximum Respawn Time for event  (Every 1000 is approx 1 min) : ": 80000,
+    "_Event - AutoSpawn - Minimum Respawn Time for event  (Every 1000 is approx 1 min) : ": 60000,
     "_Event - AutoSpawn - Spawn Event at random Intervals between Min and Max Respawn time ? ": true,
     "_Event - Broadcast Event ending to all players ?  ": false,
     "_Event - Broadcast Event spawn to all players ?  ": true,

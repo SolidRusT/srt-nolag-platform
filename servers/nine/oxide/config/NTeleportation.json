@@ -296,7 +296,7 @@
             "Bypass": 10
         },
         "Bandit": {
-            "Command Enabled": false,
+            "Command Enabled": true,
             "Allow TPB": true,
             "Allow Cave": false,
             "Cooldown": 600,

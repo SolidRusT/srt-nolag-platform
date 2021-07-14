@@ -14,10 +14,10 @@
             },
             "Max Amount Allowed To Automatically Spawn Per Difficulty (0 = infinite, -1 = disabled)": {
                 "Allow Max Amount Increase From Difficulties Disabled On A Specific Day Of The Week": false,
-                "Easy": 1,
-                "Medium": 1,
-                "Hard": 1,
-                "Expert": 1,
+                "Easy": 0,
+                "Medium": 5,
+                "Hard": 3,
+                "Expert": 2,
                 "Nightmare": 1
             },
             "Player Lockouts (0 = ignore)": {
@@ -224,7 +224,7 @@
             "Include PVP Bases": true,
             "Ignore Safe Checks": false,
             "Ignore Player Entities At Custom Spawn Locations": false,
-            "Max Scheduled Events": 10,
+            "Max Scheduled Events": 15,
             "Max To Spawn At Once (0 = Use Max Scheduled Events Amount)": 1,
             "Minimum Required Players Online": 1,
             "Spawn Bases X Distance Apart": 100.0,
@@ -297,11 +297,11 @@
         "Announce Raid Unlocked": false,
         "Announce Buy Base Messages": false,
         "Announce Thief Message": true,
-        "Announce PVE/PVP Enter/Exit Messages": true,
-        "Show Destroy Warning": true,
-        "Show Opened Message": true,
-        "Show Opened Message For Paid Bases": true,
-        "Show Prefix": true
+        "Announce PVE/PVP Enter/Exit Messages": false,
+        "Show Destroy Warning": false,
+        "Show Opened Message": false,
+        "Show Opened Message For Paid Bases": false,
+        "Show Prefix": false
     },
     "GUIAnnouncements": {
         "Enabled": false,
