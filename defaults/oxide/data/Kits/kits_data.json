@@ -1996,6 +1996,19 @@
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
+        },
+        {
+          "Shortname": "lowgradefuel",
+          "Skin": 0,
+          "Amount": 49,
+          "Condition": 0.0,
+          "MaxCondition": 0.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 17,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
         }
       ],
       "WearItems": [

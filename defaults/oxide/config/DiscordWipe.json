@@ -2,9 +2,16 @@
   "Debug Level (None, Error, Warning, Info)": "Warning",
   "Command": "dw",
   "Rust Map Image Settings": {
-    "Render Name": "Icons",
-    "Image Resolution Scale": 0.5,
-    "File Type (Jpg, Png": "Jpg"
+    "Map Image Source (None, RustMaps, RustMapApi)": "None",
+    "RustMaps.com Settings": {
+      "RustMap.com API Key": "Get Your API Key @ https://rustmaps.com/user/profile",
+      "Generate Staging Map": false
+    },
+    "RustMapApi Settings": {
+      "Render Name": "Icons",
+      "Image Resolution Scale": 0.5,
+      "File Type (Jpg, Png": "Jpg"
+    }
   },
   "Send wipe message when server wipes": true,
   "Wipe Webhook url": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
@@ -13,6 +20,7 @@
   "Wipe messages": [
     {
       "Content": "@everyone",
+      "Webhook Override (Overrides the default webhook for this message)": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
       "Send Mode (Always, Random)": "Always",
       "Embed": {
         "Enabled": true,
@@ -59,6 +67,7 @@
   "Protocol messages": [
     {
       "Content": "@everyone",
+      "Webhook Override (Overrides the default webhook for this message)": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
       "Send Mode (Always, Random)": "Always",
       "Embed": {
         "Enabled": true,

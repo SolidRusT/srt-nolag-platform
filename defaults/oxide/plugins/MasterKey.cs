@@ -1,23 +1,23 @@
 using System;
 using System.Collections.Generic;
-
 using ProtoBuf;
 using UnityEngine;
-
 using Oxide.Core;
+using Oxide.Core.Plugins;
 using Oxide.Core.Configuration;
 using Oxide.Core.Libraries.Covalence;
 
 namespace Oxide.Plugins
 {
-    [Info("Master Key", "FastBurst", "0.7.5")]
+    [Info("Master Key", "FastBurst", "0.7.6")]
     [Description("Gain access and/or authorization to any locked object.")]
     public class MasterKey : CovalencePlugin
     {
+        [PluginReference] Plugin LockMaster;
         #region Initialization
 
         private readonly DynamicConfigFile dataFile = Interface.Oxide.DataFileSystem.GetFile("MasterKey");
-        private readonly string[] lockableTypes = { "box", "cell", "door", "gate", "hatch", "shop", "cupboard", "locker", "fridge", "hackable", "turret", "coffin", "furnace", "composter", "refinery", "mining", "pumpjack" };
+        private readonly string[] lockableTypes = { "box", "cell", "door", "gate", "hatch", "shop", "cupboard", "locker", "fridge", "hackable", "turret", "coffin", "furnace", "composter", "refinery", "mining", "pumpjack", "hitchtroughcombo", "planter" };
         private Dictionary<string, bool> playerPrefs = new Dictionary<string, bool>();
         private const string permCom = "masterkey.command";
         private bool logUsage;

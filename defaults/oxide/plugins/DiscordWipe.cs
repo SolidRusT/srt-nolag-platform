@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Oxide.Core;
@@ -19,7 +20,7 @@ using System.Collections;
 
 namespace Oxide.Plugins
 {
-    [Info("Discord Wipe", "MJSU", "2.2.1")]
+    [Info("Discord Wipe", "MJSU", "2.3.1")]
     [Description("Sends a notification to a discord channel when the server wipes or protocol changes")]
     internal class DiscordWipe : CovalencePlugin
     {
@@ -39,12 +40,19 @@ namespace Oxide.Plugins
         
         private string _protocol;
         private string _previousProtocol;
+        private bool _hasStarted;
 
+        private readonly StringBuilder _parser = new StringBuilder();
         private Action<IPlayer, StringBuilder, bool> _replacer;
         
         private enum DebugEnum {Message, None, Error, Warning, Info}
         public enum SendMode {Always, Random}
         private enum EncodingMode {Jpg = 1, Png = 2}
+
+#if RUST
+        private enum RustMapMode {None, RustMaps, RustMapApi}
+        private RustMapsResponse _rustMapsResponse;
+#endif
         #endregion
 
         #region Setup & Loading
@@ -56,6 +64,27 @@ namespace Oxide.Plugins
             _previousProtocol = _storedData.Protocol;
             
             permission.RegisterPermission(AdminPermission, this);
+            
+            _pluginConfig.ProtocolWebhook = _pluginConfig.ProtocolWebhook.Replace("/api/webhooks", "/api/v9/webhooks");
+            _pluginConfig.WipeWebhook = _pluginConfig.WipeWebhook.Replace("/api/webhooks", "/api/v9/webhooks");
+
+            foreach (DiscordMessageConfig embed in _pluginConfig.WipeEmbeds)
+            {
+                if (!string.IsNullOrEmpty(embed.WebhookOverride) && embed.WebhookOverride != DefaultUrl)
+                {
+                    embed.WebhookOverride = embed.WebhookOverride.Replace("/api/webhooks", "/api/v9/webhooks");
+                }
+            }
+            
+            foreach (DiscordMessageConfig embed in _pluginConfig.ProtocolEmbeds)
+            {
+                if (!string.IsNullOrEmpty(embed.WebhookOverride) && embed.WebhookOverride != DefaultUrl)
+                {
+                    embed.WebhookOverride = embed.WebhookOverride.Replace("/api/webhooks", "/api/v9/webhooks");
+                }
+            }
+            
+            _rustMapHeaders["X-API-Key"] = _pluginConfig.ImageSettings.RustMaps.ApiKey;
         }
         
         protected override void LoadDefaultMessages()
@@ -200,12 +229,37 @@ namespace Oxide.Plugins
 #if RUST
             config.ImageSettings = new RustMapImageSettings
             {
-                Name = config.ImageSettings?.Name ?? "Icons",
-                Scale = config.ImageSettings?.Scale ?? 0.5f,
-                FileType = config.ImageSettings?.FileType ?? EncodingMode.Jpg
-            };        
+                MapMode = config.ImageSettings?.MapMode ?? (RustMapApi != null ? RustMapMode.RustMapApi : RustMapMode.None),
+                RustMapApi = new RustMapApiSettings
+                {
+                    Name = config.ImageSettings?.RustMapApi?.Name ?? "Icons",
+                    Scale = config.ImageSettings?.RustMapApi?.Scale ?? 0.5f,
+                    FileType = config.ImageSettings?.RustMapApi?.FileType ?? EncodingMode.Jpg
+                },
+                RustMaps = new RustMapSettings
+                {
+                    ApiKey = config.ImageSettings?.RustMaps?.ApiKey ?? "Get Your API Key @ https://rustmaps.com/user/profile",
+                    Staging = config.ImageSettings?.RustMaps?.Staging ?? false
+                }
+            };
 #endif
+
+            foreach (DiscordMessageConfig embed in config.WipeEmbeds)
+            {
+                if (string.IsNullOrEmpty(embed.WebhookOverride))
+                {
+                    embed.WebhookOverride = DefaultUrl;
+                }
+            }
             
+            foreach (DiscordMessageConfig embed in config.ProtocolEmbeds)
+            {
+                if (string.IsNullOrEmpty(embed.WebhookOverride))
+                {
+                    embed.WebhookOverride = DefaultUrl;
+                }
+            }
+
             return config;
         }
         
@@ -248,7 +302,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (IsRustMapApiLoaded())
+            if (IsRustMapApiLoaded() && _pluginConfig.ImageSettings.MapMode == RustMapMode.RustMapApi)
             {
                 if(RustMapApi.Version < new VersionNumber(1,3,2))
                 {
@@ -262,6 +316,13 @@ namespace Oxide.Plugins
                 }
             }
 
+            if (_pluginConfig.ImageSettings.MapMode == RustMapMode.RustMaps && !string.IsNullOrEmpty(_pluginConfig.ImageSettings.RustMaps.ApiKey))
+            {
+                GetRustMapsMap();
+                timer.In(15 * 60f, HandleStartup);
+                return;
+            }
+
             //Delayed so PlaceholderAPI can be ready before we call
             timer.In(1f, HandleStartup);
         }
@@ -273,6 +334,13 @@ namespace Oxide.Plugins
         
         private void HandleStartup()
         {
+            if (_hasStarted)
+            {
+                return;
+            }
+
+            _hasStarted = true;
+            
             if (string.IsNullOrEmpty(_storedData.Protocol))
             {
                 Debug(DebugEnum.Info, $"HandleStartup - Protocol is not set setting protocol to: {_protocol}");
@@ -335,6 +403,8 @@ namespace Oxide.Plugins
                 return true;
             }
 
+            Debug(DebugEnum.Info, $"SendWipeCommand command called: {string.Join(" ", args)}");
+            
             string commandPrefix = player.IsServer ? "" : "/";
             if (args.Length == 0)
             {
@@ -429,8 +499,17 @@ namespace Oxide.Plugins
 #if RUST
                     List<Attachment> attachments = new List<Attachment>();
 
-                    AttachMap(attachments, messageConfig);
+                    Debug(DebugEnum.Info, $"SendMessage - MapMode={_pluginConfig.ImageSettings.MapMode.ToString()}");
+                    if (_pluginConfig.ImageSettings.MapMode == RustMapMode.RustMapApi)
+                    {
+                        AttachMap(attachments, messageConfig);
+                    }
 
+                    if (!string.IsNullOrEmpty(messageConfig.WebhookOverride) && messageConfig.WebhookOverride != DefaultUrl)
+                    {
+                        url = messageConfig.WebhookOverride;
+                    }
+                    
                     SendDiscordAttachmentMessage(url, message, attachments);
 #else
                 SendDiscordMessage(url, message);
@@ -443,25 +522,26 @@ namespace Oxide.Plugins
         #if RUST
         private void AttachMap(List<Attachment> attachments, DiscordMessageConfig messageConfig)
         {
+            Debug(DebugEnum.Info, $"Can attach map? RustMapApi Loaded: {IsRustMapApiLoaded()} RustMapApiReady: {IsRustMapApiReady()} Attachment Base:{messageConfig.Embed.Image.StartsWith(AttachmentBase)}");
             if (IsRustMapApiLoaded() && IsRustMapApiReady() && messageConfig.Embed.Image.StartsWith(AttachmentBase))
             {
                 Debug(DebugEnum.Info, "AttachMap - RustMapApi is ready, attaching map");
                 List<string> maps = RustMapApi.Call<List<string>>("GetSavedMaps");
-                string mapName = _pluginConfig.ImageSettings.Name;
+                string mapName = _pluginConfig.ImageSettings.RustMapApi.Name;
                 if (maps != null)
                 {
                     mapName = maps.FirstOrDefault(m => m.Equals(mapName, StringComparison.InvariantCultureIgnoreCase));
                     if (string.IsNullOrEmpty(mapName))
                     {
-                        PrintWarning($"Map name not found {_pluginConfig.ImageSettings.Name}. Valid names are {string.Join(", ", maps.ToArray())}");
+                        PrintWarning($"Map name not found {_pluginConfig.ImageSettings.RustMapApi.Name}. Valid names are {string.Join(", ", maps.ToArray())}");
                         mapName = "Icons";
                     }
                 }
                 
                 Debug(DebugEnum.Info, $"AttachMap - RustMapApi map name set to: {mapName}");
-                int resolution = (int) (World.Size * _pluginConfig.ImageSettings.Scale);
-                AttachmentContentType contentType = _pluginConfig.ImageSettings.FileType == EncodingMode.Jpg ? AttachmentContentType.Jpg : AttachmentContentType.Png; 
-                object response = RustMapApi.Call("CreatePluginImage", this, mapName, resolution, (int)_pluginConfig.ImageSettings.FileType);
+                int resolution = (int) (World.Size * _pluginConfig.ImageSettings.RustMapApi.Scale);
+                AttachmentContentType contentType = _pluginConfig.ImageSettings.RustMapApi.FileType == EncodingMode.Jpg ? AttachmentContentType.Jpg : AttachmentContentType.Png; 
+                object response = RustMapApi.Call("CreatePluginImage", this, mapName, resolution, (int)_pluginConfig.ImageSettings.RustMapApi.FileType);
                 if (response is string)
                 {
                     PrintError($"An error occurred creating the plugin image: {response}");
@@ -493,15 +573,83 @@ namespace Oxide.Plugins
             }
         }
         #endif
+
+        #region RustMaps.com
+        private readonly Dictionary<string, string> _rustMapHeaders = new Dictionary<string, string>()
+        {
+            ["Content-Type"] = "application/json"
+        };
+
+        public void GetRustMapsMap()
+        {
+            uint seed = World.Seed;
+            uint size = World.Size;
+            
+            Debug(DebugEnum.Info, "RustMaps.com Requesting Rust Map.");
+            webrequest.Enqueue($"https://rustmaps.com/api/v2/maps/{seed}/{size}?staging={_pluginConfig.ImageSettings.RustMaps.Staging}", null, RustMapsGetCallback, this, RequestMethod.GET, _rustMapHeaders);
+        }
+
+        private void RustMapsGetCallback(int code, string response)
+        {
+            if (code == 409)
+            {
+                Debug(DebugEnum.Message, "RustMaps.com is still generating the map image. Trying again in 60 seconds.");
+                timer.In(60f, GetRustMapsMap);
+            }
+            else if (code == 404)
+            {
+                Debug(DebugEnum.Message, "RustMaps.com map does not exist. Requesting Generation.");
+                RustMapsRequestMap();
+            }
+            else if (code == 200)
+            {
+                Debug(DebugEnum.Info, "RustMaps.com map image found.");
+                _rustMapsResponse = JsonConvert.DeserializeObject<RustMapsResponse>(response);
+                HandleStartup();
+            }
+            else
+            {
+                Debug(DebugEnum.Error,$"An error occured trying to get map image from RustMaps.com - Code:{code} Response:\n{response}");
+                timer.In(60f, GetRustMapsMap);
+            }
+        }
+
+        public void RustMapsRequestMap()
+        {
+            uint seed = World.Seed;
+            uint size = World.Size;
+            
+            Debug(DebugEnum.Info, "RustMaps.com Generating Rust Map.");
+            webrequest.Enqueue($"https://rustmaps.com/api/v2/maps/{seed}/{size}?staging={_pluginConfig.ImageSettings.RustMaps.Staging}", "{}", RustMapsPostCallback, this, RequestMethod.POST, _rustMapHeaders);
+        }
+
+        private void RustMapsPostCallback(int code, string response)
+        {
+            if (code == 200)
+            {
+                Debug(DebugEnum.Info, "RustMaps.com image requested successfully.");
+                timer.In(60f, GetRustMapsMap);
+            }
+            else if (code == 409)
+            {
+                Debug(DebugEnum.Info, "RustMaps.com map already exists. Requesting image.");
+                GetRustMapsMap();
+            }
+            else
+            {
+                Debug(DebugEnum.Error,$"An error occured trying to request map generation from RustMaps.com - Code:{code} Response:\n{response}");
+                timer.In(60f, GetRustMapsMap);
+            }
+        }
+        #endregion
         
         #region PlaceholderAPI
-        private string ParseFields(string json)
+        private string ParseField(string field)
         {
-            StringBuilder sb = new StringBuilder(json);
-
-            GetReplacer()?.Invoke(null, sb, false);
-
-            return sb.ToString();
+            _parser.Length = 0;
+            _parser.Append(field);
+            GetReplacer()?.Invoke(null, _parser, false);
+            return _parser.ToString();
         }
         
         private void OnPluginUnloaded(Plugin plugin)
@@ -515,6 +663,9 @@ namespace Oxide.Plugins
         private void OnPlaceholderAPIReady()
         {
             RegisterPlaceholder("server.protocol.previous", (player, s) => _previousProtocol, "Displays the previous protocol version if it changed during the last restart", double.MaxValue);
+            RegisterPlaceholder("rustmaps.com.map", (player, s) => _rustMapsResponse?.ImageUrl ?? string.Empty, "RustMaps.com map image url", double.MaxValue);
+            RegisterPlaceholder("rustmaps.com.icons", (player, s) => _rustMapsResponse?.ImageIconUrl ?? string.Empty, "RustMaps.com icon map image url", double.MaxValue);
+            RegisterPlaceholder("rustmaps.com.thumbnail", (player, s) => _rustMapsResponse?.ThumbnailUrl ?? string.Empty, "RustMaps.com thumbnail map image url", double.MaxValue);
         }
 
         private void RegisterPlaceholder(string key, Func<IPlayer, string, object> action, string description = null, double ttl = double.NaN)
@@ -640,6 +791,28 @@ namespace Oxide.Plugins
 #if RUST
         private class RustMapImageSettings
         {
+            [JsonConverter(typeof(StringEnumConverter))]
+            [JsonProperty(PropertyName = "Map Image Source (None, RustMaps, RustMapApi)")]
+            public RustMapMode MapMode { get; set; }
+            
+            [JsonProperty(PropertyName = "RustMaps.com Settings")]
+            public RustMapSettings RustMaps { get; set; }
+            
+            [JsonProperty(PropertyName = "RustMapApi Settings")]
+            public RustMapApiSettings RustMapApi { get; set; }
+        }
+
+        private class RustMapSettings
+        {
+            [JsonProperty(PropertyName = "RustMap.com API Key")]
+            public string ApiKey { get; set; }
+            
+            [JsonProperty(PropertyName = "Generate Staging Map")]
+            public bool Staging { get; set; }
+        }
+
+        private class RustMapApiSettings
+        {
             [DefaultValue("Icons")]
             [JsonProperty(PropertyName = "Render Name")]
             public string Name { get; set; }
@@ -652,6 +825,18 @@ namespace Oxide.Plugins
             [DefaultValue(EncodingMode.Jpg)]
             [JsonProperty(PropertyName = "File Type (Jpg, Png")]
             public EncodingMode FileType { get; set; }
+        }
+        
+        public class RustMapsResponse
+        {
+            [JsonProperty("imageUrl")]
+            public string ImageUrl { get; set; }
+            
+            [JsonProperty("imageIconUrl")]
+            public string ImageIconUrl { get; set; }
+            
+            [JsonProperty("thumbnailUrl")]
+            public string ThumbnailUrl { get; set; }
         }
 #endif
         
@@ -687,11 +872,13 @@ namespace Oxide.Plugins
         /// <param name="message">Message being sent</param>
         private void SendDiscordMessage(string url, DiscordMessage message)
         {
-            string messageJson = message.ToJson();
-            Debug(DebugEnum.Info, $"SendDiscordMessage - ToJson \n{messageJson}");
-            string json = ParseFields( messageJson);
-            Debug(DebugEnum.Info, $"SendDiscordMessage - ParseFields \n{json}");
-            webrequest.Enqueue(url, json, SendDiscordMessageCallback, this, RequestMethod.POST, _headers);
+            StringBuilder json = message.ToJson();
+            if (_pluginConfig.DebugLevel >= DebugEnum.Info)
+            {
+                Debug(DebugEnum.Info, $"{nameof(SendDiscordMessage)} message.ToJson()\n{json}");
+            }
+            
+            webrequest.Enqueue(url, json.ToString(), SendDiscordMessageCallback, this, RequestMethod.POST, _headers);
         }
 
         /// <summary>
@@ -716,13 +903,15 @@ namespace Oxide.Plugins
         /// <param name="files">Attachments to be added to the DiscordMessage</param>
         private void SendDiscordAttachmentMessage(string url, DiscordMessage message, List<Attachment> files)
         {
-            string messageJson = message.ToJson();
-            Debug(DebugEnum.Info, $"SendDiscordMessage - ToJson \n{messageJson}");
-            string json = ParseFields( messageJson);
-            Debug(DebugEnum.Info, $"SendDiscordMessage - ParseFields \n{json}");
+            StringBuilder json = message.ToJson();
+            if (_pluginConfig.DebugLevel >= DebugEnum.Info)
+            {
+                Debug(DebugEnum.Info, $"{nameof(SendDiscordAttachmentMessage)} message.ToJson()\n{json}");
+            }
+
             List<IMultipartFormSection> formData = new List<IMultipartFormSection>
             {
-                new MultipartFormDataSection("payload_json", json)
+                new MultipartFormDataSection("payload_json", json.ToString())
             };
 
             for (int i = 0; i < files.Count; i++)
@@ -857,8 +1046,8 @@ namespace Oxide.Plugins
             /// Returns message as JSON to be sent in the web request
             /// </summary>
             /// <returns></returns>
-            public string ToJson() => JsonConvert.SerializeObject(this, Formatting.None,
-                new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore});
+            public StringBuilder ToJson() => new StringBuilder(JsonConvert.SerializeObject(this, Formatting.None,
+                new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore}));
         }
 
         private class Embed
@@ -1341,6 +1530,9 @@ namespace Oxide.Plugins
         {
             public string Content { get; set; }
             
+            [JsonProperty("Webhook Override (Overrides the default webhook for this message)")]
+            public string WebhookOverride { get; set; }
+            
             [JsonProperty("Send Mode (Always, Random)")]
             [JsonConverter(typeof(StringEnumConverter))]
             public SendMode SendMode { get; set; }
@@ -1413,70 +1605,79 @@ namespace Oxide.Plugins
 
             if (!string.IsNullOrEmpty(config.Content))
             {
-                message.AddContent(config.Content);
+                message.AddContent(ParseField(config.Content));
             }
 
-            if (config.Embed != null && config.Embed.Enabled)
+            EmbedConfig embedConfig = config.Embed;
+            if (embedConfig != null && embedConfig.Enabled)
             {
                 Embed embed = new Embed();
-                if (!string.IsNullOrEmpty(config.Embed.Title))
+                string title = ParseField(config.Embed.Title);
+                if (!string.IsNullOrEmpty(title))
                 {
-                    embed.AddTitle(config.Embed.Title);
+                    embed.AddTitle(title);
                 }
 
-                if (!string.IsNullOrEmpty(config.Embed.Description))
+                string description = ParseField(embedConfig.Description);
+                if (!string.IsNullOrEmpty(description))
                 {
-                    embed.AddDescription(config.Embed.Description);
-                }
-                
-                if (!string.IsNullOrEmpty(config.Embed.Url))
-                {
-                    embed.AddUrl(config.Embed.Url);
+                    embed.AddDescription(description);
                 }
 
-                if (!string.IsNullOrEmpty(config.Embed.Color))
+                string url = ParseField(embedConfig.Url);
+                if (!string.IsNullOrEmpty(url))
                 {
-                    embed.AddColor(config.Embed.Color);
+                    embed.AddUrl(url);
                 }
 
-                if (!string.IsNullOrEmpty(config.Embed.Image))
+                string color = ParseField(embedConfig.Color);
+                if (!string.IsNullOrEmpty(color))
                 {
-                    embed.AddImage(config.Embed.Image);
+                    embed.AddColor(color);
                 }
 
-                if (!string.IsNullOrEmpty(config.Embed.Thumbnail))
+                string img = ParseField(embedConfig.Image);
+                if (!string.IsNullOrEmpty(img))
                 {
-                    embed.AddThumbnail(config.Embed.Thumbnail);
+                    embed.AddImage(img);
                 }
 
-                foreach (FieldConfig field in config.Embed.Fields.Where(f => f.Enabled))
+                string thumbnail = ParseField(embedConfig.Thumbnail);
+                if (!string.IsNullOrEmpty(thumbnail))
                 {
-                    string value = field.Value;
+                    embed.AddThumbnail(thumbnail);
+                }
+
+                foreach (FieldConfig field in embedConfig.Fields.Where(f => f.Enabled))
+                {
+                    string value = ParseField(field.Value);
                     if (string.IsNullOrEmpty(value))
                     {
-                        PrintWarning($"Field: {field.Title} was skipped because the value was null or empty.");
+                        //PrintWarning($"Field: {field.Title} was skipped because the value was null or empty.");
                         continue;
                     }
-                    
+
                     embed.AddField(field.Title, value, field.Inline);
                 }
 
-                if (config.Embed.Footer != null && config.Embed.Footer.Enabled)
+                if (embedConfig.Footer != null && embedConfig.Footer.Enabled)
                 {
-                    if (string.IsNullOrEmpty(config.Embed.Footer.Text) &&
-                        string.IsNullOrEmpty(config.Embed.Footer.IconUrl))
+                    if (string.IsNullOrEmpty(embedConfig.Footer.Text) &&
+                        string.IsNullOrEmpty(embedConfig.Footer.IconUrl))
                     {
                         AddPluginInfoFooter(embed);
                     }
                     else
                     {
-                        embed.AddFooter(config.Embed.Footer.Text, config.Embed.Footer.IconUrl);
+                        string text = ParseField(embedConfig.Footer.Text);
+                        string footerUrl = ParseField(embedConfig.Footer.IconUrl);
+                        embed.AddFooter(text, footerUrl);
                     }
                 }
-                
+
                 message.AddEmbed(embed);
             }
-            
+
             return message;
         }
         #endregion
