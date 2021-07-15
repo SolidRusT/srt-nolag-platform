@@ -1,0 +1,19 @@
+{
+  "Global settings": {
+    "Use permissions": true,
+    "Allow admins to use without permission": true,
+    "Default Enabled": true,
+    "Default Cooldown": 10.0,
+    "Maximum Cooldown": 15.0,
+    "Minimum Cooldown": 5.0,
+    "GodMode Cooldown": 5.0,
+    "Commands list": [
+      "mnt",
+      "mapnoteteleport"
+    ]
+  },
+  "Chat settings": {
+    "Chat steamID icon": 0,
+    "Notifications Enabled by default": true
+  }
+}

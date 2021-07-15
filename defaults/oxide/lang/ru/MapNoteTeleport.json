@@ -1,0 +1,16 @@
+{
+  "CooldownEnded": "Перезарядка завершена. Можете телепортироваться снова.",
+  "GodModeEnded": "Неуязвимость <color=#B22222>Откл.</color>.",
+  "Disabled": "<color=#B22222>Откл.</color>",
+  "Enabled": "<color=#228B22>Вкл.</color>",
+  "MapNoteTeleport": "Телепортация к маркеру на карте сейчас {0}",
+  "MapNoteTeleportCooldown": "Время перезарядки телепорта к маркеру на карте установлено на <color=#FFA500>{0}</color> секунд.",
+  "MapNoteTeleportCooldownLimit": "Значение времени перезарядки телепорта к маркеру на карте должно быть между <color=#FFA500>{0}</color> сек и <color=#FFA500>{1}</color> сек",
+  "MapNoteTeleportDead": "Вы не можете телепортироваться, пока мертвы!",
+  "MapNoteTeleportMounted": "Вы не можете телепортироваться, когда сидите!",
+  "MapNoteTeleportNotification": "Уведомления в чат сейчас {0}",
+  "NotAllowed": "У вас нет разрешения на использование этой команды!",
+  "Prefix": "<color=#00FFFF>[MapNote Teleport]</color>: ",
+  "Teleported": "Вы телепортированы на <color=#FFA500>{0}</color>. Неуязвимость <color=#228B22>Вкл.</color> на <color=#FFA500>{1}</color> сек. Перезарядка телепорта <color=#FFA500>{2}</color> сек.",
+  "SyntaxError": "Синтаксическая ошибка!\n<color=#FFFF00>/{0} <время (сек.)></color> - Установить время перезарядки телепорта к маркеру на карте. Значение должно быть между <color=#FFA500>{1}</color> сек. и <color=#FFA500>{2}</color> сек.\n<color=#FFFF00>/{0} <t | toggle></color> - Вкл./Откл. телепортацию к маркеру на карте\n<color=#FFFF00>/{0} <n | notify></color> - Вкл./Откл. уведомления в чат"
+}

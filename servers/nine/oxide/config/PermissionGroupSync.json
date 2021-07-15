@@ -206,7 +206,8 @@
                 "stashtraps.use",
                 "stashtraps.notice",
                 "stashtraps.ignore",
-                "spawnmini.staff"
+                "spawnmini.staff",
+                "mapnoteteleport.use"
             ],
             "AdditionalCommands": []
         },
@@ -297,7 +298,8 @@
                 "stashtraps.notice",
                 "stashtraps.ignore",
                 "spawnmini.staff",
-                "instanth2o.use"
+                "instanth2o.use",
+                "mapnoteteleport.use"
             ],
             "AdditionalCommands": []
         },
@@ -533,7 +535,8 @@
                 "stashtraps.ignore",
                 "craftsman.admin",
                 "spawnmini.staff",
-                "instanth2o.use"
+                "instanth2o.use",
+                "mapnoteteleport.use"
             ],
             "AdditionalCommands": []
         }
