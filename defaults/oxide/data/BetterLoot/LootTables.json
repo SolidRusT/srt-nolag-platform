@@ -2356,10 +2356,6 @@
                     "Max": 30,
                     "Min": 30
                 },
-                "ammo.rifle.hv": {
-                    "Max": 40,
-                    "Min": 40
-                },
                 "ammo.rifle.incendiary": {
                     "Max": 60,
                     "Min": 60
@@ -2377,10 +2373,6 @@
                     "Min": 1
                 },
                 "lmg.m249": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "pistol.m92": {
                     "Max": 1,
                     "Min": 1
                 },
@@ -2415,6 +2407,14 @@
                 "weapon.mod.small.scope": {
                     "Max": 1,
                     "Min": 1
+                },
+                "explosives": {
+                    "Max": 30,
+                    "Min": 15
+                },
+                "ammo.rocket.basic": {
+                    "Max": 6,
+                    "Min": 3
                 }
             },
             "ItemsMax": 9,

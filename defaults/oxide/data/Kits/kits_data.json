@@ -192,7 +192,7 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 3,
+          "Position": 2,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -205,7 +205,7 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 4,
+          "Position": 3,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -224,45 +224,6 @@
           "Contents": null
         },
         {
-          "Shortname": "wood",
-          "Skin": 0,
-          "Amount": 5000,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 1,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "stones",
-          "Skin": 0,
-          "Amount": 5000,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 12,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "stones",
-          "Skin": 0,
-          "Amount": 5000,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 7,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
           "Shortname": "stones",
           "Skin": 0,
           "Amount": 5000,
@@ -276,40 +237,27 @@
           "Contents": null
         },
         {
-          "Shortname": "stones",
-          "Skin": 0,
-          "Amount": 5000,
-          "Condition": 0.0,
-          "MaxCondition": 0.0,
+          "Shortname": "door.hinged.metal",
+          "Skin": 959898495,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 7,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "door.hinged.metal",
+          "Skin": 959898495,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
           "Ammo": 0,
           "Ammotype": null,
           "Position": 13,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "door.hinged.metal",
-          "Skin": 959898495,
-          "Amount": 1,
-          "Condition": 100.0,
-          "MaxCondition": 100.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 8,
-          "Frequency": -1,
-          "BlueprintShortname": null,
-          "Contents": null
-        },
-        {
-          "Shortname": "door.hinged.metal",
-          "Skin": 959898495,
-          "Amount": 1,
-          "Condition": 100.0,
-          "MaxCondition": 100.0,
-          "Ammo": 0,
-          "Ammotype": null,
-          "Position": 14,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -322,7 +270,7 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 2,
+          "Position": 1,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -335,7 +283,7 @@
           "MaxCondition": 100.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 9,
+          "Position": 8,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -348,7 +296,7 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 5,
+          "Position": 9,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -361,7 +309,7 @@
           "MaxCondition": 100.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 15,
+          "Position": 14,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
@@ -374,7 +322,7 @@
           "MaxCondition": 0.0,
           "Ammo": 0,
           "Ammotype": null,
-          "Position": 10,
+          "Position": 12,
           "Frequency": -1,
           "BlueprintShortname": null,
           "Contents": null
