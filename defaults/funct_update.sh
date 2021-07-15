@@ -41,7 +41,7 @@ function update_mods () {
         rsync -r "${SERVER_CUSTOM}/oxide/data/copypaste/" "${GAME_ROOT}/oxide/data/copypaste" | tee -a ${LOGS}
     fi
     echo " - oxide/data/RaidableBases" | tee -a ${LOGS}
-    rsync -r "${SERVER_GLOBAL}/oxide/data/RaidableBases/" "${GAME_ROOT}/oxide/data/RaidableBases" | tee -a ${LOGS}
+    rsync -ra --delete "${SERVER_GLOBAL}/oxide/data/RaidableBases/" "${GAME_ROOT}/oxide/data/RaidableBases" | tee -a ${LOGS}
     if [[ -d "${SERVER_CUSTOM}/oxide/data/RaidableBases" ]]; then
         rsync -r "${SERVER_CUSTOM}/oxide/data/RaidableBases/" "${GAME_ROOT}/oxide/data/RaidableBases" | tee -a ${LOGS}
     fi

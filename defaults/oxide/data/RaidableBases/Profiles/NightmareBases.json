@@ -6,133 +6,7 @@
     "autoturret_deployed"
   ],
   "Additional Bases For This Difficulty": {
-    "raidnightmare1": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare2": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare3": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare4": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare5": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare6": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare7": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare8": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare9": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raidnightmare10": [
+    "neonnightmare": [
       {
         "Option": "stability",
         "Value": "true"
@@ -154,11 +28,11 @@
     },
     {
       "Option": "autoheight",
-      "Value": "false"
+      "Value": "true"
     },
     {
       "Option": "height",
-      "Value": "1.0"
+      "Value": "0"
     }
   ],
   "Arena Walls": {
@@ -178,6 +52,11 @@
     "Level 2 - Final Death": false
   },
   "NPCs": {
+    "Spawn Inside Bases": {
+      "Spawn On Floors": false,
+      "Spawn On Beds": false,
+      "Spawn On Rugs": false
+    },
     "Murderer Items": [
       "metal.facemask",
       "metal.plate.torso",
@@ -185,28 +64,25 @@
       "tactical.gloves",
       "boots.frog",
       "tshirt",
-      "machete"
+      "machete",
+      "syringe.medical"
     ],
     "Scientist Items": [
-      "hazmatsuit_scientist",
+      "syringe.medical",
       "rifle.ak"
     ],
-    "Murderer Kits": [
-      "murderer_kit_1",
-      "murderer_kit_2"
-    ],
+    "Murderer Kits": [],
     "Scientist Kits": [
-      "scientist_kit_1",
-      "scientist_kit_2"
+      "sciexpert"
     ],
     "Random Names": [],
-    "Amount To Spawn": 8,
+    "Amount To Spawn": 12,
     "Aggression Range": 70.0,
     "Despawn Inventory On Death": true,
-    "Enabled": true,
+    "Enabled": false,
     "Health For Murderers (100 min, 5000 max)": 150.0,
     "Health For Scientists (100 min, 5000 max)": 150.0,
-    "Minimum Amount To Spawn": 1,
+    "Minimum Amount To Spawn": 6,
     "Use Dangerous Treasures NPCs": false,
     "Spawn Murderers And Scientists": true,
     "Scientist Weapon Accuracy (0 - 100)": 25.0,
@@ -230,6 +106,11 @@
     "Stone": false,
     "Metal": false,
     "HQM": true
+  },
+  "Change Door Type To": {
+    "Wooden": false,
+    "Metal": false,
+    "HQM": false
   },
   "Auto Turrets": {
     "Aim Cone": 5.0,
@@ -269,15 +150,15 @@
   "Divide Loot Into All Containers": true,
   "Drop Container Loot X Seconds After It Is Looted": 0.0,
   "Drop Container Loot Applies Only To Boxes And Cupboards": true,
-  "Create Dome Around Event Using Spheres (0 = disabled, recommended = 5)": 5,
+  "Create Dome Around Event Using Spheres (0 = disabled, recommended = 5)": 0,
   "Empty All Containers Before Spawning Loot": true,
   "Eject Corpses From Enemy Raids (Advanced Users Only)": true,
-  "Eject Enemies From Purchased PVE Raids": true,
+  "Eject Enemies From Purchased PVE Raids": false,
   "Eject Enemies From Purchased PVP Raids": false,
-  "Eject Enemies From Locked PVE Raids": true,
+  "Eject Enemies From Locked PVE Raids": false,
   "Eject Enemies From Locked PVP Raids": false,
   "Explosion Damage Modifier (0-999)": 100.0,
-  "Force All Boxes To Have Same Skin": true,
+  "Force All Boxes To Have Same Skin": false,
   "Ignore Containers That Spawn With Loot Already": false,
   "Loot Amount Multiplier": 1.0,
   "Maximum Respawn Npc X Seconds After Death": 0.0,

@@ -1,53 +1,53 @@
 {
-    "Spawn Lights At": {
-        "GasStation": true,
-        "Supermarket": true,
-        "MiningOutpost": false,
-        "Airfield": true,
-        "UseLightSwitch": false,
-        "StartTime": "20:00",
-        "EndTime": "08:00"
-    },
-    "Spawn Puzzle At": {
-        "Junkyard": true,
-        "Supermarket": true,
-        "Dome": true
-    },
-    "Spawn BigWheel at": {
-        "Outpost": true
-    },
-    "Spawn Addons At": {
-        "SpawnAddons": true,
-        "itemAddon": {
-            "supermarket": {
-                "MonumentName": "supermarket",
-                "prefab": "assets/bundled/prefabs/static/modularcarlift.static.prefab",
-                "pos": {
-                    "x": 0.2,
-                    "y": 0.0,
-                    "z": 17.5
-                },
-                "rotate": 0.0
-            },
-            "gasstation": {
-                "MonumentName": "gas_station",
-                "prefab": "assets/bundled/prefabs/static/modularcarlift.static.prefab",
-                "pos": {
-                    "x": 4.2,
-                    "y": 3.0,
-                    "z": -0.5
-                },
-                "rotate": 0.0
-            }
-        }
-    },
-    "Spawn Building At": {
-        "SpawnBuildings": false,
-        "building": {}
-    },
-    "Version": {
-        "Major": 1,
-        "Minor": 0,
-        "Patch": 27
+  "Spawn Lights At": {
+    "GasStation": true,
+    "Supermarket": true,
+    "MiningOutpost": false,
+    "Airfield": true,
+    "UseLightSwitch": false,
+    "StartTime": "20:00",
+    "EndTime": "08:00"
+  },
+  "Spawn Puzzle At": {
+    "Junkyard": true,
+    "Supermarket": true,
+    "Dome": true
+  },
+  "Spawn BigWheel at": {
+    "Outpost": true
+  },
+  "Spawn Addons At": {
+    "SpawnAddons": true,
+    "itemAddon": {
+      "supermarket": {
+        "MonumentName": "supermarket",
+        "prefab": "assets/bundled/prefabs/static/modularcarlift.static.prefab",
+        "pos": {
+          "x": 0.2,
+          "y": 0.0,
+          "z": 17.5
+        },
+        "rotate": 0.0
+      },
+      "gasstation": {
+        "MonumentName": "gas_station",
+        "prefab": "assets/bundled/prefabs/static/modularcarlift.static.prefab",
+        "pos": {
+          "x": 4.2,
+          "y": 3.0,
+          "z": -0.5
+        },
+        "rotate": 0.0
+      }
     }
+  },
+  "Spawn Building At": {
+    "SpawnBuildings": false,
+    "building": {}
+  },
+  "Version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 27
+  }
 }

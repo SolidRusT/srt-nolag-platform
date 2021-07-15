@@ -1,0 +1,11 @@
+{
+  "Commands On Connect": [
+    "exampleCommand {gameId} {discordId}"
+  ],
+  "Commands On Overwrite": [
+    "exampleCommand {oldGameId} {newGameId} {oldDiscordId} {newDiscordId}"
+  ],
+  "Commands On Server Leave": [
+    "exampleCommand {gameId} {discordId}"
+  ]
+}

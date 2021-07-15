@@ -1,0 +1,6 @@
+{
+  "Error.NotEnoughAmount": "<color=#D3D3D3>You do not have have {0} to play this table. Minimum bet is :</color> <color=#ce422b>{1}</color>",
+  "Table.Information": "<size=25>{0}</size><size=20>\nMin Bet: {1} {3}\nMax Bet: {2} {3}\nTake a seat to play!</size>",
+  "Bet.RP": "RP",
+  "Bet.Eco": "Eco"
+}

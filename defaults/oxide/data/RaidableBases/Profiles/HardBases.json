@@ -1,54 +1,54 @@
 {
-  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 0,
+  "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 2,
   "Entities Not Allowed To Be Picked Up": [
     "generator.small",
     "generator.static",
     "autoturret_deployed"
   ],
   "Additional Bases For This Difficulty": {
-    "Base1": [
+    "raidhard1": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "height",
-        "Value": "2.5"
+        "Value": "3"
       }
     ],
-    "Base2": [
+    "raidhard2": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "height",
-        "Value": "1.5"
+        "Value": "3"
       }
     ],
-    "Base3": [
+    "raidhard3": [
       {
         "Option": "stability",
         "Value": "true"
       },
       {
         "Option": "autoheight",
-        "Value": "false"
+        "Value": "true"
       },
       {
         "Option": "height",
-        "Value": "1.5"
+        "Value": "3"
       }
     ],
-    "Base4": [
+    "raidhard4": [
       {
         "Option": "stability",
         "Value": "true"
@@ -59,10 +59,10 @@
       },
       {
         "Option": "height",
-        "Value": "0"
+        "Value": "3"
       }
     ],
-    "Hemp1": [
+    "raidhard5": [
       {
         "Option": "stability",
         "Value": "true"
@@ -73,10 +73,10 @@
       },
       {
         "Option": "height",
-        "Value": "0"
+        "Value": "3"
       }
     ],
-    "raideasy1": [
+    "raidhard6": [
       {
         "Option": "stability",
         "Value": "true"
@@ -87,10 +87,10 @@
       },
       {
         "Option": "height",
-        "Value": "0"
+        "Value": "3"
       }
     ],
-    "raideasy2": [
+    "raidhard7": [
       {
         "Option": "stability",
         "Value": "true"
@@ -101,10 +101,10 @@
       },
       {
         "Option": "height",
-        "Value": "0"
+        "Value": "3"
       }
     ],
-    "raideasy3": [
+    "raidhard8": [
       {
         "Option": "stability",
         "Value": "true"
@@ -115,10 +115,10 @@
       },
       {
         "Option": "height",
-        "Value": "0"
+        "Value": "3"
       }
     ],
-    "raideasy4": [
+    "raidhard9": [
       {
         "Option": "stability",
         "Value": "true"
@@ -129,10 +129,10 @@
       },
       {
         "Option": "height",
-        "Value": "0"
+        "Value": "3"
       }
     ],
-    "raideasy5": [
+    "raidhard10": [
       {
         "Option": "stability",
         "Value": "true"
@@ -143,77 +143,7 @@
       },
       {
         "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raideasy6": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raideasy7": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raideasy8": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raideasy9": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
-      }
-    ],
-    "raideasy10": [
-      {
-        "Option": "stability",
-        "Value": "true"
-      },
-      {
-        "Option": "autoheight",
-        "Value": "true"
-      },
-      {
-        "Option": "height",
-        "Value": "0"
+        "Value": "3"
       }
     ]
   },
@@ -248,6 +178,11 @@
     "Level 2 - Final Death": false
   },
   "NPCs": {
+    "Spawn Inside Bases": {
+      "Spawn On Floors": false,
+      "Spawn On Beds": false,
+      "Spawn On Rugs": false
+    },
     "Murderer Items": [
       "metal.facemask",
       "metal.plate.torso",
@@ -262,13 +197,13 @@
     ],
     "Murderer Kits": [],
     "Scientist Kits": [
-      "scieasy"
+      "scihard"
     ],
     "Random Names": [],
     "Amount To Spawn": 8,
     "Aggression Range": 70.0,
     "Despawn Inventory On Death": true,
-    "Enabled": true,
+    "Enabled": false,
     "Health For Murderers (100 min, 5000 max)": 150.0,
     "Health For Scientists (100 min, 5000 max)": 150.0,
     "Minimum Amount To Spawn": 1,
@@ -291,8 +226,13 @@
     "Do Not Reward Buyable Events": false
   },
   "Change Building Material Tier To": {
-    "Wooden": true,
+    "Wooden": false,
     "Stone": false,
+    "Metal": true,
+    "HQM": false
+  },
+  "Change Door Type To": {
+    "Wooden": false,
     "Metal": false,
     "HQM": false
   },
@@ -334,15 +274,15 @@
   "Divide Loot Into All Containers": true,
   "Drop Container Loot X Seconds After It Is Looted": 0.0,
   "Drop Container Loot Applies Only To Boxes And Cupboards": true,
-  "Create Dome Around Event Using Spheres (0 = disabled, recommended = 5)": 5,
+  "Create Dome Around Event Using Spheres (0 = disabled, recommended = 5)": 0,
   "Empty All Containers Before Spawning Loot": true,
   "Eject Corpses From Enemy Raids (Advanced Users Only)": true,
-  "Eject Enemies From Purchased PVE Raids": true,
+  "Eject Enemies From Purchased PVE Raids": false,
   "Eject Enemies From Purchased PVP Raids": false,
-  "Eject Enemies From Locked PVE Raids": true,
+  "Eject Enemies From Locked PVE Raids": false,
   "Eject Enemies From Locked PVP Raids": false,
   "Explosion Damage Modifier (0-999)": 100.0,
-  "Force All Boxes To Have Same Skin": true,
+  "Force All Boxes To Have Same Skin": false,
   "Ignore Containers That Spawn With Loot Already": false,
   "Loot Amount Multiplier": 1.0,
   "Maximum Respawn Npc X Seconds After Death": 0.0,

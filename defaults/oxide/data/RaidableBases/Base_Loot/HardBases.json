@@ -1,0 +1,23 @@
+[
+  {
+    "shortname": "sulfur",
+    "amount": 5000,
+    "skin": 0,
+    "amountMin": 1000,
+    "probability": 1.0
+  },
+  {
+    "shortname": "metal.fragments",
+    "amount": 5000,
+    "skin": 0,
+    "amountMin": 1000,
+    "probability": 1.0
+  },
+  {
+    "shortname": "charcoal",
+    "amount": 10000,
+    "skin": 0,
+    "amountMin": 5000,
+    "probability": 1.0
+  }
+]

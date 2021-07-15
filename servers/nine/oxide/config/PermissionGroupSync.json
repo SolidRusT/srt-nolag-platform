@@ -296,7 +296,8 @@
                 "stashtraps.use",
                 "stashtraps.notice",
                 "stashtraps.ignore",
-                "spawnmini.staff"
+                "spawnmini.staff",
+                "instanth2o.use"
             ],
             "AdditionalCommands": []
         },
@@ -531,7 +532,8 @@
                 "stashtraps.notice",
                 "stashtraps.ignore",
                 "craftsman.admin",
-                "spawnmini.staff"
+                "spawnmini.staff",
+                "instanth2o.use"
             ],
             "AdditionalCommands": []
         }

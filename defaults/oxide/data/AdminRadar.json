@@ -1,8 +1,12 @@
 {
   "Extended": [],
-  "Filters": {},
+  "Filters": {
+    "76561198024774727": []
+  },
   "Hidden": [],
   "OnlineBoxes": [],
   "Visions": [],
-  "Active": []
+  "Active": [
+    "76561198024774727"
+  ]
 }

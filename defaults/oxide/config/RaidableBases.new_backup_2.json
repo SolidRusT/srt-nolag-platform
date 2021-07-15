@@ -14,10 +14,10 @@
       },
       "Max Amount Allowed To Automatically Spawn Per Difficulty (0 = infinite, -1 = disabled)": {
         "Allow Max Amount Increase From Difficulties Disabled On A Specific Day Of The Week": false,
-        "Easy": 0,
-        "Medium": 0,
-        "Hard": 2,
-        "Expert": 2,
+        "Easy": 1,
+        "Medium": 1,
+        "Hard": 1,
+        "Expert": 1,
         "Nightmare": 1
       },
       "Player Lockouts (0 = ignore)": {
