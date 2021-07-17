@@ -536,7 +536,8 @@
                 "craftsman.admin",
                 "spawnmini.staff",
                 "instanth2o.use",
-                "mapnoteteleport.use"
+                "mapnoteteleport.use",
+                "autocode.admin"
             ],
             "AdditionalCommands": []
         }

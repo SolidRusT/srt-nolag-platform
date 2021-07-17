@@ -365,7 +365,9 @@ airstrike.chat.squad \
 craftsman.leveling.melee \
 craftsman.leveling.ranged \
 craftsman.leveling.clothing \
-sleep.allow
+sleep.allow \
+autocode.use \
+autocode.try
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
