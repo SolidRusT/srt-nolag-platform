@@ -1,0 +1,75 @@
+.content-box-gray .contentz {
+    overflow: hidden;
+    padding: 10px;
+    font-size: 15px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border: 1px solid #444;
+    color: #3385FF;
+}
+.content-box-gray .title {
+    height:50px;
+    line-height:30px;
+    background:#ff9100!important;
+    font-size:18px;
+    font-weight:bold;
+    font-family: 'Roboto', sans-serif;
+    display:block;
+    color:white;
+    display:block;
+    padding:10px;
+    border-bottom:none;
+}
+
+.btn-primary.test:hover {
+		background-color: #6666CC!important;
+	}
+
+	.btn-primary.test2:hover {
+		background-color:#333!important;
+	}
+
+@media only screen and (max-width: 600px) {
+  .masthead {
+    width: 100%;
+  }
+
+  .content-box-gray .title {
+	height: 50px;
+	line-height: 15px;
+	background: #ff9100!important;
+	font-size: 12px;
+	font-weight: bold;
+	font-family: 'Roboto', sans-serif;
+	display: block;
+	color: white;
+	display: block;
+	padding: 10px;
+	border-bottom: none;
+	}
+
+
+
+	img {
+		height: 150px;
+	}
+
+	.btn {
+	box-shadow: 0 .1875rem .1875rem 0 rgba(0,0,0,.1)!important;
+	padding: 1.25rem 2rem;
+	font-family: 'Varela Round';
+	font-size: 80%;
+	text-transform: uppercase;
+	margin-top: 10px;
+	letter-spacing: .15rem;
+	border: 0;
+	}
+}
+
+
+
+
+
+
+
+Resources 1×0.5×0.25× Rerun

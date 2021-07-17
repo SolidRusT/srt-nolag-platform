@@ -367,7 +367,8 @@ craftsman.leveling.ranged \
 craftsman.leveling.clothing \
 sleep.allow \
 autocode.use \
-autocode.try
+autocode.try \
+autobaseupgrade.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

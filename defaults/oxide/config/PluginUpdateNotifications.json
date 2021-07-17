@@ -17,6 +17,8 @@
     "DeepWater",
     "PlayingCards",
     "Casino",
-    "BlackJack"
+    "BlackJack",
+    "AutoBaseUpgrade",
+    "UniversalLink"
   ]
 }

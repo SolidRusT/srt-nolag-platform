@@ -56,3 +56,13 @@ echo "3 *    * * *   ${USER} \
     aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT}; \
     chmod +x ${SERVER_GLOBAL}/*.sh" \
     | sudo tee -a /etc/crontab
+
+
+#sudo su -
+#mysql
+#create database srt_web_auth;
+#GRANT ALL PRIVILEGES ON *.* TO 'srt_sl_lcy'@'%' 
+#    IDENTIFIED BY 'lcy_402' 
+#    WITH GRANT OPTION;
+#FLUSH PRIVILEGES;
+### Import verification.sql now

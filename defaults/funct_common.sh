@@ -118,6 +118,7 @@ function stop_rust_now () {
 }
 
 function show_logs () {
+    #find . -type f -exec grep -l samplestring {} \;
     tail -n 20 -F "${HOME}/SolidRusT.log" "${GAME_ROOT}/RustDedicated.log" "${GAME_ROOT}/rcon-default.log"
 }
 

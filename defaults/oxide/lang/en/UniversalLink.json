@@ -1,0 +1,14 @@
+{
+  "ConnectionError": "There was a connection error. Please try again, or contact an admin if this issue persists.",
+  "RemovedMsg": "You have been removed from the authenticated group because you unlinked your accounts.\nContact an admin if you did not unlink.",
+  "RemovedNitroMsg": "You have been removed from the nitro group because your boost was removed.\nContact an admin if this is an issue.",
+  "VerifyMsg": "Hey, make sure you verify at {0} to receive some awesome perks.",
+  "ThanksMsg": "You have successfully verified and linked your accounts. Thanks!",
+  "SteamNotVerified": "You are in the Steam Group, but aren't verified. Please verify at our website.",
+  "ThanksNitroMsg": "You have successfully boosted our discord. Thanks!",
+  "RemovedSteamMsg": "You have been removed from the Steam Rewards group for leaving the Steam Group.",
+  "ThanksSteamMsg": "You have successfully joined our Steam Group. Thanks!",
+  "NotClient": "This command is meant to be run from a client, not the console.",
+  "OnCooldown": "You are currently on a cooldown for using this command.",
+  "NoUsers": "UniversalLink: The response received does not contain any users."
+}

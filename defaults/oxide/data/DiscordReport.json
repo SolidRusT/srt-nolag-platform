@@ -1,10 +1,3 @@
 {
-  "Cache": [
-    {
-      "ID": "76561198024774727",
-      "ImageURL": "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/bc/bc589c5203f60cc37b357a2295e7f2065a3e7ecb.jpg",
-      "LastKnownAddress": "10.0.2.2",
-      "LastUpdate": 1626469066
-    }
-  ]
+  "Cache": []
 }
