@@ -1,62 +1,10 @@
 {
   "_players": {
-    "76561198272757534": {
-      "_usageData": {
-        "Guest": {
-          "TotalUses": 2,
-          "NextUseTime": 1625518897.44274
-        }
-      },
-      "ClaimAutoKits": true
-    },
-    "76561198416399632": {
-      "_usageData": {
-        "Survivor": {
-          "TotalUses": 1,
-          "NextUseTime": 1625553545.867815
-        },
-        "Guest": {
-          "TotalUses": 2,
-          "NextUseTime": 1625758945.4403858
-        }
-      },
-      "ClaimAutoKits": true
-    },
-    "76561197996782220": {
-      "_usageData": {
-        "SolidPlayer": {
-          "TotalUses": 3,
-          "NextUseTime": 1625674306.1096809
-        },
-        "Builder": {
-          "TotalUses": 1,
-          "NextUseTime": 1625668169.406194
-        },
-        "GM": {
-          "TotalUses": 2,
-          "NextUseTime": 1625782845.9284868
-        }
-      },
-      "ClaimAutoKits": true
-    },
     "76561198024774727": {
       "_usageData": {
-        "Guest": {
+        "GM": {
           "TotalUses": 1,
-          "NextUseTime": 1625683513.9812849
-        }
-      },
-      "ClaimAutoKits": true
-    },
-    "76561199135759930": {
-      "_usageData": {
-        "Bolty & Pistol": {
-          "TotalUses": 1,
-          "NextUseTime": 1625720906.1654069
-        },
-        "Guest": {
-          "TotalUses": 1,
-          "NextUseTime": 1625721160.37429
+          "NextUseTime": 1626469069.5404708
         }
       },
       "ClaimAutoKits": true

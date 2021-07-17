@@ -32,7 +32,7 @@ export BUILD_ROOT="${HOME}/build-solidrust"
 # Current server external IP
 export SERVER_IP=$(curl -s http://whatismyip.akamai.com/)
 # SRT default world size
-export WORLD_SIZE="1900"
+export WORLD_SIZE="4500"
 # Custom map toggle
 export CUSTOM_MAP="disabled" # enabled / disabled
 

@@ -14,11 +14,11 @@
       },
       "Max Amount Allowed To Automatically Spawn Per Difficulty (0 = infinite, -1 = disabled)": {
         "Allow Max Amount Increase From Difficulties Disabled On A Specific Day Of The Week": false,
-        "Easy": 1,
-        "Medium": 1,
-        "Hard": 1,
-        "Expert": 1,
-        "Nightmare": 1
+        "Easy": 0,
+        "Medium": 0,
+        "Hard": 8,
+        "Expert": 4,
+        "Nightmare": 2
       },
       "Player Lockouts (0 = ignore)": {
         "Time Between Raids In Minutes (Easy)": 0.0,
@@ -224,7 +224,7 @@
       "Include PVP Bases": true,
       "Ignore Safe Checks": false,
       "Ignore Player Entities At Custom Spawn Locations": false,
-      "Max Scheduled Events": 10,
+      "Max Scheduled Events": 50,
       "Max To Spawn At Once (0 = Use Max Scheduled Events Amount)": 1,
       "Minimum Required Players Online": 1,
       "Spawn Bases X Distance Apart": 100.0,

@@ -9,7 +9,7 @@
   "addresses": [
     "10.0.2.2"
   ],
-  "time_connected": "2021-07-10T21:03:56.857825Z",
+  "time_connected": "2021-07-16T20:57:43.860608Z",
   "time_disconnected": "2021-07-10T21:15:06.964717Z",
   "time_played": "01:03:43.1668310",
   "ban_count": 0,
@@ -23,9 +23,9 @@
   "cripple_timer": "0001-01-01T00:00:00",
   "is_crippled": false,
   "l_position": {
-    "x": 348.508118,
-    "y": 20.8647156,
-    "z": 376.945953
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
   },
   "v_position": {
     "x": 0.0,
