@@ -21,13 +21,26 @@
     "Link Website": "https://solidrust.net/login",
     "Steam Group ID": "40905437",
     "OxideRoleNameAndDiscordID": {
-        "OxideRoleName": [
-            1234567891929,
-            9876543213939
+        "admin": [
+            853782175396134912
         ],
-        "OxideRoleName1": [
-            293849303393,
-            3939384304493
+        "gm": [
+            847519198615568425
+        ],
+        "developer": [
+            847515954002788352
+        ],
+        "legend": [
+            847518858093002812
+        ],
+        "supporter": [
+            847515819637997629
+        ],
+        "solidplayer": [
+            847515654989807666
+        ],
+        "survivor": [
+            847515430737674310
         ]
     },
     "User Group": "linked",
