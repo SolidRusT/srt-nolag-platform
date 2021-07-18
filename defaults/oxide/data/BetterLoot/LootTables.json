@@ -2426,42 +2426,26 @@
             "Enabled": false,
             "ItemList": {
                 "ammo.rifle.explosive": {
-                    "Max": 30,
-                    "Min": 30
+                    "Max": 150,
+                    "Min": 100
                 },
                 "ammo.rocket.basic": {
-                    "Max": 3,
-                    "Min": 3
-                },
-                "ammo.rocket.fire": {
-                    "Max": 5,
-                    "Min": 5
+                    "Max": 12,
+                    "Min": 6
                 },
                 "ammo.rocket.hv": {
-                    "Max": 3,
-                    "Min": 3
+                    "Max": 12,
+                    "Min": 6
                 },
                 "explosive.timed": {
-                    "Max": 2,
-                    "Min": 2
+                    "Max": 5,
+                    "Min": 4
                 },
                 "explosives": {
-                    "Max": 20,
-                    "Min": 20
+                    "Max": 100,
+                    "Min": 40
                 },
                 "lmg.m249": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "metal.facemask": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "metal.plate.torso": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "rifle.ak": {
                     "Max": 1,
                     "Min": 1
                 },
@@ -2477,15 +2461,7 @@
                     "Max": 1,
                     "Min": 1
                 },
-                "shotgun.spas12": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "weapon.mod.8x.scope": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "weapon.mod.small.scope": {
                     "Max": 1,
                     "Min": 1
                 }
