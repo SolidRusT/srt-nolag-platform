@@ -1,7 +1,7 @@
 <?php
     session_start();
-    if(!isset($_SESSION['steamid'])) header('location: /');
-    if(isset($_SESSION['guilds'])) header('location: complete');
+    if(!isset($_SESSION['steamid'])) header('location: index.php');
+    if(isset($_SESSION['guilds'])) header('location: complete.php');
     require('functions.php');
     require('main.conf.php');
 
@@ -18,7 +18,7 @@
 <html>
     <head>
         <title><?php echo $SiteTitle; ?> &bull; Verification</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="css/login.css">
         <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
         <script src="https://kit.fontawesome.com/9e14982b30.js" crossorigin="anonymous"></script>
     </head>
@@ -40,3 +40,4 @@
         </div>
     </body>
 </html>
+

@@ -63,7 +63,7 @@ if (isset($_GET['logout'])){
 	exit;
 }
 
-if (isset($_GET['update'])){
+if (isset($_GET['update']) || !empty($_SESSION['steam_uptodate']) && $_SESSION['steam_uptodate']+(24*60*60) < time()){ 
 	unset($_SESSION['steam_uptodate']);
 	require 'userInfo.php';
 	header('Location: '.$_SERVER['PHP_SELF']);

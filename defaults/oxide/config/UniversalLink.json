@@ -1,10 +1,11 @@
 {
-    "API URL": "https://solidrust.net/login/api.php?action=steamChecks&id={id(s)}&secret=2f7ea85f8b8",
+    "API URL": "https://solidrust.net/api.php?action=steamChecks&id={id(s)}&secret=2f7ea85f8b8",
     "Should auto execute syncing on a timer? (If not, it will happen on join and when command used. May help with server performance.)": true,
     "Should auto execute syncing on player connect? (If not, it will happen when command used. May help with server performance.)": true,
     "Run Command(s) On Link": true,
     "Commands To Run On Link (Use {id} for Steam ID, {name} for Steam Name)": [
-        "usermod.survivor add {id}"
+        "usermod.survivor add {id}",
+        "say {id} thank you"
     ],
     "Run Command(s) On UnLink": true,
     "Commands To Run On UnLink (Use {id} for Steam ID, {name} for Steam Name)": [
@@ -13,12 +14,12 @@
         "usermod.solidplayer remove {id}",
         "usermod.survivor remove {id}"
     ],
-    "Disable Console Messages": false,
+    "Disable Console Messages": true,
     "Use Nitro Feature": true,
     "Use Steam Rewards Feature": true,
     "Allow Steam Rewards If Not Linked": false,
-    "Sync Names To Discord": true,
-    "Link Website": "https://solidrust.net/login",
+    "Sync Names To Discord": false,
+    "Link Website": "https://solidrust.net/",
     "Steam Group ID": "40905437",
     "OxideRoleNameAndDiscordID": {
         "admin": [
@@ -43,9 +44,9 @@
             847515430737674310
         ]
     },
-    "User Group": "linked",
-    "User Group Nitro": "nitrobooster",
-    "User Group Steam Rewards": "steamrewards",
+    "User Group": "survivor",
+    "User Group Nitro": "supporter",
+    "User Group Steam Rewards": "solidplayer",
     "Valid Commands": [
         "link",
         "discord",

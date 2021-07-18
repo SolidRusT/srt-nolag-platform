@@ -1,12 +1,14 @@
 <?php
 	$user = "srt_sl_lcy";
 	$pass = "lcy_402";
-	$details = "mysql:dbname=srt_web_auth;host=data.solidrust.net";
+	$db = "srt_web_auth";
+	$db_host = "data.solidrust.net";
+	$details = "mysql:dbname=$db;host=$db_host";
 	$database = new PDO($details, $user, $pass);
 
-	$redirect = 'https://solidrust.net/discord';
+	$redirect = 'https://solidrust.net/discord.php';
 
-	$VerifiedRoleID = Survivor;
+	$VerifiedRoleID = 847515430737674310;
 	$webhook = "https://discordapp.com/api/webhooks/866039927782506556/vDRnCU-d5tMfHwuXcSGod7ADmL2D736Ym3OB5fzVXRPME444Oh_hwmzdMU0Bo5TaEL3n";
 	$logoURL = "https://solidrust.net/images/SoldRust_Logo.png";
 	$SiteTitle = "SolidRust NoLag Networks";

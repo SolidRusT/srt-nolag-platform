@@ -21,3 +21,10 @@ python -m pip install --upgrade pip
 
 pip install -U discord.py
 
+###New shit
+
+sudo apt -y install curl software-properties-common 
+curl -sL https://deb.nodesource.com/setup_16.x | sudo bash - 
+sudo apt-get install -y nodejs
+sudo npm install -g npm@7.20.0
+
