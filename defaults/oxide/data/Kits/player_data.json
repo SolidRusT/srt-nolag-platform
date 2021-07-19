@@ -8,6 +8,15 @@
         }
       },
       "ClaimAutoKits": true
+    },
+    "76561197996782220": {
+      "_usageData": {
+        "GM": {
+          "TotalUses": 1,
+          "NextUseTime": 1626704842.87246
+        }
+      },
+      "ClaimAutoKits": true
     }
   }
 }

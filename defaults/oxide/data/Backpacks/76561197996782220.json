@@ -87,11 +87,6 @@
     },
     {
       "ID": -1841918730,
-      "Position": 9,
-      "Amount": 6
-    },
-    {
-      "ID": -1841918730,
       "Position": 11,
       "Amount": 955
     },
@@ -108,12 +103,143 @@
     {
       "ID": -742865266,
       "Position": 14,
-      "Amount": 982
+      "Amount": 976
     },
     {
       "ID": -1841918730,
       "Position": 15,
       "Amount": 5
+    },
+    {
+      "ID": 1525520776,
+      "Position": 16,
+      "Amount": 1
+    },
+    {
+      "ID": 200773292,
+      "Position": 17,
+      "Amount": 1,
+      "Skin": 822539548
+    },
+    {
+      "ID": -1780802565,
+      "Position": 18,
+      "Amount": 1,
+      "Skin": 911446362,
+      "Condition": 500.0,
+      "MaxCondition": 500.0
+    },
+    {
+      "ID": -262590403,
+      "Position": 19,
+      "Amount": 1,
+      "Condition": 489.997864,
+      "MaxCondition": 500.0
+    },
+    {
+      "ID": 1712070256,
+      "Position": 20,
+      "Amount": 150
+    },
+    {
+      "ID": 51984655,
+      "Position": 21,
+      "Amount": 230
+    },
+    {
+      "ID": -1211166256,
+      "Position": 23,
+      "Amount": 256
+    },
+    {
+      "ID": -2072273936,
+      "Position": 24,
+      "Amount": 15
+    },
+    {
+      "ID": 1079279582,
+      "Position": 25,
+      "Amount": 10
+    },
+    {
+      "ID": 95950017,
+      "Position": 26,
+      "Amount": 1000
+    },
+    {
+      "ID": 95950017,
+      "Position": 27,
+      "Amount": 1000
+    },
+    {
+      "ID": 95950017,
+      "Position": 28,
+      "Amount": 1000
+    },
+    {
+      "ID": 95950017,
+      "Position": 29,
+      "Amount": 1000
+    },
+    {
+      "ID": 95950017,
+      "Position": 30,
+      "Amount": 1000
+    },
+    {
+      "ID": 95950017,
+      "Position": 31,
+      "Amount": 1000
+    },
+    {
+      "ID": 95950017,
+      "Position": 32,
+      "Amount": 1000
+    },
+    {
+      "ID": 95950017,
+      "Position": 33,
+      "Amount": 1000
+    },
+    {
+      "ID": 95950017,
+      "Position": 34,
+      "Amount": 1000
+    },
+    {
+      "ID": 317398316,
+      "Position": 35,
+      "Amount": 1000
+    },
+    {
+      "ID": 317398316,
+      "Position": 36,
+      "Amount": 1000
+    },
+    {
+      "ID": 317398316,
+      "Position": 37,
+      "Amount": 1000
+    },
+    {
+      "ID": 317398316,
+      "Position": 38,
+      "Amount": 1000
+    },
+    {
+      "ID": 317398316,
+      "Position": 39,
+      "Amount": 501
+    },
+    {
+      "ID": 317398316,
+      "Position": 40,
+      "Amount": 1000
+    },
+    {
+      "ID": 317398316,
+      "Position": 41,
+      "Amount": 1000
     }
   ],
   "OwnerID": 76561197996782220

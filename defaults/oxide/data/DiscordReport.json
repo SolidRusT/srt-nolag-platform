@@ -1,3 +1,10 @@
 {
-  "Cache": []
+  "Cache": [
+    {
+      "ID": "76561197996782220",
+      "ImageURL": "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/68/682ff5011dc68e405cf47e300f72c4d15179740d.jpg",
+      "LastKnownAddress": "10.0.2.2",
+      "LastUpdate": 1626705191
+    }
+  ]
 }
