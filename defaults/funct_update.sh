@@ -368,7 +368,10 @@ craftsman.leveling.clothing \
 sleep.allow \
 autocode.use \
 autocode.try \
-autobaseupgrade.use
+autobaseupgrade.use \
+carcommander.use \
+carcommander.canspawn \
+carcommander.canbuild
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

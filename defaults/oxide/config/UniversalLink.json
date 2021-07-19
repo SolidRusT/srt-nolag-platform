@@ -1,58 +1,58 @@
 {
-    "API URL": "https://solidrust.net/api.php?action=steamChecks&id={id(s)}&secret=2f7ea85f8b8",
-    "Should auto execute syncing on a timer? (If not, it will happen on join and when command used. May help with server performance.)": true,
-    "Should auto execute syncing on player connect? (If not, it will happen when command used. May help with server performance.)": true,
-    "Run Command(s) On Link": true,
-    "Commands To Run On Link (Use {id} for Steam ID, {name} for Steam Name)": [
-        "usermod.survivor add {id}",
-        "say {id} thank you"
+  "API URL": "",
+  "Should auto execute syncing on a timer? (If not, it will happen on join and when command used. May help with server performance.)": false,
+  "Should auto execute syncing on player connect? (If not, it will happen when command used. May help with server performance.)": false,
+  "Run Command(s) On Link": false,
+  "Commands To Run On Link (Use {id} for Steam ID, {name} for Steam Name)": [
+    "usermod.survivor add {id}",
+    "say {id} thank you"
+  ],
+  "Run Command(s) On UnLink": false,
+  "Commands To Run On UnLink (Use {id} for Steam ID, {name} for Steam Name)": [
+    "usermod.legend remove {id}",
+    "usermod.supporter remove {id}",
+    "usermod.solidplayer remove {id}",
+    "usermod.survivor remove {id}"
+  ],
+  "Disable Console Messages": true,
+  "Use Nitro Feature": false,
+  "Use Steam Rewards Feature": false,
+  "Allow Steam Rewards If Not Linked": true,
+  "Sync Names To Discord": false,
+  "Link Website": "",
+  "Steam Group ID": "",
+  "OxideRoleNameAndDiscordID": {
+    "admin": [
+      853782175396134912
     ],
-    "Run Command(s) On UnLink": true,
-    "Commands To Run On UnLink (Use {id} for Steam ID, {name} for Steam Name)": [
-        "usermod.legend remove {id}",
-        "usermod.supporter remove {id}",
-        "usermod.solidplayer remove {id}",
-        "usermod.survivor remove {id}"
+    "gm": [
+      847519198615568425
     ],
-    "Disable Console Messages": true,
-    "Use Nitro Feature": true,
-    "Use Steam Rewards Feature": true,
-    "Allow Steam Rewards If Not Linked": false,
-    "Sync Names To Discord": false,
-    "Link Website": "https://solidrust.net/",
-    "Steam Group ID": "40905437",
-    "OxideRoleNameAndDiscordID": {
-        "admin": [
-            853782175396134912
-        ],
-        "gm": [
-            847519198615568425
-        ],
-        "developer": [
-            847515954002788352
-        ],
-        "legend": [
-            847518858093002812
-        ],
-        "supporter": [
-            847515819637997629
-        ],
-        "solidplayer": [
-            847515654989807666
-        ],
-        "survivor": [
-            847515430737674310
-        ]
-    },
-    "User Group": "survivor",
-    "User Group Nitro": "supporter",
-    "User Group Steam Rewards": "solidplayer",
-    "Valid Commands": [
-        "link",
-        "discord",
-        "auth",
-        "linker"
+    "developer": [
+      847515954002788352
     ],
-    "Refresh Cooldown": 30.0,
-    "Command Cooldown (Seconds)": 60.0
+    "legend": [
+      847518858093002812
+    ],
+    "supporter": [
+      847515819637997629
+    ],
+    "solidplayer": [
+      847515654989807666
+    ],
+    "survivor": [
+      847515430737674310
+    ]
+  },
+  "User Group": "survivor",
+  "User Group Nitro": "supporter",
+  "User Group Steam Rewards": "solidplayer",
+  "Valid Commands": [
+    "link",
+    "discord",
+    "auth",
+    "linker"
+  ],
+  "Refresh Cooldown": 300.0,
+  "Command Cooldown (Seconds)": 600.0
 }

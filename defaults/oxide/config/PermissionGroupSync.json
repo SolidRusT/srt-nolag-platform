@@ -537,7 +537,9 @@
                 "spawnmini.staff",
                 "instanth2o.use",
                 "mapnoteteleport.use",
-                "autocode.admin"
+                "autocode.admin",
+                "carcommander.admin",
+                "carcommander.ignorecooldown"
             ],
             "AdditionalCommands": []
         }

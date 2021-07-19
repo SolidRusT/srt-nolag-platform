@@ -19,13 +19,13 @@
     $client_id = 854448441366151208;
     $client_secret = '2f7ea85f8b858f47645b7be893c44689840f19317ea4d8ef91db955f14383f24';
 	
-	// integration links
-	$secret_id = "$client_secret";
-	$scopes = "$scope";
-	$redirect_url = "https://solidrust.net/discord-test.php";
-
     // DO NOT MODIFY //
     $tokenURL = 'https://discordapp.com/api/oauth2/token';
     $scope = 'identify guilds guilds.join';
     // DO NOT MODIFY //
+
+	// integration links
+	$secret_id = $client_secret;
+	$scopes = $scope;
+	$redirect_url = "https://solidrust.net/discord-test.php";
 ?>
