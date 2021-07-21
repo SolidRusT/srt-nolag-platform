@@ -2,9 +2,15 @@
   "Cache": [
     {
       "ID": "76561197996782220",
-      "ImageURL": "https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/68/682ff5011dc68e405cf47e300f72c4d15179740d.jpg",
+      "ImageURL": "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/68/682ff5011dc68e405cf47e300f72c4d15179740d.jpg",
       "LastKnownAddress": "10.0.2.2",
-      "LastUpdate": 1626705191
+      "LastUpdate": 1626811168
+    },
+    {
+      "ID": "76561198886543733",
+      "ImageURL": "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/44/4407f566dfa3bfc949c0bbb3556ae2a55f78cf4e.jpg",
+      "LastKnownAddress": "10.0.2.2",
+      "LastUpdate": 1626811379
     }
   ]
 }

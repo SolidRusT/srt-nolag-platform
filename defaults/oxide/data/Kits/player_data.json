@@ -12,8 +12,25 @@
     "76561197996782220": {
       "_usageData": {
         "GM": {
+          "TotalUses": 8,
+          "NextUseTime": 1626820419.736865
+        }
+      },
+      "ClaimAutoKits": true
+    },
+    "76561198886543733": {
+      "_usageData": {
+        "Guest": {
+          "TotalUses": 5,
+          "NextUseTime": 1626816802.5979939
+        },
+        "Medic": {
+          "TotalUses": 2,
+          "NextUseTime": 1626813826.8706579
+        },
+        "Mechanic": {
           "TotalUses": 1,
-          "NextUseTime": 1626704842.87246
+          "NextUseTime": 1626816879.614861
         }
       },
       "ClaimAutoKits": true

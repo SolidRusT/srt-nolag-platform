@@ -539,7 +539,8 @@
                 "mapnoteteleport.use",
                 "autocode.admin",
                 "carcommander.admin",
-                "carcommander.ignorecooldown"
+                "carcommander.ignorecooldown",
+                "tcmapmarkers.use"
             ],
             "AdditionalCommands": []
         }

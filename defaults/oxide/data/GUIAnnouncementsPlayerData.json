@@ -135,7 +135,13 @@
     "76561197996782220": {
       "Name": "mGucci",
       "UserID": "76561197996782220",
-      "TimesJoined": 2,
+      "TimesJoined": 3,
+      "Dead": false
+    },
+    "76561198886543733": {
+      "Name": "SmokeQc",
+      "UserID": "76561198886543733",
+      "TimesJoined": 1,
       "Dead": false
     }
   }

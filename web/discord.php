@@ -1,7 +1,7 @@
 <?php
     session_start();
-    if(!isset($_SESSION['steamid'])) header('location: index.php');
-    if(isset($_SESSION['guilds'])) header('location: complete.php');
+    if(!isset($_SESSION['steamid'])) header('location: /');
+    if(isset($_SESSION['guilds'])) header('location: complete');
     require('functions.php');
     require('main.conf.php');
 
@@ -40,4 +40,3 @@
         </div>
     </body>
 </html>
-

@@ -1,7 +1,7 @@
 <?php
     session_start();
     require('main.conf.php');
-    if (!isset($_SESSION['steamid'], $_SESSION['user_id'])) header('location: index.php');
+    if (!isset($_SESSION['steamid'], $_SESSION['user_id'])) header('location: /');
 
     include ('steamauth/userInfo.php');
     include ('functions.php');
@@ -27,7 +27,7 @@
         $status = "Discord ID or Steam ID already exists. Data updated in database.";
 
         $ip = getUserIP();
-        $date = new DateTime(null, new DateTimeZone('America/Vancouver'));
+        $date = new DateTime(null, new DateTimeZone('America/New_York'));
         $timestamp = $date->getTimestamp();
 
         $updateQuery = $database->prepare("UPDATE users SET `steam_name` = ?, `discord_name` = ?, `discord_discrim` = ?, `user_locale` = ?, `timestamp` = ?, `access_token` = ? WHERE steam_id = ?");
@@ -35,11 +35,9 @@
 
     } else {
         $status = "Success! You may now leave this page.";
-
-        echo "<p><h3><a href=\"https://solidrust.net\"> SolidRusT Home </a></h3></p>";
         
         $ip = getUserIP();
-        $date = new DateTime(null, new DateTimeZone('America/Vancouver'));
+        $date = new DateTime(null, new DateTimeZone('America/New_York'));
         $timestamp = $date->getTimestamp();
 
         $insertQuery = $database->prepare("INSERT INTO `users`(`id`, `steam_id`, `steam_name`, `discord_id`, `discord_name`, `discord_discrim`, `user_locale`, `user_ip`, `nitro`, `staff_flag`, `timestamp`, `access_token`) VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?)");
@@ -87,6 +85,5 @@
         </div>
         <br />
         <center><a href="unlink" style="font-size:30px;" class="unlinkButton"><i class="fa fa-unlink" aria-hidden="true"></i> Unlink</a></center>
-    </body
-    
-    
+    </body>
+</html>

@@ -1,6 +1,12 @@
 {
   "76561197996782220": {
     "None": 0.0,
+    "ProjectileWeapon": 0.197967529,
+    "MeleeWeapon": 6.5,
+    "Clothing": 7.25649357
+  },
+  "76561198886543733": {
+    "None": 0.0,
     "ProjectileWeapon": 0.0,
     "MeleeWeapon": 0.0,
     "Clothing": 0.0

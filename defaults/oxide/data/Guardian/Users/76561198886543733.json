@@ -1,17 +1,16 @@
 {
-  "userid": 76561197996782220,
-  "name": "[God] mGucci",
+  "userid": 76561198886543733,
+  "name": "SmokeQc",
   "names": [
-    "mGucci",
-    "[God] mGucci"
+    "SmokeQc"
   ],
   "address": "10.0.2.2",
   "addresses": [
     "10.0.2.2"
   ],
-  "time_connected": "2021-07-20T19:59:28.090268Z",
-  "time_disconnected": "2021-07-20T22:54:52.149083Z",
-  "time_played": "18:43:25.1173230",
+  "time_connected": "2021-07-20T20:02:59.549696Z",
+  "time_disconnected": "2021-07-20T22:40:11.219251Z",
+  "time_played": "02:37:11.6695550",
   "ban_count": 0,
   "ban_reason": "",
   "ban_time": "9999-12-31T23:59:59.9999999",
@@ -23,9 +22,9 @@
   "cripple_timer": "0001-01-01T00:00:00",
   "is_crippled": false,
   "l_position": {
-    "x": -224.353165,
-    "y": 76.82252,
-    "z": 1176.37842
+    "x": -1203.239,
+    "y": 46.1494255,
+    "z": 230.454971
   },
   "v_position": {
     "x": 0.0,
