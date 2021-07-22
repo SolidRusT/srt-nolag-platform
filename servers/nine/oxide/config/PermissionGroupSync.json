@@ -20,6 +20,7 @@
                 "gm",
                 "developer",
                 "legend",
+                "hardcore",
                 "supporter",
                 "solidplayer"
             ],
@@ -60,6 +61,7 @@
                 "gm",
                 "developer",
                 "legend",
+                "hardcore",
                 "supporter"
             ],
             "PermissionsOxide": [
@@ -82,7 +84,8 @@
                 "admin",
                 "gm",
                 "developer",
-                "legend"
+                "legend",
+                "hardcore"
             ],
             "PermissionsOxide": [
                 "nteleportation.supporter",
@@ -109,6 +112,24 @@
                 "hazmattoscientistsuit.craftheavy",
                 "hazmattoscientistsuit.craftspacesuit",
                 "spawnmini.supporter"
+            ],
+            "AdditionalCommands": []
+        },
+        {
+            "CommandName": "usermod.hardcore",
+            "GroupName": "hardcore",
+            "ExtendedPermissionHandling": true,
+            "PermissionUse": true,
+            "ProtectedGroup": false,
+            "OverrideServerIdCheck": true,
+            "GroupsRemove": [
+                "admin",
+                "gm",
+                "developer",
+                "legend"
+            ],
+            "PermissionsOxide": [
+                "kits.hardcore"
             ],
             "AdditionalCommands": []
         },

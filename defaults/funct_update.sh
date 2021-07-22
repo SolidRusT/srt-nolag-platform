@@ -371,7 +371,9 @@ autocode.try \
 autobaseupgrade.use \
 carcommander.use \
 carcommander.canspawn \
-carcommander.canbuild
+carcommander.canbuild \
+extendedrecycler.use \
+statistics.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

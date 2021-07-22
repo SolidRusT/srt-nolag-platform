@@ -4466,6 +4466,48 @@
           "Contents": null
         }
       ]
+    },
+    "hardcore": {
+      "Name": "hardcore",
+      "Description": "",
+      "RequiredPermission": "kits.hardcore",
+      "MaximumUses": 0,
+      "RequiredAuth": 0,
+      "Cooldown": 0,
+      "Cost": 0,
+      "IsHidden": false,
+      "CopyPasteFile": "",
+      "KitImage": "",
+      "MainItems": [],
+      "WearItems": [],
+      "BeltItems": [
+        {
+          "Shortname": "torch",
+          "Skin": 0,
+          "Amount": 1,
+          "Condition": 50.0,
+          "MaxCondition": 50.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 1,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        },
+        {
+          "Shortname": "rock",
+          "Skin": 2503052578,
+          "Amount": 1,
+          "Condition": 100.0,
+          "MaxCondition": 100.0,
+          "Ammo": 0,
+          "Ammotype": null,
+          "Position": 0,
+          "Frequency": -1,
+          "BlueprintShortname": null,
+          "Contents": null
+        }
+      ]
     }
   }
 }

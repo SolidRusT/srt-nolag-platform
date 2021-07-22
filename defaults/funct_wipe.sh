@@ -1,3 +1,10 @@
+# ${GAME_ROOT}/server/solidrust/
+#    player.blueprints.3.db            – This is the database which stores all players blueprints.
+#    player.deaths.3.db                – This is supposed to store player deaths but is unused.
+#    proceduralmap.<size>.<seed>.map   – Generated Map file for your selected size / seed.
+#    proceduralmap.<size>.<seed>.sav   – Entities / Structures save file.
+#    sv.files.0.db                     – All images / paintings stored on signs.
+
 function notification () {
     echo "Notifying players with 1 hour warning" | tee -a ${LOGS}
     #3600
