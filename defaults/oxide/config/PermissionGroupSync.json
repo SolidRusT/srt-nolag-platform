@@ -572,7 +572,8 @@
                 "autocode.admin",
                 "carcommander.admin",
                 "carcommander.ignorecooldown",
-                "tcmapmarkers.use"
+                "tcmapmarkers.use",
+                "permissiongroupsync.admin"
             ],
             "AdditionalCommands": []
         }
