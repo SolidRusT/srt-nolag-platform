@@ -113,6 +113,32 @@
             "AdditionalCommands": []
         },
         {
+            "CommandName": "usermod.hardcore",
+            "GroupName": "hardcore",
+            "ExtendedPermissionHandling": true,
+            "PermissionUse": true,
+            "ProtectedGroup": false,
+            "OverrideServerIdCheck": true,
+            "GroupsRemove": [],
+            "PermissionsOxide": [
+                "kits.hardcore"
+            ],
+            "AdditionalCommands": []
+        },
+        {
+            "CommandName": "usermod.stoner",
+            "GroupName": "stoner",
+            "ExtendedPermissionHandling": true,
+            "PermissionUse": true,
+            "ProtectedGroup": false,
+            "OverrideServerIdCheck": true,
+            "GroupsRemove": [],
+            "PermissionsOxide": [
+                "kits.stoner"
+            ],
+            "AdditionalCommands": []
+        },
+        {
             "CommandName": "usermod.legend",
             "GroupName": "legend",
             "ExtendedPermissionHandling": true,
@@ -153,6 +179,8 @@
                 "kits.supporter",
                 "kits.legend",
                 "kits.developer",
+                "kits.hardcore",
+                "kits.stoner",
                 "economics.balance",
                 "eminterface.admin",
                 "skins.admin",
@@ -233,6 +261,8 @@
                 "kits.solidplayer",
                 "kits.supporter",
                 "kits.legend",
+                "kits.hardcore",
+                "kits.stoner",
                 "kits.developer",
                 "kits.gm",
                 "economics.balance",
@@ -326,6 +356,8 @@
                 "kits.supporter",
                 "kits.legend",
                 "kits.developer",
+                "kits.hardcore",
+                "kits.stoner",
                 "kits.gm",
                 "bounty.use",
                 "craftchassis.3",
