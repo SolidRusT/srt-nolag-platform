@@ -1,6 +1,6 @@
 {
     "ServerId": "nine",
-    "PollIntervalSeconds": 115,
+    "PollIntervalSeconds": 300,
     "DatabaseConfiguration": {
         "Host": "data.solidrust.net",
         "Port": 3306,
@@ -561,7 +561,8 @@
                 "autocode.admin",
                 "carcommander.admin",
                 "carcommander.ignorecooldown",
-                "tcmapmarkers.use"
+                "tcmapmarkers.use",
+                "permissiongroupsync.admin"
             ],
             "AdditionalCommands": []
         }
