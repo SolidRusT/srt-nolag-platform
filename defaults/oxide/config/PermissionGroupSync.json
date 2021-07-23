@@ -1,8 +1,8 @@
 {
     "ServerId": "one",
-    "PollIntervalSeconds": 115,
+    "PollIntervalSeconds": 300,
     "DatabaseConfiguration": {
-        "Host": "data.solidrust.net",
+        "Host": "data",
         "Port": 3306,
         "Username": "modded",
         "Password": "Admin408",
