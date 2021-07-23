@@ -2178,8 +2178,8 @@
                 }
             ]
         },
-        "hardcore": {
-            "Name": "hardcore",
+        "Hardcore": {
+            "Name": "Hardcore",
             "Description": "Exclusive kit for hardcore SolidRusT supporters.",
             "RequiredPermission": "kits.hardcore",
             "MaximumUses": 0,
