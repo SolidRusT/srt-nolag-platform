@@ -33,6 +33,6 @@ case "$1" in
         change_seed
         start_rust
         update_map_api
-        update_permissions
+        #update_permissions
         ;;
 esac
