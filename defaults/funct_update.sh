@@ -123,11 +123,11 @@ function update_permissions () {
     echo "=> Updating plugin permissions" | tee -a ${LOGS}
     echo " - \"o.load *\"" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
-    sleep 3
+    sleep 5
     for perm in ${DEFAULT_PERMS[@]}; do
         echo " - \"o.grant default $perm\""
         ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.grant group default $perm" | tee -a ${LOGS}
-        sleep 2
+        sleep 5
     done
     echo "=> Reload permissions sync" | tee -a ${LOGS}
     
@@ -373,7 +373,8 @@ carcommander.use \
 carcommander.canspawn \
 carcommander.canbuild \
 extendedrecycler.use \
-statistics.use
+statistics.use \
+bounty.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
