@@ -2,7 +2,7 @@
     "ServerId": "nine",
     "PollIntervalSeconds": 300,
     "DatabaseConfiguration": {
-        "Host": "data.solidrust.net",
+        "Host": "data",
         "Port": 3306,
         "Username": "modded",
         "Password": "Admin408",
@@ -20,7 +20,6 @@
                 "gm",
                 "developer",
                 "legend",
-                "hardcore",
                 "supporter",
                 "solidplayer"
             ],
@@ -61,7 +60,6 @@
                 "gm",
                 "developer",
                 "legend",
-                "hardcore",
                 "supporter"
             ],
             "PermissionsOxide": [
@@ -84,8 +82,7 @@
                 "admin",
                 "gm",
                 "developer",
-                "legend",
-                "hardcore"
+                "legend"
             ],
             "PermissionsOxide": [
                 "nteleportation.supporter",
@@ -122,14 +119,22 @@
             "PermissionUse": true,
             "ProtectedGroup": false,
             "OverrideServerIdCheck": true,
-            "GroupsRemove": [
-                "admin",
-                "gm",
-                "developer",
-                "legend"
-            ],
+            "GroupsRemove": [],
             "PermissionsOxide": [
                 "kits.hardcore"
+            ],
+            "AdditionalCommands": []
+        },
+        {
+            "CommandName": "usermod.stoner",
+            "GroupName": "stoner",
+            "ExtendedPermissionHandling": true,
+            "PermissionUse": true,
+            "ProtectedGroup": false,
+            "OverrideServerIdCheck": true,
+            "GroupsRemove": [],
+            "PermissionsOxide": [
+                "kits.stoner"
             ],
             "AdditionalCommands": []
         },
@@ -174,6 +179,8 @@
                 "kits.supporter",
                 "kits.legend",
                 "kits.developer",
+                "kits.hardcore",
+                "kits.stoner",
                 "economics.balance",
                 "eminterface.admin",
                 "skins.admin",
@@ -254,6 +261,8 @@
                 "kits.solidplayer",
                 "kits.supporter",
                 "kits.legend",
+                "kits.hardcore",
+                "kits.stoner",
                 "kits.developer",
                 "kits.gm",
                 "economics.balance",
@@ -347,6 +356,8 @@
                 "kits.supporter",
                 "kits.legend",
                 "kits.developer",
+                "kits.hardcore",
+                "kits.stoner",
                 "kits.gm",
                 "bounty.use",
                 "craftchassis.3",
