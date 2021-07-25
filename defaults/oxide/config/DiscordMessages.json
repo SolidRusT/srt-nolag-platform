@@ -4,7 +4,7 @@
     },
     "BanSettings": {
         "Color": "3329330",
-        "Enabled": true,
+        "Enabled": false,
         "WebhookUrl": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
     },
     "ReportSettings": {

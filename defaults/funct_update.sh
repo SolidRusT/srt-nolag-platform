@@ -442,7 +442,8 @@ recyclerspeed.use \
 buildingworkbench.use \
 buildingworkbench.cancelcraft \
 vehicledeployedlocks.codelock.allvehicles \
-vehicledeployedlocks.keylock.allvehicles
+vehicledeployedlocks.keylock.allvehicles \
+discordmessages.report
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

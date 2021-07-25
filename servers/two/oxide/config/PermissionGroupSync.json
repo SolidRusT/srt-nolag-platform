@@ -159,7 +159,10 @@
                 "policesedan.spawn",
                 "cctvutilities.add.all",
                 "cctvutilities.status.all",
-                "mapnoteteleport.use"
+                "mapnoteteleport.use",
+                "serverarmour.ban",
+                "serverarmour.unban",
+                "discordmessages.ban"
             ],
             "AdditionalCommands": []
         },
@@ -243,7 +246,11 @@
                 "buildinginfo.owner",
                 "buildinginfo.authed",
                 "buildinginfo.bypass",
-                "carcommander.canspawn"
+                "carcommander.canspawn",
+                "serverarmour.website.admin",
+                "serverarmour.ban",
+                "serverarmour.unban",
+                "discordmessages.ban"
             ],
             "AdditionalCommands": []
         }
