@@ -2,6 +2,8 @@
 
  - no lag gameplay
  - #ffe300
+ - git config --global core.autocrlf false
+ - git add --renormalize .
 
 ## Install Rust Server
 
