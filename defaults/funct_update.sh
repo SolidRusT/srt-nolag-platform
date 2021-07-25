@@ -216,7 +216,7 @@ function srt_install () {
 }
 
 # Data
-DEFAULT_PERMS=(
+NINE_PERMS=(
 skins.use  \
 craftchassis.2  \
 removertool.normal  \
@@ -375,6 +375,69 @@ carcommander.canbuild \
 extendedrecycler.use \
 statistics.use \
 bounty.use
+)
+
+DEFAULT_PERMS=(
+skins.use \
+removertool.normal  \
+carlockui.use.codelock  \
+trade.use  \
+trade.accept  \
+discordcalladmin.use  \
+securitylights.use  \
+furnacesplitter.use  \
+realistictorch.use  \
+raidalarm.use  \
+clearrepair.use  \
+farmtools.clone  \
+farmtools.clone.all  \
+farmtools.harvest.all  \
+claimrewards.use  \
+blueprintshare.toggle  \
+blueprintshare.share  \
+blueprintshare.use \
+dance.use \
+securitycameras.use \
+cctvutilities.help \
+cctvutilities.status.me \
+cctvutilities.status.server \
+cctvutilities.clear \
+cctvutilities.rename \
+cctvutilities.add.me \
+cctvutilities.add.server \
+cctvutilities.add.clear \
+cctvutilities.autoname \
+cctvutilities.autoadd \
+cctvutilities.autoadd.on \
+cctvutilities.autoadd.off \
+cctvutilities.autoadd.toggle \
+cctvutilities.autoadd.me \
+cctvutilities.autoadd.server \
+deathhistory.use \
+teamping.use \
+customgenetics.use \
+signartist.url \
+signartist.text \
+signartist.restore \
+signartist.raw \
+signartist.restoreall \
+fishing.allowed \
+fishing.makepole \
+chillnightvision.use \
+chillnightvision.modify \
+fuelgauge.allow \
+phonesplus.use \
+privatemessages.allow \
+cctvutilities.status.all \
+craftsman.leveling.melee \
+craftsman.leveling.ranged \
+craftsman.leveling.clothing \
+sleep.allow \
+carcommander.use \
+carcommander.canspawn \
+carcommander.canbuild \
+extendedrecycler.use \
+statistics.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

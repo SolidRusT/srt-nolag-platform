@@ -1,3 +1,8 @@
+
+
+##### DEPRICATED #####
+
+
 #!/bin/bash
 # Once server is finished loading and running
 
