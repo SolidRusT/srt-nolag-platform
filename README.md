@@ -61,7 +61,14 @@ Start the service.
 restart 120 “Don’t wander too far off!”
 ```
 
+### Other
 
+```
+bear.population
+stag.population
+wolf.population
+boar.population
+```
 
 
 
