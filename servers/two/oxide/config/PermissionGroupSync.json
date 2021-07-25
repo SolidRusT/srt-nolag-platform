@@ -238,7 +238,12 @@
                 "backpacks.fetch",
                 "backpacks.keepondeath",
                 "backpacks.keeponwipe",
-                "backpacks.noblacklist"
+                "backpacks.noblacklist",
+                "buildinginfo.scan",
+                "buildinginfo.owner",
+                "buildinginfo.authed",
+                "buildinginfo.bypass",
+                "carcommander.canspawn"
             ],
             "AdditionalCommands": []
         }

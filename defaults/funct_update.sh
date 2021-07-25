@@ -434,10 +434,15 @@ craftsman.leveling.ranged \
 craftsman.leveling.clothing \
 sleep.allow \
 carcommander.use \
-carcommander.canspawn \
 carcommander.canbuild \
 extendedrecycler.use \
-statistics.use
+statistics.use \
+quicksmelt.use \
+recyclerspeed.use \
+buildingworkbench.use \
+buildingworkbench.cancelcraft \
+vehicledeployedlocks.codelock.allvehicles \
+vehicledeployedlocks.keylock.allvehicles
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
