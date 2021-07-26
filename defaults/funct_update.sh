@@ -374,7 +374,8 @@ carcommander.canspawn \
 carcommander.canbuild \
 extendedrecycler.use \
 statistics.use \
-bounty.use
+bounty.use \
+blueprintmanager.all
 )
 
 DEFAULT_PERMS=(
