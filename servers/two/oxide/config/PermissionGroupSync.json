@@ -250,7 +250,10 @@
                 "serverarmour.website.admin",
                 "serverarmour.ban",
                 "serverarmour.unban",
-                "discordmessages.ban"
+                "discordmessages.ban",
+                "zbillboards.admin",
+                "zbillboards.console",
+                "payback.admin"
             ],
             "AdditionalCommands": []
         }

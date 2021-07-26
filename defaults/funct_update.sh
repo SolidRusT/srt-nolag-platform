@@ -443,7 +443,8 @@ buildingworkbench.use \
 buildingworkbench.cancelcraft \
 vehicledeployedlocks.codelock.allvehicles \
 vehicledeployedlocks.keylock.allvehicles \
-discordmessages.report
+discordmessages.report \
+craftchassis.4
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
