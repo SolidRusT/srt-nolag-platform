@@ -483,7 +483,8 @@
                 "welcomer.bypass",
                 "whoknocks.admin",
                 "whoknocks.knock",
-                "zonemanager.zone"
+                "zonemanager.zone",
+                "iteminspector.admin"
             ],
             "AdditionalCommands": []
         }

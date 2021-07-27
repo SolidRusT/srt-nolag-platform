@@ -253,7 +253,8 @@
                 "discordmessages.ban",
                 "zbillboards.admin",
                 "zbillboards.console",
-                "payback.admin"
+                "payback.admin",
+                "iteminspector.admin"
             ],
             "AdditionalCommands": []
         }

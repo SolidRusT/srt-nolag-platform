@@ -215,7 +215,7 @@ function srt_install () {
     ln -s ${SERVER_GLOBAL}/oxide ${GAME_ROOT}/oxide
 }
 
-# Data
+# SRT 5x
 NINE_PERMS=(
 skins.use  \
 craftchassis.2  \
@@ -378,9 +378,11 @@ bounty.use \
 blueprintmanager.all \
 Kits.default \
 buildingworkbench.use \
-raidalerts.use
+raidalerts.use \
+iteminspector.use
 )
 
+# SRT Main Vanilla
 DEFAULT_PERMS=(
 skins.use \
 removertool.normal  \
@@ -450,7 +452,8 @@ vehicledeployedlocks.keylock.allvehicles \
 discordmessages.report \
 craftchassis.4 \
 buildingworkbench.use \
-raidalerts.use
+raidalerts.use \
+iteminspector.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
