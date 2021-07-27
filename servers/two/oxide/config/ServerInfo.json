@@ -87,6 +87,7 @@
                     {
                         "TextLines": [
                             " ",
+                            "<color=yellow> /inspect </color>        - Show details on held item",
                             "<color=yellow> /kdr </color>            - Kills to Deaths ration",
                             "<color=yellow> /phone </color>          - Telephone settings",
                             "<color=yellow> /pm </color>             - Private messages",
