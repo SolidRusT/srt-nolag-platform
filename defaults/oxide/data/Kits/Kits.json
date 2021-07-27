@@ -1,0 +1,85 @@
+{
+  "Kits": [
+    {
+      "Name": "GuestKit",
+      "Display Name": "Spawn Kit",
+      "Color": "#A0A935",
+      "Permission": "Kits.default",
+      "Description": null,
+      "Image": null,
+      "Hide": false,
+      "Amount": 0,
+      "Cooldown": 0.0,
+      "Wipe Block": 0.0,
+      "Building": null,
+      "Items": [
+        {
+          "Type": "Item",
+          "Command": "",
+          "ShortName": "hat.miner",
+          "Amount": 1,
+          "Blueprint": 0,
+          "SkinID": 0,
+          "Container": "wear",
+          "Condition": 0.0,
+          "Chance": 100,
+          "Position": 0,
+          "Image": null,
+          "Weapon": null,
+          "Content": [
+            {
+              "ShortName": "lowgradefuel",
+              "Condition": 0.0,
+              "Amount": 10
+            }
+          ]
+        },
+        {
+          "Type": "Item",
+          "Command": "",
+          "ShortName": "largemedkit",
+          "Amount": 1,
+          "Blueprint": 0,
+          "SkinID": 0,
+          "Container": "main",
+          "Condition": 0.0,
+          "Chance": 100,
+          "Position": 5,
+          "Image": null,
+          "Weapon": null,
+          "Content": null
+        },
+        {
+          "Type": "Item",
+          "Command": "",
+          "ShortName": "torch",
+          "Amount": 1,
+          "Blueprint": 0,
+          "SkinID": 0,
+          "Container": "belt",
+          "Condition": 50.0,
+          "Chance": 100,
+          "Position": 1,
+          "Image": null,
+          "Weapon": null,
+          "Content": null
+        },
+        {
+          "Type": "Item",
+          "Command": "",
+          "ShortName": "rock",
+          "Amount": 1,
+          "Blueprint": 0,
+          "SkinID": 0,
+          "Container": "belt",
+          "Condition": 100.0,
+          "Chance": 100,
+          "Position": 0,
+          "Image": null,
+          "Weapon": null,
+          "Content": null
+        }
+      ]
+    }
+  ]
+}

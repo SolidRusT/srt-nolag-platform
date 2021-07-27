@@ -1,3508 +1,4426 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Oxide.Core;
-using Oxide.Core.Configuration;
-using Oxide.Core.Libraries;
-using Oxide.Game.Rust.Cui;
-using Oxide.Core.Plugins;
-using Oxide.Plugins;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using Facepunch;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using Oxide.Core;
+using Oxide.Core.Libraries.Covalence;
+using Oxide.Core.Plugins;
+using Oxide.Game.Rust.Cui;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Kits", "k1lly0u", "4.0.12"), Description("Create kits containing items that players can redeem")]
-    class Kits : RustPlugin
-    {
-        #region Fields
-        [PluginReference]
-        private Plugin CopyPaste, ImageLibrary, ServerRewards, Economics;
+	[Info("Kits", "Mevent", "1.0.20")]
+	public class Kits : RustPlugin
+	{
+		#region Fields
 
-        private DateTime _deprecatedHookTime = new DateTime(2021, 12, 31);
+		[PluginReference] private Plugin ImageLibrary, CopyPaste, Notify;
 
-        private Hash<ulong, KitData.Kit> _kitCreators = new Hash<ulong, KitData.Kit>();
+		private static Kits _instance;
 
-        private const string ADMIN_PERMISSION = "kits.admin";
+		private const string Layer = "UI.Kits";
 
-        private const string BLUEPRINT_BASE = "blueprintbase";
-        #endregion
+		private const string InfoLayer = "UI.Kits.Info";
 
-        #region Oxide Hooks
-        private void Loaded()
-        {
-            LoadData();
-
-            permission.RegisterPermission(ADMIN_PERMISSION, this);
-            kitData.RegisterPermissions(permission, this);
-
-            _costType = ParseType<CostType>(Configuration.Currency);
-
-            cmd.AddChatCommand(Configuration.Command, this, cmdKit);
-            cmd.AddConsoleCommand(Configuration.Command, this, "ccmdKit");
-        }
-
-        protected override void LoadDefaultMessages() => lang.RegisterMessages(Messages, this);
-
-        private void OnServerInitialized()
-        {
-            kitData.RegisterImages(ImageLibrary);
-
-            if (Configuration.AutoKits.Count == 0)
-                Unsubscribe(nameof(OnPlayerRespawned));
-        }
-
-        private void OnNewSave(string filename)
-        {
-            if (Configuration.WipeData)
-                playerData.Wipe();
-        }
-
-        private void OnServerSave() => SavePlayerData();
-
-        private void OnPlayerRespawned(BasePlayer player)
-        {
-            if (player == null)
-                return;
-
-            if ((Interface.Oxide.CallDeprecatedHook("canRedeemKit", "CanRedeemKit", _deprecatedHookTime, player) ?? Interface.Oxide.CallHook("CanRedeemKit", player)) != null)
-                return;
-
-            if (Configuration.AllowAutoToggle && !playerData[player.userID].ClaimAutoKits)
-            {
-                player.ChatMessage(Message("Error.AutoKitDisabled", player.userID));
-                return;
-            }
-
-            for (int i = 0; i < Configuration.AutoKits.Count; i++)
-            {
-                KitData.Kit kit;
-                if (!kitData.Find(Configuration.AutoKits[i], out kit))
-                    continue;
-
-                object success = CanClaimKit(player, kit, true);
-                if (success != null)
-                    continue;
-
-                player.inventory.Strip();
-
-                success = GiveKit(player, kit);
-                if (success is string)
-                    continue;
-
-                OnKitReceived(player, kit);
-                return;
-            }
-        }
-
-        private object OnServerCommand(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return null;
-
-            if (_kitCreators.ContainsKey(player.userID) && !arg.cmd.FullName.StartsWith("kits."))
-                return false;
-
-            return null;
-        }
-
-        private object OnPlayerCommand(BasePlayer player, string s, string[] args) => _kitCreators.ContainsKey(player.userID) ? (object)false : null;
-
-        private void Unload()
-        {
-            if (!Interface.Oxide.IsShuttingDown)
-                SavePlayerData();
-
-            foreach (BasePlayer player in BasePlayer.activePlayerList)
-            {
-                CuiHelper.DestroyUi(player, UI_MENU);
-                CuiHelper.DestroyUi(player, UI_POPUP);
-            }
-
-            Configuration = null;
-        }
-        #endregion
-
-        #region Kit Claiming
-        private bool TryClaimKit(BasePlayer player, string name, bool usingUI)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                if (usingUI)
-                    CreateMenuPopup(player, Message("Error.EmptyKitName", player.userID));
-                else player.ChatMessage(Message("Error.EmptyKitName", player.userID));
-                return false;
-            }
-
-            KitData.Kit kit;
-            if (!kitData.Find(name, out kit))
-            {
-                if (usingUI)
-                    CreateMenuPopup(player, Message("Error.InvalidKitName", player.userID));
-                else player.ChatMessage(Message("Error.InvalidKitName", player.userID));
-                return false;
-            }
-
-            object success = CanClaimKit(player, kit) ?? GiveKit(player, kit);
-            if (success is string)
-            {
-                if (usingUI)
-                    CreateMenuPopup(player, (string)success);
-                else player.ChatMessage((string)success);
-                return false;
-            }
-
-            OnKitReceived(player, kit);
-            return true;
-        }
-
-        private object CanClaimKit(BasePlayer player, KitData.Kit kit, bool ignoreAuthCost = false)
-        {
-            object success = Interface.Oxide.CallDeprecatedHook("canRedeemKit", "CanRedeemKit", _deprecatedHookTime, player) ?? Interface.Oxide.CallHook("CanRedeemKit", player);
-            if (success != null)
-            {
-                if (success is string)
-                    return (string)success;
-                return Message("Error.CantClaimNow", player.userID);
-            }
-
-            if (!ignoreAuthCost && kit.RequiredAuth > 0 && player.net.connection.authLevel < kit.RequiredAuth)
-                return Message("Error.CanClaim.Auth", player.userID);
-
-            if (Configuration.AdminIgnoreRestrictions && IsAdmin(player))
-            {
-                if (!kit.HasSpaceForItems(player))
-                    return Message("Error.CanClaim.InventorySpace", player.userID);
-
-                return null;
-            }
-            
-            if (!string.IsNullOrEmpty(kit.RequiredPermission) && !permission.UserHasPermission(player.UserIDString, kit.RequiredPermission))
-                return Message("Error.CanClaim.Permission", player.userID);
-
-            int wipeCooldownTime;
-            if (Configuration.WipeCooldowns.TryGetValue(kit.Name, out wipeCooldownTime))
-            {
-                if (kitData.IsOnWipeCooldown(wipeCooldownTime, out wipeCooldownTime))
-                    return string.Format(Message("Error.CanClaim.WipeCooldown", player.userID), FormatTime(wipeCooldownTime));
-            }
-
-            PlayerData.PlayerUsageData playerUsageData;
-            if (playerData.Find(player.userID, out playerUsageData))
-            {
-                if (kit.Cooldown > 0)
-                {
-                    double cooldownRemaining = playerUsageData.GetCooldownRemaining(kit.Name);
-                    if (cooldownRemaining > 0)
-                        return string.Format(Message("Error.CanClaim.Cooldown", player.userID), FormatTime(cooldownRemaining));
-                }
-
-                if (kit.MaximumUses > 0)
-                {
-                    int currentUses = playerUsageData.GetKitUses(kit.Name);
-                    if (currentUses >= kit.MaximumUses)
-                        return Message("Error.CanClaim.MaxUses", player.userID);
-                }
-            }
-
-            if (!kit.HasSpaceForItems(player))
-                return Message("Error.CanClaim.InventorySpace", player.userID);
-
-            if (!ignoreAuthCost && kit.Cost > 0)
-            {
-                if (!ChargePlayer(player, kit.Cost))
-                    return string.Format(Message("Error.CanClaim.InsufficientFunds", player.userID), kit.Cost, Message($"Cost.{_costType}", player.userID));
-            }
-
-            return null;
-        }
-
-        private object GiveKit(BasePlayer player, KitData.Kit kit)
-        {
-            if (!string.IsNullOrEmpty(kit.CopyPasteFile))
-            {
-                object success = CopyPaste?.CallHook("TryPasteFromSteamId", player.userID, kit.CopyPasteFile, Configuration.CopyPasteParams, null);
-                if (success != null)
-                    return success;
-            }
-
-            kit.GiveItemsTo(player);
-
-            return true;
-        }
-
-        private void OnKitReceived(BasePlayer player, KitData.Kit kit)
-        {
-            playerData[player.userID].OnKitClaimed(kit);
-
-            Interface.CallHook("OnKitRedeemed", player, kit.Name);
-
-            if (Configuration.LogKitsGiven)
-                LogToFile("Kits_Received", $"{player.displayName} ({player.userID}) - Received {kit.Name}", this);
-        }
-        #endregion
-
-        #region Purchase Costs     
-        private CostType _costType;
-
-        private enum CostType { Scrap, ServerRewards, Economics }
-
-        private const int SCRAP_ITEM_ID = -932201673;
-
-        private bool ChargePlayer(BasePlayer player, int amount)
-        {
-            if (amount == 0)
-                return true;
-
-            switch (_costType)
-            {
-                case CostType.Scrap:
-                    if (amount <= player.inventory.GetAmount(SCRAP_ITEM_ID))
-                    {
-                        player.inventory.Take(null, SCRAP_ITEM_ID, amount);
-                        return true;
-                    }
-                    return false;
-                case CostType.ServerRewards:
-                    return (bool)ServerRewards?.Call("TakePoints", player.userID, amount);
-                case CostType.Economics:
-                    return (bool)Economics?.Call("Withdraw", player.UserIDString, (double)amount);
-            }
-            return false;
-        }
-        #endregion
-
-        #region Helpers
-        private T ParseType<T>(string type)
-        {
-            try
-            {
-                return (T)Enum.Parse(typeof(T), type, true);
-            }
-            catch
-            {
-                return default(T);
-            }
-        }
-
-        private string FormatTime(double time)
-        {
-            TimeSpan dateDifference = TimeSpan.FromSeconds(time);
-            int days = dateDifference.Days;
-            int hours = dateDifference.Hours;
-            int mins = dateDifference.Minutes;
-            int secs = dateDifference.Seconds;
-
-            if (days > 0)
-                return string.Format("~{0:00}d:{1:00}h", days, hours);
-            else if (hours > 0)
-                return string.Format("~{0:00}h:{1:00}m", hours, mins, secs);
-            else if (mins > 0)
-                return string.Format("{0:00}m:{1:00}s", mins, secs);
-            else return string.Format("{0}s", secs);
-        }
-
-        private void GetUserValidKits(BasePlayer player, List<KitData.Kit> list, ulong npcId = 0UL)
-        {
-            bool isAdmin = IsAdmin(player);
-            bool viewPermissionKits = Configuration.ShowPermissionKits;
-
-            if (npcId != 0UL)
-            {
-                ConfigData.NPCKit npcKit;
-                if (Configuration.NPCKitMenu.TryGetValue(npcId, out npcKit))
-                {
-                    npcKit.Kits.ForEach((string kitName) =>
-                    {
-                        KitData.Kit kit;
-                        if (kitData.Find(kitName, out kit))
-                        {
-                            if (!viewPermissionKits && !string.IsNullOrEmpty(kit.RequiredPermission) && !permission.UserHasPermission(player.UserIDString, kit.RequiredPermission) && !isAdmin)
-                                return;
-
-                            if (player.net.connection.authLevel < kit.RequiredAuth)
-                                return;
-
-                            list.Add(kit);
-                        }
-                    });
-                }
-            }
-            else
-            {
-                kitData.ForEach((KitData.Kit kit) =>
-                {
-                    if (kit.IsHidden && !isAdmin)
-                        return;
-
-                    if (!viewPermissionKits && !string.IsNullOrEmpty(kit.RequiredPermission) && !permission.UserHasPermission(player.UserIDString, kit.RequiredPermission) && !isAdmin)
-                        return;
-
-                    if (player.net.connection.authLevel < kit.RequiredAuth)
-                        return;
-
-                    list.Add(kit);
-                });
-            }
-        }
-
-        private bool IsAdmin(BasePlayer player) => permission.UserHasPermission(player.UserIDString, ADMIN_PERMISSION);
-
-        private BasePlayer FindPlayer(string partialNameOrID) => BasePlayer.allPlayerList.FirstOrDefault<BasePlayer>((BasePlayer x) => x.UserIDString.Equals(partialNameOrID) ||            
-                                                                                                    x.displayName.Equals(partialNameOrID, StringComparison.OrdinalIgnoreCase) ||
-                                                                                                    x.displayName.Contains(partialNameOrID, CompareOptions.OrdinalIgnoreCase));
-
-        private BasePlayer RaycastPlayer(BasePlayer player)
-        {
-            RaycastHit raycastHit;
-            if (!Physics.Raycast(new Ray(player.eyes.position, Quaternion.Euler(player.serverInput.current.aimAngles) * Vector3.forward), out raycastHit, 5f))
-                return null;
-
-            return raycastHit.collider.GetComponentInParent<BasePlayer>();            
-        }
-
-        private static DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0);
-
-        private static double CurrentTime => DateTime.UtcNow.Subtract(Epoch).TotalSeconds;
-
-        private static double LastWipeTime => SaveRestore.SaveCreatedTime.Subtract(Epoch).TotalSeconds;
-        #endregion
-
-        #region ImageLibrary        
-        private void RegisterImage(string name, string url) => ImageLibrary?.Call("AddImage", url, name.Replace(" ", ""), 0UL, null);
-
-        private string GetImage(string name, ulong skinId = 0UL) => ImageLibrary?.Call<string>("GetImage", name.Replace(" ", ""), skinId, false);
-        #endregion
-
-        #region HumanNPC
-        private void OnUseNPC(BasePlayer npcPlayer, BasePlayer player)
-        {
-            if (Configuration.NPCKitMenu.ContainsKey(npcPlayer.userID))            
-                OpenKitGrid(player, 0, npcPlayer.userID);            
-        }
-        #endregion
-
-        #region Deprecated API 
-        [HookMethod("isKit")]
-        public bool isKit(string name) => IsKit(name);
-
-        [HookMethod("GetAllKits")]
-        public string[] GetAllKits() => kitData.Keys.ToArray();
-
-        [HookMethod("KitImage")]
-        public string KitImage(string name) => GetKitImage(name);
-
-        [HookMethod("KitDescription")]
-        public string KitDescription(string name) => GetKitDescription(name);
-
-        [HookMethod("KitMax")]
-        public int KitMax(string name) => GetKitMaxUses(name);
-
-        [HookMethod("KitCooldown")]
-        public double KitCooldown(string name) => (double)GetKitCooldown(name);
-
-        [HookMethod("PlayerKitMax")]
-        public int PlayerKitMax(ulong playerId, string name) => GetPlayerKitUses(playerId, name);
-
-        [HookMethod("PlayerKitCooldown")]
-        public double PlayerKitCooldown(ulong playerId, string name) => GetPlayerKitCooldown(playerId, name);
-
-        [HookMethod("GetKitContents")]
-        public string[] GetKitContents(string name)
-        {
-            KitData.Kit kit;
-            if (kitData.Find(name, out kit))
-            {
-                List<string> items = Facepunch.Pool.GetList<string>();
-                for (int i1 = 0; i1 < kit.BeltItems.Length; i1++)
-                {
-                    ItemData itemData = kit.BeltItems[i1];
-                    string itemstring = $"{itemData.ItemID}_{itemData.Amount}";
-
-                    for (int i2 = 0; i2 < itemData.Contents?.Length; i2++)
-                        itemstring = itemstring + $"_{itemData.Contents[i2].ItemID}";
-
-                    items.Add(itemstring);
-                }
-
-                for (int i1 = 0; i1 < kit.WearItems.Length; i1++)
-                {
-                    ItemData itemData = kit.WearItems[i1];
-                    string itemstring = $"{itemData.ItemID}_{itemData.Amount}";
-
-                    for (int i2 = 0; i2 < itemData.Contents?.Length; i2++)
-                        itemstring = itemstring + $"_{itemData.Contents[i2].ItemID}";
-
-                    items.Add(itemstring);
-                }
-
-                for (int i1 = 0; i1 < kit.MainItems.Length; i1++)
-                {
-                    ItemData itemData = kit.MainItems[i1];
-                    string itemstring = $"{itemData.ItemID}_{itemData.Amount}";
-
-                    for (int i2 = 0; i2 < itemData.Contents?.Length; i2++)
-                        itemstring = itemstring + $"_{itemData.Contents[i2].ItemID}";
-
-                    items.Add(itemstring);
-                }
-
-                string[] array = items.ToArray();
-                Facepunch.Pool.FreeList(ref items);
-
-                return array;
-            }
-
-            return null;
-        }
-
-        [HookMethod("GetKitInfo")]
-        public object GetKitInfo(string name)
-        {
-            KitData.Kit kit;
-            if (kitData.Find(name, out kit))
-            {
-                JObject obj = new JObject
-                {
-                    ["name"] = kit.Name,
-                    ["permission"] = kit.RequiredPermission,
-                    ["max"] = kit.MaximumUses,
-                    ["image"] = kit.KitImage,
-                    ["hide"] = kit.IsHidden,
-                    ["description"] = kit.Description,
-                    ["cooldown"] = kit.Cooldown,
-                    ["building"] = kit.CopyPasteFile,
-                    ["authlevel"] = kit.RequiredAuth
-                };
-
-                JArray array = new JArray();
-                GetItemObject_Old(ref array, kit.BeltItems, "belt");
-                GetItemObject_Old(ref array, kit.MainItems, "main");
-                GetItemObject_Old(ref array, kit.WearItems, "wear");
-
-                obj["items"] = array;
-                return obj;
-            }
-
-            return null;
-        }
-
-        private void GetItemObject_Old(ref JArray array, ItemData[] items, string container)
-        {
-            for (int i = 0; i < items.Length; i++)
-            {
-                ItemData itemData = items[i];
-                JObject item = new JObject
-                {
-                    ["amount"] = itemData.Amount,
-                    ["container"] = container,
-                    ["itemid"] = itemData.ItemID,
-                    ["skinid"] = itemData.Skin,
-                    ["weapon"] = !string.IsNullOrEmpty(itemData.Ammotype),
-                    ["blueprint"] = itemData.BlueprintItemID
-                };
-
-                item["mods"] = new JArray();
-                for (int i1 = 0; i1 < itemData.Contents?.Length; i1++)
-                    (item["mods"] as JArray).Add(itemData.Contents[i1].ItemID);
-
-                array.Add(item);
-            }
-        }
-        #endregion
-
-        #region API
-        [HookMethod("GiveKit")]
-        public object GiveKit(BasePlayer player, string name)
-        {
-            if (player == null)
-                return null;
-
-            if (string.IsNullOrEmpty(name))
-                return Message("Error.EmptyKitName", player.userID);
-
-            KitData.Kit kit;
-            if (!kitData.Find(name, out kit))
-                return Message("Error.InvalidKitName", player.userID);
-
-            return GiveKit(player, kit);
-        }
-
-        [HookMethod("IsKit")]
-        public bool IsKit(string name) => !string.IsNullOrEmpty(name) ? kitData.Exists(name) : false;
-
-        [HookMethod("GetKitNames")]
-        public void GetKitNames(List<string> list) => list.AddRange(kitData.Keys);
-
-        [HookMethod("GetKitImage")]
-        public string GetKitImage(string name) => kitData[name]?.KitImage ?? string.Empty;
-
-        [HookMethod("GetKitDescription")]
-        public string GetKitDescription(string name) => kitData[name]?.Description ?? string.Empty;
-
-        [HookMethod("GetKitMaxUses")]
-        public int GetKitMaxUses(string name) => kitData[name]?.MaximumUses ?? 0;
-
-        [HookMethod("GetKitCooldown")]
-        public int GetKitCooldown(string name) => kitData[name]?.Cooldown ?? 0;
-
-        [HookMethod("GetPlayerKitUses")]
-        public int GetPlayerKitUses(ulong playerId, string name) => playerData.Exists(playerId) ? playerData[playerId].GetKitUses(name) : 0;
-
-        [HookMethod("GetPlayerKitCooldown")]
-        public double GetPlayerKitCooldown(ulong playerId, string name) => playerData.Exists(playerId) ? playerData[playerId].GetCooldownRemaining(name) : 0; 
-
-        [HookMethod("GetKitObject")]
-        public JObject GetKitObject(string name)
-        {
-            KitData.Kit kit;
-            if (!kitData.Find(name, out kit))
-                return null;
-
-            return kit.ToJObject;
-        }
-        #endregion
-
-        #region UI
-        private const string UI_MENU = "kits.menu";
-        private const string UI_POPUP = "kits.popup";
-
-        private const string DEFAULT_ICON = "kits.defaultkiticon";
-        private const string MAGNIFY_ICON = "kits.magnifyicon";
-
-        #region Kit Grid View
-        private void OpenKitGrid(BasePlayer player, int page = 0, ulong npcId = 0UL)
-        {
-            CuiElementContainer container = UI.BlurContainer(UI_MENU, new UI4(0.2f, 0.15f, 0.8f, 0.85f));
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Panel.Get, new UI4(0.005f, 0.93f, 0.995f, 0.99f));
-
-            UI.Label(container, UI_MENU, Message("UI.Title", player.userID), 20, new UI4(0.015f, 0.93f, 0.99f, 0.99f), TextAnchor.MiddleLeft);
-
-            UI.Button(container, UI_MENU, Configuration.Menu.Color3.Get, "<b>×</b>", 20, new UI4(0.9575f, 0.9375f, 0.99f, 0.9825f), "kits.close");
-
-            if (IsAdmin(player) && npcId == 0UL)            
-                UI.Button(container, UI_MENU, Configuration.Menu.Color2.Get, Message("UI.CreateNew", player.userID), 14, new UI4(0.85f, 0.9375f, 0.9525f, 0.9825f), "kits.create");
-            
-            CreateGridView(player, container, page, npcId);
-
-            CuiHelper.DestroyUi(player, UI_MENU);
-            CuiHelper.AddUi(player, container);
-        }
-
-        private void CreateGridView(BasePlayer player, CuiElementContainer container, int page = 0, ulong npcId = 0UL)
-        {
-            List<KitData.Kit> list = Facepunch.Pool.GetList<KitData.Kit>();
-
-            GetUserValidKits(player, list, npcId);
-
-            if (list.Count == 0)
-            {
-                UI.Label(container, UI_MENU, Message("UI.NoKitsAvailable", player.userID), 14, new UI4(0.015f, 0.88f, 0.99f, 0.92f), TextAnchor.MiddleLeft);
-                return;
-            }
-
-            PlayerData.PlayerUsageData playerUsageData = playerData[player.userID];
-
-            int max = Mathf.Min(list.Count, (page + 1) * 8);
-            int count = 0;
-            for (int i = page * 8; i < max; i++)                
-            {
-                CreateKitEntry(player, playerUsageData, container, list[i], count, page, npcId);                
-                count += 1;
-            }
-
-            if (page > 0)
-                UI.Button(container, UI_MENU, Configuration.Menu.Color1.Get, "◀\n\n◀\n\n◀", 16, new UI4(0.005f, 0.35f, 0.03f, 0.58f), $"kits.gridview page {page - 1} {npcId}");
-            if (max < list.Count)
-                UI.Button(container, UI_MENU, Configuration.Menu.Color1.Get, "▶\n\n▶\n\n▶", 16, new UI4(0.97f, 0.35f, 0.995f, 0.58f), $"kits.gridview page {page + 1} {npcId}");
-
-            Facepunch.Pool.FreeList(ref list);
-        }
-
-        private void CreateKitEntry(BasePlayer player, PlayerData.PlayerUsageData playerUsageData, CuiElementContainer container, KitData.Kit kit, int index, int page, ulong npcId)
-        {            
-            UI4 position = KitAlign.Get(index);
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color4.Get, new UI4(position.xMin, position.yMax, position.xMax, position.yMax + 0.04f));
-            UI.Label(container, UI_MENU, kit.Name, 14, new UI4(position.xMin, position.yMax, position.xMax, position.yMax + 0.04f));
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Panel.Get, position);
-
-            string imageId = string.IsNullOrEmpty(kit.KitImage) ? GetImage(DEFAULT_ICON) : GetImage(kit.Name);
-            UI.Image(container, UI_MENU, imageId, new UI4(position.xMin + 0.005f, position.yMax - 0.3f, position.xMax - 0.005f, position.yMax - 0.0075f));
-            
-            UI.Button(container, UI_MENU, "0 0 0 0", string.Empty, 0, new UI4(position.xMin + 0.005f, position.yMax - 0.3f, position.xMax - 0.005f, position.yMax - 0.0075f), $"kits.gridview inspect {CommandSafe(kit.Name)} {page} {npcId}");
-
-            string buttonText;
-            string buttonCommand = string.Empty;
-            string buttonColor;
-
-            double cooldown = playerUsageData.GetCooldownRemaining(kit.Name);
-            int currentUses = playerUsageData.GetKitUses(kit.Name);
-
-            if (Configuration.AdminIgnoreRestrictions && IsAdmin(player))
-            {
-                buttonText = Message("UI.Redeem", player.userID);
-                buttonColor = Configuration.Menu.Color2.Get;
-                buttonCommand = $"kits.gridview redeem {CommandSafe(kit.Name)} {page} {npcId}";
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(kit.RequiredPermission) && !permission.UserHasPermission(player.UserIDString, kit.RequiredPermission))
-                {
-                    buttonText = Message("UI.NeedsPermission", player.userID);
-                    buttonColor = Configuration.Menu.Disabled.Get;
-                }
-                else if (kit.Cooldown > 0 && cooldown > 0)
-                {
-                    UI.Label(container, UI_MENU, string.Format(Message("UI.Cooldown", player.userID), FormatTime(cooldown)), 12,
-                        new UI4(position.xMin + 0.005f, position.yMin + 0.0475f, position.xMax - 0.005f, position.yMax - 0.3f), TextAnchor.MiddleLeft);
-
-                    buttonText = Message("UI.OnCooldown", player.userID);
-                    buttonColor = Configuration.Menu.Disabled.Get;
-                }
-                else if (kit.MaximumUses > 0 && currentUses >= kit.MaximumUses)
-                {
-                    buttonText = Message("UI.MaximumUses", player.userID);
-                    buttonColor = Configuration.Menu.Disabled.Get;
-                }
-                else if (kit.Cost > 0)
-                {
-                    UI.Label(container, UI_MENU, string.Format(Message("UI.Cost", player.userID), kit.Cost, Message($"Cost.{_costType}", player.userID)), 12,
-                        new UI4(position.xMin + 0.005f, position.yMin + 0.0475f, position.xMax - 0.005f, position.yMax - 0.3f), TextAnchor.MiddleLeft);
-
-                    buttonText = Message("UI.Purchase", player.userID);
-                    buttonColor = Configuration.Menu.Color2.Get;
-                    buttonCommand = $"kits.gridview redeem {CommandSafe(kit.Name)} {page} {npcId}";
-                }
-                else
-                {
-                    buttonText = Message("UI.Redeem", player.userID);
-                    buttonColor = Configuration.Menu.Color2.Get;
-                    buttonCommand = $"kits.gridview redeem {CommandSafe(kit.Name)} {page} {npcId}";
-                }
-            }
-
-            UI.Button(container, UI_MENU, buttonColor, buttonText, 14, 
-                new UI4(position.xMin + 0.038f, position.yMin + 0.0075f, position.xMax - 0.005f, position.yMin + 0.0475f), buttonCommand);
-
-            UI.ImageButton(container, UI_MENU, ICON_BACKGROUND_COLOR, GetImage(MAGNIFY_ICON), 
-                new UI4(position.xMin + 0.005f, position.yMin + 0.0075f, position.xMin + 0.033f, position.yMin + 0.0475f), $"kits.gridview inspect {CommandSafe(kit.Name)} {page} {npcId}");
-        }
-        #endregion
-
-        #region Kit View       
-        private void OpenKitView(BasePlayer player, string name, int page, ulong npcId)
-        {
-            KitData.Kit kit;
-            if (!kitData.Find(name, out kit))
-            {
-                OpenKitGrid(player);
-                return;
-            }
-
-            CuiElementContainer container = UI.BlurContainer(UI_MENU, new UI4(0.2f, 0.15f, 0.8f, 0.85f));
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Panel.Get, new UI4(0.005f, 0.93f, 0.995f, 0.99f));
-
-            UI.Label(container, UI_MENU, $"{Message("UI.Title", player.userID)} - {name}", 20, new UI4(0.015f, 0.93f, 0.99f, 0.99f), TextAnchor.MiddleLeft);
-
-            UI.Button(container, UI_MENU, Configuration.Menu.Color3.Get, "<b>×</b>", 20, new UI4(0.9575f, 0.9375f, 0.99f, 0.9825f), $"kits.gridview page 0 {npcId}");
-
-            bool isAdmin;
-            if (isAdmin = IsAdmin(player))
-            {
-                UI.Button(container, UI_MENU, Configuration.Menu.Color2.Get, Message("UI.EditKit", player.userID), 14, new UI4(0.7525f, 0.9375f, 0.845f, 0.9825f), $"kits.edit {CommandSafe(name)}");
-                UI.Button(container, UI_MENU, Configuration.Menu.Color2.Get, Message("UI.CreateNew", player.userID), 14, new UI4(0.85f, 0.9375f, 0.9525f, 0.9825f), "kits.create");
-            }
-
-            PlayerData.PlayerUsageData playerUsageData = playerData[player.userID];
-
-            int i = -1;
-
-            if (!string.IsNullOrEmpty(kit.KitImage))
-            {
-                UI.Image(container, UI_MENU, GetImage(kit.Name), new UI4(0.15f, 0.62f, 0.35f, 0.92f));
-                i = 6;
-            }
-
-            AddTitleSperator(container, i += 1, Message("UI.Details", player.userID));
-            AddLabelField(container, i += 1, Message("UI.Name", player.userID), kit.Name);
-
-            if (!string.IsNullOrEmpty(kit.Description)) 
-            {
-                int descriptionSlots = Mathf.Min(Mathf.CeilToInt(((float)kit.Description.Length / 38f) / 1.25f), 4);
-                AddLabelField(container, i += 1, Message("UI.Description", player.userID), kit.Description, descriptionSlots - 1);
-                i += descriptionSlots - 1;
-            }
-
-            string buttonText = string.Empty;
-            string buttonCommand = string.Empty;
-            string buttonColor = string.Empty;
-            
-            if (kit.Cooldown != 0 || kit.MaximumUses != 0 || kit.Cost != 0)
-            {
-                AddTitleSperator(container, i += 1, Message("UI.Usage", player.userID));
-
-                if (kit.MaximumUses != 0)
-                {
-                    int playerUses = playerUsageData.GetKitUses(kit.Name);
-
-                    AddLabelField(container, i += 1, Message("UI.MaxUses", player.userID), kit.MaximumUses.ToString());
-                    AddLabelField(container, i += 1, Message("UI.YourUses", player.userID), playerUses.ToString());
-
-                    if (playerUses >= kit.MaximumUses)
-                    {
-                        buttonText = Message("UI.MaximumUses", player.userID);
-                        buttonColor = Configuration.Menu.Disabled.Get;
-                    }
-                }
-                if (kit.Cooldown != 0)
-                {
-                    double cooldownRemaining = playerUsageData.GetCooldownRemaining(kit.Name);
-
-                    AddLabelField(container, i += 1, Message("UI.CooldownTime", player.userID), FormatTime(kit.Cooldown));
-                    AddLabelField(container, i += 1, Message("UI.CooldownRemaining", player.userID), cooldownRemaining == 0 ? Message("UI.None", player.userID) : 
-                                                                                                     FormatTime(cooldownRemaining));
-
-                    if (string.IsNullOrEmpty(buttonText) && cooldownRemaining > 0)
-                    {
-                        buttonText = Message("UI.OnCooldown", player.userID);
-                        buttonColor = Configuration.Menu.Disabled.Get;
-                    }
-                }
-                if (kit.Cost != 0)
-                {
-                    AddLabelField(container, i += 1, Message("UI.PurchaseCost", player.userID), $"{kit.Cost} {(Message($"Cost.{_costType}", player.userID))}");
-
-                    if (string.IsNullOrEmpty(buttonText))
-                    {
-                        buttonText = Message("UI.Purchase", player.userID);
-                        buttonColor = Configuration.Menu.Color2.Get;
-                        buttonCommand = $"kits.gridview redeem {CommandSafe(kit.Name)} {page} {npcId}";
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(kit.RequiredPermission) && !permission.UserHasPermission(player.UserIDString, kit.RequiredPermission))
-            {
-                buttonText = Message("UI.NeedsPermission", player.userID);
-                buttonColor = Configuration.Menu.Disabled.Get;
-            }
-            
-            if (i <= 16 && !string.IsNullOrEmpty(kit.CopyPasteFile))
-            {
-                AddTitleSperator(container, i += 1, Message("UI.CopyPaste", player.userID));
-                AddLabelField(container, i += 1, Message("UI.FileName", player.userID), kit.CopyPasteFile);
-            }
-
-            if ((Configuration.AdminIgnoreRestrictions && isAdmin) || string.IsNullOrEmpty(buttonText))
-            {
-                buttonText = Message("UI.Redeem", player.userID);
-                buttonCommand = $"kits.gridview redeem {CommandSafe(kit.Name)} {page} {npcId}";
-                buttonColor = Configuration.Menu.Color2.Get;
-            }
-
-            CreateKitLayout(player, container, kit);
-
-            UI.Button(container, UI_MENU, buttonColor, buttonText, 14, new UI4(0.005f, 0.005f, 0.495f, 0.045f), buttonCommand);
-
-            CuiHelper.DestroyUi(player, UI_MENU);
-            CuiHelper.AddUi(player, container);
-        }
-        #endregion
-
-        #region Kit Layout
-        private const string ICON_BACKGROUND_COLOR = "1 1 1 0.15";
-
-        private void CreateKitLayout(BasePlayer player, CuiElementContainer container, KitData.Kit kit)
-        {
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color1.Get, new UI4(0.505f, 0.88f, 0.995f, 0.92f));
-            UI.Label(container, UI_MENU, Message("UI.KitItems", player.userID), 14, new UI4(0.51f, 0.88f, 0.995f, 0.92f), TextAnchor.MiddleLeft);
-
-            // Main Items
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color4.Get, new UI4(0.505f, 0.835f, 0.995f, 0.875f));
-            UI.Label(container, UI_MENU, Message("UI.MainItems", player.userID), 14, new UI4(0.51f, 0.835f, 0.995f, 0.875f), TextAnchor.MiddleLeft);
-            CreateInventoryItems(container, MainAlign, kit.MainItems, 24);
-            
-            // Wear Items
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color4.Get, new UI4(0.505f, 0.365f, 0.995f, 0.405f));
-            UI.Label(container, UI_MENU, Message("UI.WearItems", player.userID), 14, new UI4(0.51f, 0.365f, 0.995f, 0.405f), TextAnchor.MiddleLeft);
-            CreateInventoryItems(container, WearAlign, kit.WearItems, 7);
-            
-            // Belt Items
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color4.Get, new UI4(0.505f, 0.21f, 0.995f, 0.25f));
-            UI.Label(container, UI_MENU, Message("UI.BeltItems", player.userID), 14, new UI4(0.51f, 0.21f, 0.995f, 0.25f), TextAnchor.MiddleLeft);
-            CreateInventoryItems(container, BeltAlign, kit.BeltItems, 6);            
-        }
-
-        #region Item Layout Helpers
-        private void CreateInventoryItems(CuiElementContainer container, GridAlignment alignment, ItemData[] items, int capacity)
-        {
-            for (int i = 0; i < capacity; i++)
-                UI.Panel(container, UI_MENU, ICON_BACKGROUND_COLOR, alignment.Get(i));
-
-            for (int i = 0; i < items.Length; i++)
-            {
-                ItemData itemData = items[i];
-                if (itemData.Position > capacity - 1)
-                    continue;
-
-                UI4 position = alignment.Get(itemData.Position);
-
-                UI.Image(container, UI_MENU, GetImage(itemData.Shortname, itemData.Skin), position);
-
-                if (itemData.IsBlueprint && !string.IsNullOrEmpty(itemData.BlueprintShortname))
-                    UI.Image(container, UI_MENU, GetImage(itemData.BlueprintShortname, 0UL), position);
-
-                if (itemData.Amount > 1)
-                    UI.Label(container, UI_MENU, $"x{itemData.Amount}", 10, position, TextAnchor.LowerRight);
-            }
-        }
-        #endregion
-        #endregion
-
-        #region Kit Editor
-        private void OpenKitsEditor(BasePlayer player, bool overwrite = false)
-        {
-            KitData.Kit kit;
-            if (!_kitCreators.TryGetValue(player.userID, out kit))
-                return;
-
-            CuiElementContainer container = UI.BlurContainer(UI_MENU, new UI4(0.2f, 0.15f, 0.8f, 0.85f));
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Panel.Get, new UI4(0.005f, 0.93f, 0.995f, 0.99f));
-
-            UI.Label(container, UI_MENU, Message("UI.Title.Editor", player.userID), 20, new UI4(0.015f, 0.93f, 0.99f, 0.99f), TextAnchor.MiddleLeft);
-
-            UI.Button(container, UI_MENU, Configuration.Menu.Color3.Get, "<b>×</b>", 20, new UI4(0.9575f, 0.9375f, 0.99f, 0.9825f), "kits.close");
-
-            // Kit Options
-            AddTitleSperator(container, 0, Message("UI.Details", player.userID));
-            AddInputField(container, 1, Message("UI.Name", player.userID), "name", kit.Name);
-            AddInputField(container, 2, Message("UI.Description", player.userID), "description", kit.Description, 3);
-            AddInputField(container, 6, Message("UI.IconURL", player.userID), "image", kit.KitImage);
-
-            AddTitleSperator(container, 7, Message("UI.UsageAuthority", player.userID));
-            AddInputField(container, 8, Message("UI.Permission", player.userID), "permission", kit.RequiredPermission);
-            AddInputField(container, 9, Message("UI.AuthLevel", player.userID), "authLevel", kit.RequiredAuth);
-            AddToggleField(container, 10, Message("UI.IsHidden", player.userID), "isHidden", kit.IsHidden);
-
-            AddTitleSperator(container, 11, Message("UI.Usage", player.userID));
-            AddInputField(container, 12, Message("UI.MaxUses", player.userID), "maximumUses", kit.MaximumUses);
-            AddInputField(container, 13, Message("UI.CooldownSeconds", player.userID), "cooldown", kit.Cooldown);
-            AddInputField(container, 14, Message("UI.PurchaseCost", player.userID), "cost", kit.Cost);
-
-            AddTitleSperator(container, 15, Message("UI.CopyPaste", player.userID));
-            AddInputField(container, 16, Message("UI.FileName", player.userID), "copyPaste", kit.CopyPasteFile);
-
-            // Kit Items
-            CreateKitLayout(player, container, kit);
-
-            // Kit Saving            
-            UI.Button(container, UI_MENU, Configuration.Menu.Color2.Get, Message("UI.SaveKit", player.userID), 14, new UI4(0.005f, 0.005f, 0.2475f, 0.045f), $"kits.savekit {overwrite}");
-            UI.Toggle(container, UI_MENU, ICON_BACKGROUND_COLOR, 14, new UI4(0.2525f, 0.005f, 0.2825f, 0.045f), $"kits.toggleoverwrite {overwrite}", overwrite);
-            UI.Label(container, UI_MENU, Message("UI.Overwrite", player.userID), 14, new UI4(0.2875f, 0.005f, 0.495f, 0.045f), TextAnchor.MiddleLeft);
-
-            // Item Management            
-            UI.Button(container, UI_MENU, Configuration.Menu.Color3.Get, Message("UI.ClearItems", player.userID), 14, new UI4(0.505f, 0.005f, 0.7475f, 0.045f), $"kits.clearitems {overwrite}");
-            UI.Button(container, UI_MENU, Configuration.Menu.Color2.Get, Message("UI.CopyInv", player.userID), 14, new UI4(0.7525f, 0.005f, 0.995f, 0.045f), $"kits.copyinv {overwrite}");
-
-            CuiHelper.DestroyUi(player, UI_MENU);
-            CuiHelper.AddUi(player, container);
-        }
-
-        #region Editor Helpers
-        private const float EDITOR_ELEMENT_HEIGHT = 0.04f;
-
-        private void AddInputField(CuiElementContainer container, int index, string title, string fieldName, object currentValue, int additionalHeight = 0)
-        {
-            float yMin = GetVerticalPos(index, 0.88f);
-            float yMax = yMin + EDITOR_ELEMENT_HEIGHT;
-
-            if (additionalHeight != 0)
-                yMin = GetVerticalPos(index + additionalHeight, 0.88f);
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color4.Get, new UI4(0.005f, yMin, 0.175f, yMax));
-            UI.Label(container, UI_MENU, title, 12, new UI4(0.01f, yMin, 0.175f, yMax - 0.0075f), TextAnchor.UpperLeft);
-
-            UI.Panel(container, UI_MENU, ICON_BACKGROUND_COLOR, new UI4(0.175f, yMin, 0.495f, yMax));
-
-            string label = GetInputLabel(currentValue);
-            if (!string.IsNullOrEmpty(label))
-            {
-                UI.Label(container, UI_MENU, label, 12, new UI4(0.18f, yMin, 0.47f, yMax - 0.0075f), TextAnchor.UpperLeft);
-                UI.Button(container, UI_MENU, Configuration.Menu.Color3.Get, "X", 14, new UI4(0.47f, yMax - EDITOR_ELEMENT_HEIGHT, 0.495f, yMax), $"kits.clear {fieldName}");
-            }
-            else UI.Input(container, UI_MENU, string.Empty, 12, $"kits.creator {fieldName}", new UI4(0.18f, yMin, 0.495f, yMax - 0.0075f), TextAnchor.UpperLeft);
-        }
-
-        private void AddTitleSperator(CuiElementContainer container, int index, string title)
-        {
-            float yMin = GetVerticalPos(index, 0.88f);
-            float yMax = yMin + EDITOR_ELEMENT_HEIGHT;
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color1.Get, new UI4(0.005f, yMin, 0.495f, yMax));
-            UI.Label(container, UI_MENU, title, 14, new UI4(0.01f, yMin, 0.495f, yMax), TextAnchor.MiddleLeft);
-        }
-
-        private void AddLabelField(CuiElementContainer container, int index, string title, string value, int additionalHeight = 0)
-        {
-            float yMin = GetVerticalPos(index, 0.88f);
-            float yMax = yMin + EDITOR_ELEMENT_HEIGHT;
-
-            if (additionalHeight != 0)
-                yMin = GetVerticalPos(index + additionalHeight, 0.88f);
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color4.Get, new UI4(0.005f, yMin, 0.175f, yMax));
-            UI.Label(container, UI_MENU, title, 12, new UI4(0.01f, yMin, 0.175f, yMax - 0.0075f), TextAnchor.UpperLeft);
-
-            UI.Panel(container, UI_MENU, ICON_BACKGROUND_COLOR, new UI4(0.175f, yMin, 0.495f, yMax));
-            UI.Label(container, UI_MENU, value, 12, new UI4(0.18f, yMin, 0.495f, yMax - 0.0075f), TextAnchor.UpperLeft);
-        }
-
-        private void AddToggleField(CuiElementContainer container, int index, string title, string fieldName, bool currentValue)
-        {
-            float yMin = GetVerticalPos(index, 0.88f);
-            float yMax = yMin + EDITOR_ELEMENT_HEIGHT;
-
-            UI.Panel(container, UI_MENU, Configuration.Menu.Color4.Get, new UI4(0.005f, yMin, 0.175f, yMax));
-            UI.Label(container, UI_MENU, title, 14, new UI4(0.01f, yMin, 0.175f, yMax), TextAnchor.MiddleLeft);
-            UI.Toggle(container, UI_MENU, ICON_BACKGROUND_COLOR, 14, new UI4(0.175f, yMin, 0.205f, yMax), $"kits.creator {fieldName} {!currentValue}", currentValue);
-        }
-
-        private string GetInputLabel(object obj)
-        {
-            if (obj is string)
-                return string.IsNullOrEmpty(obj as string) ? null : obj.ToString();
-            else if (obj is int)
-                return (int)obj <= 0 ? null : obj.ToString();
-            else if (obj is float)
-                return (float)obj <= 0 ? null : obj.ToString();
-            return null;
-        }
-
-        private float GetVerticalPos(int i, float start = 0.9f) => start - (i * (EDITOR_ELEMENT_HEIGHT + 0.005f));
-        #endregion
-        #endregion
-
-        #region Popup Messages
-        private void CreateMenuPopup(BasePlayer player, string text, float duration = 5f)
-        {
-            CuiElementContainer container = UI.Container(UI_POPUP, Configuration.Menu.Color4.Get, new UI4(0.2f, 0.11f, 0.8f, 0.15f));
-            UI.Label(container, UI_POPUP, text, 14, UI4.Full);
-
-            CuiHelper.DestroyUi(player, UI_POPUP);
-            CuiHelper.AddUi(player, container);
-
-            player.Invoke(() => CuiHelper.DestroyUi(player, UI_POPUP), duration);
-        }
-        #endregion
-
-        #region UI Grid Helper
-        private readonly GridAlignment KitAlign = new GridAlignment(4, 0.04f, 0.2f, 0.04f, 0.87f, 0.39f, 0.06f);
-
-        private readonly GridAlignment MainAlign = new GridAlignment(6, 0.545f, 0.065f, 0.0035f, 0.8275f, 0.1f, 0.005f);
-        private readonly GridAlignment WearAlign = new GridAlignment(7, 0.51f, 0.065f, 0.0035f, 0.3575f, 0.1f, 0.005f);
-        private readonly GridAlignment BeltAlign = new GridAlignment(6, 0.545f, 0.065f, 0.0035f, 0.2025f, 0.1f, 0.005f);
-
-        private class GridAlignment
-        {
-            internal int Columns { get; set; }
-            internal float XOffset { get; set; }
-            internal float Width { get; set; }
-            internal float XSpacing { get; set; }
-            internal float YOffset { get; set; }
-            internal float Height { get; set; }
-            internal float YSpacing { get; set; }
-
-            internal GridAlignment(int columns, float xOffset, float width, float xSpacing, float yOffset, float height, float ySpacing)
-            {
-                Columns = columns;
-                XOffset = xOffset;
-                Width = width;
-                XSpacing = xSpacing;
-                YOffset = yOffset;
-                Height = height;
-                YSpacing = ySpacing;
-            }
-
-            internal UI4 Get(int index)
-            {
-                int rowNumber = index == 0 ? 0 : Mathf.FloorToInt(index / Columns);
-                int columnNumber = index - (rowNumber * Columns);
-
-                float offsetX = XOffset + (Width * columnNumber) + (XSpacing * columnNumber);
-
-                float offsetY = (YOffset - (rowNumber * Height) - (YSpacing * rowNumber));
-
-                return new UI4(offsetX, offsetY - Height, offsetX + Width, offsetY);
-            }
-        }
-        #endregion
-        #endregion
-
-        #region UI Commands
-        #region View Commands
-        [ConsoleCommand("kits.close")]
-        private void ccmdKitsClose(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Connection.player as BasePlayer;
-            if (player == null)
-                return;
-
-            _kitCreators.Remove(player.userID);
-
-            CuiHelper.DestroyUi(player, UI_MENU);
-            CuiHelper.DestroyUi(player, UI_POPUP);
-        }
-
-        [ConsoleCommand("kits.gridview")]
-        private void ccmdKitsGridView(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Connection.player as BasePlayer;
-            if (player == null)
-                return;
-
-            switch (arg.GetString(0).ToLower())
-            {
-                case "page":
-                    OpenKitGrid(player, arg.GetInt(1), arg.GetULong(2));
-                    return;
-                case "inspect":                    
-                    OpenKitView(player, CommandSafe(arg.GetString(1), true), arg.GetInt(2), arg.GetULong(3));                    
-                    return;
-                case "redeem":
-                    {
-                        string kit = CommandSafe(arg.GetString(1), true);
-                        if (TryClaimKit(player, kit, true))
-                        {
-                            CuiHelper.DestroyUi(player, UI_MENU);
-                            CuiHelper.DestroyUi(player, UI_POPUP);
-                            player.ChatMessage(string.Format(Message("Notification.KitReceived", player.userID), kit));
-                        }
-                        else OpenKitGrid(player, arg.GetInt(2), arg.GetULong(3));
-                    }
-                    return;
-                default:
-                    break;
-            }            
-        }
-        #endregion
-
-        #region Editor Commands
-        [ConsoleCommand("kits.create")]
-        private void ccmdCreateKit(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return;
-
-            if (IsAdmin(player))
-            {
-                _kitCreators[player.userID] = new KitData.Kit();
-                OpenKitsEditor(player);
-            }
-        }
-
-        [ConsoleCommand("kits.edit")]
-        private void ccmdEditKit(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return;
-
-            if (IsAdmin(player))
-            {
-                string name = CommandSafe(arg.GetString(0), true);
-
-                KitData.Kit editKit;
-                if (!kitData.Find(name, out editKit))
-                {
-                    player.ChatMessage(string.Format(Message("Chat.Error.DoesntExist", player.userID), name));
-                    return;
-                }
-
-                _kitCreators[player.userID] = KitData.Kit.CloneOf(editKit);
-                OpenKitsEditor(player);
-            }
-        }
-
-        [ConsoleCommand("kits.savekit")]
-        private void ccmdSaveKit(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return;
-
-            KitData.Kit kit;
-            if (!_kitCreators.TryGetValue(player.userID, out kit))
-                return;
-
-            if (string.IsNullOrEmpty(kit.Name))
-            {
-                CreateMenuPopup(player, Message("SaveKit.Error.NoName", player.userID));
-                return;
-            }
-
-            if (kit.ItemCount == 0 && string.IsNullOrEmpty(kit.CopyPasteFile))
-            {
-                CreateMenuPopup(player, Message("SaveKit.Error.NoContents", player.userID));
-                return;
-            }
-
-            if (kitData.Exists(kit.Name) && !arg.GetBool(0))
-            {
-                CreateMenuPopup(player, Message("SaveKit.Error.Exists", player.userID));
-                return;
-            }
-
-            kitData[kit.Name] = kit;
-            SaveKitData();
-
-            _kitCreators.Remove(player.userID);
-
-            if (!string.IsNullOrEmpty(kit.RequiredPermission) && !permission.PermissionExists(kit.RequiredPermission))
-                permission.RegisterPermission(kit.RequiredPermission, this);
-
-            if (!string.IsNullOrEmpty(kit.KitImage))
-                RegisterImage(kit.Name, kit.KitImage);
-
-            OpenKitView(player, kit.Name, 0, 0UL);
-            CreateMenuPopup(player, string.Format(Message("SaveKit.Success", player.userID), kit.Name));
-        }
-
-        [ConsoleCommand("kits.toggleoverwrite")]
-        private void ccmdToggleOverwrite(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return;
-
-            KitData.Kit kit;
-            if (!_kitCreators.TryGetValue(player.userID, out kit))
-                return;
-
-            OpenKitsEditor(player, !arg.GetBool(0));
-        }
-
-        [ConsoleCommand("kits.clearitems")]
-        private void ccmdClearItems(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return;
-
-            KitData.Kit kit;
-            if (!_kitCreators.TryGetValue(player.userID, out kit))
-                return;
-
-            kit.ClearItems();
-
-            OpenKitsEditor(player);
-        }
-
-        [ConsoleCommand("kits.copyinv")]
-        private void ccmdCopyInv(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return;
-
-            KitData.Kit kit;
-            if (!_kitCreators.TryGetValue(player.userID, out kit))
-                return;
-
-            kit.CopyItemsFrom(player);
-
-            OpenKitsEditor(player);
-        }
-
-        [ConsoleCommand("kits.clear")]
-        private void ccmdClearField(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return;
-
-            KitData.Kit kit;
-            if (!_kitCreators.TryGetValue(player.userID, out kit))
-                return;
-
-            string fieldName = arg.GetString(0);
-
-            switch (fieldName)
-            {
-                case "name":
-                    kit.Name = string.Empty;
-                    break;
-                case "description":
-                    kit.Description = string.Empty;
-                    break;
-                case "copyPaste":
-                    kit.CopyPasteFile = string.Empty;
-                    break;
-                case "permission":
-                    kit.RequiredPermission = string.Empty;
-                    break;
-                case "image":
-                    kit.KitImage = string.Empty;
-                    break;
-                case "cost":
-                    kit.Cost = 0;
-                    break;
-                case "cooldown":
-                    kit.Cooldown = 0;
-                    break;                
-                case "maximumUses":
-                    kit.MaximumUses = 0;
-                    break;
-                case "authLevel":
-                    kit.RequiredAuth = 0;
-                    break;
-                
-                default:                    
-                    break;
-            }
-
-            OpenKitsEditor(player);
-        }
-
-        [ConsoleCommand("kits.creator")]
-        private void ccmdSetField(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Player();
-            if (player == null)
-                return;
-
-            KitData.Kit kit;
-            if (!_kitCreators.TryGetValue(player.userID, out kit))
-                return;
-
-            if (arg.HasArgs(2))
-            {
-                SetParameter(player, kit, arg.GetString(0), string.Join(" ", arg.Args.Skip(1)));
-                OpenKitsEditor(player);
-            }
-        }
-
-        private void SetParameter(BasePlayer player, KitData.Kit kit, string fieldName, object value)
-        {
-            if (value == null)
-                return;
-
-            switch (fieldName)
-            {
-                case "name":
-                    kit.Name = (string)value;
-                    break;
-                case "description":
-                    kit.Description = (string)value;
-                    break;
-                case "copyPaste":
-                    kit.CopyPasteFile = (string)value;
-                    break;
-                case "permission":
-                    if (!((string)value).StartsWith("kits."))
-                    {
-                        CreateMenuPopup(player, Message("EditKit.PermissionPrefix", player.userID));
-                        return;
-                    }
-                    kit.RequiredPermission = (string)value;
-                    break;
-                case "image":
-                    kit.KitImage = (string)value;
-                    break;
-                case "cost":
-                    {
-                        int intValue;
-                        if (!TryConvertValue<int>(value, out intValue))
-                            CreateMenuPopup(player, Message("EditKit.Number", player.userID));
-                        else kit.Cost = intValue;
-                    }
-                    break;
-                case "cooldown":
-                    {
-                        int intValue;
-                        if (!TryConvertValue<int>(value, out intValue))
-                            CreateMenuPopup(player, Message("EditKit.Number", player.userID));
-                        else kit.Cooldown = intValue;
-                    }
-                    break;
-                case "maximumUses":
-                    {
-                        int intValue;
-                        if (!TryConvertValue<int>(value, out intValue))
-                            CreateMenuPopup(player, Message("EditKit.Number", player.userID));
-                        else kit.MaximumUses = intValue;
-                    }
-                    break;
-                case "authLevel":
-                    {
-                        int intValue;
-                        if (!TryConvertValue<int>(value, out intValue))
-                            CreateMenuPopup(player, Message("EditKit.Number", player.userID));
-                        else kit.RequiredAuth = Mathf.Clamp(intValue, 0, 2);                        
-                    }
-                    break;
-                case "isHidden":
-                    {
-                        bool boolValue;
-                        if (!TryConvertValue<bool>(value, out boolValue))
-                            CreateMenuPopup(player, Message("EditKit.Bool", player.userID));
-                        else kit.IsHidden = boolValue;
-                    }
-                    break;                
-                default:                    
-                    return;
-            }
-        }
-
-        private bool TryConvertValue<T>(object value, out T result)
-        {
-            try
-            {
-                result = (T)Convert.ChangeType(value, typeof(T));
-                return true;
-            }
-            catch
-            {
-                result = default(T);
-                return false;
-            }
-        }
-        #endregion
-        #endregion
-
-        #region Command Helpers
-        private static string CommandSafe(string text, bool unpack = false) => unpack ? text.Replace("▊▊", " ") : text.Replace(" ", "▊▊");
-        #endregion
-
-        #region UI Helper
-        public static class UI
-        {
-            public static CuiElementContainer Container(string panelName, string color, UI4 dimensions, string parent = "Overlay")
-            {
-                CuiElementContainer container = new CuiElementContainer()
-                {
-                    {
-                        new CuiPanel
-                        {
-                            Image = { Color = color, Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat" },
-                            RectTransform = { AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() },
-                            CursorEnabled = true
-                        },
-                        new CuiElement().Parent = parent,
-                        panelName
-                    }
-                };
-                return container;
-            }
-
-            public static CuiElementContainer BlurContainer(string panelName, UI4 dimensions, string color = "0 0 0 0.9")
-            {
-                CuiElementContainer container = new CuiElementContainer()
-                {
-                    {
-                        new CuiPanel
-                        {
-                            Image = {Color = color, Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat"},
-                            RectTransform = {AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax()},
-                            CursorEnabled = true
-                        },
-                        new CuiElement().Parent = "Hud",
-                        panelName.ToString()
-                    }
-                };
-                return container;
-            }
-
-            public static CuiElementContainer Popup(string panelName, string text, int size, UI4 dimensions, TextAnchor align = TextAnchor.MiddleCenter, string parent = "Overlay")
-            {
-                CuiElementContainer container = UI.Container(panelName, "0 0 0 0", dimensions);
-
-                UI.Label(container, panelName, text, size, UI4.Full, align);
-
-                return container;
-            }
-
-            public static void Panel(CuiElementContainer container, string panel, string color, UI4 dimensions)
-            {
-                container.Add(new CuiPanel
-                {
-                    Image = { Color = color },
-                    RectTransform = { AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() }
-                },
-                panel);
-            }
-
-            public static void Label(CuiElementContainer container, string panel, string text, int size, UI4 dimensions, TextAnchor align = TextAnchor.MiddleCenter)
-            {
-                container.Add(new CuiLabel
-                {
-                    Text = { FontSize = size, Align = align, Text = text },
-                    RectTransform = { AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() }
-                },
-                panel);
-            }
-
-            public static void Button(CuiElementContainer container, string panel, string color, string text, int size, UI4 dimensions, string command, TextAnchor align = TextAnchor.MiddleCenter)
-            {
-                container.Add(new CuiButton
-                {
-                    Button = { Color = color, Command = command, FadeIn = 0f },
-                    RectTransform = { AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() },
-                    Text = { Text = text, FontSize = size, Align = align }
-                },
-                panel);
-            }
-
-            public static void ImageButton(CuiElementContainer container, string panel, string color, string png, UI4 dimensions, string command)
-            {
-                UI.Panel(container, panel, color, dimensions);
-                UI.Image(container, panel, png, dimensions);
-                UI.Button(container, panel, "0 0 0 0", string.Empty, 0, dimensions, command);
-            }
-
-            public static void Input(CuiElementContainer container, string panel, string text, int size, string command, UI4 dimensions, TextAnchor anchor = TextAnchor.MiddleLeft)
-            {
-                container.Add(new CuiElement
-                {
-                    Name = CuiHelper.GetGuid(),
-                    Parent = panel,
-                    Components =
-                    {
-                        new CuiInputFieldComponent
-                        {
-                            Align = anchor,                            
-                            CharsLimit = 300,
-                            Command = command + text,
-                            FontSize = size,
-                            IsPassword = false,
-                            Text = text
-                        },
-                        new CuiRectTransformComponent {AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() }
-                    }
-                });
-            }
-
-            public static void Image(CuiElementContainer container, string panel, string png, UI4 dimensions)
-            {
-                container.Add(new CuiElement
-                {
-                    Name = CuiHelper.GetGuid(),
-                    Parent = panel,
-                    Components =
-                    {
-                        new CuiRawImageComponent {Png = png },
-                        new CuiRectTransformComponent { AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() }
-                    }
-                });
-            }
-
-            public static void Toggle(CuiElementContainer container, string panel, string boxColor, int fontSize, UI4 dimensions, string command, bool isOn)
-            {
-                UI.Panel(container, panel, boxColor, dimensions);
-
-                if (isOn)
-                    UI.Label(container, panel, "✔", fontSize, dimensions);
-
-                UI.Button(container, panel, "0 0 0 0", string.Empty, 0, dimensions, command);
-            }
-
-            public static string Color(string hexColor, float alpha)
-            {
-                if (hexColor.StartsWith("#"))
-                    hexColor = hexColor.TrimStart('#');
-
-                int red = int.Parse(hexColor.Substring(0, 2), NumberStyles.AllowHexSpecifier);
-                int green = int.Parse(hexColor.Substring(2, 2), NumberStyles.AllowHexSpecifier);
-                int blue = int.Parse(hexColor.Substring(4, 2), NumberStyles.AllowHexSpecifier);
-
-                return $"{(double)red / 255} {(double)green / 255} {(double)blue / 255} {alpha}";
-            }
-        }
-
-        public class UI4
-        {
-            public float xMin, yMin, xMax, yMax;
-
-            public UI4(float xMin, float yMin, float xMax, float yMax)
-            {
-                this.xMin = xMin;
-                this.yMin = yMin;
-                this.xMax = xMax;
-                this.yMax = yMax;
-            }
-
-            public string GetMin() => $"{xMin} {yMin}";
-
-            public string GetMax() => $"{xMax} {yMax}";
-
-            private static UI4 _full;
-
-            public static UI4 Full
-            {
-                get
-                {
-                    if (_full == null)
-                        _full = new UI4(0, 0, 1, 1);
-                    return _full;
-                }
-            }
-        }
-        #endregion
-                
-        #region Chat Commands       
-        private void cmdKit(BasePlayer player, string command, string[] args)
-        {
-            if (args.Length == 0)
-            {
-                if (Configuration.UseUI)
-                    OpenKitGrid(player);
-                else ReplyHelp(player);
-
-                return;
-            }
-
-            bool isAdmin = IsAdmin(player);
-
-            switch (args[0].ToLower())
-            {
-                case "help":
-                    ReplyHelp(player);
-                    return;
-
-                case "list":
-                    if (isAdmin)                    
-                        player.ChatMessage(string.Format(Message("Chat.KitList", player.userID), kitData.Keys.ToSentence()));
-                    else
-                    {
-                        List<KitData.Kit> kits = Facepunch.Pool.GetList<KitData.Kit>();
-                        GetUserValidKits(player, kits);
-
-                        player.ChatMessage(string.Format(Message("Chat.KitList", player.userID), kits.Select((KitData.Kit kit) => kit.Name).ToSentence()));
-                        Facepunch.Pool.FreeList(ref kits);
-                    }  
-                    return;
-
-                case "add":
-                case "new":
-                    if (!isAdmin)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NotAdmin", player.userID));
-                        return;
-                    }
-
-                    _kitCreators[player.userID] = new KitData.Kit();
-                    OpenKitsEditor(player);
-
-                    return;
-
-                case "edit":
-                    if (!isAdmin)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NotAdmin", player.userID));
-                        return;
-                    }
-
-                    if (args.Length != 2)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NoKit", player.userID));
-                        return;
-                    }
-
-                    KitData.Kit editKit;
-                    if (!kitData.Find(args[1], out editKit))
-                    {
-                        player.ChatMessage(string.Format(Message("Chat.Error.DoesntExist", player.userID), args[1]));
-                        return;
-                    }
-
-                    _kitCreators[player.userID] = KitData.Kit.CloneOf(editKit);
-                    OpenKitsEditor(player);
-
-                    return;
-
-                case "remove":
-                case "delete":
-                    if (!isAdmin)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NotAdmin", player.userID));
-                        return;
-                    }
-
-                    if (args.Length != 2)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NoKit", player.userID));
-                        return;
-                    }
-
-                    KitData.Kit deleteKit;
-                    if (!kitData.Find(args[1], out deleteKit))
-                    {
-                        player.ChatMessage(string.Format(Message("Chat.Error.DoesntExist", player.userID), args[1]));
-                        return;
-                    }
-
-                    kitData.Remove(deleteKit);
-                    SaveKitData();
-                    player.ChatMessage(string.Format(Message("Chat.KitDeleted", player.userID), args[1]));
-
-                    return;
-
-                case "give":
-                    if (!isAdmin)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NotAdmin", player.userID));
-                        return;
-                    }
-
-                    if (args.Length != 3)
-                    {
-                        player.ChatMessage(Message("Chat.Error.GiveArgs", player.userID));
-                        return;
-                    }
-
-                    BasePlayer target = FindPlayer(args[1]);
-                    if (target == null)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NoPlayer", player.userID));
-                        return;
-                    }
-
-                    KitData.Kit giveKit;
-                    if (!kitData.Find(args[2], out giveKit))
-                    {
-                        player.ChatMessage(Message("Chat.Error.DoesntExist", player.userID));
-                        return;
-                    }
-
-                    GiveKit(target, giveKit);
-                    player.ChatMessage(string.Format(Message("Chat.KitGiven", player.userID), target.displayName, args[2]));
-                    return;
-
-                case "givenpc":
-                    if (!isAdmin)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NotAdmin", player.userID));
-                        return;
-                    }
-
-                    if (args.Length != 2)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NPCGiveArgs", player.userID));
-                        return;
-                    }
-
-                    KitData.Kit npcGiveKit;
-                    if (!kitData.Find(args[1], out npcGiveKit))
-                    {
-                        player.ChatMessage(Message("Chat.Error.DoesntExist", player.userID));
-                        return;
-                    }
-
-                    BasePlayer npc = RaycastPlayer(player);
-                    if (npc == null)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NoNPCTarget", player.userID));
-                        return;
-                    }
-
-                    npc.inventory.Strip();
-                    GiveKit(npc, npcGiveKit);
-
-                    player.ChatMessage(string.Format(Message("Chat.KitGiven", player.userID), npc.displayName, args[1]));
-                    return;
-
-                case "reset":
-                    if (!isAdmin)
-                    {
-                        player.ChatMessage(Message("Chat.Error.NotAdmin", player.userID));
-                        return;
-                    }
-
-                    playerData.Wipe();
-                    SavePlayerData();
-                    player.ChatMessage(Message("Chat.ResetPlayers", player.userID));
-
-                    return;
-
-                case "autokit":
-                    if (Configuration.AllowAutoToggle)
-                    {
-                        bool v = playerData[player.userID].ClaimAutoKits = !playerData[player.userID].ClaimAutoKits;
-                        player.ChatMessage(string.Format(Message("Chat.AutoKit.Toggle", player.userID), Message($"Chat.AutoKit.{v}", player.userID)));
-                    }
-                    return;
-
-                default:
-                    if (!kitData.Exists(args[0]))
-                    {
-                        player.ChatMessage(string.Format(Message("Chat.Error.DoesntExist", player.userID), args[0]));
-                        return;
-                    }
-
-                    if (TryClaimKit(player, args[0], false))
-                        player.ChatMessage(string.Format(Message("Notification.KitReceived", player.userID), args[0]));
-
-                    break;
-            }
-        }
-
-        private void ccmdKit(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg.Connection?.player as BasePlayer;
-            if (player != null && !IsAdmin(player))
-                return;
-
-            if (arg.Args == null || arg.Args.Length == 0)
-            {
-                SendReply(arg, "kit list - List all kits");
-                SendReply(arg, "kit delete <kitname> - Delete the specified kit");
-                SendReply(arg, "kit give <playername> <kitname> - Give the specified kit to the specified playuer");
-                SendReply(arg, "kit reset - Reset player usage data");
-                return;
-            }
-
-            switch (arg.Args[0].ToLower())
-            {               
-                case "list":
-                    SendReply(arg, string.Format("Kit List: {0}", kitData.Keys.ToSentence()));
-                    return;
-
-                case "remove":
-                case "delete":                    
-                    if (arg.Args.Length != 2)
-                    {
-                        SendReply(arg, "You must specify a kit name");
-                        return;
-                    }
-
-                    KitData.Kit deleteKit;
-                    if (!kitData.Find(arg.Args[1], out deleteKit))
-                    {
-                        SendReply(arg, string.Format("The kit {0} does not exist", arg.Args[1]));
-                        return;
-                    }
-
-                    kitData.Remove(deleteKit);
-                    SaveKitData();
-                    SendReply(arg, string.Format("You have deleted the kit {0}", arg.Args[1]));
-
-                    return;
-
-                case "give":                   
-                    if (arg.Args.Length != 3)
-                    {
-                        SendReply(arg, "You must specify target player and a kit name");
-                        return;
-                    }
-
-                    BasePlayer target = FindPlayer(arg.Args[1]);
-                    if (target == null)
-                    {
-                        SendReply(arg, "Failed to find a player with the specified name or ID");
-                        return;
-                    }
-
-                    KitData.Kit giveKit;
-                    if (!kitData.Find(arg.Args[2], out giveKit))
-                    {
-                        SendReply(arg, "The kit {0} does not exist");
-                        return;
-                    }
-
-                    GiveKit(target, giveKit);
-                    SendReply(arg, string.Format("You have given {0} the kit {1}", target.displayName, arg.Args[2]));
-                    return;
-                
-                case "reset":                    
-                    playerData.Wipe();
-                    SavePlayerData();
-                    SendReply(arg, "You have wiped player usage data");
-                    return;
-                
-                default:
-                    SendReply(arg, "Invalid syntax");
-                    break;
-            }
-        }
-
-        private void ReplyHelp(BasePlayer player)
-        {
-            player.ChatMessage(string.Format(Message("Chat.Help.Title", player.userID), Version));
-            player.ChatMessage(Message("Chat.Help.1", player.userID));
-            player.ChatMessage(Message("Chat.Help.2", player.userID));
-            
-            if (Configuration.AllowAutoToggle)
-                player.ChatMessage(Message("Chat.Help.9", player.userID));
-
-            if (IsAdmin(player))
-            {
-                player.ChatMessage(Message("Chat.Help.3", player.userID));
-                player.ChatMessage(Message("Chat.Help.4", player.userID));
-                player.ChatMessage(Message("Chat.Help.5", player.userID));
-                player.ChatMessage(Message("Chat.Help.6", player.userID));
-                player.ChatMessage(Message("Chat.Help.7", player.userID));
-                player.ChatMessage(Message("Chat.Help.8", player.userID));
-                player.ChatMessage(Message("Chat.Help.10", player.userID));
-            }
-        }
-        #endregion
-
-        #region Old Data Conversion
-        [ConsoleCommand("kits.convertolddata")]
-        private void ccmdConvertKitsData(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg?.Connection?.player as BasePlayer;
-            if (player != null)
-                return;
-
-            ConvertOldKitData();
-        }
-
-        [ConsoleCommand("kits.convertoldplayerdata")]
-        private void ccmdConvertPlayerData(ConsoleSystem.Arg arg)
-        {
-            BasePlayer player = arg?.Connection?.player as BasePlayer;
-            if (player != null)
-                return;
-
-            ConvertOldPlayerData();
-        }
-
-        private void ConvertOldPlayerData()
-        {
-            try
-            {
-                Dictionary<ulong, Dictionary<string, OldKitData>> oldPlayerData = Interface.Oxide.DataFileSystem.ReadObject<Dictionary<ulong, Dictionary<string, OldKitData>>>("Kits_Data");
-
-                if (oldPlayerData != null)
-                {
-                    int success = 0;
-
-                    foreach (KeyValuePair<ulong, Dictionary<string, OldKitData>> oldPlayer in oldPlayerData)
-                    {
-                        PlayerData.PlayerUsageData playerUsageData = playerData[oldPlayer.Key];
-
-                        foreach(KeyValuePair<string, OldKitData> oldUsageData in oldPlayer.Value)
-                        {
-                            if (kitData.Exists(oldUsageData.Key))                            
-                                playerUsageData.InsertOldData(oldUsageData.Key, oldUsageData.Value.max, oldUsageData.Value.cooldown);                            
-                        }
-
-                        success++;
-                    }
-
-                    if (success > 0)
-                        SavePlayerData();
-
-                    Debug.Log($"Successfully converted {success} / {oldPlayerData.Count} player's data");
-                }
-            }
-            catch { }
-        }
-
-        private void ConvertOldKitData()
-        {            
-            try
-            {
-                DynamicConfigFile kits = Interface.Oxide.DataFileSystem.GetFile("Kits");
-                kits.Settings.NullValueHandling = NullValueHandling.Ignore;
-                OldStoredData oldStoredData = kits.ReadObject<OldStoredData>();
-
-                int success = 0;
-
-                foreach (OldKit oldKit in oldStoredData.Kits.Values)
-                {
-                    Debug.Log($"Converting Kit {oldKit.name} with {oldKit.items.Count} items");
-                    KitData.Kit kit = new KitData.Kit()
-                    {
-                        Name = oldKit.name,
-                        Description = oldKit.description ?? string.Empty,
-                        Cooldown = Convert.ToInt32(oldKit.cooldown),
-                        CopyPasteFile = oldKit.building ?? string.Empty,
-                        Cost = 0,
-                        IsHidden = oldKit.hide,
-                        KitImage = oldKit.image ?? string.Empty,
-                        MaximumUses = oldKit.max,
-                        RequiredAuth = oldKit.authlevel,
-                        RequiredPermission = oldKit.permission ?? string.Empty
-                    };
-
-                    TryConvertItems(ref kit, oldKit.items);
-
-                    kitData[oldKit.name] = kit;
-
-                    success++;
-                }
-
-                if (success > 0)
-                    SaveKitData();
-
-                Debug.Log($"Successfully converted {success} / {oldStoredData.Kits.Count} kits");
-            }
-            catch { }
-        }
-
-        private void TryConvertItems(ref KitData.Kit kit, List<OldKitItem> items)
-        {
-            List<ItemData> wear = Facepunch.Pool.GetList<ItemData>();
-            List<ItemData> belt = Facepunch.Pool.GetList<ItemData>();
-            List<ItemData> main = Facepunch.Pool.GetList<ItemData>();
-
-            ConvertItems(ref wear, items.Where((OldKitItem oldKitItem) => oldKitItem.container == "wear"));
-            ConvertItems(ref belt, items.Where((OldKitItem oldKitItem) => oldKitItem.container == "belt"));
-            ConvertItems(ref main, items.Where((OldKitItem oldKitItem) => oldKitItem.container == "main"));
-
-            kit.WearItems = wear.ToArray();
-            kit.BeltItems = belt.ToArray();
-            kit.MainItems = main.ToArray();
-
-            Facepunch.Pool.FreeList(ref wear);
-            Facepunch.Pool.FreeList(ref belt);
-            Facepunch.Pool.FreeList(ref main);
-        } 
-
-        private ItemDefinition FindItemDefinition(int itemID)
-        {
-            ItemDefinition itemDefinition;
-
-            string shortname;
-            if (_itemIdShortnameConversions.TryGetValue(itemID, out shortname))
-                itemDefinition = ItemManager.FindItemDefinition(shortname);
-            else itemDefinition = ItemManager.FindItemDefinition(itemID);
-
-            return itemDefinition;
-        }
-
-        private void ConvertItems(ref List<ItemData> list, IEnumerable<OldKitItem> items)
-        {
-            int position = 0;
-            foreach (OldKitItem oldKitItem in items)
-            {
-                ItemDefinition itemDefinition = FindItemDefinition(oldKitItem.itemid);
-
-                if (itemDefinition == null)
-                {
-                    Debug.Log($"Failed to find ItemDefinition for item ID {oldKitItem.itemid}");
-                    continue;
-                }
-
-                ItemData itemData = new ItemData()
-                {
-                    Shortname = itemDefinition.shortname,
-                    Amount = oldKitItem.amount,
-                    Skin = oldKitItem.skinid,
-                    Position = position
-                };
-
-                if (itemDefinition.condition.enabled)                
-                    itemData.Condition = itemData.MaxCondition = itemDefinition.condition.max;
-
-                if (itemData.IsBlueprint)
-                {
-                    itemDefinition = FindItemDefinition(oldKitItem.blueprintTarget);
-                    if (itemDefinition == null) 
-                    {
-                        Debug.Log($"Failed to find ItemDefinition for blueprint target {oldKitItem.blueprintTarget}");
-                        continue;
-                    }
-
-                    itemData.BlueprintShortname = itemDefinition.shortname;
-                }
-                
-                if (oldKitItem.mods?.Count > 0)                
-                {
-                    List<ItemData> contents = Facepunch.Pool.GetList<ItemData>();
-
-                    oldKitItem.mods.ForEach((int itemId) =>
-                    {
-                        itemDefinition = FindItemDefinition(itemId);
-                        if (itemDefinition != null)
-                        {
-                            contents.Add(new ItemData
-                            {
-                                Shortname = itemDefinition.shortname,
-                                Amount = 1
-                            });
-                        }
-                    });
-
-                    itemData.Contents = contents.ToArray();
-
-                    Facepunch.Pool.FreeList(ref contents);
-                }
-
-                list.Add(itemData);
-                position++;
-            }
-        }
-
-        private class OldStoredData
-        {
-            public Dictionary<string, OldKit> Kits = new Dictionary<string, OldKit>();
-        }
-
-        private class OldKitData
-        {
-            public int max;
-            public double cooldown;
-        }
-
-        private class OldKitItem
-        {
-            public int itemid;
-            public string container;
-            public int amount;
-            public ulong skinid;
-            public bool weapon;
-            public int blueprintTarget;
-            public List<int> mods = new List<int>();
-        }
-
-        private class OldKit
-        {
-            public string name;
-            public string description;
-            public int max;
-            public double cooldown;
-            public int authlevel;
-            public bool hide;
-            public bool npconly;
-            public string permission;
-            public string image;
-            public string building;
-            public List<OldKitItem> items = new List<OldKitItem>();
-        }
-
-        private readonly Dictionary<int, string> _itemIdShortnameConversions = new Dictionary<int, string>
-        {
-            [-1461508848] = "rifle.ak",
-            [2115555558] = "ammo.handmade.shell",
-            [-533875561] = "ammo.pistol",
-            [1621541165] = "ammo.pistol.fire",
-            [-422893115] = "ammo.pistol.hv",
-            [815896488] = "ammo.rifle",
-            [805088543] = "ammo.rifle.explosive",
-            [449771810] = "ammo.rifle.incendiary",
-            [1152393492] = "ammo.rifle.hv",
-            [1578894260] = "ammo.rocket.basic",
-            [1436532208] = "ammo.rocket.fire",
-            [542276424] = "ammo.rocket.hv",
-            [1594947829] = "ammo.rocket.smoke",
-            [-1035059994] = "ammo.shotgun",
-            [1818890814] = "ammo.shotgun.fire",
-            [1819281075] = "ammo.shotgun.slug",
-            [1685058759] = "antiradpills",
-            [93029210] = "apple",
-            [-1565095136] = "apple.spoiled",
-            [-1775362679] = "arrow.bone",
-            [-1775249157] = "arrow.fire",
-            [-1280058093] = "arrow.hv",
-            [-420273765] = "arrow.wooden",
-            [563023711] = "autoturret",
-            [790921853] = "axe.salvaged",
-            [-337261910] = "bandage",
-            [498312426] = "barricade.concrete",
-            [504904386] = "barricade.metal",
-            [-1221200300] = "barricade.sandbags",
-            [510887968] = "barricade.stone",
-            [-814689390] = "barricade.wood",
-            [1024486167] = "barricade.woodwire",
-            [2021568998] = "battery.small",
-            [97329] = "bbq",
-            [1046072789] = "trap.bear",
-            [97409] = "bed",
-            [-1480119738] = "tool.binoculars",
-            [1611480185] = "black.raspberries",
-            [-1386464949] = "bleach",
-            [93832698] = "blood",
-            [-1063412582] = "blueberries",
-            [-1887162396] = "blueprintbase",
-            [-55660037] = "rifle.bolt",
-            [919780768] = "bone.club",
-            [-365801095] = "bone.fragments",
-            [68998734] = "botabag",
-            [-853695669] = "bow.hunting",
-            [271534758] = "box.wooden.large",
-            [-770311783] = "box.wooden",
-            [-1192532973] = "bucket.water",
-            [-307490664] = "building.planner",
-            [707427396] = "burlap.shirt",
-            [707432758] = "burlap.shoes",
-            [-2079677721] = "cactusflesh",
-            [-1342405573] = "tool.camera",
-            [-139769801] = "campfire",
-            [-1043746011] = "can.beans",
-            [2080339268] = "can.beans.empty",
-            [-171664558] = "can.tuna",
-            [1050986417] = "can.tuna.empty",
-            [-1693683664] = "candycaneclub",
-            [523409530] = "candycane",
-            [1300054961] = "cctv.camera",
-            [-2095387015] = "ceilinglight",
-            [1428021640] = "chainsaw",
-            [94623429] = "chair",
-            [1436001773] = "charcoal",
-            [1711323399] = "chicken.burned",
-            [1734319168] = "chicken.cooked",
-            [-1658459025] = "chicken.raw",
-            [-726947205] = "chicken.spoiled",
-            [-341443994] = "chocholate",
-            [1540879296] = "xmasdoorwreath",
-            [94756378] = "cloth",
-            [3059095] = "coal",
-            [3059624] = "corn",
-            [2045107609] = "clone.corn",
-            [583366917] = "seed.corn",
-            [2123300234] = "crossbow",
-            [1983936587] = "crude.oil",
-            [1257201758] = "cupboard.tool",
-            [-1144743963] = "diving.fins",
-            [-1144542967] = "diving.mask",
-            [-1144334585] = "diving.tank",
-            [1066729526] = "diving.wetsuit",
-            [-1598790097] = "door.double.hinged.metal",
-            [-933236257] = "door.double.hinged.toptier",
-            [-1575287163] = "door.double.hinged.wood",
-            [-2104481870] = "door.hinged.metal",
-            [-1571725662] = "door.hinged.toptier",
-            [1456441506] = "door.hinged.wood",
-            [1200628767] = "door.key",
-            [-778796102] = "door.closer",
-            [1526866730] = "xmas.door.garland",
-            [1925723260] = "dropbox",
-            [1891056868] = "ducttape",
-            [1295154089] = "explosive.satchel",
-            [498591726] = "explosive.timed",
-            [1755466030] = "explosives",
-            [726730162] = "facialhair.style01",
-            [-1034048911] = "fat.animal",
-            [252529905] = "femalearmpithair.style01",
-            [471582113] = "femaleeyebrow.style01",
-            [-1138648591] = "femalepubichair.style01",
-            [305916740] = "female_hairstyle_01",
-            [305916742] = "female_hairstyle_03",
-            [305916744] = "female_hairstyle_05",
-            [1908328648] = "fireplace.stone",
-            [-2078972355] = "fish.cooked",
-            [-533484654] = "fish.raw",
-            [1571660245] = "fishingrod.handmade",
-            [1045869440] = "flamethrower",
-            [1985408483] = "flameturret",
-            [97513422] = "flare",
-            [1496470781] = "flashlight.held",
-            [1229879204] = "weapon.mod.flashlight",
-            [-1722829188] = "floor.grill",
-            [1849912854] = "floor.ladder.hatch",
-            [-1266285051] = "fridge",
-            [-1749787215] = "boots.frog",
-            [28178745] = "lowgradefuel",
-            [-505639592] = "furnace",
-            [1598149413] = "furnace.large",
-            [-1779401418] = "gates.external.high.stone",
-            [-57285700] = "gates.external.high.wood",
-            [98228420] = "gears",
-            [1422845239] = "geiger.counter",
-            [277631078] = "generator.wind.scrap",
-            [115739308] = "burlap.gloves",
-            [-522149009] = "gloweyes",
-            [3175989] = "glue",
-            [718197703] = "granolabar",
-            [384204160] = "grenade.beancan",
-            [-1308622549] = "grenade.f1",
-            [-217113639] = "fun.guitar",
-            [-1580059655] = "gunpowder",
-            [-1832205789] = "male_hairstyle_01",
-            [305916741] = "female_hairstyle_02",
-            [936777834] = "attire.hide.helterneck",
-            [-1224598842] = "hammer",
-            [-1976561211] = "hammer.salvaged",
-            [-1406876421] = "hat.beenie",
-            [-1397343301] = "hat.boonie",
-            [1260209393] = "bucket.helmet",
-            [-1035315940] = "burlap.headwrap",
-            [-1381682752] = "hat.candle",
-            [696727039] = "hat.cap",
-            [-2128719593] = "coffeecan.helmet",
-            [-1178289187] = "deer.skull.mask",
-            [1351172108] = "heavy.plate.helmet",
-            [-450738836] = "hat.miner",
-            [-966287254] = "attire.reindeer.headband",
-            [340009023] = "riot.helmet",
-            [124310981] = "hat.wolf",
-            [1501403549] = "wood.armor.helmet",
-            [698310895] = "hatchet",
-            [523855532] = "hazmatsuit",
-            [2045246801] = "clone.hemp",
-            [583506109] = "seed.hemp",
-            [-148163128] = "attire.hide.boots",
-            [-132588262] = "attire.hide.skirt",
-            [-1666761111] = "attire.hide.vest",
-            [-465236267] = "weapon.mod.holosight",
-            [-1211618504] = "hoodie",
-            [2133577942] = "hq.metal.ore",
-            [-1014825244] = "humanmeat.burned",
-            [-991829475] = "humanmeat.cooked",
-            [-642008142] = "humanmeat.raw",
-            [661790782] = "humanmeat.spoiled",
-            [-1440143841] = "icepick.salvaged",
-            [569119686] = "bone.armor.suit",
-            [1404466285] = "heavy.plate.jacket",
-            [-1616887133] = "jacket.snow",
-            [-1167640370] = "jacket",
-            [-1284735799] = "jackolantern.angry",
-            [-1278649848] = "jackolantern.happy",
-            [776005741] = "knife.bone",
-            [108061910] = "ladder.wooden.wall",
-            [255101535] = "trap.landmine",
-            [-51678842] = "lantern",
-            [-789202811] = "largemedkit",
-            [516382256] = "weapon.mod.lasersight",
-            [50834473] = "leather",
-            [-975723312] = "lock.code",
-            [1908195100] = "lock.key",
-            [-1097452776] = "locker",
-            [146685185] = "longsword",
-            [-1716193401] = "rifle.lr300",
-            [193190034] = "lmg.m249",
-            [371156815] = "pistol.m92",
-            [3343606] = "mace",
-            [825308669] = "machete",
-            [830965940] = "mailbox",
-            [1662628660] = "male.facialhair.style02",
-            [1662628661] = "male.facialhair.style03",
-            [1662628662] = "male.facialhair.style04",
-            [-1832205788] = "male_hairstyle_02",
-            [-1832205786] = "male_hairstyle_04",
-            [1625090418] = "malearmpithair.style01",
-            [-1269800768] = "maleeyebrow.style01",
-            [429648208] = "malepubichair.style01",
-            [-1832205787] = "male_hairstyle_03",
-            [-1832205785] = "male_hairstyle_05",
-            [107868] = "map",
-            [997973965] = "mask.balaclava",
-            [-46188931] = "mask.bandana",
-            [-46848560] = "metal.facemask",
-            [-2066726403] = "bearmeat.burned",
-            [-2043730634] = "bearmeat.cooked",
-            [1325935999] = "bearmeat",
-            [-225234813] = "deermeat.burned",
-            [-202239044] = "deermeat.cooked",
-            [-322501005] = "deermeat.raw",
-            [-1851058636] = "horsemeat.burned",
-            [-1828062867] = "horsemeat.cooked",
-            [-1966381470] = "horsemeat.raw",
-            [968732481] = "meat.pork.burned",
-            [991728250] = "meat.pork.cooked",
-            [-253819519] = "meat.boar",
-            [-1714986849] = "wolfmeat.burned",
-            [-1691991080] = "wolfmeat.cooked",
-            [179448791] = "wolfmeat.raw",
-            [431617507] = "wolfmeat.spoiled",
-            [688032252] = "metal.fragments",
-            [-1059362949] = "metal.ore",
-            [1265861812] = "metal.plate.torso",
-            [374890416] = "metal.refined",
-            [1567404401] = "metalblade",
-            [-1057402571] = "metalpipe",
-            [-758925787] = "mining.pumpjack",
-            [-1411620422] = "mining.quarry",
-            [88869913] = "fish.minnows",
-            [-2094080303] = "smg.mp5",
-            [843418712] = "mushroom",
-            [-1569356508] = "weapon.mod.muzzleboost",
-            [-1569280852] = "weapon.mod.muzzlebrake",
-            [449769971] = "pistol.nailgun",
-            [590532217] = "ammo.nailgun.nails",
-            [3387378] = "note",
-            [1767561705] = "burlap.trousers",
-            [106433500] = "pants",
-            [-1334615971] = "heavy.plate.pants",
-            [-135651869] = "attire.hide.pants",
-            [-1595790889] = "roadsign.kilt",
-            [-459156023] = "pants.shorts",
-            [106434956] = "paper",
-            [-578028723] = "pickaxe",
-            [-586116979] = "jar.pickle",
-            [-1379225193] = "pistol.eoka",
-            [-930579334] = "pistol.revolver",
-            [548699316] = "pistol.semiauto",
-            [142147109] = "planter.large",
-            [148953073] = "planter.small",
-            [102672084] = "attire.hide.poncho",
-            [640562379] = "pookie.bear",
-            [-1732316031] = "xmas.present.large",
-            [-2130280721] = "xmas.present.medium",
-            [-1725510067] = "xmas.present.small",
-            [1974032895] = "propanetank",
-            [-225085592] = "pumpkin",
-            [509654999] = "clone.pumpkin",
-            [466113771] = "seed.pumpkin",
-            [2033918259] = "pistol.python",
-            [2069925558] = "target.reactive",
-            [-1026117678] = "box.repair.bench",
-            [1987447227] = "research.table",
-            [540154065] = "researchpaper",
-            [1939428458] = "riflebody",
-            [-288010497] = "roadsign.jacket",
-            [-847065290] = "roadsigns",
-            [3506021] = "rock",
-            [649603450] = "rocket.launcher",
-            [3506418] = "rope",
-            [569935070] = "rug.bear",
-            [113284] = "rug",
-            [1916127949] = "water.salt",
-            [-1775234707] = "salvaged.cleaver",
-            [-388967316] = "salvaged.sword",
-            [2007564590] = "santahat",
-            [-1705696613] = "scarecrow",
-            [670655301] = "hazmatsuit_scientist",
-            [1148128486] = "hazmatsuit_scientist_peacekeeper",
-            [-141135377] = "weapon.mod.small.scope",
-            [109266897] = "scrap",
-            [-527558546] = "searchlight",
-            [-1745053053] = "rifle.semiauto",
-            [1223860752] = "semibody",
-            [-419069863] = "sewingkit",
-            [-1617374968] = "sheetmetal",
-            [2057749608] = "shelves",
-            [24576628] = "shirt.collared",
-            [-1659202509] = "shirt.tanktop",
-            [2107229499] = "shoes.boots",
-            [191795897] = "shotgun.double",
-            [-1009492144] = "shotgun.pump",
-            [2077983581] = "shotgun.waterpipe",
-            [378365037] = "guntrap",
-            [-529054135] = "shutter.metal.embrasure.a",
-            [-529054134] = "shutter.metal.embrasure.b",
-            [486166145] = "shutter.wood.a",
-            [1628490888] = "sign.hanging.banner.large",
-            [1498516223] = "sign.hanging",
-            [-632459882] = "sign.hanging.ornate",
-            [-626812403] = "sign.pictureframe.landscape",
-            [385802761] = "sign.pictureframe.portrait",
-            [2117976603] = "sign.pictureframe.tall",
-            [1338515426] = "sign.pictureframe.xl",
-            [-1455694274] = "sign.pictureframe.xxl",
-            [1579245182] = "sign.pole.banner.large",
-            [-587434450] = "sign.post.double",
-            [-163742043] = "sign.post.single",
-            [-1224714193] = "sign.post.town",
-            [644359987] = "sign.post.town.roof",
-            [-1962514734] = "sign.wooden.huge",
-            [-705305612] = "sign.wooden.large",
-            [-357728804] = "sign.wooden.medium",
-            [-698499648] = "sign.wooden.small",
-            [1213686767] = "weapon.mod.silencer",
-            [386382445] = "weapon.mod.simplesight",
-            [1859976884] = "skull_fire_pit",
-            [960793436] = "skull.human",
-            [1001265731] = "skull.wolf",
-            [1253290621] = "sleepingbag",
-            [470729623] = "small.oil.refinery",
-            [1051155022] = "stash.small",
-            [865679437] = "fish.troutsmall",
-            [927253046] = "smallwaterbottle",
-            [109552593] = "smg.2",
-            [-2092529553] = "smgbody",
-            [691633666] = "snowball",
-            [-2055888649] = "snowman",
-            [621575320] = "shotgun.spas12",
-            [-2118132208] = "spear.stone",
-            [-1127699509] = "spear.wooden",
-            [-685265909] = "spikes.floor",
-            [552706886] = "spinner.wheel",
-            [1835797460] = "metalspring",
-            [-892259869] = "sticks",
-            [-1623330855] = "stocking.large",
-            [-1616524891] = "stocking.small",
-            [789892804] = "stone.pickaxe",
-            [-1289478934] = "stonehatchet",
-            [-892070738] = "stones",
-            [-891243783] = "sulfur",
-            [889398893] = "sulfur.ore",
-            [-1625468793] = "supply.signal",
-            [1293049486] = "surveycharge",
-            [1369769822] = "fishtrap.small",
-            [586484018] = "syringe.medical",
-            [110115790] = "table",
-            [1490499512] = "targeting.computer",
-            [3552619] = "tarp",
-            [1471284746] = "techparts",
-            [456448245] = "smg.thompson",
-            [110547964] = "torch",
-            [1588977225] = "xmas.decoration.baubels",
-            [918540912] = "xmas.decoration.candycanes",
-            [-471874147] = "xmas.decoration.gingerbreadmen",
-            [205978836] = "xmas.decoration.lights",
-            [-1044400758] = "xmas.decoration.pinecone",
-            [-2073307447] = "xmas.decoration.star",
-            [435230680] = "xmas.decoration.tinsel",
-            [-864578046] = "tshirt",
-            [1660607208] = "tshirt.long",
-            [260214178] = "tunalight",
-            [-1847536522] = "vending.machine",
-            [-496055048] = "wall.external.high.stone",
-            [-1792066367] = "wall.external.high",
-            [562888306] = "wall.frame.cell.gate",
-            [-427925529] = "wall.frame.cell",
-            [995306285] = "wall.frame.fence.gate",
-            [-378017204] = "wall.frame.fence",
-            [447918618] = "wall.frame.garagedoor",
-            [313836902] = "wall.frame.netting",
-            [1175970190] = "wall.frame.shopfront",
-            [525244071] = "wall.frame.shopfront.metal",
-            [-1021702157] = "wall.window.bars.metal",
-            [-402507101] = "wall.window.bars.toptier",
-            [-1556671423] = "wall.window.bars.wood",
-            [61936445] = "wall.window.glass.reinforced",
-            [112903447] = "water",
-            [1817873886] = "water.catcher.large",
-            [1824679850] = "water.catcher.small",
-            [-1628526499] = "water.barrel",
-            [547302405] = "waterjug",
-            [1840561315] = "water.purifier",
-            [-460592212] = "xmas.window.garland",
-            [3655341] = "wood",
-            [1554697726] = "wood.armor.jacket",
-            [-1883959124] = "wood.armor.pants",
-            [-481416622] = "workbench1",
-            [-481416621] = "workbench2",
-            [-481416620] = "workbench3",
-            [-1151126752] = "xmas.lightstring",
-            [-1926458555] = "xmas.tree"
-        };
-        #endregion
-
-        #region Config        
-        private static ConfigData Configuration;
-
-        private class ConfigData
-        {
-            [JsonProperty(PropertyName = "Kit chat command")]
-            public string Command { get; set; }
-
-            [JsonProperty(PropertyName = "Currency used for purchase costs (Scrap, Economics, ServerRewards)")]
-            public string Currency { get; set; }
-
-            [JsonProperty(PropertyName = "Log kits given")]
-            public bool LogKitsGiven { get; set; }
-
-            [JsonProperty(PropertyName = "Wipe player data when the server is wiped")]
-            public bool WipeData { get; set; }
-
-            [JsonProperty(PropertyName = "Use the Kits UI menu")]
-            public bool UseUI { get; set; }
-
-            [JsonProperty(PropertyName = "Allow players to toggle auto-kits on spawn")]
-            public bool AllowAutoToggle { get; set; }
-
-            [JsonProperty(PropertyName = "Show kits with permissions assigned to players without the permission")]
-            public bool ShowPermissionKits { get; set; }
-
-            [JsonProperty(PropertyName = "Players with the admin permission ignore usage restrictions")]
-            public bool AdminIgnoreRestrictions { get; set; }
-
-            [JsonProperty(PropertyName = "Autokits ordered by priority")]
-            public List<string> AutoKits { get; set; }
-
-            [JsonProperty(PropertyName = "Post wipe cooldowns (kit name | seconds)")]
-            public Hash<string, int> WipeCooldowns { get; set; }
-
-            [JsonProperty(PropertyName = "Parameters used when pasting a building via CopyPaste")]
-            public string[] CopyPasteParams { get; set; }
-
-            [JsonProperty(PropertyName = "UI Options")]
-            public MenuOptions Menu { get; set; }
-
-            [JsonProperty(PropertyName = "Kit menu items when opened via HumanNPC (NPC user ID | Items)")]
-            public Hash<ulong, NPCKit> NPCKitMenu { get; set; }
-
-            public class MenuOptions
-            {
-                [JsonProperty(PropertyName = "Panel Color")]
-                public UIColor Panel { get; set; }
-
-                [JsonProperty(PropertyName = "Disabled Color")]
-                public UIColor Disabled { get; set; }
-
-                [JsonProperty(PropertyName = "Color 1")]
-                public UIColor Color1 { get; set; }
-
-                [JsonProperty(PropertyName = "Color 2")]
-                public UIColor Color2 { get; set; }
-
-                [JsonProperty(PropertyName = "Color 3")]
-                public UIColor Color3 { get; set; }
-
-                [JsonProperty(PropertyName = "Color 4")]
-                public UIColor Color4 { get; set; }
-
-                [JsonProperty(PropertyName = "Default kit image URL")]
-                public string DefaultKitURL { get; set; }
-
-                [JsonProperty(PropertyName = "View kit icon URL")]
-                public string MagnifyIconURL { get; set; }
-            }
-
-            public class UIColor
-            {
-                public string Hex { get; set; }
-                public float Alpha { get; set; }
-
-                [JsonIgnore]
-                private string _color;
-
-                [JsonIgnore]
-                public string Get
-                {
-                    get
-                    {
-                        if (string.IsNullOrEmpty(_color))
-                            _color = UI.Color(Hex, Alpha);
-                        return _color;
-                    }
-                }
-            }
-
-            public class NPCKit
-            {
-                [JsonProperty(PropertyName = "The list of kits that can be claimed from this NPC")]
-                public List<string> Kits { get; set; }
-
-                [JsonProperty(PropertyName = "The NPC's response to opening their kit menu")]
-                public string Description { get; set; }
-            }
-
-            public VersionNumber Version { get; set; }
-        }
-
-        protected override void LoadConfig()
-        {
-            base.LoadConfig();
-            Configuration = Config.ReadObject<ConfigData>();
-
-            if (Configuration.Version < Version)
-                UpdateConfigValues();
-
-            Config.WriteObject(Configuration, true);
-        }
-
-        protected override void LoadDefaultConfig() => Configuration = GetBaseConfig();
-
-        private ConfigData GetBaseConfig()
-        {
-            return new ConfigData
-            {
-                Command = "kit",                
-                Currency = "Scrap",
-                LogKitsGiven = false,
-                WipeData = false,
-                ShowPermissionKits = false,
-                UseUI = true,
-                AllowAutoToggle = false,
-                AutoKits = new List<string>
-                {
-                    "ExampleKitName",
-                    "OtherKitName"
-                },
-                WipeCooldowns = new Hash<string, int>
-                {
-                    ["ExampleKitName"] = 3600,
-                    ["OtherKitName"] = 600
-                },
-                CopyPasteParams = new string[] { "deployables", "true", "inventories", "true" },
-                Menu = new ConfigData.MenuOptions
-                {
-                    Panel = new ConfigData.UIColor { Hex = "#232323", Alpha = 1f },
-                    Disabled = new ConfigData.UIColor { Hex = "#3e3e42", Alpha = 1f },
-                    Color1 = new ConfigData.UIColor { Hex = "#007acc", Alpha = 1f },
-                    Color2 = new ConfigData.UIColor { Hex = "#6a8b38", Alpha = 1f },
-                    Color3 = new ConfigData.UIColor { Hex = "#d85540", Alpha = 1f },
-                    Color4 = new ConfigData.UIColor { Hex = "#d08822", Alpha = 1f },
-                    DefaultKitURL = "https://chaoscode.io/oxide/Images/kiticon.png",
-                    MagnifyIconURL = "https://chaoscode.io/oxide/Images/magnifyingglass.png"
-                },
-                NPCKitMenu = new Hash<ulong, ConfigData.NPCKit>
-                {
-                    [0UL] = new ConfigData.NPCKit
-                    {
-                        Kits = new List<string>
-                        {
-                            "ExampleKitName",
-                            "OtherKitName"
-                        },
-                        Description = "Welcome to this server! Here are some free kits you can claim"
-                    },
-                    [1111UL] = new ConfigData.NPCKit
-                    {
-                        Kits = new List<string>
-                        {
-                            "ExampleKitName",
-                            "OtherKitName"
-                        },
-                        Description = "Welcome to this server! Here are some free kits you can claim"
-                    },
-                },
-                Version = Version
-            };
-        }
-
-        protected override void SaveConfig() => Config.WriteObject(Configuration, true);
-
-        private void UpdateConfigValues()
-        {
-            PrintWarning("Config update detected! Updating config values...");
-
-            ConfigData baseConfig = GetBaseConfig();
-
-            if (Configuration.Version < new VersionNumber(4, 0, 0))
-                Configuration = baseConfig;
-
-            if (Configuration.Version < new VersionNumber(4, 0, 1))
-            {
-                Configuration.UseUI = true;
-                Configuration.NPCKitMenu = baseConfig.NPCKitMenu;
-            }
-
-            if (Configuration.Version < new VersionNumber(4, 0, 12))
-                Configuration.Command = baseConfig.Command;
-
-            Configuration.Version = Version;
-            PrintWarning("Config update completed!");
-        }
-
-        #endregion
-
-        #region Data Management
-        private KitData kitData;
-        private PlayerData playerData;
-
-        private DynamicConfigFile kitdata;
-        private DynamicConfigFile playerdata;
-
-        private void SaveKitData() => kitdata.WriteObject(kitData);
-
-        private void SavePlayerData() => playerdata.WriteObject(playerData);
-
-        private void LoadData()
-        {
-            kitdata = Interface.Oxide.DataFileSystem.GetFile("Kits/kits_data");
-            playerdata = Interface.Oxide.DataFileSystem.GetFile("Kits/player_data");
-
-            try
-            {
-                kitData = kitdata.ReadObject<KitData>();
-            }
-            catch
-            {
-                kitData = new KitData();
-            }
-
-            try
-            {
-                playerData = playerdata.ReadObject<PlayerData>();
-            }
-            catch
-            {
-                playerData = new PlayerData();
-            }
-
-            if (!kitData?.IsValid ?? true)
-                kitData = new KitData();
-
-            if (!playerData?.IsValid ?? true)
-                playerData = new PlayerData();
-        }
-
-        private class KitData
-        {
-            [JsonProperty]
-            private Dictionary<string, Kit> _kits = new Dictionary<string, Kit>(StringComparer.OrdinalIgnoreCase);
-
-            internal Kit this[string key]
-            {
-                get
-                {
-                    Kit tValue;
-                    if (_kits.TryGetValue(key, out tValue))                    
-                        return tValue;
-                    
-                    return null;
-                }
-                set
-                {
-                    if (value == null)
-                    {
-                        _kits.Remove(key);
-                        return;
-                    }
-                    _kits[key] = value;
-                }
-            }
-
-            internal int Count => _kits.Count;
-
-            internal bool Find(string name, out Kit kit) => _kits.TryGetValue(name, out kit);
-
-            internal bool Exists(string name) => _kits.ContainsKey(name);
-
-            internal ICollection<string> Keys => _kits.Keys;
-
-            internal ICollection<Kit> Values => _kits.Values;
-
-            internal void ForEach(Action<Kit> action)
-            {
-                foreach(Kit kit in Values)
-                {
-                    action.Invoke(kit);
-                }
-            }
-
-            internal void RegisterPermissions(Permission permission, Plugin plugin)
-            {
-                foreach(Kit kit in _kits.Values)
-                {
-                    if (!string.IsNullOrEmpty(kit.RequiredPermission))
-                    {                        
-                        if(!permission.PermissionExists(kit.RequiredPermission, plugin))
-                            permission.RegisterPermission(kit.RequiredPermission, plugin);
-                    }
-                }
-            }
-
-            internal void RegisterImages(Plugin plugin)
-            {
-                List<KeyValuePair<string, ulong>> itemIcons = new List<KeyValuePair<string, ulong>>();
-
-                Dictionary<string, string> loadOrder = new Dictionary<string, string>
-                {
-                    [DEFAULT_ICON] = Configuration.Menu.DefaultKitURL,
-                    [MAGNIFY_ICON] = Configuration.Menu.MagnifyIconURL
-                };
-
-                foreach (Kit kit in _kits.Values)
-                {
-                    if (!string.IsNullOrEmpty(kit.KitImage))
-                        loadOrder.Add(kit.Name.Replace(" ", ""), kit.KitImage);
-
-                    for (int i = 0; i < kit.MainItems.Length; i++)
-                    {
-                        ItemData itemData = kit.MainItems[i];
-                        itemIcons.Add(new KeyValuePair<string, ulong>(itemData.Shortname, itemData.Skin));
-
-                        if (itemData.IsBlueprint)
-                            itemIcons.Add(new KeyValuePair<string, ulong>(itemData.BlueprintShortname, 0UL));
-                    }
-
-                    for (int i = 0; i < kit.BeltItems.Length; i++)
-                    {
-                        ItemData itemData = kit.BeltItems[i];
-                        itemIcons.Add(new KeyValuePair<string, ulong>(itemData.Shortname, itemData.Skin));
-
-                        if (itemData.IsBlueprint)
-                            itemIcons.Add(new KeyValuePair<string, ulong>(itemData.BlueprintShortname, 0UL));
-                    }
-
-                    for (int i = 0; i < kit.WearItems.Length; i++)
-                    {
-                        ItemData itemData = kit.WearItems[i];
-                        itemIcons.Add(new KeyValuePair<string, ulong>(itemData.Shortname, itemData.Skin));
-
-                        if (itemData.IsBlueprint)
-                            itemIcons.Add(new KeyValuePair<string, ulong>(itemData.BlueprintShortname, 0UL));
-                    }
-                }
-
-                if (itemIcons.Count > 0)
-                    plugin?.Call("LoadImageList", "Kits", itemIcons, null);
-
-                plugin?.CallHook("ImportImageList", "Kits", loadOrder, 0UL, true, null);
-            }
-
-            internal bool IsOnWipeCooldown(int seconds, out int remaining)
-            {
-                double currentTime = CurrentTime;
-                double nextUseTime = LastWipeTime + seconds;
-
-                if (currentTime < nextUseTime)
-                {
-                    remaining = Mathf.RoundToInt((float)nextUseTime - (float)currentTime);
-                    return true;
-                }
-
-                remaining = 0;
-                return false;
-            }
-
-            internal void Remove(Kit kit) => _kits.Remove(kit.Name);
-
-            internal bool IsValid => _kits != null;
-
-            public class Kit
-            {
-                public string Name { get; set; } = string.Empty;
-                public string Description { get; set; } = string.Empty;
-                public string RequiredPermission { get; set; } = string.Empty;
-
-                public int MaximumUses { get; set; }
-                public int RequiredAuth { get; set; }
-                public int Cooldown { get; set; }
-                public int Cost { get; set; }
-
-                public bool IsHidden { get; set; }
-
-                public string CopyPasteFile { get; set; } = string.Empty;
-                public string KitImage { get; set; } = string.Empty;
-
-                public ItemData[] MainItems { get; set; } = new ItemData[0];
-                public ItemData[] WearItems { get; set; } = new ItemData[0];
-                public ItemData[] BeltItems { get; set; } = new ItemData[0];
-                
-                [JsonIgnore]
-                internal int ItemCount => MainItems.Length + WearItems.Length + BeltItems.Length;
-
-                [JsonIgnore]
-                private JObject _jObject;
-
-                [JsonIgnore]
-                internal JObject ToJObject
-                {
-                    get
-                    {
-                        if (_jObject == null)
-                        {
-                            _jObject = new JObject
-                            {
-                                ["Name"] = Name,
-                                ["Description"] = Description,
-                                ["RequiredPermission"] = RequiredPermission,
-                                ["MaximumUses"] = MaximumUses,
-                                ["RequiredAuth"] = RequiredAuth,
-                                ["Cost"] = Cost,
-                                ["IsHidden"] = IsHidden,
-                                ["CopyPasteFile"] = CopyPasteFile,
-                                ["KitImage"] = KitImage,
-                                ["MainItems"] = new JArray(),
-                                ["WearItems"] = new JArray(),
-                                ["BeltItems"] = new JArray()
-                            };
-
-                            for (int i = 0; i < MainItems.Length; i++)                            
-                                (_jObject["MainItems"] as JArray).Add(MainItems[i].ToJObject);
-
-                            for (int i = 0; i < WearItems.Length; i++)
-                                (_jObject["WearItems"] as JArray).Add(WearItems[i].ToJObject);
-
-                            for (int i = 0; i < BeltItems.Length; i++)
-                                (_jObject["BeltItems"] as JArray).Add(BeltItems[i].ToJObject);
-                        }
-
-                        return _jObject;
-                    }
-                }
-
-                internal static Kit CloneOf(Kit other)
-                {
-                    Kit kit = new Kit();
-
-                    kit.Name = other.Name;
-                    kit.Description = other.Description;
-                    kit.RequiredPermission = other.RequiredPermission;
-
-                    kit.MaximumUses = other.MaximumUses;
-                    kit.RequiredAuth = other.RequiredAuth;
-                    kit.Cooldown = other.Cooldown;
-                    kit.Cost = other.Cost;
-
-                    kit.IsHidden = other.IsHidden;
-
-                    kit.CopyPasteFile = other.CopyPasteFile;
-                    kit.KitImage = other.KitImage;
-
-                    ItemData[] array = kit.MainItems;
-                    Array.Resize(ref array, other.MainItems.Length);
-                    Array.Copy(other.MainItems, array, other.MainItems.Length);
-                    kit.MainItems = array;
-
-                    array = kit.WearItems;
-                    Array.Resize(ref array, other.WearItems.Length);
-                    Array.Copy(other.WearItems, array, other.WearItems.Length);
-                    kit.WearItems = array;
-
-                    array = kit.BeltItems;
-                    Array.Resize(ref array, other.BeltItems.Length);
-                    Array.Copy(other.BeltItems, array, other.BeltItems.Length);
-                    kit.BeltItems = array;
-
-                    return kit;
-                }
-
-                internal bool HasSpaceForItems(BasePlayer player)
-                {
-                    int wearSpacesFree = 7 - player.inventory.containerWear.itemList.Count;
-                    int mainSpacesFree = 24 - player.inventory.containerMain.itemList.Count;
-                    int beltSpacesFree = 6 - player.inventory.containerBelt.itemList.Count;
-
-                    return (wearSpacesFree >= WearItems.Length &&
-                            beltSpacesFree >= BeltItems.Length &&
-                            mainSpacesFree >= MainItems.Length) || ItemCount <= mainSpacesFree + beltSpacesFree;
-                }
-
-                internal void GiveItemsTo(BasePlayer player)
-                {
-                    List<ItemData> list = Facepunch.Pool.GetList<ItemData>();
-
-                    GiveItems(MainItems, player.inventory.containerMain, ref list);
-                    GiveItems(WearItems, player.inventory.containerWear, ref list, true);
-                    GiveItems(BeltItems, player.inventory.containerBelt, ref list);
-
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        Item item = CreateItem(list[i]);
-
-                        if (!MoveToIdealContainer(player.inventory, item) && !item.MoveToContainer(player.inventory.containerMain, -1, true) && !item.MoveToContainer(player.inventory.containerBelt, -1, true))                        
-                            item.Drop(player.GetDropPosition(), player.GetDropVelocity());                                                
-                    }
-
-                    Facepunch.Pool.FreeList(ref list);
-                }
-
-                private void GiveItems(ItemData[] items, ItemContainer container, ref List<ItemData> leftOverItems, bool isWearContainer = false)
-                {
-                    for (int i = 0; i < items.Length; i++)
-                    {
-                        ItemData itemData = items[i];
-                        if (itemData.Amount < 1)
-                            continue;
-
-                        if (container.GetSlot(itemData.Position) != null)
-                            leftOverItems.Add(itemData);
-                        else
-                        {
-                            Item item = CreateItem(itemData);
-                            if (!isWearContainer || (isWearContainer && item.info.isWearable && CanWearItem(container, item)))
-                            {
-                                item.position = itemData.Position;
-                                item.SetParent(container);
-                            }
-                            else
-                            {
-                                leftOverItems.Add(itemData);
-                                item.Remove(0f);
-                            }
-                        }
-                    }
-                }
-
-                private bool MoveToIdealContainer(PlayerInventory playerInventory, Item item)
-                {
-                    if (item.info.isWearable && CanWearItem(playerInventory.containerWear, item))                    
-                        return item.MoveToContainer(playerInventory.containerWear, -1, false);
-                    
-                    if (item.info.stackable > 1)
-                    {
-                        if (playerInventory.containerBelt != null && playerInventory.containerBelt.FindItemByItemID(item.info.itemid) != null)                        
-                            return item.MoveToContainer(playerInventory.containerBelt, -1, true);
-                        
-
-                        if (playerInventory.containerMain != null && playerInventory.containerMain.FindItemByItemID(item.info.itemid) != null)                        
-                            return item.MoveToContainer(playerInventory.containerMain, -1, true);
-                        
-                    }
-                    if (item.info.HasFlag(ItemDefinition.Flag.NotStraightToBelt) || !item.info.isUsable)                    
-                        return item.MoveToContainer(playerInventory.containerMain, -1, true);                    
-
-                    return item.MoveToContainer(playerInventory.containerBelt, -1, false); 
-                }
-
-                private bool CanWearItem(ItemContainer containerWear, Item item)
-                {
-                    ItemModWearable itemModWearable = item.info.GetComponent<ItemModWearable>();
-                    if (itemModWearable == null)                  
-                        return false;
-                    
-                    for (int i = 0; i < containerWear.itemList.Count; i++)
-                    {
-                        Item otherItem = containerWear.itemList[i];
-                        if (otherItem != null)
-                        {
-                            ItemModWearable otherModWearable = otherItem.info.GetComponent<ItemModWearable>();                          
-                            if (otherModWearable != null && !itemModWearable.CanExistWith(otherModWearable))
-                                return false;
-                        }
-                    }
-
-                    return true;
-                }
-                                
-                internal void CopyItemsFrom(BasePlayer player)
-                {
-                    ItemData[] array = MainItems;
-                    CopyItems(ref array, player.inventory.containerMain, 24);
-                    MainItems = array;
-
-                    array = WearItems;
-                    CopyItems(ref array, player.inventory.containerWear, 7);
-                    WearItems = array;
-
-                    array = BeltItems;
-                    CopyItems(ref array, player.inventory.containerBelt, 6);
-                    BeltItems = array;
-                }
-
-                private void CopyItems(ref ItemData[] array, ItemContainer container, int limit)
-                {
-                    limit = Mathf.Min(container.itemList.Count, limit);
-
-                    Array.Resize(ref array, limit);
-
-                    for (int i = 0; i < limit; i++)                    
-                        array[i] = new ItemData(container.itemList[i]);                    
-                }
-
-                internal void ClearItems()
-                {
-                    ItemData[] array = MainItems;
-                    Array.Resize(ref array, 0);
-                    MainItems = array;
-
-                    array = WearItems;
-                    Array.Resize(ref array, 0);
-                    WearItems = array;
-
-                    array = BeltItems;
-                    Array.Resize(ref array, 0);
-                    BeltItems = array;
-                }
-            }
-        }
-
-        private class PlayerData
-        {
-            [JsonProperty]
-            private Dictionary<ulong, PlayerUsageData> _players = new Dictionary<ulong, PlayerUsageData>();
-
-            internal bool Find(ulong playerId, out PlayerUsageData playerUsageData) => _players.TryGetValue(playerId, out playerUsageData);
-
-            internal bool Exists(ulong playerId) => _players.ContainsKey(playerId);
-
-            internal PlayerUsageData this[ulong key]
-            {
-                get
-                {
-                    PlayerUsageData tValue;
-                    if (_players.TryGetValue(key, out tValue))
-                        return tValue;
-
-                    tValue = (PlayerUsageData)Activator.CreateInstance(typeof(PlayerUsageData));
-                    _players.Add(key, tValue);
-                    return tValue;
-                }
-                set
-                {
-                    if (value == null)
-                    {
-                        _players.Remove(key);
-                        return;
-                    }
-                    _players[key] = value;
-                }
-            }
-
-            internal void OnKitClaimed(BasePlayer player, KitData.Kit kit)
-            {
-                if (kit.MaximumUses == 0 && kit.Cooldown == 0)
-                    return;
-
-                PlayerUsageData playerUsageData;
-                if (!_players.TryGetValue(player.userID, out playerUsageData))
-                    playerUsageData = _players[player.userID] = new PlayerUsageData();
-
-                playerUsageData.OnKitClaimed(kit);
-            }
-
-            internal void Wipe() => _players.Clear();
-
-            internal bool IsValid => _players != null;
-
-            public class PlayerUsageData
-            {
-                [JsonProperty]
-                private Hash<string, KitUsageData> _usageData = new Hash<string, KitUsageData>();
-
-                public bool ClaimAutoKits { get; set; } = true;
-
-                internal double GetCooldownRemaining(string name)
-                {
-                    KitUsageData kitUsageData;
-                    if (!_usageData.TryGetValue(name, out kitUsageData))
-                        return 0;
-
-                    double currentTime = CurrentTime;
-
-                    return currentTime > kitUsageData.NextUseTime ? 0 : kitUsageData.NextUseTime - CurrentTime;
-                }
-
-                internal int GetKitUses(string name)
-                {
-                    KitUsageData kitUsageData;
-                    if (!_usageData.TryGetValue(name, out kitUsageData))
-                        return 0;
-
-                    return kitUsageData.TotalUses;
-                }
-
-                internal void OnKitClaimed(KitData.Kit kit)
-                {
-                    KitUsageData kitUsageData;
-                    if (!_usageData.TryGetValue(kit.Name, out kitUsageData))
-                        kitUsageData = _usageData[kit.Name] = new KitUsageData();
-
-                    kitUsageData.OnKitClaimed(kit.Cooldown);
-                }
-
-                internal void InsertOldData(string name, int totalUses, double nextUse)
-                {
-                    KitUsageData kitUsageData;
-                    if (!_usageData.TryGetValue(name, out kitUsageData))
-                        kitUsageData = _usageData[name] = new KitUsageData();
-
-                    kitUsageData.NextUseTime = nextUse;
-                    kitUsageData.TotalUses = totalUses;
-                }
-
-                public class KitUsageData
-                {
-                    public int TotalUses { get; set; }
-
-                    public double NextUseTime { get; set; }
-
-                    internal void OnKitClaimed(int cooldownSeconds)
-                    {
-                        TotalUses += 1;
-                        NextUseTime = CurrentTime + cooldownSeconds;
-                    }
-                }
-            }            
-        }        
-        #endregion
-
-        #region Serialized Items
-        private static Item CreateItem(ItemData itemData)
-        {
-            Item item = ItemManager.CreateByItemID(itemData.ItemID, itemData.Amount, itemData.Skin);
-            item.condition = itemData.Condition;
-            item.maxCondition = itemData.MaxCondition;
-
-            if (itemData.Frequency > 0)
-            {
-                ItemModRFListener rfListener = item.info.GetComponentInChildren<ItemModRFListener>();
-                if (rfListener != null)
-                    (BaseNetworkable.serverEntities.Find(item.instanceData.subEntity) as PagerEntity)?.ChangeFrequency(itemData.Frequency);  
-            }
-
-            if (itemData.BlueprintItemID != 0)
-            {
-                if (item.instanceData == null)
-                    item.instanceData = new ProtoBuf.Item.InstanceData();
-
-                item.instanceData.ShouldPool = false;
-
-                item.instanceData.blueprintAmount = 1;
-                item.instanceData.blueprintTarget = itemData.BlueprintItemID;
-
-                item.MarkDirty();
-            }
-
-            BaseProjectile weapon = item.GetHeldEntity() as BaseProjectile;
-            if (weapon != null)
-            {
-                if (!string.IsNullOrEmpty(itemData.Ammotype))
-                    weapon.primaryMagazine.ammoType = ItemManager.FindItemDefinition(itemData.Ammotype);
-                weapon.primaryMagazine.contents = itemData.Ammo;
-            }
-
-            FlameThrower flameThrower = item.GetHeldEntity() as FlameThrower;
-            if (flameThrower != null)
-                flameThrower.ammo = itemData.Ammo;
-
-            if (itemData.Contents != null)
-            {
-                foreach (ItemData contentData in itemData.Contents)
-                {
-                    Item newContent = ItemManager.CreateByItemID(contentData.ItemID, contentData.Amount);
-                    if (newContent != null)
-                    {
-                        newContent.condition = contentData.Condition;
-                        newContent.MoveToContainer(item.contents);
-                    }
-                }
-            }
-
-            item.MarkDirty();
-
-            return item;
-        }
-
-        public class ItemData
-        {
-            public string Shortname { get; set; }
-
-            public ulong Skin { get; set; }
-
-            public int Amount { get; set; }
-
-            public float Condition { get; set; }
-
-            public float MaxCondition { get; set; }
-
-            public int Ammo { get; set; }
-
-            public string Ammotype { get; set; }
-
-            public int Position { get; set; }
-
-            public int Frequency { get; set; }
-
-            public string BlueprintShortname { get; set; }
-
-            public ItemData[] Contents { get; set; }
-
-
-            [JsonIgnore]
-            private int _itemId = 0;
-
-            [JsonIgnore]
-            private int _blueprintItemId = 0;
-
-            [JsonIgnore]
-            private JObject _jObject;
-
-           
-            [JsonIgnore]
-            internal int ItemID
-            {
-                get
-                {
-                    if (_itemId == 0)
-                        _itemId = ItemManager.itemDictionaryByName[Shortname].itemid;
-                    return _itemId;
-                }
-            }
-
-            [JsonIgnore]
-            internal bool IsBlueprint => Shortname.Equals(BLUEPRINT_BASE);
-
-            [JsonIgnore]
-            internal int BlueprintItemID
-            {
-                get
-                {
-                    if (_blueprintItemId == 0 && !string.IsNullOrEmpty(BlueprintShortname))
-                        _blueprintItemId = ItemManager.itemDictionaryByName[BlueprintShortname].itemid;
-                    return _blueprintItemId;
-                }
-            }
-
-            [JsonIgnore]
-            internal JObject ToJObject
-            {
-                get
-                {
-                    if (_jObject == null)
-                    {
-                        _jObject = new JObject
-                        {
-                            ["Shortname"] = Shortname,
-                            ["SkinID"] = Skin,
-                            ["Amount"] = Amount,
-                            ["Condition"] = Condition,
-                            ["MaxCondition"] = MaxCondition,
-                            ["IsBlueprint"] = BlueprintItemID != 0,
-                            ["Ammo"] = Ammo,
-                            ["AmmoType"] = Ammotype,
-                            ["Contents"] = new JArray()
-                        };
-
-                        for (int i = 0; i < Contents?.Length; i++)                        
-                            (_jObject["Contents"] as JArray).Add(Contents[i].ToJObject);
-                    }
-
-                    return _jObject;
-                }
-            }
-
-            internal ItemData() { }
-
-            internal ItemData(Item item)
-            {
-                Shortname = item.info.shortname;
-                Amount = item.amount;
-
-                Ammotype = (item.GetHeldEntity() as BaseProjectile)?.primaryMagazine.ammoType.shortname ?? null;
-                Ammo = item.GetHeldEntity() is BaseProjectile ? (item.GetHeldEntity() as BaseProjectile).primaryMagazine.contents :
-                               item.GetHeldEntity() is FlameThrower ? (item.GetHeldEntity() as FlameThrower).ammo : 0;
-
-                Position = item.position;
-                Skin = item.skin;
-
-                Condition = item.condition;
-                MaxCondition = item.maxCondition;
-
-                Frequency = ItemModAssociatedEntity<PagerEntity>.GetAssociatedEntity(item)?.GetFrequency() ?? -1;
-
-                if (item.instanceData != null && item.instanceData.blueprintTarget != 0)
-                    BlueprintShortname = ItemManager.FindItemDefinition(item.instanceData.blueprintTarget).shortname;
-
-                Contents = item.contents?.itemList.Select(item1 => new ItemData(item1)).ToArray();
-            }
-
-            public class InstanceData
-            {
-                public int DataInt { get; set; }
-                public int BlueprintTarget { get; set; }
-                public int BlueprintAmount { get; set; }
-                public uint SubEntityNetID { get; set; }
-
-                internal InstanceData() { }
-
-                internal InstanceData(Item item)
-                {
-                    if (item.instanceData == null)
-                        return;
-
-                    DataInt = item.instanceData.dataInt;
-                    BlueprintAmount = item.instanceData.blueprintAmount;
-                    BlueprintTarget = item.instanceData.blueprintTarget;
-                }
-
-                internal void Restore(Item item)
-                {
-                    if (item.instanceData == null)
-                        item.instanceData = new ProtoBuf.Item.InstanceData();
-
-                    item.instanceData.ShouldPool = false;
-
-                    item.instanceData.blueprintAmount = BlueprintAmount;
-                    item.instanceData.blueprintTarget = BlueprintTarget;
-                    item.instanceData.dataInt = DataInt;
-
-                    item.MarkDirty();
-                }
-
-                internal bool IsValid => DataInt != 0 || BlueprintAmount != 0 || BlueprintTarget != 0;                
-            }
-        }
-        #endregion
-
-        #region Localization
-        private string Message(string key, ulong playerId = 0U) => lang.GetMessage(key, this, playerId != 0U ? playerId.ToString() : null);
-
-        private readonly Dictionary<string, string> Messages = new Dictionary<string, string>
-        {
-            ["Error.EmptyKitName"] = "No kit name was specified",
-            ["Error.InvalidKitName"] = "No kit exists with the specified name",
-            ["Error.CantClaimNow"] = "Another plugin is preventing you from receiving a kit",
-            ["Error.CanClaim.Auth"] = "You do not have the required auth level to access this kit",
-            ["Error.CanClaim.Permission"] = "You do not have the required permission to access this kit",
-            ["Error.CanClaim.Cooldown"] = "You have a cooldown of {0} remaining before you can claim this kit",
-            ["Error.CanClaim.MaxUses"] = "You have already reached the maximum number of uses allowed for this kit",
-            ["Error.CanClaim.WipeCooldown"] = "This kit has a post-wipe cooldown of {0} remaining",
-            ["Error.CanClaim.InventorySpace"] = "You do not have enough space in your inventory to claim this kit",
-            ["Error.CanClaim.InsufficientFunds"] = "You need {0} {1} to claim this kit",
-            ["Error.AutoKitDisabled"] = "Skipped giving auto-kit as you have it disabled",
-
-
-            ["Cost.Scrap"] = "Scrap",
-            ["Cost.ServerRewards"] = "RP",
-            ["Cost.Economics"] = "Coins",
-
-            ["Notification.KitReceived"] = "You have received the kit: <color=#ce422b>{0}</color>",
-
-            ["Chat.Help.Title"] = "<size=18><color=#ce422b>Kits </color></size><size=14>v{0}</size>",
-            ["Chat.Help.1"] = "<color=#ce422b>/kit</color> - Open the Kit menu",
-            ["Chat.Help.9"] = "<color=#ce422b>/kit autokit</color> - Toggle auto-kits on/off",
-            ["Chat.Help.2"] = "<color=#ce422b>/kit <name></color> - Claim the specified kit",
-            ["Chat.Help.3"] = "<color=#ce422b>/kit new</color> - Create a new kit",
-            ["Chat.Help.4"] = "<color=#ce422b>/kit edit <name></color> - Edit the specified kit",
-            ["Chat.Help.5"] = "<color=#ce422b>/kit delete <name></color> - Delete the specified kit",
-            ["Chat.Help.6"] = "<color=#ce422b>/kit list</color> - List all kits",
-            ["Chat.Help.7"] = "<color=#ce422b>/kit give <player name or ID> <kit name></color> - Give the target player the specified kit",
-            ["Chat.Help.8"] = "<color=#ce422b>/kit givenpc <kit name></color> - Give the NPC you are looking at the specified kit",
-            ["Chat.Help.10"] = "<color=#ce422b>/kit reset</color> - Wipe's all player usage data",
-
-            ["Chat.Error.NotAdmin"] = "You must either be a admin, or have the admin permission to use that command",
-            ["Chat.Error.NoKit"] = "You must specify a kit name",
-            ["Chat.Error.DoesntExist"] = "The kit <color=#ce422b>{0}</color> does not exist",
-            ["Chat.Error.GiveArgs"] = "You must specify target player and a kit name",
-            ["Chat.Error.NPCGiveArgs"] = "You must specify a kit name",
-            ["Chat.Error.NoNPCTarget"] = "Failed to find the target player",
-            ["Chat.Error.NoPlayer"] = "Failed to find a player with the specified name or ID",
-            ["Chat.KitList"] = "<color=#ce422b>Kit List:</color> {0}",
-            ["Chat.KitDeleted"] = "You have deleted the kit <color=#ce422b>{0}</color>",
-            ["Chat.KitGiven"] = "You have given <color=#ce422b>{0}</color> the kit <color=#ce422b>{1}</color>",
-            ["Chat.AutoKit.Toggle"] = "Auto-kits have been <color=#ce422b>{0}</color>",
-            ["Chat.ResetPlayers"] = "You have wiped player usage data",
-            ["Chat.AutoKit.True"] = "enabled",
-            ["Chat.AutoKit.False"] = "disabled",
-
-            ["UI.Title"] = "Kits",
-            ["UI.Title.Editor"] = "Kit Editor",
-            ["UI.OnCooldown"] = "On Cooldown",
-            ["UI.Cooldown"] = "Cooldown : {0}",
-            ["UI.MaximumUses"] = "At Redeem Limit",
-            ["UI.Purchase"] = "Purchase",
-            ["UI.Cost"] = "Cost : {0} {1}",
-            ["UI.Redeem"] = "Redeem",
-            ["UI.Details"] = "Kit Details",
-            ["UI.Name"] = "Name",
-            ["UI.Description"] = "Description",
-            ["UI.Usage"] = "Usage Details",
-            ["UI.MaxUses"] = "Maximum Uses",
-            ["UI.YourUses"] = "Your Uses",
-            ["UI.CooldownTime"] = "Cooldown Time",
-            ["UI.CooldownRemaining"] = "Remaining Cooldown",
-            ["UI.None"] = "None",
-            ["UI.PurchaseCost"] = "Purchase Cost",
-            ["UI.CopyPaste"] = "CopyPaste Support",
-            ["UI.FileName"] = "File Name",
-            ["UI.KitItems"] = "Kit Items",
-            ["UI.MainItems"] = "Main Items",
-            ["UI.WearItems"] = "Wear Items",
-            ["UI.BeltItems"] = "Belt Items",
-            ["UI.IconURL"] = "Icon URL",
-            ["UI.UsageAuthority"] = "Usage Authority",
-            ["UI.Permission"] = "Permission",
-            ["UI.AuthLevel"] = "Auth Level",
-            ["UI.IsHidden"] = "Is Hidden",
-            ["UI.CooldownSeconds"] = "Cooldown (seconds)",
-            ["UI.SaveKit"] = "Save Kit",
-            ["UI.Overwrite"] = "Overwrite Existing",
-            ["UI.ItemManagement"] = "Item Management",
-            ["UI.ClearItems"] = "Clear Items",
-            ["UI.CopyInv"] = "Copy From Inventory",
-            ["UI.CreateNew"] = "Create New",
-            ["UI.EditKit"] = "Edit Kit",
-            ["UI.NeedsPermission"] = "VIP Kit",
-            ["UI.NoKitsAvailable"] = "There are currently no kits available",
-
-            ["SaveKit.Error.NoName"] = "You must enter a kit name",
-            ["SaveKit.Error.NoContents"] = "A kit must contain atleast 1 item, or a CopyPaste file reference",
-            ["SaveKit.Error.Exists"] = "A kit with that name already exists. If you want to overwrite it check the 'Overwrite' toggle",
-            ["SaveKit.Success"] = "You have saved the kit {0}",
-
-            ["EditKit.PermissionPrefix"] = "Permissions must start with the 'kits.' prefix",
-            ["EditKit.Number"] = "You must enter a number",
-            ["EditKit.Bool"] = "You must enter true or false",
-        };
-        #endregion
-    }
+		private const string EditingLayer = "UI.Kits.Editing";
+
+		private const string ModalLayer = "UI.Kits.Modal";
+
+		private readonly Dictionary<BasePlayer, List<Kit>> openGUI = new Dictionary<BasePlayer, List<Kit>>();
+
+		private readonly Dictionary<BasePlayer, Dictionary<string, object>> kitEditing =
+			new Dictionary<BasePlayer, Dictionary<string, object>>();
+
+		private readonly Dictionary<BasePlayer, Dictionary<string, object>> itemEditing =
+			new Dictionary<BasePlayer, Dictionary<string, object>>();
+
+		private readonly Dictionary<string, List<string>> ItemsCategories =
+			new Dictionary<string, List<string>>();
+
+		private const string PERM_ADMIN = "Kits.admin";
+
+		private int LastKitID;
+
+		private string ColorOne;
+		private string ColorTwo;
+		private string ColorWhite;
+		private string ColorThree;
+		private string ColorFour;
+		private string ColorRed;
+
+		#endregion
+
+		#region Config
+
+		private Configuration _config;
+
+		private class Configuration
+		{
+			[JsonProperty(PropertyName = "Automatic wipe on wipe")]
+			public bool AutoWipe;
+
+			[JsonProperty(PropertyName = "Default Kit Color")]
+			public string KitColor = "#A0A935";
+
+			[JsonProperty(PropertyName = "Work with Notify?")]
+			public bool UseNotify = true;
+
+			[JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public string[] Commands = {"kit", "kits"};
+
+			[JsonProperty(PropertyName = "Rarity Settings", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public List<RarityColor> RarityColors = new List<RarityColor>
+			{
+				new RarityColor(40, "#A0A935")
+			};
+
+			[JsonProperty(PropertyName = "Auto Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public List<string> AutoKits = new List<string>
+			{
+				"autokit", "autokit_vip", "autokit_premium"
+			};
+
+			[JsonProperty(PropertyName = "Getting an auto kit 1 time?")]
+			public bool OnceAutoKit;
+
+			[JsonProperty(PropertyName = "Logs")] public LogInfo Logs = new LogInfo
+			{
+				Console = true,
+				File = true
+			};
+
+			[JsonProperty(PropertyName = "Color 1")]
+			public string ColorOne = "#161617";
+
+			[JsonProperty(PropertyName = "Color 2")]
+			public string ColorTwo = "#0E0E10";
+
+			[JsonProperty(PropertyName = "Color 3")]
+			public string ColorThree = "#4B68FF";
+
+			[JsonProperty(PropertyName = "Color 4")]
+			public string ColorFour = "#303030";
+
+			[JsonProperty(PropertyName = "Color Red")]
+			public string ColorRed = "#FF4B4B";
+
+			[JsonProperty(PropertyName = "Color White")]
+			public string ColorWhite = "#FFFFFF";
+
+			[JsonProperty(PropertyName = "Show Number?")]
+			public bool ShowNumber = true;
+
+			[JsonProperty(PropertyName = "Show No Permission Description?")]
+			public bool ShowNoPermDescription = true;
+
+			[JsonProperty(PropertyName = "Show All Kits?")]
+			public bool ShowAllKits;
+
+			[JsonProperty(PropertyName = "CopyPaste Parameters",
+				ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public List<string> CopyPasteParameters = new List<string>
+			{
+				"deployables", "true", "inventories", "true"
+			};
+
+			[JsonProperty(PropertyName = "Block in Building Block?")]
+			public bool BlockBuilding;
+
+			[JsonProperty(PropertyName = "NPC Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public Dictionary<string, NpcKitsData> NpcKits = new Dictionary<string, NpcKitsData>
+			{
+				["1234567"] = new NpcKitsData
+				{
+					Description = "Free Kits",
+					Kits = new List<string>
+					{
+						"kit_one",
+						"kit_two"
+					}
+				},
+				["7654321"] = new NpcKitsData
+				{
+					Description = "VIPs Kits",
+					Kits = new List<string>
+					{
+						"kit_three",
+						"kit_four"
+					}
+				}
+			};
+
+			[JsonProperty(PropertyName = "Description")]
+			public MenuDescription Description = new MenuDescription
+			{
+				AnchorMin = "0 0", AnchorMax = "1 0",
+				OffsetMin = "0 -55", OffsetMax = "0 -5",
+				Enabled = true,
+				Color = new IColor("#0E0E10", 100),
+				FontSize = 18,
+				Font = "robotocondensed-bold.ttf",
+				Align = TextAnchor.MiddleCenter,
+				TextColor = new IColor("#FFFFFF", 100),
+				Description = string.Empty
+			};
+
+			[JsonProperty(PropertyName = "Info Kit Description")]
+			public DescriptionSettings InfoKitDescription = new DescriptionSettings
+			{
+				AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+				OffsetMin = "-125 -55", OffsetMax = "125 -5",
+				Enabled = true,
+				Color = new IColor("#0E0E10", 100),
+				FontSize = 18,
+				Font = "robotocondensed-bold.ttf",
+				Align = TextAnchor.MiddleCenter,
+				TextColor = new IColor("#FFFFFF", 100)
+			};
+
+			[JsonProperty(PropertyName = "Interface")]
+			public UserInterface UI = new UserInterface
+			{
+				Height = 455,
+				Width = 640,
+				KitHeight = 165,
+				KitWidth = 135f,
+				Margin = 10f,
+				KitsOnString = 4,
+				Strings = 2,
+				YIndent = -100f,
+				DisplayName = new DisplayNameSettings
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "-45 -75",
+					OffsetMax = "45 0",
+					Enabled = true
+				},
+				Image = new ImageSettings
+				{
+					Enabled = false,
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "-32 -75", OffsetMax = "32 -11"
+				},
+				KitAvailable = new InterfacePosition
+				{
+					AnchorMin = "0 1", AnchorMax = "1 1",
+					OffsetMin = "0 -100", OffsetMax = "0 -75"
+				},
+				KitAmount = new KitAmountSettings
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "-125",
+					OffsetMax = "-120",
+					Width = 115
+				},
+				KitCooldown = new InterfacePosition
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "-32.5 -125", OffsetMax = "32.5 -105"
+				},
+				KitAmountCooldown = new InterfacePosition
+				{
+					AnchorMin = "0 1", AnchorMax = "1 1",
+					OffsetMin = "0 -120",
+					OffsetMax = "0 -95"
+				},
+				NoPermission = new InterfacePosition
+				{
+					AnchorMin = "0 1", AnchorMax = "1 1",
+					OffsetMin = "0 -100", OffsetMax = "0 -75"
+				}
+			};
+		}
+
+		private class UserInterface
+		{
+			[JsonProperty(PropertyName = "Height")]
+			public float Height;
+
+			[JsonProperty(PropertyName = "Width")] public float Width;
+
+			[JsonProperty(PropertyName = "Kit Height")]
+			public float KitHeight;
+
+			[JsonProperty(PropertyName = "Kit Width")]
+			public float KitWidth;
+
+			[JsonProperty(PropertyName = "Margin")]
+			public float Margin;
+
+			[JsonProperty(PropertyName = "Kits On String")]
+			public int KitsOnString;
+
+			[JsonProperty(PropertyName = "Strings")]
+			public int Strings;
+
+			[JsonProperty(PropertyName = "Y Indent")]
+			public float YIndent;
+
+			[JsonProperty(PropertyName = "Display Name Settings")]
+			public DisplayNameSettings DisplayName;
+
+			[JsonProperty(PropertyName = "Image Settings")]
+			public ImageSettings Image;
+
+			[JsonProperty(PropertyName = "Kit Available Settings")]
+			public InterfacePosition KitAvailable;
+
+			[JsonProperty(PropertyName = "Kit Amount Settings")]
+			public KitAmountSettings KitAmount;
+
+			[JsonProperty(PropertyName = "Kit Cooldown Settings")]
+			public InterfacePosition KitCooldown;
+
+			[JsonProperty(PropertyName = "Kit Cooldown Settings (with amount)")]
+			public InterfacePosition KitAmountCooldown;
+
+			[JsonProperty(PropertyName = "No Permission Settings")]
+			public InterfacePosition NoPermission;
+		}
+
+		private class DisplayNameSettings : InterfacePosition
+		{
+			[JsonProperty(PropertyName = "Enabled")]
+			public bool Enabled;
+		}
+
+		private class KitAmountSettings : InterfacePosition
+		{
+			[JsonProperty(PropertyName = "Width")] public float Width;
+		}
+
+		private class NpcKitsData
+		{
+			[JsonProperty(PropertyName = "Description")]
+			public string Description;
+
+			[JsonProperty(PropertyName = "Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public List<string> Kits;
+		}
+
+		private class InterfacePosition
+		{
+			public string AnchorMin;
+
+			public string AnchorMax;
+
+			public string OffsetMin;
+
+			public string OffsetMax;
+		}
+
+		private class ImageSettings : InterfacePosition
+		{
+			[JsonProperty(PropertyName = "Enabled")]
+			public bool Enabled;
+		}
+
+		private class DescriptionSettings : ImageSettings
+		{
+			[JsonProperty(PropertyName = "Background Color")]
+			public IColor Color;
+
+			[JsonProperty(PropertyName = "Font Size")]
+			public int FontSize;
+
+			[JsonProperty(PropertyName = "Font")] public string Font;
+
+			[JsonProperty(PropertyName = "Align")] [JsonConverter(typeof(StringEnumConverter))]
+			public TextAnchor Align;
+
+			[JsonProperty(PropertyName = "Text Color")]
+			public IColor TextColor;
+
+			public void Get(ref CuiElementContainer container, string parent, string name = null,
+				string description = null)
+			{
+				if (!Enabled || string.IsNullOrEmpty(description)) return;
+
+				if (string.IsNullOrEmpty(name))
+					name = CuiHelper.GetGuid();
+
+				container.Add(new CuiPanel
+				{
+					RectTransform =
+					{
+						AnchorMin = AnchorMin, AnchorMax = AnchorMax,
+						OffsetMin = OffsetMin, OffsetMax = OffsetMax
+					},
+					Image = {Color = Color.Get()}
+				}, parent, name);
+
+				container.Add(new CuiLabel
+				{
+					RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+					Text =
+					{
+						Text = $"{description}",
+						Align = Align,
+						Font = Font,
+						FontSize = FontSize,
+						Color = TextColor.Get()
+					}
+				}, name);
+			}
+		}
+
+		private class MenuDescription : DescriptionSettings
+		{
+			[JsonProperty(PropertyName = "Description")]
+			public string Description;
+		}
+
+		private class IColor
+		{
+			[JsonProperty(PropertyName = "HEX")] public string HEX;
+
+			[JsonProperty(PropertyName = "Opacity (0 - 100)")]
+			public float Alpha;
+
+			public string Get()
+			{
+				if (string.IsNullOrEmpty(HEX)) HEX = "#FFFFFF";
+
+				var str = HEX.Trim('#');
+				if (str.Length != 6) throw new Exception(HEX);
+				var r = byte.Parse(str.Substring(0, 2), NumberStyles.HexNumber);
+				var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
+				var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
+
+				return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {Alpha / 100}";
+			}
+
+			public IColor(string hex, float alpha)
+			{
+				HEX = hex;
+				Alpha = alpha;
+			}
+		}
+
+		private class LogInfo
+		{
+			[JsonProperty(PropertyName = "To Console")]
+			public bool Console;
+
+			[JsonProperty(PropertyName = "To File")]
+			public bool File;
+		}
+
+		private class RarityColor
+		{
+			[JsonProperty(PropertyName = "Chance")]
+			public int Chance;
+
+			[JsonProperty(PropertyName = "Color")] public string Color;
+
+			public RarityColor(int chance, string color)
+			{
+				Chance = chance;
+				Color = color;
+			}
+		}
+
+		protected override void LoadConfig()
+		{
+			base.LoadConfig();
+			try
+			{
+				_config = Config.ReadObject<Configuration>();
+				if (_config == null) throw new Exception();
+				SaveConfig();
+			}
+			catch
+			{
+				PrintError("Your configuration file contains an error. Using default configuration values.");
+				LoadDefaultConfig();
+			}
+		}
+
+		protected override void SaveConfig()
+		{
+			Config.WriteObject(_config);
+		}
+
+		protected override void LoadDefaultConfig()
+		{
+			_config = new Configuration();
+		}
+
+		#endregion
+
+		#region Data
+
+		private PluginData _data;
+		private Dictionary<ulong, Dictionary<string, KitData>> PlayerData;
+
+		private void SaveData()
+		{
+			SaveKits();
+
+			SaveUsers();
+		}
+
+		private void SaveKits()
+		{
+			Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Kits", _data);
+		}
+
+		private void SaveUsers()
+		{
+			Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Data", PlayerData);
+		}
+
+		private void LoadData()
+		{
+			try
+			{
+				_data = Interface.Oxide.DataFileSystem.ReadObject<PluginData>($"{Name}/Kits");
+
+				PlayerData =
+					Interface.Oxide.DataFileSystem.ReadObject<Dictionary<ulong, Dictionary<string, KitData>>>(
+						$"{Name}/Data");
+			}
+			catch (Exception e)
+			{
+				PrintError(e.ToString());
+			}
+
+			if (_data == null) _data = new PluginData();
+			if (PlayerData == null) PlayerData = new Dictionary<ulong, Dictionary<string, KitData>>();
+		}
+
+
+		private class PluginData
+		{
+			[JsonProperty(PropertyName = "Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public List<Kit> Kits = new List<Kit>();
+		}
+
+		private KitData GetPlayerData(ulong userID, string name)
+		{
+			if (!PlayerData.ContainsKey(userID))
+				PlayerData[userID] = new Dictionary<string, KitData>();
+
+			if (!PlayerData[userID].ContainsKey(name))
+				PlayerData[userID][name] = new KitData();
+
+			return PlayerData[userID][name];
+		}
+
+		private class Kit
+		{
+			[JsonIgnore] public int ID;
+
+			[JsonProperty(PropertyName = "Name")] public string Name;
+
+			[JsonProperty(PropertyName = "Display Name")]
+			public string DisplayName;
+
+			[JsonProperty(PropertyName = "Color")] public string Color;
+
+			[JsonProperty(PropertyName = "Permission")]
+			public string Permission;
+
+			[JsonProperty(PropertyName = "Description")]
+			public string Description;
+
+			[JsonProperty(PropertyName = "Image")] public string Image;
+
+			[JsonProperty(PropertyName = "Hide")] public bool Hide;
+
+			[JsonProperty(PropertyName = "Amount")]
+			public int Amount;
+
+			[JsonProperty(PropertyName = "Cooldown")]
+			public double Cooldown;
+
+			[JsonProperty(PropertyName = "Wipe Block")]
+			public double CooldownAfterWipe;
+
+			[JsonProperty(PropertyName = "Building")]
+			public string Building;
+
+			[JsonProperty(PropertyName = "Items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public List<KitItem> Items;
+
+			public void Get(BasePlayer player)
+			{
+				Items?.ForEach(item => item?.Get(player));
+			}
+		}
+
+		private enum KitItemType
+		{
+			Item,
+			Command
+		}
+
+		private class KitItem
+		{
+			[JsonProperty(PropertyName = "Type")] [JsonConverter(typeof(StringEnumConverter))]
+			public KitItemType Type;
+
+			[JsonProperty(PropertyName = "Command")]
+			public string Command;
+
+			[JsonProperty(PropertyName = "ShortName")]
+			public string ShortName;
+
+			[JsonProperty(PropertyName = "Amount")]
+			public int Amount;
+
+			[JsonProperty(PropertyName = "Blueprint")]
+			public int Blueprint;
+
+			[JsonProperty(PropertyName = "SkinID")]
+			public ulong SkinID;
+
+			[JsonProperty(PropertyName = "Container")]
+			public string Container;
+
+			[JsonProperty(PropertyName = "Condition")]
+			public float Condition;
+
+			[JsonProperty(PropertyName = "Chance")]
+			public int Chance;
+
+			[JsonProperty(PropertyName = "Position", DefaultValueHandling = DefaultValueHandling.Populate)]
+			[DefaultValue(-1)]
+			public int Position;
+
+			[JsonProperty(PropertyName = "Image")] public string Image;
+
+			[JsonProperty(PropertyName = "Weapon")]
+			public Weapon Weapon;
+
+			[JsonProperty(PropertyName = "Content", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+			public List<ItemContent> Content;
+
+			public void Get(BasePlayer player)
+			{
+				if (Chance < 100 && Random.Range(0, 100) > Chance) return;
+
+				switch (Type)
+				{
+					case KitItemType.Item:
+					{
+						GiveItem(player, BuildItem(),
+							Container == "belt" ? player.inventory.containerBelt :
+							Container == "wear" ? player.inventory.containerWear : player.inventory.containerMain);
+						break;
+					}
+					case KitItemType.Command:
+					{
+						ToCommand(player);
+						break;
+					}
+				}
+			}
+
+			private void ToCommand(BasePlayer player)
+			{
+				var command = Command.Replace("\n", "|")
+					.Replace("%steamid%", player.UserIDString, StringComparison.OrdinalIgnoreCase).Replace(
+						"%username%",
+						player.displayName, StringComparison.OrdinalIgnoreCase);
+
+				foreach (var check in command.Split('|')) _instance?.Server.Command(check);
+			}
+
+			private static void GiveItem(BasePlayer player, Item item, ItemContainer cont = null)
+			{
+				if (item == null) return;
+				var inv = player.inventory;
+
+				var moved = item.MoveToContainer(cont, item.position) || item.MoveToContainer(cont) ||
+				            item.MoveToContainer(inv.containerMain);
+				if (!moved)
+				{
+					if (cont == inv.containerBelt)
+						moved = item.MoveToContainer(inv.containerWear);
+					if (cont == inv.containerWear)
+						moved = item.MoveToContainer(inv.containerBelt);
+				}
+
+				if (!moved)
+					item.Drop(player.GetCenter(), player.GetDropVelocity());
+			}
+
+			private Item BuildItem()
+			{
+				var item = ItemManager.CreateByName(ShortName, Amount > 1 ? Amount : 1, SkinID);
+				item.condition = Condition;
+
+				item.position = Position;
+
+				if (Blueprint != 0)
+					item.blueprintTarget = Blueprint;
+
+				if (Weapon != null)
+				{
+					var baseProjectile = item.GetHeldEntity() as BaseProjectile;
+					if (baseProjectile != null && !string.IsNullOrEmpty(Weapon.ammoType))
+					{
+						baseProjectile.primaryMagazine.contents = Weapon.ammoAmount;
+						baseProjectile.primaryMagazine.ammoType =
+							ItemManager.FindItemDefinition(Weapon.ammoType);
+					}
+				}
+
+				Content?.ForEach(cont =>
+				{
+					var new_cont = ItemManager.CreateByName(cont.ShortName, cont.Amount);
+					new_cont.condition = cont.Condition;
+					new_cont.MoveToContainer(item.contents);
+				});
+
+				return item;
+			}
+
+			public static KitItem FromOld(ItemData item, string container)
+			{
+				var newItem = new KitItem
+				{
+					Content =
+						item.Contents?.Select(x =>
+								new ItemContent {ShortName = x.Shortname, Condition = x.Condition, Amount = x.Amount})
+							.ToList() ?? new List<ItemContent>(),
+					Weapon = new Weapon {ammoAmount = item.Ammo, ammoType = item.Ammotype},
+					Container = container,
+					SkinID = item.Skin,
+					Command = string.Empty,
+					Chance = 100,
+					Blueprint = string.IsNullOrEmpty(item.BlueprintShortname) ? 0 : 1,
+					Condition = item.Condition,
+					Amount = item.Amount,
+					ShortName = item.Shortname,
+					Type = KitItemType.Item,
+					Position = item.Position
+				};
+
+				return newItem;
+			}
+		}
+
+		private class Weapon
+		{
+			public string ammoType;
+
+			public int ammoAmount;
+		}
+
+		private class ItemContent
+		{
+			public string ShortName;
+
+			public float Condition;
+
+			public int Amount;
+		}
+
+		private class KitData
+		{
+			public int Amount;
+
+			public double Cooldown;
+		}
+
+		#endregion
+
+		#region Hooks
+
+		private void Init()
+		{
+			_instance = this;
+
+			LoadData();
+		}
+
+		private void OnServerInitialized()
+		{
+			LoadImages();
+
+			#region Colors
+
+			ColorOne = HexToCuiColor(_config.ColorOne);
+			ColorTwo = HexToCuiColor(_config.ColorTwo);
+			ColorWhite = HexToCuiColor(_config.ColorWhite);
+			ColorThree = HexToCuiColor(_config.ColorThree);
+			ColorFour = HexToCuiColor(_config.ColorFour);
+			ColorRed = HexToCuiColor(_config.ColorRed);
+
+			#endregion
+
+			#region Set IDs
+
+			_data.Kits.ForEach(kit =>
+			{
+				kit.ID = LastKitID;
+				++LastKitID;
+
+				if (!string.IsNullOrEmpty(kit.Permission) && !permission.PermissionExists(kit.Permission))
+					permission.RegisterPermission(kit.Permission, this);
+			});
+
+			#endregion
+
+			if (!permission.PermissionExists(PERM_ADMIN))
+				permission.RegisterPermission(PERM_ADMIN, this);
+
+			FixItemsPositions();
+
+			FillCategories();
+
+			AddCovalenceCommand(_config.Commands, nameof(CmdOpenKits));
+
+			timer.Every(1, HandleUi);
+		}
+
+		private void OnServerSave()
+		{
+			timer.In(Random.Range(2, 7), SaveData);
+		}
+
+		private void Unload()
+		{
+			foreach (var player in BasePlayer.activePlayerList)
+			{
+				CuiHelper.DestroyUi(player, Layer);
+				CuiHelper.DestroyUi(player, InfoLayer);
+				CuiHelper.DestroyUi(player, EditingLayer);
+				CuiHelper.DestroyUi(player, ModalLayer);
+
+				if (kitEditing.ContainsKey(player) || itemEditing.ContainsKey(player))
+					player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
+			}
+
+			SaveUsers();
+
+			_instance = null;
+		}
+
+		private void OnNewSave(string filename)
+		{
+			if (!_config.AutoWipe) return;
+
+			LoadData();
+
+			PlayerData.Clear();
+
+			SaveUsers();
+		}
+
+		private void OnPlayerRespawned(BasePlayer player)
+		{
+			if (player == null) return;
+
+			var kits = GetAutoKits(player);
+			if (kits.Count == 0)
+				return;
+
+			player.inventory.Strip();
+
+			if (_config.OnceAutoKit)
+				kits.LastOrDefault()?.Get(player);
+			else
+				kits.ForEach(kit => kit.Get(player));
+		}
+
+		private void OnPlayerDisconnected(BasePlayer player)
+		{
+			openGUI.Remove(player);
+			kitEditing.Remove(player);
+			itemEditing.Remove(player);
+		}
+
+		private object CanSpectateTarget(BasePlayer player, string filter)
+		{
+			return player != null && (itemEditing.ContainsKey(player) || kitEditing.ContainsKey(player))
+				? (object) true
+				: null;
+		}
+
+		private void OnUseNPC(BasePlayer npc, BasePlayer player)
+		{
+			if (npc == null || player == null || !_config.NpcKits.ContainsKey(npc.UserIDString)) return;
+
+			MainUi(player, npc.userID, First: true);
+		}
+
+		#endregion
+
+		#region Commands
+
+		private void CmdOpenKits(IPlayer cov, string command, string[] args)
+		{
+			var player = cov?.Object as BasePlayer;
+			if (player == null) return;
+
+			if (args.Length == 0)
+			{
+				MainUi(player, First: true);
+				return;
+			}
+
+			switch (args[0])
+			{
+				case "help":
+				{
+					Reply(player, KitsHelp, command);
+					break;
+				}
+				case "list":
+				{
+					Reply(player, KitsList,
+						string.Join(", ", GetAvailableKits(player).Select(x => $"'{x.DisplayName}'")));
+					break;
+				}
+				case "remove":
+				{
+					if (!IsAdmin(player)) return;
+
+					var name = string.Join(" ", args.Skip(1));
+					if (string.IsNullOrEmpty(name))
+					{
+						SendNotify(player, KitNotFound, 1, name);
+						return;
+					}
+
+					var kit = GetAvailableKits(player)?.Find(x => x.DisplayName == name);
+					if (kit == null)
+					{
+						SendNotify(player, KitNotFound, 1, name);
+						return;
+					}
+
+					_data.Kits.Remove(kit);
+					SaveKits();
+
+					SendNotify(player, KitRemoved, 0, name);
+					break;
+				}
+				default:
+				{
+					var name = string.Join(" ", args);
+					if (string.IsNullOrEmpty(name))
+					{
+						SendNotify(player, KitNotFound, 1, name);
+						return;
+					}
+
+					var kit = GetAvailableKits(player, checkAmount: false)
+						.Find(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase) ||
+						           string.Equals(x.DisplayName, name, StringComparison.InvariantCultureIgnoreCase));
+					if (kit == null)
+					{
+						SendNotify(player, KitNotFound, 1, name);
+						return;
+					}
+
+					GiveKit(player, kit);
+					break;
+				}
+			}
+		}
+
+		[ConsoleCommand("UI_Kits")]
+		private void CmdKitsConsole(ConsoleSystem.Arg arg)
+		{
+			var player = arg?.Player();
+			if (player == null || !arg.HasArgs()) return;
+
+			switch (arg.Args[0])
+			{
+				case "close":
+				{
+					openGUI.Remove(player);
+					itemEditing.Remove(player);
+					kitEditing.Remove(player);
+					player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
+
+					if (itemEditing.Count == 0 && kitEditing.Count == 0)
+						Unsubscribe(nameof(CanSpectateTarget));
+					break;
+				}
+
+				case "stopedit":
+				{
+					itemEditing.Remove(player);
+					kitEditing.Remove(player);
+					player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
+
+					if (itemEditing.Count == 0 && kitEditing.Count == 0)
+						Unsubscribe(nameof(CanSpectateTarget));
+					break;
+				}
+
+				case "main":
+				{
+					var targetId = 0UL;
+					if (arg.HasArgs(2))
+						ulong.TryParse(arg.Args[1], out targetId);
+
+					var page = 0;
+					if (arg.HasArgs(3))
+						int.TryParse(arg.Args[2], out page);
+
+					var showAll = false;
+					if (arg.HasArgs(4))
+						bool.TryParse(arg.Args[3], out showAll);
+
+					MainUi(player, targetId, page, showAll);
+					break;
+				}
+
+				case "infokit":
+				{
+					int kitId;
+					if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out kitId)) return;
+
+					var kit = _data.Kits.Find(x => x.ID == kitId);
+					if (kit == null) return;
+
+					player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
+
+					kitEditing.Remove(player);
+					itemEditing.Remove(player);
+
+					if (itemEditing.Count == 0 && kitEditing.Count == 0)
+						Unsubscribe(nameof(CanSpectateTarget));
+
+					InfoKitUi(player, kit);
+					break;
+				}
+
+				case "givekit":
+				{
+					int kitId;
+					if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out kitId)) return;
+
+					var kit = _data.Kits.Find(x => x.ID == kitId);
+					if (kit == null) return;
+
+					GiveKit(player, kit);
+					break;
+				}
+
+				case "editkit":
+				{
+					if (!IsAdmin(player)) return;
+
+					bool creating;
+					if (!arg.HasArgs(2) || !bool.TryParse(arg.Args[1], out creating)) return;
+
+					var kitId = -1;
+					if (arg.HasArgs(3))
+						int.TryParse(arg.Args[2], out kitId);
+
+					if (arg.HasArgs(4) && (!arg.HasArgs(5) || string.IsNullOrEmpty(arg.Args[4])))
+						return;
+
+					if (arg.HasArgs(5))
+					{
+						var key = arg.Args[3];
+						var value = arg.Args[4];
+
+						if (kitEditing.ContainsKey(player) && kitEditing[player].ContainsKey(key))
+						{
+							object newValue = null;
+
+							switch (key)
+							{
+								case "Name":
+									newValue = value;
+									break;
+								case "DisplayName":
+									newValue = string.Join(" ", arg.Args.Skip(4));
+									break;
+								case "Color":
+									newValue = value;
+									break;
+								case "Permission":
+									newValue = value;
+									break;
+								case "Hide":
+									bool hide;
+									bool.TryParse(value, out hide);
+
+									newValue = hide;
+									break;
+								case "AutoKit":
+									bool autoKit;
+									bool.TryParse(value, out autoKit);
+
+									newValue = autoKit;
+									break;
+								case "Amount":
+									int amount;
+									int.TryParse(value, out amount);
+
+									newValue = amount;
+									break;
+								case "Cooldown":
+									double cooldown;
+									double.TryParse(value, out cooldown);
+
+									newValue = cooldown;
+									break;
+							}
+
+							kitEditing[player][key] = newValue;
+						}
+					}
+
+					EditingKitUi(player, creating, kitId);
+					break;
+				}
+
+				case "takeitem":
+				{
+					if (!IsAdmin(player)) return;
+
+					int kitId, slot;
+					if (!arg.HasArgs(5) ||
+					    !itemEditing.ContainsKey(player) ||
+					    !int.TryParse(arg.Args[2], out kitId) ||
+					    !int.TryParse(arg.Args[3], out slot))
+						return;
+
+					var container = arg.Args[1];
+
+					itemEditing[player]["ShortName"] = arg.Args[4];
+
+					EditingItemUi(player, kitId, slot, container);
+					break;
+				}
+
+				case "selectitem":
+				{
+					if (!IsAdmin(player)) return;
+
+					int kitId, slot;
+					if (!arg.HasArgs(4) ||
+					    !itemEditing.ContainsKey(player) ||
+					    !int.TryParse(arg.Args[2], out kitId) ||
+					    !int.TryParse(arg.Args[3], out slot))
+						return;
+
+					var container = arg.Args[1];
+
+					var selectedCategory = string.Empty;
+					if (arg.HasArgs(5))
+						selectedCategory = arg.Args[4];
+
+					var page = 0;
+					if (arg.HasArgs(6))
+						int.TryParse(arg.Args[5], out page);
+
+					var input = string.Empty;
+					if (arg.HasArgs(7))
+						input = string.Join(" ", arg.Args.Skip(6));
+
+					SelectItem(player, kitId, slot, container, selectedCategory, page, input);
+					break;
+				}
+
+				case "startedititem":
+				{
+					if (!IsAdmin(player)) return;
+
+					int kitId, slot;
+					if (!arg.HasArgs(4) ||
+					    !int.TryParse(arg.Args[2], out kitId) ||
+					    !int.TryParse(arg.Args[3], out slot)) return;
+
+					var container = arg.Args[1];
+
+					EditingItemUi(player, kitId, slot, container, true);
+					break;
+				}
+
+				case "edititem":
+				{
+					if (!IsAdmin(player)) return;
+
+					int kitId, slot;
+					if (!arg.HasArgs(6) ||
+					    !int.TryParse(arg.Args[2], out kitId) ||
+					    !int.TryParse(arg.Args[3], out slot)) return;
+
+					var container = arg.Args[1];
+
+					var key = arg.Args[4];
+					var value = arg.Args[5];
+
+					if (itemEditing.ContainsKey(player) && itemEditing[player].ContainsKey(key))
+					{
+						object newValue = null;
+
+						switch (key)
+						{
+							case "Type":
+							{
+								KitItemType type;
+								if (Enum.TryParse(value, out type))
+									newValue = type;
+								break;
+							}
+							case "Command":
+							{
+								newValue = string.Join(" ", arg.Args.Skip(5));
+								break;
+							}
+							case "ShortName":
+							{
+								newValue = value;
+								break;
+							}
+							case "Amount":
+							{
+								int Value;
+
+								if (int.TryParse(value, out Value))
+									newValue = Value;
+								break;
+							}
+							case "Blueprint":
+							{
+								int Value;
+
+								if (int.TryParse(value, out Value))
+									newValue = Value;
+								break;
+							}
+							case "SkinID":
+							{
+								ulong Value;
+
+								if (ulong.TryParse(value, out Value))
+									newValue = Value;
+								break;
+							}
+							case "Chance":
+							{
+								int Value;
+
+								if (int.TryParse(value, out Value))
+									newValue = Value;
+								break;
+							}
+						}
+
+						itemEditing[player][key] = newValue;
+					}
+
+					EditingItemUi(player, kitId, slot, container);
+					break;
+				}
+
+				case "saveitem":
+				{
+					if (!IsAdmin(player)) return;
+
+					int kitId, slot;
+					if (!arg.HasArgs(4) ||
+					    !int.TryParse(arg.Args[1], out kitId) ||
+					    !int.TryParse(arg.Args[2], out slot)) return;
+
+					var container = arg.Args[3];
+					if (string.IsNullOrEmpty(container)) return;
+
+					var editing = itemEditing[player];
+					if (editing == null) return;
+
+					var kit = _data.Kits.Find(x => x.ID == kitId);
+					if (kit == null) return;
+
+					var item = kit.Items.Find(x => x.Container == container && x.Position == slot);
+					var hasItem = item != null;
+
+					if (item == null)
+						item = new KitItem();
+
+					item.Type = (KitItemType) editing["Type"];
+					item.Command = editing["Command"].ToString();
+					item.Container = editing["Container"].ToString();
+					item.ShortName = editing["ShortName"].ToString();
+					item.Amount = (int) editing["Amount"];
+					item.Blueprint = (int) editing["Blueprint"];
+					item.Chance = (int) editing["Chance"];
+					item.SkinID = (ulong) editing["SkinID"];
+					item.Position = (int) editing["Position"];
+
+					if (!hasItem)
+					{
+						var info = ItemManager.FindItemDefinition(item.ShortName);
+						if (info != null)
+							item.Condition = info.condition.max;
+
+						kit.Items.Add(item);
+					}
+
+					itemEditing.Remove(player);
+
+					SaveKits();
+
+					InfoKitUi(player, kit);
+					break;
+				}
+
+				case "removeitem":
+				{
+					if (!IsAdmin(player)) return;
+
+					int kitId, slot;
+					if (!arg.HasArgs(4) ||
+					    !int.TryParse(arg.Args[1], out kitId) ||
+					    !int.TryParse(arg.Args[2], out slot)) return;
+
+					var editing = itemEditing[player];
+					if (editing == null) return;
+
+					var kit = _data.Kits.Find(x => x.ID == kitId);
+					if (kit == null) return;
+
+					var item = kit.Items.Find(x => x.Container == arg.Args[3] && x.Position == slot);
+					if (item != null)
+						kit.Items.Remove(item);
+
+					itemEditing.Remove(player);
+
+					SaveKits();
+
+					InfoKitUi(player, kit);
+
+					break;
+				}
+
+				case "savekit":
+				{
+					if (!IsAdmin(player)) return;
+
+					bool creating;
+					int kitId;
+					if (!arg.HasArgs(3) || !bool.TryParse(arg.Args[1], out creating) ||
+					    !int.TryParse(arg.Args[2], out kitId)) return;
+
+					var editing = kitEditing[player];
+					if (editing == null) return;
+
+					Kit kit;
+					if (creating)
+					{
+						kit = new Kit
+						{
+							ID = ++LastKitID,
+							Name = (string) editing["Name"],
+							DisplayName = (string) editing["DisplayName"],
+							Color = (string) editing["Color"],
+							Permission = (string) editing["Permission"],
+							Hide = editing["Hide"] as bool? ?? true,
+							Amount = (int) editing["Amount"],
+							Cooldown = (double) editing["Cooldown"],
+							Items = new List<KitItem>()
+						};
+						_data.Kits.Add(kit);
+					}
+					else
+					{
+						kit = _data.Kits.Find(x => x.ID == kitId);
+						if (kit == null) return;
+
+						kit.Name = (string) editing["Name"];
+						kit.DisplayName = (string) editing["DisplayName"];
+						kit.Color = (string) editing["Color"];
+						kit.Permission = (string) editing["Permission"];
+						kit.Hide = editing["Hide"] as bool? ?? true;
+						kit.Amount = (int) editing["Amount"];
+						kit.Cooldown = (double) editing["Cooldown"];
+					}
+
+					var autoKit = editing["AutoKit"] as bool? ?? false;
+					if (autoKit)
+					{
+						if (!_config.AutoKits.Contains(kit.Name))
+						{
+							_config.AutoKits.Add(kit.Name);
+							SaveConfig();
+						}
+					}
+					else
+					{
+						_config.AutoKits.Remove(kit.Name);
+						SaveConfig();
+					}
+
+					kitEditing.Remove(player);
+
+					if (!string.IsNullOrEmpty(kit.Permission) && !permission.PermissionExists(kit.Permission))
+						permission.RegisterPermission(kit.Permission, this);
+
+					SaveKits();
+
+					MainUi(player);
+					break;
+				}
+
+				case "removekit":
+				{
+					if (!IsAdmin(player)) return;
+
+					int kitId;
+					if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out kitId)) return;
+
+					_data.Kits.RemoveAll(x => x.ID == kitId);
+
+					SaveKits();
+
+					MainUi(player);
+					break;
+				}
+
+				case "frominv":
+				{
+					if (!IsAdmin(player)) return;
+
+					int kitId;
+					if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out kitId)) return;
+
+					var kit = _data.Kits.Find(x => x.ID == kitId);
+					if (kit == null) return;
+
+					var kitItems = GetPlayerItems(player);
+					if (kitItems == null) return;
+
+					kit.Items = kitItems;
+
+					SaveKits();
+
+					InfoKitUi(player, kit);
+					break;
+				}
+			}
+		}
+
+		[ConsoleCommand("kits.resetkits")]
+		private void CmdKitsReset(ConsoleSystem.Arg arg)
+		{
+			if (!arg.IsAdmin) return;
+
+			_data.Kits.Clear();
+			PlayerData.Clear();
+
+			SaveData();
+
+			SendReply(arg, "Plugin successfully reset");
+		}
+
+		[ConsoleCommand("kits.resetdata")]
+		private void CmdKitsResetPlayers(ConsoleSystem.Arg arg)
+		{
+			if (!arg.IsAdmin) return;
+
+			PlayerData.Clear();
+
+			SaveUsers();
+
+			SendReply(arg, "Players successfully reset");
+		}
+
+		[ConsoleCommand("kits.give")]
+		private void CmdKitsGive(ConsoleSystem.Arg arg)
+		{
+			if (!arg.IsAdmin) return;
+
+			if (!arg.HasArgs(2))
+			{
+				SendReply(arg, $"Error syntax! Use: {arg.cmd.FullName} [name/steamid] [kitname]");
+				return;
+			}
+
+			var target = BasePlayer.Find(arg.Args[0]);
+
+			if (target == null)
+			{
+				SendReply(arg, $"Player '{arg.Args[0]}' not found!");
+				return;
+			}
+
+			var kit = _data.Kits.Find(x => x.Name == arg.Args[1]);
+			if (kit == null)
+			{
+				SendReply(arg, $"Kit '{arg.Args[1]}' not found!");
+				return;
+			}
+
+			kit.Items.ForEach(item => item.Get(target));
+
+			SendReply(arg, $"Player '{arg.Args[0]}' successfully received a kit '{arg.Args[1]}'");
+
+			Interface.CallHook("OnKitRedeemed", target, kit.Name);
+			Log(target, kit.Name);
+		}
+
+		#endregion
+
+		#region Interface
+
+		private void MainUi(BasePlayer player, ulong targetId = 0, int page = 0, bool showAll = false,
+			bool First = false)
+		{
+			#region Fields
+
+			var totalAmount = _config.UI.KitsOnString * _config.UI.Strings;
+
+			var constSwitch = -(_config.UI.KitsOnString * _config.UI.KitWidth +
+			                    (_config.UI.KitsOnString - 1) * _config.UI.Margin) / 2f;
+
+			var xSwicth = constSwitch;
+			var ySwitch = _config.UI.YIndent;
+
+			var allKits = GetAvailableKits(player, targetId.ToString(), showAll);
+			var kitsList = allKits.Skip(page * totalAmount).Take(totalAmount).ToList();
+
+			openGUI[player] = kitsList;
+
+			#endregion
+
+			var container = new CuiElementContainer();
+
+			#region Background
+
+			if (First)
+			{
+				CuiHelper.DestroyUi(player, Layer);
+
+				container.Add(new CuiPanel
+				{
+					RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+					Image =
+					{
+						Color = "0 0 0 0.9",
+						Material = "assets/content/ui/uibackgroundblur.mat"
+					},
+					CursorEnabled = true
+				}, "Overlay", Layer);
+
+				container.Add(new CuiButton
+				{
+					RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+					Text = {Text = ""},
+					Button =
+					{
+						Color = "0 0 0 0",
+						Close = Layer,
+						Command = "UI_Kits close"
+					}
+				}, Layer);
+			}
+
+			#endregion
+
+			#region Main
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+					OffsetMin = $"-{_config.UI.Width / 2f} -{_config.UI.Height / 2f}",
+					OffsetMax = $"{_config.UI.Width / 2f} {_config.UI.Height / 2f}"
+				},
+				Image =
+				{
+					Color = ColorTwo
+				}
+			}, Layer, Layer + ".Main");
+
+			#region Header
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 1", AnchorMax = "1 1",
+					OffsetMin = "0 -50",
+					OffsetMax = "0 0"
+				},
+				Image = {Color = ColorOne}
+			}, Layer + ".Main", Layer + ".Header");
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 0", AnchorMax = "1 1",
+					OffsetMin = "10 0",
+					OffsetMax = "0 0"
+				},
+				Text =
+				{
+					Text = Msg(player, MainTitle),
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-bold.ttf",
+					FontSize = 14,
+					Color = ColorWhite
+				}
+			}, Layer + ".Header");
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "1 1", AnchorMax = "1 1",
+					OffsetMin = "-35 -37.5",
+					OffsetMax = "-10 -12.5"
+				},
+				Text =
+				{
+					Text = Msg(player, Close),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-bold.ttf",
+					FontSize = 10,
+					Color = ColorWhite
+				},
+				Button =
+				{
+					Close = Layer,
+					Color = ColorThree,
+					Command = "UI_Kits close"
+				}
+			}, Layer + ".Header");
+
+			if (IsAdmin(player))
+				container.Add(new CuiButton
+				{
+					RectTransform =
+					{
+						AnchorMin = "1 1", AnchorMax = "1 1",
+						OffsetMin = "-140 -37.5",
+						OffsetMax = "-45 -12.5"
+					},
+					Text =
+					{
+						Text = Msg(player, CreateKit),
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = ColorWhite
+					},
+					Button =
+					{
+						Color = ColorTwo,
+						Command = "UI_Kits editkit True"
+					}
+				}, Layer + ".Header");
+
+			#endregion
+
+			#region Second Header
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 1", AnchorMax = "0 1",
+					OffsetMin = "10 -85",
+					OffsetMax = "110 -60"
+				},
+				Text =
+				{
+					Text = Msg(player, ListKits),
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = ColorWhite
+				}
+			}, Layer + ".Main");
+
+			#region Checkbox
+
+			if (IsAdmin(player))
+				CheckBoxUi(ref container,
+					Layer + ".Main",
+					Layer + ".ShowAll",
+					"0 1", "0 1",
+					"90 -77.5",
+					"100 -67.5",
+					showAll,
+					$"UI_Kits main {targetId} 0 {!showAll}",
+					Msg(player, ShowAll)
+				);
+
+			#endregion
+
+			#region Pages
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "1 1", AnchorMax = "1 1",
+					OffsetMin = "-132.5 -82.5",
+					OffsetMax = "-72.5 -60"
+				},
+				Text =
+				{
+					Text = Msg(player, Back),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = ColorWhite
+				},
+				Button =
+				{
+					Color = ColorOne,
+					Command = page != 0 ? $"UI_Kits main {targetId} {page - 1} {showAll}" : ""
+				}
+			}, Layer + ".Main");
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "1 1", AnchorMax = "1 1",
+					OffsetMin = "-70 -82.5",
+					OffsetMax = "-10 -60"
+				},
+				Text =
+				{
+					Text = Msg(player, Next),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = ColorWhite
+				},
+				Button =
+				{
+					Color = ColorThree,
+					Command = allKits.Count > (page + 1) * totalAmount
+						? $"UI_Kits main {targetId} {page + 1} {showAll}"
+						: ""
+				}
+			}, Layer + ".Main");
+
+			#endregion
+
+			#endregion
+
+			#region Kits
+
+			if (allKits.Count == 0)
+				container.Add(new CuiLabel
+				{
+					RectTransform =
+					{
+						AnchorMin = "0 0", AnchorMax = "1 1",
+						OffsetMin = "0 25", OffsetMax = "0 -85"
+					},
+					Text =
+					{
+						Text = Msg(player, NotAvailableKits),
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-bold.ttf",
+						FontSize = 20,
+						Color = "1 1 1 0.45"
+					}
+				}, Layer + ".Main");
+			else
+				for (var i = 0; i < kitsList.Count; i++)
+				{
+					var kit = kitsList[i];
+
+					var number = page * totalAmount + i + 1;
+
+					container.Add(new CuiPanel
+					{
+						RectTransform =
+						{
+							AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+							OffsetMin = $"{xSwicth} {ySwitch - _config.UI.KitHeight}",
+							OffsetMax = $"{xSwicth + _config.UI.KitWidth} {ySwitch}"
+						},
+						Image =
+						{
+							Color = "0 0 0 0"
+						}
+					}, Layer + ".Main", Layer + $".Kit.{kit.ID}.Main");
+
+					container.Add(new CuiPanel
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 0", AnchorMax = "1 1",
+							OffsetMin = "0 30", OffsetMax = "0 0"
+						},
+						Image =
+						{
+							Color = ColorOne
+						}
+					}, Layer + $".Kit.{kit.ID}.Main", Layer + $".Kit.{kit.ID}.Main.Background");
+
+					#region Name
+
+					if (_config.ShowNumber)
+						container.Add(new CuiLabel
+						{
+							RectTransform =
+							{
+								AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+								OffsetMin = "-45 -75",
+								OffsetMax = "45 0"
+							},
+							Text =
+							{
+								Text = $"#{number}",
+								Align = TextAnchor.MiddleCenter,
+								Font = "robotocondensed-bold.ttf",
+								FontSize = 60,
+								Color = ColorFour
+							}
+						}, Layer + $".Kit.{kit.ID}.Main");
+
+					if (_config.UI.DisplayName.Enabled)
+						container.Add(new CuiLabel
+						{
+							RectTransform =
+							{
+								AnchorMin = _config.UI.DisplayName.AnchorMin,
+								AnchorMax = _config.UI.DisplayName.AnchorMax,
+								OffsetMin = _config.UI.DisplayName.OffsetMin,
+								OffsetMax = _config.UI.DisplayName.OffsetMax
+							},
+							Text =
+							{
+								Text = $"{kit.DisplayName}",
+								Align = TextAnchor.MiddleCenter,
+								Font = "robotocondensed-bold.ttf",
+								FontSize = 16,
+								Color = "1 1 1 1"
+							}
+						}, Layer + $".Kit.{kit.ID}.Main");
+
+					#endregion
+
+					#region Image
+
+					if (_config.UI.Image.Enabled && !string.IsNullOrEmpty(kit.Image))
+						container.Add(new CuiElement
+						{
+							Parent = Layer + $".Kit.{kit.ID}.Main",
+							Components =
+							{
+								new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", kit.Image)},
+								new CuiRectTransformComponent
+								{
+									AnchorMin = _config.UI.Image.AnchorMin,
+									AnchorMax = _config.UI.Image.AnchorMax,
+									OffsetMin = _config.UI.Image.OffsetMin,
+									OffsetMax = _config.UI.Image.OffsetMax
+								}
+							}
+						});
+
+					#endregion
+
+					#region Line
+
+					container.Add(new CuiPanel
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 0", AnchorMax = "1 0",
+							OffsetMin = "0 0", OffsetMax = "0 2"
+						},
+						Image = {Color = HexToCuiColor(kit.Color)}
+					}, Layer + $".Kit.{kit.ID}.Main.Background");
+
+					#endregion
+
+					#region Give Kit
+
+					container.Add(new CuiButton
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 1", AnchorMax = "0 1",
+							OffsetMin = $"0 -{_config.UI.KitHeight}",
+							OffsetMax = $"{_config.UI.KitWidth - 30} -{_config.UI.KitHeight - 25}"
+						},
+						Text =
+						{
+							Text = Msg(player, KitTake),
+							Align = TextAnchor.MiddleCenter,
+							Font = "robotocondensed-regular.ttf",
+							FontSize = 10,
+							Color = "1 1 1 1"
+						},
+						Button =
+						{
+							Color = ColorOne,
+							Command = $"UI_Kits givekit {kit.ID}"
+						}
+					}, Layer + $".Kit.{kit.ID}.Main");
+
+					#endregion
+
+					#region Info
+
+					container.Add(new CuiButton
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 1", AnchorMax = "0 1",
+							OffsetMin = $"{_config.UI.KitWidth - 25} -{_config.UI.KitHeight}",
+							OffsetMax = $"{_config.UI.KitWidth} -{_config.UI.KitHeight - 25}"
+						},
+						Text =
+						{
+							Text = Msg(player, KitInfo),
+							Align = TextAnchor.MiddleCenter,
+							Font = "robotocondensed-regular.ttf",
+							FontSize = 18,
+							Color = "1 1 1 1"
+						},
+						Button =
+						{
+							Color = ColorOne,
+							Command = $"UI_Kits infokit {kit.ID}"
+						}
+					}, Layer + $".Kit.{kit.ID}.Main");
+
+					#endregion
+
+					RefreshKitUi(ref container, player, kit);
+
+					if ((i + 1) % _config.UI.KitsOnString == 0)
+					{
+						xSwicth = constSwitch;
+						ySwitch = ySwitch - _config.UI.KitHeight - _config.UI.Margin;
+					}
+					else
+					{
+						xSwicth += _config.UI.Margin + _config.UI.KitWidth;
+					}
+				}
+
+			#endregion
+
+			#region Description
+
+			NpcKitsData npcKit;
+			var description = targetId == 0
+				? _config.Description.Description
+				: _config.NpcKits.TryGetValue(targetId.ToString(), out npcKit)
+					? npcKit.Description
+					: string.Empty;
+
+			_config.Description.Get(ref container, Layer + ".Main", null, description);
+
+			#endregion
+
+			#endregion
+
+			CuiHelper.DestroyUi(player, Layer + ".Main");
+			CuiHelper.AddUi(player, container);
+		}
+
+		private void InfoKitUi(BasePlayer player, Kit kit)
+		{
+			var container = new CuiElementContainer();
+
+			#region Fields
+
+			var Size = 70f;
+			var Margin = 5f;
+
+			var ySwitch = -125f;
+			var amountOnString = 6;
+			var constSwitch = -(amountOnString * Size + (amountOnString - 1) * Margin) / 2f;
+
+			var total = 0;
+
+			#endregion
+
+			#region Background
+
+			container.Add(new CuiPanel
+			{
+				RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+				Image =
+				{
+					Color = HexToCuiColor(_config.ColorTwo, 98)
+				}
+			}, "Overlay", InfoLayer);
+
+			#endregion
+
+			#region Header
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "112.5 -140", OffsetMax = "222.5 -115"
+				},
+				Text =
+				{
+					Text = Msg(player, ComeBack),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = ColorThree,
+					Command = "UI_Kits stopedit",
+					Close = InfoLayer
+				}
+			}, InfoLayer);
+
+			#region Change Button
+
+			if (IsAdmin(player))
+			{
+				container.Add(new CuiPanel
+				{
+					RectTransform =
+					{
+						AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+						OffsetMin = "-12.5 -140", OffsetMax = "102.5 -115"
+					},
+					Image = {Color = "0 0 0 0"}
+				}, InfoLayer, InfoLayer + ".Btn.Change");
+
+				CreateOutLine(ref container, InfoLayer + ".Btn.Change", ColorThree, 1);
+
+				container.Add(new CuiButton
+				{
+					RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+					Text =
+					{
+						Text = Msg(player, Edit),
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = "1 1 1 1"
+					},
+					Button =
+					{
+						Color = "0 0 0 0",
+						Command = $"UI_Kits editkit {false} {kit.ID}",
+						Close = InfoLayer
+					}
+				}, InfoLayer + ".Btn.Change");
+			}
+
+			#endregion
+
+			#endregion
+
+			#region Main
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = $"{constSwitch} {ySwitch - 15f}", OffsetMax = $"0 {ySwitch}"
+				},
+				Text =
+				{
+					Text = Msg(player, ContainerMain),
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 12,
+					Color = "1 1 1 1"
+				}
+			}, InfoLayer);
+
+			ySwitch -= 20f;
+
+			var xSwitch = constSwitch;
+
+			var kitItems = kit.Items.FindAll(item => item.Container == "main");
+
+			kitItems.Sort((x, y) => y.Chance.CompareTo(x.Chance));
+
+			for (var slot = 0; slot < amountOnString * 4; slot++)
+			{
+				var kitItem = kitItems.Find(x => x.Position == slot); //kitItems.Count > slot ? kitItems[slot] : null;
+
+				InfoItemUi(ref container, player,
+					slot,
+					$"{xSwitch} {ySwitch - Size}",
+					$"{xSwitch + Size} {ySwitch}",
+					kit,
+					kitItem,
+					total,
+					"main");
+
+				if ((slot + 1) % amountOnString == 0)
+				{
+					xSwitch = constSwitch;
+					ySwitch = ySwitch - Size - Margin;
+				}
+				else
+				{
+					xSwitch += Size + Margin;
+				}
+
+				total++;
+			}
+
+			#endregion
+
+			#region Wear
+
+			ySwitch -= 5f;
+
+			amountOnString = 7;
+
+			constSwitch = -(amountOnString * Size + (amountOnString - 1) * Margin) / 2f;
+
+			xSwitch = constSwitch;
+
+			kitItems = kit.Items.FindAll(item => item.Container == "wear");
+
+			kitItems.Sort((x, y) => y.Chance.CompareTo(x.Chance));
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = $"{constSwitch} {ySwitch - 15f}", OffsetMax = $"0 {ySwitch}"
+				},
+				Text =
+				{
+					Text = Msg(player, ContaineWear),
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 12,
+					Color = "1 1 1 1"
+				}
+			}, InfoLayer);
+
+			ySwitch -= 20f;
+
+			for (var slot = 0; slot < amountOnString; slot++)
+			{
+				var kitItem = kitItems.Find(x => x.Position == slot); //kitItems.Count > slot ? kitItems[slot] : null;
+
+				InfoItemUi(ref container, player,
+					slot,
+					$"{xSwitch} {ySwitch - Size}",
+					$"{xSwitch + Size} {ySwitch}",
+					kit,
+					kitItem,
+					total,
+					"wear");
+
+				if ((slot + 1) % amountOnString == 0)
+				{
+					xSwitch = constSwitch;
+					ySwitch = ySwitch - Size - Margin;
+				}
+				else
+				{
+					xSwitch += Size + Margin;
+				}
+
+				total++;
+			}
+
+			#endregion
+
+			#region Belt
+
+			ySwitch -= 5f;
+
+			amountOnString = 6;
+
+			constSwitch = -(amountOnString * Size + (amountOnString - 1) * Margin) / 2f;
+
+			xSwitch = constSwitch;
+
+			kitItems = kit.Items.FindAll(item => item.Container == "belt");
+
+			kitItems.Sort((x, y) => y.Chance.CompareTo(x.Chance));
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = $"{constSwitch} {ySwitch - 15f}", OffsetMax = $"0 {ySwitch}"
+				},
+				Text =
+				{
+					Text = Msg(player, ContainerBelt),
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 12,
+					Color = "1 1 1 1"
+				}
+			}, InfoLayer);
+
+			ySwitch -= 20f;
+
+			for (var slot = 0; slot < amountOnString; slot++)
+			{
+				var kitItem = kitItems.Find(x => x.Position == slot); //kitItems.Count > slot ? kitItems[slot] : null;
+
+				InfoItemUi(ref container, player,
+					slot,
+					$"{xSwitch} {ySwitch - Size}",
+					$"{xSwitch + Size} {ySwitch}",
+					kit,
+					kitItem,
+					total,
+					"belt");
+
+				if ((slot + 1) % amountOnString == 0)
+				{
+					xSwitch = constSwitch;
+					ySwitch = ySwitch - Size - Margin;
+				}
+				else
+				{
+					xSwitch += Size + Margin;
+				}
+
+				total++;
+			}
+
+			#endregion
+
+			#region Description
+
+			_config.InfoKitDescription.Get(ref container, InfoLayer, null, kit.Description);
+
+			#endregion
+
+			CuiHelper.DestroyUi(player, InfoLayer);
+			CuiHelper.AddUi(player, container);
+		}
+
+		private void EditingKitUi(BasePlayer player, bool creating, int kitId = -1)
+		{
+			#region Dictionary
+
+			if (!kitEditing.ContainsKey(player))
+			{
+				if (kitId != -1)
+				{
+					var kit = _data.Kits.Find(x => x.ID == kitId);
+					if (kit == null) return;
+
+					kitEditing.Add(player, new Dictionary<string, object>
+					{
+						["Name"] = kit.Name,
+						["DisplayName"] = kit.DisplayName,
+						["Color"] = kit.Color,
+						["Permission"] = kit.Permission,
+						["Hide"] = kit.Hide,
+						["Amount"] = kit.Amount,
+						["Cooldown"] = kit.Cooldown,
+						["AutoKit"] = _config.AutoKits.Contains(kit.Name)
+					});
+				}
+				else
+				{
+					kitEditing.Add(player, new Dictionary<string, object>
+					{
+						["Name"] = CuiHelper.GetGuid(),
+						["DisplayName"] = "My Kit",
+						["Color"] = _config.KitColor,
+						["Permission"] = $"{Name}.default",
+						["Hide"] = true,
+						["Amount"] = 0,
+						["Cooldown"] = 0.0,
+						["AutoKit"] = false
+					});
+				}
+
+				player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
+
+				Subscribe(nameof(CanSpectateTarget));
+			}
+
+			#endregion
+
+			var container = new CuiElementContainer();
+
+			#region Main
+
+			container.Add(new CuiPanel
+			{
+				RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+				Image =
+				{
+					Color = HexToCuiColor(_config.ColorTwo, 98)
+				}
+			}, "Overlay", EditingLayer);
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+					OffsetMin = "-260 -150",
+					OffsetMax = "260 185"
+				},
+				Image =
+				{
+					Color = ColorTwo
+				}
+			}, EditingLayer, EditingLayer + ".Main");
+
+			#region Header
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 1", AnchorMax = "1 1",
+					OffsetMin = "0 -50",
+					OffsetMax = "0 0"
+				},
+				Image = {Color = ColorOne}
+			}, EditingLayer + ".Main", EditingLayer + ".Header");
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 0", AnchorMax = "1 1",
+					OffsetMin = "10 0",
+					OffsetMax = "0 0"
+				},
+				Text =
+				{
+					Text = Msg(player, CreateOrEditKit),
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-bold.ttf",
+					FontSize = 14,
+					Color = ColorWhite
+				}
+			}, EditingLayer + ".Header");
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "1 1", AnchorMax = "1 1",
+					OffsetMin = "-35 -37.5",
+					OffsetMax = "-10 -12.5"
+				},
+				Text =
+				{
+					Text = Msg(player, Close),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-bold.ttf",
+					FontSize = 10,
+					Color = ColorWhite
+				},
+				Button =
+				{
+					Close = EditingLayer,
+					Color = ColorThree,
+					Command = "UI_Kits close"
+				}
+			}, EditingLayer + ".Header");
+
+			if (IsAdmin(player))
+				container.Add(new CuiButton
+				{
+					RectTransform =
+					{
+						AnchorMin = "1 1", AnchorMax = "1 1",
+						OffsetMin = "-140 -37.5",
+						OffsetMax = "-45 -12.5"
+					},
+					Text =
+					{
+						Text = Msg(player, MainMenu),
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = "1 1 1 1"
+					},
+					Button =
+					{
+						Color = ColorTwo,
+						Command = $"{_config.Commands.GetRandom()}",
+						Close = EditingLayer
+					}
+				}, EditingLayer + ".Header");
+
+			#endregion
+
+			#region Fields
+
+			var ySwitch = -60f;
+			var Height = 60f;
+			var Width = 225f;
+			var xMargin = 35f;
+			var yMargin = 10f;
+
+
+			var i = 1;
+			foreach (var obj in kitEditing[player].Where(x => x.Key != "Hide" && x.Key != "AutoKit"))
+			{
+				var xSwitch = i % 2 == 0 ? xMargin / 2f : -Width - xMargin / 2f;
+
+				EditFieldUi(ref container, EditingLayer + ".Main", EditingLayer + $".Editing.{i}",
+					$"{xSwitch} {ySwitch - Height}",
+					$"{xSwitch + Width} {ySwitch}",
+					$"UI_Kits editkit {creating} {kitId} {obj.Key} ",
+					obj);
+
+				if (i % 2 == 0) ySwitch = ySwitch - Height - yMargin;
+
+				i++;
+			}
+
+			#region Hide
+
+			var hide = !(kitEditing[player]["Hide"] is bool && (bool) kitEditing[player]["Hide"]);
+
+			CheckBoxUi(ref container, EditingLayer + ".Main", EditingLayer + ".Editing.Hide", "0.5 1", "0.5 1",
+				$"{-Width - xMargin / 2f} {ySwitch - 10}",
+				$"{-Width - xMargin / 2f + 10} {ySwitch}",
+				hide,
+				$"UI_Kits editkit {creating} {kitId} Hide {hide}",
+				Msg(player, EnableKit)
+			);
+
+			#endregion
+
+			#region Auto Kit
+
+			var autoKit = kitEditing[player]["AutoKit"] is bool && (bool) kitEditing[player]["AutoKit"];
+
+			CheckBoxUi(ref container, EditingLayer + ".Main", EditingLayer + ".Editing.AutoKit", "0.5 1", "0.5 1",
+				$"{-Width - xMargin / 2f + 80} {ySwitch - 10}",
+				$"{-Width - xMargin / 2f + 90} {ySwitch}",
+				autoKit,
+				$"UI_Kits editkit {creating} {kitId} AutoKit {!autoKit}",
+				Msg(player, AutoKit)
+			);
+
+			#endregion
+
+			#endregion
+
+			ySwitch -= 35f;
+
+			#region Buttons
+
+			#region Save Kit
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 1", AnchorMax = "0 1",
+					OffsetMin = $"15 {ySwitch - 25}",
+					OffsetMax = $"115 {ySwitch}"
+				},
+				Text =
+				{
+					Text = Msg(player, SaveKit),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = ColorThree,
+					Command = $"UI_Kits savekit {creating} {kitId}",
+					Close = EditingLayer
+				}
+			}, EditingLayer + ".Main");
+
+			#endregion
+
+			#region Add From Inventory
+
+			if (!creating)
+				container.Add(new CuiButton
+				{
+					RectTransform =
+					{
+						AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+						OffsetMin = $"-100 {ySwitch - 25}",
+						OffsetMax = $"100 {ySwitch}"
+					},
+					Text =
+					{
+						Text = Msg(player, CopyItems),
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = "1 1 1 1"
+					},
+					Button =
+					{
+						Color = HexToCuiColor("#50965F"),
+						Command = $"UI_Kits frominv {kitId}",
+						Close = EditingLayer
+					}
+				}, EditingLayer + ".Main");
+
+			#endregion
+
+			#region Remove Kit
+
+			if (!creating)
+				container.Add(new CuiButton
+				{
+					RectTransform =
+					{
+						AnchorMin = "1 1", AnchorMax = "1 1",
+						OffsetMin = $"-115 {ySwitch - 25}",
+						OffsetMax = $"-15 {ySwitch}"
+					},
+					Text =
+					{
+						Text = Msg(player, RemoveKit),
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = "1 1 1 1"
+					},
+					Button =
+					{
+						Color = ColorRed,
+						Command = $"UI_Kits removekit {kitId}",
+						Close = EditingLayer
+					}
+				}, EditingLayer + ".Main");
+
+			#endregion
+
+			#endregion
+
+			#endregion
+
+			CuiHelper.DestroyUi(player, EditingLayer);
+			CuiHelper.AddUi(player, container);
+		}
+
+		private void EditingItemUi(BasePlayer player, int kitId, int slot, string itemContainer, bool First = false)
+		{
+			var container = new CuiElementContainer();
+
+			#region Dictionary
+
+			if (!itemEditing.ContainsKey(player))
+			{
+				var kit = _data.Kits.Find(x => x.ID == kitId);
+				if (kit == null) return;
+
+				var item = kit.Items.Find(x => x.Container == itemContainer && x.Position == slot);
+				if (item != null)
+					itemEditing.Add(player, new Dictionary<string, object>
+					{
+						["Type"] = item.Type,
+						["Command"] = item.Command,
+						["Container"] = item.Container,
+						["ShortName"] = item.ShortName,
+						["Amount"] = item.Amount,
+						["Blueprint"] = item.Blueprint,
+						["SkinID"] = item.SkinID,
+						["Chance"] = item.Chance,
+						["Position"] = item.Position
+					});
+				else
+					itemEditing.Add(player, new Dictionary<string, object>
+					{
+						["Type"] = KitItemType.Item,
+						["Container"] = itemContainer,
+						["Command"] = string.Empty,
+						["ShortName"] = string.Empty,
+						["Amount"] = 1,
+						["Blueprint"] = 0,
+						["SkinID"] = 0UL,
+						["Chance"] = 100,
+						["Position"] = slot
+					});
+
+				player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
+
+				Subscribe(nameof(CanSpectateTarget));
+			}
+
+			#endregion
+
+			var edit = itemEditing[player];
+
+			#region Background
+
+			if (First)
+			{
+				CuiHelper.DestroyUi(player, EditingLayer);
+
+				container.Add(new CuiPanel
+				{
+					RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+					Image = {Color = HexToCuiColor(_config.ColorOne, 80)},
+					CursorEnabled = true
+				}, "Overlay", EditingLayer);
+			}
+
+			#endregion
+
+			#region Main
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+					OffsetMin = "-260 -240",
+					OffsetMax = "260 250"
+				},
+				Image =
+				{
+					Color = ColorTwo
+				}
+			}, EditingLayer, EditingLayer + ".Main");
+
+			#region Header
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 1", AnchorMax = "1 1",
+					OffsetMin = "0 -50",
+					OffsetMax = "0 0"
+				},
+				Image = {Color = ColorOne}
+			}, EditingLayer + ".Main", EditingLayer + ".Header");
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 0", AnchorMax = "1 1",
+					OffsetMin = "10 0",
+					OffsetMax = "0 0"
+				},
+				Text =
+				{
+					Text = Msg(player, EditingTitle),
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-bold.ttf",
+					FontSize = 14,
+					Color = ColorWhite
+				}
+			}, EditingLayer + ".Header");
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "1 1", AnchorMax = "1 1",
+					OffsetMin = "-35 -37.5",
+					OffsetMax = "-10 -12.5"
+				},
+				Text =
+				{
+					Text = Msg(player, Close),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-bold.ttf",
+					FontSize = 10,
+					Color = ColorWhite
+				},
+				Button =
+				{
+					Close = EditingLayer,
+					Color = ColorThree,
+					Command = $"UI_Kits infokit {kitId}"
+				}
+			}, EditingLayer + ".Header");
+
+			#endregion
+
+			#region Type
+
+			var type = edit["Type"] as KitItemType? ?? KitItemType.Item;
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "10 -110",
+					OffsetMax = "115 -80"
+				},
+				Text =
+				{
+					Text = Msg(player, ItemName),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = HexToCuiColor(_config.ColorThree, type == KitItemType.Item ? 100 : 50),
+					Command = $"UI_Kits edititem {itemContainer} {kitId} {slot} Type {KitItemType.Item}"
+				}
+			}, EditingLayer + ".Main");
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "135 -110",
+					OffsetMax = "240 -80"
+				},
+				Text =
+				{
+					Text = Msg(player, CmdName),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = HexToCuiColor(_config.ColorThree, type == KitItemType.Command ? 100 : 50),
+					Command = $"UI_Kits edititem {itemContainer} {kitId} {slot} Type {KitItemType.Command}"
+				}
+			}, EditingLayer + ".Main");
+
+			#endregion
+
+			#region Command
+
+			EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+				"-240 -110",
+				"0 -60",
+				$"UI_Kits edititem {itemContainer} {kitId} {slot} Command ",
+				new KeyValuePair<string, object>("Command", edit["Command"]));
+
+			#endregion
+
+			#region Item
+
+			var shortName = (string) edit["ShortName"];
+
+			#region Image
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "-240 -265", OffsetMax = "-105 -130"
+				},
+				Image = {Color = ColorOne}
+			}, EditingLayer + ".Main", EditingLayer + ".Image");
+
+			if (!string.IsNullOrEmpty(shortName) && ImageLibrary)
+				container.Add(new CuiElement
+				{
+					Parent = EditingLayer + ".Image",
+					Components =
+					{
+						new CuiRawImageComponent
+							{Png = ImageLibrary.Call<string>("GetImage", shortName, edit["SkinID"])},
+						new CuiRectTransformComponent
+						{
+							AnchorMin = "0 0", AnchorMax = "1 1",
+							OffsetMin = "10 10", OffsetMax = "-10 -10"
+						}
+					}
+				});
+
+			#endregion
+
+			#region ShortName
+
+			EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+				"-85 -190",
+				"140 -130",
+				$"UI_Kits edititem {itemContainer} {kitId} {slot} ShortName ",
+				new KeyValuePair<string, object>("ShortName", edit["ShortName"]));
+
+			#endregion
+
+			#region Select Item
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = "-85 -265",
+					OffsetMax = "55 -235"
+				},
+				Text =
+				{
+					Text = Msg(player, BtnSelect),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = ColorThree,
+					Command = $"UI_Kits selectitem {itemContainer} {kitId} {slot}"
+				}
+			}, EditingLayer + ".Main");
+
+			#endregion
+
+			#region Blueprint
+
+			var bp = edit["Blueprint"] as int? ?? 0;
+			CheckBoxUi(ref container,
+				EditingLayer + ".Main",
+				CuiHelper.GetGuid(),
+				"0.5 1", "0.5 1",
+				"65 -255",
+				"75 -245",
+				bp == 1,
+				$"UI_Kits edititem {itemContainer} {kitId} {slot} Blueprint {(bp == 0 ? 1 : 0)}",
+				Msg(player, BluePrint)
+			);
+
+			#endregion
+
+			#region Amount
+
+			EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+				"-240 -345",
+				"-7.5 -285",
+				$"UI_Kits edititem {itemContainer} {kitId} {slot} Amount ",
+				new KeyValuePair<string, object>("Amount", edit["Amount"]));
+
+			#endregion
+
+			#region Chance
+
+			EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+				"7.5 -345",
+				"240 -285",
+				$"UI_Kits edititem {itemContainer} {kitId} {slot} Chance ",
+				new KeyValuePair<string, object>("Chance", edit["Chance"]));
+
+			#endregion
+
+			#region Skin
+
+			EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+				"-240 -425",
+				"240 -365",
+				$"UI_Kits edititem {itemContainer} {kitId} {slot} SkinID ",
+				new KeyValuePair<string, object>("SkinID", edit["SkinID"]));
+
+			#endregion
+
+			#endregion
+
+			#region Save Button
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+					OffsetMin = "-90 10",
+					OffsetMax = $"{(slot == -1 ? 90 : 55)} 40"
+				},
+				Text =
+				{
+					Text = Msg(player, BtnSave),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = ColorThree,
+					Command = $"UI_Kits saveitem {kitId} {slot} {itemContainer}",
+					Close = EditingLayer
+				}
+			}, EditingLayer + ".Main");
+
+			#endregion
+
+			#region Save Button
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+					OffsetMin = "60 10",
+					OffsetMax = "90 40"
+				},
+				Text =
+				{
+					Text = Msg(player, RemoveItem),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = ColorRed,
+					Command = $"UI_Kits removeitem {kitId} {slot} {itemContainer}",
+					Close = EditingLayer
+				}
+			}, EditingLayer + ".Main");
+
+			#endregion
+
+			#endregion
+
+			CuiHelper.DestroyUi(player, EditingLayer + ".Main");
+			CuiHelper.AddUi(player, container);
+		}
+
+		private void SelectItem(BasePlayer player, int kitId, int slot, string itemContainer,
+			string selectedCategory = "", int page = 0, string input = "")
+		{
+			if (string.IsNullOrEmpty(selectedCategory)) selectedCategory = ItemsCategories.FirstOrDefault().Key;
+
+			var container = new CuiElementContainer();
+
+			#region Background
+
+			container.Add(new CuiButton
+			{
+				RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+				Text = {Text = ""},
+				Button =
+				{
+					Close = ModalLayer,
+					Color = HexToCuiColor(_config.ColorOne, 80)
+				}
+			}, "Overlay", ModalLayer);
+
+			#endregion
+
+			#region Main
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+					OffsetMin = "-260 -270",
+					OffsetMax = "260 280"
+				},
+				Image =
+				{
+					Color = ColorTwo
+				}
+			}, ModalLayer, ModalLayer + ".Main");
+
+			#region Categories
+
+			var amountOnString = 4;
+			var Width = 120f;
+			var Height = 25f;
+			var xMargin = 5f;
+			var yMargin = 5f;
+
+			var constSwitch = -(amountOnString * Width + (amountOnString - 1) * xMargin) / 2f;
+			var xSwitch = constSwitch;
+			var ySwitch = -15f;
+
+			var i = 1;
+			foreach (var category in ItemsCategories)
+			{
+				container.Add(new CuiButton
+				{
+					RectTransform =
+					{
+						AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+						OffsetMin = $"{xSwitch} {ySwitch - Height}",
+						OffsetMax = $"{xSwitch + Width} {ySwitch}"
+					},
+					Text =
+					{
+						Text = $"{category.Key}",
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = "1 1 1 1"
+					},
+					Button =
+					{
+						Color = selectedCategory == category.Key
+							? ColorThree
+							: ColorOne,
+						Command = $"UI_Kits selectitem {itemContainer} {kitId} {slot}  {category.Key}"
+					}
+				}, ModalLayer + ".Main");
+
+				if (i % amountOnString == 0)
+				{
+					ySwitch = ySwitch - Height - yMargin;
+					xSwitch = constSwitch;
+				}
+				else
+				{
+					xSwitch += xMargin + Width;
+				}
+
+				i++;
+			}
+
+			#endregion
+
+			#region Items
+
+			amountOnString = 5;
+
+			var strings = 4;
+			var totalAmount = amountOnString * strings;
+
+			ySwitch = ySwitch - yMargin - Height - 10f;
+
+			Width = 85f;
+			Height = 85f;
+			xMargin = 15f;
+			yMargin = 5f;
+
+			constSwitch = -(amountOnString * Width + (amountOnString - 1) * xMargin) / 2f;
+			xSwitch = constSwitch;
+
+			i = 1;
+
+			var canSearch = !string.IsNullOrEmpty(input) && input.Length > 2;
+
+			var temp = canSearch
+				? ItemsCategories
+					.SelectMany(x => x.Value)
+					.Where(x => x.StartsWith(input) || x.Contains(input) || x.EndsWith(input)).ToList()
+				: ItemsCategories[selectedCategory];
+
+			var itemsAmount = temp.Count;
+			var Items = temp.Skip(page * totalAmount).Take(totalAmount).ToList();
+
+			Items.ForEach(item =>
+			{
+				container.Add(new CuiPanel
+				{
+					RectTransform =
+					{
+						AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+						OffsetMin = $"{xSwitch} {ySwitch - Height}",
+						OffsetMax = $"{xSwitch + Width} {ySwitch}"
+					},
+					Image = {Color = ColorOne}
+				}, ModalLayer + ".Main", ModalLayer + $".Item.{item}");
+
+				if (ImageLibrary)
+					container.Add(new CuiElement
+					{
+						Parent = ModalLayer + $".Item.{item}",
+						Components =
+						{
+							new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", item)},
+							new CuiRectTransformComponent
+							{
+								AnchorMin = "0 0", AnchorMax = "1 1",
+								OffsetMin = "5 5", OffsetMax = "-5 -5"
+							}
+						}
+					});
+
+				container.Add(new CuiButton
+				{
+					RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+					Text = {Text = ""},
+					Button =
+					{
+						Color = "0 0 0 0",
+						Command = $"UI_Kits takeitem {itemContainer} {kitId} {slot} {item}",
+						Close = ModalLayer
+					}
+				}, ModalLayer + $".Item.{item}");
+
+				if (i % amountOnString == 0)
+				{
+					xSwitch = constSwitch;
+					ySwitch = ySwitch - yMargin - Height;
+				}
+				else
+				{
+					xSwitch += xMargin + Width;
+				}
+
+				i++;
+			});
+
+			#endregion
+
+			#region Search
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+					OffsetMin = "-90 10", OffsetMax = "90 35"
+				},
+				Image = {Color = ColorThree}
+			}, ModalLayer + ".Main", ModalLayer + ".Search");
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 0", AnchorMax = "1 1",
+					OffsetMin = "10 0", OffsetMax = "0 0"
+				},
+				Text =
+				{
+					Text = canSearch ? $"{input}" : Msg(player, ItemSearch),
+					Align = canSearch ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = canSearch ? "1 1 1 0.8" : "1 1 1 1"
+				}
+			}, ModalLayer + ".Search");
+
+			container.Add(new CuiElement
+			{
+				Parent = ModalLayer + ".Search",
+				Components =
+				{
+					new CuiInputFieldComponent
+					{
+						FontSize = 10,
+						Align = TextAnchor.MiddleLeft,
+						Command = $"UI_Kits selectitem {itemContainer} {kitId} {slot} {selectedCategory} 0 ",
+						Color = "1 1 1 0.95",
+						CharsLimit = 150
+					},
+					new CuiRectTransformComponent
+					{
+						AnchorMin = "0 0", AnchorMax = "1 1",
+						OffsetMin = "10 0", OffsetMax = "0 0"
+					}
+				}
+			});
+
+			#endregion
+
+			#region Pages
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 0", AnchorMax = "0 0",
+					OffsetMin = "10 10",
+					OffsetMax = "80 35"
+				},
+				Text =
+				{
+					Text = Msg(player, Back),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = ColorOne,
+					Command = page != 0
+						? $"UI_Kits selectitem {itemContainer} {kitId} {slot} {selectedCategory} {page - 1} {input}"
+						: ""
+				}
+			}, ModalLayer + ".Main");
+
+			container.Add(new CuiButton
+			{
+				RectTransform =
+				{
+					AnchorMin = "1 0", AnchorMax = "1 0",
+					OffsetMin = "-80 10",
+					OffsetMax = "-10 35"
+				},
+				Text =
+				{
+					Text = Msg(player, Next),
+					Align = TextAnchor.MiddleCenter,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				},
+				Button =
+				{
+					Color = ColorThree,
+					Command = itemsAmount > (page + 1) * totalAmount
+						? $"UI_Kits selectitem {itemContainer} {kitId} {slot} {selectedCategory} {page + 1} {input}"
+						: ""
+				}
+			}, ModalLayer + ".Main");
+
+			#endregion
+
+			#endregion
+
+			CuiHelper.DestroyUi(player, ModalLayer);
+			CuiHelper.AddUi(player, container);
+		}
+
+		private void ErrorUi(BasePlayer player, string msg)
+		{
+			var container = new CuiElementContainer
+			{
+				{
+					new CuiPanel
+					{
+						RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+						Image = {Color = HexToCuiColor(_config.ColorTwo, 98)},
+						CursorEnabled = true
+					},
+					"Overlay", ModalLayer
+				},
+				{
+					new CuiPanel
+					{
+						RectTransform =
+						{
+							AnchorMin = "0.5 0.5",
+							AnchorMax = "0.5 0.5",
+							OffsetMin = "-127.5 -75",
+							OffsetMax = "127.5 140"
+						},
+						Image = {Color = ColorRed}
+					},
+					ModalLayer, ModalLayer + ".Main"
+				},
+				{
+					new CuiLabel
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 1", AnchorMax = "1 1", OffsetMin = "0 -165", OffsetMax = "0 0"
+						},
+						Text =
+						{
+							Text = "XXX",
+							Align = TextAnchor.MiddleCenter,
+							Font = "robotocondensed-bold.ttf",
+							FontSize = 120,
+							Color = ColorWhite
+						}
+					},
+					ModalLayer + ".Main"
+				},
+				{
+					new CuiLabel
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 1", AnchorMax = "1 1", OffsetMin = "0 -175", OffsetMax = "0 -155"
+						},
+						Text =
+						{
+							Text = $"{msg}",
+							Align = TextAnchor.MiddleCenter,
+							Font = "robotocondensed-regular.ttf",
+							FontSize = 12,
+							Color = ColorWhite
+						}
+					},
+					ModalLayer + ".Main"
+				},
+				{
+					new CuiButton
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 0", AnchorMax = "1 0", OffsetMin = "0 0", OffsetMax = "0 30"
+						},
+						Text =
+						{
+							Text = Msg(player, BtnClose),
+							Align = TextAnchor.MiddleCenter,
+							Font = "robotocondensed-regular.ttf",
+							FontSize = 12,
+							Color = ColorWhite
+						},
+						Button = {Color = HexToCuiColor("#CD3838"), Close = ModalLayer}
+					},
+					ModalLayer + ".Main"
+				}
+			};
+
+			CuiHelper.DestroyUi(player, ModalLayer);
+			CuiHelper.AddUi(player, container);
+		}
+
+		private void EditFieldUi(ref CuiElementContainer container,
+			string parent,
+			string name,
+			string oMin,
+			string oMax,
+			string command,
+			KeyValuePair<string, object> obj)
+		{
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = $"{oMin}",
+					OffsetMax = $"{oMax}"
+				},
+				Image =
+				{
+					Color = "0 0 0 0"
+				}
+			}, parent, name);
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 1", AnchorMax = "1 1",
+					OffsetMin = "0 -20", OffsetMax = "0 0"
+				},
+				Text =
+				{
+					Text = $"{obj.Key}",
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 1"
+				}
+			}, name);
+
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 0", AnchorMax = "1 1",
+					OffsetMin = "0 0", OffsetMax = "0 -20"
+				},
+				Image = {Color = "0 0 0 0"}
+			}, name, $"{name}.Value");
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0 0", AnchorMax = "1 1",
+					OffsetMin = "10 0", OffsetMax = "0 0"
+				},
+				Text =
+				{
+					Text = $"{obj.Value}",
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = "1 1 1 0.15"
+				}
+			}, $"{name}.Value");
+
+			CreateOutLine(ref container, $"{name}.Value", ColorOne);
+
+			container.Add(new CuiElement
+			{
+				Parent = $"{name}.Value",
+				Components =
+				{
+					new CuiInputFieldComponent
+					{
+						FontSize = 12,
+						Align = TextAnchor.MiddleLeft,
+						Command = $"{command}",
+						Color = "1 1 1 0.99",
+						CharsLimit = 150
+					},
+					new CuiRectTransformComponent
+					{
+						AnchorMin = "0 0", AnchorMax = "1 1",
+						OffsetMin = "10 0", OffsetMax = "0 0"
+					}
+				}
+			});
+		}
+
+		private void CheckBoxUi(ref CuiElementContainer container, string parent, string name, string aMin, string aMax,
+			string oMin, string oMax, bool enabled,
+			string command, string text)
+		{
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = aMin, AnchorMax = aMax,
+					OffsetMin = oMin,
+					OffsetMax = oMax
+				},
+				Image = {Color = "0 0 0 0"}
+			}, parent, name);
+
+			CreateOutLine(ref container, name, ColorThree, 1);
+
+			if (enabled)
+				container.Add(new CuiPanel
+				{
+					RectTransform =
+					{
+						AnchorMin = "0 0", AnchorMax = "1 1"
+					},
+					Image = {Color = ColorThree}
+				}, name);
+
+
+			container.Add(new CuiButton
+			{
+				RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+				Text = {Text = ""},
+				Button =
+				{
+					Color = "0 0 0 0",
+					Command = $"{command}"
+				}
+			}, name);
+
+			container.Add(new CuiLabel
+			{
+				RectTransform =
+				{
+					AnchorMin = "1 0.5", AnchorMax = "1 0.5",
+					OffsetMin = "5 -10",
+					OffsetMax = "100 10"
+				},
+				Text =
+				{
+					Text = $"{text}",
+					Align = TextAnchor.MiddleLeft,
+					Font = "robotocondensed-regular.ttf",
+					FontSize = 10,
+					Color = ColorWhite
+				}
+			}, name);
+		}
+
+		private void InfoItemUi(ref CuiElementContainer container, BasePlayer player, int slot, string oMin,
+			string oMax, Kit kit,
+			KitItem kitItem, int total, string itemContainer)
+		{
+			container.Add(new CuiPanel
+			{
+				RectTransform =
+				{
+					AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+					OffsetMin = $"{oMin}",
+					OffsetMax = $"{oMax}"
+				},
+				Image =
+				{
+					Color = ColorOne
+				}
+			}, InfoLayer, InfoLayer + $".Item.{total}");
+
+			if (kitItem != null)
+			{
+				if (ImageLibrary)
+					container.Add(new CuiElement
+					{
+						Parent = InfoLayer + $".Item.{total}",
+						Components =
+						{
+							new CuiRawImageComponent
+							{
+								Png = !string.IsNullOrEmpty(kitItem.Image)
+									? ImageLibrary.Call<string>("GetImage", kitItem.Image)
+									: ImageLibrary.Call<string>("GetImage", kitItem.ShortName, kitItem.SkinID)
+							},
+							new CuiRectTransformComponent
+							{
+								AnchorMin = "0 0", AnchorMax = "1 1",
+								OffsetMin = "10 10", OffsetMax = "-10 -10"
+							}
+						}
+					});
+
+				container.Add(new CuiLabel
+				{
+					RectTransform =
+					{
+						AnchorMin = "0 0", AnchorMax = "1 1",
+						OffsetMin = "2.5 3.5", OffsetMax = "-2.5 -2.5"
+					},
+					Text =
+					{
+						Text = $"x{kitItem.Amount}",
+						Align = TextAnchor.LowerRight,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = "1 1 1 1"
+					}
+				}, InfoLayer + $".Item.{total}");
+
+				var color = _config.RarityColors.Find(x => x.Chance == kitItem.Chance);
+				if (color != null)
+				{
+					container.Add(new CuiPanel
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 0", AnchorMax = "1 0",
+							OffsetMin = "0 0", OffsetMax = "0 2"
+						},
+						Image =
+						{
+							Color = HexToCuiColor(color.Color)
+						}
+					}, InfoLayer + $".Item.{total}");
+
+					container.Add(new CuiLabel
+					{
+						RectTransform =
+						{
+							AnchorMin = "0 0", AnchorMax = "1 1",
+							OffsetMin = "2.5 2.5", OffsetMax = "-2.5 -2.5"
+						},
+						Text =
+						{
+							Text = $"{kitItem.Chance}%",
+							Align = TextAnchor.UpperLeft,
+							Font = "robotocondensed-regular.ttf",
+							FontSize = 10,
+							Color = "1 1 1 1"
+						}
+					}, InfoLayer + $".Item.{total}");
+				}
+			}
+
+			if (IsAdmin(player))
+				container.Add(new CuiButton
+				{
+					RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+					Text = {Text = ""},
+					Button =
+					{
+						Color = "0 0 0 0",
+						Command =
+							$"UI_Kits startedititem {itemContainer} {kit.ID} {slot}",
+						Close = InfoLayer
+					}
+				}, InfoLayer + $".Item.{total}");
+		}
+
+		private void RefreshKitUi(ref CuiElementContainer container, BasePlayer player, Kit kit)
+		{
+			var playerData = GetPlayerData(player.userID, kit.Name);
+			if (playerData == null) return;
+
+			CuiHelper.DestroyUi(player, Layer + $".Kit.{kit.ID}");
+
+			container.Add(new CuiPanel
+			{
+				RectTransform = {AnchorMin = "0 1", AnchorMax = "1 1"},
+				Image = {Color = "0 0 0 0"}
+			}, Layer + $".Kit.{kit.ID}.Main", Layer + $".Kit.{kit.ID}");
+
+			if (_config.ShowAllKits && _config.ShowNoPermDescription && !string.IsNullOrEmpty(kit.Permission) &&
+			    !permission.UserHasPermission(player.UserIDString, kit.Permission))
+			{
+				container.Add(new CuiLabel
+				{
+					RectTransform =
+					{
+						AnchorMin = _config.UI.NoPermission.AnchorMin, AnchorMax = _config.UI.NoPermission.AnchorMax,
+						OffsetMin = _config.UI.NoPermission.OffsetMin, OffsetMax = _config.UI.NoPermission.OffsetMax
+					},
+					Text =
+					{
+						Text = Msg(player, NoPermissionDescription),
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = ColorFour
+					}
+				}, Layer + $".Kit.{kit.ID}");
+				return;
+			}
+
+			if (kit.Cooldown > 0 && playerData.Cooldown - 1 < GetCurrentTime() || kit.Cooldown == 0)
+			{
+				container.Add(new CuiLabel
+				{
+					RectTransform =
+					{
+						AnchorMin = _config.UI.KitAvailable.AnchorMin, AnchorMax = _config.UI.KitAvailable.AnchorMax,
+						OffsetMin = _config.UI.KitAvailable.OffsetMin, OffsetMax = _config.UI.KitAvailable.OffsetMax
+					},
+					Text =
+					{
+						Text = Msg(player, KitAvailableTitle),
+						Align = TextAnchor.MiddleCenter,
+						Font = "robotocondensed-regular.ttf",
+						FontSize = 10,
+						Color = ColorFour
+					}
+				}, Layer + $".Kit.{kit.ID}");
+			}
+			else
+			{
+				var time = TimeSpan.FromSeconds(playerData.Cooldown - GetCurrentTime());
+
+				if (kit.Amount > 0)
+				{
+					container.Add(new CuiLabel
+					{
+						RectTransform =
+						{
+							AnchorMin = _config.UI.KitAmountCooldown.AnchorMin,
+							AnchorMax = _config.UI.KitAmountCooldown.AnchorMax,
+							OffsetMin = _config.UI.KitAmountCooldown.OffsetMin,
+							OffsetMax = _config.UI.KitAmountCooldown.OffsetMax
+						},
+						Text =
+						{
+							Text = $"{FormatShortTime(time)}",
+							Align = TextAnchor.MiddleCenter,
+							Font = "robotocondensed-bold.ttf",
+							FontSize = 12,
+							Color = "1 1 1 1"
+						}
+					}, Layer + $".Kit.{kit.ID}", Layer + $".Kit.{kit.ID}.Cooldown");
+				}
+				else
+				{
+					container.Add(new CuiPanel
+					{
+						RectTransform =
+						{
+							AnchorMin = _config.UI.KitCooldown.AnchorMin, AnchorMax = _config.UI.KitCooldown.AnchorMax,
+							OffsetMin = _config.UI.KitCooldown.OffsetMin, OffsetMax = _config.UI.KitCooldown.OffsetMax
+						},
+						Image = {Color = HexToCuiColor(kit.Color)}
+					}, Layer + $".Kit.{kit.ID}", Layer + $".Kit.{kit.ID}.Cooldown");
+
+					container.Add(new CuiLabel
+					{
+						RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+						Text =
+						{
+							Text = $"{FormatShortTime(time)}",
+							Align = TextAnchor.MiddleCenter,
+							Font = "robotocondensed-bold.ttf",
+							FontSize = 12,
+							Color = "1 1 1 1"
+						}
+					}, Layer + $".Kit.{kit.ID}.Cooldown");
+				}
+			}
+
+			if (kit.Amount > 0)
+			{
+				var width = kit.Amount == 1
+					? _config.UI.KitAmount.Width
+					: _config.UI.KitAmount.Width / kit.Amount * 0.9f;
+
+				var margin = (_config.UI.KitAmount.Width - width * kit.Amount) / (kit.Amount - 1);
+
+				var xSwitch = -(_config.UI.KitAmount.Width / 2f);
+
+				for (var i = 0; i < kit.Amount; i++)
+				{
+					container.Add(new CuiPanel
+					{
+						RectTransform =
+						{
+							AnchorMin = _config.UI.KitAmount.AnchorMin, AnchorMax = _config.UI.KitAmount.AnchorMax,
+							OffsetMin = $"{xSwitch} {_config.UI.KitAmount.OffsetMin}",
+							OffsetMax = $"{xSwitch + width} {_config.UI.KitAmount.OffsetMax}"
+						},
+						Image =
+						{
+							Color = i < playerData.Amount ? HexToCuiColor(kit.Color) : ColorTwo
+						}
+					}, Layer + $".Kit.{kit.ID}");
+
+					xSwitch += width + margin;
+				}
+			}
+		}
+
+		#endregion
+
+		#region Kit Helpers
+
+		private void GiveKit(BasePlayer player, Kit kit, bool force = false)
+		{
+			if (player == null || kit == null) return;
+
+			if (Interface.Oxide.CallHook("canRedeemKit", player) != null)
+				return;
+
+			if (!force && !string.IsNullOrEmpty(kit.Permission) &&
+			    !permission.UserHasPermission(player.UserIDString, kit.Permission))
+			{
+				ErrorUi(player, Msg(player, NoPermission));
+				return;
+			}
+
+			if (!force && _config.BlockBuilding && !player.CanBuild())
+			{
+				ErrorUi(player, Msg(player, BBlocked));
+				return;
+			}
+
+			var currentTime = GetCurrentTime();
+
+			if (!force && kit.CooldownAfterWipe > 0)
+			{
+				var leftTime = UnBlockTime(kit.CooldownAfterWipe) - currentTime;
+				if (leftTime > 0)
+				{
+					ErrorUi(player,
+						Msg(player, KitCooldown,
+							FormatShortTime(TimeSpan.FromSeconds(leftTime))));
+
+					return;
+				}
+			}
+
+			var playerData = GetPlayerData(player.userID, kit.Name);
+
+			if (!force && kit.Amount > 0 && playerData.Amount >= kit.Amount)
+			{
+				ErrorUi(player, Msg(player, KitLimit));
+				return;
+			}
+
+			if (!force && kit.Cooldown > 0)
+				if (playerData.Cooldown > currentTime)
+				{
+					ErrorUi(player,
+						Msg(player, KitCooldown,
+							FormatShortTime(TimeSpan.FromSeconds(playerData.Cooldown - currentTime))));
+					return;
+				}
+
+			if (CopyPaste && !string.IsNullOrEmpty(kit.Building))
+			{
+				var success = CopyPaste?.Call("TryPasteFromSteamId", player.userID, kit.Building,
+					_config.CopyPasteParameters.ToArray());
+				if (success is string)
+				{
+					SendNotify(player, BuildError, 1);
+					return;
+				}
+			}
+
+			var beltcount = kit.Items.Count(i => i.Container == "belt");
+			var wearcount = kit.Items.Count(i => i.Container == "wear");
+			var maincount = kit.Items.Count(i => i.Container == "main");
+			var totalcount = beltcount + wearcount + maincount;
+			if (player.inventory.containerBelt.capacity - player.inventory.containerBelt.itemList.Count < beltcount ||
+			    player.inventory.containerWear.capacity - player.inventory.containerWear.itemList.Count < wearcount ||
+			    player.inventory.containerMain.capacity - player.inventory.containerMain.itemList.Count < maincount)
+				if (totalcount > player.inventory.containerMain.capacity -
+					player.inventory.containerMain.itemList.Count)
+				{
+					ErrorUi(player, Msg(player, NotEnoughtSpace));
+					return;
+				}
+
+			kit.Items.ForEach(item => item?.Get(player));
+
+			if (!force && kit.Amount > 0) playerData.Amount += 1;
+
+			if (!force && kit.Cooldown > 0)
+				playerData.Cooldown = GetCurrentTime() + GetCooldown(kit.Cooldown, player);
+
+			SendNotify(player, KitClaimed, 0, kit.DisplayName);
+
+			openGUI.Remove(player);
+
+			CuiHelper.DestroyUi(player, Layer);
+
+			Interface.CallHook("OnKitRedeemed", player, kit.Name);
+
+			Log(player, kit.Name);
+		}
+
+		private double GetCooldown(double cooldown, BasePlayer player)
+		{
+			var cd = Interface.Oxide.CallHook("OnKitCooldown", player, cooldown) as double?;
+			if (cd != null) return (double) cd;
+
+			return cooldown;
+		}
+
+		private List<KitItem> GetPlayerItems(BasePlayer player)
+		{
+			var kititems = new List<KitItem>();
+
+			player.inventory.containerWear.itemList.ForEach(item =>
+			{
+				if (item == null) return;
+				kititems.Add(ItemToKit(item, "wear"));
+			});
+
+			player.inventory.containerMain.itemList.ForEach(item =>
+			{
+				if (item == null) return;
+				kititems.Add(ItemToKit(item, "main"));
+			});
+
+			player.inventory.containerBelt.itemList.ForEach(item =>
+			{
+				if (item == null) return;
+				kititems.Add(ItemToKit(item, "belt"));
+			});
+
+			return kititems;
+		}
+
+		private KitItem ItemToKit(Item item, string container)
+		{
+			var kitem = new KitItem
+			{
+				Amount = item.amount,
+				Container = container,
+				SkinID = item.skin,
+				Blueprint = item.blueprintTarget,
+				ShortName = item.info.shortname,
+				Condition = item.condition,
+				Weapon = null,
+				Content = null,
+				Chance = 100,
+				Command = string.Empty,
+				Position = item.position
+			};
+
+			if (item.info.category == ItemCategory.Weapon)
+			{
+				var weapon = item.GetHeldEntity() as BaseProjectile;
+				if (weapon != null)
+					kitem.Weapon = new Weapon
+					{
+						ammoType = weapon.primaryMagazine.ammoType.shortname,
+						ammoAmount = weapon.primaryMagazine.contents
+					};
+			}
+
+			if (item.contents != null)
+				kitem.Content = item.contents.itemList.Select(cont => new ItemContent
+				{
+					Amount = cont.amount,
+					Condition = cont.condition,
+					ShortName = cont.info.shortname
+				}).ToList();
+
+			return kitem;
+		}
+
+		#endregion
+
+		#region Utils
+
+		private void FillCategories()
+		{
+			ItemManager.itemList.ForEach(item =>
+			{
+				var itemCategory = item.category.ToString();
+
+				if (ItemsCategories.ContainsKey(itemCategory))
+				{
+					if (!ItemsCategories[itemCategory].Contains(item.shortname))
+						ItemsCategories[itemCategory].Add(item.shortname);
+				}
+				else
+				{
+					ItemsCategories.Add(itemCategory, new List<string> {item.shortname});
+				}
+			});
+		}
+
+		private void HandleUi()
+		{
+			var toRemove = Pool.GetList<BasePlayer>();
+
+			foreach (var check in openGUI)
+			{
+				var player = check.Key;
+				if (player == null || !player.IsConnected)
+				{
+					toRemove.Add(player);
+					continue;
+				}
+
+				var container = new CuiElementContainer();
+
+				check.Value.ForEach(kit => RefreshKitUi(ref container, player, kit));
+
+				CuiHelper.AddUi(player, container);
+			}
+
+			toRemove.ForEach(x => openGUI.Remove(x));
+			Pool.FreeList(ref toRemove);
+		}
+
+		private void FixItemsPositions()
+		{
+			_data.Kits.ForEach(kit =>
+			{
+				var Positions = new Dictionary<string, int>
+				{
+					["belt"] = 0,
+					["main"] = 0,
+					["wear"] = 0
+				};
+
+				kit.Items.ForEach(item =>
+				{
+					if (Positions.ContainsKey(item.Container) && item.Position == -1)
+					{
+						item.Position = Positions[item.Container];
+
+						Positions[item.Container] += 1;
+					}
+				});
+			});
+
+			SaveKits();
+		}
+
+		private void LoadImages()
+		{
+			if (!ImageLibrary)
+			{
+				PrintError("IMAGE LIBRARY IS NOT INSTALLED!");
+			}
+			else
+			{
+				var imagesList = new Dictionary<string, string>();
+
+				var itemIcons = new List<KeyValuePair<string, ulong>>();
+
+				_data.Kits.ForEach(kit =>
+				{
+					if (_config.UI.Image.Enabled && !string.IsNullOrEmpty(kit.Image)
+					                             && !imagesList.ContainsKey(kit.Image))
+						imagesList.Add(kit.Image, kit.Image);
+
+					kit.Items.ForEach(item =>
+					{
+						if (!string.IsNullOrEmpty(item.Image) && !imagesList.ContainsKey(item.Image))
+							imagesList.Add(item.Image, item.Image);
+
+						itemIcons.Add(new KeyValuePair<string, ulong>(item.ShortName, item.SkinID));
+					});
+				});
+
+				if (itemIcons.Count > 0) ImageLibrary?.Call("LoadImageList", Title, itemIcons, null);
+
+				ImageLibrary?.Call("ImportImageList", Title, imagesList, 0UL, true);
+			}
+		}
+
+		private static string HexToCuiColor(string HEX, float Alpha = 100)
+		{
+			if (string.IsNullOrEmpty(HEX)) HEX = "#FFFFFF";
+
+			var str = HEX.Trim('#');
+			if (str.Length != 6) throw new Exception(HEX);
+			var r = byte.Parse(str.Substring(0, 2), NumberStyles.HexNumber);
+			var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
+			var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
+
+			return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {Alpha / 100f}";
+		}
+
+		private static string FormatShortTime(TimeSpan time)
+		{
+			return time.ToShortString();
+		}
+
+		private static void CreateOutLine(ref CuiElementContainer container, string parent, string color,
+			float size = 2)
+		{
+			container.Add(new CuiPanel
+				{
+					RectTransform =
+					{
+						AnchorMin = "0 0",
+						AnchorMax = "1 0",
+						OffsetMin = $"{size} 0",
+						OffsetMax = $"-{size} {size}"
+					},
+					Image = {Color = color}
+				},
+				parent);
+			container.Add(new CuiPanel
+				{
+					RectTransform =
+					{
+						AnchorMin = "0 1",
+						AnchorMax = "1 1",
+						OffsetMin = $"{size} -{size}",
+						OffsetMax = $"-{size} 0"
+					},
+					Image = {Color = color}
+				},
+				parent);
+			container.Add(new CuiPanel
+				{
+					RectTransform =
+					{
+						AnchorMin = "0 0", AnchorMax = "0 1",
+						OffsetMin = "0 0",
+						OffsetMax = $"{size} 0"
+					},
+					Image = {Color = color}
+				},
+				parent);
+			container.Add(new CuiPanel
+				{
+					RectTransform =
+					{
+						AnchorMin = "1 0",
+						AnchorMax = "1 1",
+						OffsetMin = $"-{size} 0",
+						OffsetMax = "0 0"
+					},
+					Image = {Color = color}
+				},
+				parent);
+		}
+
+		private List<Kit> GetAvailableKits(BasePlayer player, string targetId = "0", bool showAll = false,
+			bool checkAmount = true)
+		{
+			return IsAdmin(player) && showAll
+				? _data.Kits
+				: _data.Kits.FindAll(x =>
+					!x.Hide &&
+					(targetId == "0" || _config.NpcKits.ContainsKey(targetId) &&
+						_config.NpcKits[targetId].Kits.Contains(x.Name)) &&
+					(!checkAmount || x.Amount == 0 || x.Amount > 0 &&
+						GetPlayerData(player.userID, x.Name).Amount < x.Amount) &&
+					(_config.ShowAllKits || string.IsNullOrEmpty(x.Permission) ||
+					 permission.UserHasPermission(player.UserIDString, x.Permission)));
+		}
+
+		private List<Kit> GetAutoKits(BasePlayer player)
+		{
+			return _data.Kits
+				.FindAll(kit => kit.Name == "autokit" || _config.AutoKits.Contains(kit.Name) &&
+					(string.IsNullOrEmpty(kit.Permission) ||
+					 permission.UserHasPermission(
+						 player.UserIDString, kit.Permission)));
+		}
+
+		private double UnBlockTime(double amount)
+		{
+			return TimeSpan.FromTicks(SaveRestore.SaveCreatedTime.ToUniversalTime().Ticks).TotalSeconds + amount;
+		}
+
+		private static double GetCurrentTime()
+		{
+			return TimeSpan.FromTicks(DateTime.UtcNow.Ticks).TotalSeconds;
+		}
+
+		private bool IsAdmin(BasePlayer player)
+		{
+			return player != null && (player.IsAdmin || permission.UserHasPermission(player.UserIDString, PERM_ADMIN));
+		}
+
+		#endregion
+
+		#region Log
+
+		private void Log(BasePlayer player, string kitname)
+		{
+			if (player == null) return;
+
+			var text = $"{player.displayName}[{player.UserIDString}] - Received Kit: {kitname}";
+
+			if (_config.Logs.Console)
+				Puts(text);
+
+			if (_config.Logs.Console)
+				LogToFile(Name, $"[{DateTime.Now}] {text}", this);
+		}
+
+		#endregion
+
+		#region Lang
+
+		private const string
+			KitExist = "KitExist",
+			KitNotExist = "KitNotExist",
+			KitRemoved = "KitRemoved",
+			AccessDenied = "AccessDenied",
+			KitLimit = "KitLimit",
+			KitCooldown = "KitCooldown",
+			KitCreate = "KitCreate",
+			KitClaimed = "KitClaimed",
+			NotEnoughtSpace = "NotEnoughtSpace",
+			NotifyTitle = "NotifyTitle",
+			Close = "Close",
+			MainTitle = "MainTitle",
+			Back = "Back",
+			Next = "Next",
+			NotAvailableKits = "NoAvailabeKits",
+			CreateKit = "CreateKit",
+			ListKits = "ListKits",
+			ShowAll = "ShowAll",
+			KitInfo = "KitInfo",
+			KitTake = "KitGet",
+			ComeBack = "ComeBack",
+			Edit = "Edit",
+			ContainerMain = "ContainerMain",
+			ContaineWear = "ContaineWear",
+			ContainerBelt = "ContainerBelt",
+			CreateOrEditKit = "CreateOrEditKit",
+			MainMenu = "MainMenu",
+			EnableKit = "EnableKit",
+			AutoKit = "AutoKit",
+			SaveKit = "SaveKit",
+			CopyItems = "CopyItems",
+			RemoveKit = "RemoveKit",
+			EditingTitle = "EditingTitle",
+			ItemName = "ItemName",
+			CmdName = "CmdName",
+			BtnSelect = "BtnSelect",
+			BluePrint = "BluePrint",
+			BtnSave = "BtnSave",
+			ItemSearch = "ItemSearch",
+			BtnClose = "BtnClose",
+			KitAvailableTitle = "KitAvailable",
+			KitsList = "KitsList",
+			KitsHelp = "KitsHelp",
+			KitNotFound = "KitNotFound",
+			RemoveItem = "RemoveItem",
+			NoPermission = "NoPermission",
+			BuildError = "BuildError",
+			BBlocked = "BuildingBlocked",
+			NoPermissionDescription = "NoPermissionDescription";
+
+		protected override void LoadDefaultMessages()
+		{
+			lang.RegisterMessages(new Dictionary<string, string>
+			{
+				[KitExist] = "Kit with the same name already exist",
+				[KitCreate] = "You have created a new kit - {0}",
+				[KitNotExist] = "This kit doesn't exist",
+				[KitRemoved] = "Kit {0} was removed",
+				[AccessDenied] = "Access denied",
+				[KitLimit] = "Usage limite reached",
+				[KitCooldown] = "You will be able to use this kit after: {0}",
+				[NotEnoughtSpace] = "Can't redeem kit. Not enought space",
+				[KitClaimed] = "You have claimed kit - {0}",
+				[NotifyTitle] = "KITS",
+				[Close] = "✕",
+				[MainTitle] = "Kits",
+				[Back] = "Back",
+				[Next] = "Next",
+				[NotAvailableKits] = "NO KITS AVAILABLE FOR YOU :(",
+				[CreateKit] = "Create Kit",
+				[ListKits] = "List of kits",
+				[ShowAll] = "Show all",
+				[KitInfo] = "i",
+				[KitTake] = "Take",
+				[ComeBack] = "Come back",
+				[Edit] = "Edit",
+				[ContainerMain] = "Main",
+				[ContaineWear] = "Wear",
+				[ContainerBelt] = "Belt",
+				[CreateOrEditKit] = "Create/Edit Kit",
+				[MainMenu] = "Main menu",
+				[EnableKit] = "Enable kit",
+				[AutoKit] = "Auto kit",
+				[SaveKit] = "Save kit",
+				[CopyItems] = "Copy items from inventory",
+				[RemoveKit] = "Remove kit",
+				[EditingTitle] = "Item editing",
+				[ItemName] = "Item",
+				[CmdName] = "Command",
+				[BtnSelect] = "Select",
+				[BluePrint] = "Blueprint",
+				[BtnSave] = "Save",
+				[ItemSearch] = "Item search",
+				[BtnClose] = "CLOSE",
+				[KitAvailableTitle] = "KIT AVAILABLE\nTO RECEIVE",
+				[KitsList] = "List of kits: {0}",
+				[KitsHelp] =
+					"KITS HELP\n- /{0} help - get help with kits\n- /{0} list - get a list of available kits\n- /{0} [name] - get the kit",
+				[KitNotFound] = "Kit '{0}' not found",
+				[RemoveItem] = "✕",
+				[NoPermission] = "You don't have permission to get this kit",
+				[BuildError] = "Can't place the building here",
+				[BBlocked] = "Cannot do that while building blocked.",
+				[NoPermissionDescription] = "PURCHASE THIS KIT AT\nSERVERNAME.GG"
+			}, this);
+		}
+
+		private string Msg(string key, string userid = null, params object[] obj)
+		{
+			return string.Format(lang.GetMessage(key, this, userid), obj);
+		}
+
+		private string Msg(BasePlayer player, string key, params object[] obj)
+		{
+			return string.Format(lang.GetMessage(key, this, player.UserIDString), obj);
+		}
+
+		private void Reply(BasePlayer player, string key, params object[] obj)
+		{
+			SendReply(player, Msg(key, player.UserIDString, obj));
+		}
+
+		private void SendNotify(BasePlayer player, string key, int type, params object[] obj)
+		{
+			if (Notify && _config.UseNotify)
+				Notify?.Call("SendNotify", player, type, Msg(player, key, obj));
+			else
+				Reply(player, key, obj);
+		}
+
+		#endregion
+
+		#region API
+
+		private string[] GetAllKits()
+		{
+			return _data.Kits.Select(kit => kit.Name).ToArray();
+		}
+
+		private object GetKitInfo(string kitname)
+		{
+			var kit = _data.Kits.Find(x => x.Name == kitname);
+			if (kit == null) return null;
+
+			var obj = new JObject
+			{
+				["name"] = kit.Name,
+				["displayname"] = kit.DisplayName,
+				["color"] = kit.Color,
+				["permission"] = kit.Permission,
+				["image"] = kit.Image,
+				["hide"] = kit.Hide,
+				["amount"] = kit.Amount,
+				["cooldown"] = kit.Cooldown
+			};
+
+			var items = new JArray();
+			foreach (var item in kit.Items.Select(itemEntry => new JObject
+			{
+				["type"] = itemEntry.Type.ToString(),
+				["command"] = itemEntry.Command,
+				["shortname"] = itemEntry.ShortName,
+				["amount"] = itemEntry.Amount,
+				["blueprint"] = itemEntry.Blueprint,
+				["skinid"] = itemEntry.SkinID,
+				["container"] = itemEntry.Container,
+				["condition"] = itemEntry.Condition,
+				["chance"] = itemEntry.Chance
+			}))
+				items.Add(item);
+
+			obj["items"] = items;
+			return obj;
+		}
+
+		private string[] GetKitContents(string kitname)
+		{
+			var kit = _data.Kits.Find(x => x.Name == kitname);
+			if (kit == null) return null;
+
+			var items = new List<string>();
+			foreach (var item in kit.Items)
+			{
+				var itemstring = $"{item.ShortName}_{item.Amount}";
+				if (item.Content.Count > 0)
+					itemstring = item.Content.Aggregate(itemstring, (current, mod) => current + $"_{mod.ShortName}");
+
+				items.Add(itemstring);
+			}
+
+			return items.ToArray();
+		}
+
+		private double GetKitCooldown(string kitname)
+		{
+			return _data.Kits.Find(x => x.Name == kitname)?.Cooldown ?? 0;
+		}
+
+		private double PlayerKitCooldown(ulong ID, string kitname)
+		{
+			return GetPlayerData(ID, kitname).Cooldown;
+		}
+
+		private int KitMax(string kitname)
+		{
+			return _data.Kits.Find(x => x.Name == kitname)?.Amount ?? 0;
+		}
+
+		private double PlayerKitMax(ulong ID, string kitname)
+		{
+			return GetPlayerData(ID, kitname)?.Amount ?? 0;
+		}
+
+		private string KitImage(string kitname)
+		{
+			return _data.Kits.Find(x => x.Name == kitname)?.Image ?? string.Empty;
+		}
+
+		private void GiveKit(BasePlayer player, string kitname)
+		{
+			GiveKit(player, _data.Kits.Find(x => x.Name == kitname), true);
+		}
+
+		private bool isKit(string kitname)
+		{
+			return IsKit(kitname);
+		}
+
+		private bool IsKit(string kitname)
+		{
+			return _data.Kits.Exists(x => x.Name == kitname);
+		}
+
+		#endregion
+
+		#region Convert
+
+		[ConsoleCommand("kits.convert")]
+		private void OldKitsConvert(ConsoleSystem.Arg arg)
+		{
+			if (!arg.IsAdmin) return;
+
+			OldData oldKits = null;
+
+			try
+			{
+				oldKits = Interface.Oxide.DataFileSystem.ReadObject<OldData>("Kits/kits_data");
+			}
+			catch (Exception e)
+			{
+				PrintError(e.ToString());
+			}
+
+			var amount = 0;
+
+			oldKits?._kits.ToList().ForEach(oldKit =>
+			{
+				var kit = new Kit
+				{
+					ID = ++LastKitID,
+					Name = oldKit.Value.Name,
+					DisplayName = oldKit.Value.Name,
+					Permission = oldKit.Value.RequiredPermission,
+					Amount = oldKit.Value.MaximumUses,
+					Cooldown = oldKit.Value.Cooldown,
+					Description = oldKit.Value.Description,
+					Hide = oldKit.Value.IsHidden,
+					Building = oldKit.Value.CopyPasteFile,
+					Image = oldKit.Value.KitImage,
+					Color = _config.KitColor,
+					Items = new List<KitItem>()
+				};
+
+				foreach (var item in oldKit.Value.MainItems)
+					kit.Items.Add(KitItem.FromOld(item, "main"));
+
+				foreach (var item in oldKit.Value.WearItems)
+					kit.Items.Add(KitItem.FromOld(item, "wear"));
+
+				foreach (var item in oldKit.Value.BeltItems)
+					kit.Items.Add(KitItem.FromOld(item, "belt"));
+
+				_data.Kits.Add(kit);
+
+				amount++;
+			});
+
+			Puts($"{amount} kits was converted!");
+
+			SaveKits();
+		}
+
+		private class OldData
+		{
+			[JsonProperty] public Dictionary<string, OldKitsData> _kits =
+				new Dictionary<string, OldKitsData>(StringComparer.OrdinalIgnoreCase);
+		}
+
+		private class OldKitsData
+		{
+			public string Name;
+			public string Description;
+			public string RequiredPermission;
+
+			public int MaximumUses;
+			public int RequiredAuth;
+			public int Cooldown;
+			public int Cost;
+
+			public bool IsHidden;
+
+			public string CopyPasteFile;
+			public string KitImage;
+
+			public ItemData[] MainItems;
+			public ItemData[] WearItems;
+			public ItemData[] BeltItems;
+		}
+
+		private class ItemData
+		{
+			public string Shortname;
+
+			public ulong Skin;
+
+			public int Amount;
+
+			public float Condition;
+
+			public float MaxCondition;
+
+			public int Ammo;
+
+			public string Ammotype;
+
+			public int Position;
+
+			public int Frequency;
+
+			public string BlueprintShortname;
+
+			public ItemData[] Contents;
+		}
+
+		#endregion
+	}
 }
