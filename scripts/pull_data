@@ -1,0 +1,47 @@
+#!/bin/bash
+SERVER=$1
+PLUGIN=$2
+REPO_DIR="/c/Users/shaun/repos/solidrust.net/defaults"
+SERVER_KEYS="/c/Users/shaun/repos"
+
+case $SERVER in
+
+  two)
+    SCP_CMD="scp -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem -r admin@two.solidrust.net"
+    ;;
+
+  nine)
+    SCP_CMD="scp -i ${SERVER_KEYS}/us-west-2-solidrust.pem -r admin@nine.solidrust.net"
+    ;;
+
+  *)
+    echo "pull_data: Invalid server selection"
+    echo ""
+    echo "Currently supported servers: two, nine"
+    echo ""
+    echo "Usage: pull_data <server> <plugin>"
+    echo ""
+    ;;
+esac
+
+case $PLUGIN in
+
+  Kits)
+    echo "Pulling Kits data from ${SERVER}"
+    $SCP_CMD:/game/oxide/data/Kits/Kits.json "${REPO_DIR}/oxide/data/Kits/"
+    ;;
+
+  copypaste)
+    echo "Pulling CopyPaste data from ${SERVER}"
+    $SCP_CMD:/game/oxide/data/copypaste/*.json "${REPO_DIR}/oxide/data/copypaste/"
+    ;;
+
+  *)
+    echo "pull_data: Invalid plugin selection"
+    echo ""
+    echo "Currently supported plugins: kits, copypaste"
+    echo ""
+    echo "Usage: pull_data <server> <plugin>"
+    echo ""
+    ;;
+esac

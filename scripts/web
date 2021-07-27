@@ -1,0 +1,4 @@
+#!/bin/bash
+SERVER_KEYS="/c/Users/shaun/repos/"
+WEB_SERVER="44.234.152.179"
+ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@${WEB_SERVER}

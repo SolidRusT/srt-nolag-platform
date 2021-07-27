@@ -375,7 +375,10 @@ carcommander.canbuild \
 extendedrecycler.use \
 statistics.use \
 bounty.use \
-blueprintmanager.all
+blueprintmanager.all \
+Kits.default \
+buildingworkbench.use \
+raidalerts.use
 )
 
 DEFAULT_PERMS=(
@@ -445,7 +448,9 @@ buildingworkbench.cancelcraft \
 vehicledeployedlocks.codelock.allvehicles \
 vehicledeployedlocks.keylock.allvehicles \
 discordmessages.report \
-craftchassis.4
+craftchassis.4 \
+buildingworkbench.use \
+raidalerts.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
