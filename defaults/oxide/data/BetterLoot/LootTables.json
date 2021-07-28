@@ -3,10 +3,6 @@
         "assets/bundled/prefabs/autospawn/resource/loot/loot-barrel-1.prefab": {
             "Enabled": true,
             "ItemList": {
-                "fun.guitar": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "fuse": {
                     "Max": 2,
                     "Min": 1
@@ -68,10 +64,6 @@
         "assets/bundled/prefabs/autospawn/resource/loot/loot-barrel-2.prefab": {
             "Enabled": true,
             "ItemList": {
-                "fun.guitar": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "fuse": {
                     "Max": 1,
                     "Min": 1

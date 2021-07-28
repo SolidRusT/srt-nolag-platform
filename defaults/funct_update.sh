@@ -11,7 +11,7 @@ function update_mods () {
     OXIDE=(
         oxide/data/BetterLoot/LootTables.json
         oxide/data/FancyDrop.json
-        oxide/data/Kits/kits_data.json
+        oxide/data/Kits/Kits.json
         oxide/data/BetterChat.json
         oxide/data/CompoundOptions.json
         oxide/data/death.png
@@ -19,14 +19,14 @@ function update_mods () {
         oxide/data/GuardedCrate.json
         oxide/data/CustomChatCommands.json
     )
-    echo "=> Removing unwanted plugins" | tee -a ${LOGS}
-    SHITLIST=(
-        PluginUpdateNotifications.cs
-    )
-    for plugin in ${SHITLIST[@]}; do
-        echo " - $plugin" | tee -a ${LOGS}
-        rm ${HOME}/solidrust.net/defaults/oxide/plugins/$plugin  | tee -a ${LOGS}
-    done
+    #echo "=> Removing unwanted plugins" | tee -a ${LOGS}
+    #SHITLIST=(
+    #    PluginUpdateNotifications.cs
+    #)
+    #for plugin in ${SHITLIST[@]}; do
+    #    echo " - $plugin" | tee -a ${LOGS}
+    #    rm ${HOME}/solidrust.net/defaults/oxide/plugins/$plugin  | tee -a ${LOGS}
+    #done
     echo "=> Updating plugin data" | tee -a ${LOGS}
     for data in ${OXIDE[@]}; do
         echo " - $data" | tee -a ${LOGS}
@@ -64,6 +64,18 @@ function update_mods () {
     rsync -ra "${SERVER_CUSTOM}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra --delete "${BUILD_ROOT}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rm -rf ${BUILD_ROOT}
+    # lang
+    LANG=(
+        oxide/lang/en/Kits.json
+    )
+    echo "=> Updating plugin language data" | tee -a ${LOGS}
+    for data in ${LANG[@]}; do
+        echo " - $data" | tee -a ${LOGS}
+        rsync "${SERVER_GLOBAL}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}
+        if [[ -f "${SERVER_CUSTOM}/$data" ]]; then
+            rsync "${SERVER_CUSTOM}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}
+        fi
+    done
     echo "=> loading dormant plugins" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
 }
