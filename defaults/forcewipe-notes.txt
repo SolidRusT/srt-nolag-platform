@@ -1,2 +1,0 @@
-# run command on the first Thursday of each month
-0  15 *  *  4   [ $(date +\%d) -le 07 ] && command

@@ -1,13 +1,14 @@
 ## SolidRusT wipe schedule
-0 9 * * MON,THU   root  /bin/sh -c /root/solidrust.net/defaults/0_wipe_server.sh
+# Facepunch force-wipe
+0 9 * * THU [ "$(date +\%d)" -le 7 ] && /bin/sh -c "/root/solidrust.net/defaults/0_wipe_server.sh force"
+# Monday, Thursday map wipe
+0 9 * * MON,THU [[ "$(date +\%d)" -le 7 ]] || /bin/sh -c /root/solidrust.net/defaults/0_wipe_server.sh
 
-## SolidRusT server backups. Final step after going live.
-*/5 *  * * *   root  /bin/sh -c /root/solidrust.net/defaults/10_backup.sh
+## SolidRusT server backups
+*/10 *  * * *   root /bin/sh -c /root/solidrust.net/defaults/10_backup.sh
 
-## SolidRusT server specific. Enable only after server is configured, running and healthy
-40 *    * * *   root  /bin/sh -c /root/solidrust.net/defaults/40_sync_oxide_mods.sh
-#44 *    * * *   root  /bin/sh -c /root/solidrust.net/defaults/44_sync_server_config.sh
+## SolidRusT Build refresh
+03 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/21_sync_repo.sh
 
-# SolidRusT defaults
-15 *    * * *   root    /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
-#10 *    * * *   root    rm -rf /root/solidrust.net;     mkdir -p /root/solidrust.net;     aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /root/solidrust.net;     chmod +x /root/solidrust.net/defaults/*.sh
+## SolidRusT local log management
+15 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
