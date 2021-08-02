@@ -63,7 +63,8 @@ function start_rust () {
         +rcon.web 1 \
         +rcon.password "NOFAGS" \
         +server.identity "solidrust" \
-        +server.levelurl ${CUSTOM_MAP_URL} &
+        +server.levelurl ${CUSTOM_MAP_URL} \
+        +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" &
     else
         echo "Using ${WORLD_SIZE} Procedural map with seed: ${SEED} " | tee -a ${LOGS}
         sleep 2
@@ -80,7 +81,8 @@ function start_rust () {
         +server.identity "solidrust" \
         +server.level "Procedural Map" \
         +server.seed ${SEED} \
-        +server.worldsize ${WORLD_SIZE} &
+        +server.worldsize ${WORLD_SIZE} \
+        +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" &
     fi
     # Launch game server
     echo "===> Touching my peepee..." | tee -a ${LOGS}

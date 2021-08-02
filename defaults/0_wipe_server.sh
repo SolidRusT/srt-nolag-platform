@@ -11,28 +11,51 @@ source ${HOME}/solidrust.net/defaults/funct_wipe.sh
 source ${HOME}/solidrust.net/defaults/funct_update.sh
 
 case "$1" in
-    now | fast | quick )
-        echo "performing a Quick Wipe"
-        initialize_srt
-        stop_rust_now
-        wipe_map
-        change_seed
-        start_rust
-        update_map_api
-        ;;
-    *)
-        echo "performing a Standard Wipe"
-        initialize_srt
-        update_repo
-        initialize_srt
-        notification
-        update_server        
-        update_mods
-        update_configs
-        wipe_map
-        change_seed
-        start_rust
-        update_map_api
-        #update_permissions
-        ;;
+now | fast | quick)
+    echo "performing a Quick Wipe"
+    initialize_srt
+    stop_rust_now
+    wipe_map
+    change_seed
+    start_rust
+    update_map_api
+    ;;
+
+force | forcewipe | facepunch)
+    echo "performing a Facepunch Force-wipe"
+    initialize_srt
+    update_repo
+    initialize_srt
+    notification
+    update_server
+    update_mods
+    update_configs
+    wipe_map
+    change_seed
+    wipe_kits
+    wipe_backpacks
+    wipe_banks
+    wipe_leaderboards
+    #wipe_permissions
+    start_rust
+    update_map_api
+    #update_permissions
+    ;;
+
+*)
+    echo "performing a Standard Wipe"
+    initialize_srt
+    update_repo
+    initialize_srt
+    notification
+    update_server
+    update_mods
+    update_configs
+    wipe_map
+    change_seed
+    wipe_kits
+    start_rust
+    update_map_api
+    #update_permissions
+    ;;
 esac

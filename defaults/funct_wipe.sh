@@ -23,29 +23,33 @@ function notification () {
 }
 
 function wipe_map () {
-    echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
-    rm -rf ${GAME_ROOT}/server/solidrust/proceduralmap.*
-    echo "Wipe out custom maps and related data" | tee -a ${LOGS}
+    echo "Wipe out old maps and related data" | tee -a ${LOGS}
     rm -rf ${GAME_ROOT}/server/solidrust/*.map
+    rm -rf ${GAME_ROOT}/server/solidrust/*.sav*
+    rm -rf ${GAME_ROOT}/server/solidrust/sv.*
 }
 
 function wipe_kits () {
     echo "Wipe out all saved kits" | tee -a ${LOGS}
-    echo "oxide/data/Kits/kits_data.json"
+    echo "oxide/data/Kits/Data.json"
+    rm -rf ${GAME_ROOT}/oxide/data/Kits/Data.json
 }
 
-function wipe_bank () {
+function wipe_banks () {
     echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
     echo "oxide/data/banks/*.json"
+    rm -rf ${GAME_ROOT}/oxide/data/banks/*.json
 }
 
 function wipe_backpacks () {
     echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
     echo "oxide/data/Backpacks/*.json"
+    rm -rf ${GAME_ROOT}/oxide/data/Backpacks/*.json
 }
 
 function wipe_leaderboards () {
     echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
+    rm -rf ${GAME_ROOT}/server/solidrust/player.*
 }
 
 function wipe_permissions () {
