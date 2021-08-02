@@ -12,8 +12,8 @@ source ${HOME}/solidrust.net/defaults/funct_update.sh
 
 case "$1" in
 now | fast | quick)
-    echo "performing a Quick Wipe"
     initialize_srt
+    echo "performing a Quick Wipe" | tee -a ${LOGS}
     stop_rust_now
     wipe_map
     change_seed
@@ -22,11 +22,10 @@ now | fast | quick)
     ;;
 
 force | forcewipe | facepunch)
-    echo "performing a Facepunch Force-wipe"
     initialize_srt
-    update_repo
-    initialize_srt
+    echo "performing a Facepunch Force-wipe" | tee -a ${LOGS}
     notification
+    update_repo
     update_server
     update_mods
     update_configs
@@ -43,11 +42,10 @@ force | forcewipe | facepunch)
     ;;
 
 *)
-    echo "performing a Standard Wipe"
     initialize_srt
-    update_repo
-    initialize_srt
+    echo "performing a Standard Wipe" | tee -a ${LOGS}
     notification
+    update_repo
     update_server
     update_mods
     update_configs

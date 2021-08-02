@@ -1,4 +1,4 @@
-function initialize_srt () {
+function initialize_srt() {
     source ${HOME}/solidrust.net/defaults/env_vars.sh
     source ${HOME}/solidrust.net/servers/${HOSTNAME}/env_vars.sh
     alias rcon="${GAME_ROOT}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
@@ -9,7 +9,7 @@ function initialize_srt () {
     source ${HOME}/solidrust.net/defaults/funct_update.sh
 }
 
-function backup_s3 () {
+function backup_s3() {
     if [ -f "${GAME_ROOT}/rcon" ]; then
         echo "rcon binary found, saving world..." | tee -a ${LOGS}
         ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.writecfg"
@@ -33,18 +33,18 @@ function backup_s3 () {
     done
 }
 
-function save_ebs () {
+function save_ebs() {
     echo "save current game folder to instance EBS" | tee -a ${LOGS}
-    mkdir -p ${HOME}/game_root
-    rsync -ra --delete "${GAME_ROOT}/" "${HOME}/game_root" | tee -a ${LOGS}
+    mkdir -p ${HOME}/nvme_root
+    rsync -ra --delete "${GAME_ROOT}/" "${HOME}/nvme_root" | tee -a ${LOGS}
 }
 
-function restore_ebs () {
+function restore_ebs() {
     echo "save current game folder to instance EBS" | tee -a ${LOGS}
-    rsync -ra --delete "${HOME}/game_root/" "${GAME_ROOT}"
+    rsync -ra --delete "${HOME}/nvme_root/" "${GAME_ROOT}"
 }
 
-function start_rust () {
+function start_rust() {
     echo "Start RustDedicated game service" | tee -a ${LOGS}
     # enter game root
     cd ${GAME_ROOT}
@@ -52,38 +52,44 @@ function start_rust () {
     if [ ${CUSTOM_MAP} = "enabled" ]; then
         echo "Custom Maps enabled: ${CUSTOM_MAP_URL}" | tee -a ${LOGS}
         sleep 2
-        ./RustDedicated -batchmode -nographics -silent-crashes -logfile 2>&1 ${SERVER_LOGS} \
-        +server.ip 0.0.0.0 \
-        +server.port 28015 \
-        +rcon.ip 0.0.0.0 \
-        +rcon.port 28016 \
-        +server.tickrate 30 \
-        +app.publicip ${SERVER_IP} \
-        +app.port 28082 \
-        +rcon.web 1 \
-        +rcon.password "NOFAGS" \
-        +server.identity "solidrust" \
-        +server.levelurl ${CUSTOM_MAP_URL} \
-        +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" &
+        ./RustDedicated -batchmode -nographics -silent-crashes -logfile ${SERVER_LOGS} \
+            +server.ip 0.0.0.0 \
+            +server.port 28015 \
+            +rcon.ip 0.0.0.0 \
+            +rcon.port 28016 \
+            +server.tickrate 30 \
+            +app.publicip ${SERVER_IP} \
+            +app.port 28082 \
+            +rcon.web 1 \
+            +rcon.password "NOFAGS" \
+            +server.identity "solidrust" \
+            +server.levelurl ${CUSTOM_MAP_URL} \
+            +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" 2>&1 \
+            ;
+
     else
+
         echo "Using ${WORLD_SIZE} Procedural map with seed: ${SEED} " | tee -a ${LOGS}
         sleep 2
-        ./RustDedicated -batchmode -nographics -silent-crashes -logfile 2>&1 ${SERVER_LOGS} \
-        +server.ip 0.0.0.0 \
-        +server.port 28015 \
-        +rcon.ip 0.0.0.0 \
-        +rcon.port 28016 \
-        +server.tickrate 30 \
-        +app.publicip ${SERVER_IP} \
-        +app.port 28082 \
-        +rcon.web 1 \
-        +rcon.password "NOFAGS" \
-        +server.identity "solidrust" \
-        +server.level "Procedural Map" \
-        +server.seed ${SEED} \
-        +server.worldsize ${WORLD_SIZE} \
-        +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" &
+        ./RustDedicated -batchmode -nographics -silent-crashes -logfile ${SERVER_LOGS} \
+            +server.ip 0.0.0.0 \
+            +server.port 28015 \
+            +rcon.ip 0.0.0.0 \
+            +rcon.port 28016 \
+            +server.tickrate 30 \
+            +app.publicip ${SERVER_IP} \
+            +app.port 28082 \
+            +rcon.web 1 \
+            +rcon.password "NOFAGS" \
+            +server.identity "solidrust" \
+            +server.level "Procedural Map" \
+            +server.seed ${SEED} \
+            +server.worldsize ${WORLD_SIZE} \
+            +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" 2>&1 \
+            ;
+
     fi
+
     # Launch game server
     echo "===> Touching my peepee..." | tee -a ${LOGS}
     sleep 3
@@ -91,43 +97,42 @@ function start_rust () {
     echo "Delaying for about 8mins while service loads" | tee -a ${LOGS}
     sleep 120
     tail -n 10 ${SERVER_LOGS}
-    echo "Delaying for 6mins while service loads"  | tee -a ${LOGS}
+    echo "Delaying for 6mins while service loads" | tee -a ${LOGS}
     sleep 120
     tail -n 10 ${SERVER_LOGS}
-    echo "Delaying for 4mins while service loads"  | tee -a ${LOGS}
+    echo "Delaying for 4mins while service loads" | tee -a ${LOGS}
     sleep 60
     tail -n 10 ${SERVER_LOGS}
-    echo "Delaying for 3mins while service loads"  | tee -a ${LOGS}
+    echo "Delaying for 3mins while service loads" | tee -a ${LOGS}
     sleep 60
     tail -n 10 ${SERVER_LOGS}
-    echo "Delaying for 2mins while service loads"  | tee -a ${LOGS}
+    echo "Delaying for 2mins while service loads" | tee -a ${LOGS}
     sleep 60
     tail -n 10 ${SERVER_LOGS}
-    echo "Delaying for 1mins while service loads"  | tee -a ${LOGS}
+    echo "Delaying for 1mins while service loads" | tee -a ${LOGS}
     sleep 60
     tail -n 10 ${SERVER_LOGS}
     echo "Should be ready for action" | tee -a ${LOGS}
 }
 
-function stop_rust () {
+function stop_rust() {
     echo "Stop RustDedicated game service" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "restart 30"
 }
 
-function stop_rust_now () {
+function stop_rust_now() {
     echo "Stop RustDedicated game service" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "restart 1"
 }
 
-function show_logs () {
+function show_logs() {
     #find . -type f -exec grep -l samplestring {} \;
     tail -n 20 -F "${HOME}/SolidRusT.log" "${GAME_ROOT}/RustDedicated.log" "${GAME_ROOT}/rcon-default.log"
 }
 
-function hot_plugs () {
+function hot_plugs() {
     export REPORTS="${GAME_ROOT}/oxide/data/PerformanceMonitor/Reports"
     export LATEST_REPORT=$(ls -1tr ${REPORTS}/*/* | tail -n 1)
-
 
 }
 
