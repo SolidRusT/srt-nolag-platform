@@ -25,3 +25,6 @@ terraform.tfstate.backup
 oxide/logs/*
 *.log
 .vscode
+
+# Build markers
+build.txt
