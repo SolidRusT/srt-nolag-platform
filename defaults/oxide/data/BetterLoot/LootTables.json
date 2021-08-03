@@ -11,10 +11,6 @@
                     "Max": 5,
                     "Min": 5
                 },
-                "mask.bandana": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "metalblade": {
                     "Max": 4,
                     "Min": 3
@@ -56,10 +52,10 @@
                     "Min": 2
                 }
             },
-            "ItemsMax": 3,
+            "ItemsMax": 4,
             "ItemsMin": 3,
             "MaxBPs": 0,
-            "Scrap": 15
+            "Scrap": 20
         },
         "assets/bundled/prefabs/autospawn/resource/loot/loot-barrel-2.prefab": {
             "Enabled": true,
@@ -72,10 +68,6 @@
                     "Max": 5,
                     "Min": 5
                 },
-                "mask.bandana": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "metalblade": {
                     "Max": 4,
                     "Min": 3
@@ -117,10 +109,10 @@
                     "Min": 2
                 }
             },
-            "ItemsMax": 3,
+            "ItemsMax": 4,
             "ItemsMin": 3,
             "MaxBPs": 0,
-            "Scrap": 15
+            "Scrap": 20
         },
         "assets/bundled/prefabs/autospawn/resource/loot/trash-pile-1.prefab": {
             "Enabled": true,
@@ -365,8 +357,8 @@
                     "Min": 1
                 },
                 "lowgradefuel": {
-                    "Max": 5,
-                    "Min": 5
+                    "Max": 50,
+                    "Min": 50
                 },
                 "metal.fragments": {
                     "Max": 300,
@@ -422,18 +414,6 @@
                     "Min": 1
                 },
                 "hazmatsuit": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "heavy.plate.helmet": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "heavy.plate.jacket": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "heavy.plate.pants": {
                     "Max": 1,
                     "Min": 1
                 },
@@ -532,6 +512,18 @@
                 "grenade.f1": {
                     "Max": 2,
                     "Min": 2
+                },
+                "heavy.plate.helmet": {
+                    "Max": 1,
+                    "Min": 1
+                },
+                "heavy.plate.jacket": {
+                    "Max": 1,
+                    "Min": 1
+                },
+                "heavy.plate.pants": {
+                    "Max": 1,
+                    "Min": 1
                 }
             },
             "ItemsMax": 4,
@@ -542,10 +534,6 @@
         "assets/bundled/prefabs/radtown/crate_normal_2.prefab": {
             "Enabled": true,
             "ItemList": {
-                "bucket.helmet": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "cctv.camera": {
                     "Max": 3,
                     "Min": 2
@@ -571,10 +559,6 @@
                     "Min": 1
                 },
                 "jacket": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "jacket.snow": {
                     "Max": 1,
                     "Min": 1
                 },
@@ -607,10 +591,6 @@
                     "Min": 1
                 },
                 "roadsigns": {
-                    "Max": 10,
-                    "Min": 10
-                },
-                "salvaged.cleaver": {
                     "Max": 1,
                     "Min": 1
                 },
@@ -619,8 +599,8 @@
                     "Min": 1
                 },
                 "sheetmetal": {
-                    "Max": 10,
-                    "Min": 10
+                    "Max": 1,
+                    "Min": 1
                 },
                 "shotgun.double": {
                     "Max": 1,
@@ -639,6 +619,30 @@
                     "Min": 1
                 },
                 "hoodie": {
+                    "Max": 1,
+                    "Min": 1
+                },
+                "mask.bandana": {
+                    "Max": 1,
+                    "Min": 1
+                },
+                "shoes.boots": {
+                    "Max": 1,
+                    "Min": 1
+                },
+                "propanetank": {
+                    "Max": 10,
+                    "Min": 10
+                },
+                "metalblade": {
+                    "Max": 10,
+                    "Min": 10
+                },
+                "tarp": {
+                    "Max": 3,
+                    "Min": 3
+                },
+                "grenade.f1": {
                     "Max": 1,
                     "Min": 1
                 }
@@ -1591,10 +1595,6 @@
         "assets/bundled/prefabs/radtown/loot_barrel_1.prefab": {
             "Enabled": true,
             "ItemList": {
-                "fun.guitar": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "fuse": {
                     "Max": 1,
                     "Min": 1
@@ -1602,10 +1602,6 @@
                 "gears": {
                     "Max": 5,
                     "Min": 5
-                },
-                "mask.bandana": {
-                    "Max": 1,
-                    "Min": 1
                 },
                 "metalblade": {
                     "Max": 4,
@@ -1648,18 +1644,14 @@
                     "Min": 2
                 }
             },
-            "ItemsMax": 3,
+            "ItemsMax": 4,
             "ItemsMin": 3,
             "MaxBPs": 0,
-            "Scrap": 15
+            "Scrap": 20
         },
         "assets/bundled/prefabs/radtown/loot_barrel_2.prefab": {
             "Enabled": true,
             "ItemList": {
-                "fun.guitar": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "fuse": {
                     "Max": 1,
                     "Min": 1
@@ -1667,10 +1659,6 @@
                 "gears": {
                     "Max": 5,
                     "Min": 5
-                },
-                "mask.bandana": {
-                    "Max": 1,
-                    "Min": 1
                 },
                 "metalblade": {
                     "Max": 4,
@@ -1713,10 +1701,10 @@
                     "Min": 2
                 }
             },
-            "ItemsMax": 3,
+            "ItemsMax": 4,
             "ItemsMin": 3,
             "MaxBPs": 0,
-            "Scrap": 15
+            "Scrap": 20
         },
         "assets/bundled/prefabs/radtown/loot_trash.prefab": {
             "Enabled": true,
@@ -1832,14 +1820,6 @@
                     "Max": 35,
                     "Min": 35
                 },
-                "grenade.f1": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "grenade.smoke": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "hazmatsuit": {
                     "Max": 1,
                     "Min": 1
@@ -1917,14 +1897,6 @@
                     "Min": 1
                 },
                 "weapon.mod.8x.scope": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "jackhammer": {
-                    "Max": 1,
-                    "Min": 1
-                },
-                "chainsaw": {
                     "Max": 1,
                     "Min": 1
                 }
@@ -2017,10 +1989,6 @@
                     "Max": 10,
                     "Min": 10
                 },
-                "shotgun.pump": {
-                    "Max": 1,
-                    "Min": 1
-                },
                 "shotgun.spas12": {
                     "Max": 1,
                     "Min": 1
@@ -2048,7 +2016,7 @@
             "Scrap": 0
         },
         "assets/prefabs/npc/m2bradley/bradley_crate.prefab": {
-            "Enabled": false,
+            "Enabled": true,
             "ItemList": {
                 "ammo.rifle.explosive": {
                     "Max": 60,
@@ -2127,13 +2095,13 @@
                     "Min": 1
                 }
             },
-            "ItemsMax": 8,
+            "ItemsMax": 10,
             "ItemsMin": 8,
             "MaxBPs": 0,
             "Scrap": 0
         },
         "assets/prefabs/npc/patrol helicopter/heli_crate.prefab": {
-            "Enabled": false,
+            "Enabled": true,
             "ItemList": {
                 "ammo.rocket.basic": {
                     "Max": 3,
@@ -2184,8 +2152,8 @@
                     "Min": 1
                 }
             },
-            "ItemsMax": 4,
-            "ItemsMin": 4,
+            "ItemsMax": 6,
+            "ItemsMin": 5,
             "MaxBPs": 0,
             "Scrap": 0
         }
