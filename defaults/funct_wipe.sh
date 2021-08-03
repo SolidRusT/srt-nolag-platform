@@ -64,6 +64,9 @@ function wipe_permissions () {
 }
 
 function change_seed () {
+    # if set: ${WORLD_SIZE}
+    # else: export WORLD_SIZE="2700"
+    echo "Changing seed for world size: ${WORLD_SIZE}" | tee -a ${LOGS}
     if [ -f "${GAME_ROOT}/server.seed.new" ]; then
         export SEED=$(cat ${GAME_ROOT}/server.seed.new)
         echo "Staged Map Seed found: ${SEED}" | tee -a ${LOGS}
@@ -71,8 +74,11 @@ function change_seed () {
         echo ${SEED} > ${GAME_ROOT}/server.seed
         rm -f ${GAME_ROOT}/server.seed.new
     else
-        export SEED=$(shuf -i 1-2147483648 -n 1)
-        echo "New Map Seed generated: ${SEED}" | tee -a ${LOGS}
+        echo "Generating new ${WORLD_SIZE} seed." | tee -a ${LOGS}
+        # if exists: ${HOME}/solidrust.net/defaults/${WORLD_SIZE}-full.txt
+        # else: #export SEED=$(shuf -i 1-2147483648 -n 1)
+        export SEED=$(shuf -n 1 ${HOME}/solidrust.net/defaults/${WORLD_SIZE}-full.txt)
+        echo "New ${WORLD_SIZE} Map Seed generated: ${SEED}" | tee -a ${LOGS}
         cp ${GAME_ROOT}/server.seed ${GAME_ROOT}/server.seed.old
         echo ${SEED} > ${GAME_ROOT}/server.seed
     fi

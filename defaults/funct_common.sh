@@ -133,7 +133,15 @@ function show_logs() {
 function hot_plugs() {
     export REPORTS="${GAME_ROOT}/oxide/data/PerformanceMonitor/Reports"
     export LATEST_REPORT=$(ls -1tr ${REPORTS}/*/* | tail -n 1)
+}
 
+function send_discord() {
+    MESSAGE='testing discord CLI from console'
+
+    curl -X POST \
+        -F "content=${MESSAGE}" \
+        -F "username=${CORDNAME}" \
+        "${WEBHOOK}"
 }
 
 echo "SRT Common Functions initialized" | tee -a ${LOGS}

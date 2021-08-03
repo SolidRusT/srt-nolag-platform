@@ -16,6 +16,8 @@ echo "Downloading repo from s3" | tee -a ${LOGS}
 mkdir -p ${HOME}/solidrust.net/web ${HOME}/solidrust.net/defaults
 aws s3 sync --size-only --delete ${S3_BACKUPS}/repo/web ${HOME}/solidrust.net/web --exclude 'web/maps/*' | tee -a ${LOGS}
 aws s3 sync --size-only --delete ${S3_BACKUPS}/repo/defaults ${HOME}/solidrust.net/defaults | tee -a ${LOGS}
+aws s3 cp ${S3_BACKUPS}/repo/build.txt ${HOME}/solidrust.net/web/
+cat ${HOME}/solidrust.net/web/build.txt | head -n 2
 chmod +x ${HOME}/solidrust.net/defaults/*.sh ${HOME}/solidrust.net/defaults/web/*.sh
 
 # Update custom maps
