@@ -85,9 +85,7 @@ function start_rust() {
             +server.level "Procedural Map" \
             +server.seed ${SEED} \
             +server.worldsize ${WORLD_SIZE} \
-            +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" 2>&1 \
-            ;
-
+            +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" &
     fi
 
     # Launch game server

@@ -73,7 +73,7 @@ function change_seed () {
         rm -f ${GAME_ROOT}/server.seed.new
     else
         echo "Generating new ${WORLD_SIZE} seed." | tee -a ${LOGS}
-        if [ -f "${HOME}/solidrust.net/defaults/${WORLD_SIZE}-full.txt" ]; then
+        if [ -f "${HOME}/solidrust.net/defaults/procedural-maps/${WORLD_SIZE}-full.txt" ]; then
             echo "Custom SRT procedural map list found" | tee -a ${LOGS}
             export SEED=$(shuf -n 1 ${HOME}/solidrust.net/defaults/${WORLD_SIZE}-full.txt)
         else
