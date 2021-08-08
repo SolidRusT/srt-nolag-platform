@@ -59,6 +59,13 @@
     "bradley_crate": true,
     "heli_crate": true,
     "diesel_barrel_world": true,
-    "visualshelvestest": true
+    "visualshelvestest": true,
+    "crate_ammunition": true,
+    "crate_food_1": true,
+    "crate_food_2": true,
+    "crate_fuel": true,
+    "crate_medical": true,
+    "tech_parts_1": true,
+    "tech_parts_2": true
   }
 }

@@ -7,6 +7,7 @@ function initialize_srt() {
     source ${HOME}/solidrust.net/defaults/funct_common.sh
     source ${HOME}/solidrust.net/defaults/funct_wipe.sh
     source ${HOME}/solidrust.net/defaults/funct_update.sh
+    source ${HOME}/solidrust.net/defaults/funct_items.sh
 }
 
 function backup_s3() {

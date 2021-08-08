@@ -244,6 +244,21 @@
         "Minimum range from entity before temperature takes effect": 2.0
       },
       "Enabled": false
+    },
+    "bbq.static_hidden": {
+      "Temperature": {
+        "Max temperature": 45.0,
+        "Temperature range (Meters)": 2.5,
+        "Temperature falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 0.0
+      },
+      "Comfort": {
+        "Max comfort": 0.5,
+        "Comfort range (Meters)": 4.0,
+        "Comfort falloff rate multiplier ( > 1 falls off slower < 1 falls off quicker)": 1.0,
+        "Minimum range from entity before temperature takes effect": 2.0
+      },
+      "Enabled": false
     }
   }
 }

@@ -210,6 +210,18 @@
       "Height": 90,
       "ImageUrl": "",
       "Show": false
+    },
+    "Ice Lake": {
+      "Width": 90,
+      "Height": 90,
+      "ImageUrl": "",
+      "Show": false
+    },
+    "Underwater Lab": {
+      "Width": 90,
+      "Height": 90,
+      "ImageUrl": "",
+      "Show": false
     }
   },
   "Custom Icons": [

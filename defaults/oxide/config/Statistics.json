@@ -1,0 +1,57 @@
+{
+  "Statistics Commands": [
+    "stats",
+    "statistics"
+  ],
+  "Leaderboard Commands": [
+    "leaders",
+    "leaderboard"
+  ],
+  "Automatic wipe on wipe": false,
+  "Access by permission (statistics.use)": false,
+  "Weapons": [
+    "rifle.ak",
+    "rifle.bolt",
+    "rifle.l96",
+    "rifle.lr300",
+    "rifle.m39",
+    "rifle.semiauto",
+    "pistol.eoka",
+    "pistol.m92",
+    "pistol.nailgun",
+    "pistol.python",
+    "pistol.revolver",
+    "pistol.semiauto"
+  ],
+  "Resources": [
+    "stones",
+    "sulfur.ore",
+    "metal.ore",
+    "hq.metal.ore",
+    "wood"
+  ],
+  "Score Table (shortname - score)": {
+    "kills": 1.0,
+    "deaths": -1.0,
+    "stone-ore": 0.1,
+    "supply_drop": 3.0,
+    "crate_normal": 0.3,
+    "crate_elite": 0.5,
+    "bradley_crate": 5.0,
+    "heli_crate": 5.0,
+    "bradley": 10.0,
+    "helicopter": 15.0,
+    "barrel": 0.1,
+    "scientistnpc": 0.5,
+    "heavyscientist": 2.0,
+    "sulfur.ore": 0.5,
+    "metal.ore": 0.5,
+    "hq.metal.ore": 0.5,
+    "stones": 0.5,
+    "cupboard.tool.deployed": 1.0
+  },
+  "PlayerDatabase": {
+    "Enabled": false,
+    "Table": "Statistics"
+  }
+}

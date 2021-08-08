@@ -1,0 +1,11 @@
+{
+  "Maximum amount of signs in total (width x height) Tier 1": 6,
+  "Maximum amount of signs in total (width x height) Tier 2": 12,
+  "Maximum amount of signs in total (width x height) Tier 3": 16,
+  "Maximum amount of signs in total (width x height) Admin": 150,
+  "Width and height of each neon sign image in pixels": 150,
+  "Seconds between pasting images": 0.5,
+  "Brightness of the images pasted on the billboards (experimental)": 0.5,
+  "Lock signs to owner after creating billboard": false,
+  "Log extra output to console": false
+}

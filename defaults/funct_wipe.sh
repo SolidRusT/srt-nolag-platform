@@ -75,7 +75,7 @@ function change_seed () {
         echo "Generating new ${WORLD_SIZE} seed." | tee -a ${LOGS}
         if [ -f "${HOME}/solidrust.net/defaults/procedural-maps/${WORLD_SIZE}-full.txt" ]; then
             echo "Custom SRT procedural map list found" | tee -a ${LOGS}
-            export SEED=$(shuf -n 1 ${HOME}/solidrust.net/defaults/${WORLD_SIZE}-full.txt)
+            export SEED=$(shuf -n 1 ${HOME}/solidrust.net/defaults/procedural-maps/${WORLD_SIZE}-full.txt)
         else
             echo "using a truly random seed" | tee -a ${LOGS}
             export SEED=$(shuf -i 1-2147483648 -n 1)

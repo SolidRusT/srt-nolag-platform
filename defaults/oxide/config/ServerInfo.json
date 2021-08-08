@@ -1,274 +1,284 @@
 {
-    "settings": {
-        "Tabs": [{
-                "ButtonText": "SolidRust",
-                "HeaderText": "SolidRusT (SRT)",
-                "Pages": [{
-                    "TextLines": [
-                        " ",
-                        "<color=yellow> SolidRusT Networks NOLAG™ game hosting. </color>",
-                        " ",
-                        " - 5x Resource Gather and customized loot tables",
-                        " - Raidable NPC bases and Crate Hunting events",
-                        " - Faster smelting, auto-sort loot in boxes",
-                        " - Auto-use Fuel and Wood from Tool Cupboard",
-                        " - Useful CCTV Utilities, motion sensors and Dancing emotes",
-                        " - Modular Vehicle lifts and Reclyclers at monuments",
-                        " - Locks, Storage, Extra Seats and Turrets on Modular Vehicles",
-                        " - Improved recycling, recycle anything!",
-                        " - Better stack sizes, World Bank and Backpacks",
-                        " - Base repair and auto upgrade tools",
-                        " - Escalated Bradley APC combat levels",
-                        " - Constant Hackable Crate and Treasure events",
-                        " - Blueprint Sharing and Better Box Sorting",
-                        " - Parachute for jumping off high places",
-                        " - Clans Tools, Team Chats and Rust+ Mobile App enabled",
-                        " - NPC Vendors, Safe Zones, night creeps and server votes.",
-                        " - Real-time Hit and Damage indicators, Realistic Explosions",
-                        " - Improved Weather and heath effects"
-                    ],
-                    "ImageSettings": []
-                }],
-                "TabButtonAnchor": 4,
-                "TabButtonFontSize": 16,
-                "HeaderAnchor": 0,
-                "HeaderFontSize": 32,
-                "TextFontSize": 16,
-                "TextAnchor": 3,
-                "OxideGroup": ""
-            },
-            {
-                "ButtonText": "Rules",
-                "HeaderText": "Server Rules",
-                "Pages": [{
-                    "TextLines": [
-                        " ",
-                        "<color=yellow>1</color> - All 3X 5X 10X (Solo/Duo/Trio) have a max group limit of 3 players",
-                        " ",
-                        "<color=yellow>2</color> - No admins, moderators or any other human will censor chat (just bots).",
-                        " ",
-                        "<color=yellow>3</color> - use the in-game chat censor/filter to block unwanted content on your own",
-                        " ",
-                        "<color=yellow>4</color> - Do not call out hackers in chat, report them using <color=yellow> F7</color>.",
-                        " ",
-                        "<color=yellow>5</color> - No cheating, scripting, bug abuse or otherwise exploiting the game.",
-                        " ",
-                        "<color=yellow>6</color> - Griefing / PvP / Raids / Base Takovers is allowed and encouraged.",
-                        " "
-                    ],
-                    "ImageSettings": []
-                }],
-                "TabButtonAnchor": 4,
-                "TabButtonFontSize": 16,
-                "HeaderAnchor": 0,
-                "HeaderFontSize": 32,
-                "TextFontSize": 16,
-                "TextAnchor": 3,
-                "OxideGroup": ""
-            },
-            {
-                "ButtonText": "Commands",
-                "HeaderText": "Chat Commands",
-                "Pages": [{
-                        "TextLines": [
-                            " ",
-                            "<color=yellow> /airstrike </color>     - Convert supply signal into an airstrike",
-                            "<color=yellow> /ad </color>            - Auto-close doors after opening them",
-                            "<color=yellow> /al </color>            - Auto-lock doors with a specific code",
-                            "<color=yellow> /autoauthui </color>    - Auto-add friends / clan / team to Tool Cupboard",
-                            "<color=yellow> /backpack </color>      - Open your backpack storage",
-                            "<color=yellow> /backpackGUI </color>   - Toggle on/off the Backpack icon",
-                            "<color=yellow> /bank </color>          - Opens the Central Bank storage",
-                            "<color=yellow> /bgrade </color>        - Set the default Resource Grade when building",
-                            "<color=yellow> /br </color>            - Building repair using the Hammer tool",
-                            "<color=yellow> /bs </color>            - Blueprint Sharing settings",
-                            "<color=yellow> /carturret </color>     - Add auto-turrets to a modular car",
-                            "<color=yellow> /cctv </color>          - CCTV Security Camera tools",
-                            "<color=yellow> /chute </color>         - Parachute for landing soft from high places",
-                            "<color=yellow> /claim </color>         - Claim donation code",
-                            "<color=yellow> /clanhelp </color>      - Clan management commands",
-                            "<color=yellow> /cnv </color>           - Chill Night Vision add-on",
-                            "<color=yellow> /dance </color>         - Dancing emote"
-                        ],
-                        "ImageSettings": []
-                    },
-                    {
-                        "TextLines": [
-                            " ",
-                            "<color=yellow> /dc </color>            - Discord Connect - get the SURVIVOR role and free kits",
-                            "<color=yellow> /deaths </color>        - Show last death locations",
-                            "<color=yellow> /down </color>          - Downgrade Structures",
-                            "<color=yellow> /downall </color>       - Downgrade Whole Base",
-                            "<color=yellow> /drone </color>         - Get a Drone",
-                            "<color=yellow> /farmtools </color>     - Manage farming, clones, ect..",
-                            "<color=yellow> /fmini </color>         - Fetch MiniCopter",
-                            "<color=yellow> /friend </color>        - Manage Friends list",
-                            "<color=yellow> /fs </color>            - Furnace stack splitter settings",
-                            "<color=yellow> /gather </color>        - Show current Gathering multiplyers",
-                            "<color=yellow> /heal </color>          - Heal yourself",
-                            "<color=yellow> /healplayer </color>    - Heal another player",
-                            "<color=yellow> /hit </color>           - disable/enable hit markers",
-                            "<color=yellow> /home </color>          - Set your Home spawn points",
-                            "<color=yellow> /info </color>          - Show this info / help panel",
-                            "<color=yellow> /inspect </color>       - Show details on held item",
-                            "<color=yellow> /kit </color>           - Spawn item and loadout kits",
-                            "<color=yellow> /mymini </color>        - Spawn MiniCopter"
-                        ],
-                        "ImageSettings": []
-                    },
-                    {
-                        "TextLines": [
-                            " ",
-                            "<color=yellow> /nomini </color>        - Remove MiniCopter",
-                            "<color=yellow> /phone </color>         - Telephone settings",
-                            "<color=yellow> /pm </color>            - Private messages",
-                            "<color=yellow> /pmhistory </color>     - Private Message History",
-                            "<color=yellow> /qs help </color>       - Quickly sort into boxes, and loot at once.",
-                            "<color=yellow> /r </color>             - Reply to last private message",
-                            "<color=yellow> /raidalarm </color>     - Rust+ App settings for Raid alarms",
-                            "<color=yellow> /remove </color>        - Remover Tool for owned structures",
-                            "<color=yellow> /setgenes </color>      - Set the genes for the seed you are holding",
-                            "<color=yellow> /sil </color>           - Add a JPG image URL to a sign",
-                            "<color=yellow> /silrestore </color>    - Restore JPG image after Rust Updates",
-                            "<color=yellow> /silt </color>          - Add text to a sign",
-                            "<color=yellow> /showsphere </color>    - Show how far your TC(s) can reach",
-                            "<color=yellow> /showsphereall</color>  - Show All Players how far your TC(s) can reach",
-                            "<color=yellow> /skin </color>          - Free Steam Workshop skins",
-                            "<color=yellow> /skulls </color>        - Show how many human skulls you have crushed",
-                            "<color=yellow> /sl </color>            - Security Light configuration"
-                        ],
-                        "ImageSettings": []
-                    },
-                    {
-                        "TextLines": [
-                            " ",
-                            "<color=yellow> /time </color>          - Show current world time",
-                            "<color=yellow> /tod </color>           - Show Time of Day statistics",
-                            "<color=yellow> /tpa </color>           - Accept a teleport request",
-                            "<color=yellow> /tpb </color>           - Teleport back to where you previously teleported from",
-                            "<color=yellow> /tpr </color>           - Request teleport to another player",
-                            "<color=yellow> /trade </color>         - Remote trading with other players",
-                            "<color=yellow> /up </color>            - Upgrade structures",
-                            "<color=yellow> /upall </color>         - Upgrade Whole Base"
-                        ],
-                        "ImageSettings": []
-                    }
-                ],
-                "TabButtonAnchor": 4,
-                "TabButtonFontSize": 16,
-                "HeaderAnchor": 0,
-                "HeaderFontSize": 32,
-                "TextFontSize": 16,
-                "TextAnchor": 3,
-                "OxideGroup": ""
-            },
-            {
-                "ButtonText": "Key Binding",
-                "HeaderText": "Reccomended KeyBinds",
-                "Pages": [{
-                    "TextLines": [
-                        " ",
-                        "To enable Key Binds, so you don't have to use the chat commands,",
-                        "Open the <color=yellow> F1 </color> client console, Customize the key you want to bind",
-                        "(suggested examples below), pressing enter after each line",
-                        " ",
-                        "<color=yellow> bind b teamping </color> - Ping what you're looking at, to your team",
-                        " ",
-                        "<color=yellow> bind h heal </color> - Heal yourself",
-                        " ",
-                        "<color=yellow> bind k kill </color> - Kill yourself",
-                        " ",
-                        "<color=yellow> bind c chute </color> - Open Parachute",
-                        " ",
-                        "<color=yellow> bind f2 ''consoletoggle;combatlog'' </color> - open combat log with <color=yellow> F2 </color> key",
-                        " ",
-                        "<color=yellow> bind Mouse1 +lighttoggle;+attack2 </color> - turn on weapon light, when aiming down sights",
-                        " "
-                    ],
-                    "ImageSettings": []
-                }],
-                "TabButtonAnchor": 4,
-                "TabButtonFontSize": 16,
-                "HeaderAnchor": 0,
-                "HeaderFontSize": 32,
-                "TextFontSize": 16,
-                "TextAnchor": 3,
-                "OxideGroup": ""
-            },
-            {
-                "ButtonText": "Roles/Rewards",
-                "HeaderText": "Player Roles and Loyalty Rewards",
-                "Pages": [{
-                    "TextLines": [
-                        " ",
-                        "Each SRT Rank will give you a unique spawn kit, grant bank and backpack space and many other quality of life improvements. ",
-                        " ",
-                        " <color=silver> Scavenger </color>    - Default rank for unregistered players and guests.",
-                        " <color=white> Survivor </color>      - Registered player. can be obtained using <color=yellow> /dc </color> command",
-                        " <color=green> SolidPlayer </color>   - Verified player. Have connected their steam accounts to <color=orange> solidrust.net </color>",
-                        " <color=aqua> Supporter </color>      - Contributing Member. Have made a donation, or contributed time to the NOLAG™ network",
-                        " <color=purple> Legendary </color>    - Team Member. Monthly subscriber or NOLAG™ Staff member.",
-                        " ",
-                        " ",
-                        "<color=yellow> Roles are global throughout all NOLAG™ servers and Discord. Rewards are server specific. </color>",
-                        " ",
-                        "See: <color=orange> solidrust.net/rewards </color> for more details on server rewards.",
-                        " ",
-                        "See: <color=orange> discord.gg/PpAvPcD46q </color> for community support, Rust news and server updates",
-                        " "
-                    ],
-                    "ImageSettings": []
-                }],
-                "TabButtonAnchor": 4,
-                "TabButtonFontSize": 16,
-                "HeaderAnchor": 0,
-                "HeaderFontSize": 32,
-                "TextFontSize": 16,
-                "TextAnchor": 3,
-                "OxideGroup": ""
-            }
+  "settings": {
+    "Tabs": [
+      {
+        "ButtonText": "SolidRust",
+        "HeaderText": "SolidRusT (SRT)",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "<color=yellow> SolidRusT Networks NOLAG™ game hosting. </color>",
+              " ",
+              " - 5x Resource Gather and customized loot tables",
+              " - Raidable NPC bases and Crate Hunting events",
+              " - Faster smelting, auto-sort loot in boxes",
+              " - Auto-use Fuel and Wood from Tool Cupboard",
+              " - Useful CCTV Utilities, motion sensors and Dancing emotes",
+              " - Modular Vehicle lifts and Reclyclers at monuments",
+              " - Locks, Storage, Extra Seats and Turrets on Modular Vehicles",
+              " - Improved recycling, recycle anything!",
+              " - Better stack sizes, World Bank and Backpacks",
+              " - Base repair and auto upgrade tools",
+              " - Escalated Bradley APC combat levels",
+              " - Constant Hackable Crate and Treasure events",
+              " - Blueprint Sharing and Better Box Sorting",
+              " - Parachute for jumping off high places",
+              " - Clans Tools, Team Chats and Rust+ Mobile App enabled",
+              " - NPC Vendors, Safe Zones, night creeps and server votes.",
+              " - Real-time Hit and Damage indicators, Realistic Explosions",
+              " - Improved Weather and heath effects"
+            ],
+            "ImageSettings": []
+          }
         ],
-        "ShowInfoOnPlayerInit": true,
-        "ShowInfoOnlyOncePerRuntime": true,
-        "TabToOpenByDefault": 0,
-        "Position": {
-            "MinX": 0.15,
-            "MaxX": 0.9,
-            "MinY": 0.2,
-            "MaxY": 0.9
-        },
-        "BackgroundImage": {
-            "Enabled": true,
-            "Position": {
-                "MinX": 0.0,
-                "MaxX": 1.0,
-                "MinY": 0.0,
-                "MaxY": 1.0
-            },
-            "Url": "https://solidrust.net/images/background-black.jpg",
-            "TransparencyInPercent": 80
-        },
-        "ActiveButtonColor": "#0255255255",
-        "InactiveButtonColor": "#128128128255",
-        "CloseButtonColor": "#128128128255",
-        "CloseButtonText": "Close",
-        "NextPageButtonColor": "#128128128255",
-        "NextPageText": "Next Page",
-        "PrevPageButtonColor": "#128128128255",
-        "PrevPageText": "Prev Page",
-        "BackgroundColor": "#CC000000",
-        "HelpButton": {
-            "IsEnabled": false,
-            "Text": "Help",
-            "Position": {
-                "MinX": 0.0,
-                "MaxX": 0.05,
-                "MinY": 0.1,
-                "MaxY": 0.14
-            },
-            "Color": "#128128128255",
-            "FontSize": 18
-        },
-        "UpgradedConfig": true
-    }
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      },
+      {
+        "ButtonText": "Rules",
+        "HeaderText": "Server Rules",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "<color=yellow>1</color> - All 3X 5X 10X (Solo/Duo/Trio) have a max group limit of 3 players",
+              " ",
+              "<color=yellow>2</color> - No admins, moderators or any other human will censor chat (just bots).",
+              " ",
+              "<color=yellow>3</color> - use the in-game chat censor/filter to block unwanted content on your own",
+              " ",
+              "<color=yellow>4</color> - Do not call out hackers in chat, report them using <color=yellow> F7</color>.",
+              " ",
+              "<color=yellow>5</color> - No cheating, scripting, bug abuse or otherwise exploiting the game.",
+              " ",
+              "<color=yellow>6</color> - Griefing / PvP / Raids / Base Takovers is allowed and encouraged.",
+              " "
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      },
+      {
+        "ButtonText": "Commands",
+        "HeaderText": "Chat Commands",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "<color=yellow> /airstrike </color>     - Convert supply signal into an airstrike",
+              "<color=yellow> /ad </color>            - Auto-close doors after opening them",
+              "<color=yellow> /al </color>            - Auto-lock doors with a specific code",
+              "<color=yellow> /autoauthui </color>    - Auto-add friends / clan / team to Tool Cupboard",
+              "<color=yellow> /backpack </color>      - Open your backpack storage",
+              "<color=yellow> /backpackGUI </color>   - Toggle on/off the Backpack icon",
+              "<color=yellow> /bank </color>          - Opens the Central Bank storage",
+              "<color=yellow> /bgrade </color>        - Set the default Resource Grade when building",
+              "<color=yellow> /br </color>            - Building repair using the Hammer tool",
+              "<color=yellow> /bs </color>            - Blueprint Sharing settings",
+              "<color=yellow> /carturret </color>     - Add auto-turrets to a modular car",
+              "<color=yellow> /cctv </color>          - CCTV Security Camera tools",
+              "<color=yellow> /chute </color>         - Parachute for landing soft from high places",
+              "<color=yellow> /claim </color>         - Claim donation code",
+              "<color=yellow> /clanhelp </color>      - Clan management commands",
+              "<color=yellow> /cnv </color>           - Chill Night Vision add-on",
+              "<color=yellow> /dance </color>         - Dancing emote"
+            ],
+            "ImageSettings": []
+          },
+          {
+            "TextLines": [
+              " ",
+              "<color=yellow> /dc </color>            - Discord Connect - get the SURVIVOR role and free kits",
+              "<color=yellow> /deaths </color>        - Show last death locations",
+              "<color=yellow> /down </color>          - Downgrade Structures",
+              "<color=yellow> /downall </color>       - Downgrade Whole Base",
+              "<color=yellow> /drone </color>         - Get a Drone",
+              "<color=yellow> /farmtools </color>     - Manage farming, clones, ect..",
+              "<color=yellow> /fmini </color>         - Fetch MiniCopter",
+              "<color=yellow> /friend </color>        - Manage Friends list",
+              "<color=yellow> /fs </color>            - Furnace stack splitter settings",
+              "<color=yellow> /gather </color>        - Show current Gathering multiplyers",
+              "<color=yellow> /heal </color>          - Heal yourself",
+              "<color=yellow> /healplayer </color>    - Heal another player",
+              "<color=yellow> /hit </color>           - disable/enable hit markers",
+              "<color=yellow> /home </color>          - Set your Home spawn points",
+              "<color=yellow> /info </color>          - Show this info / help panel",
+              "<color=yellow> /inspect </color>       - Show details on held item",
+              "<color=yellow> /kit </color>           - Spawn item and loadout kits",
+              "<color=yellow> /mymini </color>        - Spawn MiniCopter"
+            ],
+            "ImageSettings": []
+          },
+          {
+            "TextLines": [
+              " ",
+              "<color=yellow> /nomini </color>        - Remove MiniCopter",
+              "<color=yellow> /phone </color>         - Telephone settings",
+              "<color=yellow> /pm </color>            - Private messages",
+              "<color=yellow> /pmhistory </color>     - Private Message History",
+              "<color=yellow> /qs help </color>       - Quickly sort into boxes, and loot at once.",
+              "<color=yellow> /r </color>             - Reply to last private message",
+              "<color=yellow> /raidalarm </color>     - Rust+ App settings for Raid alarms",
+              "<color=yellow> /remove </color>        - Remover Tool for owned structures",
+              "<color=yellow> /setgenes </color>      - Set the genes for the seed you are holding",
+              "<color=yellow> /sil </color>           - Add a JPG image URL to a sign",
+              "<color=yellow> /silrestore </color>    - Restore JPG image after Rust Updates",
+              "<color=yellow> /silt </color>          - Add text to a sign",
+              "<color=yellow> /showsphere </color>    - Show how far your TC(s) can reach",
+              "<color=yellow> /showsphereall</color>  - Show All Players how far your TC(s) can reach",
+              "<color=yellow> /skin </color>          - Free Steam Workshop skins",
+              "<color=yellow> /skulls </color>        - Show how many human skulls you have crushed",
+              "<color=yellow> /sl </color>            - Security Light configuration"
+            ],
+            "ImageSettings": []
+          },
+          {
+            "TextLines": [
+              " ",
+              "<color=yellow> /time </color>          - Show current world time",
+              "<color=yellow> /tod </color>           - Show Time of Day statistics",
+              "<color=yellow> /tpa </color>           - Accept a teleport request",
+              "<color=yellow> /tpb </color>           - Teleport back to where you previously teleported from",
+              "<color=yellow> /tpr </color>           - Request teleport to another player",
+              "<color=yellow> /trade </color>         - Remote trading with other players",
+              "<color=yellow> /up </color>            - Upgrade structures",
+              "<color=yellow> /upall </color>         - Upgrade Whole Base"
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      },
+      {
+        "ButtonText": "Key Binding",
+        "HeaderText": "Reccomended KeyBinds",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "To enable Key Binds, so you don't have to use the chat commands,",
+              "Open the <color=yellow> F1 </color> client console, Customize the key you want to bind",
+              "(suggested examples below), pressing enter after each line",
+              " ",
+              "<color=yellow> bind b teamping </color> - Ping what you're looking at, to your team",
+              " ",
+              "<color=yellow> bind h heal </color> - Heal yourself",
+              " ",
+              "<color=yellow> bind k kill </color> - Kill yourself",
+              " ",
+              "<color=yellow> bind c chute </color> - Open Parachute",
+              " ",
+              "<color=yellow> bind f2 ''consoletoggle;combatlog'' </color> - open combat log with <color=yellow> F2 </color> key",
+              " ",
+              "<color=yellow> bind Mouse1 +lighttoggle;+attack2 </color> - turn on weapon light, when aiming down sights",
+              " "
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      },
+      {
+        "ButtonText": "Roles/Rewards",
+        "HeaderText": "Player Roles and Loyalty Rewards",
+        "Pages": [
+          {
+            "TextLines": [
+              " ",
+              "Each SRT Rank will give you a unique spawn kit, grant bank and backpack space and many other quality of life improvements. ",
+              " ",
+              " <color=silver> Scavenger </color>    - Default rank for unregistered players and guests.",
+              " <color=white> Survivor </color>      - Registered player. can be obtained using <color=yellow> /dc </color> command",
+              " <color=green> SolidPlayer </color>   - Verified player. Have connected their steam accounts to <color=orange> solidrust.net </color>",
+              " <color=aqua> Supporter </color>      - Contributing Member. Have made a donation, or contributed time to the NOLAG™ network",
+              " <color=purple> Legendary </color>    - Team Member. Monthly subscriber or NOLAG™ Staff member.",
+              " ",
+              " ",
+              "<color=yellow> Roles are global throughout all NOLAG™ servers and Discord. Rewards are server specific. </color>",
+              " ",
+              "See: <color=orange> solidrust.net/rewards </color> for more details on server rewards.",
+              " ",
+              "See: <color=orange> discord.gg/PpAvPcD46q </color> for community support, Rust news and server updates",
+              " "
+            ],
+            "ImageSettings": []
+          }
+        ],
+        "TabButtonAnchor": 4,
+        "TabButtonFontSize": 16,
+        "HeaderAnchor": 0,
+        "HeaderFontSize": 32,
+        "TextFontSize": 16,
+        "TextAnchor": 3,
+        "OxideGroup": ""
+      }
+    ],
+    "ShowInfoOnPlayerInit": true,
+    "ShowInfoOnlyOncePerRuntime": true,
+    "TabToOpenByDefault": 0,
+    "Position": {
+      "MinX": 0.15,
+      "MaxX": 0.9,
+      "MinY": 0.2,
+      "MaxY": 0.9
+    },
+    "BackgroundImage": {
+      "Enabled": true,
+      "Position": {
+        "MinX": 0.0,
+        "MaxX": 1.0,
+        "MinY": 0.0,
+        "MaxY": 1.0
+      },
+      "Url": "https://solidrust.net/images/background-black.jpg",
+      "TransparencyInPercent": 80
+    },
+    "ActiveButtonColor": "#0255255255",
+    "InactiveButtonColor": "#128128128255",
+    "CloseButtonColor": "#128128128255",
+    "CloseButtonText": "Close",
+    "NextPageButtonColor": "#128128128255",
+    "NextPageText": "Next Page",
+    "PrevPageButtonColor": "#128128128255",
+    "PrevPageText": "Prev Page",
+    "BackgroundColor": "#CC000000",
+    "HelpButton": {
+      "IsEnabled": false,
+      "Text": "Help",
+      "Position": {
+        "MinX": 0.0,
+        "MaxX": 0.05,
+        "MinY": 0.1,
+        "MaxY": 0.14
+      },
+      "Color": "#128128128255",
+      "FontSize": 18
+    },
+    "UpgradedConfig": true
+  }
 }

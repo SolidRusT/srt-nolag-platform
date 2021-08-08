@@ -1,6 +1,6 @@
 {
-    "Display workbench built notification": true,
-    "Display cancel craft notification": true,
-    "Inside building check frequency (Seconds)": 3.0,
-    "Distance from base to be considered inside building (Meters)": 5.0
+  "Display workbench built notification": true,
+  "Display cancel craft notification": true,
+  "Inside building check frequency (Seconds)": 3.0,
+  "Distance from base to be considered inside building (Meters)": 5.0
 }

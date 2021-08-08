@@ -33,6 +33,7 @@
         "[Manifest] URI IS",
         "[SpawnHandler] populationCounts",
         ", disk(",
-        "Bone error in SkeletonPropertie"
+        "Bone error in SkeletonPropertie",
+        "Look rotation viewing vector is zero"
     ]
 }

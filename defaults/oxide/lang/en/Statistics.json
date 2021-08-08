@@ -1,0 +1,21 @@
+{
+  "stones": "Stones",
+  "sulfur.ore": "Sulfur",
+  "metal.ore": "Metal",
+  "hq.metal.ore": "HQM",
+  "wood": "Wood",
+  "Back": "Back",
+  "Close": "Close",
+  "Mining": "Mining",
+  "ResourcesAmount": "{0} pcs",
+  "Deaths": "Deaths",
+  "Kills": "Kills",
+  "Top": "Top",
+  "FavoriteWeapon": "Favorite weapon",
+  "Score": "Score",
+  "GameTimeOnServer": "Game time on server",
+  "Username": "Username",
+  "KDAmount": "Amount of kills / deaths",
+  "Leaderboard": "Leaderboard",
+  "NoPermission": "You don't have permission to use this command!"
+}

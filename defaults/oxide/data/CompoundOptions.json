@@ -1367,6 +1367,154 @@
         "refillAmount": 100,
         "refillDelay": 10.0
       }
+    ],
+    "Fishing_Village": [
+      {
+        "_comment": "Sell Diving Mask x 20 for Scrap x 15",
+        "sellId": -113413047,
+        "sellAmount": 15,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 20,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Diving Tank x 30 for Scrap x 35",
+        "sellId": -2022172587,
+        "sellAmount": 35,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 30,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Diving Fins x 25 for Scrap x 25",
+        "sellId": 296519935,
+        "sellAmount": 25,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 25,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Wetsuit x 1 for Scrap x 20",
+        "sellId": -1101924344,
+        "sellAmount": 20,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 1,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Worm x 5 for Scrap x 50",
+        "sellId": 1770475779,
+        "sellAmount": 50,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 5,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Handmade Fishing Rod x 5 for Scrap x 80",
+        "sellId": 1569882109,
+        "sellAmount": 80,
+        "sellAsBP": false,
+        "currencyId": -932201673,
+        "currencyAmount": 5,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      }
+    ],
+    "FishExchange": [
+      {
+        "_comment": "Sell Scrap x 30 for Small Trout x 5",
+        "sellId": -932201673,
+        "sellAmount": 5,
+        "sellAsBP": false,
+        "currencyId": -1878764039,
+        "currencyAmount": 30,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Scrap x 40 for Yellow Perch x 5",
+        "sellId": -932201673,
+        "sellAmount": 5,
+        "sellAsBP": false,
+        "currencyId": 680234026,
+        "currencyAmount": 40,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Scrap x 70 for Small Shark x 2",
+        "sellId": -932201673,
+        "sellAmount": 2,
+        "sellAsBP": false,
+        "currencyId": -1768880890,
+        "currencyAmount": 70,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Scrap x 40 for Salmon x 2",
+        "sellId": -932201673,
+        "sellAmount": 2,
+        "sellAsBP": false,
+        "currencyId": -851988960,
+        "currencyAmount": 40,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Scrap x 60 for Orange Roughy x 2",
+        "sellId": -932201673,
+        "sellAmount": 2,
+        "sellAsBP": false,
+        "currencyId": -1904821376,
+        "currencyAmount": 60,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      },
+      {
+        "_comment": "Sell Scrap x 50 for Catfish x 2",
+        "sellId": -932201673,
+        "sellAmount": 2,
+        "sellAsBP": false,
+        "currencyId": -587989372,
+        "currencyAmount": 50,
+        "currencyAsBP": false,
+        "weight": 100,
+        "refillAmount": 100,
+        "refillDelay": 10.0
+      }
     ]
   }
 }

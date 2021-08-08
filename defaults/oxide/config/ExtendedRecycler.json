@@ -1,0 +1,24 @@
+{
+  "1. Pickup settings:": {
+    "1. Enabled for personal recyclers (placed by player)": false,
+    "2. Check ability to build for pickup": true,
+    "3. Only owner can pickup": false
+  },
+  "2. Craft settings:": {
+    "1. Enabled": true,
+    "2. Cost (shortname - amount):": {
+      "scrap": 500,
+      "metal.fragments": 5000,
+      "metal.refined": 50,
+      "gears": 10
+    }
+  },
+  "3. Destroy settings:": {
+    "1. Check ground for recyclers (destroy on missing)": true,
+    "2. Give item on destroy recycler": true,
+    "3. Effects on destroy recycler": [
+      "assets/bundled/prefabs/fx/item_break.prefab",
+      "assets/bundled/prefabs/fx/impacts/stab/rock/stab_rock_01.prefab"
+    ]
+  }
+}
