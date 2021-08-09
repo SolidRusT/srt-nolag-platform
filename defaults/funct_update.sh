@@ -231,6 +231,10 @@ function srt_install () {
 
 # SRT 5x
 NINE_PERMS=(
+vehicledeployedlocks.codelock.duosub \
+vehicledeployedlocks.codelock.solosub \
+vehicledeployedlocks.keylock.duosub \
+vehicledeployedlocks.keylock.solosub \
 skins.use  \
 craftchassis.2  \
 removertool.normal  \
@@ -398,6 +402,10 @@ iteminspector.use
 
 # SRT Main Vanilla
 DEFAULT_PERMS=(
+vehicledeployedlocks.codelock.duosub \
+vehicledeployedlocks.codelock.solosub \
+vehicledeployedlocks.keylock.duosub \
+vehicledeployedlocks.keylock.solosub \
 skins.use \
 removertool.normal  \
 carlockui.use.codelock  \

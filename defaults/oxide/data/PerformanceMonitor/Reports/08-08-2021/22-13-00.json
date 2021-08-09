@@ -1,0 +1,2667 @@
+{
+  "Online players": 0,
+  "Offline players": 0,
+  "Entities report": {
+    "Total": 28392,
+    "Owned": 0,
+    "Unowned": 28392,
+    "List": {
+      "planner": {
+        "Total": 1102,
+        "Owned": 0,
+        "Unowned": 1102
+      },
+      "orebonus_generic": {
+        "Total": 665,
+        "Owned": 0,
+        "Unowned": 665
+      },
+      "hemp-collectable": {
+        "Total": 583,
+        "Owned": 0,
+        "Unowned": 583
+      },
+      "sulfur-collectable": {
+        "Total": 420,
+        "Owned": 0,
+        "Unowned": 420
+      },
+      "metal-collectable": {
+        "Total": 389,
+        "Owned": 0,
+        "Unowned": 389
+      },
+      "stone-collectable": {
+        "Total": 389,
+        "Owned": 0,
+        "Unowned": 389
+      },
+      "creosote_bush_d": {
+        "Total": 387,
+        "Owned": 0,
+        "Unowned": 387
+      },
+      "creosote_bush_c": {
+        "Total": 386,
+        "Owned": 0,
+        "Unowned": 386
+      },
+      "pine_sapling_e": {
+        "Total": 336,
+        "Owned": 0,
+        "Unowned": 336
+      },
+      "pine_sapling_d": {
+        "Total": 336,
+        "Owned": 0,
+        "Unowned": 336
+      },
+      "pine_sapling_c": {
+        "Total": 336,
+        "Owned": 0,
+        "Unowned": 336
+      },
+      "pine_sapling_a": {
+        "Total": 336,
+        "Owned": 0,
+        "Unowned": 336
+      },
+      "pine_sapling_b": {
+        "Total": 336,
+        "Owned": 0,
+        "Unowned": 336
+      },
+      "m92.entity": {
+        "Total": 319,
+        "Owned": 0,
+        "Unowned": 319
+      },
+      "dead_log_c": {
+        "Total": 312,
+        "Owned": 0,
+        "Unowned": 312
+      },
+      "dead_log_b": {
+        "Total": 306,
+        "Owned": 0,
+        "Unowned": 306
+      },
+      "bush_spicebush_c": {
+        "Total": 305,
+        "Owned": 0,
+        "Unowned": 305
+      },
+      "bush_spicebush_b": {
+        "Total": 305,
+        "Owned": 0,
+        "Unowned": 305
+      },
+      "bush_spicebush_d": {
+        "Total": 305,
+        "Owned": 0,
+        "Unowned": 305
+      },
+      "bush_spicebush_a": {
+        "Total": 303,
+        "Owned": 0,
+        "Unowned": 303
+      },
+      "dead_log_a": {
+        "Total": 296,
+        "Owned": 0,
+        "Unowned": 296
+      },
+      "mushroom-cluster-5": {
+        "Total": 292,
+        "Owned": 0,
+        "Unowned": 292
+      },
+      "wood-collectable": {
+        "Total": 292,
+        "Owned": 0,
+        "Unowned": 292
+      },
+      "mushroom-cluster-6": {
+        "Total": 291,
+        "Owned": 0,
+        "Unowned": 291
+      },
+      "pine_a": {
+        "Total": 291,
+        "Owned": 0,
+        "Unowned": 291
+      },
+      "stone-ore": {
+        "Total": 276,
+        "Owned": 0,
+        "Unowned": 276
+      },
+      "crate_normal_2": {
+        "Total": 264,
+        "Owned": 0,
+        "Unowned": 264
+      },
+      "mp5.entity": {
+        "Total": 255,
+        "Owned": 0,
+        "Unowned": 255
+      },
+      "pine_d": {
+        "Total": 238,
+        "Owned": 0,
+        "Unowned": 238
+      },
+      "pine_b": {
+        "Total": 235,
+        "Owned": 0,
+        "Unowned": 235
+      },
+      "loot_barrel_2": {
+        "Total": 234,
+        "Owned": 0,
+        "Unowned": 234
+      },
+      "douglas_fir_a": {
+        "Total": 222,
+        "Owned": 0,
+        "Unowned": 222
+      },
+      "pine_c": {
+        "Total": 222,
+        "Owned": 0,
+        "Unowned": 222
+      },
+      "douglas_fir_b": {
+        "Total": 222,
+        "Owned": 0,
+        "Unowned": 222
+      },
+      "douglas_fir_c": {
+        "Total": 222,
+        "Owned": 0,
+        "Unowned": 222
+      },
+      "crate_underwater_basic": {
+        "Total": 216,
+        "Owned": 0,
+        "Unowned": 216
+      },
+      "douglas_fir_d": {
+        "Total": 199,
+        "Owned": 0,
+        "Unowned": 199
+      },
+      "loot_barrel_1": {
+        "Total": 198,
+        "Owned": 0,
+        "Unowned": 198
+      },
+      "creosote_bush_a": {
+        "Total": 195,
+        "Owned": 0,
+        "Unowned": 195
+      },
+      "birch_big_tundra": {
+        "Total": 194,
+        "Owned": 0,
+        "Unowned": 194
+      },
+      "pine_dead_d": {
+        "Total": 194,
+        "Owned": 0,
+        "Unowned": 194
+      },
+      "creosote_bush_b": {
+        "Total": 194,
+        "Owned": 0,
+        "Unowned": 194
+      },
+      "mormon_tea_b": {
+        "Total": 193,
+        "Owned": 0,
+        "Unowned": 193
+      },
+      "mormon_tea_c": {
+        "Total": 193,
+        "Owned": 0,
+        "Unowned": 193
+      },
+      "mormon_tea_a": {
+        "Total": 193,
+        "Owned": 0,
+        "Unowned": 193
+      },
+      "pine_dead_f": {
+        "Total": 192,
+        "Owned": 0,
+        "Unowned": 192
+      },
+      "mormon_tea_d": {
+        "Total": 192,
+        "Owned": 0,
+        "Unowned": 192
+      },
+      "pine_dead_e": {
+        "Total": 191,
+        "Owned": 0,
+        "Unowned": 191
+      },
+      "birch_large_tundra": {
+        "Total": 190,
+        "Owned": 0,
+        "Unowned": 190
+      },
+      "sulfur-ore": {
+        "Total": 182,
+        "Owned": 0,
+        "Unowned": 182
+      },
+      "metal-ore": {
+        "Total": 179,
+        "Owned": 0,
+        "Unowned": 179
+      },
+      "smallwaterbottle.entity": {
+        "Total": 172,
+        "Owned": 0,
+        "Unowned": 172
+      },
+      "pine_dead_a": {
+        "Total": 170,
+        "Owned": 0,
+        "Unowned": 170
+      },
+      "pine_dead_b": {
+        "Total": 170,
+        "Owned": 0,
+        "Unowned": 170
+      },
+      "pine_dead_c": {
+        "Total": 170,
+        "Owned": 0,
+        "Unowned": 170
+      },
+      "salvaged_sword.entity": {
+        "Total": 160,
+        "Owned": 0,
+        "Unowned": 160
+      },
+      "lr300.entity": {
+        "Total": 160,
+        "Owned": 0,
+        "Unowned": 160
+      },
+      "door.hinged.underwater_labs.public": {
+        "Total": 159,
+        "Owned": 0,
+        "Unowned": 159
+      },
+      "doormanipulator": {
+        "Total": 157,
+        "Owned": 0,
+        "Unowned": 157
+      },
+      "oil_barrel": {
+        "Total": 154,
+        "Owned": 0,
+        "Unowned": 154
+      },
+      "m39.entity": {
+        "Total": 152,
+        "Owned": 0,
+        "Unowned": 152
+      },
+      "bush_willow_b": {
+        "Total": 145,
+        "Owned": 0,
+        "Unowned": 145
+      },
+      "bush_willow_d": {
+        "Total": 145,
+        "Owned": 0,
+        "Unowned": 145
+      },
+      "lasersight.entity": {
+        "Total": 144,
+        "Owned": 0,
+        "Unowned": 144
+      },
+      "bush_willow_a": {
+        "Total": 144,
+        "Owned": 0,
+        "Unowned": 144
+      },
+      "bush_willow_c": {
+        "Total": 141,
+        "Owned": 0,
+        "Unowned": 141
+      },
+      "flashlight.entity": {
+        "Total": 140,
+        "Owned": 0,
+        "Unowned": 140
+      },
+      "american_beech_c": {
+        "Total": 132,
+        "Owned": 0,
+        "Unowned": 132
+      },
+      "birch_big_temp": {
+        "Total": 131,
+        "Owned": 0,
+        "Unowned": 131
+      },
+      "american_beech_a": {
+        "Total": 130,
+        "Owned": 0,
+        "Unowned": 130
+      },
+      "birch_large_temp": {
+        "Total": 130,
+        "Owned": 0,
+        "Unowned": 130
+      },
+      "keycard.entity": {
+        "Total": 129,
+        "Owned": 0,
+        "Unowned": 129
+      },
+      "american_beech_b": {
+        "Total": 129,
+        "Owned": 0,
+        "Unowned": 129
+      },
+      "crate_normal": {
+        "Total": 124,
+        "Owned": 0,
+        "Unowned": 124
+      },
+      "pressbutton": {
+        "Total": 120,
+        "Owned": 0,
+        "Unowned": 120
+      },
+      "birch_tiny_temp": {
+        "Total": 119,
+        "Owned": 0,
+        "Unowned": 119
+      },
+      "cctv.static": {
+        "Total": 119,
+        "Owned": 0,
+        "Unowned": 119
+      },
+      "birch_small_temp": {
+        "Total": 118,
+        "Owned": 0,
+        "Unowned": 118
+      },
+      "bush_willow_snow_a": {
+        "Total": 117,
+        "Owned": 0,
+        "Unowned": 117
+      },
+      "bush_willow_snow_b": {
+        "Total": 117,
+        "Owned": 0,
+        "Unowned": 117
+      },
+      "pine_sapling_e_snow": {
+        "Total": 117,
+        "Owned": 0,
+        "Unowned": 117
+      },
+      "bush_willow_snow_d": {
+        "Total": 116,
+        "Owned": 0,
+        "Unowned": 116
+      },
+      "pine_sapling_d_snow": {
+        "Total": 116,
+        "Owned": 0,
+        "Unowned": 116
+      },
+      "bush_willow_snow_c": {
+        "Total": 115,
+        "Owned": 0,
+        "Unowned": 115
+      },
+      "american_beech_e": {
+        "Total": 110,
+        "Owned": 0,
+        "Unowned": 110
+      },
+      "american_beech_d": {
+        "Total": 109,
+        "Owned": 0,
+        "Unowned": 109
+      },
+      "orswitch": {
+        "Total": 104,
+        "Owned": 0,
+        "Unowned": 104
+      },
+      "birch_medium_temp": {
+        "Total": 102,
+        "Owned": 0,
+        "Unowned": 102
+      },
+      "bush_willow_snow_small_a": {
+        "Total": 97,
+        "Owned": 0,
+        "Unowned": 97
+      },
+      "bush_willow_snow_small_b": {
+        "Total": 96,
+        "Owned": 0,
+        "Unowned": 96
+      },
+      "cardreader": {
+        "Total": 95,
+        "Owned": 0,
+        "Unowned": 95
+      },
+      "creosote_bush_dry_b": {
+        "Total": 90,
+        "Owned": 0,
+        "Unowned": 90
+      },
+      "creosote_bush_dry_a": {
+        "Total": 90,
+        "Owned": 0,
+        "Unowned": 90
+      },
+      "door.hinged.underwater_labs.security": {
+        "Total": 90,
+        "Owned": 0,
+        "Unowned": 90
+      },
+      "connectedspeaker.deployed.static": {
+        "Total": 89,
+        "Owned": 0,
+        "Unowned": 89
+      },
+      "pickaxe.entity": {
+        "Total": 88,
+        "Owned": 0,
+        "Unowned": 88
+      },
+      "pine_sapling_c_snow": {
+        "Total": 88,
+        "Owned": 0,
+        "Unowned": 88
+      },
+      "pine_sapling_a_snow": {
+        "Total": 88,
+        "Owned": 0,
+        "Unowned": 88
+      },
+      "pine_sapling_b_snow": {
+        "Total": 87,
+        "Owned": 0,
+        "Unowned": 87
+      },
+      "binocular.entity": {
+        "Total": 86,
+        "Owned": 0,
+        "Unowned": 86
+      },
+      "hatchet.entity": {
+        "Total": 84,
+        "Owned": 0,
+        "Unowned": 84
+      },
+      "oak_f": {
+        "Total": 84,
+        "Owned": 0,
+        "Unowned": 84
+      },
+      "oak_e": {
+        "Total": 83,
+        "Owned": 0,
+        "Unowned": 83
+      },
+      "american_beech_a_dead": {
+        "Total": 79,
+        "Owned": 0,
+        "Unowned": 79
+      },
+      "waterjug.entity": {
+        "Total": 77,
+        "Owned": 0,
+        "Unowned": 77
+      },
+      "tunneldweller": {
+        "Total": 77,
+        "Owned": 0,
+        "Unowned": 77
+      },
+      "berry-blue-collectable": {
+        "Total": 73,
+        "Owned": 0,
+        "Unowned": 73
+      },
+      "berry-red-collectable": {
+        "Total": 73,
+        "Owned": 0,
+        "Unowned": 73
+      },
+      "potato-collectable": {
+        "Total": 73,
+        "Owned": 0,
+        "Unowned": 73
+      },
+      "berry-white-collectable": {
+        "Total": 73,
+        "Owned": 0,
+        "Unowned": 73
+      },
+      "berry-yellow-collectable": {
+        "Total": 73,
+        "Owned": 0,
+        "Unowned": 73
+      },
+      "berry-green-collectable": {
+        "Total": 73,
+        "Owned": 0,
+        "Unowned": 73
+      },
+      "crate_tools": {
+        "Total": 70,
+        "Owned": 0,
+        "Unowned": 70
+      },
+      "palm_tree_short_b_entity": {
+        "Total": 68,
+        "Owned": 0,
+        "Unowned": 68
+      },
+      "birch_medium_tundra": {
+        "Total": 67,
+        "Owned": 0,
+        "Unowned": 67
+      },
+      "cactus-6": {
+        "Total": 67,
+        "Owned": 0,
+        "Unowned": 67
+      },
+      "cactus-7": {
+        "Total": 67,
+        "Owned": 0,
+        "Unowned": 67
+      },
+      "cactus-4": {
+        "Total": 67,
+        "Owned": 0,
+        "Unowned": 67
+      },
+      "cactus-1": {
+        "Total": 67,
+        "Owned": 0,
+        "Unowned": 67
+      },
+      "cactus-2": {
+        "Total": 67,
+        "Owned": 0,
+        "Unowned": 67
+      },
+      "cactus-5": {
+        "Total": 67,
+        "Owned": 0,
+        "Unowned": 67
+      },
+      "palm_tree_short_a_entity": {
+        "Total": 67,
+        "Owned": 0,
+        "Unowned": 67
+      },
+      "birch_small_tundra": {
+        "Total": 66,
+        "Owned": 0,
+        "Unowned": 66
+      },
+      "pine_dead_snow_e": {
+        "Total": 66,
+        "Owned": 0,
+        "Unowned": 66
+      },
+      "palm_tree_short_c_entity": {
+        "Total": 66,
+        "Owned": 0,
+        "Unowned": 66
+      },
+      "pine_dead_snow_f": {
+        "Total": 66,
+        "Owned": 0,
+        "Unowned": 66
+      },
+      "birch_tiny_tundra": {
+        "Total": 66,
+        "Owned": 0,
+        "Unowned": 66
+      },
+      "cactus-3": {
+        "Total": 66,
+        "Owned": 0,
+        "Unowned": 66
+      },
+      "underwaterdweller": {
+        "Total": 63,
+        "Owned": 0,
+        "Unowned": 63
+      },
+      "loot-barrel-1": {
+        "Total": 61,
+        "Owned": 0,
+        "Unowned": 61
+      },
+      "loot-barrel-2": {
+        "Total": 61,
+        "Owned": 0,
+        "Unowned": 61
+      },
+      "trash-pile-1": {
+        "Total": 60,
+        "Owned": 0,
+        "Unowned": 60
+      },
+      "pine_a_snow": {
+        "Total": 58,
+        "Owned": 0,
+        "Unowned": 58
+      },
+      "bow_hunting.entity": {
+        "Total": 57,
+        "Owned": 0,
+        "Unowned": 57
+      },
+      "swamp_tree_e": {
+        "Total": 57,
+        "Owned": 0,
+        "Unowned": 57
+      },
+      "bandage.entity": {
+        "Total": 55,
+        "Owned": 0,
+        "Unowned": 55
+      },
+      "ak47u.entity": {
+        "Total": 52,
+        "Owned": 0,
+        "Unowned": 52
+      },
+      "semi_auto_rifle.entity": {
+        "Total": 52,
+        "Owned": 0,
+        "Unowned": 52
+      },
+      "swamp_tree_f": {
+        "Total": 52,
+        "Owned": 0,
+        "Unowned": 52
+      },
+      "door.hinged.elevator_door": {
+        "Total": 52,
+        "Owned": 0,
+        "Unowned": 52
+      },
+      "pressbutton_trainstairwell": {
+        "Total": 52,
+        "Owned": 0,
+        "Unowned": 52
+      },
+      "chair.invisible.static": {
+        "Total": 50,
+        "Owned": 0,
+        "Unowned": 50
+      },
+      "vehicle_parts": {
+        "Total": 49,
+        "Owned": 0,
+        "Unowned": 49
+      },
+      "cardtableseat": {
+        "Total": 49,
+        "Owned": 0,
+        "Unowned": 49
+      },
+      "cardtableplayerstorage": {
+        "Total": 49,
+        "Owned": 0,
+        "Unowned": 49
+      },
+      "syringe_medical.entity": {
+        "Total": 48,
+        "Owned": 0,
+        "Unowned": 48
+      },
+      "palm_tree_med_a_entity": {
+        "Total": 48,
+        "Owned": 0,
+        "Unowned": 48
+      },
+      "palm_tree_tall_a_entity": {
+        "Total": 48,
+        "Owned": 0,
+        "Unowned": 48
+      },
+      "palm_tree_tall_b_entity": {
+        "Total": 47,
+        "Owned": 0,
+        "Unowned": 47
+      },
+      "mace.entity": {
+        "Total": 46,
+        "Owned": 0,
+        "Unowned": 46
+      },
+      "driftwood_1": {
+        "Total": 46,
+        "Owned": 0,
+        "Unowned": 46
+      },
+      "driftwood_5": {
+        "Total": 46,
+        "Owned": 0,
+        "Unowned": 46
+      },
+      "driftwood_2": {
+        "Total": 46,
+        "Owned": 0,
+        "Unowned": 46
+      },
+      "driftwood_4": {
+        "Total": 46,
+        "Owned": 0,
+        "Unowned": 46
+      },
+      "driftwood_3": {
+        "Total": 46,
+        "Owned": 0,
+        "Unowned": 46
+      },
+      "driftwood_set_3": {
+        "Total": 45,
+        "Owned": 0,
+        "Unowned": 45
+      },
+      "swamp_tree_d": {
+        "Total": 44,
+        "Owned": 0,
+        "Unowned": 44
+      },
+      "driftwood_set_2": {
+        "Total": 43,
+        "Owned": 0,
+        "Unowned": 43
+      },
+      "douglas_fir_d_small": {
+        "Total": 43,
+        "Owned": 0,
+        "Unowned": 43
+      },
+      "salvaged_cleaver.entity": {
+        "Total": 41,
+        "Owned": 0,
+        "Unowned": 41
+      },
+      "scientistnpc_oilrig": {
+        "Total": 41,
+        "Owned": 0,
+        "Unowned": 41
+      },
+      "driftwood_set_1": {
+        "Total": 41,
+        "Owned": 0,
+        "Unowned": 41
+      },
+      "simplelight": {
+        "Total": 39,
+        "Owned": 0,
+        "Unowned": 39
+      },
+      "swamp_tree_a": {
+        "Total": 39,
+        "Owned": 0,
+        "Unowned": 39
+      },
+      "crate_underwater_advanced": {
+        "Total": 38,
+        "Owned": 0,
+        "Unowned": 38
+      },
+      "elevator.static": {
+        "Total": 37,
+        "Owned": 0,
+        "Unowned": 37
+      },
+      "generator.static_hidden": {
+        "Total": 37,
+        "Owned": 0,
+        "Unowned": 37
+      },
+      "boar": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "pine_c_snow": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "douglas_fir_b_snow": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "douglas_fir_c_snow": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "pine_dead_snow_d": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "pine_dead_snow_c": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "pine_dead_snow_b": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "pine_dead_snow_a": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "swamp_tree_b": {
+        "Total": 36,
+        "Owned": 0,
+        "Unowned": 36
+      },
+      "m249.entity": {
+        "Total": 34,
+        "Owned": 0,
+        "Unowned": 34
+      },
+      "douglas_fir_a_snow": {
+        "Total": 34,
+        "Owned": 0,
+        "Unowned": 34
+      },
+      "door.hinged.industrial_a_a": {
+        "Total": 34,
+        "Owned": 0,
+        "Unowned": 34
+      },
+      "crate_ammunition": {
+        "Total": 33,
+        "Owned": 0,
+        "Unowned": 33
+      },
+      "tunnellootstrip_a": {
+        "Total": 33,
+        "Owned": 0,
+        "Unowned": 33
+      },
+      "crate_food_1": {
+        "Total": 31,
+        "Owned": 0,
+        "Unowned": 31
+      },
+      "crate_mine": {
+        "Total": 29,
+        "Owned": 0,
+        "Unowned": 29
+      },
+      "pine_d_snow": {
+        "Total": 29,
+        "Owned": 0,
+        "Unowned": 29
+      },
+      "knife.combat.entity": {
+        "Total": 28,
+        "Owned": 0,
+        "Unowned": 28
+      },
+      "corn-collectable": {
+        "Total": 27,
+        "Owned": 0,
+        "Unowned": 27
+      },
+      "chair.static": {
+        "Total": 27,
+        "Owned": 0,
+        "Unowned": 27
+      },
+      "pine_b snow": {
+        "Total": 27,
+        "Owned": 0,
+        "Unowned": 27
+      },
+      "foodbox": {
+        "Total": 26,
+        "Owned": 0,
+        "Unowned": 26
+      },
+      "pumpkin-collectable": {
+        "Total": 26,
+        "Owned": 0,
+        "Unowned": 26
+      },
+      "guitar.weapon": {
+        "Total": 25,
+        "Owned": 0,
+        "Unowned": 25
+      },
+      "crossbow.entity": {
+        "Total": 25,
+        "Owned": 0,
+        "Unowned": 25
+      },
+      "swamp_tree_c": {
+        "Total": 25,
+        "Owned": 0,
+        "Unowned": 25
+      },
+      "boombox.static": {
+        "Total": 25,
+        "Owned": 0,
+        "Unowned": 25
+      },
+      "crate_food_2": {
+        "Total": 24,
+        "Owned": 0,
+        "Unowned": 24
+      },
+      "generator.static": {
+        "Total": 24,
+        "Owned": 0,
+        "Unowned": 24
+      },
+      "crate_medical": {
+        "Total": 23,
+        "Owned": 0,
+        "Unowned": 23
+      },
+      "fusebox": {
+        "Total": 23,
+        "Owned": 0,
+        "Unowned": 23
+      },
+      "vending_mapmarker": {
+        "Total": 23,
+        "Owned": 0,
+        "Unowned": 23
+      },
+      "ocotillo_d": {
+        "Total": 23,
+        "Owned": 0,
+        "Unowned": 23
+      },
+      "ocotillo_dry_d": {
+        "Total": 23,
+        "Owned": 0,
+        "Unowned": 23
+      },
+      "ocotillo_b": {
+        "Total": 23,
+        "Owned": 0,
+        "Unowned": 23
+      },
+      "ocotillo_dry_b": {
+        "Total": 23,
+        "Owned": 0,
+        "Unowned": 23
+      },
+      "sentry.bandit.static": {
+        "Total": 23,
+        "Owned": 0,
+        "Unowned": 23
+      },
+      "waterbucket.entity": {
+        "Total": 22,
+        "Owned": 0,
+        "Unowned": 22
+      },
+      "tech_parts_2": {
+        "Total": 22,
+        "Owned": 0,
+        "Unowned": 22
+      },
+      "stag": {
+        "Total": 22,
+        "Owned": 0,
+        "Unowned": 22
+      },
+      "american_beech_e_dead": {
+        "Total": 22,
+        "Owned": 0,
+        "Unowned": 22
+      },
+      "ocotillo_dry_a": {
+        "Total": 22,
+        "Owned": 0,
+        "Unowned": 22
+      },
+      "ocotillo_c": {
+        "Total": 22,
+        "Owned": 0,
+        "Unowned": 22
+      },
+      "ocotillo_dry_c": {
+        "Total": 22,
+        "Owned": 0,
+        "Unowned": 22
+      },
+      "chicken": {
+        "Total": 21,
+        "Owned": 0,
+        "Unowned": 21
+      },
+      "modularcarpassengerseatright": {
+        "Total": 21,
+        "Owned": 0,
+        "Unowned": 21
+      },
+      "smallboatpassenger": {
+        "Total": 21,
+        "Owned": 0,
+        "Unowned": 21
+      },
+      "ocotillo_a": {
+        "Total": 21,
+        "Owned": 0,
+        "Unowned": 21
+      },
+      "junkpile_water_b": {
+        "Total": 20,
+        "Owned": 0,
+        "Unowned": 20
+      },
+      "crate_fuel": {
+        "Total": 20,
+        "Owned": 0,
+        "Unowned": 20
+      },
+      "icepick_salvaged.entity": {
+        "Total": 20,
+        "Owned": 0,
+        "Unowned": 20
+      },
+      "keycard_green_pickup.entity": {
+        "Total": 20,
+        "Owned": 0,
+        "Unowned": 20
+      },
+      "junkpile_water_a": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "junkpile_water_c": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "underwaterlab_dwelling_300_corner_h": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "modularcardriverseat": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "modular_car_fuel_storage": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "simpleshark": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "oak_c": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "bush_spicebush_a_snow": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "bush_spicebush_c_snow": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "palm_tree_small_c_entity": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "sentry.scientist.static": {
+        "Total": 19,
+        "Owned": 0,
+        "Unowned": 19
+      },
+      "tech_parts_1": {
+        "Total": 18,
+        "Owned": 0,
+        "Unowned": 18
+      },
+      "workcart_fuel_storage": {
+        "Total": 18,
+        "Owned": 0,
+        "Unowned": 18
+      },
+      "palm_tree_small_b_entity": {
+        "Total": 18,
+        "Owned": 0,
+        "Unowned": 18
+      },
+      "divesite_a": {
+        "Total": 17,
+        "Owned": 0,
+        "Unowned": 17
+      },
+      "crate_elite": {
+        "Total": 17,
+        "Owned": 0,
+        "Unowned": 17
+      },
+      "geiger_counter.entity": {
+        "Total": 17,
+        "Owned": 0,
+        "Unowned": 17
+      },
+      "oak_d": {
+        "Total": 17,
+        "Owned": 0,
+        "Unowned": 17
+      },
+      "simpleswitch": {
+        "Total": 17,
+        "Owned": 0,
+        "Unowned": 17
+      },
+      "divesite_c": {
+        "Total": 16,
+        "Owned": 0,
+        "Unowned": 16
+      },
+      "junkpile_e": {
+        "Total": 16,
+        "Owned": 0,
+        "Unowned": 16
+      },
+      "underwaterlab_dwelling_600_edge_b": {
+        "Total": 16,
+        "Owned": 0,
+        "Unowned": 16
+      },
+      "ore_stone": {
+        "Total": 16,
+        "Owned": 0,
+        "Unowned": 16
+      },
+      "timerswitch": {
+        "Total": 16,
+        "Owned": 0,
+        "Unowned": 16
+      },
+      "door.hinged.industrial_a_b": {
+        "Total": 16,
+        "Owned": 0,
+        "Unowned": 16
+      },
+      "divesite_b": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "axe_salvaged.entity": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "chainsaw.entity": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "paddle.entity": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "fuel_storage": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "wolf": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "saddletest": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "testridablehorse": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "bear": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "oak_b": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "elevator_lift.static": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "elevator.static.top": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "door.hinged.industrial_a_d": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "computerstation.static": {
+        "Total": 15,
+        "Owned": 0,
+        "Unowned": 15
+      },
+      "underwaterlab_dwelling_600_corner_f": {
+        "Total": 14,
+        "Owned": 0,
+        "Unowned": 14
+      },
+      "underwaterlab_dwelling_600_corner_a": {
+        "Total": 14,
+        "Owned": 0,
+        "Unowned": 14
+      },
+      "microphonestandio.entity.static": {
+        "Total": 14,
+        "Owned": 0,
+        "Unowned": 14
+      },
+      "microphonestand.deployed.static": {
+        "Total": 14,
+        "Owned": 0,
+        "Unowned": 14
+      },
+      "recycler_static": {
+        "Total": 14,
+        "Owned": 0,
+        "Unowned": 14
+      },
+      "door.hinged.vent": {
+        "Total": 14,
+        "Owned": 0,
+        "Unowned": 14
+      },
+      "sirenlightorange": {
+        "Total": 14,
+        "Owned": 0,
+        "Unowned": 14
+      },
+      "junkpile_f": {
+        "Total": 13,
+        "Owned": 0,
+        "Unowned": 13
+      },
+      "underwaterlab_dwelling_300_edge_f": {
+        "Total": 13,
+        "Owned": 0,
+        "Unowned": 13
+      },
+      "silencer.entity": {
+        "Total": 13,
+        "Owned": 0,
+        "Unowned": 13
+      },
+      "door.hinged.wood.static": {
+        "Total": 13,
+        "Owned": 0,
+        "Unowned": 13
+      },
+      "shopkeeper_vm_invis": {
+        "Total": 13,
+        "Owned": 0,
+        "Unowned": 13
+      },
+      "andswitch": {
+        "Total": 13,
+        "Owned": 0,
+        "Unowned": 13
+      },
+      "double_shotgun.entity": {
+        "Total": 12,
+        "Owned": 0,
+        "Unowned": 12
+      },
+      "flare.weapon": {
+        "Total": 12,
+        "Owned": 0,
+        "Unowned": 12
+      },
+      "underwaterlab_dwelling_300_corner_k": {
+        "Total": 12,
+        "Owned": 0,
+        "Unowned": 12
+      },
+      "underwaterlab_dwelling_300_corner_b": {
+        "Total": 12,
+        "Owned": 0,
+        "Unowned": 12
+      },
+      "underwaterlab_dwelling_300_corner_a": {
+        "Total": 12,
+        "Owned": 0,
+        "Unowned": 12
+      },
+      "scientistpeacekeeper": {
+        "Total": 12,
+        "Owned": 0,
+        "Unowned": 12
+      },
+      "bandit_guard": {
+        "Total": 12,
+        "Owned": 0,
+        "Unowned": 12
+      },
+      "underwaterlab_dwelling_600_corner_b": {
+        "Total": 11,
+        "Owned": 0,
+        "Unowned": 11
+      },
+      "underwaterlab_dwelling_300_corner_d": {
+        "Total": 11,
+        "Owned": 0,
+        "Unowned": 11
+      },
+      "underwaterlab_dwelling_300_corner_g": {
+        "Total": 11,
+        "Owned": 0,
+        "Unowned": 11
+      },
+      "modular_car_i4_engine_storage": {
+        "Total": 11,
+        "Owned": 0,
+        "Unowned": 11
+      },
+      "1module_cockpit_with_engine": {
+        "Total": 11,
+        "Owned": 0,
+        "Unowned": 11
+      },
+      "roadsign8": {
+        "Total": 11,
+        "Owned": 0,
+        "Unowned": 11
+      },
+      "cardtablepotstorage": {
+        "Total": 11,
+        "Owned": 0,
+        "Unowned": 11
+      },
+      "junkpile_b": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "underwaterlab_dwelling_300_edge_a": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "underwaterlab_dwelling_300_corner_j": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "underwaterlab_dwelling_600_corner_e": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "underwaterlab_dwelling_300_corner_l": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "grenade.f1.entity": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "crate_normal_2_medical": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "modularcarpassengerseatlesslegroomright": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "modularcarpassengerseatlesslegroomleft": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "bigwheelbettingterminal": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "door.hinged.industrial_a_g": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "bandit_shopkeeper": {
+        "Total": 10,
+        "Owned": 0,
+        "Unowned": 10
+      },
+      "junkpile_a": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "junkpile_d": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "underwaterlab_dwelling_600_corner_c": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "underwaterlab_dwelling_300_corner_c": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "supplysignal.weapon": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "hammer_salvaged.entity": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "jackhammer.entity": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "grenade.beancan.entity": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "roadsign6": {
+        "Total": 9,
+        "Owned": 0,
+        "Unowned": 9
+      },
+      "underwaterlab_dwelling_300_corner_e": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "underwaterlab_dwelling_300_edge_deep_a": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "underwaterlab_dwelling_300_edge_deep_b": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "underwaterlab_dwelling_600_corner_d": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "thompson.entity": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "explosive.timed.entity": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "2module_car_spawned.entity": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "modular_car_v8_engine_storage": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "1module_engine": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "stone_pickaxe.entity": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "minecart": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "small_refinery_static": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "phonebooth.static": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "door.hinged.industrial_a_f": {
+        "Total": 8,
+        "Owned": 0,
+        "Unowned": 8
+      },
+      "junkpile_h": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "underwaterlab_dwelling_300_corridor_b": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "underwaterlab_dwelling_300_edge_e": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "underwaterlab_dwelling_300_corner_deep_f": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "detonator.entity": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "underwaterlab_dwelling_600_edge_a": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "pistol_revolver.entity": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "pager.entity": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "junkpile_j": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "stonehatchet.entity": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "rowboat_storage": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "smallboatdriver": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "rowboat": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "smg.entity": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "hab_storage": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "hotairballoon": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "ore_metal": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "crate_normal_2_food": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "roadsign1": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "underwaterlab_dwelling_600_corridor_double_a": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "underwaterlab_dwelling_600_corridor_double_d": {
+        "Total": 7,
+        "Owned": 0,
+        "Unowned": 7
+      },
+      "diesel_collectable": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "junkpile_i": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "underwaterlab_dwelling_300_edge_b": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "underwaterlab_dwelling_300_edge_d": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "underwaterlab_dwelling_300_edge_g": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "underwaterlab_dwelling_300_corner_deep_a": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "cratemarker": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "pistol_semiauto.entity": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "4module_car_spawned.entity": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "bolt_rifle.entity": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "holosight.entity": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "roadsign5": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "door.hinged.security.green": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "speargun.entity": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "marketterminal": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "door.hinged.industrial_a_h": {
+        "Total": 6,
+        "Owned": 0,
+        "Unowned": 6
+      },
+      "junkpile_g": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "underwaterlab_dwelling_300_corner_deep_k": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "underwaterlab_dwelling_300_edge_c": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "underwaterlab_dwelling_300_corner_deep_j": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "underwaterlab_dwelling_300_corner_f": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "underwaterlab_dwelling_300_corner_i": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "flamethrower.entity": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "longsword.entity": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "3module_car_spawned.entity": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "1module_cockpit": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "ore_sulfur": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "roadsign2": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "underwaterlab_dwelling_600_corridor_double_c": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "arcadeuser": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "shotgun_waterpipe.entity": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "palm_tree_small_a_entity": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "repairbench_static": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "door.hinged.industrial_a_c": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "chippyarcademachine.static": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "bbq.static_hidden": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "cardtable.static_configa_hidden": {
+        "Total": 5,
+        "Owned": 0,
+        "Unowned": 5
+      },
+      "junkpile_c": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "underwaterlab_dwelling_300_corner_deep_g": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "underwaterlab_dwelling_300_corner_deep_l": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "underwaterlab_dwelling_300_corner_deep_h": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "smoke_grenade.weapon": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "scientistnpc_patrol": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "trainbarricadeheavy": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "generic_deploy": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "8xscope.entity": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "1module_rear_seats": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "1module_flatbed": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "smallscope.entity": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "codelockedhackablecrate": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "muzzlebrake.entity": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "roadsign3": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "roadsign9": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "roadsign4": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "tunnel_dwelling_a": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "searchlight.deployed": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "fuelstorage": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "engineswitch": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "testseat": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "door.hinged.industrial_a_e": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "rfbroadcaster.static": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "door.hinged.garage_a": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "door.hinged.security.blue": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "hobobarrel_static": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "cave_lift_trigger": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "cave_lift": {
+        "Total": 4,
+        "Owned": 0,
+        "Unowned": 4
+      },
+      "chicken.corpse": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "underwaterlab_dwelling_300_corridor_a": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "underwaterlab_dwelling_300_corner_deep_c": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "underwaterlab_dwelling_300_corner_deep_b": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "underwaterlab_dwelling_300_corner_deep_e": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "underwaterlab_dwelling_300_edge_deep_d": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "modular_car_2mod_fuel_tank": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "2module_fuel_tank": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "1module_cockpit_armored": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "fishing_rod.entity": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "spas12.entity": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "underwaterlab_dwelling_600_corridor_double_b": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "tunnel_dwelling_g": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "tunnel_dwelling_e": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "modularcarlift.static": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "shotgun_pump.entity": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "boatspawner": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "boat_shopkeeper": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "npcvendingmachine_fishexchange": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "cardtable.static_configc": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "workbench1.static": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "researchtable_static": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "slotmachinestorage": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "slotmachine": {
+        "Total": 3,
+        "Owned": 0,
+        "Unowned": 3
+      },
+      "supply_drop": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "underwaterlab_dwelling_300_corner_deep_i": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "underwaterlab_dwelling_300_corner_deep_d": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "underwaterlab_dwelling_300_edge_deep_f": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "scientist_junkpile_pistol": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "codelockedhackablecrate_oilrig": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "keycard_red_pickup.entity": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "underwaterlab_dwelling_300_edge_deep_c": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "keycard_blue_pickup.entity": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "underwaterlab_dwelling_300_edge_deep_g": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "2module_flatbed": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "python.entity": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "workcartdriver": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "workcart.entity": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "modularcarpassengerseatleft": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "1module_passengers_armored": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "2module_passengers": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "roadsign7": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "tunnel_dwelling_h": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "tunnel_dwelling_f": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "big_wheel": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "crudeoutput": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "hopperoutput": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "rocket_launcher.entity": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "muzzleboost.entity": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "wall.frame.shopfront.metal.static": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "marketplace": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "bbq.static": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "pumpjack-static": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "sliding_blast_door": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "miningquarry_static": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "spikes_static": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "reinforcementslistener": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "door.hinged.security.red": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "alarmsound": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "alarmsytstem": {
+        "Total": 2,
+        "Owned": 0,
+        "Unowned": 2
+      },
+      "explosive.satchel.entity": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "nailgun.entity": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "modular_car_1mod_storage": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "1module_storage": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "underwaterlab_dwelling_300_edge_deep_e": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "l96.entity": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "cargomarker": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "cargoshiptest": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "tunnel_dwelling_d": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "campfire_static": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "simplesight.entity": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "rhib_storage": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "tree_manager": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "relationship_manager": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "resourcedepositmanager": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "community": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "net_env": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "spear_stone.entity": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "cardtable.static_configb": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "splitter": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "bandit_conversationalist": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "airwolfspawner": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "cardtable.static_configa": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "cardtable.static_configd": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "water_catcher_small.static": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "npcvendingmachine_building": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "npcvendingmachine_attire": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "npcvendingmachine_weapons": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "npcvendingmachine_components": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "npcvendingmachine_resources": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "npcvendingmachine_tools": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "npcvendingmachine_farming": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "piano.deployed.static": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "drumkit.deployed.static": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "xylophone.deployed.static": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "wheelswitch": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "waterwellstatic": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      },
+      "workbench2.static": {
+        "Total": 1,
+        "Owned": 0,
+        "Unowned": 1
+      }
+    }
+  },
+  "Plugins report": [
+    "PermissionGroupSync (2.0.3), Total Hook Time = 92",
+    "AdminRadar (5.1.4), Total Hook Time = 25",
+    "FurnaceSplitter (2.3.2), Total Hook Time = 11",
+    "Craftsman (1.0.1), Total Hook Time = 8",
+    "PerformanceUI (1.0.7), Total Hook Time = 6",
+    "GUIAnnouncements (2.0.3), Total Hook Time = 5",
+    "Guardian (1.7.9), Total Hook Time = 4",
+    "ZoneManager (3.0.21), Total Hook Time = 4",
+    "Backpacks (3.6.0), Total Hook Time = 3",
+    "PhonesPlus (1.0.2), Total Hook Time = 3",
+    "Casino (0.1.7), Total Hook Time = 3",
+    "AutoPurge (2.1.1), Total Hook Time = 2",
+    "SecurityLights (1.1.6), Total Hook Time = 2",
+    "Statistics (1.0.9), Total Hook Time = 2",
+    "TemperatureExtender (1.0.0), Total Hook Time = 2",
+    "ExtraSeating (1.0.8), Total Hook Time = 2",
+    "CompoundOptions (1.1.7), Total Hook Time = 2",
+    "ScientistNames (1.2.1), Total Hook Time = 2",
+    "Godmode (4.2.9), Total Hook Time = 2",
+    "MiniCopterOptions (2.0.7), Total Hook Time = 1",
+    "MapNoteTeleport (2.2.1), Total Hook Time = 1",
+    "QuickSmelt (5.1.3), Total Hook Time = 1",
+    "FuelGauge (0.5.5), Total Hook Time = 1",
+    "Skins (2.2.2), Total Hook Time = 1",
+    "PoliceSedan (1.0.9), Total Hook Time = 1",
+    "NoEscape (2.1.33), Total Hook Time = 1",
+    "DiscordServerStats (2.0.2), Total Hook Time = 1",
+    "SecurityCameras (0.0.9), Total Hook Time = 1",
+    "ClearNight (2.3.5), Total Hook Time = 1",
+    "Payback (1.6.1), Total Hook Time = 1",
+    "CustomChatCommands (2.1.2), Total Hook Time = 1",
+    "Prod (2.5.4), Total Hook Time = 1",
+    "Clans (0.2.4), Total Hook Time = 1",
+    "DiscordReport (1.1.0), Total Hook Time = 1",
+    "SkullCrusher (1.1.1), Total Hook Time = 1",
+    "DiscordMessages (2.1.8), Total Hook Time = 1",
+    "BuildingWorkbench (1.2.3), Total Hook Time = 1",
+    "LootBouncer (1.0.7), Total Hook Time = 1",
+    "CargoWetnessFix (1.0.2), Total Hook Time = 1",
+    "BradleyGuards (1.3.6), Total Hook Time = 1",
+    "PermissionsManager (2.0.5), Total Hook Time = 1",
+    "CarLockUI (1.0.2), Total Hook Time = 1",
+    "RaidAlarm (0.2.1), Total Hook Time = 1",
+    "ScrapHeliStorage (0.0.5), Total Hook Time = 0",
+    "BradleyCam (1.0.2), Total Hook Time = 0",
+    "CCTVUtilities (1.5.1), Total Hook Time = 0",
+    "MonumentPlus (1.0.27), Total Hook Time = 0",
+    "KDRGui (2.0.3), Total Hook Time = 0",
+    "Arkan (1.0.18), Total Hook Time = 0",
+    "LighthouseBeacon (1.0.3), Total Hook Time = 0",
+    "RespawnProtection (2.0.2), Total Hook Time = 0",
+    "VehicleDeployedLocks (1.3.0), Total Hook Time = 0",
+    "NPCDropGun (2.0.7), Total Hook Time = 0",
+    "ImageLibrary (2.0.58), Total Hook Time = 0",
+    "ExtendedRecycler (1.1.0), Total Hook Time = 0",
+    "ServerArmour (0.6.40), Total Hook Time = 0",
+    "ServerInfo (0.5.6), Total Hook Time = 0",
+    "PlaceholderAPI (2.2.0), Total Hook Time = 0",
+    "PlayingCards (0.1.2), Total Hook Time = 0",
+    "AdminPanel (1.4.6), Total Hook Time = 0",
+    "PluginUpdateNotifications (1.1.0), Total Hook Time = 0",
+    "RemoverTool (4.3.29), Total Hook Time = 0",
+    "HitIcon (2.0.0), Total Hook Time = 0",
+    "DynamicPlayerLimit (0.0.7), Total Hook Time = 0",
+    "SimpleTime (1.0.1), Total Hook Time = 0",
+    "CopyPaste (4.1.27), Total Hook Time = 0",
+    "FPSRestart (1.2.0), Total Hook Time = 0",
+    "RustMapApi (1.3.2), Total Hook Time = 0",
+    "ZBillBoards (1.2.0), Total Hook Time = 0",
+    "AntiChatFlood (1.0.2), Total Hook Time = 0",
+    "ClearRepair (1.3.0), Total Hook Time = 0",
+    "MasterKey (0.7.6), Total Hook Time = 0",
+    "Sleep (0.2.0), Total Hook Time = 0",
+    "Welcomer (1.5.6), Total Hook Time = 0",
+    "IgnoreCollision (1.1.1), Total Hook Time = 0",
+    "TeaModifiers (2.0.0), Total Hook Time = 0",
+    "DeathChat (1.1.2), Total Hook Time = 0",
+    "AdminNoLoot (0.1.3), Total Hook Time = 0",
+    "Analytics (1.1.2), Total Hook Time = 0",
+    "GodmodeIndicator (2.0.5), Total Hook Time = 0",
+    "ImgurApi (1.0.2), Total Hook Time = 0",
+    "CustomIcon (1.0.2), Total Hook Time = 0",
+    "BlueprintManager (1.1.6), Total Hook Time = 0",
+    "DiscordWipe (2.3.1), Total Hook Time = 0",
+    "SignArtist (1.2.6), Total Hook Time = 0",
+    "ItemInspector (1.0.0), Total Hook Time = 0",
+    "BlackJack (0.1.8), Total Hook Time = 0",
+    "RecycleBlueprints (1.0.5), Total Hook Time = 0",
+    "TimeOfDay (2.3.4), Total Hook Time = 0",
+    "BlueprintShare (1.2.7), Total Hook Time = 0",
+    "BuildingInfo (1.0.6), Total Hook Time = 0",
+    "CustomGenetics (0.15.0), Total Hook Time = 0",
+    "Friends (3.1.2), Total Hook Time = 0",
+    "ConsoleFilter (0.0.2), Total Hook Time = 0",
+    "Dance (1.1.0), Total Hook Time = 0",
+    "FreeBuild (2.0.1), Total Hook Time = 0",
+    "FarmTools (1.0.4), Total Hook Time = 0",
+    "LoadingMessages (1.0.6), Total Hook Time = 0",
+    "InventoryCleaner (1.5.1), Total Hook Time = 0",
+    "BetterChat (5.2.7), Total Hook Time = 0",
+    "NoGiveNotices (0.3.0), Total Hook Time = 0",
+    "PrivateMessagesGUI (1.0.2), Total Hook Time = 0",
+    "PrivateMessages (1.1.11), Total Hook Time = 0",
+    "Promocodes (3.0.0), Total Hook Time = 0",
+    "RealisticWeather (1.3.4), Total Hook Time = 0",
+    "TeamPing (2.0.1), Total Hook Time = 0",
+    "RealisticExplosions (0.2.1), Total Hook Time = 0",
+    "RealisticTorch (1.0.3), Total Hook Time = 0",
+    "RecyclerSpeed (2.0.2), Total Hook Time = 0",
+    "SAMSiteAuth (2.3.3), Total Hook Time = 0",
+    "Trade (1.2.43), Total Hook Time = 0",
+    "UpkeepDisplayFix (1.0.1), Total Hook Time = 0",
+    "Vanish (1.5.5), Total Hook Time = 0",
+    "CraftChassis (1.2.1), Total Hook Time = 0"
+  ],
+  "Performance report": {
+    "frameID": 8649734,
+    "frameRate": 101,
+    "frameTime": 9.904436,
+    "frameRateAverage": 105.6,
+    "frameTimeAverage": 9.586182,
+    "memoryUsageSystem": 0,
+    "memoryAllocations": 1226,
+    "memoryCollections": 258,
+    "loadBalancerTasks": 0,
+    "invokeHandlerTasks": 4892,
+    "workshopSkinsQueued": 0,
+    "ping": 0,
+    "gcTriggered": false
+  }
+}

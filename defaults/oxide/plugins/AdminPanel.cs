@@ -1,8 +1,10 @@
+using Oxide.Core;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust;
 using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /*======================================================================================================================= 
@@ -22,6 +24,15 @@ using UnityEngine;
 *=======================================================================================================================*/
 
 /*
+ * 1.4.6:
+ * Added Player Administration button
+ * Added missing localization to language API
+ * Added adminpanel.autotoggle.admin permission - toggles panel when added/removed from the admin group
+ * Added command `adminpanel settp` - sets the custom teleport
+ * Added command `adminpanel settp all` - sets the teleport location for all admins without a custom location
+ * Added command `adminpanel removetp` - removes the custom teleport location
+ * Removed ToggleMode requirement to use `adminpanel toggle` console command
+ * 
  * 1.4.5:
  * UI updates panel when player toggles godmode/vanish/radar
  * Requires AdminRadar 5.0.8+
@@ -44,29 +55,104 @@ using UnityEngine;
  *  Fixed `/adminpanel show` not showing the GUI
  */
 
+// https://umod.org/community/admin-panel/28638-ability-to-create-custom-buttons
+
 namespace Oxide.Plugins
 {
-    [Info("Admin Panel", "nivex", "1.4.5")]
+    [Info("Admin Panel", "nivex", "1.4.6")]
     [Description("GUI admin panel with command buttons")]
     class AdminPanel : RustPlugin
     {
         [PluginReference]
-        private Plugin AdminRadar, EnhancedBanSystem, Godmode, NTeleportation, Vanish;
+        private Plugin AdminRadar, Godmode, Vanish, PlayerAdministration;
 
         private const string permAdminPanel = "adminpanel.allowed";
         private const string permAdminRadar = "adminradar.allowed";
         private const string permGodmode = "godmode.toggle";
         private const string permVanish = "vanish.allow";
+        private const string permPlayerAdministration = "playeradministration.access.show";
+        private const string permAutoToggle = "adminpanel.autotoggle.admin";
 
         public Dictionary<BasePlayer, string> playerCUI = new Dictionary<BasePlayer, string>();
 
         #region Integrations
 
+        public class StoredData
+        {
+            public Dictionary<string, string> TP = new Dictionary<string, string>();
+            public StoredData() { }
+        }
+
+        public StoredData data = new StoredData();
+
+        #region Player Administration
+
+        private List<string> _playerAdministration = new List<string>();
+
+        private bool IsPlayerAdministration(string UserID)
+        {
+            return PlayerAdministration != null && _playerAdministration.Contains(UserID);
+        }
+
+        private void TogglePlayerAdministration(BasePlayer player)
+        {            
+            if (PlayerAdministration == null || !PlayerAdministration.IsLoaded) return;
+
+            if (IsPlayerAdministration(player.UserIDString))
+            {
+                player.Command("playeradministration.closeui", player, "playeradministration.closeui", new string[0]);
+            }
+            else
+            {
+                player.Command("padmin", player, "padmin", new string[0]);
+            }
+        }
+
+        private void OnPlayerCommand(BasePlayer player, string command, string[] args)
+        {
+            if (player.IsValid() && permission.UserHasPermission(player.UserIDString, permPlayerAdministration))
+            {
+                if (command.Equals("padmin", StringComparison.OrdinalIgnoreCase) && !_playerAdministration.Contains(player.UserIDString))
+                {
+                    _playerAdministration.Add(player.UserIDString);
+                    AdminGui(player);
+                }
+                else if (command.Equals("playeradministration.closeui", StringComparison.OrdinalIgnoreCase) && _playerAdministration.Contains(player.UserIDString))
+                {
+                    _playerAdministration.Remove(player.UserIDString);
+                    AdminGui(player);
+                }
+            }
+        }
+
+        private void OnServerCommand(ConsoleSystem.Arg arg)
+        {
+            var player = arg.Player();
+
+            if (player.IsValid() && permission.UserHasPermission(player.UserIDString, permPlayerAdministration))
+            {
+                string command = arg.cmd.FullName.Replace("/", string.Empty);
+                
+                if (command.Equals("padmin", StringComparison.OrdinalIgnoreCase) && !_playerAdministration.Contains(player.UserIDString))
+                {
+                    _playerAdministration.Add(player.UserIDString);
+                    AdminGui(player);
+                }
+                else if (command.Equals("playeradministration.closeui", StringComparison.OrdinalIgnoreCase) && _playerAdministration.Contains(player.UserIDString))
+                {
+                    _playerAdministration.Remove(player.UserIDString);
+                    AdminGui(player);
+                }
+            }
+        }
+
+        #endregion Player Administration
+
         #region Godmode
 
         private bool IsGod(string UserID)
         {
-            return Godmode != null && Godmode.IsLoaded && Godmode.Call<bool>("IsGod", UserID);
+            return Godmode != null && Convert.ToBoolean(Godmode?.Call("IsGod", UserID));
         }
 
         private void ToggleGodmode(BasePlayer player)
@@ -97,7 +183,7 @@ namespace Oxide.Plugins
 
         private bool IsInvisible(BasePlayer player)
         {
-            return Vanish != null && Vanish.IsLoaded && Vanish.Call<bool>("IsInvisible", player);
+            return Vanish != null && Convert.ToBoolean(Vanish?.Call("IsInvisible", player));
         }
 
         private void ToggleVanish(BasePlayer player)
@@ -134,7 +220,7 @@ namespace Oxide.Plugins
 
         private bool IsRadar(string id)
         {
-            return AdminRadar != null && AdminRadar.IsLoaded && AdminRadar.Call<bool>("IsRadar", id);
+            return AdminRadar != null && Convert.ToBoolean(AdminRadar?.Call("IsRadar", id));
         }
 
         private void ToggleRadar(BasePlayer player)
@@ -170,8 +256,43 @@ namespace Oxide.Plugins
         {
             LoadDefaultConfig();
             permission.RegisterPermission(permAdminPanel, this);
+            permission.RegisterPermission(permAutoToggle, this);
             Unsubscribe(nameof(OnPlayerSleepEnded));
             Unsubscribe(nameof(OnPlayerDeath));
+        }
+
+        private void OnUserGroupRemoved(string id, string group)
+        {
+            if (group != "admin" || !permission.UserHasPermission(id, permAutoToggle))
+            {
+                return;
+            }
+
+            var player = BasePlayer.FindAwakeOrSleeping(id);
+
+            if (player == null || !player.IsConnected)
+            {
+                return;
+            }
+
+            DestroyUI(player);
+        }
+
+        private void OnUserGroupAdded(string id, string group)
+        {
+            if (group != "admin" || !permission.UserHasPermission(id, permAutoToggle))
+            {
+                return;
+            }
+
+            var player = BasePlayer.FindAwakeOrSleeping(id);
+
+            if (player == null || !player.IsConnected || !IsAllowed(player, permAdminPanel))
+            {
+                return;
+            }
+
+            AdminGui(player);
         }
 
         #region Configuration
@@ -212,9 +333,16 @@ namespace Oxide.Plugins
                 ["Godmode"] = "God",
                 ["Radar"] = "Radar",
                 ["Vanish"] = "Vanish",
-                ["NewTP"] = "NewTP"
-
-
+                ["NewTP"] = "NewTP",
+                ["PA"] = "Player Administration",
+                ["Syntax"] = "Invalid syntax: /{0} {1}",
+                ["No Custom Location Set"] = "You do not have a custom location set.",
+                ["Removed Custom Location"] = "Removed your custom TP coordinates. You will teleport to the admin location instead.",
+                ["Set Custom TP Coordinates"] = "Your TP coordinates set to current position {0}",
+                ["Set Admin TP Coordinates"] = "Admin zone coordinates set to current position {0}",
+                ["Panel Shown"] = "Admin panel refreshed/shown",
+                ["Panel Hidden"] = "Admin panel hidden",
+                ["Usage"] = "Usage: /{0} show/hide/settp/removetp",
             }, this);
 
             // Spanish
@@ -224,20 +352,18 @@ namespace Oxide.Plugins
                 ["Godmode"] = "Dios",
                 ["Radar"] = "Radar",
                 ["Vanish"] = "Desaparecer",
-                ["NewTP"] = "NewTP"
-
+                ["NewTP"] = "NewTP",
             }, this, "es");
 
+            // French
             lang.RegisterMessages(new Dictionary<string, string>
             {
                 ["AdminTP"] = "Teleport",
                 ["Godmode"] = "Dieu",
                 ["Radar"] = "Radar",
                 ["Vanish"] = "Invisible",
-                ["NewTP"] = "NewTP"
-
+                ["NewTP"] = "NewTP",
             }, this, "fr");
-
         }
 
         #endregion Localization
@@ -259,7 +385,7 @@ namespace Oxide.Plugins
 
         private void OnPluginLoaded(Plugin plugin)
         {
-            if (plugin.Name == "AdminRadar" || plugin.Name == "Godmode" || plugin.Name == "Vanish")
+            if (plugin.Name == "AdminRadar" || plugin.Name == "Godmode" || plugin.Name == "Vanish" || plugin.Name == "PlayerAdministration")
             {
                 RefreshAllUI();
             }
@@ -267,7 +393,7 @@ namespace Oxide.Plugins
 
         private void OnPluginUnloaded(Plugin plugin)
         {
-            if (plugin.Name == "AdminRadar" || plugin.Name == "Godmode" || plugin.Name == "Vanish")
+            if (plugin.Name == "AdminRadar" || plugin.Name == "Godmode" || plugin.Name == "Vanish" || plugin.Name == "PlayerAdministration")
             {
                 RefreshAllUI();
             }
@@ -275,6 +401,21 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
+            try
+            {
+                data = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(Name);
+            }
+            catch
+            {
+
+            }
+
+            if (data == null)
+            {
+                data = new StoredData();
+                SaveData();
+            }
+
             Subscribe(nameof(OnPlayerDeath));
 
             if (!ToggleMode)
@@ -282,6 +423,11 @@ namespace Oxide.Plugins
                 Subscribe(nameof(OnPlayerSleepEnded));
                 RefreshAllUI();
             }
+        }
+
+        private void SaveData()
+        {
+            Interface.Oxide.DataFileSystem.WriteObject(Name, data, true);
         }
 
         private void RefreshAllUI()
@@ -300,7 +446,7 @@ namespace Oxide.Plugins
         #region Command Structure
 
         [ConsoleCommand("adminpanel")]
-        private void ccmdAdminPanel(ConsoleSystem.Arg arg) // TODO: Make universal command
+        private void ccmdAdminPanel(ConsoleSystem.Arg arg)
         {
             var player = arg.Player();
             if (player == null || !IsAllowed(player, permAdminPanel) || !arg.HasArgs()) return;
@@ -311,41 +457,49 @@ namespace Oxide.Plugins
                     {
                         if (arg.Args.Length >= 2)
                         {
-                            if (arg.Args[1] == "vanish") // TODO: ToLower() args[1] here and below, use switch?
+                            switch (arg.Args[1].ToLower())
                             {
-                                if (Vanish) ToggleVanish(player);
-                            }
-                            else if (arg.Args[1] == "admintp")
-                            {
-                                var pos = adminZoneCords.Split(';');
-                                var loc = new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
-                                covalence.Players.FindPlayer(player.UserIDString).Teleport(loc.x, loc.y, loc.z);
-                            }
-                            else if (arg.Args[1] == "radar")
-                            {
-                                if (AdminRadar) ToggleRadar(player);
-                            }
-                            else if (arg.Args[1] == "god")
-                            {
-                                if (Godmode) ToggleGodmode(player);
-                            }
-                            else if (arg.Args[1] == "newtp")
-                            {
-                                if (newtp)
-                                {
-                                    string[] argu = new string[1];
-                                    argu[0] = "settp";
-                                    ccmdAdminPanel(player, null, argu);
-                                }
-                            }
-                            else
-                            {
-                                SendReply(player, "Syntax: adminpanel action vanish/admintp/radar/god/newtp");
+                                case "vanish":
+                                    ToggleVanish(player);
+                                    break;
+                                case "radar":
+                                    ToggleRadar(player);
+                                    break;
+                                case "god":
+                                    ToggleGodmode(player);
+                                    break;
+                                case "pa":
+                                    TogglePlayerAdministration(player);
+                                    break;
+                                case "admintp":
+                                    if (data.TP.ContainsKey(player.UserIDString))
+                                    {
+                                        var pos = data.TP[player.UserIDString].ToVector3();
+                                        player.Teleport(pos);
+                                    }
+                                    else
+                                    {
+                                        var pos = adminZoneCords.Split(';');
+                                        var loc = new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
+                                        player.Teleport(loc);
+                                    }
+                                    break;
+                                case "newtp":
+                                    if (newtp)
+                                    {
+                                        string[] argu = new string[1];
+                                        argu[0] = "settp";
+                                        ccmdAdminPanel(player, null, argu);
+                                    }
+                                    break;
+                                default:
+                                    arg.ReplyWith(_("Syntax", player.UserIDString, "adminpanel", "action vanish/admintp/radar/god/newtp"));
+                                    break;
                             }
                         }
                         else
                         {
-                            SendReply(player, "Syntax: adminpanel action vanish/admintp/radar/god/newtp");
+                            arg.ReplyWith(_("Syntax", player.UserIDString, "adminpanel", "action vanish/admintp/radar/god/newtp"));
                         }
 
                         break;
@@ -354,29 +508,23 @@ namespace Oxide.Plugins
                     {
                         if (IsAllowed(player, permAdminPanel))
                         {
-                            /*if (args[1] == "True" && ToggleMode) // TODO: Convert to bool to check
+                            if (playerCUI.ContainsKey(player))
+                            {
+                                DestroyUI(player);
+                            }
+                            else
                             {
                                 AdminGui(player);
                             }
-                            else if (args[1] == "False" && ToggleMode) // TODO: Convert to bool to check
-                            {
-                                PleaseDestroyUI(player);
-                            }
-                            // TODO: Show reply*/
-                            if (ToggleMode && playerCUI.ContainsKey(player))
-                                DestroyUI(player);
-                            else AdminGui(player);
                         }
-
                         break;
                     }
                 default:
                     {
-                        SendReply(player, "Invalid syntax: action/toggle"); // TODO: Localization
+                        arg.ReplyWith(_("Syntax", player.UserIDString, "adminpanel", "action/toggle"));
                         break;
                     }
             }
-            //Reply(player, null); // TODO: Show actual reply or not at all
         }
 
         [ChatCommand("adminpanel")]
@@ -384,13 +532,13 @@ namespace Oxide.Plugins
         {
             if (!IsAllowed(player, permAdminPanel))
             {
-                SendReply(player, $"Unknown command: {command}"); // TODO: Localization
+                SendReply(player, $"Unknown command: {command}");
                 return;
             }
 
             if (args.Length == 0)
             {
-                SendReply(player, $"Usage: /{command} show/hide/settp"); // TODO: Localization
+                Message(player, "Usage", command);
                 return;
             }
 
@@ -398,23 +546,41 @@ namespace Oxide.Plugins
             {
                 case "hide":
                     DestroyUI(player);
-                    SendReply(player, "Admin panel hidden"); // TODO: Localization
+                    Message(player, "Panel Hidden");
                     break;
 
                 case "show":
-                    AdminGui(player);
-                    SendReply(player, "Admin panel refreshed/shown"); // TODO: Localization
+                    AdminGui(player);                    
+                    Message(player, "Panel Shown");
                     break;
 
                 case "settp":
-                    Vector3 coord = player.transform.position + new Vector3(0, 1, 0);
-                    Config["AdminZoneCoordinates"] = adminZoneCords = $"{coord.x};{coord.y};{coord.z}";
-                    Config.Save();
-                    SendReply(player, $"Admin zone coordinates set to current position {player.transform.position + new Vector3(0, 1, 0)}"); // TODO: Localization
+                    Vector3 coord = player.transform.position;
+                    if (args.Any(arg => arg.ToLower() == "all"))
+                    {
+                        Config["AdminZoneCoordinates"] = adminZoneCords = $"{coord.x};{coord.y};{coord.z}";
+                        Config.Save();                        
+                        Message(player, "Set Admin TP Coordinates", coord);
+                    }
+                    else
+                    {
+                        data.TP[player.UserIDString] = coord.ToString();
+                        SaveData();
+                        Message(player, "Set Custom TP Coordinates", coord);
+                    }
+                    break;
+
+                case "removetp":
+                    if (data.TP.Remove(player.UserIDString))
+                    {
+                        Message(player, "Removed Custom Location");
+                        SaveData();
+                    }
+                    else Message(player, "No Custom Location Set");
                     break;
 
                 default:
-                    SendReply(player, $"Invalid syntax: /{command} {args[0]}"); // TODO: Localization
+                    Message(player, "Syntax", command, args[0]);
                     break;
             }
         }
@@ -434,10 +600,12 @@ namespace Oxide.Plugins
                 var BTNColorGod = btnInactColor;
                 var BTNColorRadar = btnInactColor;
                 var BTNColorNewTP = btnNewtpColor;
+                var BTNColorPA = btnInactColor;
 
-                if (AdminRadar) { if (IsRadar(player.UserIDString)) { BTNColorRadar = btnActColor; } }
-                if (Godmode) { if (IsGod(player.UserIDString)) { BTNColorGod = btnActColor; } }
-                if (Vanish) { if (IsInvisible(player)) { BTNColorVanish = btnActColor; } }
+                if (AdminRadar != null && IsRadar(player.UserIDString)) BTNColorRadar = btnActColor;
+                if (Godmode != null && IsGod(player.UserIDString)) BTNColorGod = btnActColor;
+                if (Vanish != null && IsInvisible(player)) BTNColorVanish = btnActColor;
+                if (_playerAdministration.Contains(player.UserIDString)) BTNColorPA = btnActColor;
 
                 var GUIElement = new CuiElementContainer();
 
@@ -455,7 +623,7 @@ namespace Oxide.Plugins
                     CursorEnabled = false
                 }, "Hud", Name);
 
-                if (AdminRadar && permission.UserHasPermission(player.UserIDString, permAdminRadar))
+                if (AdminRadar != null && permission.UserHasPermission(player.UserIDString, permAdminRadar))
                 {
                     GUIElement.Add(new CuiButton
                     {
@@ -466,7 +634,7 @@ namespace Oxide.Plugins
                         },
                         Text =
                         {
-                            Text = Lang("Radar", player.UserIDString),
+                            Text = _("Radar", player.UserIDString),
                             FontSize = 8,
                             Align = TextAnchor.MiddleCenter,
                             Color = "1 1 1 1"
@@ -475,6 +643,30 @@ namespace Oxide.Plugins
                         {
                             AnchorMin = "0.062 0.21",
                             AnchorMax = "0.51 0.37"
+                        }
+                    }, GUIPanel);
+                }
+
+                if (PlayerAdministration != null && permission.UserHasPermission(player.UserIDString, permPlayerAdministration))
+                {
+                    GUIElement.Add(new CuiButton
+                    {
+                        Button =
+                        {
+                            Command = "adminpanel action pa",
+                            Color = BTNColorPA
+                        },
+                        Text =
+                        {
+                            Text = _("PA", player.UserIDString),
+                            FontSize = 8,
+                            Align = TextAnchor.MiddleCenter,
+                            Color = "1 1 1 1"
+                        },
+                        RectTransform =
+                        {
+                            AnchorMin = "0.062 0.39",
+                            AnchorMax = "0.51 0.555"
                         }
                     }, GUIPanel);
                 }
@@ -488,7 +680,7 @@ namespace Oxide.Plugins
                     },
                     Text =
                     {
-                        Text = Lang("AdminTP", player.UserIDString),
+                        Text = _("AdminTP", player.UserIDString),
                         FontSize = 8,
                         Align = TextAnchor.MiddleCenter,
                         Color = "1 1 1 1"
@@ -505,26 +697,26 @@ namespace Oxide.Plugins
                     GUIElement.Add(new CuiButton
                     {
                         Button =
-                    {
-                        Command = "adminpanel action newtp",
-                        Color = BTNColorNewTP
-                    },
+                        {
+                            Command = "adminpanel action newtp",
+                            Color = BTNColorNewTP
+                        },
                         Text =
-                    {
-                        Text = Lang("newTP", player.UserIDString),
-                        FontSize = 8,
-                        Align = TextAnchor.MiddleCenter,
-                        Color = "1 1 1 1"
-                    },
+                        {
+                            Text = _("newTP", player.UserIDString),
+                            FontSize = 8,
+                            Align = TextAnchor.MiddleCenter,
+                            Color = "1 1 1 1"
+                        },
                         RectTransform =
-                    {
-                        AnchorMin = "0.52 0.39",
-                        AnchorMax = "0.95 0.47"
-                    }
+                        {
+                            AnchorMin = "0.52 0.39",
+                            AnchorMax = "0.95 0.47"
+                        }
                     }, GUIPanel);
                 }
 
-                if (Godmode && permission.UserHasPermission(player.UserIDString, permGodmode))
+                if (Godmode != null && permission.UserHasPermission(player.UserIDString, permGodmode))
                 {
                     GUIElement.Add(new CuiButton
                     {
@@ -535,7 +727,7 @@ namespace Oxide.Plugins
                         },
                         Text =
                         {
-                            Text = Lang("Godmode", player.UserIDString),
+                            Text = _("Godmode", player.UserIDString),
                             FontSize = 8,
                             Align = TextAnchor.MiddleCenter,
                             Color = "1 1 1 1"
@@ -548,7 +740,7 @@ namespace Oxide.Plugins
                     }, GUIPanel);
                 }
 
-                if (Vanish && permission.UserHasPermission(player.UserIDString, permVanish))
+                if (Vanish != null && permission.UserHasPermission(player.UserIDString, permVanish))
                 {
                     GUIElement.Add(new CuiButton
                     {
@@ -559,7 +751,7 @@ namespace Oxide.Plugins
                         },
                         Text =
                         {
-                            Text = Lang("Vanish", player.UserIDString),
+                            Text = _("Vanish", player.UserIDString),
                             FontSize = 8,
                             Align = TextAnchor.MiddleCenter,
                             Color = "1 1 1 1"
@@ -605,9 +797,11 @@ namespace Oxide.Plugins
             return (T)Convert.ChangeType(Config[name], typeof(T));
         }
 
-        private bool IsAllowed(BasePlayer player, string perm) => player != null && (permission.UserHasPermission(player.UserIDString, perm) || player.IsAdmin);
+        private bool IsAllowed(BasePlayer player, string perm) => player != null && permission.UserHasPermission(player.UserIDString, perm);
 
-        private string Lang(string key, string id = null, params object[] args) => string.Format(lang.GetMessage(key, this, id), args);
+        private string _(string key, string id = null, params object[] args) => string.Format(lang.GetMessage(key, this, id), args);
+
+        private void Message(BasePlayer player, string key, params object[] args) => Player.Message(player, _(key, player.UserIDString, args));
 
         #endregion Helpers
     }

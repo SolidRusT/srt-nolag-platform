@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Oxide.Core.Plugins;
@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Oxide.Plugins
 {
-    [Info("Prod", "Quapi", "2.5.3")]
+    [Info("Prod", "Quapi", "2.5.4")]
     class Prod : RustPlugin
     {
         private DynamicConfigFile BuildingData;
@@ -177,9 +177,7 @@ namespace Oxide.Plugins
                 player.IPlayer.Message(informationAdded);
             }
 
-            var input = serverinput.GetValue(player) as InputState;
-            var currentRot = Quaternion.Euler(input.current.aimAngles) * Vector3.forward;
-            var target = DoRay(player.transform.position + eyesAdjust, currentRot);
+            var target = DoRay(player.eyes.HeadRay());
 
             if (!hasAccess(player))
             {
@@ -410,9 +408,8 @@ namespace Oxide.Plugins
             }
         }
 
-        private BaseEntity DoRay(Vector3 Pos, Vector3 Aim)
+        private BaseEntity DoRay(Ray ray)
         {
-            Ray ray = new Ray(Pos, Aim);
             float distance = 100000f;
             BaseEntity target = null;
             var hits = Physics.RaycastAll(ray);

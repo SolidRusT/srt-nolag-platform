@@ -1,0 +1,38 @@
+
+id|userid|name|ip|steamid|StatisticsDB|Last Seen|Time Played|Last Position|IPs|Names|First Connection|Statistics
+
+select steamid,name,Last Seen,Time Played,First Connection from west LIMIT 5;
+
+
+
+SELECT steamid,name,`Last Seen`,`Time Played`,`First Connection` FROM west WHERE steamid IS NOT NULL AND `Last Seen` IS NOT NULL ORDER BY `First Connection` ASC LIMIT 10;
+
+SELECT steamid,name,`Last Seen`,`Time Played`,`First Connection` 
+FROM west 
+WHERE steamid IS NOT NULL 
+AND `Last Seen` IS NOT NULL 
+ORDER BY CAST(`Time Played` as DECIMAL(10,2)) 
+DESC 
+LIMIT 10;
+
+
+web donations:
+
+donationid
+status
+donationdate
+steamid
+type
+server
+description
+quantity
+
+
+srtwallet:
+
+walletid
+status
+steamid
+balance
+donationidhistory
+lasttransactiondate

@@ -1,3 +1,7 @@
+<?php include('nav_bar_simple.php'); ?>
+</div>
+</nav>
+
 <?php
     session_start();
     require('main.conf.php');
@@ -52,15 +56,9 @@
         
     }
 ?>
-
-<html>
-    <head>
-        <title><?php echo $SiteTitle; ?> &bull; Verification</title>
-        <link rel="stylesheet" href="css/login.css">
-        <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-        <script src="https://kit.fontawesome.com/9e14982b30.js" crossorigin="anonymous"></script>
-    </head>
-    <body>
+<link rel="stylesheet" href="css/login.css">
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/9e14982b30.js" crossorigin="anonymous"></script>
         <div class="container">
             <div class="logo">
                 <img src="<?php echo $logoURL; ?>" alt="" width="130"/>
@@ -81,9 +79,11 @@
                 <br /><br />
                 <img style='margin-right: 5px; border-radius: 4px; border: 1px solid cyan; display: inline-block; height:125px;' src="<?php echo "https://cdn.discordapp.com/avatars/{$_SESSION['user_id']}/{$_SESSION['user_avatar']}.png" ?>">
                 <img style='margin-left: 5px; border-radius: 4px; border: 1px solid lime; display: inline-block; height:125px;' src="<?php echo $_SESSION['steam_avatarfull'];?>">
+				<ul>
+					<li><a href='/'>Back to Home</a></li>
+				</ul>
+				
             </center>
         </div>
-        <br />
-        <center><a href="unlink" style="font-size:30px;" class="unlinkButton"><i class="fa fa-unlink" aria-hidden="true"></i> Unlink</a></center>
-    </body>
-</html>
+<?php header('Refresh: 3; URL=/index'); ?>
+<?php include('footer.php'); ?>

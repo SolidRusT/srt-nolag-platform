@@ -1,20 +1,26 @@
 {
-  "Command": "skin",
+  "Commands": [
+    "skin",
+    "skins"
+  ],
   "Skins": [
     {
       "Item Shortname": "shortname",
+      "Permission": "",
       "Skins": [
         0
       ]
     },
     {
       "Item Shortname": "Apocalypse",
+      "Permission": "",
       "Skins": [
         0
       ]
     },
     {
       "Item Shortname": "horse.armor.roadsign",
+      "Permission": "",
       "Skins": [
         0,
         60528587
@@ -22,6 +28,7 @@
     },
     {
       "Item Shortname": "rifle.l96",
+      "Permission": "",
       "Skins": [
         0,
         2533821331,
@@ -34,6 +41,7 @@
     },
     {
       "Item Shortname": "roadsign.gloves",
+      "Permission": "",
       "Skins": [
         0,
         2545323768,
@@ -49,12 +57,14 @@
     },
     {
       "Item Shortname": "welding.helmet",
+      "Permission": "",
       "Skins": [
         0
       ]
     },
     {
       "Item Shortname": "coffeecan.helmet",
+      "Permission": "",
       "Skins": [
         0,
         2551769961,
@@ -123,6 +133,7 @@
     },
     {
       "Item Shortname": "mask.bandana",
+      "Permission": "",
       "Skins": [
         0,
         2382052928,
@@ -151,6 +162,7 @@
     },
     {
       "Item Shortname": "attire.hide.poncho",
+      "Permission": "",
       "Skins": [
         0,
         833524594,
@@ -162,6 +174,7 @@
     },
     {
       "Item Shortname": "shoes.boots",
+      "Permission": "",
       "Skins": [
         0,
         2382084100,
@@ -213,6 +226,7 @@
     },
     {
       "Item Shortname": "bow.hunting",
+      "Permission": "",
       "Skins": [
         0,
         2511286714,
@@ -252,6 +266,7 @@
     },
     {
       "Item Shortname": "door.hinged.metal",
+      "Permission": "",
       "Skins": [
         0,
         2531097217,
@@ -384,6 +399,7 @@
     },
     {
       "Item Shortname": "hammer",
+      "Permission": "",
       "Skins": [
         0,
         2542274630,
@@ -415,6 +431,7 @@
     },
     {
       "Item Shortname": "hoodie",
+      "Permission": "",
       "Skins": [
         0,
         2382062354,
@@ -540,6 +557,7 @@
     },
     {
       "Item Shortname": "sleepingbag",
+      "Permission": "",
       "Skins": [
         0,
         2390982175,
@@ -613,6 +631,7 @@
     },
     {
       "Item Shortname": "sled",
+      "Permission": "",
       "Skins": [
         0,
         13056
@@ -620,6 +639,7 @@
     },
     {
       "Item Shortname": "fun.guitar",
+      "Permission": "",
       "Skins": [
         0,
         959976935,
@@ -632,6 +652,7 @@
     },
     {
       "Item Shortname": "hat.beenie",
+      "Permission": "",
       "Skins": [
         0,
         14180,
@@ -647,6 +668,7 @@
     },
     {
       "Item Shortname": "knife.bone",
+      "Permission": "",
       "Skins": [
         0,
         808955868,
@@ -658,6 +680,7 @@
     },
     {
       "Item Shortname": "rifle.lr300",
+      "Permission": "",
       "Skins": [
         0,
         2382067186,
@@ -717,6 +740,7 @@
     },
     {
       "Item Shortname": "lmg.m249",
+      "Permission": "",
       "Skins": [
         0,
         2382068795,
@@ -731,6 +755,7 @@
     },
     {
       "Item Shortname": "rifle.m39",
+      "Permission": "",
       "Skins": [
         0,
         2382069561,
@@ -744,6 +769,7 @@
     },
     {
       "Item Shortname": "roadsign.jacket",
+      "Permission": "",
       "Skins": [
         0,
         2551767355,
@@ -818,6 +844,7 @@
     },
     {
       "Item Shortname": "roadsign.kilt",
+      "Permission": "",
       "Skins": [
         0,
         2382074933,
@@ -899,6 +926,7 @@
     },
     {
       "Item Shortname": "rug",
+      "Permission": "",
       "Skins": [
         0,
         2382076790,
@@ -916,6 +944,7 @@
     },
     {
       "Item Shortname": "rug.bear",
+      "Permission": "",
       "Skins": [
         0,
         2357538771,
@@ -926,6 +955,7 @@
     },
     {
       "Item Shortname": "skullspikes",
+      "Permission": "",
       "Skins": [
         0,
         13050,
@@ -934,6 +964,7 @@
     },
     {
       "Item Shortname": "skull.trophy",
+      "Permission": "",
       "Skins": [
         0,
         13052,
@@ -943,6 +974,7 @@
     },
     {
       "Item Shortname": "pants.shorts",
+      "Permission": "",
       "Skins": [
         0,
         794678401,
@@ -955,6 +987,7 @@
     },
     {
       "Item Shortname": "shirt.collared",
+      "Permission": "",
       "Skins": [
         0,
         885078753,
@@ -968,6 +1001,7 @@
     },
     {
       "Item Shortname": "jacket.snow",
+      "Permission": "",
       "Skins": [
         0,
         530154777,
@@ -980,6 +1014,7 @@
     },
     {
       "Item Shortname": "sunglasses",
+      "Permission": "",
       "Skins": [
         0,
         13040,
@@ -994,6 +1029,7 @@
     },
     {
       "Item Shortname": "shirt.tanktop",
+      "Permission": "",
       "Skins": [
         0,
         784578916
@@ -1001,6 +1037,7 @@
     },
     {
       "Item Shortname": "table",
+      "Permission": "",
       "Skins": [
         0,
         2269204376,
@@ -1011,6 +1048,7 @@
     },
     {
       "Item Shortname": "smg.2",
+      "Permission": "",
       "Skins": [
         0,
         2545649216,
@@ -1048,6 +1086,7 @@
     },
     {
       "Item Shortname": "smg.thompson",
+      "Permission": "",
       "Skins": [
         0,
         2538735352,
@@ -1062,6 +1101,7 @@
     },
     {
       "Item Shortname": "vending.machine",
+      "Permission": "",
       "Skins": [
         0,
         2382082628,
@@ -1085,6 +1125,7 @@
     },
     {
       "Item Shortname": "rifle.semiauto",
+      "Permission": "",
       "Skins": [
         0,
         2546054165,
@@ -1159,6 +1200,7 @@
     },
     {
       "Item Shortname": "box.wooden",
+      "Permission": "",
       "Skins": [
         0,
         2544654811,
@@ -1190,6 +1232,7 @@
     },
     {
       "Item Shortname": "door.double.hinged.wood",
+      "Permission": "",
       "Skins": [
         0,
         1882487559,
@@ -1198,6 +1241,7 @@
     },
     {
       "Item Shortname": "door.double.hinged.metal",
+      "Permission": "",
       "Skins": [
         0,
         2517254509,
@@ -1225,6 +1269,7 @@
     },
     {
       "Item Shortname": "explosive.satchel",
+      "Permission": "",
       "Skins": [
         0,
         2551145714,
@@ -1246,6 +1291,7 @@
     },
     {
       "Item Shortname": "salvaged.sword",
+      "Permission": "",
       "Skins": [
         0,
         1568609421,
@@ -1275,6 +1321,7 @@
     },
     {
       "Item Shortname": "barricade.sandbags",
+      "Permission": "",
       "Skins": [
         0,
         809144507
@@ -1282,6 +1329,7 @@
     },
     {
       "Item Shortname": "gun.water",
+      "Permission": "",
       "Skins": [
         0,
         13046,
@@ -1292,6 +1340,7 @@
     },
     {
       "Item Shortname": "water.purifier",
+      "Permission": "",
       "Skins": [
         0,
         886677071,
@@ -1301,6 +1350,7 @@
     },
     {
       "Item Shortname": "door.hinged.wood",
+      "Permission": "",
       "Skins": [
         0,
         2516629631,
@@ -1348,6 +1398,7 @@
     },
     {
       "Item Shortname": "rocket.launcher",
+      "Permission": "",
       "Skins": [
         0,
         2382075873,
@@ -1374,6 +1425,7 @@
     },
     {
       "Item Shortname": "pants",
+      "Permission": "",
       "Skins": [
         0,
         2382072779,
@@ -1478,6 +1530,7 @@
     },
     {
       "Item Shortname": "pistol.python",
+      "Permission": "",
       "Skins": [
         0,
         2512932146,
@@ -1534,6 +1587,7 @@
     },
     {
       "Item Shortname": "pickaxe",
+      "Permission": "",
       "Skins": [
         0,
         2524132103,
@@ -1580,6 +1634,7 @@
     },
     {
       "Item Shortname": "hatchet",
+      "Permission": "",
       "Skins": [
         0,
         2523530326,
@@ -1656,6 +1711,7 @@
     },
     {
       "Item Shortname": "hazmatsuit",
+      "Permission": "",
       "Skins": [
         0,
         10180
@@ -1663,6 +1719,7 @@
     },
     {
       "Item Shortname": "twitch.headset",
+      "Permission": "",
       "Skins": [
         0,
         13055
@@ -1670,6 +1727,7 @@
     },
     {
       "Item Shortname": "attire.hide.boots",
+      "Permission": "",
       "Skins": [
         0,
         785347695,
@@ -1679,6 +1737,7 @@
     },
     {
       "Item Shortname": "riot.helmet",
+      "Permission": "",
       "Skins": [
         0,
         869125904,
@@ -1700,6 +1759,7 @@
     },
     {
       "Item Shortname": "box.wooden.large",
+      "Permission": "",
       "Skins": [
         0,
         2556823724,
@@ -1848,6 +1908,7 @@
     },
     {
       "Item Shortname": "door.hinged.toptier",
+      "Permission": "",
       "Skins": [
         0,
         2382051228,
@@ -1883,6 +1944,7 @@
     },
     {
       "Item Shortname": "door.double.hinged.toptier",
+      "Permission": "",
       "Skins": [
         0,
         2466891876,
@@ -1895,6 +1957,7 @@
     },
     {
       "Item Shortname": "rifle.ak",
+      "Permission": "",
       "Skins": [
         0,
         2546271708,
@@ -2035,6 +2098,7 @@
     },
     {
       "Item Shortname": "hat.cap",
+      "Permission": "",
       "Skins": [
         0,
         10029,
@@ -2056,6 +2120,7 @@
     },
     {
       "Item Shortname": "beachchair",
+      "Permission": "",
       "Skins": [
         0,
         13000,
@@ -2069,6 +2134,7 @@
     },
     {
       "Item Shortname": "beachparasol",
+      "Permission": "",
       "Skins": [
         0,
         13007,
@@ -2082,6 +2148,7 @@
     },
     {
       "Item Shortname": "beachtowel",
+      "Permission": "",
       "Skins": [
         0,
         13014,
@@ -2095,6 +2162,7 @@
     },
     {
       "Item Shortname": "rifle.bolt",
+      "Permission": "",
       "Skins": [
         0,
         2382054120,
@@ -2130,6 +2198,7 @@
     },
     {
       "Item Shortname": "bone.club",
+      "Permission": "",
       "Skins": [
         0,
         1557788243,
@@ -2143,6 +2212,7 @@
     },
     {
       "Item Shortname": "deer.skull.mask",
+      "Permission": "",
       "Skins": [
         0,
         784259585,
@@ -2153,6 +2223,7 @@
     },
     {
       "Item Shortname": "boogieboard",
+      "Permission": "",
       "Skins": [
         0,
         13021,
@@ -2165,6 +2236,7 @@
     },
     {
       "Item Shortname": "hat.boonie",
+      "Permission": "",
       "Skins": [
         0,
         2382055109,
@@ -2184,6 +2256,7 @@
     },
     {
       "Item Shortname": "bucket.helmet",
+      "Permission": "",
       "Skins": [
         0,
         831798567,
@@ -2203,6 +2276,7 @@
     },
     {
       "Item Shortname": "burlap.headwrap",
+      "Permission": "",
       "Skins": [
         0,
         2546312064,
@@ -2219,6 +2293,7 @@
     },
     {
       "Item Shortname": "burlap.shirt",
+      "Permission": "",
       "Skins": [
         0,
         2547109183,
@@ -2248,6 +2323,7 @@
     },
     {
       "Item Shortname": "burlap.shoes",
+      "Permission": "",
       "Skins": [
         0,
         906443871,
@@ -2257,6 +2333,7 @@
     },
     {
       "Item Shortname": "chair",
+      "Permission": "",
       "Skins": [
         0,
         875258235,
@@ -2271,6 +2348,7 @@
     },
     {
       "Item Shortname": "knife.combat",
+      "Permission": "",
       "Skins": [
         0,
         2545769270,
@@ -2291,6 +2369,7 @@
     },
     {
       "Item Shortname": "barricade.concrete",
+      "Permission": "",
       "Skins": [
         0,
         2382058140,
@@ -2303,6 +2382,7 @@
     },
     {
       "Item Shortname": "crossbow",
+      "Permission": "",
       "Skins": [
         0,
         2495479669,
@@ -2352,6 +2432,7 @@
     },
     {
       "Item Shortname": "shotgun.double",
+      "Permission": "",
       "Skins": [
         0,
         916790605,
@@ -2395,6 +2476,7 @@
     },
     {
       "Item Shortname": "pistol.eoka",
+      "Permission": "",
       "Skins": [
         0,
         856053892,
@@ -2410,6 +2492,7 @@
     },
     {
       "Item Shortname": "grenade.f1",
+      "Permission": "",
       "Skins": [
         0,
         836745325,
@@ -2420,6 +2503,7 @@
     },
     {
       "Item Shortname": "fridge",
+      "Permission": "",
       "Skins": [
         0,
         2382058837,
@@ -2435,6 +2519,7 @@
     },
     {
       "Item Shortname": "furnace",
+      "Permission": "",
       "Skins": [
         0,
         2551907520,
@@ -2519,6 +2604,7 @@
     },
     {
       "Item Shortname": "wall.frame.garagedoor",
+      "Permission": "",
       "Skins": [
         0,
         2382060744,
@@ -2591,6 +2677,7 @@
     },
     {
       "Item Shortname": "attire.hide.helterneck",
+      "Permission": "",
       "Skins": [
         0,
         798669794,
@@ -2599,6 +2686,7 @@
     },
     {
       "Item Shortname": "attire.hide.pants",
+      "Permission": "",
       "Skins": [
         0,
         1269154354,
@@ -2607,6 +2695,7 @@
     },
     {
       "Item Shortname": "attire.hide.skirt",
+      "Permission": "",
       "Skins": [
         0,
         831920129,
@@ -2615,6 +2704,7 @@
     },
     {
       "Item Shortname": "attire.hide.vest",
+      "Permission": "",
       "Skins": [
         0,
         878319804,
@@ -2623,6 +2713,7 @@
     },
     {
       "Item Shortname": "mask.balaclava",
+      "Permission": "",
       "Skins": [
         0,
         843976918,
@@ -2658,6 +2749,7 @@
     },
     {
       "Item Shortname": "innertube",
+      "Permission": "",
       "Skins": [
         0,
         13027,
@@ -2671,6 +2763,7 @@
     },
     {
       "Item Shortname": "jacket",
+      "Permission": "",
       "Skins": [
         0,
         2382081884,
@@ -2693,6 +2786,7 @@
     },
     {
       "Item Shortname": "burlap.gloves",
+      "Permission": "",
       "Skins": [
         0,
         1839312425,
@@ -2739,6 +2833,7 @@
     },
     {
       "Item Shortname": "locker",
+      "Permission": "",
       "Skins": [
         0,
         2382065873,
@@ -2756,6 +2851,7 @@
     },
     {
       "Item Shortname": "tshirt.long",
+      "Permission": "",
       "Skins": [
         0,
         10047,
@@ -2787,6 +2883,7 @@
     },
     {
       "Item Shortname": "longsword",
+      "Permission": "",
       "Skins": [
         0,
         1222939471,
@@ -2799,6 +2896,7 @@
     },
     {
       "Item Shortname": "metal.plate.torso",
+      "Permission": "",
       "Skins": [
         0,
         2551474093,
@@ -2884,6 +2982,7 @@
     },
     {
       "Item Shortname": "metal.facemask",
+      "Permission": "",
       "Skins": [
         0,
         2551475709,
@@ -2994,6 +3093,7 @@
     },
     {
       "Item Shortname": "burlap.trousers",
+      "Permission": "",
       "Skins": [
         0,
         2519100909,
@@ -3013,6 +3113,7 @@
     },
     {
       "Item Shortname": "hat.miner",
+      "Permission": "",
       "Skins": [
         0,
         886968007,
@@ -3022,6 +3123,7 @@
     },
     {
       "Item Shortname": "smg.mp5",
+      "Permission": "",
       "Skins": [
         0,
         2382071990,
@@ -3053,6 +3155,7 @@
     },
     {
       "Item Shortname": "paddlingpool",
+      "Permission": "",
       "Skins": [
         0,
         13034,
@@ -3063,6 +3166,7 @@
     },
     {
       "Item Shortname": "shotgun.pump",
+      "Permission": "",
       "Skins": [
         0,
         10074,
@@ -3094,6 +3198,7 @@
     },
     {
       "Item Shortname": "target.reactive",
+      "Permission": "",
       "Skins": [
         0,
         2255973811,
@@ -3103,6 +3208,7 @@
     },
     {
       "Item Shortname": "pistol.revolver",
+      "Permission": "",
       "Skins": [
         0,
         910665268,
@@ -3150,6 +3256,7 @@
     },
     {
       "Item Shortname": "rock",
+      "Permission": "",
       "Skins": [
         0,
         2108583966,
@@ -3193,6 +3300,7 @@
     },
     {
       "Item Shortname": "icepick.salvaged",
+      "Permission": "",
       "Skins": [
         0,
         911446362,
@@ -3207,6 +3315,7 @@
     },
     {
       "Item Shortname": "pistol.semiauto",
+      "Permission": "",
       "Skins": [
         0,
         902487409,
@@ -3267,6 +3376,7 @@
     },
     {
       "Item Shortname": "stonehatchet",
+      "Permission": "",
       "Skins": [
         0,
         2552079649,
@@ -3311,6 +3421,7 @@
     },
     {
       "Item Shortname": "stone.pickaxe",
+      "Permission": "",
       "Skins": [
         0,
         2552077355,
@@ -3342,6 +3453,7 @@
     },
     {
       "Item Shortname": "tshirt",
+      "Permission": "",
       "Skins": [
         0,
         10130,
@@ -3379,6 +3491,7 @@
     },
     {
       "Item Shortname": "shotgun.waterpipe",
+      "Permission": "",
       "Skins": [
         0,
         2544687622,
@@ -3446,6 +3559,5 @@
       "Anchor Max X": "0.975",
       "Anchor Max Y": "0.95"
     }
-  },
-  "Debug": false
+  }
 }

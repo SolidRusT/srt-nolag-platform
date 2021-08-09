@@ -9,19 +9,20 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
 #if RUST
-using Network;
 using ConVar;
 using Facepunch;
+using Facepunch.CardGames;
 using Facepunch.Math;
 using CompanionServer;
 #endif
 
+// TODO: Reduce garbage creation
 // TODO: Improve string usage by using stringbuilders
 // TODO: Add "name" or "identifier" format for third-party plugins to obtain a formatted identifier
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat", "LaserHydra", "5.2.6")]
+    [Info("Better Chat", "LaserHydra", "5.2.7")]
     [Description("Allows to manage chat groups, customize colors and add titles.")]
     internal class BetterChat : CovalencePlugin
     {
@@ -97,11 +98,37 @@ namespace Oxide.Plugins
             if (message.Length > _instance._config.MaxMessageLength)
                 message = message.Substring(0, _instance._config.MaxMessageLength);
 
-            BetterChatMessage chatMessage = ChatGroup.FormatMessage(player, message);
+            BetterChatMessage chatMessage = ChatGroup.PrepareMessage(player, message);
 
             if (chatMessage == null)
                 return null;
 
+#if RUST
+            BetterChatMessage.CancelOptions result = SendBetterChatMessage(chatMessage, chatchannel);
+#else
+            BetterChatMessage.CancelOptions result = SendBetterChatMessage(chatMessage);
+#endif
+
+            switch (result)
+            {
+                case BetterChatMessage.CancelOptions.None:
+                case BetterChatMessage.CancelOptions.BetterChatAndDefault:
+                    return true;
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Messaging
+
+#if RUST
+        private BetterChatMessage.CancelOptions SendBetterChatMessage(BetterChatMessage chatMessage, Chat.ChatChannel chatchannel)
+#else
+        private BetterChatMessage.CancelOptions SendBetterChatMessage(BetterChatMessage chatMessage)
+#endif
+        {
             Dictionary<string, object> chatMessageDict = chatMessage.ToDictionary();
 #if RUST
             chatMessageDict.Add("ChatChannel", chatchannel);
@@ -123,44 +150,68 @@ namespace Oxide.Plugins
                     }
                 }
                 else if (hookResult != null)
-                    return null;
+                    return BetterChatMessage.CancelOptions.BetterChatOnly;
             }
 
             chatMessage = BetterChatMessage.FromDictionary(chatMessageDict);
 
-            switch (chatMessage.CancelOption)
+            if (chatMessage.CancelOption != BetterChatMessage.CancelOptions.None)
             {
-                case BetterChatMessage.CancelOptions.BetterChatOnly:
-                    return null;
-
-                case BetterChatMessage.CancelOptions.BetterChatAndDefault:
-                    return true;
+                return chatMessage.CancelOption;
             }
 
             var output = chatMessage.GetOutput();
 
 #if RUST
+            BasePlayer basePlayer = chatMessage.Player.Object as BasePlayer;
+
             switch (chatchannel)
             {
                 case Chat.ChatChannel.Team:
-                    RelationshipManager.PlayerTeam team = bplayer.Team;
+                    RelationshipManager.PlayerTeam team = basePlayer.Team;
                     if (team == null || team.members.Count == 0)
                     {
-                        return true;
+                        throw new InvalidOperationException("Chat channel is set to Team, however the player is not in a team.");
                     }
 
-                    team.BroadcastTeamChat(bplayer.userID, player.Name, chatMessage.Message, chatMessage.UsernameSettings.Color);
+                    team.BroadcastTeamChat(basePlayer.userID, chatMessage.Player.Name, chatMessage.Message, chatMessage.UsernameSettings.Color);
 
                     List<Network.Connection> onlineMemberConnections = team.GetOnlineMemberConnections();
                     if (onlineMemberConnections != null)
                     {
-                        ConsoleNetwork.SendClientCommand(onlineMemberConnections, "chat.add", new object[] { (int) chatchannel, player.Id, output.Chat });
+                        ConsoleNetwork.SendClientCommand(onlineMemberConnections, "chat.add", (int) chatchannel, chatMessage.Player.Id, output.Chat);
                     }
+                    break;
+                
+                case Chat.ChatChannel.Cards:
+                    CardTable cardTable = basePlayer.GetMountedVehicle() as CardTable;
+
+                    if (cardTable == null /* || !cardTable.GameController.PlayerIsInGame(basePlayer) */)
+                    {
+                       throw new InvalidOperationException("Chat channel is set to Cards, however the player is not in a participating in a card game.");
+                    }
+                    
+                    List<Network.Connection> list = Facepunch.Pool.GetList<Network.Connection>();
+
+                    foreach (CardPlayerData playerData in cardTable.GameController.playerData)
+                    {
+                        if (playerData.HasUser)
+                        {
+                            list.Add(BasePlayer.FindByID(playerData.UserID).net.connection);   
+                        }
+                    }
+                    
+                    if (list.Count > 0)
+                    {
+                        ConsoleNetwork.SendClientCommand(list, "chat.add", (int) chatchannel, chatMessage.Player.Id, output.Chat);
+                    }
+                    
+                    Facepunch.Pool.FreeList(ref list);
                     break;
 
                 default:
                     foreach (BasePlayer p in BasePlayer.activePlayerList.Where(p => !chatMessage.BlockedReceivers.Contains(p.UserIDString)))
-                        p.SendConsoleCommand("chat.add", new object[] { (int) chatchannel, player.Id, output.Chat });
+                        p.SendConsoleCommand("chat.add", (int) chatchannel, chatMessage.Player.Id, output.Chat);
                     break;
             }
 #else
@@ -168,25 +219,26 @@ namespace Oxide.Plugins
                 p.Message(output.Chat);
 #endif
 
-
-
 #if RUST
             Puts($"[{chatchannel}] {output.Console}");
 
-            RCon.Broadcast(RCon.LogType.Chat, new Chat.ChatEntry
+            var chatEntry = new Chat.ChatEntry
             {
                 Channel = chatchannel,
                 Message = output.Console,
-                UserId = player.Id,
-                Username = player.Name,
+                UserId = chatMessage.Player.Id,
+                Username = chatMessage.Player.Name,
                 Color = chatMessage.UsernameSettings.Color,
                 Time = Epoch.Current
-            });
+            };
+            
+            Chat.History.Add(chatEntry);
+            RCon.Broadcast(RCon.LogType.Chat, chatEntry);
 #else
             Puts(output.Console);
 #endif
 
-            return true;
+            return chatMessage.CancelOption;
         }
 
         #endregion
@@ -214,7 +266,7 @@ namespace Oxide.Plugins
 
         private Dictionary<string, object> API_GetGroupFields(string group) => ChatGroup.Find(group)?.GetFields() ?? new Dictionary<string, object>();
 
-        private Dictionary<string, object> API_GetMessageData(IPlayer player, string message) => ChatGroup.FormatMessage(player, message)?.ToDictionary();
+        private Dictionary<string, object> API_GetMessageData(IPlayer player, string message) => ChatGroup.PrepareMessage(player, message).ToDictionary();
 
         private string API_GetFormattedUsername(IPlayer player)
         {
@@ -227,7 +279,21 @@ namespace Oxide.Plugins
             return $"[#{primary.Username.GetUniversalColor()}][+{primary.Username.Size}]{player.Name}[/+][/#]";
         }
 
-        private string API_GetFormattedMessage(IPlayer player, string message, bool console = false) => console ? ChatGroup.FormatMessage(player, message).GetOutput().Console : ChatGroup.FormatMessage(player, message).GetOutput().Chat;
+        private string API_GetFormattedMessage(IPlayer player, string message, bool console = false)
+        {
+            var output = ChatGroup.PrepareMessage(player, message).GetOutput();
+
+            return console ? output.Console : output.Chat;
+        }
+
+        private BetterChatMessage.CancelOptions API_SendMessage(Dictionary<string, object> betterChatMessageDict, int chatChannel = 0)
+        {
+#if RUST
+            return SendBetterChatMessage(BetterChatMessage.FromDictionary(betterChatMessageDict), (Chat.ChatChannel)chatChannel);
+#else
+            return SendBetterChatMessage(BetterChatMessage.FromDictionary(betterChatMessageDict));
+#endif
+        }
 
         private void API_RegisterThirdPartyTitle(Plugin plugin, Func<IPlayer, string> titleGetter) => _thirdPartyTitles[plugin] = titleGetter;
 
@@ -509,8 +575,6 @@ namespace Oxide.Plugins
 
         private static string StripRichText(string text)
         {
-            
-
             foreach (var replacement in _stringReplacements)
                 text = text.Replace(replacement, string.Empty);
 
@@ -773,19 +837,19 @@ namespace Oxide.Plugins
                 return primary;
             }
 
-            public static BetterChatMessage FormatMessage(IPlayer player, string message)
+            public static BetterChatMessage PrepareMessage(IPlayer player, string message)
             {
                 ChatGroup primary = GetUserPrimaryGroup(player);
                 List<ChatGroup> groups = GetUserGroups(player);
 
                 if (primary == null)
                 {
-                    _instance.PrintWarning($"{player.Name} ({player.Id}) does not seem to be in any BetterChat group - falling back to plugin's default group! This should never happen! Please make sure you have a group called 'default'.");
+                    _instance.PrintWarning($"{player.Name} ({player.Id}) does not seem to be in any BetterChat group - falling back to internal default group! This should never happen! Please make sure you have a group called 'default'.");
                     primary = _fallbackGroup;
                     groups.Add(primary);
                 }
 
-                groups.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+                groups.Sort((a, b) => a.Priority.CompareTo(b.Priority));
 
                 var titles = (from g in groups
                               where !g.Title.Hidden && !(g.Title.HiddenIfNotPrimary && primary != g)
@@ -797,7 +861,7 @@ namespace Oxide.Plugins
                 if (_instance._config.ReverseTitleOrder)
                 {
                     titles.Reverse();
-                }   
+                }
 
                 foreach (var thirdPartyTitle in _instance._thirdPartyTitles)
                 {
