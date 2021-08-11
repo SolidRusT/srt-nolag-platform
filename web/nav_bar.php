@@ -46,21 +46,25 @@ include 'functions.php';
                     <li>
                         <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Report</a>
                     </li>
-                </ul><span class="navbar-text"><?php
+				</ul>
+				<ul class="navbar-nav navbar-right"><?php
 				if (!isset($_SESSION['steamid'])) {
 					$target = "/link";
 					$linkname = "Account Login";
-					echo "<a href=\"$target\">$linkname</a>";
+					echo "<li><a class=\"navbar-text\" href=\"$target\">$linkname</a>></li>";
 				} else {
+					$target = "/profile";
 					$avatar = $steamprofile['avatar'];
-					$profile_name = $steamprofile['personaname'];
-					echo "<img src=\"$avatar\" align=\"top\"> $profile_name";
+					$profile_name = $steamprofile['personaname']; echo "
+					<li><a class=\"navbar-text\" href=\"$target\">$profile_name</a>&nbsp;&nbsp;&nbsp;</li>
+					<li><a class=\"navbar-text\" href=\"$target\"><img src=\"$avatar\"></a>&nbsp</li>";
 				}
-				?>&nbsp;&nbsp;<?php
+				?><li><?php
 				if (isset($_SESSION['steamid'])) {
 					logoutbutton("rectangle");
 				}
-				?></span>
+				?></li>
+                </ul>
             </div>
         </div>
     </nav>
