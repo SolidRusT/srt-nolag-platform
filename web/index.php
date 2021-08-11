@@ -3,7 +3,7 @@
 	<div class="row">
     	<div class="col-md-4"><?php
 if (!isset($_SESSION['steamid'])) {
-	echo "<p class=\"bg-warning\">Welcome, Guest. Please <a href=\"/link\">login</a> to access more content.</p>";
+	echo "<p class=\"bg-warning\">Welcome, Guest. Please <a href=\"/link\">login</a> to access more SRT content.</p>";
 } else {
 	include 'steamauth/userInfo.php';
 	$avatar = $steamprofile['avatar'];
