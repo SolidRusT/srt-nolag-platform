@@ -13,9 +13,7 @@
     <meta property="og:image" content="https://solidrust.net/images/SoldRust_Logo.png">
     <meta property="og:site_name" content="solidrust.net">
     <meta name="theme-color" content="#ff0000">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">	
     <style type="text/css">
     body {
         background-image: url(images/SR-Demo-Loot-1.PNG);
@@ -32,3 +30,4 @@
     gtag('config', 'UA-188473063-1');
     </script>
 </head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

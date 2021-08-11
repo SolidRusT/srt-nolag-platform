@@ -22,6 +22,7 @@ function backup_s3() {
     else
         echo "No rcon binary found here, unable to save world data" | tee -a ${LOGS}
     fi
+    # if modded server, then:
     CONTENTS=(
         oxide
         server
@@ -92,6 +93,9 @@ function start_rust() {
     # Launch game server
     echo "===> Touching my peepee..." | tee -a ${LOGS}
     sleep 3
+    export MY_PID=$(pidof RustDedicated)
+    echo "Boosting affinity for RustDedicated PID: ${MY_PID}" | tee -a ${LOGS}
+    renice -10 ${MY_PID} | tee -a ${LOGS}
     tail -n 10 ${SERVER_LOGS}
     echo "Delaying for about 8mins while service loads" | tee -a ${LOGS}
     sleep 120

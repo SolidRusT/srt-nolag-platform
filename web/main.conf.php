@@ -23,9 +23,4 @@
     $tokenURL = 'https://discordapp.com/api/oauth2/token';
     $scope = 'identify guilds guilds.join';
     // DO NOT MODIFY //
-
-	// integration links
-	$secret_id = $client_secret;
-	$scopes = $scope;
-	$redirect_url = "https://solidrust.net/discord-test.php";
 ?>

@@ -28,7 +28,7 @@ case "$type" in
 now | fast | quick)
     initialize_srt
     echo "performing a Quick Wipe" | tee -a ${LOGS}
-    stop_rust_now
+    notification_restart 1
     wipe_map
     change_seed
     start_rust
@@ -40,7 +40,7 @@ force | forcewipe | facepunch)
     echo "performing a Facepunch Force-wipe" | tee -a ${LOGS}
     #sleep 3600
     sleep 2900
-    notification
+    notification_restart 3600
     update_repo
     update_server
     update_mods
@@ -60,7 +60,7 @@ force | forcewipe | facepunch)
 *)
     initialize_srt
     echo "performing a Standard Wipe" | tee -a ${LOGS}
-    notification
+    notification_restart 3600
     update_repo
     update_server
     update_mods

@@ -17,6 +17,15 @@ function give_kit() {
         give_item $user weapon.mod.lasersight 1
         give_item $user weapon.mod.small.scope 1
         ;;
+    builder)
+        echo "Building Materials"
+        give_item $user wood 5000
+        give_item $user stones 10000
+        give_item $user metal.fragments 5000
+        give_item $user metal.refined 500
+        give_item $user building.planner 1
+        give_item $user hammer 1        
+        ;;
     *)
         echo "Please specify a valid kit."
         ;;
