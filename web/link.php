@@ -1,7 +1,5 @@
-<?php include('nav_bar_simple.php'); ?>
-</div>
-</nav>
 <?php
+include('header.php');
 session_start();
 require 'steamauth/steamauth.php';
 require 'main.conf.php';
@@ -14,7 +12,6 @@ if (isset($_SESSION['steamid'])) {
 }
 ?>
 	<link rel="stylesheet" href="css/login.css">
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/9e14982b30.js" crossorigin="anonymous"></script>
     <div id="logincontent">
         <center>Step 1: Steam Auth (Click Steam Button)</center>
@@ -23,4 +20,4 @@ if (isset($_SESSION['steamid'])) {
                 aria-hidden="true"></i> Login with Steam</a>
     </div>
 
-<?php include('footer.php'); ?>
+<?php include('footer_simple.php'); ?>

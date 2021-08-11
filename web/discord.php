@@ -1,7 +1,5 @@
-<?php include('nav_bar_simple.php'); ?>
-</div>
-</nav>
 <?php
+include('header.php');
     session_start();
     if(!isset($_SESSION['steamid'])) header('location: link');
     if(isset($_SESSION['guilds'])) header('location: complete');
@@ -27,4 +25,4 @@
             <a href="<?php echo url($client_id, $redirect, $scope); ?>" style="font-size:30px; background-color: #444;" class="discordButton"><i class="fab fa-discord" aria-hidden="true"></i> Login with Discord</a>
         </div>
 	
-<?php include('footer.php'); ?>
+<?php include('footer_simple.php'); ?>

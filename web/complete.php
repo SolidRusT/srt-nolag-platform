@@ -1,8 +1,5 @@
-<?php include('nav_bar_simple.php'); ?>
-</div>
-</nav>
-
 <?php
+include('header.php');
     session_start();
     require('main.conf.php');
     if (!isset($_SESSION['steamid'], $_SESSION['user_id'])) header('location: /');
@@ -85,5 +82,5 @@
 				
             </center>
         </div>
-<?php header('Refresh: 3; URL=/index'); ?>
-<?php include('footer.php'); ?>
+<?php header('Refresh: 1; URL=/index'); ?>
+<?php include('footer_simple.php'); ?>
