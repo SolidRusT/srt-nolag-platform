@@ -17,33 +17,35 @@ include 'functions.php';
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/index">Home</a>
+					<li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Connect</a>
+						<ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <li><a class="dropdown-item" href="steam://connect/two.solidrust.net:28015">Main - two.solidrust.net</a></li>
+            <li><a class="dropdown-item" href="steam://connect/nine.solidrust.net:28015">5x Practice - nine.solidrust.net</a></li>
+			<li><a class="dropdown-item" href="steam://connect/one.solidrust.net:28015">Demo Server - one.solidrust.net</a></li>
+          </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Discord</a>
                     </li>
-                    <li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#">Store</a>
                     </li>
-                    <li>
-                        <a class="nav-link" href="#">Connect</a>
-                    </li>
-                    <li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#">Apply</a>
                     </li>
-                    <li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#">Learn</a>
                     </li>
-                    <li>
+					<li class="nav-item">
                         <a class="nav-link" href="#">Gallery</a>
                     </li>
-                    <li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#">Help</a>
                     </li>
-                    <li>
+                    <li class="nav-item">
                         <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Report</a>
                     </li>
 				</ul>
@@ -51,13 +53,13 @@ include 'functions.php';
 				if (!isset($_SESSION['steamid'])) {
 					$target = "/link";
 					$linkname = "Account Login";
-					echo "<li><a class=\"navbar-text\" href=\"$target\">$linkname</a>></li>";
+					echo "<li class=\"nav-item\"><a class=\"navbar-text\" href=\"$target\">$linkname</a>></li>";
 				} else {
 					$target = "/profile";
 					$avatar = $steamprofile['avatar'];
 					$profile_name = $steamprofile['personaname']; echo "
-					<li><a class=\"navbar-text\" href=\"$target\">$profile_name</a>&nbsp;&nbsp;&nbsp;</li>
-					<li><a class=\"navbar-text\" href=\"$target\"><img src=\"$avatar\"></a>&nbsp</li>";
+					<li class=\"nav-item\"><a class=\"navbar-text\" href=\"$target\">$profile_name</a>&nbsp;&nbsp;&nbsp;</li>
+					<li class=\"nav-item\"><a class=\"navbar-text\" href=\"$target\"><img src=\"$avatar\"></a>&nbsp</li>";
 				}
 				?><li><?php
 				if (isset($_SESSION['steamid'])) {
