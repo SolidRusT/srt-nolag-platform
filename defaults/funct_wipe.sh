@@ -16,26 +16,22 @@ function notification_restart() {
 
     while [ $delay -gt 900 ]; do
         if [ $delay -gt 60 ]; then
-            declare -i seconds=60
-            declare -i delay_amount=delay/seconds
+            declare -i delay_amount=delay/60
             export delay_unit="minutes"
             export delay_amount=$delay_amount
-            echo "currently $delay_amount $delay_unit remaining"
         else
-            export delay_unit="seconds"
             declare -i delay_amount=$delay
+            export delay_unit="seconds"
             export delay_amount=$delay_amount
-            echo "currently less than 1 minute remaining ($delay_amount seconds)."
         fi
         echo "Notify players that wipe will begin, in ${delay_amount} ${delay_unit}." | tee -a ${LOGS}
+        ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "say \"Scheduled map wipe is about to begin, in ${delay_amount} ${delay_unit}.\"" | tee -a ${LOGS}
+        
         if [ $delay -gt 900 ]; then
             declare -i delay=delay-900
-            ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "say \"Scheduled map wipe is about to begin, in ${delay_amount} ${delay_unit}.\""
-            sleep 5
             export delay=$delay
-        else
-            ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "say \"Scheduled map wipe is about to begin, in ${delay_amount} ${delay_unit}.\""
-        fi
+            sleep 900     
+        fi 
     done
 
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "restart $delay \"Scheduled map wipe is about to begin.\""
