@@ -139,12 +139,39 @@ function hot_plugs() {
 }
 
 function send_discord() {
-    MESSAGE='testing discord CLI from console'
+    MESSAGE="$1"
 
     curl -X POST \
         -F "content=${MESSAGE}" \
-        -F "username=${CORDNAME}" \
+        -F "username=\"${HOSTNAME}-global\"" \
         "${WEBHOOK}"
 }
 
+function show_players() {
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "players"
+}
+
+function create_chat_log() {
+    echo "parsing the serverlog for player chat" | tee -a ${LOGS}
+    tail -n +1 -f ${GAME_ROOT}/RustDedicated.log | while read line; do echo "$line" | grep "CHAT" | tee -a ${GAME_ROOT}/chat-global.out ; done
+}
+
+function chat_to_discord() {
+    echo "sending player chat to discord" | tee -a ${LOGS}
+    fielpos="/game/chat-global.out"
+    declare -i infinite=1
+    while [ "$infinite" -eq 1 ]; do
+        declare -i lineno=0
+        while read -r line; do
+            send_discord "${line}"
+            let ++lineno
+            sed -i "1 d" "$fielpos"
+            sleep 2
+        done <"$fielpos"
+        sleep 3
+    done 
+}
+
 echo "SRT Common Functions initialized" | tee -a ${LOGS}
+
+#fuckyou

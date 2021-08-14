@@ -33,6 +33,7 @@ if (!isset($_SESSION['steamid'])) {
 	  <script type="application/javascript">window.addEventListener('message',function(e){if(e.data.uid&&e.data.type==='sizeUpdate'){var i = document.querySelector('iframe[name="'+e.data.uid+'"]');i.style.width = e.data.payload.width;i.style.height = e.data.payload.height;}});</script><iframe src="https://cdn.battlemetrics.com/b/standardVertical/11593491.html?_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InN0YW5kYXJkVmVydGljYWwiLCJzZXJ2ZXIiOjExNTkzNDkxLCJvcHRpb25zIjp7ImZvcmVncm91bmQiOiIjODUwMDAwIiwibGlua0NvbG9yIjoiIzAwMDAwMCIsImxpbmVzIjoiIzg1MDAwMCIsImJhY2tncm91bmQiOiIjZmZmZmZmIiwiY2hhcnQiOiJ0aW1lOjFNIiwiY2hhcnRDb2xvciI6IiMwMDEzYWMiLCJtYXhQbGF5ZXJzSGVpZ2h0IjoiMzAwIn0sImxpdmVVcGRhdGVzIjp0cnVlLCJ1c2VyX2lkIjozNTgyMjAsImlhdCI6MTYyODY1Nzc2Nn0.yHhEQSkhA8kijr2RAtkj_vaifFV4_cUCcDVjkyCEDl8" frameborder=0 style="border:0" name="ilqin"></iframe>
       <p class="card-text"><small class="text-muted">Last updated less than 1 min ago</small></p>
 	  <a href="steam://connect/nine.solidrust.net:28015" class="btn btn-primary">connect nine.solidrust.net:28015</a>
+		<a href="https://topg.org/rust-servers/server-631719" target="_blank"><img src="https://topg.org/topg2.gif" width="88" height="31" border="0" alt="Solidrust 5x trio - Rust server"></a>
     </div>
   </div>
   <div class="card">

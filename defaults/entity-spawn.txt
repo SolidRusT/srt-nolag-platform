@@ -1,0 +1,1 @@
+entity.spawn "assets/prefabs/misc/casino/bigwheel/big_wheel.prefab"​
