@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Oxide.Core;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust;
@@ -24,6 +25,11 @@ using UnityEngine;
 *=======================================================================================================================*/
 
 /*
+ * 1.4.7:
+ * Added FontSize (8)
+ * New configuration format
+ * Moved UI position above new map buttons
+ * 
  * 1.4.6:
  * Added Player Administration button
  * Added missing localization to language API
@@ -59,7 +65,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Admin Panel", "nivex", "1.4.6")]
+    [Info("Admin Panel", "nivex", "1.4.7")]
     [Description("GUI admin panel with command buttons")]
     class AdminPanel : RustPlugin
     {
@@ -254,7 +260,6 @@ namespace Oxide.Plugins
 
         private void Init()
         {
-            LoadDefaultConfig();
             permission.RegisterPermission(permAdminPanel, this);
             permission.RegisterPermission(permAutoToggle, this);
             Unsubscribe(nameof(OnPlayerSleepEnded));
@@ -294,33 +299,6 @@ namespace Oxide.Plugins
 
             AdminGui(player);
         }
-
-        #region Configuration
-
-        private bool ToggleMode;
-        private bool newtp;
-        private string PanelPosMax;
-        private string PanelPosMin;
-        private string adminZoneCords;
-        private string btnActColor;
-        private string btnInactColor;
-        private string btnNewtpColor;
-
-        protected override void LoadDefaultConfig()
-        {
-            Config["AdminPanelToggleMode"] = ToggleMode = GetConfig("AdminPanelToggleMode", false);
-            Config["AdminPanelPosMax"] = PanelPosMax = GetConfig("AdminPanelPosMax", "0.991 0.67");
-            Config["AdminPanelPosMin"] = PanelPosMin = GetConfig("AdminPanelPosMin", "0.9 0.5");
-            Config["AdminZoneCoordinates"] = adminZoneCords = GetConfig("AdminZoneCoordinates", "0;0;0;");
-            Config["PanelButtonActiveColor"] = btnActColor = GetConfig("PanelButtonActiveColor", "0 2.55 0 0.3");
-            Config["PanelButtonInactiveColor"] = btnInactColor = GetConfig("PanelButtonInactiveColor", "2.55 0 0 0.3");
-            Config["PanelButtonNewtp"] = newtp = GetConfig("PanelButtonNewtp", false);
-            Config["PanelButtonNewtpColor"] = btnNewtpColor = GetConfig("PanelButtonNewtpColor", "1.0 0.65 0.85 0.3");
-
-            SaveConfig();
-        }
-
-        #endregion Configuration
 
         #region Localization
 
@@ -418,7 +396,7 @@ namespace Oxide.Plugins
 
             Subscribe(nameof(OnPlayerDeath));
 
-            if (!ToggleMode)
+            if (!config.ToggleMode)
             {
                 Subscribe(nameof(OnPlayerSleepEnded));
                 RefreshAllUI();
@@ -450,7 +428,7 @@ namespace Oxide.Plugins
         {
             var player = arg.Player();
             if (player == null || !IsAllowed(player, permAdminPanel) || !arg.HasArgs()) return;
-
+            
             switch (arg.Args[0].ToLower())
             {
                 case "action":
@@ -479,13 +457,11 @@ namespace Oxide.Plugins
                                     }
                                     else
                                     {
-                                        var pos = adminZoneCords.Split(';');
-                                        var loc = new Vector3(float.Parse(pos[0]), float.Parse(pos[1]), float.Parse(pos[2]));
-                                        player.Teleport(loc);
+                                        player.Teleport(config.adminZoneCords);
                                     }
                                     break;
                                 case "newtp":
-                                    if (newtp)
+                                    if (config.newtp.enabled)
                                     {
                                         string[] argu = new string[1];
                                         argu[0] = "settp";
@@ -558,8 +534,8 @@ namespace Oxide.Plugins
                     Vector3 coord = player.transform.position;
                     if (args.Any(arg => arg.ToLower() == "all"))
                     {
-                        Config["AdminZoneCoordinates"] = adminZoneCords = $"{coord.x};{coord.y};{coord.z}";
-                        Config.Save();                        
+                        config.adminZoneCords = coord;
+                        SaveConfig();
                         Message(player, "Set Admin TP Coordinates", coord);
                     }
                     else
@@ -596,16 +572,16 @@ namespace Oxide.Plugins
                 // Destroy existing UI
                 DestroyUI(player);
 
-                var BTNColorVanish = btnInactColor;
-                var BTNColorGod = btnInactColor;
-                var BTNColorRadar = btnInactColor;
-                var BTNColorNewTP = btnNewtpColor;
-                var BTNColorPA = btnInactColor;
+                var BTNColorVanish = config.btnInactColor;
+                var BTNColorGod = config.btnInactColor;
+                var BTNColorRadar = config.btnInactColor;
+                var BTNColorNewTP = config.newtp.color;
+                var BTNColorPA = config.btnInactColor;
 
-                if (AdminRadar != null && IsRadar(player.UserIDString)) BTNColorRadar = btnActColor;
-                if (Godmode != null && IsGod(player.UserIDString)) BTNColorGod = btnActColor;
-                if (Vanish != null && IsInvisible(player)) BTNColorVanish = btnActColor;
-                if (_playerAdministration.Contains(player.UserIDString)) BTNColorPA = btnActColor;
+                if (AdminRadar != null && IsRadar(player.UserIDString)) BTNColorRadar = config.btnActColor;
+                if (Godmode != null && IsGod(player.UserIDString)) BTNColorGod = config.btnActColor;
+                if (Vanish != null && IsInvisible(player)) BTNColorVanish = config.btnActColor;
+                if (_playerAdministration.Contains(player.UserIDString)) BTNColorPA = config.btnActColor;
 
                 var GUIElement = new CuiElementContainer();
 
@@ -617,8 +593,8 @@ namespace Oxide.Plugins
                     },
                     RectTransform =
                     {
-                        AnchorMin = PanelPosMin,
-                        AnchorMax = PanelPosMax
+                        AnchorMin = config.PanelPosMin,
+                        AnchorMax = config.PanelPosMax
                     },
                     CursorEnabled = false
                 }, "Hud", Name);
@@ -635,7 +611,7 @@ namespace Oxide.Plugins
                         Text =
                         {
                             Text = _("Radar", player.UserIDString),
-                            FontSize = 8,
+                            FontSize = config.fontSize,
                             Align = TextAnchor.MiddleCenter,
                             Color = "1 1 1 1"
                         },
@@ -659,7 +635,7 @@ namespace Oxide.Plugins
                         Text =
                         {
                             Text = _("PA", player.UserIDString),
-                            FontSize = 8,
+                            FontSize = config.fontSize,
                             Align = TextAnchor.MiddleCenter,
                             Color = "1 1 1 1"
                         },
@@ -681,7 +657,7 @@ namespace Oxide.Plugins
                     Text =
                     {
                         Text = _("AdminTP", player.UserIDString),
-                        FontSize = 8,
+                        FontSize = config.fontSize,
                         Align = TextAnchor.MiddleCenter,
                         Color = "1 1 1 1"
                     },
@@ -692,7 +668,7 @@ namespace Oxide.Plugins
                     }
                 }, GUIPanel);
 
-                if (newtp)
+                if (config.newtp.enabled)
                 {
                     GUIElement.Add(new CuiButton
                     {
@@ -704,7 +680,7 @@ namespace Oxide.Plugins
                         Text =
                         {
                             Text = _("newTP", player.UserIDString),
-                            FontSize = 8,
+                            FontSize = config.fontSize,
                             Align = TextAnchor.MiddleCenter,
                             Color = "1 1 1 1"
                         },
@@ -728,7 +704,7 @@ namespace Oxide.Plugins
                         Text =
                         {
                             Text = _("Godmode", player.UserIDString),
-                            FontSize = 8,
+                            FontSize = config.fontSize,
                             Align = TextAnchor.MiddleCenter,
                             Color = "1 1 1 1"
                         },
@@ -752,7 +728,7 @@ namespace Oxide.Plugins
                         Text =
                         {
                             Text = _("Vanish", player.UserIDString),
-                            FontSize = 8,
+                            FontSize = config.fontSize,
                             Align = TextAnchor.MiddleCenter,
                             Color = "1 1 1 1"
                         },
@@ -791,12 +767,6 @@ namespace Oxide.Plugins
 
         #region Helpers
 
-        private T GetConfig<T>(string name, T defaultValue)
-        {
-            if (Config[name] == null) return defaultValue;
-            return (T)Convert.ChangeType(Config[name], typeof(T));
-        }
-
         private bool IsAllowed(BasePlayer player, string perm) => player != null && permission.UserHasPermission(player.UserIDString, perm);
 
         private string _(string key, string id = null, params object[] args) => string.Format(lang.GetMessage(key, this, id), args);
@@ -804,5 +774,76 @@ namespace Oxide.Plugins
         private void Message(BasePlayer player, string key, params object[] args) => Player.Message(player, _(key, player.UserIDString, args));
 
         #endregion Helpers
+
+        #region Configuration
+
+        private Configuration config;
+
+        public class ButtonState
+        {
+            [JsonProperty(PropertyName = "Button Enabled")]
+            public bool enabled { get; set; }
+
+            [JsonProperty(PropertyName = "Button Color")]
+            public string color { get; set; }
+        }
+
+        public class Configuration
+        {
+            [JsonProperty(PropertyName = "newtp")]
+            public ButtonState newtp { get; set; } = new ButtonState
+            {
+                enabled = false,
+                color = "1.0 0.65 0.85 0.3"
+            };
+
+            [JsonProperty(PropertyName = "Admin Zone Coordinates")]
+            public Vector3 adminZoneCords { get; set; }
+
+            [JsonProperty(PropertyName = "Button Active Color")]
+            public string btnActColor { get; set; } = "0 2.55 0 0.3";
+
+            [JsonProperty(PropertyName = "Button Inactive Color")]
+            public string btnInactColor { get; set; } = "2.55 0 0 0.3";
+
+            [JsonProperty(PropertyName = "Font Size")]
+            public int fontSize { get; set; } = 8;
+
+            [JsonProperty(PropertyName = "Panel Pos Max")]
+            public string PanelPosMax { get; set; } = "0.991 0.87";
+
+            [JsonProperty(PropertyName = "Panel Pos Min")]
+            public string PanelPosMin { get; set; } = "0.9 0.7";
+
+            [JsonProperty(PropertyName = "Toggle Mode")]
+            public bool ToggleMode { get; set; }
+        }
+
+        protected override void LoadConfig()
+        {
+            base.LoadConfig();
+
+            try
+            {
+                config = Config.ReadObject<Configuration>();
+            }
+            catch
+            {
+
+            }
+
+            if (config == null)
+            {
+                LoadDefaultConfig();
+            }
+
+            SaveConfig();
+        }
+
+        protected override void SaveConfig() => Config.WriteObject(config);
+
+        protected override void LoadDefaultConfig() => config = new Configuration();
+
+        #endregion
     }
 }

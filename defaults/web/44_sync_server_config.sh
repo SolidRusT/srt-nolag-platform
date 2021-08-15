@@ -24,4 +24,8 @@ chmod +x ${HOME}/solidrust.net/defaults/*.sh ${HOME}/solidrust.net/defaults/web/
 echo "Downloading custom maps from s3" | tee -a ${LOGS}
 aws s3 sync --size-only --delete ${S3_WEB}/maps ${HOME}/solidrust.net/web/maps | tee -a ${LOGS}
 
+# Update SRT Radio
+echo "" | tee -a ${LOGS}
+aws s3 sync --size-only --delete ${S3_RADIO} /var/www/radio | tee -a ${LOGS}
+
 echo "Finished ${me}"   | tee -a ${LOGS}

@@ -15,7 +15,7 @@ using Rust.Ai;
 
 namespace Oxide.Plugins
 {
-    [Info("ZombieHorde", "k1lly0u", "0.3.4")]
+    [Info("ZombieHorde", "k1lly0u", "0.3.5")]
     class ZombieHorde : RustPlugin
     {
         [PluginReference] 
@@ -121,9 +121,8 @@ namespace Oxide.Plugins
         }
 
         private object CanBeTargeted(ScientistNPC scientistNPC, MonoBehaviour behaviour)
-        {
-            HordeMember hordeMember = scientistNPC.GetComponent<HordeMember>();
-            if (hordeMember != null)
+        {            
+            if (HordeMember._allHordeScientists.Contains(scientistNPC))
             {
                 if (((behaviour is AutoTurret) || (behaviour is GunTrap) || (behaviour is FlameTurret)) && configData.Member.TargetedByTurrets)
                     return null;
@@ -133,14 +132,13 @@ namespace Oxide.Plugins
             return null;
         }
 
-        private object CanEntityBeHostile(ScientistNPC scientistNPC) => scientistNPC != null && scientistNPC.GetComponent<HordeMember>() != null ? (object)true : null;
+        private object CanEntityBeHostile(ScientistNPC scientistNPC) => HordeMember._allHordeScientists.Contains(scientistNPC) ? (object)true : null;
         
         private object CanBradleyApcTarget(BradleyAPC bradleyAPC, ScientistNPC scientistNPC)
         {
             if (scientistNPC != null)
             {
-                HordeMember hordeMember = scientistNPC.GetComponent<HordeMember>();
-                if (hordeMember != null && !configData.Member.TargetedByAPC)
+                if (HordeMember._allHordeScientists.Contains(scientistNPC) && !configData.Member.TargetedByAPC)
                     return false;
             }
             return null;
@@ -168,7 +166,7 @@ namespace Oxide.Plugins
             return null;
         }
 
-        private object CanPopulateLoot(ScientistNPC scientistNPC, NPCPlayerCorpse corpse) => scientistNPC != null && scientistNPC.GetComponent<HordeMember>() != null ? (object)false : null;
+        private object CanPopulateLoot(ScientistNPC scientistNPC, NPCPlayerCorpse corpse) => HordeMember._allHordeScientists.Contains(scientistNPC) ? (object)false : null;
 
         private void Unload()
         {
@@ -313,7 +311,7 @@ namespace Oxide.Plugins
 
         private const int SPAWN_RAYCAST_MASK = 1 << 0 | 1 << 8 | 1 << 15 | 1 << 17 | 1 << 21 | 1 << 29;
 
-        private const TerrainTopology.Enum SPAWN_TOPOLOGY_MASK = (TerrainTopology.Enum.Ocean | TerrainTopology.Enum.River | TerrainTopology.Enum.Lake | TerrainTopology.Enum.Cliff | TerrainTopology.Enum.Cliffside | TerrainTopology.Enum.Offshore | TerrainTopology.Enum.Summit);
+        private const TerrainTopology.Enum SPAWN_TOPOLOGY_MASK = (TerrainTopology.Enum.Ocean | TerrainTopology.Enum.River | TerrainTopology.Enum.Lake | TerrainTopology.Enum.Cliff | TerrainTopology.Enum.Cliffside | TerrainTopology.Enum.Offshore | TerrainTopology.Enum.Summit | TerrainTopology.Enum.Decor);
 
         private Vector3 GetSpawnPoint()
         {
@@ -593,7 +591,6 @@ namespace Oxide.Plugins
                 {
                     loadout.Movement = new ConfigData.MemberOptions.Loadout.MovementStats()
                     {
-                        Acceleration = DefaultDefinition.Movement.Acceleration,
                         DuckSpeed = DefaultDefinition.Movement.DuckSpeed,
                         RunSpeed = DefaultDefinition.Movement.RunSpeed,
                         WalkSpeed = DefaultDefinition.Movement.WalkSpeed
@@ -1016,8 +1013,8 @@ namespace Oxide.Plugins
 
                 TryGrowHorde();
 
-                bool hasValidTarget = HasTarget();
-                if (PrimaryTarget is BasePlayer && ShouldIgnorePlayer(PrimaryTarget as BasePlayer))
+                bool hasValidTarget = HasTarget();                
+                if ((PrimaryTarget is BasePlayer && ShouldIgnorePlayer(PrimaryTarget as BasePlayer)) || ShouldForgetTarget(this, PrimaryTarget))
                 {
                     PrimaryTarget = null;
                     hasValidTarget = false;
@@ -1107,6 +1104,9 @@ namespace Oxide.Plugins
                     if (TerrainMeta.HeightMap != null)                    
                         destination.y = TerrainMeta.HeightMap.GetHeight(destination);
 
+                    if (IsInSafeZone(destination))
+                        continue;
+
                     NavMeshHit navMeshHit;
                     if (NavMesh.FindClosestEdge(destination, out navMeshHit, 1))
                     {
@@ -1122,6 +1122,21 @@ namespace Oxide.Plugins
                     }
                 }
                 return AverageLocation;
+            }
+
+            private bool IsInSafeZone(Vector3 position)
+            {
+                int hits = Physics.OverlapSphereNonAlloc(position, 0.1f, Vis.colBuffer, 1 << 18);
+
+                for (int i = 0; i < hits; i++)
+                {
+                    Collider col = Vis.colBuffer[i];
+
+                    if (col.GetComponent<TriggerSafeZone>())
+                        return true;
+                }
+
+                return false;
             }
 
             private float GetMaximumSeperation()
@@ -1319,6 +1334,17 @@ namespace Oxide.Plugins
                 }
             }
 
+            internal static bool ShouldForgetTarget(HordeManager hordeManager, BaseEntity baseEntity)
+            {
+                if (!configData.Horde.RestrictLocalChaseDistance || !hordeManager.isLocalHorde || hordeManager.maximumRoamDistance <= 0f)
+                    return false;
+
+                if (baseEntity == null || baseEntity.transform == null)
+                    return false;
+
+                return Vector3.Distance(hordeManager.initialSpawnPosition, baseEntity.transform.position) > hordeManager.maximumRoamDistance * 1.5f;
+            }
+
             internal static bool ShouldIgnorePlayer(BasePlayer player)
             {
                 if (player.IsDead())
@@ -1380,7 +1406,7 @@ namespace Oxide.Plugins
                     {
                         hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
                         hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, false);
-                        hordeMember.Entity.SetDestination(interestPoint);
+                        hordeMember.SetDestination(interestPoint);
                     }
                 }
             }
@@ -1754,6 +1780,12 @@ namespace Oxide.Plugins
                     for (int j = 0; j < array.Length; j++)
                     {
                         Item item = array[j];
+                        if (configData.Loot.DroppedBlacklist.Contains(item.info.shortname))
+                        {
+                            item.Remove(0f);
+                            continue;
+                        }
+
                         if (i == 1)
                         {
                             Item newItem = ItemManager.CreateByItemID(item.info.itemid, item.amount, item.skin);
@@ -1810,19 +1842,16 @@ namespace Oxide.Plugins
 
                 Entity.NavAgent.enabled = true;
                 Entity.NavAgent.isStopped = false;
+
                 SetDestination(Transform.position);
             }
 
             internal void SetDestination(Vector3 destination)
             {
-                if (!NavMeshEnabled)
+                if (Entity.NavAgent.enabled)
                 {
-                    if (!_NavMeshEnabled)
-                        _NavMeshEnabled = true;
-
-                    Entity.NavAgent.enabled = true;
-                    Entity.NavAgent.isStopped = false;
-                    Entity.SetDestination(destination);
+                    Entity.NavAgent.ResetPath();
+                    Entity.NavAgent.SetDestination(destination);
                 }
             }
 
@@ -1877,15 +1906,15 @@ namespace Oxide.Plugins
 
             private void ServerThink(float delta)
             {
+                if (Entity == null || Entity.IsDestroyed)
+                    return;
+
                 if (!configData.Member.DisableDormantSystem)
                 {
                     if (Entity.IsDormant)
                         return;
                 }
                 else Entity.IsDormant = false;
-
-                if (Entity == null || Entity.IsDestroyed)
-                    return;
 
                 if (configData.Member.KillUnderWater && Entity.WaterFactor() > 0.8f)
                 {
@@ -1923,7 +1952,7 @@ namespace Oxide.Plugins
 
                 Entity.currentTargetLOS = TargetVisible(Manager.PrimaryTarget);
 
-                Entity.SetDestination(Manager.PrimaryTarget.transform.position);
+                SetDestination(Manager.PrimaryTarget.transform.position);
             }
 
             internal bool TargetVisible(BaseCombatEntity baseCombatEntity)
@@ -1951,6 +1980,9 @@ namespace Oxide.Plugins
                         float distToTarget = Vector3.Distance(seenInfo.Entity.transform.position, currentPosition);
 
                         if (seenInfo.Entity is BasePlayer && HordeManager.ShouldIgnorePlayer(seenInfo.Entity as BasePlayer))
+                            continue;
+
+                        if (HordeManager.ShouldForgetTarget(Manager, seenInfo.Entity))
                             continue;
 
                         if (seenInfo.Entity.Health() > 0f)
@@ -2053,6 +2085,9 @@ namespace Oxide.Plugins
                     BasePlayer player = baseCombatEntity as BasePlayer;
 
                     if (HordeManager.ShouldIgnorePlayer(player))
+                        return false;
+
+                    if (player is NPCShopKeeper || (player is NPCPlayerApex && (player as NPCPlayerApex).GetFact(NPCPlayerApex.Facts.IsPeacekeeper) != 0))
                         return false;
                     
                     if (!configData.Member.TargetNPCs)
@@ -2527,8 +2562,8 @@ namespace Oxide.Plugins
                         return StateStatus.Running;
                     
                     if (distanceFromAverage > 15f)                                          
-                        hordeMember.Entity.SetDestination(hordeMember.Manager.AverageLocation);                    
-                    else hordeMember.Entity.SetDestination(hordeMember.Manager.Destination);
+                        hordeMember.SetDestination(hordeMember.Manager.AverageLocation);                    
+                    else hordeMember.SetDestination(hordeMember.Manager.Destination);
 
                     nextSetDestinationTime = Time.time + 3f;
 
@@ -2610,7 +2645,7 @@ namespace Oxide.Plugins
                         }
                         else position = hordeMember.Entity.currentTarget.transform.position;
 
-                        hordeMember.Entity.SetDestination(position);
+                        hordeMember.SetDestination(position);
 
                         nextPositionUpdateTime = Time.time + 1f;
                     }
@@ -2674,7 +2709,7 @@ namespace Oxide.Plugins
                                 nextStrafeTime = Time.time + UnityEngine.Random.Range(3f, 4f);
                                 hordeMember.Entity.SetDucked(false);
                                 hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Walk);
-                                hordeMember.Entity.SetDestination(hordeMember.Entity.GetRandomPositionAround(brain.mainInterestPoint, 1f, 2f));
+                                hordeMember.SetDestination(hordeMember.Entity.GetRandomPositionAround(brain.mainInterestPoint, 1f, 2f));
                             }
                             else
                             {
@@ -2693,7 +2728,7 @@ namespace Oxide.Plugins
                         else
                         {
                             hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
-                            hordeMember.Entity.SetDestination(hordeMember.Entity.currentTarget.transform.position);
+                            hordeMember.SetDestination(hordeMember.Entity.currentTarget.transform.position);
                         }
                     }
 
@@ -3208,6 +3243,9 @@ namespace Oxide.Plugins
                 [JsonProperty(PropertyName = "Local roam distance")]
                 public float RoamDistance { get; set; }
 
+                [JsonProperty(PropertyName = "Restrict chase distance for local hordes (1.5x the maximum roam distance for that horde)")]
+                public bool RestrictLocalChaseDistance { get; set; }
+
                 [JsonProperty(PropertyName = "Use horde profiles for randomly spawned hordes")]
                 public bool UseProfiles { get; set; }
 
@@ -3243,10 +3281,7 @@ namespace Oxide.Plugins
 
                 [JsonProperty(PropertyName = "Headshots instantly kill zombie")]
                 public bool HeadshotKills { get; set; }
-
-                [JsonProperty(PropertyName = "Projectile weapon aimcone override (0 = disabled)")]
-                public float AimconeOverride { get; set; }
-
+                               
                 [JsonProperty(PropertyName = "Kill NPCs that are under water")]
                 public bool KillUnderWater { get; set; }
 
@@ -3292,8 +3327,6 @@ namespace Oxide.Plugins
                         
                         [JsonProperty(PropertyName = "Duck speed")]
                         public float DuckSpeed { get; set; }
-
-                        public float Acceleration { get; set; }
                     }
 
                     public class SensoryStats
@@ -3316,7 +3349,6 @@ namespace Oxide.Plugins
 
                         Movement = new MovementStats()
                         {
-                            Acceleration = definition.Movement.Acceleration,
                             DuckSpeed = definition.Movement.DuckSpeed,
                             RunSpeed = definition.Movement.RunSpeed,
                             WalkSpeed = definition.Movement.WalkSpeed
@@ -3341,6 +3373,9 @@ namespace Oxide.Plugins
 
                 [JsonProperty(PropertyName = "Random loot table")]
                 public RandomLoot Random { get; set; }
+
+                [JsonProperty(PropertyName = "Dropped inventory item blacklist (shortnames)")]
+                public string[] DroppedBlacklist { get; set; }
 
                 public class InventoryItem
                 {
@@ -3455,7 +3490,7 @@ namespace Oxide.Plugins
             {
                 [JsonProperty(PropertyName = "Distance that this horde can roam from their initial spawn point")]
                 public float RoamDistance { get; set; }
-
+                                
                 [JsonProperty(PropertyName = "Maximum amount of members in this horde")]
                 public int HordeSize { get; set; }
 
@@ -3492,7 +3527,7 @@ namespace Oxide.Plugins
                     CreateOnDeath = true,
                     ForgetTime = 10f,
                     MergeHordes = true,
-                    RespawnTime = 900,                   
+                    RespawnTime = 900,
                     SpawnType = "Random",
                     SpawnFile = "",
                     LocalRoam = false,
@@ -3505,21 +3540,21 @@ namespace Oxide.Plugins
                     IgnoreSleepers = false,
                     TargetAnimals = false,
                     TargetedByTurrets = false,
-                    TargetedByAPC = false,                    
+                    TargetedByAPC = false,
                     TargetNPCs = true,
                     TargetHumanNPCs = false,
                     GiveGlowEyes = true,
                     HeadshotKills = true,
                     Loadouts = BuildDefaultLoadouts(),
-                    AimconeOverride = 0,
                     KillUnderWater = true,
                     TargetedByPeaceKeeperTurrets = true,
-                    DisableDormantSystem = true
+                    DisableDormantSystem = false
                 },
                 Loot = new ConfigData.LootTable
                 {
                     DropInventory = false,
                     Random = BuildDefaultLootTable(),
+                    DroppedBlacklist = new string[] { "exampleitem.shortname1", "exampleitem.shortname2" }
                 },
                 TimedSpawns = new ConfigData.TimedSpawnOptions
                 {
@@ -3790,9 +3825,6 @@ namespace Oxide.Plugins
                 configData.Monument.WaterTreatment.Profile = string.Empty;
             }
 
-            if (configData.Version < new Core.VersionNumber(0, 2, 5))
-                configData.Member.AimconeOverride = 0f;
-
             if (configData.Version < new Core.VersionNumber(0, 2, 13))
                 configData.TimedSpawns = baseConfig.TimedSpawns;
 
@@ -3810,12 +3842,18 @@ namespace Oxide.Plugins
                 if (string.IsNullOrEmpty(configData.Horde.SpawnType))
                     configData.Horde.SpawnType = "Random";
 
-                configData.Member.DisableDormantSystem = true;
+                configData.Member.DisableDormantSystem = false;
             }
 
             if (configData.Version < new Core.VersionNumber(0, 3, 0))
             {
                 configData.Horde.UseSenses = true;
+            }
+
+            if (configData.Version < new Core.VersionNumber(0, 3, 5))
+            {
+                configData.Loot.DroppedBlacklist = baseConfig.Loot.DroppedBlacklist;
+                configData.Member.DisableDormantSystem = false;
             }
             
             configData.Version = Version;

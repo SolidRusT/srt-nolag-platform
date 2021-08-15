@@ -11,6 +11,8 @@ export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
 export S3_BACKUPS="s3://solidrust.net-backups"
 # Amazon s3 destination for backups
 export S3_WEB="s3://solidrust.net"
+# Amazon s3 destination for srt radio
+export S3_RADIO="s3://solidrust.net-radio"
 # Github source for configs
 export GITHUB_ROOT="${HOME}/solidrust.net"
 # Default configs

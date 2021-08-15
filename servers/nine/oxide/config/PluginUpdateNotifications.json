@@ -1,13 +1,28 @@
 {
     "Frequency to check for updates (hours)": 24.0,
     "Ignore lower versions (ignores when the official version is a lower version number)": true,
-    "Check Unloaded Plugins": false,
-    "Enable Discord Notifications": false,
-    "Discord Webhook URL": "",
+    "Check Unloaded Plugins": true,
+    "Enable Discord Notifications": true,
+    "Discord Webhook URL": "https://discord.com/api/webhooks/876565289599377410/woK1nsvW4e3bG3OEwd1ZS9d-IVPl1iNszcN_czXgemN5AXMWu0bbC7Ee7trwsOm0uNoh",
     "Avatar URL": "https://solidrust.net/images/SoldRust_Logo.png",
     "Discord Username": "Plugin Update Notifications",
     "Automatic Blacklist": true,
     "Blacklist of plugins names not to check": [
-        "RustIO"
+        "RustIO",
+        "PermissionsManager",
+        "BotSpawn",
+        "Payback",
+        "ZombieHorde",
+        "RaidingZombies",
+        "DeepWater",
+        "PlayingCards",
+        "Casino",
+        "BlackJack",
+        "AutoBaseUpgrade",
+        "UniversalLink",
+        "CarCommander",
+        "Statistics",
+        "ZBillBoards",
+        "MonumentPlus"
     ]
 }

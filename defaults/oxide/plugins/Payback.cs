@@ -13,10 +13,11 @@ using System.Text.RegularExpressions;
 using Oxide.Core.Libraries.Covalence;
 using Rust;
 using Rust.Ai;
+using Network;
 
 namespace Oxide.Plugins
 {
-    [Info("Payback", "1928Tommygun", "1.6.1")]
+    [Info("Payback", "1928Tommygun", "1.7.2")]
     [Description("Special Admin Commands To Mess With Cheaters")]
     class Payback : RustPlugin
     {
@@ -88,7 +89,10 @@ namespace Oxide.Plugins
             Burn, // Gives a player a flamethrower that will make his foes scream and burn
             Hammer, // hammer - gives target player a hammer that will destroy all the entities owned by the hammer's target
             Bag, // Bag - Print all players that have bagged target player in, and print all players that have been bagged.  Include "discord" after the command to log the results to discord
-            Shocker, // Shocker - insert a Tesla Coil and make the sun shine where it don't
+            Shocker, // Shocker - Shock target player to death.  Affects nearby players so be careful.  Make sure to disable it after use.
+            //Cowboy, // Cowboy - Ride target player like a wild hog -> couldn't get this to work
+            Masochist, // Masochist - Stop player from F1 killing themselves
+            Emote, // Emote - options: 
         }
 
         Dictionary<Card, string> descriptions = new Dictionary<Card, string>() {
@@ -114,6 +118,9 @@ namespace Oxide.Plugins
             {Card.Hammer, "Gives admin a hammer that will destroy all the entities owned by the hammer's target.  Add -noloot to also delete the loot" },
             {Card.Bag, "Print all players that have bagged target player in, and print all players that have been bagged.  Include \"discord\" after the command to log the results to discord" },
             {Card.Shocker, "Shock target player to death.  Affects nearby players so be careful.  Make sure to disable it after use." },
+            //{Card.Cowboy, "Cowboy - Ride target player like a wild hog" },
+            {Card.Masochist, "Masochist - Stop player from F1 killing themselves" },
+            {Card.Emote, "Masochist -  "},
         };
 
         Dictionary<string, Card> cardAliases = new Dictionary<string, Card>() {
@@ -140,6 +147,9 @@ namespace Oxide.Plugins
             { "ham", Card.Hammer},
             { "bg", Card.Bag},
             { "sh", Card.Shocker},
+            //{ "cow", Card.Cowboy},
+            { "ms", Card.Masochist},
+            { "em", Card.Emote},
         };
 
         //| ==============================================================
@@ -237,7 +247,15 @@ namespace Oxide.Plugins
                 } else if (card == Card.Shocker)
                 {
                     DoShocker(player, args, admin);
+                } else if (card == Card.Emote)
+                {
+                    DoEmote(player, args, admin);
                 }
+                
+                //if (card == Card.Cowboy)
+                //{
+                //    DoCowboy(player, args, admin);
+                //}
 
             }
 
@@ -250,6 +268,213 @@ namespace Oxide.Plugins
         //| ==============================================================
         //| COMMAND Implementation
         //| ==============================================================
+        void DoEmote(BasePlayer player, string[] args, BasePlayer admin = null)
+        {
+            if (player == null) return;
+
+            string gesture = "wave";
+
+            if (args.Length > 1)
+            {
+                gesture = args[1];
+
+                var g = player.gestureList.StringToGesture(gesture);
+                if (g == null)
+                {
+
+                    string output = "\n";
+                    foreach (var gg in player.gestureList.AllGestures)
+                    {
+                        output += gg.convarName + "\n";
+                    }
+
+                    PrintToPlayer(admin, $"Gesture not found: {gesture}\nAvailable Gestures:{output}");
+                }
+
+            } else
+            {
+                PrintToPlayer(admin, $"to see all emotes use: /emote <target> list");
+            }
+
+            PlayGesture(player, gesture);
+            TakeCard(player, Card.Emote);
+        }
+
+        bool? CanUseGesture(BasePlayer player, GestureConfig gesture)
+        {
+            if (HasAnyCard(player.userID)) return true;
+            return null;
+        }
+
+
+        void ResolveConflictingCommands(BasePlayer player, BasePlayer admin = null)
+        {
+            bool hasSit = false;
+            if (HasCard(player.userID, Card.Sit))
+            {
+                hasSit = true;
+                TakeCard(player, Card.Sit);
+            }
+
+            if (player.isMounted)
+            {
+                var car = player.GetMountedVehicle();
+                if (car != null)
+                {
+                    car.Kill(BaseNetworkable.DestroyMode.Gib);
+                }
+            }
+            TakeCard(player, Card.Rocketman);
+
+        }
+
+        //object CanNetworkTo(BaseNetworkable entity, BasePlayer target)
+        //{
+        //    if (cowboynetworkables.ContainsKey(target.userID) && cowboynetworkables[target.userID].Contains(entity))
+        //    {
+        //        PrintToChat($"CanNetworkTo: {entity.ShortPrefabName} {target.displayName}");
+        //        return true;
+        //    }
+        //    return null;
+        //}
+
+        //Dictionary<ulong, List<BaseNetworkable>> cowboynetworkables = new Dictionary<ulong, List<BaseNetworkable>>();
+        //void DoCowboy(BasePlayer player, string[] args, BasePlayer admin = null) {
+
+        //    //disabled for testing
+        //    if (player == null) return;
+
+        //    if (HasCard(admin.userID, Card.Cowboy))
+        //    {
+        //        List<BaseNetworkable> existing;
+        //        if (cowboynetworkables.TryGetValue(admin.userID, out existing))
+        //        {
+        //            if (existing != null)
+        //            {
+        //                existing.ForEach(x => x.Kill());
+        //                existing.Clear();
+        //            }
+        //            cowboynetworkables.Remove(admin.userID);
+        //        }
+        //    }
+
+        //    //down target player
+        //    //disabled for testing
+        //    player.BecomeWounded();
+        //    player.ProlongWounding(100000000000);
+
+        //    ResolveConflictingCommands(player, admin);
+
+        //    //|====================================================
+        //    //| create the chair for the person to ride
+        //    //string innertube = "assets/prefabs/misc/summer_dlc/inner_tube/innertube.deployed.prefab";
+
+        //    var chair = GameManager.server.CreateEntity(invisibleChairPrefab, player.transform.position + Vector3.up * 0.5f);
+        //    //var chair = GameManager.server.CreateEntity(chairPrefab, player.transform.position + Vector3.up * 0.5f);
+        //    //var chair = GameManager.server.CreateEntity(innertube, player.transform.position + Vector3.up * 0.75f);
+        //    var mount = chair as BaseMountable;
+        //    chair.Spawn();
+
+        //    GameObject.DestroyImmediate(chair.GetComponentInChildren<DestroyOnGroundMissing>());
+        //    GameObject.DestroyImmediate(chair.GetComponentInChildren<GroundWatch>());
+
+        //    chair.GetComponentInChildren<Collider>().enabled = false;
+
+        //    //|====================================================
+        //    //| create something for the chair to parent to
+
+        //    Item muzzle = ItemManager.CreateByPartialName("muzzlebrake");
+        //    var dropped = muzzle.Drop(player.transform.position, Vector2.zero);
+        //    DroppedItem droppedItem = dropped as DroppedItem;
+
+        //    droppedItem.allowPickup = false;
+        //    droppedItem.GetComponent<Rigidbody>().collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+        //    droppedItem.GetComponent<Rigidbody>().isKinematic = true;
+        //    droppedItem.GetComponent<Rigidbody>().useGravity = false;
+
+        //    SetDespawnDuration(droppedItem, 60 * 15);
+
+        //    //|====================================================
+        //    //| Do the parenting
+        //    dropped.transform.position += Vector3.up * 0.5f;
+        //    //chair.SetParent(dropped, true, true);
+
+
+        //    //now we can either parent to the player, or we need to run a coroutine to bind the chair to the player
+
+        //    //may need to replace this with something to track a downed player instead of rocket
+        //    //Worker.StaticStartCoroutine(AccelerateRocketOverTime(projectile));
+
+
+        //    //dropped.SetParent(player, true, true);
+
+        //    //chair.SetParent(player, true, true);
+            
+        //    //timer.Once (3f, () => {
+        //    //    //chair.limitNetworking = true;
+
+        //    //});
+
+        //    //timer.Once(0.25f, () => {
+
+        //    //    if (chair != null && admin != null)
+        //    //    {
+        //    //        PrintToChat("on");
+        //    //        chair.net.SwitchGroup(Net.sv.visibility.Get(13371));
+        //    //        admin.net.SwitchGroup(Net.sv.visibility.Get(13371));
+        //    //        //admin.net.AddVisibleFromNear(Net.sv.visibility.GetGroup(admin.transform.position), new List<Network.Visibility.Group>());
+        //    //        admin.net.subscriber.Subscribe(Net.sv.visibility.GetGroup(player.transform.position));
+        //    //    }
+        //    //});
+
+
+        //    //timer.Once(15f, () => {
+        //    //    if (chair != null && admin != null)
+        //    //    {
+        //    //        //chair.limitNetworking = true;
+        //    //        PrintToChat("off");
+        //    //        chair.net.SwitchGroup(Net.sv.visibility.GetGroup(admin.transform.position));
+        //    //        admin.net.SwitchGroup(Net.sv.visibility.GetGroup(admin.transform.position));
+        //    //    }
+
+        //    //});
+        //    //chair._limitedNetworking = true;
+        //    Worker.StaticStartCoroutine(MoveCowboyOverTime(player, chair));
+
+        //    //mount.MountPlayer(admin);
+
+        //    cowboynetworkables[admin.userID] = new List<BaseNetworkable>() { chair };
+
+        //}
+
+        //IEnumerator MoveCowboyOverTime(BasePlayer player, BaseEntity entity)
+        //{
+        //    Vector3 offset = entity.transform.position - player.transform.position;
+        //    ulong userid = player.userID;
+        //    while (HasCard(player.userID, Card.Cowboy))
+        //    {
+        //        if (player != null && player.net.connection != null)
+        //        {
+        //            //entity.transform.position += Vector3.forward * 0.01f;
+        //            entity.transform.position = player.transform.position + offset;
+        //            var forward = player.eyes.HeadForward();
+        //            forward.y = 0;
+        //            entity.transform.LookAt(entity.transform.position + forward);
+        //            entity.SendNetworkUpdateImmediate();
+        //            yield return new WaitForFixedUpdate();
+        //        } else
+        //        {
+        //            break;
+        //        }
+        //    }
+        //    if (entity != null)
+        //    {
+        //        entity?.Kill();
+        //    }
+        //    TakeCard(userid, Card.Cowboy);
+        //}
+
+
         Dictionary<ulong, BaseEntity> coilMap = new Dictionary<ulong, BaseEntity>();
         void DoShocker(BasePlayer player, string[] args, BasePlayer admin = null)
         {
@@ -780,7 +1005,7 @@ namespace Oxide.Plugins
         {
 
             if (entity == null) return;
-            if (explosives.Contains(entity))
+            if (entitiesWatchingForKilledMounts.Contains(entity))
             {
                 var chair = entity.GetComponentInChildren<BaseMountable>();
                 if (chair.IsMounted())
@@ -790,7 +1015,7 @@ namespace Oxide.Plugins
                     player.Teleport(chair.transform.position);
                     player.Die();
                 }
-                explosives.Remove(entity);
+                entitiesWatchingForKilledMounts.Remove(entity);
 
                 timer.Once(0.5f, () => {
                     Unsubscribe($"OnEntityKill");
@@ -798,7 +1023,7 @@ namespace Oxide.Plugins
             }
         }
 
-        HashSet<BaseNetworkable> explosives = new HashSet<BaseNetworkable>();
+        HashSet<BaseNetworkable> entitiesWatchingForKilledMounts = new HashSet<BaseNetworkable>();
         void RocketManTarget(BasePlayer player)
         {
             bool hasSit = false;
@@ -833,7 +1058,7 @@ namespace Oxide.Plugins
             rocket.Spawn();
             rocket.transform.LookAt(Vector3.up + rocket.transform.position);
 
-            explosives.Add(rocket as BaseNetworkable);
+            entitiesWatchingForKilledMounts.Add(rocket as BaseNetworkable);
 
             //| Attempt to solve instant kill sometimes
             rocket.GetComponent<Collider>().enabled = false;
@@ -880,14 +1105,14 @@ namespace Oxide.Plugins
 
         public const string invisibleChairPrefab = "assets/bundled/prefabs/static/chair.invisible.static.prefab";
 
-        HashSet<BaseMountable> chairs = new HashSet<BaseMountable>();
+        HashSet<BaseMountable> chairsPreventingDismount = new HashSet<BaseMountable>();
         BaseEntity InvisibleSit(BasePlayer targetPlayer)
         {
             var chair = GameManager.server.CreateEntity(invisibleChairPrefab, targetPlayer.transform.position);
             var mount = chair as BaseMountable;
             chair.Spawn();
 
-            chairs.Add(mount);
+            chairsPreventingDismount.Add(mount);
 
             GameObject.DestroyImmediate(chair.GetComponentInChildren<DestroyOnGroundMissing>());
             GameObject.DestroyImmediate(chair.GetComponentInChildren<GroundWatch>());
@@ -1150,22 +1375,28 @@ namespace Oxide.Plugins
             yield return new WaitForSeconds(2);
 
 
-            //print all gestures
-            //foreach (var g in player.gestureList.AllGestures) {
+            ////print all gestures
+            //foreach (var g in targetPlayer.gestureList.AllGestures)
+            //{
             //    Puts($"{g.convarName} - {g.gestureCommand} - {g.gestureName}");
             //}
 
-            //            (17:26:59) | [Payback] clap - clap - Translate + Phrase
-            //(17:26:59) | [Payback] friendly - friendly - Translate + Phrase
-            //(17:26:59) | [Payback] hurry - hurry - Translate + Phrase
-            //(17:26:59) | [Payback] ok - ok - Translate + Phrase
-            //(17:26:59) | [Payback] point - point - Translate + Phrase
-            //(17:26:59) | [Payback] shrug - shrug - Translate + Phrase
-            //(17:26:59) | [Payback] thumbsdown - thumbsdown - Translate + Phrase
-            //(17:26:59) | [Payback] thumbsup - thumbsup - Translate + Phrase
-            //(17:26:59) | [Payback] victory - victory - Translate + Phrase
-            //(17:26:59) | [Payback] wave - wave - Translate + Phrase
-            //(17:26:59) | [Payback] - dance_01 - Translate + Phrase
+
+
+//            (10:49:59) | [Payback] clap - clap - Translate + Phrase
+//(10:50:00) | [Payback] friendly - friendly - Translate + Phrase
+//(10:50:00) | [Payback] hurry - hurry - Translate + Phrase
+//(10:50:00) | [Payback] ok - ok - Translate + Phrase
+//(10:50:00) | [Payback] point - point - Translate + Phrase
+//(10:50:00) | [Payback] shrug - shrug - Translate + Phrase
+//(10:50:00) | [Payback] thumbsdown - thumbsdown - Translate + Phrase
+//(10:50:00) | [Payback] thumbsup - thumbsup - Translate + Phrase
+//(10:50:00) | [Payback] victory - victory - Translate + Phrase
+//(10:50:00) | [Payback] wave - wave - Translate + Phrase
+//(10:50:00) | [Payback] - dance_01 - Translate + Phrase
+//(10:50:00) | [Payback] raiseroof - hiphopdance - Translate + Phrase
+//(10:50:00) | [Payback] cabbagepatch - sillydance - Translate + Phrase
+//(10:50:00) | [Payback] twist - sillydance2 - Translate + Phrase
 
             //Clients now block this :'(
             //targetPlayer.SendConsoleCommand("gesture wave");
@@ -1200,16 +1431,18 @@ namespace Oxide.Plugins
         }
 
 
-        string chairPrefab = "assets/prefabs/deployable/chair/chair.deployed.prefab";
+        //string chairPrefab = "assets/prefabs/deployable/chair/chair.deployed.prefab";
+        string chairPrefab = "assets/prefabs/deployable/secretlab chair/secretlabchair.deployed.prefab";
 
         Dictionary<ulong, BaseEntity> sitChairMap = new Dictionary<ulong, BaseEntity>();
 
         void DoSitCommand(BasePlayer targetPlayer, BasePlayer adminPlayer)
         {
-            if (targetPlayer == null || adminPlayer == null) return;
+            if (targetPlayer == null) return;
 
             if (HasCard(targetPlayer.userID, Card.Sit))
             {
+                if (adminPlayer == null) return;
 
                 if (targetPlayer.isMounted)
                 {
@@ -1339,24 +1572,24 @@ namespace Oxide.Plugins
 
         object CanDismountEntity(BasePlayer player, BaseMountable entity)
         {
-            if (cardMap.Count == 0 && chairs.Count == 0) return null;//early out for maximum perf
+            if (cardMap.Count == 0 && chairsPreventingDismount.Count == 0) return null;//early out for maximum perf
 
             if (HasCard(player.userID, Card.Sit))
             {
                 return false;
             }
 
-            if (chairs.Contains(entity))
-            {
-                return false;
-            }
-
             //cleanup dead chairs
-            foreach (var chair in new HashSet<BaseMountable>(chairs)) {
+            foreach (var chair in new HashSet<BaseMountable>(chairsPreventingDismount)) {
                 if (chair == null || chair.IsDestroyed)
                 {
-                    chairs.Remove(chair);
+                    chairsPreventingDismount.Remove(chair);
                 }
+            }
+
+            if (chairsPreventingDismount.Contains(entity))
+            {
+                return false;
             }
 
             return null;
@@ -1979,6 +2212,11 @@ namespace Oxide.Plugins
                     player.DismountObject();//for some reason this was required
                 }
 
+                //if (HasCard(player.userID, Card.Cowboy))
+                //{
+                //    DoCowboy(player, null);
+                //}
+
                 if (HasCard(player.userID, Card.NoRest))
                 {
                     timer.Once(3f, ()=>{ 
@@ -2409,6 +2647,11 @@ namespace Oxide.Plugins
                 var player = entity as BasePlayer;
                 var attacker = hitinfo.InitiatorPlayer;
 
+                if (player != null && HasCard(player.userID, Card.Masochist) && hitinfo.damageTypes != null && hitinfo.damageTypes.GetMajorityDamageType() == DamageType.Suicide)
+                {
+                    hitinfo.damageTypes.Clear();
+                    hitinfo.DoHitEffects = false;
+                }
 
                 if (player != null && HasCard(player.userID, Card.Shocker) && hitinfo.damageTypes != null && hitinfo.damageTypes.GetMajorityDamageType() == DamageType.ElectricShock)
                 {
@@ -3045,6 +3288,10 @@ namespace Oxide.Plugins
         //| ==============================================================
         //| UTILITIES
         //| ==============================================================
+        void SetDespawnDuration(DroppedItem dropped, float seconds)
+        {
+            dropped.Invoke(new Action(dropped.IdleDestroy), seconds);//prevent dropped item from despawn
+        }
         void DestroyGroundCheck(BaseEntity entity)
         {
             GameObject.DestroyImmediate(entity.GetComponentInChildren<DestroyOnGroundMissing>());

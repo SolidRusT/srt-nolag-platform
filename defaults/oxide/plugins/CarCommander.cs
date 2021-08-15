@@ -14,7 +14,7 @@ using System.Globalization;
 
 namespace Oxide.Plugins
 {
-    [Info("CarCommander", "k1lly0u", "0.2.67")]
+    [Info("CarCommander", "k1lly0u", "0.2.68")]
     [Description("A custom car controller with many options including persistence")]
     class CarCommander : RustPlugin
     {
@@ -864,7 +864,7 @@ namespace Oxide.Plugins
                     fuelTank.ServerInitialize(null, 1);
                     if ((int)fuelTank.uid == 0)
                         fuelTank.GiveUID();
-                    fuelTank.onlyAllowedItem = ItemManager.itemList.Find(x => x.itemid == fuelId);
+                    fuelTank.onlyAllowedItems = new ItemDefinition[] { ItemManager.itemList.Find(x => x.itemid == fuelId) };
 
                     if (fuel.GiveFuel && !ins.storedData.HasRestoreData(entity.net.ID))
                     {

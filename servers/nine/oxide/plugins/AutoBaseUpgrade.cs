@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("AutoBaseUpgrade", "CASHR#6906", "1.0.3")]
+    [Info("AutoBaseUpgrade", "CASHR#6906", "1.0.4")]
     internal class AutoBaseUpgrade : RustPlugin
     {
         #region Static
@@ -219,7 +219,12 @@ namespace Oxide.Plugins
             if (!permission.UserHasPermission(player.UserIDString, perm)) return;
 
             var tc = player.GetBuildingPrivilege();
-           
+            if (!TCList.ContainsKey(tc))
+            {
+                player.ChatMessage("An error occurred, open the TC again");
+                return;
+            }
+
             switch (arg.Args[0])
             {
                 case "CHANGE":

@@ -12,7 +12,7 @@ using System;
 
 namespace Oxide.Plugins
 {
-    [Info("ZBillBoards", "JOSH-Z", "1.2.0", ResourceId = 0)]
+    [Info("ZBillBoards", "JOSH-Z", "1.2.2", ResourceId = 0)]
     [Description("Create huge (or small) billboards")]
     public class ZBillBoards : RustPlugin
     {
@@ -110,7 +110,11 @@ namespace Oxide.Plugins
             if(ins.configData.debug)
                 Debug.Log("Image url: " + request.imageURL);
 
-            if (request.targetSign == null) return;
+            if (request.targetSign == null)
+            {
+                ins.pasteController.PasteNextFromList();
+                return;
+            }
 
             //if (!ins.storedData.billBoards.ContainsKey(request.targetSign.net.ID)) return;
             List<uint> billBoardSigns;
@@ -232,8 +236,12 @@ namespace Oxide.Plugins
                 if (webRequest.isNetworkError || webRequest.isHttpError)
                 {
                     Debug.Log("Billboard image download failed for image url: " + request.imageURL + " - Error: " + (webRequest.error != null ? webRequest.error : "N/A"));
+                    if(request.player != null && request.player.IsConnected)
+                        request.player.ChatMessage("Failed to download your image, error: " + (webRequest.error != null ? webRequest.error : "Unknown"));
 
                     webRequest.Dispose();
+
+                    downloading--;
                     StartNewDownload();
                     yield break;
                 }
@@ -324,7 +332,10 @@ namespace Oxide.Plugins
             {
                 Signage targetSign = BaseNetworkable.serverEntities.Find(request.signID) as Signage;
                 if (targetSign == null)
+                {
+                    isPasting = false;
                     return;
+                }
 
                 targetSign.EnsureInitialized();
 
@@ -422,10 +433,23 @@ namespace Oxide.Plugins
         private void cmdBillBoard(BasePlayer player, string command, string[] args)
         {
             var maxSigns = 0;
-            if(HasPermission(player.UserIDString, permAdmin)) { maxSigns = configData.maxSignsAdmin; }
-            else if (HasPermission(player.UserIDString, permTier3)) { maxSigns = configData.maxSignsTier3; }
-            else if (HasPermission(player.UserIDString, permTier2)) { maxSigns = configData.maxSignsTier2; }
-            else if (HasPermission(player.UserIDString, permTier1)) { maxSigns = configData.maxSignsTier1; }
+            var maxBillboards = 0;
+            if(HasPermission(player.UserIDString, permAdmin)) {
+                maxSigns = configData.maxSignsAdmin;
+                maxBillboards = configData.maxBillboardsAdmin;
+            }
+            else if (HasPermission(player.UserIDString, permTier3)) {
+                maxSigns = configData.maxSignsTier3;
+                maxBillboards = configData.maxBillboardsTier3;
+            }
+            else if (HasPermission(player.UserIDString, permTier2)) {
+                maxSigns = configData.maxSignsTier2;
+                maxBillboards = configData.maxBillboardsTier2;
+            }
+            else if (HasPermission(player.UserIDString, permTier1)) {
+                maxSigns = configData.maxSignsTier1;
+                maxBillboards = configData.maxBillboardsTier1;
+            }
             else
             {
                 player.ChatMessage("No permission");
@@ -436,12 +460,13 @@ namespace Oxide.Plugins
             {
                 switch (args[0])
                 {
-                    case "create": CreateBillBoard(player, args, maxSigns); break;
+                    case "create": CreateBillBoard(player, args, maxSigns, maxBillboards); break;
                     case "remove":
                     case "destroy": DestroyBillBoard(player); break;
                     case "destroyall": DestroyBillBoards(player); break;
                     case "info": ShowBillboardInfo(player); break;
                     case "debug": ToggleDebug(player); break;
+                    case "addsign": AddSignToBillboard(player, args); break;
                     case "toggle": ToggleBillBoardPower(player); break;
                     case "speed": ChangeBillBoardSpeed(player, args); break;
                     case "dimmer": ChangeBillBoardDimmer(player, args); break;
@@ -479,6 +504,9 @@ namespace Oxide.Plugins
             if (signage == null)
             {
                 storedData.billBoards.Remove(mainSignID);
+
+                RemoveFromUserBillboards(mainSignID);
+
                 Puts("Deleted billboard " + mainSignID + " as it does not exist anymore");
                 return;
             }
@@ -509,6 +537,44 @@ namespace Oxide.Plugins
             SwitchBillBoardPower(billboardSign);
 
             player.ChatMessage("Billboard power toggled");
+            return;
+        }
+
+        public void AddSignToBillboard(BasePlayer player, string[] args)
+        {
+            if (args.Length == 0) return;
+
+            var newSign = GetBillBoard(player, false);
+            if (newSign == null) return;
+
+           
+
+            uint inpID;
+            if (!uint.TryParse(args[1], out inpID))
+            {
+                player.ChatMessage("Invalid billboard ID");
+                return;
+            }
+
+
+            if (!storedData.billBoards.ContainsKey(inpID))
+            {
+                player.ChatMessage("Billboard not found");
+                return;
+            }
+
+            if (storedData.billBoards[inpID].Contains(newSign.net.ID))
+            {
+                player.ChatMessage("Already in billboard!");
+                return;
+            }
+
+            storedData.billBoards[inpID].Add(newSign.net.ID);
+
+            newSign.UpdateHasPower(25, 0);
+            newSign.SendNetworkUpdate();
+
+            player.ChatMessage("Sign added to billboard");
             return;
         }
 
@@ -657,6 +723,7 @@ namespace Oxide.Plugins
                 }
             }
             storedData.billBoards.Clear();
+            storedData.userBillboards.Clear();
         }
 
         public void DestroyBillBoard(BasePlayer player)
@@ -669,7 +736,6 @@ namespace Oxide.Plugins
             List<uint> billBoardSigns;
             if (!ins.storedData.billBoards.TryGetValue(sid, out billBoardSigns)) return;
 
-            //foreach (uint signID in storedData.billBoards[sign.net.ID])
             foreach (uint signID in billBoardSigns)
             {
                 BaseEntity ent = BaseNetworkable.serverEntities.Find(signID) as BaseEntity;
@@ -677,7 +743,23 @@ namespace Oxide.Plugins
             }
             storedData.billBoards.Remove(sid);
 
+            RemoveFromUserBillboards(sid);
+
             player.ChatMessage("Billboard destroyed");
+        }
+
+        public void RemoveFromUserBillboards(uint sid)
+        {
+            var userBBs = new Dictionary<string, List<uint>>(storedData.userBillboards);
+            foreach (var ubb in userBBs)
+            {
+                if (!ubb.Value.Contains(sid)) continue;
+
+                storedData.userBillboards[ubb.Key].Remove(sid);
+
+                if (storedData.userBillboards[ubb.Key].Count == 0)
+                    storedData.userBillboards.Remove(ubb.Key);
+            }
         }
 
         public NeonSign GetBillBoard(BasePlayer player, bool checkIfBillBoard = true)
@@ -747,10 +829,18 @@ namespace Oxide.Plugins
                 player.ChatMessage("Billboard ID: " + billboard.net.ID + "\nLocation: " + billboard.transform.position);
         }
 
-        public void CreateBillBoard(BasePlayer player, string[] args, int maxSigns)
+        public void CreateBillBoard(BasePlayer player, string[] args, int maxSigns, int maxBillboards)
         {
             int horizontal = 3;
             int vertical = 2;
+
+
+            List<uint> userBillboards;
+            if(maxBillboards > 0 && storedData.userBillboards.TryGetValue(player.UserIDString, out userBillboards) && userBillboards.Count >= maxBillboards)
+            {
+                player.ChatMessage("Failed creating billboard: You have reached the limit (" + maxBillboards + ")");
+                return;
+            }
 
             if (args.Length == 3)
             {
@@ -794,6 +884,10 @@ namespace Oxide.Plugins
 
             storedData.billBoards.Add(startSign.net.ID, new List<uint>());
             storedData.billBoards[startSign.net.ID].Add(startSign.net.ID);
+
+            if (!storedData.userBillboards.ContainsKey(player.UserIDString))
+                storedData.userBillboards.Add(player.UserIDString, new List<uint>());
+            storedData.userBillboards[player.UserIDString].Add(startSign.net.ID);
 
 
             if (configData.lockSigns)
@@ -881,14 +975,26 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Maximum amount of signs in total (width x height) Tier 1")]
             public int maxSignsTier1 = 6;
 
+            [JsonProperty(PropertyName = "Maximum amount of billboards (any size, 0 = unlimited) Tier 1")]
+            public int maxBillboardsTier1 = 1;
+
             [JsonProperty(PropertyName = "Maximum amount of signs in total (width x height) Tier 2")]
             public int maxSignsTier2 = 12;
+
+            [JsonProperty(PropertyName = "Maximum amount of billboards (any size, 0 = unlimited) Tier 2")]
+            public int maxBillboardsTier2 = 3;
 
             [JsonProperty(PropertyName = "Maximum amount of signs in total (width x height) Tier 3")]
             public int maxSignsTier3 = 16;
 
+            [JsonProperty(PropertyName = "Maximum amount of billboards (any size, 0 = unlimited) Tier 3")]
+            public int maxBillboardsTier3 = 5;
+
             [JsonProperty(PropertyName = "Maximum amount of signs in total (width x height) Admin")]
             public int maxSignsAdmin = 150;
+
+            [JsonProperty(PropertyName = "Maximum amount of billboards (any size, 0 = unlimited) Admin")]
+            public int maxBillboardsAdmin = 0;
 
             [JsonProperty(PropertyName = "Width and height of each neon sign image in pixels")]
             public int imageSize = 150;
@@ -934,7 +1040,8 @@ namespace Oxide.Plugins
         StoredData storedData;
         class StoredData
         {
-            public Dictionary<uint, List<uint>> billBoards = new Dictionary<uint, List<uint>>();           
+            public Dictionary<uint, List<uint>> billBoards = new Dictionary<uint, List<uint>>();
+            public Dictionary<string, List<uint>> userBillboards = new Dictionary<string, List<uint>>();
         }
 
         void Loaded()

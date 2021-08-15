@@ -15,21 +15,24 @@ using Rust.Ai.HTN;
 using Rust.Ai.HTN.Sensors;
 using Rust.Ai.HTN.Reasoning;
 using Rust.Ai.HTN.Murderer;
+using System.Collections;
+using Facepunch;
+
+using Rust;
+using System.Reflection;
 
 namespace Oxide.Plugins
 {
-    [Info("Raiding Zombies", "Razor", "1.0.9", ResourceId = 23)]
+    [Info("Raiding Zombies", "Razor", "2.0.5", ResourceId = 23)]
     [Description("Make zombies toss C4")]
     public class RaidingZombies : RustPlugin
     {
         public static RaidingZombies _instance;
         private bool isInit;
         private int totalZombies;
-		private int totalC4z;
-		private int totalRz;
-        private static int groundLayer;
-        private const string SCARECROW_PREFAB = "assets/prefabs/npc/scarecrow/scarecrow.prefab";
-		public bool theSwitchBoom = false;
+        private int totalC4z;
+        private int totalRz;
+        public bool theSwitch = false;
 
         #region Config
 
@@ -44,8 +47,9 @@ namespace Oxide.Plugins
                 public int chance { get; set; }
                 public int totalExplosives { get; set; }
                 public int totalRockets { get; set; }
-				public string explosive { get; set; } 
+                public string explosive { get; set; }
                 public bool targetPlayerOnly { get; set; }
+                public float BaseScanDistance { get; set; }
             }
 
             public Oxide.Core.VersionNumber Version { get; set; }
@@ -72,8 +76,9 @@ namespace Oxide.Plugins
                     chance = 50,
                     totalExplosives = 2,
                     totalRockets = 2,
-					explosive = "explosive.timed",
-                    targetPlayerOnly = true
+                    explosive = "explosive.timed",
+                    targetPlayerOnly = true,
+                    BaseScanDistance = 40f
                 },
 
                 Version = Version
@@ -97,38 +102,30 @@ namespace Oxide.Plugins
 
         #endregion Config
 
-        void OnEntitySpawned(HTNPlayer npc)
+        void OnEntitySpawned(ScientistNPC npc)
         {
-			bool theSwitch = false;
-			timer.Once(2f, () => {
-			if (npc == null) return;
-            if (isInit && npc?.name == SCARECROW_PREFAB && npc?.GetComponent<ZombieHorde.HordeMember>() != null)
+            timer.Once(2f, () =>
             {
-				if (npc.GetComponent<SuicideController>() != null) return;
-                int rando = UnityEngine.Random.Range(0, 100);
-                if (rando <= configData.settings.chance)
+                if (npc == null) return;
+                if (isInit && npc?.GetComponent<ZombieHorde.HordeMember>() != null)
                 {
-                    SuicideController controler = npc?.GetOrAddComponent<SuicideController>();
-                    if (controler != null && configData.settings.totalExplosives < 1) { theSwitch = true; controler.NotC4NPC = true; }
-							else if (controler != null && configData.settings.totalRockets < 1) { theSwitch = false; controler.NotC4NPC = false; }
-                            else if (controler != null) controler.NotC4NPC = theSwitch;
-                            if (theSwitch) { totalRz++; theSwitch = false; }
-						    else { totalC4z++; theSwitch = true; }
-                    controler.manager = npc?.GetComponent<ZombieHorde.HordeMember>().Manager;
+                    int rando = UnityEngine.Random.Range(0, 100);
+                    if (rando <= configData.settings.chance)
+                    {
+                        npc?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(npc.GetComponent<ZombieHorde.HordeMember>()));
+                    }
                 }
-            }});
+            });
         }
-		
+
         private void OnServerInitialized()
         {
             _instance = this;
-			if (configData.settings.explosive == null || configData.settings.explosive == "")
-			{
-				configData.settings.explosive = "explosive.timed";
-				SaveConfig();
-			} 
-            bool theSwitch = false;
-            groundLayer = LayerMask.GetMask("Construction", "Terrain", "World");
+            if (configData.settings.explosive == null || configData.settings.explosive == "")
+            {
+                configData.settings.explosive = "explosive.timed";
+                SaveConfig();
+            }
             timer.Once(60, () =>
             {
                 for (int i = ZombieHorde.HordeManager._allHordes.Count - 1; i >= 0; i--)
@@ -137,14 +134,8 @@ namespace Oxide.Plugins
                         int rando = UnityEngine.Random.Range(0, 100);
                         if (rando <= configData.settings.chance)
                         {
-                            SuicideController controler = g?.GetOrAddComponent<SuicideController>();
-							if (controler != null && configData.settings.totalExplosives < 1) { theSwitch = true; controler.NotC4NPC = true; }
-							else if (controler != null && configData.settings.totalRockets < 1) { theSwitch = false; controler.NotC4NPC = false; }
-                            else if (controler != null) controler.NotC4NPC = theSwitch;
-                            if (theSwitch) { totalRz++; theSwitch = false; }
-						    else { totalC4z++; theSwitch = true; }
+                            g?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(g.GetComponent<ZombieHorde.HordeMember>()));
                             totalZombies++;
-                            controler.manager = g?.GetComponent<ZombieHorde.HordeMember>().Manager;
                         }
                     }
                 isInit = true;
@@ -152,365 +143,346 @@ namespace Oxide.Plugins
             });
         }
 
-        private class SuicideController : MonoBehaviour
+        private class mynewclass : BaseAIBrain<global::HumanNPC>.BasicAIState
         {
-            private ScientistNPC npc;
-            public ZombieHorde.HordeManager manager = null;
-            private ZombieHorde.HordeMember hordeMember = null;
-            public BasePlayer targetPlayer;
-            private DateTime newtargetTime = DateTime.Now;
-            private TimedExplosive c4;
+            private readonly ZombieHorde.HordeMember hordeMember;
+            private float nextThrowTime = Time.time;
+            private float nextTargetTime = Time.time;
+            private float nextPositionUpdateTime;
+            private float forgetTargetTime = Time.time;
+            private bool isThrowingWeapon = false;
+            public int totalTossed;
+            public int totalBoom;
+            public bool isC4 = true;
+            public ThrownWeapon _throwableWeapon = null;
+            public BaseProjectile _ProectileWeapon = null;
             private Vector3 nextPosition = Vector3.zero;
-            private BaseEntity targetEntity;
-            private bool target;
-            private float num1 = 1f;
-            public Vector3 StartPos = new Vector3(0f, 0f, 0f);
-            public Vector3 EndPos = new Vector3(0f, 0f, 0f);
-            public Vector3 LastPos = new Vector3(0f, 0f, 0f);
-            public Dictionary<Vector3, float> NoMoveInfo = new Dictionary<Vector3, float>();
-            private Vector3 nextPos = new Vector3(0f, 0f, 0f);
-            private float waypointDone = 0f;
-            public float secondsTaken = 0f;
-            private float secondsToTake = 0f;
-            private bool shouldMove;
-            private Vector3 Vector3Down = new Vector3(0f, -1f, 0f);
-            private bool c4Deployed;
-            public int totalExplosives;
-            public int allowedC4 = 1;
-            private DateTime nextDeploy = DateTime.Now;
-            public bool NotC4NPC = false;
-
-            private void Awake()
+            private BaseCombatEntity targetEntity;
+            private Transform tr;
+            public BasePlayer targetPlayer;
+            private bool DoNotMove;
+            private bool notActive;
+			private Vector3 destination = Vector3.zero;
+			
+            public mynewclass(ZombieHorde.HordeMember hordeMember) : base(AIState.Cooldown)
             {
-                npc = GetComponent<ScientistNPC>();
-                hordeMember = npc.GetComponent<ZombieHorde.HordeMember>();
-                InvokeRepeating("lookForTarget", 10f, 30f);
-                _instance.NextTick(() =>
-                {
-                    allowedC4 = _instance.configData.settings.totalExplosives;
-                    if (NotC4NPC) allowedC4 = _instance.configData.settings.totalRockets;
-                });
+                this.hordeMember = hordeMember;
+                setup();
             }
 
-            void Update()
+            private void setup()
             {
-                if (shouldMove && StartPos != EndPos) Execute_Move();
-                if (manager == null) return;
-                if (newtargetTime < DateTime.Now && manager.PrimaryTarget != null && manager.PrimaryTarget is BasePlayer)
+				if (_instance.theSwitch == false && _instance.configData.settings.totalExplosives > 0)
                 {
-                    targetPlayer = manager.PrimaryTarget as BasePlayer;
-                    if (targetPlayer.IsSleeping()) targetPlayer = null;
-                    newtargetTime = DateTime.Now.AddSeconds(15);
+                    _instance.totalC4z++;
+                    totalBoom = _instance.configData.settings.totalExplosives;
+					if (_instance.configData.settings.totalRockets <= 0)
+						_instance.theSwitch = false;
+                    _instance.theSwitch = true;
+				}
+				
+                else if (_instance.configData.settings.totalRockets > 0)
+                {
+                    isC4 = false;
+                    totalBoom = _instance.configData.settings.totalRockets;
+                    _instance.theSwitch = false;
+                    _instance.totalRz++;
                 }
+            }
+
+            public override float GetWeight()
+            {
+                if (nextTargetTime < Time.time)
+                    lookForTarget();
+
+                if (hordeMember.Entity.currentTarget != null && hordeMember.Entity.currentTarget is BasePlayer)
+                    setNewTargetPlayer();
+
+                if (targetEntity == null || notActive)
+                    return 0f;
+
+                if (!TargetInThrowableRange())
+                    return 20f;
+
+                if (CanThrowWeapon())
+                    return 20f;
+
+                if (targetEntity != null)
+                    return 20f;
+
+                return 0f;
+            }
+
+            private void setNewTargetPlayer()
+            {
+                if (forgetTargetTime < Time.time)
+                {
+                    targetPlayer = hordeMember.Entity.currentTarget as BasePlayer;
+                    forgetTargetTime = Time.time + 320;
+                }
+            }
+
+			private object FindBestPointOnNavmesh(Vector3 location, float maxDistance = 4f)
+			{
+				AIInformationZone informationZone = hordeMember.Entity.GetInformationZone(tr.position);
+				object success = informationZone.GetBestMovePointNear(hordeMember.Entity.transform.position, hordeMember.Entity.transform.position, 0f, maxDistance * 0.75f, true, hordeMember.Entity, true);
+				if (success is Vector3)
+					return success;
+				return null;
+			}
+
+            private bool TargetInThrowableRange()
+            {
+                if (targetEntity == null)
+                    return false;
+				
+                if (!isC4) return Vector3.Distance(targetEntity.transform.position, hordeMember.Entity.transform.position) <= 15.5f;
+                return Vector3.Distance(targetEntity.transform.position, hordeMember.Entity.transform.position) <= 5.5f;
+            }
+
+            public override void StateEnter()
+            {
+                hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
+                hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, false);
+                base.StateEnter();
+            }
+
+            public override StateStatus StateThink(float delta)
+            {
+                base.StateThink(delta);
+
+                if (targetEntity == null)
+                {
+                    return StateStatus.Error;
+                }
+                float distanceToTarget = Vector3.Distance(targetEntity.transform.position, hordeMember.Entity.transform.position);
+				
+				
+                if (DoNotMove)
+                {
+					hordeMember.SetDestination(hordeMember.Entity.transform.position);
+                    hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Walk);
+                    hordeMember.Entity.Stop();
+                }
+                else
+                {
+                    if (!DoNotMove)
+                    {
+                        if (Time.time > nextPositionUpdateTime)
+                        {
+							if (!isC4) destination = hordeMember.Entity.GetRandomPositionAround(nextPosition, 10f, 11f);
+							else destination = hordeMember.Entity.GetRandomPositionAround(nextPosition, 1f, 2f);
+							
+                            hordeMember.SetDestination(destination);
+							
+                            if (distanceToTarget < 5f)
+                                hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Walk);
+                            else hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
+                            nextPositionUpdateTime = Time.time + 3f;
+                        }
+                    }
+                    else
+                    {
+                        nextPositionUpdateTime = Time.time + 1f;
+                        hordeMember.Entity.SetDucked(true);
+                        hordeMember.Entity.SetAimDirection((nextPosition - hordeMember.Entity.transform.position).normalized);
+                        hordeMember.Entity.Stop();
+                    }
+                }
+
+                return StateStatus.Running;
             }
 
             private void lookForTarget()
             {
-                bool isPlayers = false;
-                float currentTime = Time.time;
-                if (target || totalExplosives >= allowedC4 || nextDeploy > DateTime.Now) return;
+                nextTargetTime = Time.time + 20f;
+                if (notActive || hordeMember.Entity.currentTarget != null || nextThrowTime > Time.time || targetEntity != null || isThrowingWeapon) return;
+
                 ulong targetID = 0;
                 if (_instance.configData.settings.targetPlayerOnly)
                 {
-                    if (targetPlayer == null || targetPlayer.IsSleeping()) return; //hordeMember.Context.GetFact(Facts.IsRoaming) != 1 REMOVED
+                    if (targetPlayer == null || targetPlayer.IsSleeping()) return;
                     targetID = targetPlayer.userID;
                 }
-                List<BaseEntity> nearby = new List<BaseEntity>();
-                Vis.Entities<BaseEntity>(npc.transform.position, 40, nearby);
+
+                List<BaseCombatEntity> nearby = new List<BaseCombatEntity>();
+                Vis.Entities<BaseCombatEntity>(hordeMember.Entity.transform.position, _instance.configData.settings.BaseScanDistance, nearby);
                 float closest = float.MaxValue;
-                foreach (BaseEntity entity in nearby.Distinct().ToList())
+                foreach (BaseCombatEntity entity in nearby.Distinct().ToList())
                 {
-                    isPlayers = false;
-                    if (entity == null || entity.OwnerID == 0) continue;
-                    if (entity is BuildingBlock || entity.name.Contains("wall") || entity.name.Contains("gates"))
+                    if (entity == null || entity.OwnerID == 0 || entity is BasePlayer || entity.IsNpc) continue;
+
+                    if (isBuilding((entity)))
                     {
                         if (_instance.configData.settings.targetPlayerOnly)
+                            if (!isPlayersBuilding(entity, targetID)) continue;
+
+                        float distance = Vector3.Distance(entity.transform.position, hordeMember.Entity.transform.position);
+                        if (closest > distance)
                         {
-                            BuildingPrivlidge theBlock = entity?.GetBuildingPrivilege();
-                            if (theBlock != null)
-                            {
-                                if (theBlock.IsAuthed(targetID))
-                                {
-                                    isPlayers = true;
-                                }
-                            }
-                            else if (entity.OwnerID != targetID)
-                                continue;
-                        }
-                        if (isPlayers)
-                        {
-                            float distance = Vector3.Distance(entity.transform.position, npc.transform.position);
-                            if (closest > distance)
-                            {
-                                closest = distance;
-                                nextPosition = entity.transform.position;
-                                targetEntity = entity;
-                            }
-                        }
-                        else
-                        {
-                            float distance = Vector3.Distance(entity.transform.position, npc.transform.position);
-                            if (closest > distance)
-                            {
-                                closest = distance;
-                                nextPosition = entity.transform.position;
-                                targetEntity = entity;
-                            }
+                            closest = distance;
+                            nextPosition = entity.transform.position;
+                            targetEntity = entity;
+                            tr = entity.transform;
+                            hordeMember.Entity.currentTarget = entity;
+                            hordeMember.Entity.SetDestination(nextPosition);
+							//Vector3 dest = hordeMember.Entity.GetRandomPositionAround(nextPosition, 4f, 5f);
+							destination = nextPosition;
                         }
                     }
                 }
-                if (nextPosition != Vector3.zero)
-                {
-                    //npc.Pause(); REMOVED
-                    target = true;
-                    SetMovementPoint(npc.transform.position + new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f)), nextPosition, 3.2f);
-                }
             }
 
-            public void LookTowards(Vector3 vector3_1)
+            private bool CanThrowWeapon()
             {
+                if (Time.time < nextThrowTime)
+                    return false;
+
+                if (targetEntity == null)
+                    return false;
+
+                TryThrowBoom();
+                nextThrowTime = Time.time + 15f;
+                return true;
+            }
+
+            private bool isBuilding(BaseCombatEntity entity)
+            {
+                if (entity == null || entity.IsDestroyed || entity.IsDead()) return false;
+                if (entity is BuildingBlock || entity.name.Contains("wall") || entity.name.Contains("gates"))
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            private bool isPlayersBuilding(BaseCombatEntity entity, ulong playerID)
+            {
+                BuildingPrivlidge theBlock = entity?.GetBuildingPrivilege();
+                if (theBlock != null && theBlock.IsAuthed(playerID))
+                    return true;
+                else if (entity.OwnerID == playerID)
+                    return true;
+                return false;
+            }
+
+            private void TryThrowBoom()
+            {
+                if (isThrowingWeapon)
+                    return;
+
+                isThrowingWeapon = true;
+                hordeMember.Entity.StartCoroutine(ThrowWeaponBoom());
+            }
+
+            private IEnumerator ThrowWeaponBoom()
+            {
+                EquipThrowable();
+                yield return CoroutineEx.waitForSeconds(1.7f + UnityEngine.Random.value);
+
                 if (targetEntity != null)
                 {
-                    BaseEntity parentEntity = npc.GetParentEntity();
-                    if (parentEntity != null)
+                    hordeMember.Entity.SetAimDirection((nextPosition - hordeMember.Entity.transform.position).normalized);
+
+                    DoNotMove = true;                   
+                    hordeMember.Entity.Stop();
+                    yield return CoroutineEx.waitForSeconds(1.0f);
+                    if (isC4 && _throwableWeapon != null) _throwableWeapon.ServerThrow(nextPosition);
+                    else if (_ProectileWeapon != null)
                     {
-                        parentEntity.transform.LookAt(targetEntity.transform);
+                        hordeMember.Entity.SetDucked(true);
+                        yield return CoroutineEx.waitForSeconds(1.05f);
+                        hordeMember.Entity.SetAimDirection((nextPosition - hordeMember.Entity.transform.position).normalized);
+                        yield return CoroutineEx.waitForSeconds(0.8f);
+                        fireRocket();
+                        DoNotMove = false;
                     }
-                    else
-                    {
-                        npc.transform.LookAt(targetEntity.transform);
-                    }
+
+                    nextThrowTime = Time.time + 15f;
                 }
+
+                yield return CoroutineEx.waitForSeconds(1f);
+                hordeMember.Entity.SetDucked(false);
+                hordeMember.Entity.EquipWeapon();
+                removeweapons();
+                yield return CoroutineEx.waitForSeconds(1f);
+
+                totalTossed++;
+                if (totalTossed >= totalBoom)
+                    notActive = true;
+
+                isThrowingWeapon = false;
             }
 
-            public void SetMovementPoint(Vector3 startpos, Vector3 endpos, float s)
+            private void EquipThrowable()
             {
-                StartPos = startpos;
-
-                if (endpos != Vector3.zero)
-                {
-                    EndPos = endpos;
-                    EndPos.y = Math.Max(EndPos.y, TerrainMeta.HeightMap.GetHeight(EndPos));
-                    if (StartPos != EndPos)
-                        secondsToTake = Vector3.Distance(EndPos, StartPos) / s;
-
-                    LookTowards(nextPosition);
-                    shouldMove = true;
-                    // npc.ToPlayer().LookTowards(EndPos);
-                }
-                secondsTaken = 0f;
-                waypointDone = 0f;
-            }
-
-            private void Execute_Move()
-            {
-                if (!shouldMove) return;
-                float distance = Vector3.Distance(nextPosition, npc.transform.position);
-                if (!NotC4NPC && distance <= 6.0f)
-                {
-                    shouldMove = false;
-                    if (nextDeploy < DateTime.Now)
-                    {
-                        nextDeploy = DateTime.Now.AddSeconds(20);
-                        LookTowards(nextPosition);
-                        if (!c4Deployed && targetEntity != null) GetFirststC4();
-                        c4Deployed = true;
-                    }
-                    _instance.timer.Once(4, () => { if (npc == null) return; npc.Resume(); GetFirststC4(false); });
-                    _instance.timer.Once(10, () => { target = false; });
-
+                if (targetEntity == null || targetEntity.IsDestroyed || targetEntity.IsDead())
                     return;
-                }
-                else if (NotC4NPC && distance <= 9.0f)
-                {
-                    shouldMove = false;
-                    if (nextDeploy < DateTime.Now)
-                    {
-                        nextDeploy = DateTime.Now.AddSeconds(20);
-                        LookTowards(nextPosition);
-                        if (!c4Deployed && targetEntity != null) GetFirststLauncher();
-                        c4Deployed = true;
-                    }
-                    _instance.timer.Once(6, () => { if (npc == null) return; npc.Resume(); GetFirststLauncher(false); });
-                    _instance.timer.Once(10, () => { target = false; });
-
-                    return;
-                }
-                secondsTaken += Time.deltaTime;
-                waypointDone = Mathf.InverseLerp(0f, secondsToTake, secondsTaken);
-                nextPos = Vector3.Lerp(StartPos, EndPos, waypointDone);
-                nextPos.y = GetMoveY(nextPos);
-                npc.ToPlayer().MovePosition(nextPos);
-                var newEyesPos = nextPos + new Vector3(0, 1.6f, 0);
-                npc.ToPlayer().eyes.position.Set(newEyesPos.x, newEyesPos.y, newEyesPos.z);
-                //npc.ToPlayer().UpdatePlayerCollider(true);
-                npc.ToPlayer().EnablePlayerCollider();
-                LookTowards(nextPosition);
-            }
-
-            public float GetMoveY(Vector3 position)
-            {
-                return GetGroundY(position);
-            }
-
-            public float GetGroundY(Vector3 position)
-            {
-                position = position + Vector3.up;
-                RaycastHit hitinfo;
-                if (Physics.Raycast(position, Vector3Down, out hitinfo, 100f, groundLayer))
-                {
-                    return hitinfo.point.y;
-                }
-                return position.y - .5f;
-            }
-
-            public void GetFirststLauncher(bool shot = true)
-            {
-                Item launcher = null;
-                Item items = npc.inventory.containerBelt.GetSlot(5);
-                if (items != null) npc.inventory.Take(null, items.info.itemid, items.amount);
-                if (shot)
-                {
-                    launcher = ItemManager.CreateByName("rocket.launcher", 1);
-                    launcher.MoveToContainer(npc.inventory.containerBelt, 5);
-                }
-                ChangeWeapon(launcher, shot);
-                totalExplosives++;
-            }
-
-            public void GetFirststC4(bool c4Toss = true)
-            {
                 Item itemC4 = null;
-                Item items = npc.inventory.containerBelt.GetSlot(5);
-                if (items != null) npc.inventory.Take(null, items.info.itemid, items.amount);
-                if (c4Toss)
+                hordeMember.Entity.inventory.containerBelt.capacity = 6;
+                Item items = hordeMember.Entity.inventory.containerBelt.GetSlot(5);
+                if (items != null) hordeMember.Entity.inventory.Take(null, items.info.itemid, items.amount);
+                if (isC4)
                 {
                     itemC4 = ItemManager.CreateByName(_instance.configData.settings.explosive, 1);
-					if (itemC4 == null) return;
-                    itemC4.MoveToContainer(npc.inventory.containerBelt, 5);
+                    if (itemC4 == null) return;
+                    itemC4.MoveToContainer(hordeMember.Entity.inventory.containerBelt, 5);
+                    _throwableWeapon = itemC4.GetHeldEntity() as ThrownWeapon;
+                    hordeMember.Entity.UpdateActiveItem(hordeMember.Entity.inventory.containerBelt.GetSlot(5).uid);
+                    if (_throwableWeapon == null) return;
+                    _throwableWeapon.SetHeld(true);
+                    hordeMember.Entity.inventory.UpdatedVisibleHolsteredItems();
+                    hordeMember.Entity.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
                 }
-                ChangeWeapon(itemC4, c4Toss);
-                totalExplosives++;
+                else
+                {
+                    Item launcher = null;
+                    launcher = ItemManager.CreateByName("rocket.launcher", 1);
+                    launcher.MoveToContainer(hordeMember.Entity.inventory.containerBelt, 5);
+                    hordeMember.Entity.UpdateActiveItem(hordeMember.Entity.inventory.containerBelt.GetSlot(5).uid);
+                    _ProectileWeapon = launcher.GetHeldEntity() as BaseProjectile;
+                    if (_ProectileWeapon == null) return;
+                    _ProectileWeapon.SetHeld(true);
+                    hordeMember.Entity.inventory.UpdatedVisibleHolsteredItems();
+                    hordeMember.Entity.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
+                }
             }
 
-            void ChangeWeapon(Item item, bool c4Toss)
+            private void fireRocket()
             {
-                HeldEntity heldEntity = null;
-
-                if (!c4Toss || item == null)
+                if (_ProectileWeapon != null)
                 {
-                    foreach (Item item1 in npc.inventory.containerBelt.itemList)
-                    {
-                        if (item1.GetHeldEntity() as BaseMelee != null)
-                        {
-                            npc.svActiveItemID = item1.uid;
-                            npc.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
-                            heldEntity = item1.GetHeldEntity() as HeldEntity;
-                            if (heldEntity != null)
-                            {
-                                heldEntity.SetHeld(true);
-                                npc.inventory.UpdatedVisibleHolsteredItems();
-                                npc.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
-                            }
-                            break;
-                        }
-                    }
-                    return;
+                    var aim = hordeMember.Entity.serverInput.current.aimAngles;
+                    var rocket = GameManager.server.CreateEntity($"assets/prefabs/ammo/rocket/rocket_basic.prefab", hordeMember.Entity.eyes.position + hordeMember.Entity.eyes.HeadForward(), hordeMember.Entity.transform.rotation);
+                    if (rocket == null) return;
+                    var proj = rocket.GetComponent<ServerProjectile>();
+                    if (proj == null) return;
+					rocket.creatorEntity = hordeMember.Entity;
+                    proj.InitializeVelocity(Quaternion.Euler(aim) * rocket.transform.forward * 25f);
+                    rocket.Spawn();
                 }
-
-                npc.svActiveItemID = item.uid;
-                npc.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
-
-                heldEntity = item.GetHeldEntity() as HeldEntity;
-                if (heldEntity != null)
-                    heldEntity.SetHeld(true);
-
-                npc.inventory.UpdatedVisibleHolsteredItems();
-                npc.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
-                npc.transform.LookAt(targetEntity.transform.position);
-
-                if (heldEntity == null) return;
-                ThrownWeapon thrown = heldEntity as ThrownWeapon;
-                BaseProjectile launcher = heldEntity as BaseProjectile;
-                if (thrown == null && launcher == null) return;
-                BasePlayer ownerPlayer = thrown?.GetOwnerPlayer();
-                if (ownerPlayer == null) ownerPlayer = launcher?.GetOwnerPlayer();
-                if (ownerPlayer == null) heldEntity.SetOwnerPlayer(npc.ToPlayer());
-                _instance.timer.Once(3, () =>
-                {
-                    if (targetEntity == null || npc == null) return;
-                    LookTowards(targetEntity.transform.position);
-                    Vector3 targetPosition = targetEntity.transform.position;
-                    Vector3 position = npc.eyes.position;
-                    Vector3 vector3 = npc.eyes.BodyForward();
-                    npc.transform.LookAt(targetEntity.transform.position);
-
-                    if (item.info.shortname.Contains("launcher") && launcher != null)
-                    {
-                        var pos = npc.eyes.position;
-                        var forward = npc.eyes.HeadForward();
-                        var rot = npc.transform.rotation;
-                        var aim = npc.serverInput.current.aimAngles;
-                        var rocket = GameManager.server.CreateEntity($"assets/prefabs/ammo/rocket/rocket_basic.prefab", npc.eyes.position + npc.eyes.HeadForward(), npc.transform.rotation);
-                        if (rocket == null) return;
-                        var proj = rocket.GetComponent<ServerProjectile>();
-                        if (proj == null) return;
-                        proj.InitializeVelocity(Quaternion.Euler(aim) * rocket.transform.forward * 25f);
-
-                        rocket.Spawn();
-                    }
-                    else if (item.info.shortname.Contains(_instance.configData.settings.explosive))
-                    {
-                        BaseEntity entity = GameManager.server.CreateEntity(thrown.prefabToThrow.resourcePath, position, Quaternion.LookRotation(thrown.overrideAngle == Vector3.zero ? -vector3 : thrown.overrideAngle), true);
-                        entity.creatorEntity = (BaseEntity)npc;
-                        Vector3 aimDir = vector3 + Quaternion.AngleAxis(10f, Vector3.right) * Vector3.up;
-                        float f = GetThrowVelocity(position, targetPosition, aimDir);
-                        if (float.IsNaN(f))
-                        {
-                            aimDir = vector3 + Vector3.up * 2;
-                            f = GetThrowVelocity(position, targetPosition, aimDir);
-                            if (float.IsNaN(f))
-                                f = 10f;
-                        }
-                        entity.SetVelocity(aimDir * f * num1);
-                        if ((double)thrown.tumbleVelocity > 0.0)
-                            entity.SetAngularVelocity(new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f)) * thrown.tumbleVelocity);
-                        npc.SignalBroadcast(BaseEntity.Signal.Throw, string.Empty, (Network.Connection)null);
-                        entity.Spawn();
-
-                        if (item != null) item.RemoveFromContainer();
-                        if (item != null) item.MarkDirty();
-                        thrown.StartAttackCooldown(thrown.repeatDelay);
-                    }
-                    c4Deployed = false;
-                    nextPosition = Vector3.zero;
-                    targetEntity = null;
-                    _instance.timer.Once(5, () =>
-                    {
-                        if (npc == null) return;
-                        ChangeWeapon(null, false);
-                        Item items = npc.inventory.containerBelt.GetSlot(5);
-                        if (items != null) npc.inventory.Take(null, items.info.itemid, items.amount);
-                        npc.inventory.UpdatedVisibleHolsteredItems();
-                        npc.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
-                    });
-                });
             }
-
-            private float GetThrowVelocity(Vector3 throwPos, Vector3 targetPos, Vector3 aimDir)
+            private void removeweapons()
             {
-                Vector3 vector3 = targetPos - throwPos;
-                float magnitude1 = new Vector2(vector3.x, vector3.z).magnitude;
-                float y1 = vector3.y;
-                float magnitude2 = new Vector2(aimDir.x, aimDir.z).magnitude;
-                float y2 = aimDir.y;
-                return Mathf.Sqrt((float)(0.5 * (double)UnityEngine.Physics.gravity.y * (double)magnitude1 * (double)magnitude1 / ((double)magnitude2 * ((double)magnitude2 * (double)y1 - (double)y2 * (double)magnitude1))));
+                Item itemC4 = null;
+                hordeMember.Entity.inventory.containerBelt.capacity = 6;
+                Item items = hordeMember.Entity.inventory.containerBelt.GetSlot(5);
+                if (items != null) hordeMember.Entity.inventory.Take(null, items.info.itemid, items.amount);
             }
         }
+
+		object OnEntityTakeDamage(ScientistNPC entity, HitInfo hitinfo)
+		{
+			if (hitinfo == null || hitinfo.WeaponPrefab == null || hitinfo.Initiator == null) return null;
+			if (hitinfo.WeaponPrefab.ShortPrefabName.Contains("rocket") && hitinfo.Initiator is ScientistNPC)
+				return false;
+			return null;
+		}
+		
         object CanEntityTakeDamage(BuildingBlock entity, HitInfo hitinfo)
         {
-            if (hitinfo?.Initiator is HTNPlayer) return true;
+            if (hitinfo?.Initiator is ScientistNPC) return true;
             return null;
-        }
+        }		
     }
 }
