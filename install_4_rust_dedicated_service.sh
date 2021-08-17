@@ -3,12 +3,17 @@ export GAME_ROOT="/game"
 echo "export STEAMUSER=\"${STEAMUSER}\"" >> ~/.bashrc
 echo "export GAME_ROOT=\"${GAME_ROOT}\"" >> ~/.bashrc
 
-sudo mkdir ${GAME_ROOT}
+sudo mkdir -p ${GAME_ROOT}
 sudo mkfs -t xfs /dev/nvme0n1
 sudo mount /dev/nvme0n1 ${GAME_ROOT}
 
 /usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT} +app_update 258550 +quit
 /usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT} +app_update 258550 validate +quit
+
+aws s3 sync --quiet --delete ${S3_BACKUPS}/repo $HOME/solidrust.net
+chmod +x $HOME/solidrust.net/defaults/*.sh
+
+cp $HOME/solidrust.net/defaults/bashrc ~/.bashrc
 
 # Create the game service user
 

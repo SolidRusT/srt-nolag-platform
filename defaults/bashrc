@@ -108,4 +108,4 @@ initialize_srt
 alias rcon="${GAME_ROOT}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
 export STEAMUSER="${USER}"
 
-sudo mount /dev/nvme0n1 ${GAME_ROOT}
+#sudo mount /dev/nvme0n1 ${GAME_ROOT}
