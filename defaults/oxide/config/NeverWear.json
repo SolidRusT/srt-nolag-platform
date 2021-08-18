@@ -1,0 +1,9 @@
+{
+    "useAttire": false,
+    "useTools": false,
+    "useWeapons": false,
+    "useWhiteList": true,
+    "WhitelistedItems": [
+        "fun.boomboxportable"
+    ]
+}
