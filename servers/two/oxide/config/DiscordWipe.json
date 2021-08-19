@@ -2,9 +2,16 @@
     "Debug Level (None, Error, Warning, Info)": "Warning",
     "Command": "dw",
     "Rust Map Image Settings": {
-        "Render Name": "Icons",
-        "Image Resolution Scale": 0.5,
-        "File Type (Jpg, Png": "Jpg"
+        "Map Image Source (None, RustMaps, RustMapApi)": "RustMaps",
+        "RustMaps.com Settings": {
+            "RustMap.com API Key": "9f581a87-3ba8-4f9e-90b6-1485f969dbf0",
+            "Generate Staging Map": false
+        },
+        "RustMapApi Settings": {
+            "Render Name": "Icons",
+            "Image Resolution Scale": 0.5,
+            "File Type (Jpg, Png": "Jpg"
+        }
     },
     "Send wipe message when server wipes": true,
     "Wipe Webhook url": "https://discordapp.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC",
