@@ -153,7 +153,8 @@
                 "stashtraps.notice",
                 "stashtraps.ignore",
                 "spawnmini.staff",
-                "mapnoteteleport.use"
+                "mapnoteteleport.use",
+                "holograms.use"
             ],
             "AdditionalCommands": []
         },
@@ -218,7 +219,8 @@
                 "stashtraps.ignore",
                 "spawnmini.staff",
                 "instanth2o.use",
-                "mapnoteteleport.use"
+                "mapnoteteleport.use",
+                "holograms.use"
             ],
             "AdditionalCommands": []
         },
@@ -257,6 +259,9 @@
                 "backpacks.use.7",
                 "betterchat.admin",
                 "bgrade.nores",
+                "boombox.admin",
+                "boombox.stationsuse",
+                "boombox.customurluse",
                 "blueprintshare.share",
                 "blueprintshare.toggle",
                 "buildinginfo.authed",
@@ -280,6 +285,7 @@
                 "godmode.toggle",
                 "godmode.untiring",
                 "guardedcrate.use",
+                "holograms.use",
                 "inventorycleaner.allowed",
                 "iteminspector.admin",
                 "mapnoteteleport.use",

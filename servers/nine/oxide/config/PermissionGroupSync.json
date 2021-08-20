@@ -173,7 +173,8 @@
                 "zbillboards.admin",
                 "zbillboards.console",
                 "payback.admin",
-                "backpacks.keepondeath"
+                "backpacks.keepondeath",
+                "holograms.use"
             ],
             "AdditionalCommands": []
         },
@@ -240,7 +241,8 @@
                 "spawnmini.staff",
                 "instanth2o.use",
                 "mapnoteteleport.use",
-                "backpacks.keepondeath"
+                "backpacks.keepondeath",
+                "holograms.use"
             ],
             "AdditionalCommands": []
         },
@@ -294,6 +296,9 @@
                 "bgrade.nores",
                 "blueprintshare.share",
                 "blueprintshare.toggle",
+                "boombox.admin",
+                "boombox.stationsuse",
+                "boombox.customurluse",
                 "buildinggrades.nocost",
                 "buildinginfo.authed",
                 "buildinginfo.bypass",
@@ -323,6 +328,7 @@
                 "godmode.untiring",
                 "heal.all",
                 "heal.nocooldown",
+                "holograms.use",
                 "instanth2o.use",
                 "inventorycleaner.allowed",
                 "iteminspector.admin",

@@ -397,7 +397,9 @@ blueprintmanager.all \
 Kits.default \
 buildingworkbench.use \
 raidalerts.use \
-iteminspector.use
+iteminspector.use \
+betterrootcombiners.use \
+payforelectricity.use
 )
 
 # SRT Main Vanilla
@@ -475,7 +477,9 @@ discordmessages.report \
 craftchassis.4 \
 buildingworkbench.use \
 raidalerts.use \
-iteminspector.use
+iteminspector.use \
+betterrootcombiners.use \
+payforelectricity.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

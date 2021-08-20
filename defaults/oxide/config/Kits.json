@@ -1,6 +1,6 @@
 {
     "Automatic wipe on wipe": false,
-    "Default Kit Color": "#A0A935",
+    "Default Kit Color": "#F28633",
     "Work with Notify?": true,
     "Commands": [
         "kit",
@@ -8,7 +8,7 @@
     ],
     "Rarity Settings": [{
         "Chance": 40,
-        "Color": "#A0A935"
+        "Color": "#F28633"
     }],
     "Auto Kits": [
         "GuestKit"
@@ -20,8 +20,8 @@
     },
     "Color 1": "#161617",
     "Color 2": "#0E0E10",
-    "Color 3": "#4B68FF",
-    "Color 4": "#303030",
+    "Color 3": "#F28633",
+    "Color 4": "#FFFFFF",
     "Color Red": "#FF4B4B",
     "Color White": "#FFFFFF",
     "Show Number?": false,
@@ -98,23 +98,23 @@
         "Y Indent": -100.0,
         "Display Name Settings": {
             "Enabled": true,
-            "AnchorMin": "0.5 1",
-            "AnchorMax": "0.5 1",
-            "OffsetMin": "-45 -75",
-            "OffsetMax": "45 0"
+            "AnchorMin": "0.5 1.150",
+            "AnchorMax": "0.5 1.150",
+            "OffsetMin": "-55 -75",
+            "OffsetMax": "55 0"
         },
         "Image Settings": {
             "Enabled": true,
-            "AnchorMin": "0.5 1",
-            "AnchorMax": "0.5 1",
-            "OffsetMin": "-32 -75",
-            "OffsetMax": "32 -11"
+            "AnchorMin": "0.35 0.85",
+            "AnchorMax": "0.35 0.85",
+            "OffsetMin": "-32 -95",
+            "OffsetMax": "72 0.9"
         },
         "Kit Available Settings": {
             "AnchorMin": "0 1",
             "AnchorMax": "1 1",
-            "OffsetMin": "0 -100",
-            "OffsetMax": "0 -75"
+            "OffsetMin": "0 -130",
+            "OffsetMax": "0 -85"
         },
         "Kit Amount Settings": {
             "Width": 115.0,

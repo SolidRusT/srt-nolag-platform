@@ -1,0 +1,16 @@
+{
+    "Whitelist": true,
+    "Whitelisted Domains": [
+        "solidrust.net"
+    ],
+    "Boombox Deployed Require Power": true,
+    "Preset Stations": {
+        "SolidRusT Radio One": "http://solidrust.net:8000/SRTRadioOne",
+        "Country Hits": "http://crystalout.surfernetwork.com:8001/KXBZ_MP3",
+        "Todays Hits": "https://rfcmedia.streamguys1.com/MusicPulsePremium.mp3",
+        "Pop Hits": "https://rfcmedia.streamguys1.com/newpophitspremium.mp3"
+    },
+    "Deployed Boombox Never Decays": true,
+    "Handheld Boombox Never Breaks": true,
+    "Microphone Stand Never Breaks": true
+}
