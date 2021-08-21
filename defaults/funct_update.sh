@@ -399,7 +399,8 @@ buildingworkbench.use \
 raidalerts.use \
 iteminspector.use \
 betterrootcombiners.use \
-payforelectricity.use
+payforelectricity.use \
+bloodtrail.allow
 )
 
 # SRT Main Vanilla
@@ -479,7 +480,8 @@ buildingworkbench.use \
 raidalerts.use \
 iteminspector.use \
 betterrootcombiners.use \
-payforelectricity.use
+payforelectricity.use \
+bloodtrail.allow
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
