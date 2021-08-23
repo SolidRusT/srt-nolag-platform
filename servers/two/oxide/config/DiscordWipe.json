@@ -14,9 +14,9 @@
         }
     },
     "Send wipe message when server wipes": true,
-    "Wipe Webhook url": "https://discordapp.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC",
+    "Wipe Webhook url": "https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp",
     "Send protocol message when server protocol changes": true,
-    "Protocol Webhook url": "https://discordapp.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC",
+    "Protocol Webhook url": "https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp",
     "Wipe messages": [{
         "Content": "@everyone",
         "Send Mode (Always, Random)": "Always",

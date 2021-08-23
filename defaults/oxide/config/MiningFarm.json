@@ -83,7 +83,7 @@
     },
     "Настройки охлаждающих компонентов для фермы || Farm Cooling Component Settings": {
         "2319470516": {
-            "Количество отнимаемой температуры || The amount of temperature taken away": 10.0,
+            "Количество отнимаемой температуры || The amount of temperature taken away": 25.0,
             "Количество отнимаемой прочности у предмета || The amount of strength taken away from the item": 2.0,
             "Максимальное количество прочности предмета || Maximum amount of item strength": 100.0,
             "ShortName предмета || Item ShortName": "fuse"

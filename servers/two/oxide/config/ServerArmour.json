@@ -35,13 +35,13 @@
         "Reason Prefix": "Assoc Ban -> {playerId}: {reason}"
     },
     "Discord": {
-        "Bans Webhook URL": "https://discordapp.com/api/webhooks/868978683254308904/oQlbyhLAlZ0pYATpHuRdYVNxrmTagOeoX03isLckTpC-K6pyjaR1YS37P7bywCjqsSnr",
+        "Bans Webhook URL": "https://discordapp.com/api/webhooks/869390181076181062/MRjtQkAMJXYsDrLBVnWnR0qraY31ywWW4mt4u27oy2NRi_ezWKiWmW6VyqBmxIl26ojm",
         "Notify when a player has received a game ban": true,
         "Send Ban Report": true,
         "Send Kick Report": true,
         "Send Only Dirty Player Reports": true,
         "Show Quick Connect On report": false,
-        "Webhook URL": "https://discordapp.com/api/webhooks/868978683254308904/oQlbyhLAlZ0pYATpHuRdYVNxrmTagOeoX03isLckTpC-K6pyjaR1YS37P7bywCjqsSnr"
+        "Webhook URL": "https://discordapp.com/api/webhooks/869390181076181062/MRjtQkAMJXYsDrLBVnWnR0qraY31ywWW4mt4u27oy2NRi_ezWKiWmW6VyqBmxIl26ojm"
     },
     "General": {
         "Debug: Show additional debug console logs": false,

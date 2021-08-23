@@ -7,6 +7,6 @@
     "Print To Console - Enabled": false,
     "Custom Welcome Messages": [{
         "Steam ID": 123,
-        "Message": "Welcome to two.SolidRusT.net"
+        "Message": "Welcome to SolidRusT (SRT). use /info for help"
     }]
 }
