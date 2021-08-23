@@ -1,7 +1,7 @@
 {
     "Only Notify Admin": false,
     "Enable Discord Notifications": true,
-    "Discord Webhook URL": "https://discord.com/api/webhooks/863831541671002133/ueBsZwQ-3iYN9GzkWXhmnaY2vr4l-5OWOX9psTO3PYpVsVXw2CtAdmCa6BODqweB5mIi",
+    "Discord Webhook URL": "https://discord.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC",
     "Enable Gui Notifications": true,
     "Enable Chat Notifications": true,
     "GUI Notifications Tint Color": "Purple",

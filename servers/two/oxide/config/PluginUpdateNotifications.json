@@ -3,7 +3,7 @@
     "Ignore lower versions (ignores when the official version is a lower version number)": true,
     "Check Unloaded Plugins": true,
     "Enable Discord Notifications": true,
-    "Discord Webhook URL": "https://discord.com/api/webhooks/876565289599377410/woK1nsvW4e3bG3OEwd1ZS9d-IVPl1iNszcN_czXgemN5AXMWu0bbC7Ee7trwsOm0uNoh",
+    "Discord Webhook URL": "https://discord.com/api/webhooks/879412029201461329/nB7bLhgt_EQemwfs0Edyf2GRLUGJ0XO_yB0iN0Zexv4EN4XGZ0-i-q5GqVVGhG1vPtz8",
     "Avatar URL": "https://solidrust.net/images/SoldRust_Logo.png",
     "Discord Username": "Plugin Update Notifications",
     "Automatic Blacklist": true,

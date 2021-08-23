@@ -5,7 +5,7 @@
     "BanSettings": {
         "Color": "3329330",
         "Enabled": false,
-        "WebhookUrl": "https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp"
+        "WebhookUrl": "https://discord.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC"
     },
     "ReportSettings": {
         "LogToConsole": true,
@@ -13,7 +13,7 @@
         "Cooldown": 30,
         "Color": "3329330",
         "Enabled": true,
-        "WebhookUrl": "https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp"
+        "WebhookUrl": "https://discord.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC"
     },
     "MessageSettings": {
         "LogToConsole": true,
@@ -22,16 +22,16 @@
         "Cooldown": 30,
         "Color": "3329330",
         "Enabled": true,
-        "WebhookUrl": "https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp"
+        "WebhookUrl": "https://discord.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC"
     },
     "ChatSettings": {
         "TextToSpeech": false,
         "Enabled": true,
-        "WebhookUrl": "https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp"
+        "WebhookUrl": "https://discord.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC"
     },
     "MuteSettings": {
         "Color": "3329330",
         "Enabled": true,
-        "WebhookUrl": "https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp"
+        "WebhookUrl": "https://discord.com/api/webhooks/868649931374727268/dhbp5kB_lOHbPm9eCOIGpzQGSRaQFjyJIu59XzF9wDysUlZMHcm_TEggrCAYL1NputJC"
     }
 }
