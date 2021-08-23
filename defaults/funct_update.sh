@@ -400,7 +400,8 @@ raidalerts.use \
 iteminspector.use \
 betterrootcombiners.use \
 payforelectricity.use \
-bloodtrail.allow
+bloodtrail.allow \
+patrolboat.builder
 )
 
 # SRT Main Vanilla
@@ -481,7 +482,8 @@ raidalerts.use \
 iteminspector.use \
 betterrootcombiners.use \
 payforelectricity.use \
-bloodtrail.allow
+bloodtrail.allow \
+patrolboat.builder
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

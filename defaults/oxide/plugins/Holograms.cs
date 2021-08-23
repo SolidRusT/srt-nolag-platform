@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Holograms", "birthdates", "1.4.2")]
+    [Info("Holograms", "birthdates", "1.4.3")]
     [Description("Provide floating text with information to players")]
     public class Holograms : RustPlugin
     {
@@ -255,6 +255,12 @@ namespace Oxide.Plugins
                     executor.Reply(string.Format(lang.GetMessage("Teleported", this, executor.GetId()), hologram.Id));
                     return;
                 }
+                if (arg.Equals("tphere"))
+                {
+                    hologram.Position = executor.GetPosition();
+                    executor.Reply(string.Format(lang.GetMessage("TeleportedHere", this, executor.GetId()), hologram.Id));
+                    return;
+                }
 
                 if (args.Length > 2)
                 {
@@ -467,7 +473,7 @@ namespace Oxide.Plugins
             /// <summary>
             ///     Have we checked?
             /// </summary>
-            private bool _hasChecked = false;
+            private bool _hasChecked;
 
             /// <summary>
             ///     Our next update time
@@ -641,7 +647,6 @@ namespace Oxide.Plugins
             }
         }
 
-
         private struct ConsoleExecutor : IExecutor
         {
             /// <summary>
@@ -804,12 +809,14 @@ namespace Oxide.Plugins
                 {"NoPermission", "You do not have permission to execute this command."},
                 {"Permission", "You have set the viewing permission of the hologram \"{0}\" to \"{1}\""},
                 {"UpdateInterval", "You have set the update interval of the hologram \"{0}\" to {1}s"},
+                {"TeleportedHere", "You have teleported the hologram \"{0}\" to your position."},
                 {
                     "Help", "<color=#4287f5>Holograms Help</color>\n" +
                             "/{0} create <name> - Create a hologram with that name\n" +
                             "/{0} delete <name> - Delete a hologram with that name\n" +
                             "/{0} list - List all of the active holograms\n" +
                             "/{0} teleport <hologram> - Teleport to that hologram\n" +
+                            "/{0} tphere <hologram> - Teleport to that hologram to your location\n" +
                             "/{0} rename <hologram> <new name> - Rename a hologram\n\n" +
                             "/{0} spacing <hologram> <spacing> - Change the spacing between lines (metres) of a hologram\n" +
                             "/{0} update <hologram> <interval> - Change the placeholder update delay (seconds) of a hologram\n" +

@@ -154,7 +154,8 @@
                 "stashtraps.ignore",
                 "spawnmini.staff",
                 "mapnoteteleport.use",
-                "holograms.use"
+                "holograms.use",
+                "patrolboat.admin"
             ],
             "AdditionalCommands": []
         },
@@ -220,7 +221,8 @@
                 "spawnmini.staff",
                 "instanth2o.use",
                 "mapnoteteleport.use",
-                "holograms.use"
+                "holograms.use",
+                "patrolboat.admin"
             ],
             "AdditionalCommands": []
         },
@@ -313,7 +315,8 @@
                 "welcomer.bypass",
                 "zbillboards.admin",
                 "zbillboards.console",
-                "zonemanager.zone"
+                "zonemanager.zone",
+                "patrolboat.admin"
             ],
             "AdditionalCommands": []
         }

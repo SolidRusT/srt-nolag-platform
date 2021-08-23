@@ -174,7 +174,9 @@
                 "zbillboards.console",
                 "payback.admin",
                 "backpacks.keepondeath",
-                "holograms.use"
+                "holograms.use",
+                "patrolboat.admin",
+                "build.perm"
             ],
             "AdditionalCommands": []
         },
@@ -242,7 +244,9 @@
                 "instanth2o.use",
                 "mapnoteteleport.use",
                 "backpacks.keepondeath",
-                "holograms.use"
+                "holograms.use",
+                "patrolboat.admin",
+                "build.perm"
             ],
             "AdditionalCommands": []
         },
@@ -379,7 +383,9 @@
                 "welcomer.bypass",
                 "zbillboards.admin",
                 "zbillboards.console",
-                "zonemanager.zone"
+                "zonemanager.zone",
+                "patrolboat.admin",
+                "build.perm"
             ],
             "AdditionalCommands": []
         }
