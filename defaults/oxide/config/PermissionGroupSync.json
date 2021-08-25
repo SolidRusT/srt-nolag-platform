@@ -222,7 +222,15 @@
                 "instanth2o.use",
                 "mapnoteteleport.use",
                 "holograms.use",
-                "patrolboat.admin"
+                "patrolboat.admin",
+                "betterchatfilter.admin",
+                "betterchatmute.use",
+                "betterchatmute.use.global",
+                "betterchatmute.permanent",
+                "respawnbradley.use",
+                "respawnbradley.nolock",
+                "respawnbradley.nocosts",
+                "respawnbradley.nocooldown"
             ],
             "AdditionalCommands": []
         },
@@ -316,7 +324,15 @@
                 "zbillboards.admin",
                 "zbillboards.console",
                 "zonemanager.zone",
-                "patrolboat.admin"
+                "patrolboat.admin",
+                "betterchatfilter.admin",
+                "betterchatmute.use",
+                "betterchatmute.use.global",
+                "betterchatmute.permanent",
+                "respawnbradley.use",
+                "respawnbradley.nolock",
+                "respawnbradley.nocosts",
+                "respawnbradley.nocooldown"
             ],
             "AdditionalCommands": []
         }

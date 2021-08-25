@@ -401,7 +401,8 @@ iteminspector.use \
 betterrootcombiners.use \
 payforelectricity.use \
 bloodtrail.allow \
-patrolboat.builder
+patrolboat.builder \
+localize.use
 )
 
 # SRT Main Vanilla
@@ -483,7 +484,8 @@ iteminspector.use \
 betterrootcombiners.use \
 payforelectricity.use \
 bloodtrail.allow \
-patrolboat.builder
+patrolboat.builder \
+localize.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

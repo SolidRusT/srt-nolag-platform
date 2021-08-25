@@ -246,7 +246,15 @@
                 "backpacks.keepondeath",
                 "holograms.use",
                 "patrolboat.admin",
-                "build.perm"
+                "build.perm",
+                "betterchatfilter.admin",
+                "betterchatmute.use",
+                "betterchatmute.use.global",
+                "betterchatmute.permanent",
+                "respawnbradley.use",
+                "respawnbradley.nolock",
+                "respawnbradley.nocosts",
+                "respawnbradley.nocooldown"
             ],
             "AdditionalCommands": []
         },
@@ -385,7 +393,15 @@
                 "zbillboards.console",
                 "zonemanager.zone",
                 "patrolboat.admin",
-                "build.perm"
+                "build.perm",
+                "betterchatfilter.admin",
+                "betterchatmute.use",
+                "betterchatmute.use.global",
+                "betterchatmute.permanent",
+                "respawnbradley.use",
+                "respawnbradley.nolock",
+                "respawnbradley.nocosts",
+                "respawnbradley.nocooldown"
             ],
             "AdditionalCommands": []
         }
