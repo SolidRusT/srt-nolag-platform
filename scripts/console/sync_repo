@@ -1,0 +1,22 @@
+#!/bin/bash
+CURRENT_DIR=$(pwd)
+REPO_DIR="/c/Users/shaun/repos/"
+
+# mkdir -p ${REPO_DIR}/solidrust.net #&& git checkout
+echo "Creating SRT Build marker"
+cd ${REPO_DIR}/solidrust.net
+git fetch --tags
+git rev-parse --short HEAD | tee build.txt
+git tag | tac | tee -a build.txt
+cd ${CURRENT_DIR}
+
+echo "Pushing SRT Build marker"
+aws s3 cp ${REPO_DIR}/solidrust.net/build.txt s3://solidrust.net-backups/repo/
+echo "Pushing SRT Defaults"
+aws s3 sync --delete ${REPO_DIR}/solidrust.net/defaults/ s3://solidrust.net-backups/repo/defaults/
+echo "Pushing SRT Custom Servers"
+aws s3 sync --delete ${REPO_DIR}/solidrust.net/servers/ s3://solidrust.net-backups/repo/servers/
+echo "Pushing SRT Web"
+aws s3 sync --delete ${REPO_DIR}/solidrust.net/web/ s3://solidrust.net-backups/repo/web/
+echo "Pushing SRT Radio"
+aws s3 sync --delete ${REPO_DIR}/radio/ s3://solidrust.net-radio/
