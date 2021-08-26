@@ -2,110 +2,85 @@
 SERVER=$1
 SERVER_KEYS="/c/Users/shaun/repos"
 
+function initialize_this () {
+  echo "Initializing for ${SERVER}.solidrust.net"
+  REPO_DIR="/c/Users/shaun/repos/solidrust.net/servers/${SERVER}"
+  mkdir -p ${REPO_DIR}
+}
+
+function pull_shell_configs () {
+  mkdir -p ${REPO_DIR}/etc
+  echo "Pulling Linux environment configs from ${SERVER}.solidrust.net"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem admin@${SERVER}.solidrust.net:/etc/crontab "${REPO_DIR}/etc/crontab"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem admin@${SERVER}.solidrust.net:~/.bashrc "${REPO_DIR}/bashrc"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem admin@${SERVER}.solidrust.net:~/.profile "${REPO_DIR}/profile"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem admin@${SERVER}.solidrust.net:~/.bash_history "${REPO_DIR}/bash_history"
+}
+
+function pull_ssl_configs () {
+  mkdir -p ${REPO_DIR}/etc/letsencrypt
+  echo "Pulling SSL configs from ${SERVER}.solidrust.net"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem -r admin@${SERVER}.solidrust.net:/etc/letsencrypt/* "${REPO_DIR}/etc/letsencrypt/"
+}
+
+function pull_apache_configs () {
+  mkdir -p ${REPO_DIR}/etc/apache2
+  echo "Pulling Apache configs from ${SERVER}.solidrust.net"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem -r admin@${SERVER}.solidrust.net:/etc/apache2/* "${REPO_DIR}/etc/apache2/"
+}
+
+function pull_icecast_configs () {
+  mkdir -p ${REPO_DIR}/etc/icecast2
+  echo "Pulling IceCast configs from ${SERVER}.solidrust.net"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem -r admin@${SERVER}.solidrust.net:/etc/icecast2/* "${REPO_DIR}/etc/icecast2/"
+}
+
+function pull_mpd_configs () {
+  mkdir -p ${REPO_DIR}/etc
+  echo "Pulling MPD configs from ${SERVER}.solidrust.net"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem admin@${SERVER}.solidrust.net:/etc/mpd.conf "${REPO_DIR}/etc/mpd.conf"
+}
+
+function pull_mysql_configs () {
+  mkdir -p ${REPO_DIR}/etc/mysql
+  echo "Pulling MySQL configs from ${SERVER}.solidrust.net"
+  scp -i ${SERVER_KEYS}/${SERVER}.pem -r admin@${SERVER}.solidrust.net:/etc/mysql/* "${REPO_DIR}/etc/mysql/"
+}
+
 case $SERVER in
 
   web)
-    SCP_CMD="scp -i ${SERVER_KEYS}/us-west-2-solidrust.pem -r admin@web.solidrust.net"
-    LINUX="true"
-    APACHE="true"
-    SSL="true"
-    ICECAST="true"
-    MPD="true"
-    YMPD="true"
+    initialize_this
+    pull_shell_configs
+    pull_apache_configs
+    pull_ssl_configs
+    pull_icecast_configs
+    pull_mpd_configs
     ;;
 
   data)
-    SCP_CMD="scp -i ${SERVER_KEYS}/us-west-2-solidrust.pem -r admin@data.solidrust.net"
-    LINUX="true"
-    MYSQL="true"
+    initialize_this
+    pull_shell_configs
+    pull_mysql_configs
     ;;
 
-  radio)
-    SCP_CMD="scp -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem -r admin@radio.solidrust.net"
-    LINUX="true"
+  radio-one|radio-two)
+    initialize_this
+    shell_configs
     NGINX="true"
-    SSL="true"
-    ICECAST="true"
-    ;;
-
-  stream)
-    SCP_CMD="scp -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem -r admin@stream.solidrust.net"
-    LINUX="true"
-    NGINX="true"
-    SSL="true"
-    MPD="true"
-    YMPD="true"
+    pull_ssl_configs
+    pull_icecast_configs
+    pull_mpd_configs
     ;;
 
   *)
     echo "---------------SYNTAX ERROR-----------------"
     echo "pull_system_config: Invalid server selection"
     echo ""
-    echo "Currently supported servers: web, data, radio, stream"
+    echo "Currently supported servers: web, data, radio-one, radio-two"
     echo ""
     echo "Usage: pull_system_config <server>"
     echo ""
     exit 1
     ;;
 esac
-
-echo "Initializing for ${SERVER}.solidrust.net"
-REPO_DIR="/c/Users/shaun/repos/solidrust.net/servers/${SERVER}"
-mkdir -p ${REPO_DIR}
-
-# Shell configuration
-if [ -z "$LINUX" ]; then
-  echo "Skipping Linux"
-else
-  mkdir -p ${REPO_DIR}/etc
-  echo "Pulling Linux environment configs from ${SERVER}.solidrust.net"
-  $SCP_CMD:/etc/crontab "${REPO_DIR}/etc/crontab"
-  $SCP_CMD:~/.bashrc "${REPO_DIR}/bashrc"
-  $SCP_CMD:~/.profile "${REPO_DIR}/profile"
-  $SCP_CMD:~/.bash_history "${REPO_DIR}/bash_history"
-fi
-
-# SSL Certificates
-if [ -z "$SSL" ]; then
-  echo "Skipping SSL"
-else
-  mkdir -p ${REPO_DIR}/etc/letsencrypt
-  echo "Pulling SSL configs from ${SERVER}.solidrust.net"
-  $SCP_CMD:/etc/letsencrypt/* "${REPO_DIR}/etc/letsencrypt/"
-fi
-
-# Apache2 configuration
-if [ -z "$APACHE" ]; then
-  echo "Skipping Apache"
-else
-  mkdir -p ${REPO_DIR}/etc/apache2
-  echo "Pulling Apache configs from ${SERVER}.solidrust.net"
-  $SCP_CMD:/etc/apache2/* "${REPO_DIR}/etc/apache2/"
-fi
-
-# IceCast configuration
-if [ -z "$ICECAST" ]; then
-  echo "Skipping IceCast"
-else
-  mkdir -p ${REPO_DIR}/etc/icecast2
-  echo "Pulling IceCast configs from ${SERVER}.solidrust.net"
-  $SCP_CMD:/etc/icecast2/* "${REPO_DIR}/etc/icecast2/"
-fi
-
-# MPD configuration
-if [ -z "$MPD" ]; then
-  echo "Skipping MPD"
-else
-  mkdir -p ${REPO_DIR}/etc
-  echo "Pulling MPD configs from ${SERVER}.solidrust.net"
-  $SCP_CMD:/etc/mpd.conf "${REPO_DIR}/etc/mpd.conf"
-fi
-
-# MySQL configuration
-if [ -z "$MYSQL" ]; then
-  echo "Skipping MySQL"
-else
-  mkdir -p ${REPO_DIR}/etc/mysql
-  echo "Pulling MySQL configs from ${SERVER}.solidrust.net"
-  $SCP_CMD:/etc/mysql/* "${REPO_DIR}/etc/mysql/"
-fi
