@@ -12,7 +12,7 @@ using System;
 
 namespace Oxide.Plugins
 {
-    [Info("ZBillBoards", "JOSH-Z", "1.2.2", ResourceId = 0)]
+    [Info("ZBillBoards", "JOSH-Z", "1.2.3")]
     [Description("Create huge (or small) billboards")]
     public class ZBillBoards : RustPlugin
     {
@@ -103,7 +103,6 @@ namespace Oxide.Plugins
             }
         }
 
-
         private static void SplitImageAndPaste(DownloadRequest request, Bitmap sourceImage, int defWidth, int defHeight)
         {
 
@@ -148,7 +147,6 @@ namespace Oxide.Plugins
             ins.pasteController.PasteNextFromList();
         }
 
-
         private static byte[] RecolorImage(MemoryStream stream, int targetWidth, int targetHeight)
         {
             var bytes = stream.ToArray();
@@ -186,9 +184,6 @@ namespace Oxide.Plugins
                 return recoloredImageBytes;
             }           
         }
-
-
-
 
         private class DownloadController : FacepunchBehaviour
         {            
@@ -498,9 +493,9 @@ namespace Oxide.Plugins
             {
                 Puts("Trying to validate a non-existing billboard");
                 return;
-            }            
+            }
 
-            Signage signage = BaseNetworkable.serverEntities.Find(mainSignID) as Signage;
+            NeonSign signage = BaseNetworkable.serverEntities.Find(mainSignID) as NeonSign;
             if (signage == null)
             {
                 storedData.billBoards.Remove(mainSignID);
@@ -511,10 +506,15 @@ namespace Oxide.Plugins
                 return;
             }
 
+            var speed = 1f;
+            float storedSpeed;
+            if (storedData.billBoardSpeeds.TryGetValue(mainSignID, out storedSpeed))
+                speed = storedSpeed;
+
             Puts("Billboard " + mainSignID + " has " + signList.Count + " signs, validating...");
             foreach (var subSign in signList)
             {
-                Signage subSignage = BaseNetworkable.serverEntities.Find(subSign) as Signage;
+                NeonSign subSignage = BaseNetworkable.serverEntities.Find(subSign) as NeonSign;
                 if (subSignage == null)
                 {
                     storedData.billBoards[mainSignID].Remove(subSign);
@@ -522,10 +522,13 @@ namespace Oxide.Plugins
                     continue;
                 }
 
+                subSignage.animationSpeed = speed;
                 subSignage.UpdateHasPower(0, 0);
-                subSignage.UpdateHasPower(25, 0);
-                subSignage.SendNetworkUpdate();
+                //subSignage.UpdateHasPower(25, 0);
+                //subSignage.SendNetworkUpdate();
             }
+
+            SwitchBillBoardPower(signage, 25);
             Puts("Billboard validated");
         }
 
@@ -587,9 +590,11 @@ namespace Oxide.Plugins
             return;
         }
 
-        private void SwitchBillBoardPower(NeonSign billboardSign)
+        private void SwitchBillBoardPower(NeonSign billboardSign, int forcePower = -1)
         {
-            var newPower = billboardSign.IsPowered() ? 0 : 25;
+            int newPower = billboardSign.IsPowered() ? 0 : 25;
+            if (forcePower >= 0)
+                newPower = forcePower;
 
             List<uint> billBoardSigns;
             if (!ins.storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardSigns)) return;
@@ -620,21 +625,29 @@ namespace Oxide.Plugins
             }
 
             float newSpeed = 1f;
-            float speed = 1f;
-            if (float.TryParse(args[1], out speed) && speed >= 0) newSpeed = speed;
+
+            float possibleSpeed;
+            if (float.TryParse(args[1], out possibleSpeed) && possibleSpeed >= 0)
+                newSpeed = possibleSpeed;
+
+            if (!storedData.billBoardSpeeds.ContainsKey(billboardSign.net.ID))
+                storedData.billBoardSpeeds.Add(billboardSign.net.ID, newSpeed);
+
+            storedData.billBoardSpeeds[billboardSign.net.ID] = newSpeed;
+
 
 
             List<uint> billBoardSigns;
-            if (!ins.storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardSigns)) return;
+            if (!ins.storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardSigns))
+                return;
 
-            //foreach (uint signID in storedData.billBoards[billboardSign.net.ID])
             foreach (uint signID in billBoardSigns)
             {
                 NeonSign signage = BaseNetworkable.serverEntities.Find(signID) as NeonSign;
                 if (signage == null) continue;
 
                 signage.animationSpeed = newSpeed;
-                signage.SendNetworkUpdate();                
+                signage.SendNetworkUpdate();
             }
 
             SwitchBillBoardPower(billboardSign);
@@ -744,6 +757,13 @@ namespace Oxide.Plugins
             storedData.billBoards.Remove(sid);
 
             RemoveFromUserBillboards(sid);
+
+            if(configData.refundOnDestroy)
+            {
+                var item = ItemManager.CreateByName("sign.neon.xl.animated");
+                if(item != null)
+                    player.GiveItem(item);
+            }
 
             player.ChatMessage("Billboard destroyed");
         }
@@ -1008,6 +1028,9 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Lock signs to owner after creating billboard")]
             public bool lockSigns = false;
 
+            [JsonProperty(PropertyName = "Give back a Neon Sign when a billboard is removed with the destroy command")]
+            public bool refundOnDestroy = true;
+
             [JsonProperty(PropertyName = "Log extra output to console")]
             public bool debug = false;
         }
@@ -1041,6 +1064,7 @@ namespace Oxide.Plugins
         class StoredData
         {
             public Dictionary<uint, List<uint>> billBoards = new Dictionary<uint, List<uint>>();
+            public Dictionary<uint, float> billBoardSpeeds = new Dictionary<uint, float>();
             public Dictionary<string, List<uint>> userBillboards = new Dictionary<string, List<uint>>();
         }
 

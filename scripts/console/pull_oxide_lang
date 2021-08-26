@@ -6,10 +6,6 @@ SERVER_KEYS="/c/Users/shaun/repos"
 
 case $SERVER in
 
-  two)
-    SCP_CMD="scp -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@two.solidrust.net"
-    ;;
-
   nine)
     SCP_CMD="scp -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@nine.solidrust.net"
     ;;
@@ -17,7 +13,7 @@ case $SERVER in
   *)
     echo "pull_data: Invalid server selection"
     echo ""
-    echo "Currently supported servers: two, nine"
+    echo "Currently supported server(s): nine"
     echo ""
     echo "Usage: pull_data <server> <plugin>"
     echo ""

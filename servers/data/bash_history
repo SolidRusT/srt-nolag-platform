@@ -1,0 +1,187 @@
+sudo sed -i 's/main/main contrib non-free/g' /etc/apt/sources.list
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt -y dist-upgrade
+NEW_NAME="rust-data"
+echo ${NEW_NAME} | sudo tee /etc/hostname
+echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/hosts
+echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
+sudo hostnamectl set-hostname ${NEW_NAME}
+sudo apt-get -y install     git     apt-transport-https     ca-certificates     curl     wget     htop     gnupg-agent     gnupg2     software-properties-common     screen     unzip     rsync     linux-headers-$(uname -r)     build-essential
+sudo apt install mysql-server mysql-client
+sudo apt install mysql-server mysql
+apt search mysql
+sudo apt instal mariadb
+sudo apt install mariadb
+sudo apt install mariadb-server
+sudo mysql_secure_installation
+mysql
+mysql -u root -p
+sudo mysql_secure_installation
+mysql -u root
+mysql -u root -p
+sudo mysql_secure_installation
+mysql -u root -p
+sudo mysql
+sudo systemctl status mariadb
+sudo mysqladmin version
+mysql -u admin -p
+sudo systemctl restart mariadb
+tail /var/log/mysql/error.log 
+tail /var/log/messages 
+tail /var/log/messages -F
+sudo mysql
+sudo nano /etc/hosts
+sudo mysql
+ping east.soludrust.net
+ping east.solidrust.net
+sudo mysql
+mysql -u modded -p 
+netstat -an | grep 3306
+sudo nano /etc/mysql/my.cnf
+ifcongi
+ifconfig
+/sbin/ifconfig
+nano /etc/default/mysql 
+nano /etc/mysql/my.cnf
+nano /etc/mysql/mariadb.cnf 
+nano /etc/mysql/mariadb.conf.d/50-server.cnf 
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
+sudo systemctl restart mariadb
+history | grep STEAM
+htop
+sudo mysql
+ls -la
+ls -al
+chmod +x rcon
+./rcon 
+rm -rf rcon 
+aws s3 ls
+aws s3 cp s3://solidrust.net-backups/rcon .
+ls -al
+chmod +x rcon 
+./rcon 
+ls -al
+rm rcon 
+ls -al
+aws s3 cp s3://solidrust.net-backups/rcon .
+ls -al
+chmod +x rcon
+./rcon 
+rm rcon 
+NEW_NAME="data"
+echo ${NEW_NAME} | sudo tee /etc/hostname
+echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/hosts
+echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
+sudo hostnamectl set-hostname ${NEW_NAME}
+history
+sudo systemctl status mariadb
+cat /etc/hosts
+netstat -an | grep 3306
+tail /etc/crontab
+echo "3 *    * * *   ${USER}  ${HOME}/solidrust.net/defaults/database/3_sync_repo_pull.sh" | sudo tee -a /etc/crontab
+echo "15 *    * * *   ${USER}  ${HOME}/solidrust.net/defaults/database/15_backup_database.sh" | sudo tee -a /etc/crontab
+cat /etc/crontab 
+echo "50 *    * * *   ${USER}  /usr/sbin/logrotate ${HOME}/solidrust.net/defaults/database/logrotate.conf --state ${HOME}/logrotate-state" | sudo tee -a /etc/crontab
+cat /etc/crontab 
+sudo nano /etc/crontab 
+sudo su - mysql
+sudo su mysql
+ls -al
+ls -al /home/
+sudo su - mysql
+sudo su - mariadb
+cat /etc/passwd
+sudo su -
+ls -al
+cat /etc/crontab 
+ls -al
+/bin/bash /home/admin/solidrust.net/defaults/database/3_sync_repo_pull.sh
+#!/bin/bash
+## Global default environments
+# root of where the game server is installed
+export GAME_ROOT="/game"
+# automation lock
+export SOLID_LCK="$HOME/SolidRusT.lock"
+# Amazon s3 destination for backups
+export S3_BACKUPS="s3://solidrust.net-backups"
+# Amazon s3 destination for backups
+export S3_WEB="s3://solidrust.net"
+# Github source for configs
+export GITHUB_ROOT="${HOME}/solidrust.net"
+# Default configs
+export SERVER_GLOBAL="${GITHUB_ROOT}/defaults"
+# Customized config
+export SERVER_CUSTOM="${GITHUB_ROOT}/servers/${HOSTNAME}"
+# local RCON CLI config
+export RCON_CFG="${GITHUB_ROOT}/defaults/rcon.yaml"
+# logging format
+export LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%p")
+# log file location
+export LOG_FILE="SolidRusT.log"
+# construct full log output endpoint
+export LOGS="${HOME}/${LOG_FILE}"
+# instantiate the log file
+touch ${LOGS}
+# Build root
+export BUILD_ROOT="${HOME}/build-solidrust"
+rm -rf ${BUILD_ROOT}
+mkdir -p ${BUILD_ROOT}
+# end of env_vars
+echo "++++++= Initialized SolidRust =++++++" | tee -a ${LOGS}
+echo "3 *    * * *   ${USER} \
+    rm -rf ${GITHUB_ROOT}; \
+    mkdir -p ${GITHUB_ROOT}; \
+    aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${GITHUB_ROOT}; \
+    chmod +x ${SERVER_GLOBAL}/*.sh"     | sudo tee -a /etc/crontab
+htop
+ls -al
+ls -al solidrust.net/
+cat /etc/crontab 
+cd solidrust.net/
+ls -al
+cat /etc/crontab 
+sudo nano /etc/crontab 
+cd ..
+rm -rf /home/admin/solidrust.net;     mkdir -p /home/admin/solidrust.net;     aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /home/admin/solidrust.net;     chmod +x /home/admin/solidrust.net/defaults/*.sh;     chmod +x /home/admin/solidrust.net/defaults/database/*.sh
+rm -rf /home/admin/solidrust.net
+ls -al
+mkdir -p /home/admin/solidrust.ne
+mkdir -p /home/admin/solidrust.net
+rm solidrust.ne
+rm solidrust.ne -rf
+ls -al
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo/ /home/admin/solidrust.net/
+aws s3 sync --delete s3://solidrust.net-backups/repo/ /home/admin/solidrust.net/
+aws s3 ls
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo/ /home/admin/solidrust.net/
+chmod +x /home/admin/solidrust.net/defaults/*.sh;     chmod +x /home/admin/solidrust.net/defaults/database/*.sh
+nano /etc/crontab 
+sudo nano /etc/crontab 
+/bin/sh -c /home/admin/solidrust.net/defaults/database/15_backup_database.sh
+ls -al /home/admin/solidrust.net/defaults/database
+ls -al /home/admin/solidrust.net/defaults/database/15_backup_database.sh
+/bin/sh -c /home/admin/solidrust.net/defaults/database/15_backup_database.sh
+/bin/bash -c /home/admin/solidrust.net/defaults/database/15_backup_database.sh
+rm -rf /home/admin/solidrust.net; mkdir -p /home/admin/solidrust.net; aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo/ /home/admin/solidrust.net/;     chmod +x /home/admin/solidrust.net/defaults/*.sh;     chmod +x /home/admin/solidrust.net/defaults/database/*.sh
+/bin/sh -c /home/admin/solidrust.net/defaults/database/15_backup_database.sh
+htop
+mysql -u root
+mysql -u root -p
+history | grep mysql
+sudo mysql
+sudo su -
+cat /etc/crontab 
+sudo cat /etc/crontab 
+sudo nano /etc/crontab 
+date
+sudo su -
+ls -al
+sudo su - 
+uptime
+sudo su - 
+ifconfig
+sudo /sbin/ifconfig
+sudo su - 
+htop
+top

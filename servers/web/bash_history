@@ -1,0 +1,1145 @@
+sudo apt update && sudo apt dist-upgrade
+sudo apt install apache2 php7 libapache2-mod-php7 php7-common php7-mbstring php7-xmlrpc php7-soap php7-gd php7-xml php7-intl php7-mysql php7-cli php7-ldap php7-zip php7-curl
+apt cache search php7
+apt search php7
+sudo apt install apache2 php7.3 libapache2-mod-php7.3 php7.3-common php7.3-mbstring php7.3-xmlrpc php7.3-soap php7.3-gd php7.3-xml php7.3-intl php7.3-mysql php7.3-cli php7.3-ldap php7.3-zip php7.3-curl
+sudo nano /var/www/html/test.php
+sudo apt install default-mysql-server
+sudo mysql_secure_installation
+sudo mysql -u root -p
+cd /tmp/
+wget -c https://wordpress.org/latest.tar.gz
+tar -xvzf latest.tar.gz
+sudo mv wordpress/ /var/www/html/
+sudo chown -R www-data:www-data /var/www/html/wordpress/
+sudo chmod 755 -R /var/www/html/wordpress/
+sudo nano /etc/apache2/sites-available/wordpress.conf
+sudo ln -s /etc/apache2/sites-available/wordpress.conf /etc/apache2/sites-enabled/wordpress.conf
+sudo a2enmod rewrite
+sudo systemctl restart apache2
+host solidrust.net
+sudo snap install core; sudo snap refresh core
+sudo apt install snapd
+sudo reboot
+sudo apt install htop
+df -h
+htop
+sudo nano /etc/php/7.3/apache2/php.ini 
+history
+sudo systemctl restart apache2
+cat /etc/apache2/sites-enabled/wordpress.conf
+cd /var/www/html/wordpress
+ls -al
+mkdir images
+aws s3 ls
+cd /
+cd /tmp
+aws s3 sync s3://solidrust.net/images images
+aws s3 sync s3://solidrust.net/maps maps
+sudo mv images /var/www/html/wordpress
+sudo mv maps /var/www/html/wordpress
+cd /var/www/html/wordpress
+ls -al
+sudo chmod -R www-data:www-data images
+sudo chown -R www-data:www-data images
+sudo chown -R www-data:www-data maps
+ls -al
+egrep '(processor|model name|cpu MHz|physical id|siblings|core id|cpu cores)' /proc/cpuinfo
+sudo apt get install imagick
+sudo apt install imagick
+apt search imagick
+sudo apt install php-imagick
+history | grep apache
+sudo systemctl restart apache2
+sudo apt-get install imagemagick php-imagick --reinstall
+sudo systemctl restart apache2
+shutdown -h now
+sudo shutdown -h now
+ls -al
+mv /tmp/logo.png /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png 
+sudo mv /tmp/logo.png /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png 
+chown www-root:www-root /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png
+sudo chown www-root:www-root /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png
+sudo chown www-data:www-data /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png
+sudo mv /tmp/SoldRust_Banner_trans.png /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png 
+sudo chown www-data:www-data /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png
+sudo mv /tmp/SoldRust_Banner_trans.png /var/www/html/wordpress/wp-content/uploads/2017/10/logo_x2.png
+sudo chown www-data:www-data /var/www/html/wordpress/wp-content/uploads/2017/10/logo_x2.png 
+sudo cp /tmp/SoldRust_Banner_trans.png /var/www/html/wordpress/wp-content/uploads/2017/10/logo_x2.png
+sudo cp /tmp/SoldRust_Banner_trans.png /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png
+sudo chown www-data:www-data /var/www/html/wordpress/wp-content/uploads/2017/10/logo_x2.png 
+sudo chown www-data:www-data /var/www/html/wordpress/wp-content/uploads/2017/10/logo.png 
+cd /var/www/html/wordpress/wp-content/
+ls -al
+cd ../..
+ls -al
+cd wordpress/
+ls -al
+cd images/
+ls -al
+pwd
+cd /var/www/html/wordpress/wp-content/
+cd image
+cd images
+cd ../images/
+ls -al
+cp /tmp/SoldRust_Banner_game.png header_default.png
+sudo cp /tmp/SoldRust_Banner_game.png header_default.png
+sudo cp /tmp/SoldRust_Logo_mobile_game.png mobile_icon.png
+history | grep wordpress
+cd /var/www/html
+ls -la
+mv wordpress/ wordpress-sux
+sudo mv wordpress/ wordpress-sux
+sudo cp /etc/apache2/sites-available/wordpress.conf /etc/apache2/sites-available/wordpress.conf
+sudo cp /etc/apache2/sites-available/wordpress.conf /etc/apache2/sites-available/solidrust.conf
+nano /etc/apache2/sites-available/solidrust.conf
+sudo nano /etc/apache2/sites-available/solidrust.conf
+sudo ln -s /etc/apache2/sites-available/solidrust.conf /etc/apache2/sites-enabled/solidrust.conf
+rm /etc/apache2/sites-enabled/wordpress.conf 
+sudo rm /etc/apache2/sites-enabled/wordpress.conf 
+ls -al /etc/apache2/sites-enabled/wordpress-le-ssl.conf 
+rm /etc/apache2/sites-enabled/wordpress-le-ssl.conf
+sudo rm /etc/apache2/sites-enabled/wordpress-le-ssl.conf
+cp /etc/apache2/sites-available/wordpress-le-ssl.conf /etc/apache2/sites-available/solidrust-le-ssl.conf
+sudo cp /etc/apache2/sites-available/wordpress-le-ssl.conf /etc/apache2/sites-available/solidrust-le-ssl.conf
+nano /etc/apache2/sites-available/solidrust-le-ssl.conf
+sudo nano /etc/apache2/sites-available/solidrust-le-ssl.conf
+sudo systemctl apache2 restart
+sudo systemctl restart apache2
+cd /etc/apache2/sites-enabled
+ls -la
+ln -s /etc/apache2/sites-available/solidrust-le-ssl.conf /etc/apache2/sites-enabled/solidrust-le-ssl.conf
+sudo ln -s /etc/apache2/sites-available/solidrust-le-ssl.conf /etc/apache2/sites-enabled/solidrust-le-ssl.conf
+ls -al
+sudo systemctl restart apache2
+ls -al
+cd /var/www/
+cd html/
+ls -al
+sudo mkdir solidrust
+sudo cp test.php solidrust/index.php
+sudo chown -R www-data:www-data solidrust
+ls -al
+cd solidrust/
+ls -al
+cat /dev/null > index.php 
+sudo cat /dev/null > index.php 
+ls -al
+cat index.php
+sudo nano index.php 
+cd ..
+ls -al
+sudo rm solidrust
+sudo rm solidrust -rf
+sudo ln -s $HOME/solidrust.net/web solidrust
+ls -la
+ls -al solidrust 
+ls -al solidrust/
+ls -la /home/admin/solidrust.net/web
+cd
+ls -al
+aws s3 ls
+aws s3 sync --quiet --delete ${S3_BACKUPS}/repo $HOME/solidrust.net
+export S3_BACKUPS="s3://solidrust.net-backups"
+aws s3 sync --quiet --delete ${S3_BACKUPS}/repo $HOME/solidrust.net
+chmod +x $HOME/solidrust.net/defaults/*.sh
+sudo su - www-data
+ls -al /etc/apache2/
+aws s3 sync --quiet --delete /etc/apache2 ${S3_BACKUPS}/servers/${HOSTNAME}/apache2
+echo $S3_BACKUPS
+sudo nano /etc/hostname 
+sudo nano /etc/hosts
+nano /etc/cloud/templates/hosts.debian.tmpl
+sudo nano /etc/hosts
+sudo nano /etc/cloud/templates/hosts.debian.tmpl
+sudo hostnamectl set-hostname web
+# Pull global env vars
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=$(basename -- "$0")
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+aws s3 sync --quiet --delete /etc/apache2 ${S3_BACKUPS}/servers/${HOSTNAME}/apache2
+ls -al /etc/php/
+ls -al /etc/php/7.3/
+aws s3 sync --quiet --delete /etc/php ${S3_BACKUPS}/servers/${HOSTNAME}/php | tee -a ${LOGS}
+ls -al /etc/mysql/
+ls -al /etc/
+ls -al /var/log/apache2/
+aws s3 sync --quiet --delete /etc/apache2 ${S3_BACKUPS}/servers/${HOSTNAME}/apache2 | tee -a ${LOGS}
+aws s3 sync --quiet --delete /etc/php ${S3_BACKUPS}/servers/${HOSTNAME}/php | tee -a ${LOGS}
+aws s3 sync --quiet --delete /etc/mysql ${S3_BACKUPS}/servers/${HOSTNAME}/mysql | tee -a ${LOGS}
+aws s3 sync --quiet --delete /var/log/apache2 ${S3_BACKUPS}/servers/${HOSTNAME}/apache2-logs
+aws s3 cp /etc/crontab ${S3_BACKUPS}/servers/${HOSTNAME}/crontab
+echo "*/15 *    * * *   ${USER}  /bin/sh -c ${HOME}/solidrust.net/defaults/web/15_web_backups.sh" | sudo tee -a /etc/crontab
+cat /etc/crontab 
+sudo nano 
+sudo nano /etc/crontab 
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /admin/solidrust.net;     chmod +x /root/solidrust.net/defaults/*.sh;  chmod +x /home/admin/solidrust.net/defaults/web/*.sh
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /admin/solidrust.net;     chmod +x /admin/solidrust.net/defaults/*.sh;  chmod +x /home/admin/solidrust.net/defaults/web/*.sh
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /home/admin/solidrust.net;     chmod +x /admin/solidrust.net/defaults/*.sh;  chmod +x /home/admin/solidrust.net/defaults/web/*.sh
+ls -la
+ls -la solidrust.net/defaults/
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /home/admin/solidrust.net;     chmod +x /home/admin/solidrust.net/defaults/*.sh;  chmod +x /home/admin/solidrust.net/defaults/web/*.sh
+sudo nano /etc/crontab 
+echo ${S3_BACKUPS}
+s3 sync --quiet /var/www/html/solidrust ${S3_BACKUPS}/servers/${HOSTNAME}/web
+aws s3 sync --quiet /var/www/html/solidrust ${S3_BACKUPS}/servers/${HOSTNAME}/web
+cd /var/www/html/solidrust
+ls -la
+cat /etc/crontab 
+cd
+ls -al
+tail -F SolidRusT.log 
+cat /etc/crontab 
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /home/admin/solidrust.net;     chmod +x /home/admin/solidrust.net/defaults/*.sh;  chmod +x /home/admin/solidrust.net/defaults/web/*.sh
+cd /var/www/html/
+ls -al
+cd wordpress-sux/
+ls -la
+cd wp-content/
+ls -la
+grep -i solidrust *
+grep -i solidrust */*
+grep -is solidrust */*
+grep -is solidrust */*/*
+grep -is solidrust */*/*/*
+grep -is solidrust */*/*/*/*
+grep -is solidrust */*/*/*/*/*
+find . | grep -i solidrust
+find . -type f -print0 | xargs -0 grep "solidrust"
+cd ..
+find . -type f -print0 | xargs -0 grep "solidrust"
+ls -al
+cd ..
+sudo nano /etc/apache2/sites-available/wordpress.conf 
+sudo nano /etc/apache2/sites-available/wordpress-le-ssl.conf 
+sudo nano /etc/apache2/sites-available/wordpress.conf 
+sudo systemctl restart apache2
+sudo ln -s /etc/apache2/sites-available/wordpress.conf /etc/apache2/sites-enabled/wordpress.conf
+sudo ln -s /etc/apache2/sites-available/wordpress-le-ssl.conf /etc/apache2/sites-enabled/wordpress-le-ssl.conf
+sudo systemctl restart apache2
+ls -al
+rm -rf solidrust
+sudo rm -rf solidrust
+sudo ln -s /var/www/html/wordpress-sux /var/www/html/solidrust
+ls -al
+sudo rm -rf solidrust
+sudo ln -s /home/admin/solidrust.net/web
+sudo ln -s /home/admin/solidrust.net/web solidrust
+ls -al
+sudo rm web
+ls -al
+cd
+aws s3 sync --only-show-errors --delete s3://solidrust.net-backups/repo /home/admin/solidrust.net;     chmod +x /home/admin/solidrust.net/defaults/*.sh;  chmod +x /home/admin/solidrust.net/defaults/web/*.sh
+cd /var/www/html/
+ls -al
+cd solidrust
+ls -al
+mkdir maps
+cd
+ls -al
+ls -al solidrust.net/web/
+ls -al /home/admin/solidrust.net/web/maps
+sudo su - 
+ls -al /home/admin/solidrust.net/web/maps
+echo "*/10 *    * * *   ${USER}  /bin/sh -c ${HOME}/solidrust.net/defaults/web/44_sync_server_config.sh" | sudo tee -a /etc/crontab
+nano /etc/crontab 
+sudo nano /etc/crontab 
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=$(basename -- "$0")
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+# update repo
+aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net
+ls -al solidrust.net/
+ls -al solidrust.net/web
+chmod +x ${HOME}/solidrust.net/defaults/*.sh
+chmod +x ${HOME}/solidrust.net/defaults/web/*.sh
+aws s3 sync ${S3_WEB}/maps ${HOME}/solidrust.net/web/maps | tee -a ${LOGS}
+sudo nano /etc/crontab 
+ls /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net
+chmod +x ${HOME}/solidrust.net/defaults/*.sh
+chmod +x ${HOME}/solidrust.net/defaults/web/*.sh
+# Pull global env vars
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=$(basename -- "$0")
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+# update repo
+aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net
+chmod +x ${HOME}/solidrust.net/defaults/*.sh
+chmod +x ${HOME}/solidrust.net/defaults/web/*.sh
+ls /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+ls -al solidrust.net/web/images/
+cat /etc/crontab 
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cat /etc/crontab 
+ls -al
+ln -s /var/www/html/solidrust live
+ls -al
+cd live
+ls -al
+cd maps/
+ls -la
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+cd ..
+ls -al
+mv Stellarium6.map maps/
+ls -al
+cd maps/
+ls -al
+rm Stellarium4.map 
+aws s3 sync --delete ${HOME}/solidrust.net/web/maps ${S3_WEB}/maps
+# Pull global env vars
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=$(basename -- "$0")
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+aws s3 sync --delete ${HOME}/solidrust.net/web/maps ${S3_WEB}/maps
+ls -al
+echo " ${S3_WEB}/maps"
+ls -al
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/maps/
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/maps/
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls
+ls live
+ls live/images/
+cat /etc/crontab 
+cat live/index.php 
+cat /etc/crontab 
+tail SolidRusT.log 
+ls -al
+ls -al /var/www/html/
+grep youtube live/index.php 
+cat /etc/crontab 
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+grep youtube live/index.php 
+cd solidrust.net/
+ls -al
+cd ..
+grep youtube solidrust.net/web/index.php 
+# Pull global env vars
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+aws s3 sync --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
+grep youtube live/index.php 
+rm solidrust.net/web/index.php 
+grep youtube live/index.php 
+aws s3 sync --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
+grep youtube live/index.php 
+aws s3 sync --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
+grep fuck live/index.php 
+aws s3 sync --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/images/
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/images/
+ls -al live/images/Ki*
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/images/Ki*
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/images/Ki*
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/images/Ki*
+/bin/sh -c /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/images/
+cat /etc/crontab 
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/images/Kit-*
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd live/maps/
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd maps
+cd live
+cd maps/
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+grep meta live/discord/index.html 
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+grep meta live/discord/index.html 
+ls -al
+unzip simple-link-discord-steam-linking-system.zip 
+sudo apt install unzip
+unzip simple-link-discord-steam-linking-system.zip 
+ls -la
+mv Simple\ Link/ SimpleLink
+ls -al
+mv simple-link-discord-steam-linking-system.zip SimpleLink/
+cd SimpleLink/
+ls-la
+ls -al
+cd Website\ Files/
+ls -al
+mysql -u srt_sl_lcy -p data.solidrust.net
+mysql
+mysql --help
+mysql -u srt_sl_lcy -p -h data.solidrust.net srt_web_auth
+ls -la
+cat index.php 
+ls -al
+rm -rf SimpleLink/
+ls -al
+rm -rf __MACOSX/
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+sudo apt remove mysql-server
+sudo apt remove mariadb-server
+dpkg -l | grep server
+sudo apt remove mariadb-server* default-mysql-server
+mysql
+mysql -u srt_sl_lcy -p -h data.solidrust.net srt_web_auth
+ls -al
+cd live
+ls -l
+cd
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd live
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -la
+rm -rf *
+l s-la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls-la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd bot/
+ls -0al
+ls -la
+npm
+sudo apt update && sudo apt dist-upgrade
+sudo apt install npm
+ls -la
+npm install
+ls-la
+l s-al
+ls -la
+cd ..
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -la
+ls -al bot
+rm bot
+rm bot -rf
+ls -al
+cd discord/
+ls -al
+npm install
+l s-la
+ls -al
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+npm install
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+npm install
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+npm install
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+npm install
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+npm install
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+npm install
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+npm install
+npm install discord.js
+npm install discord.js node-fetch steamapi
+npm install
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+npm install discord.js node-fetch steamapi
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd ..
+ls -al
+rm discord/
+rm -rf discord/
+ls -al
+cd login/
+ls -l
+rm *
+rm * -rf
+ls -al
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd ../discord/
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+nodejs SimpleLinkBot.js 
+apt search nodejs
+sudo apt-get install curl software-properties-common 
+sudo apt -y install curl software-properties-common 
+curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -
+sudo apt-get install -y nodejs
+nodejs --version
+npm --version
+npm install
+ls -la
+npm install --help
+npm help install
+ls -la
+npm install -g npm@7.20.0
+sudo npm install -g npm@7.20.0
+cd live
+cd discord/
+npm --version
+npm install
+ls -al
+arm -rf node_modules/
+rm -rf node_modules/
+npm install
+ls -al
+ls -al node_modules/
+ls -al
+nodejs SimpleLinkBot.js 
+ps -ef | grep node
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+npm install
+nodejs SimpleLinkBot.js 
+nodejs SimpleLinkBot.js &
+ls -al ~/
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+npm install
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd ..
+ps -ef | grep node
+ls -al
+cd live
+ls -al
+cd steamauth/
+ls -al
+cat SteamConfig.php 
+cd ..
+cat main.conf.php 
+nano /etc/apache2/sites-enabled/solidrust.conf 
+sudo nano /etc/apache2/sites-enabled/solidrust-le-ssl.conf 
+sudo nano /etc/apache2/apache2.conf 
+sudo nano /etc/apache2/mods-enabled/php7.3.load 
+cd /etc/apache2/
+find . -type f -exec grep -l index.htm {} \;
+sudo nano ./mods-available/dir.conf
+ls mods-enabled/
+nano mods-enabled/dir.conf 
+find . -type f -exec grep -l index.htm {} \;
+find . -type f -exec grep -l index.html {} \;
+find . -type f -exec grep -l index.php {} \;
+ls -al mods-enabled/
+sudo systemctl apache2 restart
+sudo systemctl restart apache2
+cd
+cd live
+find . -type f -exec grep -l "RustReborn.link" {} \;
+find . -type f -exec grep -l ".net/discord" {} \;
+find . -type f -exec grep -l "discord" {} \;
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -0al
+ls -la
+tail -n 1000 /var/log/apache2/error.log
+dat
+tail -n 1000 /var/log/apache2/solidrust.net_error.log
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+history | grep find
+find . -type f -exec grep -l "user_id" {} \;
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+find . -type f -exec grep -l "user_id" {} \;
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+find . -type f -exec grep -l "user_id" {} \;
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+find . -type f -exec grep -l "SimpleLinkBot.js" {} \;
+ls -al
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+tail -n 1000 /var/log/apache2/solidrust.net_error.log
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+tail -n 1000 /var/log/apache2/solidrust.net_error.log
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ps -ef | grep node
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd discord/
+cd ..
+ls -al
+npn install
+npm install
+nodejs SimpleLinkBot.js &
+ls -la
+cd live
+ls -la
+ps -ef | grep node
+kill 19113
+ps -ef | grep node
+history | grep find
+history | grep mysql
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+cd liva
+cd live
+ls -al
+npm install
+nodejs SimpleLinkBot.js &
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+PS -EF 
+ps -ef | grep node
+kill -4 26611
+ps -ef | grep node
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+ls discord
+rm discord/node_modules/
+rm discord/node_modules/ -rf
+ls -al login
+rm -rf login
+ls -la
+rm -rf link.php 
+rm -rf link
+rm -rf node_modules/
+ls -al
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+cd linkbot/
+ls -al
+npm install
+ls -al
+npm install node-linux
+sudo npm install node-linux
+sudo npm audit fix --force
+sudo npm install node-linux
+l s-la
+ls -al
+npm install node-linux
+npm audit fix --force
+npm install
+l s-la
+ls -al
+cd ..
+cat ~/.bashrc
+ls -al
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd ..
+ls -al live
+ls -al live/
+ls -al live/linkbot/
+rm -rf live/linkbot
+ls -al
+ln -s solidrust.net/defaults/web web_scripts
+ls -al
+cd web_scripts
+ls -la
+cd linkbot/
+ls -al
+node install
+npm install
+node install
+node install LinkBot
+node install service 
+ls -al
+pwd
+ls -al ${HOME}/solidrust.net/defaults/
+ls -al ${HOME}/solidrust.net/defaults/web/
+ls -al ${HOME}/solidrust.net/defaults/web/linkbot
+ls -al
+npm install
+cd
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -la
+ln -s ${HOME}/solidrust.net/defaults/web/linkbot linkbot
+cd linkbot
+ls -alk
+chmod +x start.sh 
+./start.sh &
+ps -ef | grep node
+ls -al
+ps -ef | grep node
+kill -9 31674
+ps -ef | grep node
+kill -9 31687
+ps -ef | grep start
+kill -9 31634
+ps -ef | grep start
+nodejs LinkBot.js > run.log &
+ls -al
+rm -rf node_modules/
+ls -al
+nmp install
+npm install
+ls -al
+nodejs LinkBot.js > run.log &
+tail run.log -F
+ls a-l
+
+ls -al
+nodejs LinkBot.js > run.log &
+ls -la
+rm -rf node_modules/
+npm install
+nodejs LinkBot.js > run.log &
+tail run.log -F
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd linkbot
+ls -al
+chmod +x start.sh 
+./start.sh &
+ls -al
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+sudo su -
+cat /etc/hosts
+cd live
+cd images/
+ls -al
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+source ${HOME}/solidrust.net/defaults/env_vars.sh
+me=$(basename -- "$0")
+echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
+echo "Downloading repo from s3" | tee -a ${LOGS}
+aws s3 sync --only-show-errors --delete ${S3_BACKUPS}/repo ${HOME}/solidrust.net | tee -a ${LOGS}
+chmod +x ${HOME}/solidrust.net/defaults/*.sh
+chmod +x ${HOME}/solidrust.net/defaults/web/*.sh
+cd live/images/
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+nano /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/images/
+mkdir shit
+cd shit
+ls -al
+npm i discord.js-poll-tool
+ls -al
+cat package.json
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd ..
+cd live/
+ls -al
+cd discord/
+ls -al
+mv index.html index.php
+cat index.php 
+cd ..
+ls -al
+cd
+mkdir shit
+cd shit
+ls -al
+nano somefile
+cat somefile | sort | uniq
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd live/images/
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls Grow-*
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+nano /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+nano /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd solidrust.net/
+ls -la
+rm terraform/
+rm -rf terraform/
+rm -rf servers
+rm -rf bots
+rm -rf archived
+ls -la
+rm -rf draft
+ls -al
+rm -rf .git/
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cat /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cat /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cat /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cat /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cat /home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+MESSAGE='testing discord CLI from console'
+curl -X POST         -F "content=${MESSAGE}"         -F "username=${USERNAME}"         "${WEBHOOK}"
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+cd linkbot
+ls -la
+history start.sh
+history | grep start.sh
+chmod +x ./start.sh &
+catg start.sh 
+cat start.sh 
+ps -ef | grep node
+ps -ef | grep start.sh 
+kill -9 32110
+ps -ef | grep node
+ls -al
+cat start.sh 
+tail run.log 
+nodejs  LinkBot.js 
+npm install
+npm install -g npm@7.20.5
+sudo npm install -g npm@7.20.5
+npm install
+./start.sh 
+ls -al
+history
+history | grep apt
+sudo apt install apache2 php7.3 libapache2-mod-php7.3 php7.3-common php7.3-mbstring php7.3-xmlrpc php7.3-soap php7.3-gd php7.3-xml php7.3-intl php7.3-mysql php7.3-cli php7.3-ldap php7.3-zip php7.3-curl curl software-properties-common nodejs npm unzip imagemagick php-imagick snapd htop
+sudo apt install apache2 php7.3 libapache2-mod-php7.3 php7.3-common php7.3-mbstring php7.3-xmlrpc php7.3-soap php7.3-gd php7.3-xml php7.3-intl php7.3-mysql php7.3-cli php7.3-ldap php7.3-zip php7.3-curl curl software-properties-common npm unzip imagemagick php-imagick snapd htop
+sudo apt install apache2 php7.3 libapache2-mod-php7.3 php7.3-common php7.3-mbstring php7.3-xmlrpc php7.3-soap php7.3-gd php7.3-xml php7.3-intl php7.3-mysql php7.3-cli php7.3-ldap php7.3-zip php7.3-curl curl software-properties-common unzip imagemagick php-imagick snapd htop
+apt search php7.
+cat /etc/crontab 
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd linkbot
+ls -la
+rm -rf node_modules/
+npm install
+chmod +x start.sh 
+./start.sh &
+ps -ef | grep node
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+./start.sh &
+chmod +x start.sh 
+./start.sh &
+cd live
+cat .htaccess 
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al live/
+rm -rf live/discord
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd live
+cat nav_bar_simple.php 
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+df -h
+sudo apt update && sudo apt dist-upgrade -y
+sudo apt install icecast2
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+icecast2 --version
+dpkg -l
+dpkg -l | grep libxml
+dpkg -l | grep libxslt
+dpkg -l | grep curl
+dpkg -l | grep ogg
+cd live
+ls -al
+cd music/
+ls -al
+ls -al club-house-uk/
+cd ..
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd live
+ls -la
+cd music/
+ls -la
+cd ..
+ld -ls
+ls -al
+rm -rf *
+ls -al
+rm .htaccess 
+rm .gitignore 
+ls -la
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd live
+ls -al
+cd music/
+ls
+cd ..
+rm -rf music/
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls
+dpkg -l | grep icecast
+dh -h
+df -h
+cd ..
+ls -al
+cd /var/www/
+ls -al
+mkdir radio
+sudo mkdir radio
+cd radio/
+pwd
+sudo chown admin:admin /var/www/radio\
+sudo chown admin:admin /var/www/radio
+touch my.balls
+rm my.balls 
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -la
+ls -la club-house-uk/
+nano /etc/icecast2/icecast.xml
+sudo nano /etc/icecast2/icecast.xml
+sudo service icecast2 restart
+history
+apt-get install libshout3-dev libxml2-dev libmp3lame-dev gcc g++ make
+sudo apt-get install libshout3-dev libxml2-dev libmp3lame-dev gcc g++ make
+cd /tmp
+wget https://ftp.osuosl.org/pub/xiph/releases/ices/ices-2.0.3.tar.gz
+tar xfzs ices-2.0.3.tar.gz && cd ices-2.0.3
+./configure --prefix=/var/ices --with-lame ;make
+make install
+sudo make install
+sudo mkdir /var/log/ices
+sudo nano /var/ices/etc/ices.conf
+ls /var/ices/
+ls /var/ices/bin/
+sudo nano /etc/ices.xml
+nano /etc/default/icecast2
+sudo nano /etc/default/icecast2
+sudo service icecast2 restart
+sudo nano /etc/icecast2/icecast.xml
+apt-get install ices2
+sudo apt-get install ices2
+sudo su - 
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+ln -s /etc/ices2/music radio
+ls -al
+cd roadi
+cd radio
+ls -al
+pwd
+cd /etc/ices2/
+cd music/
+ls -al
+sudo nano /var/ices/etc/ices.conf
+sudo nano /ect/ices2/ices-playlist.xml
+cd ..
+ls-al
+ls -al
+nano ices-playlist.xml 
+sudo nano ices-playlist.xml 
+ices2 /etc/ices2/ices-playlist.xml
+ps -ef | grep ices
+sudo ices2 /etc/ices2/ices-playlist.xml
+ps -ef | grep ices
+tail /var/log/ices/ices.log
+sudo nano ices-playlist.xml 
+ls -al
+sudo nano ices-playlist.xml 
+sudo ices2 /etc/ices2/ices-playlist.xml
+tail /var/log/ices/ices.log
+ls -al /etc/ices2/music/SRTDanceUK_list.m3u
+ls -al
+ln -s /etc/ices2/music/SRTDanceUK_list.m3u /etc/ices2/SRTDanceUK_list.m3u
+sudo ln -s /etc/ices2/music/SRTDanceUK_list.m3u /etc/ices2/SRTDanceUK_list.m3u
+ls -al
+mv ices-playlist.xml SRTDanceUK_list.xml
+sudo mv ices-playlist.xml SRTDanceUK_list.xml
+ls -al
+ls /etc/ices2/music
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+sudo ices2 /etc/ices2/SRTDanceUK_list.xml 
+tail /var/log/ices/ices.log
+sudo nano SRTDanceUK_list.xml 
+sudo ices2 /etc/ices2/SRTDanceUK_list.xml 
+tail /var/log/ices/ices.log
+sudo ices2 /etc/ices2/SRTDanceUK_list.xml 
+sudo nano SRTDanceUK_list.xml 
+sudo ices2 /etc/ices2/SRTDanceUK_list.xml 
+cd /tmp/
+ls -al
+cd ices-2.0.3/
+ls -al
+sudo make install
+which ices
+which ices2
+/usr/bin/ices2 --varsion
+/usr/bin/ices2 --version
+/usr/bin/ices2 -v
+/usr/bin/ices2
+ls -al /var/ices/bin
+cd /etc/ices2/
+sudo /var/ices/bin/ices /etc/ices2/SRTDanceUK_list.xml 
+tail /var/log/ices/ices.log
+tail /var/log/ices/ices.log -n 100
+tail /var/log/ices/ices.log -n 200
+ls -al "/etc/ices2/music/099. Drake Ft. Rihanna - Take Care (Jolyon Petch's Proper Club Mix).mp3"
+sudo apt install build-essential libshout3-dev liblame-dev libmp3lame-dev
+sudo apt install build-essential libshout3-dev liblame libmp3lame-dev
+sudo apt install build-essential libshout3-dev libmp3lame-dev
+cat /etc/apt/sources.list
+sudo apt install mpd
+nano /etc/mpd.conf
+sudo nano /etc/mpd.conf
+cd /var/lib/mpd/music/
+sudo ln -s /var/www/radio radio
+ls -al
+sudo systemctl start mpd
+sudo systemctl status mpd
+cd
+git clone https://github.com/notandy/ympd.git
+sudo apt install git
+apt search libmpd
+sudo apt install libmpdclient2
+git clone https://github.com/notandy/ympd.git
+ls -al
+cd ympd/
+ls -al
+sudo apt install cmake
+sudo apt install openssl-dev
+apt search openssl | grep dev
+sudo apt install libssl-dev
+sudo apt autoremove
+mkdir build; cd build
+cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr
+apt search libmpdclient2
+cd /var/www/
+ls -al
+ls -al radio
+tail /var/log/mpd/mpd.log 
+sudo apt install alsa
+sudo apt install alsa-base
+sudo apt install alsaconf
+sudo apt install alsamixer
+sudo apt install alsa-tools
+tail /var/log/mpd/mpd.log 
+tail /var/log/mpd/mpd.log -F
+nano /etc/mpd.conf 
+sudo nano /etc/mpd.conf 
+sudo systemctl restart mpd
+journalctl -xe
+sudo systemctl restart mpd
+journalctl -xe
+sudo nano /etc/mpd.conf 
+sudo systemctl restart mpd
+tail /var/log/mpd/mpd.log -F
+ls -la
+cd radio/
+ls -al
+cd /var/lib/mpd/music/
+ls -la
+rm radio
+sudo rm radio
+ls -al
+cd ..
+rm music/
+sudo rm music/
+sudo rm music/ -rf
+sudo ln -s /var/www/radio music
+sudo systemctl restart mpd
+ls -al
+ls -al music
+ls -al music/
+ls -al music/club-house-uk/
+rm -rf music/club-house-uk/
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+cd :~/ympd/build
+cd ~/ympd/build
+cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr
+apt search libmpdclient
+sudo apt install libmpdclient-dev
+cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr
+make
+sudo make install
+cat /etc/apache2/sites-enabled/solidrust-le-ssl.conf 
+cat /etc/letsencrypt/live/solidrust.net/privkey.pem > /etc/letsencrypt/live/solidrust.net/combined.pem
+sudo su -
+cd
+ympd -w "ssl://8081:/etc/letsencrypt/live/solidrust.net/combined.pem"
+sudo su -
+/home/admin/solidrust.net/defaults/web/44_sync_server_config.sh
+ls -al
+rm radio
+ln -s /var/www/radio radio
+ls -al
+cd radio
+ls -al
+sudo systemctl icecast2 restart
+sudo systemctl restart icecast2
+sudo systemctl restart mpd
+nano /etc/icecast2/icecast.xml 
+sudo nano /etc/icecast2/icecast.xml 
+sudo systemctl restart icecast2
+sudo systemctl restart MPD
+sudo systemctl restart mpd
+sudo nano /etc/icecast2/icecast.xml 
+tail -F /var/log/mpd/mpd.log 
+sudo systemctl restart icecast2
+tail -F /var/log/icecast2/error.log 
+nano /etc/apache2/sites-enabled/solidrust-le-ssl.conf 
+sudo nano /etc/apache2/sites-enabled/solidrust-le-ssl.conf 
+sudo systemctl restart apache2
+journalctl -xe
+cd /etc/apache2/conf-available/
+ls -al
+cd ..
+cd mods-available/
+ls -al
+nano ../sites-enabled/solidrust-le-ssl.conf 
+sudo nano ../sites-enabled/solidrust-le-ssl.conf 
+sudo a2enmod proxy
+sudo a2enmod proxy_http
+sudo a2enmod proxy_balancer
+sudo a2enmod lbmethod_byrequests
+systemctl restart apache2
+sudo systemctl restart apache2
+cd /etc/icecast2/
+ls -la
+sudo nano icecast.xml 
+sudo systemctl restart icecast2
+sudo systemctl restart mbd
+sudo systemctl restart mpd
+sudo nano icecast.xml 
+sudo systemctl restart icecast2
+sudo nano icecast.xml 
+sudo systemctl restart icecast2
+sudo nano icecast.xml 
+sudo systemctl restart icecast2
+sudo systemctl restart mpd
+sudo nano icecast.xml 
+sudo systemctl restart icecast2
+sudo nano ../mpd.conf 
+sudo systemctl restart mpd
+sudo sh -c "echo deb http://download.opensuse.org/repositories/multimedia:/xiph/Debian_10/ ./ >>/etc/apt/sources.list.d/icecast.list"
+sudo apt update && sudo apt -y dist-upgrade
+wget -qO - http://icecast.org/multimedia-obs.key | sudo apt-key add -
+sudo apt update && sudo apt -y dist-upgrade
+sudo apt-get install icecast2
+aps search icecast2
+apt search icecast2
+cat /etc/apt/sources.list.d/icecast.list
+htop
+cd
+ls -la
+cd ympd/
+ls -al
+cd 
+which ympd
+cd ympd/build/
+ls -la
+cdc CMakeFiles/
+ls -al
+cd CMakeFiles/
+ll
+ls -al
+cd 3.13.4/
+ls -la
+cd ~/ympd/
+l s-la
+ls -al
+cd src/
+ls -la
+solidrust.net/defaults/web/44_sync_server_config.sh 
+ps -ef node
+ps -ef | grep node
+kill -9 20340
+sudo su -
+cd linkbot
+ls -al
+./start.sh &
+df -h
+sudo su -
+solidrust.net/defaults/web/44_sync_server_config.sh 
+ls -al
+sudo su -
+solidrust.net/defaults/web/44_sync_server_config.sh 
+sudo su -
+solidrust.net/defaults/web/44_sync_server_config.sh 
+history | grep encryp
+ls -al /etc/apache2/
+which ympd 
+ls -al
+cd ympd/
+ls -al
