@@ -1,6 +1,9 @@
 {
   "DefaultLimitPerCar": 1,
   "EnableTurretPickup": true,
+  "OnlyPowerTurretsWhileEngineIsOn": false,
+  "TargetNPCs": true,
+  "TargetAnimals": true,
   "SpawnWithCar": {
     "NaturalCarSpawns": {
       "Enabled": false

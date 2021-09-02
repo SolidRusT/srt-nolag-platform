@@ -16,15 +16,16 @@
       "Monument": false,
       "Ignore Monument Marker Prefab": false,
       "Mounted": true,
-      "Oil Rig": false,
+      "Oil Rig": true,
       "Safe Zone": true,
       "Swimming": false
     },
     "Block Teleport (NoEscape)": true,
     "Block Teleport (ZoneManager)": false,
     "Chat Name": "<color=red>Teleportation</color> \n\n",
-    "Chat Steam64ID": 76561199182551125,
+    "Chat Steam64ID": 76561199056025689,
     "Check Boundaries On Teleport X Y Z": true,
+    "Data File Directory (Blank = Default)": "",
     "Draw Sphere On Set Home": true,
     "Homes Enabled": true,
     "TPR Enabled": true,
@@ -41,7 +42,7 @@
     "Use Cave Topology Check": false,
     "Use Economics": true,
     "Use Server Rewards": false,
-    "Wipe On Upgrade Or Change": false,
+    "Wipe On Upgrade Or Change": true,
     "Auto Generate Outpost Location": true,
     "Auto Generate Bandit Location": true,
     "Show Time As Seconds Instead": false
@@ -56,13 +57,13 @@
   "Home": {
     "Homes Limit": 2,
     "VIP Homes Limits": {
-      "nteleportation.survivor": 5,
-      "nteleportation.solidplayer": 5,
+      "nteleportation.survivor": 3,
+      "nteleportation.solidplayer": 4,
       "nteleportation.supporter": 5,
-      "nteleportation.legendary": 5,
+      "nteleportation.legend": 5,
       "nteleportation.developer": 5,
       "nteleportation.gm": 5,
-      "nteleportation.admin": 5
+      "nteleportation.admin": 15
     },
     "Allow Sethome At Specific Monuments": [
       "HQM Quarry",
@@ -73,30 +74,30 @@
     "Allow TPB": true,
     "Cooldown": 600,
     "Countdown": 15,
-    "Daily Limit": 5,
+    "Daily Limit": 10,
     "VIP Daily Limits": {
-      "nteleportation.survivor": 5,
-      "nteleportation.solidplayer": 5,
-      "nteleportation.supporter": 5,
-      "nteleportation.legendary": 5,
-      "nteleportation.developer": 5,
-      "nteleportation.gm": 5,
-      "nteleportation.admin": 5
+      "nteleportation.survivor": 15,
+      "nteleportation.solidplayer": 20,
+      "nteleportation.supporter": 25,
+      "nteleportation.legend": 30,
+      "nteleportation.developer": 50,
+      "nteleportation.gm": 50,
+      "nteleportation.admin": 100
     },
     "VIP Cooldowns": {
-      "nteleportation.survivor": 5,
-      "nteleportation.solidplayer": 5,
-      "nteleportation.supporter": 5,
-      "nteleportation.legendary": 5,
-      "nteleportation.developer": 5,
-      "nteleportation.gm": 5,
-      "nteleportation.admin": 5
+      "nteleportation.survivor": 450,
+      "nteleportation.solidplayer": 300,
+      "nteleportation.supporter": 250,
+      "nteleportation.legend": 120,
+      "nteleportation.developer": 0,
+      "nteleportation.gm": 0,
+      "nteleportation.admin": 0
     },
     "VIP Countdowns": {
-      "nteleportation.survivor": 5,
-      "nteleportation.solidplayer": 5,
-      "nteleportation.supporter": 5,
-      "nteleportation.legendary": 5,
+      "nteleportation.survivor": 14,
+      "nteleportation.solidplayer": 13,
+      "nteleportation.supporter": 12,
+      "nteleportation.legend": 10,
       "nteleportation.developer": 5,
       "nteleportation.gm": 5,
       "nteleportation.admin": 5
@@ -117,7 +118,7 @@
     "Allow Above Foundation": true,
     "Check If Home Is Valid On Listhomes": false,
     "Pay": 0,
-    "Bypass": 0
+    "Bypass": 10
   },
   "TPT": {
     "Use Friends": false,
@@ -131,30 +132,30 @@
     "Allow TPB": true,
     "Cooldown": 600,
     "Countdown": 15,
-    "Daily Limit": 5,
+    "Daily Limit": 10,
     "VIP Daily Limits": {
-      "nteleportation.survivor": 5,
-      "nteleportation.solidplayer": 5,
-      "nteleportation.supporter": 5,
-      "nteleportation.legendary": 5,
-      "nteleportation.developer": 5,
-      "nteleportation.gm": 5,
-      "nteleportation.admin": 5
+      "nteleportation.survivor": 15,
+      "nteleportation.solidplayer": 20,
+      "nteleportation.supporter": 25,
+      "nteleportation.legend": 30,
+      "nteleportation.developer": 50,
+      "nteleportation.gm": 50,
+      "nteleportation.admin": 100
     },
     "VIP Cooldowns": {
-      "nteleportation.survivor": 5,
-      "nteleportation.solidplayer": 5,
-      "nteleportation.supporter": 5,
-      "nteleportation.legendary": 5,
-      "nteleportation.developer": 5,
-      "nteleportation.gm": 5,
-      "nteleportation.admin": 5
+      "nteleportation.survivor": 450,
+      "nteleportation.solidplayer": 300,
+      "nteleportation.supporter": 250,
+      "nteleportation.legend": 120,
+      "nteleportation.developer": 0,
+      "nteleportation.gm": 0,
+      "nteleportation.admin": 0
     },
     "VIP Countdowns": {
-      "nteleportation.survivor": 5,
-      "nteleportation.solidplayer": 5,
-      "nteleportation.supporter": 5,
-      "nteleportation.legendary": 5,
+      "nteleportation.survivor": 14,
+      "nteleportation.solidplayer": 13,
+      "nteleportation.supporter": 12,
+      "nteleportation.legend": 10,
       "nteleportation.developer": 5,
       "nteleportation.gm": 5,
       "nteleportation.admin": 5
@@ -166,7 +167,7 @@
     "Allow Cupboard Owner When Building Blocked": true,
     "Allow Crafting": false,
     "Pay": 0,
-    "Bypass": 0
+    "Bypass": 10
   },
   "Dynamic Commands": {
     "Town": {
@@ -175,30 +176,30 @@
       "Allow Cave": false,
       "Cooldown": 600,
       "Countdown": 15,
-      "Daily Limit": 5,
+      "Daily Limit": 10,
       "VIP Daily Limits": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
-        "nteleportation.developer": 5,
-        "nteleportation.gm": 5,
-        "nteleportation.admin": 5
+        "nteleportation.survivor": 15,
+        "nteleportation.solidplayer": 20,
+        "nteleportation.supporter": 25,
+        "nteleportation.legend": 30,
+        "nteleportation.developer": 50,
+        "nteleportation.gm": 50,
+        "nteleportation.admin": 100
       },
       "VIP Cooldowns": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
-        "nteleportation.developer": 5,
-        "nteleportation.gm": 5,
-        "nteleportation.admin": 5
+        "nteleportation.survivor": 450,
+        "nteleportation.solidplayer": 300,
+        "nteleportation.supporter": 250,
+        "nteleportation.legend": 120,
+        "nteleportation.developer": 0,
+        "nteleportation.gm": 0,
+        "nteleportation.admin": 0
       },
       "VIP Countdowns": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
+        "nteleportation.survivor": 14,
+        "nteleportation.solidplayer": 13,
+        "nteleportation.supporter": 12,
+        "nteleportation.legend": 10,
         "nteleportation.developer": 5,
         "nteleportation.gm": 5,
         "nteleportation.admin": 5
@@ -209,7 +210,7 @@
       "Usable Out Of Building Blocked": false,
       "Allow Crafting": false,
       "Pay": 0,
-      "Bypass": 0
+      "Bypass": 10
     },
     "Island": {
       "Command Enabled": true,
@@ -217,30 +218,30 @@
       "Allow Cave": false,
       "Cooldown": 600,
       "Countdown": 15,
-      "Daily Limit": 5,
+      "Daily Limit": 10,
       "VIP Daily Limits": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
-        "nteleportation.developer": 5,
-        "nteleportation.gm": 5,
-        "nteleportation.admin": 5
+        "nteleportation.survivor": 15,
+        "nteleportation.solidplayer": 20,
+        "nteleportation.supporter": 25,
+        "nteleportation.legend": 30,
+        "nteleportation.developer": 50,
+        "nteleportation.gm": 50,
+        "nteleportation.admin": 100
       },
       "VIP Cooldowns": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
-        "nteleportation.developer": 5,
-        "nteleportation.gm": 5,
-        "nteleportation.admin": 5
+        "nteleportation.survivor": 450,
+        "nteleportation.solidplayer": 300,
+        "nteleportation.supporter": 250,
+        "nteleportation.legend": 120,
+        "nteleportation.developer": 0,
+        "nteleportation.gm": 0,
+        "nteleportation.admin": 0
       },
       "VIP Countdowns": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
+        "nteleportation.survivor": 14,
+        "nteleportation.solidplayer": 13,
+        "nteleportation.supporter": 12,
+        "nteleportation.legend": 10,
         "nteleportation.developer": 5,
         "nteleportation.gm": 5,
         "nteleportation.admin": 5
@@ -251,7 +252,7 @@
       "Usable Out Of Building Blocked": false,
       "Allow Crafting": false,
       "Pay": 0,
-      "Bypass": 0
+      "Bypass": 10
     },
     "Outpost": {
       "Command Enabled": true,
@@ -259,41 +260,41 @@
       "Allow Cave": false,
       "Cooldown": 600,
       "Countdown": 15,
-      "Daily Limit": 5,
+      "Daily Limit": 10,
       "VIP Daily Limits": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
-        "nteleportation.developer": 5,
-        "nteleportation.gm": 5,
-        "nteleportation.admin": 5
+        "nteleportation.survivor": 15,
+        "nteleportation.solidplayer": 20,
+        "nteleportation.supporter": 25,
+        "nteleportation.legend": 30,
+        "nteleportation.developer": 50,
+        "nteleportation.gm": 50,
+        "nteleportation.admin": 100
       },
       "VIP Cooldowns": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
-        "nteleportation.developer": 5,
-        "nteleportation.gm": 5,
-        "nteleportation.admin": 5
+        "nteleportation.survivor": 450,
+        "nteleportation.solidplayer": 300,
+        "nteleportation.supporter": 250,
+        "nteleportation.legend": 120,
+        "nteleportation.developer": 0,
+        "nteleportation.gm": 0,
+        "nteleportation.admin": 0
       },
       "VIP Countdowns": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
+        "nteleportation.survivor": 14,
+        "nteleportation.solidplayer": 13,
+        "nteleportation.supporter": 12,
+        "nteleportation.legend": 10,
         "nteleportation.developer": 5,
         "nteleportation.gm": 5,
         "nteleportation.admin": 5
       },
-      "Location": "589.682 73.11444 391.9695",
+      "Location": "123.0647 32.54002 712.0807",
       "Locations": [],
       "Teleport To Random Location": true,
       "Usable Out Of Building Blocked": false,
       "Allow Crafting": false,
       "Pay": 0,
-      "Bypass": 0
+      "Bypass": 10
     },
     "Bandit": {
       "Command Enabled": true,
@@ -301,41 +302,41 @@
       "Allow Cave": false,
       "Cooldown": 600,
       "Countdown": 15,
-      "Daily Limit": 5,
+      "Daily Limit": 10,
       "VIP Daily Limits": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
-        "nteleportation.developer": 5,
-        "nteleportation.gm": 5,
-        "nteleportation.admin": 5
+        "nteleportation.survivor": 15,
+        "nteleportation.solidplayer": 20,
+        "nteleportation.supporter": 25,
+        "nteleportation.legend": 30,
+        "nteleportation.developer": 50,
+        "nteleportation.gm": 50,
+        "nteleportation.admin": 100
       },
       "VIP Cooldowns": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
-        "nteleportation.developer": 5,
-        "nteleportation.gm": 5,
-        "nteleportation.admin": 5
+        "nteleportation.survivor": 450,
+        "nteleportation.solidplayer": 300,
+        "nteleportation.supporter": 250,
+        "nteleportation.legend": 120,
+        "nteleportation.developer": 0,
+        "nteleportation.gm": 0,
+        "nteleportation.admin": 0
       },
       "VIP Countdowns": {
-        "nteleportation.survivor": 5,
-        "nteleportation.solidplayer": 5,
-        "nteleportation.supporter": 5,
-        "nteleportation.legendary": 5,
+        "nteleportation.survivor": 14,
+        "nteleportation.solidplayer": 13,
+        "nteleportation.supporter": 12,
+        "nteleportation.legend": 10,
         "nteleportation.developer": 5,
         "nteleportation.gm": 5,
         "nteleportation.admin": 5
       },
-      "Location": "-963.1696 89.08693 1020.718",
+      "Location": "505.4142 27.44166 -325.6425",
       "Locations": [],
       "Teleport To Random Location": true,
       "Usable Out Of Building Blocked": false,
       "Allow Crafting": false,
       "Pay": 0,
-      "Bypass": 0
+      "Bypass": 10
     }
   }
 }

@@ -1,4 +1,5 @@
 {
+  "Ignore Admins": true,
   "Revert to Vanilla Stacks on unload (Recommended true if removing plugin)": false,
   "Disable Ammo/Fuel duplication fix (Recommended false)": false,
   "Enable VendingMachine Ammo Fix (Recommended)": true,
@@ -501,6 +502,11 @@
         "DisplayName": "Basic Horse Shoes",
         "Vanilla": 1,
         "Modified": 1
+      },
+      "jumpsuit.suit.blue": {
+        "DisplayName": "Blue Jumpsuit",
+        "Vanilla": 1,
+        "Modified": 1
       }
     },
     "Misc": {
@@ -761,6 +767,16 @@
       },
       "sickle": {
         "DisplayName": "Sickle",
+        "Vanilla": 1,
+        "Modified": 1
+      },
+      "submarineduo": {
+        "DisplayName": "Duo Submarine",
+        "Vanilla": 1,
+        "Modified": 1
+      },
+      "submarinesolo": {
+        "DisplayName": "Solo Submarine",
         "Vanilla": 1,
         "Modified": 1
       }
@@ -1302,6 +1318,16 @@
         "DisplayName": "SAM Ammo",
         "Vanilla": 1000,
         "Modified": 2000
+      },
+      "speargun.spear": {
+        "DisplayName": "Speargun Spear",
+        "Vanilla": 64,
+        "Modified": 64
+      },
+      "submarine.torpedo.straight": {
+        "DisplayName": "Torpedo",
+        "Vanilla": 100,
+        "Modified": 100
       }
     },
     "Construction": {
@@ -2919,6 +2945,56 @@
         "DisplayName": "Pure Wood Tea",
         "Vanilla": 10,
         "Modified": 30
+      },
+      "grub": {
+        "DisplayName": "Grub",
+        "Vanilla": 20,
+        "Modified": 20
+      },
+      "worm": {
+        "DisplayName": "Worm",
+        "Vanilla": 20,
+        "Modified": 20
+      },
+      "fish.anchovy": {
+        "DisplayName": "Anchovy",
+        "Vanilla": 10,
+        "Modified": 10
+      },
+      "fish.catfish": {
+        "DisplayName": "Catfish",
+        "Vanilla": 5,
+        "Modified": 5
+      },
+      "fish.herring": {
+        "DisplayName": "Herring",
+        "Vanilla": 10,
+        "Modified": 10
+      },
+      "fish.orangeroughy": {
+        "DisplayName": "Orange Roughy",
+        "Vanilla": 5,
+        "Modified": 5
+      },
+      "fish.salmon": {
+        "DisplayName": "Salmon",
+        "Vanilla": 10,
+        "Modified": 10
+      },
+      "fish.sardine": {
+        "DisplayName": "Sardine",
+        "Vanilla": 10,
+        "Modified": 10
+      },
+      "fish.smallshark": {
+        "DisplayName": "Small Shark",
+        "Vanilla": 5,
+        "Modified": 5
+      },
+      "fish.yellowperch": {
+        "DisplayName": "Yellow Perch",
+        "Vanilla": 10,
+        "Modified": 10
       }
     },
     "Resources": {
@@ -3218,6 +3294,11 @@
         "DisplayName": "Water Bucket",
         "Vanilla": 1,
         "Modified": 1
+      },
+      "fishingrod.handmade": {
+        "DisplayName": "Handmade Fishing Rod",
+        "Vanilla": 1,
+        "Modified": 1
       }
     },
     "Weapon": {
@@ -3498,6 +3579,11 @@
       },
       "spear.wooden": {
         "DisplayName": "Wooden Spear",
+        "Vanilla": 1,
+        "Modified": 1
+      },
+      "speargun": {
+        "DisplayName": "Speargun",
         "Vanilla": 1,
         "Modified": 1
       }

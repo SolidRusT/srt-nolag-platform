@@ -144,7 +144,7 @@
     "Show message to admin after command usage": false,
     "Time for active smoke of SupplySignal": 30.0,
     "Unlock crates only after player stopped looting": false,
-    "version": "2.9.3"
+    "version": "2.9.4"
   },
   "Notification": {
     "Maximum distance in meters to get notified about landed Drop": 1000,
