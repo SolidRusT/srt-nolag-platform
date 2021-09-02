@@ -17,7 +17,7 @@ using Network;
 
 namespace Oxide.Plugins
 {
-    [Info("Payback", "1928Tommygun", "1.7.2")]
+    [Info("Payback", "1928Tommygun", "1.8.0")]
     [Description("Special Admin Commands To Mess With Cheaters")]
     class Payback : RustPlugin
     {
@@ -93,6 +93,7 @@ namespace Oxide.Plugins
             //Cowboy, // Cowboy - Ride target player like a wild hog -> couldn't get this to work
             Masochist, // Masochist - Stop player from F1 killing themselves
             Emote, // Emote - options: 
+            Shark, // Jaws - shark comes to eat the cheater
         }
 
         Dictionary<Card, string> descriptions = new Dictionary<Card, string>() {
@@ -120,7 +121,8 @@ namespace Oxide.Plugins
             {Card.Shocker, "Shock target player to death.  Affects nearby players so be careful.  Make sure to disable it after use." },
             //{Card.Cowboy, "Cowboy - Ride target player like a wild hog" },
             {Card.Masochist, "Masochist - Stop player from F1 killing themselves" },
-            {Card.Emote, "Masochist -  "},
+            {Card.Emote, "Emote - force player to do an emote. "},
+            {Card.Shark, "shark comes to eat the cheater"},
         };
 
         Dictionary<string, Card> cardAliases = new Dictionary<string, Card>() {
@@ -150,6 +152,7 @@ namespace Oxide.Plugins
             //{ "cow", Card.Cowboy},
             { "ms", Card.Masochist},
             { "em", Card.Emote},
+            { "jaws", Card.Shark},
         };
 
         //| ==============================================================
@@ -250,6 +253,9 @@ namespace Oxide.Plugins
                 } else if (card == Card.Emote)
                 {
                     DoEmote(player, args, admin);
+                }else if (card == Card.Shark)
+                {
+                    DoShark(player, args, admin);
                 }
                 
                 //if (card == Card.Cowboy)
@@ -268,6 +274,148 @@ namespace Oxide.Plugins
         //| ==============================================================
         //| COMMAND Implementation
         //| ==============================================================
+
+        void DoShark(BasePlayer player, string[] args, BasePlayer admin = null)
+        {
+            Worker.StaticStartCoroutine(SharkCo2(player, args, admin));
+        }
+        IEnumerator SharkCo2(BasePlayer player, string[] args, BasePlayer admin = null) {
+
+            TakeCard(player, Card.Shark);
+
+            ////| KILL ALL EXISTING SHARKS FOR DEBUGGING
+            //SimpleShark[] sharks = GameObject.FindObjectsOfType<SimpleShark>();
+            //foreach (var s in sharks)
+            //{
+            //    s.Kill();
+            //}
+
+            //| SPAWN THE SHARK
+            SimpleShark shark;
+            string sharkPrefab = "assets/rust.ai/agents/fish/simpleshark.prefab";
+
+            BaseEntity entity = GameManager.server.CreateEntity(sharkPrefab, player.transform.position + new Vector3(-100, -100, -100));
+
+            shark = entity as SimpleShark;
+            entity.Spawn();
+
+            shark.enabled = false;
+
+            Vector3 playerForward = player.eyes.HeadForward();
+            playerForward.y = 0;
+            playerForward.Normalize();
+
+            shark.transform.LookAt(player.transform.position + Vector3.up * 100 + playerForward);
+
+            yield return Worker.StaticStartCoroutine(MoveSharkCo(shark, player));
+
+
+
+        }
+        string sfx_bloodHit = "assets/bundled/prefabs/fx/impacts/stab/flesh/fleshbloodimpact.prefab";
+        string sfx_watersplash = "assets/bundled/prefabs/fx/explosions/water_bomb.prefab";
+        IEnumerator MoveSharkCo(SimpleShark shark, BasePlayer player)
+        {
+
+            float duration = 4f;
+            //float duration = 20f;
+            float ts = Time.realtimeSinceStartup;
+            Vector3 sharkStartPos = player.transform.position + Vector3.down * 30f;
+            Vector3 playerStartPosition = player.transform.position;
+
+            Vector3 playerForward = player.eyes.HeadForward();
+            playerForward.y = 0;
+            playerForward.Normalize();
+
+            bool didSit = false;
+            BaseEntity chair = null;
+
+            //bool didEmote = false;
+
+            float p;
+            float y;
+            while (Time.realtimeSinceStartup - ts < duration && player != null && shark != null)
+            {
+                p = (Time.realtimeSinceStartup - ts) / duration;
+                y = Mathf.Sin(p * Mathf.PI);
+
+                //if (p < 0.34)
+                if (p < 0.24)
+                {
+                    //playerStartPosition = player.transform.position + Vector3.up * 4f;//|V2
+                    playerStartPosition = player.transform.position + Vector3.up * 10f;
+                    shark.transform.LookAt(player.transform.position + Vector3.up * 100 + playerForward);
+
+                }
+                else
+                {
+                    if (!didSit)
+                    {
+                        //| PLAY SFX
+                        //PlaySound(sfx_bloodHit, player, false, player.transform.position + Vector3.up);
+                        //PlaySound(sfx_watersplash, player, false, player.transform.position);
+                        global::Effect.server.Run(shark.bloodCloud.resourcePath, player.transform.position + Vector3.up, Vector3.forward, null, false);
+                        global::Effect.server.Run(sfx_watersplash, player.transform.position + Vector3.up, Vector3.forward, null, false);
+
+                        timer.Once(0.2f, () =>
+                        {
+                            if (player == null) return;
+                            PlayGesture(player, "friendly");
+
+                        });
+
+                        //| Dismount the player if mounted
+                        if (HasCard(player.userID, Card.Sit))
+                        {
+                            TakeCard(player.userID, Card.Sit);
+                        }
+
+                        Vector3 playerFacing = player.eyes.HeadForward();
+                        playerFacing.y = 0;
+                        playerFacing.Normalize();
+
+                        //| Sit the player
+                        chair = InvisibleSit(player);
+
+                        chair.SetParent(shark, true, true);
+
+                        //| V2
+
+                        chair.transform.LookAt(chair.transform.position + playerFacing);
+
+                        didSit = true;
+                    }
+
+
+
+                    //chair.transform.position = shark.transform.position + shark.transform.forward * 0.88f + shark.transform.up * 0.15f;
+                    chair.transform.position = shark.transform.position + shark.transform.forward * 0.88f + shark.transform.up * 0.19f;
+
+                    //chair.transform.LookAt(shark.transform.up * -1 + shark.transform.position + Vector3.up * 0.25f);
+                    chair.transform.LookAt(shark.transform.position + shark.transform.up * -1 + Vector3.up * 0.15f);
+
+                }
+
+                shark.transform.position = Vector3.Lerp(sharkStartPos, playerStartPosition, y);
+                shark.transform.LookAt(player.transform.position + Vector3.up * 100 + playerForward);
+
+                shark.transform.Rotate(shark.transform.right, -15f);
+
+                yield return new WaitForFixedUpdate();
+            }
+
+
+            shark.transform.position += Vector3.down * 100000;
+            shark.SendNetworkUpdate();
+
+            yield return null;
+
+            player?.DismountObject();
+            chair?.Kill();
+            player?.Die();
+            shark?.Kill();
+        }
+
         void DoEmote(BasePlayer player, string[] args, BasePlayer admin = null)
         {
             if (player == null) return;
@@ -2380,8 +2528,10 @@ namespace Oxide.Plugins
 
                 var payload = new Dictionary<string, string>() {
                     { "Server", $"{serverHostName}" },
-                    { "Banned Player", $"{name} : {id}" },
-                    { "BM", $"https://www.battlemetrics.com/rcon/players?filter[search]={id}" },
+                    //{ "Banned Player", $"{name} : {id}" },
+                    //{ "BM", $"https://www.battlemetrics.com/rcon/players?filter[search]={id}" },
+                    { "Banned Player", $"[Info](https://steamid.uk/profile/{id}) - {id} : [{TryGetDisplayName(id)}](https://www.battlemetrics.com/rcon/players?filter[search]={id})" },
+
                 };
 
                 int number = 1;
@@ -2397,7 +2547,9 @@ namespace Oxide.Plugins
 
                             if (config.notify_ban_include_bm)
                             {
-                                playerOutput += $"\nhttps://www.battlemetrics.com/rcon/players?filter[search]={userID}";
+                                //playerOutput += $"\nhttps://www.battlemetrics.com/rcon/players?filter[search]={userID}";
+                                playerOutput += $"\n[Info](https://steamid.uk/profile/{userID}) - {userID} : [{TryGetDisplayName(userID)}](https://www.battlemetrics.com/rcon/players?filter[search]={userID})";
+
                             }
 
                             number++;
@@ -2513,9 +2665,11 @@ namespace Oxide.Plugins
                                     //Puts($"Detected game-banned user: {player.userID} {player.displayName}");
                                 SendToDiscordWebhook(new Dictionary<string, string>() {
                                     { "Server", $"{serverHostName}" },
-                                    { "Url", $"{url}" },
-                                    { "Player", $"{player.displayName} : {player.userID}" },
-                                    { "BM", $"https://www.battlemetrics.com/rcon/players?filter[search]={player.userID}" },
+                                    //{ "Url", $"{url}" },
+                                    //{ "Player", $"{player.displayName} : {player.userID}" },
+                                    //{ "BM", $"https://www.battlemetrics.com/rcon/players?filter[search]={player.userID}" },
+                                    { "Player", $"[Info](https://steamid.uk/profile/{player.userID}) - {player.userID} : [{TryGetDisplayName(player.userID)}](https://www.battlemetrics.com/rcon/players?filter[search]={player.userID})" },
+
                                 });
                             }
 
@@ -3381,11 +3535,17 @@ namespace Oxide.Plugins
 
         bool test = false;
 
-        public void PlaySound(string effect, BasePlayer player, bool playlocal = true)
+        public void PlaySound(string effect, BasePlayer player, bool playlocal = true, Vector3 posLocal = default(Vector3))
         {
             if (player == null) return;//ai
 
             var sound = new Effect(effect, player, 0, Vector3.zero, Vector3.forward);
+            
+            if (posLocal != Vector3.zero)
+            {
+                sound = new Effect(effect, player.transform.position + posLocal, Vector3.forward);
+            }
+
 
             if (playlocal)
             {

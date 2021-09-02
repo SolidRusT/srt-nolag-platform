@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Oxide.Plugins {
 
-	[Info("Submarine Storage", "yetzt", "0.0.3")]
+	[Info("Submarine Storage", "yetzt", "0.0.4")]
 	[Description("Adds Storage Boxes to Submarines")]
 
 	public class SubmarineStorage : RustPlugin {
@@ -17,6 +17,7 @@ namespace Oxide.Plugins {
 
 			// defer checking to ensure storage box is loaded (loads after parent, race condition there)
 			timer.Once(0.1f, () => {
+				if (entity == null) return;
 
 				// check if there is already a box
 				foreach (var child in entity.GetComponentsInChildren<StorageContainer>(true)) {

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Oxide.Plugins
 {
-    [Info("Welcomer", "Dana", "1.5.6")]
+    [Info("Welcomer", "Suparious", "1.5.7")]
     [Description("Provides welcome, join and leave messages.")]
     public class Welcomer : RustPlugin
     {
@@ -108,7 +108,7 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["WelcomeMessage"] = "Welcome to uMod\r\nThere're currently {0} players online",
+                ["WelcomeMessage"] = "Welcome to SolidRusT\r\nThere're currently {0} players online",
                 ["JoinMessage"] = "Player {0} has joined the server from {1}",
                 ["JoinMessageUnknown"] = "Player {0} has joined the server",
                 ["LeaveMessage"] = "Player {0} has left the server. Reason {1}"

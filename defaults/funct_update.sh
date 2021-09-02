@@ -10,6 +10,7 @@ function update_repo () {
 }
 
 function update_mods () {
+    # Sync global Oxide data defaults
     OXIDE=(
         oxide/data/BetterLoot/LootTables.json
         oxide/data/FancyDrop.json
@@ -21,14 +22,6 @@ function update_mods () {
         oxide/data/GuardedCrate.json
         oxide/data/CustomChatCommands.json
     )
-    echo "=> Removing unwanted plugins" | tee -a ${LOGS}
-    SHITLIST=(
-        PluginUpdateNotifications.cs
-    )
-    for plugin in ${SHITLIST[@]}; do
-        echo " - $plugin" | tee -a ${LOGS}
-        rm ${HOME}/solidrust.net/defaults/oxide/plugins/$plugin  | tee -a ${LOGS}
-    done
     echo "=> Updating plugin data" | tee -a ${LOGS}
     for data in ${OXIDE[@]}; do
         echo " - $data" | tee -a ${LOGS}
@@ -47,28 +40,30 @@ function update_mods () {
     if [[ -d "${SERVER_CUSTOM}/oxide/data/RaidableBases" ]]; then
         rsync -r "${SERVER_CUSTOM}/oxide/data/RaidableBases/" "${GAME_ROOT}/oxide/data/RaidableBases" | tee -a ${LOGS}
     fi
-    echo " - oxide/data/LustyMap" | tee -a ${LOGS}
-    rsync -r "${SERVER_GLOBAL}/oxide/data/LustyMap/" "${GAME_ROOT}/oxide/data/LustyMap" | tee -a ${LOGS}
-    # Sync global Oxide defaults
+    # Sync global Oxide config defaults
     echo "=> Updating plugin configurations" | tee -a ${LOGS}
     mkdir -p "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     echo " - sync ${SERVER_GLOBAL}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     rsync -r "${SERVER_GLOBAL}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
-    # Sync custom Oxide overrides
+    # Sync server-specific Oxide config overrides
     echo " - sync ${SERVER_CUSTOM}/oxide/config/ to ${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
     rsync -r "${SERVER_CUSTOM}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
-    # Build out the customized plugin list
+    # Merge global default, SRT Custom and other server-specific plugins into a single build
     rm -rf ${BUILD_ROOT}
     mkdir -p ${BUILD_ROOT}/oxide/plugins
     echo "=> Updating Oxide plugins" | tee -a ${LOGS}
     rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra "${SERVER_GLOBAL}/oxide/custom/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rsync -ra "${SERVER_CUSTOM}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
+    # Push customized plugins into the game root
     rsync -ra --delete "${BUILD_ROOT}/oxide/plugins/" "${GAME_ROOT}/oxide/plugins" | tee -a ${LOGS}
     rm -rf ${BUILD_ROOT}
-    # lang
+    # Update plugin language and wording overrides
     LANG=(
         oxide/lang/en/Kits.json
+        oxide/lang/en/Welcomer.json
+        oxide/lang/en/Dance.json
+        oxide/lang/ru/Dance.json
     )
     echo "=> Updating plugin language data" | tee -a ${LOGS}
     for data in ${LANG[@]}; do
@@ -80,12 +75,13 @@ function update_mods () {
     done
     echo "=> loading dormant plugins" | tee -a ${LOGS}
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *" | tee -a ${LOGS}
+    tail -n 24 "${GAME_ROOT}/RustDedicated.log"
 }
 
 function update_configs () {
     echo "=> Update Rust Server configs" | tee -a ${LOGS}
     mkdir -p ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}
-    rm ${GAME_ROOT}/server/solidrust/cfg/serverauto.cfg
+    rm ${GAME_ROOT}/server/solidrust/cfg/serverauto.cfg ## TODO, conditional, only if file exists
     rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/server.cfg ${GAME_ROOT}/server/solidrust/cfg/server.cfg | tee -a ${LOGS}
     rsync -a ${SERVER_GLOBAL}/cfg/users.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg | tee -a ${LOGS}
     rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/users.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg | tee -a ${LOGS}
@@ -95,10 +91,11 @@ function update_configs () {
 function update_server () {
     echo "=> Updating server: ${GAME_ROOT}" | tee -a ${LOGS}
     echo " - No rcon found here, downloading it..." | tee -a ${LOGS}
-    wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.1/rcon-0.9.1-amd64_linux.tar.gz
-    tar xzvf rcon-0.9.1-amd64_linux.tar.gz
-    mv rcon-0.9.1-amd64_linux/rcon ${GAME_ROOT}/rcon
-    rm -rf rcon-0.9.1-amd64_linux*
+    LATEST_RCON=$(curl https://github.com/gorcon/rcon-cli/releases | grep "/releases/tag" | head -n 1 | awk -F "v" '{ print $2 }' | rev | cut -c3- | rev)
+    wget https://github.com/gorcon/rcon-cli/releases/download/v${LATEST_RCON}/rcon-${LATEST_RCON}-amd64_linux.tar.gz
+    tar xzvf rcon-${LATEST_RCON}-amd64_linux.tar.gz
+    mv rcon-${LATEST_RCON}-amd64_linux/rcon ${GAME_ROOT}/rcon
+    rm -rf rcon-${LATEST_RCON}-amd64_linux*
     echo " - Buffing-up Debian Distribution..." | tee -a ${LOGS}
     sudo apt update | tee -a ${LOGS}
     sudo apt -y dist-upgrade | tee -a ${LOGS}
@@ -123,14 +120,15 @@ function update_server () {
 }
 
 function update_umod () {
-    echo "=> Download fresh plugins from uMod" | tee -a ${LOGS}
-    cd ${GAME_ROOT}/oxide/plugins
-    plugins=$(ls -1 *.cs)
-    for plugin in ${plugins[@]}; do
-        echo " - Attempting to replace $plugin from umod" | tee -a ${LOGS}
-        wget "https://umod.org/plugins/$plugin" -O $plugin | tee -a ${LOGS}
-        sleep 3 | tee -a ${LOGS}
-    done
+    echo "Currently Disabled. This method causes conflicts now that we use custom plugins from many sources."
+#    echo "=> Download fresh plugins from uMod" | tee -a ${LOGS}
+#    cd ${GAME_ROOT}/oxide/plugins
+#    plugins=$(ls -1 *.cs)
+#    for plugin in ${plugins[@]}; do
+#        echo " - Attempting to replace $plugin from umod" | tee -a ${LOGS}
+#        wget "https://umod.org/plugins/$plugin" -O $plugin | tee -a ${LOGS}
+#        sleep 3 | tee -a ${LOGS}
+#    done
 }
 
 function update_permissions () {
@@ -402,7 +400,8 @@ betterrootcombiners.use \
 payforelectricity.use \
 bloodtrail.allow \
 patrolboat.builder \
-localize.use
+localize.use \
+vehiclevendoroptions.ownership.allvehicles
 )
 
 # SRT Main Vanilla
@@ -485,7 +484,8 @@ betterrootcombiners.use \
 payforelectricity.use \
 bloodtrail.allow \
 patrolboat.builder \
-localize.use
+localize.use \
+vehiclevendoroptions.ownership.allvehicles
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

@@ -4,13 +4,14 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("FPS Restart", "RustySpoon342", "1.2.0")]
+    [Info("FPS Restart", "RustySpoon342", "1.2.1")]
     [Description("Restarts the server when FPS reaches a specific target")]
     public class FPSRestart : CovalencePlugin
     {
         private Timer timerAborted;
         private Timer timerFirstCheck;
         private Timer timerLastCheck;
+
 
         #region Configuration
 
@@ -66,15 +67,17 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
-            timerFirstCheck = timer.Every(300, FramerateFirstCheck);
+            float args = config.RestartTime;
+
+            int offset = (int)(args + 100);
+
+            timerFirstCheck = timer.Every(offset, FramerateFirstCheck);
         }
 
         private void Unload()
         {
             config = null;
             timerFirstCheck.Destroy();
-            timerLastCheck.Destroy();
-            timerAborted.Destroy();
         }
 
         protected override void LoadDefaultMessages()
@@ -100,26 +103,33 @@ namespace Oxide.Plugins
 
         private void FramerateLastCheck()
         {
-           string msg = string.Format(lang.GetMessage("RestartMessage", this));
+            string msg = string.Format(lang.GetMessage("RestartMessage", this));
 
-           float args = config.RestartTime;
-
-           float args2 = config.RestartTime + 60;
+            float args = config.RestartTime;
 
             if (Performance.report.frameRate > config.FrameRate)
             {
                 return;
             }
-           
+
             if (config.ShowMessage)
             {
              server.Broadcast(msg);
             }
-            
+
             LogWarning("The Server Has Detected Low FPS That May Cause Lag. A Restart Has Begun!");
+
             server.Command("restart", args);
+
+            timerFirstCheck.Destroy();
             timerLastCheck.Destroy();
-            timerAborted = timer.Once(args2, OnServerInitialized);
+
+            if (timerFirstCheck.Destroyed)
+            {
+                int offset = (int)(args + 60);
+
+                timerAborted = timer.Once(offset, OnServerInitialized);
+            }
         }
 
         #endregion
