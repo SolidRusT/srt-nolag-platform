@@ -32,44 +32,44 @@
             },
             "Easy Raids Can Spawn On": {
                 "Monday": true,
-                "Tuesday": true,
+                "Tuesday": false,
                 "Wednesday": false,
-                "Thursday": true,
-                "Friday": true,
-                "Saturday": true,
+                "Thursday": false,
+                "Friday": false,
+                "Saturday": false,
                 "Sunday": false
             },
             "Medium Raids Can Spawn On": {
                 "Monday": false,
                 "Tuesday": true,
-                "Wednesday": false,
+                "Wednesday": true,
                 "Thursday": false,
-                "Friday": true,
+                "Friday": false,
                 "Saturday": false,
                 "Sunday": false
             },
             "Hard Raids Can Spawn On": {
                 "Monday": false,
-                "Tuesday": true,
-                "Wednesday": true,
-                "Thursday": false,
+                "Tuesday": false,
+                "Wednesday": false,
+                "Thursday": true,
                 "Friday": true,
-                "Saturday": true,
-                "Sunday": true
+                "Saturday": false,
+                "Sunday": false
             },
             "Expert Raids Can Spawn On": {
                 "Monday": false,
-                "Tuesday": true,
-                "Wednesday": true,
+                "Tuesday": false,
+                "Wednesday": false,
                 "Thursday": false,
                 "Friday": true,
                 "Saturday": true,
-                "Sunday": true
+                "Sunday": false
             },
             "Nightmare Raids Can Spawn On": {
                 "Monday": false,
                 "Tuesday": false,
-                "Wednesday": true,
+                "Wednesday": false,
                 "Thursday": false,
                 "Friday": false,
                 "Saturday": true,
@@ -158,7 +158,7 @@
         },
         "Map Markers": {
             "Marker Name": "SRT Base Event",
-            "Radius": 0.25,
+            "Radius": 0.15,
             "Use Vending Map Marker": true,
             "Use Explosion Map Marker": false,
             "Create Markers For Buyable Events": true,
@@ -385,10 +385,10 @@
         "Do Not Duplicate Base Loot": false,
         "Do Not Duplicate Difficulty Loot": false,
         "Do Not Duplicate Default Loot": false,
-        "Use Stack Size Limit For Spawning Items": false
+        "Use Stack Size Limit For Spawning Items": true
     },
     "TruePVE": {
-        "Allow PVP Server-Wide During Events": false
+        "Allow PVP Server-Wide During Events": true
     },
     "UI": {
         "Buyable UI": {
@@ -443,20 +443,20 @@
         },
         "Ammo": {
             "AutoTurret": 256,
-            "FlameTurret": 256,
-            "FogMachine": 5,
-            "GunTrap": 128,
+            "FlameTurret": 128,
+            "FogMachine": 25,
+            "GunTrap": 64,
             "SamSite": 24
         },
         "Tesla Coil": {
-            "Requires A Power Source": true,
-            "Max Discharge Self Damage Seconds (0 = None, 120 = Rust default)": 0.0,
+            "Requires A Power Source": false,
+            "Max Discharge Self Damage Seconds (0 = None, 120 = Rust default)": 120.0,
             "Max Damage Output": 35.0
         },
         "Fog Machine Allows Motion Toggle": true,
-        "Fog Machine Requires A Power Source": true,
+        "Fog Machine Requires A Power Source": false,
         "SamSite Repairs Every X Minutes (0.0 = disabled)": 5.0,
-        "SamSite Range (350.0 = Rust default)": 75.0,
+        "SamSite Range (350.0 = Rust default)": 350.0,
         "Test Generator Power": 100.0
     }
 }

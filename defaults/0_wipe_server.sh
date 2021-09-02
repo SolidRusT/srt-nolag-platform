@@ -38,8 +38,6 @@ now | fast | quick)
 force | forcewipe | facepunch)
     initialize_srt
     echo "performing a Facepunch Force-wipe" | tee -a ${LOGS}
-    #sleep 3600
-    sleep 2900
     notification_restart 3600
     update_repo
     update_server

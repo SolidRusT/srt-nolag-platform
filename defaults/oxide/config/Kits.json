@@ -1,145 +1,147 @@
 {
-    "Automatic wipe on wipe": false,
-    "Default Kit Color": "#F28633",
-    "Work with Notify?": true,
-    "Commands": [
-        "kit",
-        "kits"
-    ],
-    "Rarity Settings": [{
-        "Chance": 40,
-        "Color": "#F28633"
-    }],
-    "Auto Kits": [
-        "GuestKit"
-    ],
-    "Getting an auto kit 1 time?": false,
-    "Logs": {
-        "To Console": true,
-        "To File": true
-    },
-    "Color 1": "#161617",
-    "Color 2": "#0E0E10",
-    "Color 3": "#F28633",
-    "Color 4": "#FFFFFF",
-    "Color Red": "#FF4B4B",
-    "Color White": "#FFFFFF",
-    "Show Number?": false,
-    "Show No Permission Description?": true,
-    "Show All Kits?": true,
-    "CopyPaste Parameters": [
-        "deployables",
-        "true",
-        "inventories",
-        "true"
-    ],
-    "Block in Building Block?": false,
-    "NPC Kits": {
-        "1234567": {
-            "Description": "Free Kits",
-            "Kits": [
-                "kit_one",
-                "kit_two"
-            ]
-        },
-        "7654321": {
-            "Description": "VIPs Kits",
-            "Kits": [
-                "kit_three",
-                "kit_four"
-            ]
-        }
-    },
-    "Description": {
-        "Description": "",
-        "Background Color": {
-            "HEX": "#0E0E10",
-            "Opacity (0 - 100)": 100.0
-        },
-        "Font Size": 18,
-        "Font": "robotocondensed-bold.ttf",
-        "Align": "MiddleCenter",
-        "Text Color": {
-            "HEX": "#FFFFFF",
-            "Opacity (0 - 100)": 100.0
-        },
-        "Enabled": true,
-        "AnchorMin": "0 0",
-        "AnchorMax": "1 0",
-        "OffsetMin": "0 -55",
-        "OffsetMax": "0 -5"
-    },
-    "Info Kit Description": {
-        "Background Color": {
-            "HEX": "#0E0E10",
-            "Opacity (0 - 100)": 100.0
-        },
-        "Font Size": 18,
-        "Font": "robotocondensed-bold.ttf",
-        "Align": "MiddleCenter",
-        "Text Color": {
-            "HEX": "#FFFFFF",
-            "Opacity (0 - 100)": 100.0
-        },
-        "Enabled": true,
-        "AnchorMin": "0.5 1",
-        "AnchorMax": "0.5 1",
-        "OffsetMin": "-125 -55",
-        "OffsetMax": "125 -5"
-    },
-    "Interface": {
-        "Height": 455.0,
-        "Width": 640.0,
-        "Kit Height": 165.0,
-        "Kit Width": 135.0,
-        "Margin": 10.0,
-        "Kits On String": 4,
-        "Strings": 2,
-        "Y Indent": -100.0,
-        "Display Name Settings": {
-            "Enabled": true,
-            "AnchorMin": "0.5 1.150",
-            "AnchorMax": "0.5 1.150",
-            "OffsetMin": "-55 -75",
-            "OffsetMax": "55 0"
-        },
-        "Image Settings": {
-            "Enabled": true,
-            "AnchorMin": "0.35 0.85",
-            "AnchorMax": "0.35 0.85",
-            "OffsetMin": "-32 -95",
-            "OffsetMax": "72 0.9"
-        },
-        "Kit Available Settings": {
-            "AnchorMin": "0 1",
-            "AnchorMax": "1 1",
-            "OffsetMin": "0 -130",
-            "OffsetMax": "0 -85"
-        },
-        "Kit Amount Settings": {
-            "Width": 115.0,
-            "AnchorMin": "0.5 1",
-            "AnchorMax": "0.5 1",
-            "OffsetMin": "-125",
-            "OffsetMax": "-120"
-        },
-        "Kit Cooldown Settings": {
-            "AnchorMin": "0.5 1",
-            "AnchorMax": "0.5 1",
-            "OffsetMin": "-32.5 -125",
-            "OffsetMax": "32.5 -105"
-        },
-        "Kit Cooldown Settings (with amount)": {
-            "AnchorMin": "0 1",
-            "AnchorMax": "1 1",
-            "OffsetMin": "0 -120",
-            "OffsetMax": "0 -95"
-        },
-        "No Permission Settings": {
-            "AnchorMin": "0 1",
-            "AnchorMax": "1 1",
-            "OffsetMin": "0 -100",
-            "OffsetMax": "0 -75"
-        }
+  "Automatic wipe on wipe": false,
+  "Default Kit Color": "#F28633",
+  "Work with Notify?": true,
+  "Commands": [
+    "kit",
+    "kits"
+  ],
+  "Rarity Settings": [
+    {
+      "Chance": 40,
+      "Color": "#F28633"
     }
+  ],
+  "Auto Kits": [
+    "GuestKit"
+  ],
+  "Getting an auto kit 1 time?": false,
+  "Logs": {
+    "To Console": true,
+    "To File": true
+  },
+  "Color 1": "#161617",
+  "Color 2": "#0E0E10",
+  "Color 3": "#F28633",
+  "Color 4": "#FFFFFF",
+  "Color Red": "#FF4B4B",
+  "Color White": "#FFFFFF",
+  "Show Number?": false,
+  "Show No Permission Description?": true,
+  "Show All Kits?": true,
+  "CopyPaste Parameters": [
+    "deployables",
+    "true",
+    "inventories",
+    "true"
+  ],
+  "Block in Building Block?": false,
+  "NPC Kits": {
+    "1234567": {
+      "Description": "Free Kits",
+      "Kits": [
+        "kit_one",
+        "kit_two"
+      ]
+    },
+    "7654321": {
+      "Description": "VIPs Kits",
+      "Kits": [
+        "kit_three",
+        "kit_four"
+      ]
+    }
+  },
+  "Description": {
+    "Description": "",
+    "Background Color": {
+      "HEX": "#0E0E10",
+      "Opacity (0 - 100)": 100.0
+    },
+    "Font Size": 18,
+    "Font": "robotocondensed-bold.ttf",
+    "Align": "MiddleCenter",
+    "Text Color": {
+      "HEX": "#FFFFFF",
+      "Opacity (0 - 100)": 100.0
+    },
+    "Enabled": true,
+    "AnchorMin": "0 0",
+    "AnchorMax": "1 0",
+    "OffsetMin": "0 -55",
+    "OffsetMax": "0 -5"
+  },
+  "Info Kit Description": {
+    "Background Color": {
+      "HEX": "#0E0E10",
+      "Opacity (0 - 100)": 100.0
+    },
+    "Font Size": 18,
+    "Font": "robotocondensed-bold.ttf",
+    "Align": "MiddleCenter",
+    "Text Color": {
+      "HEX": "#FFFFFF",
+      "Opacity (0 - 100)": 100.0
+    },
+    "Enabled": true,
+    "AnchorMin": "0.5 1",
+    "AnchorMax": "0.5 1",
+    "OffsetMin": "-125 -55",
+    "OffsetMax": "125 -5"
+  },
+  "Interface": {
+    "Height": 455.0,
+    "Width": 640.0,
+    "Kit Height": 165.0,
+    "Kit Width": 135.0,
+    "Margin": 10.0,
+    "Kits On String": 4,
+    "Strings": 2,
+    "Y Indent": -100.0,
+    "Display Name Settings": {
+      "Enabled": true,
+      "AnchorMin": "0.5 1.150",
+      "AnchorMax": "0.5 1.150",
+      "OffsetMin": "-55 -75",
+      "OffsetMax": "55 0"
+    },
+    "Image Settings": {
+      "Enabled": true,
+      "AnchorMin": "0.35 0.85",
+      "AnchorMax": "0.35 0.85",
+      "OffsetMin": "-32 -95",
+      "OffsetMax": "72 0.9"
+    },
+    "Kit Available Settings": {
+      "AnchorMin": "0 1",
+      "AnchorMax": "1 1",
+      "OffsetMin": "0 -130",
+      "OffsetMax": "0 -85"
+    },
+    "Kit Amount Settings": {
+      "Width": 115.0,
+      "AnchorMin": "0.5 1",
+      "AnchorMax": "0.5 1",
+      "OffsetMin": "-125",
+      "OffsetMax": "-120"
+    },
+    "Kit Cooldown Settings": {
+      "AnchorMin": "0.5 1",
+      "AnchorMax": "0.5 1",
+      "OffsetMin": "-32.5 -125",
+      "OffsetMax": "32.5 -105"
+    },
+    "Kit Cooldown Settings (with amount)": {
+      "AnchorMin": "0 1",
+      "AnchorMax": "1 1",
+      "OffsetMin": "0 -120",
+      "OffsetMax": "0 -95"
+    },
+    "No Permission Settings": {
+      "AnchorMin": "0 1",
+      "AnchorMax": "1 1",
+      "OffsetMin": "0 -100",
+      "OffsetMax": "0 -75"
+    }
+  }
 }

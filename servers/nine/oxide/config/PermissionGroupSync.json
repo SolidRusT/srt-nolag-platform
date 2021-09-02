@@ -176,7 +176,8 @@
                 "backpacks.keepondeath",
                 "holograms.use",
                 "patrolboat.admin",
-                "build.perm"
+                "build.perm",
+                "zombiehorde.admin"
             ],
             "AdditionalCommands": []
         },
@@ -254,7 +255,8 @@
                 "respawnbradley.use",
                 "respawnbradley.nolock",
                 "respawnbradley.nocosts",
-                "respawnbradley.nocooldown"
+                "respawnbradley.nocooldown",
+                "zombiehorde.admin"
             ],
             "AdditionalCommands": []
         },
@@ -401,7 +403,8 @@
                 "respawnbradley.use",
                 "respawnbradley.nolock",
                 "respawnbradley.nocosts",
-                "respawnbradley.nocooldown"
+                "respawnbradley.nocooldown",
+                "zombiehorde.admin"
             ],
             "AdditionalCommands": []
         }

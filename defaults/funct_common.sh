@@ -10,13 +10,21 @@ function initialize_srt() {
     source ${HOME}/solidrust.net/defaults/funct_items.sh
 }
 
+function save_players() {
+    if [ -f "${GAME_ROOT}/rcon" ]; then
+        echo "Saving game world..." | tee -a ${LOGS}
+        ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.save"
+    else
+        echo "No rcon binary found here, unable to save world data" | tee -a ${LOGS}
+    fi    
+}
+
 function backup_s3() {
     if [ -f "${GAME_ROOT}/rcon" ]; then
-        echo "rcon binary found, saving world..." | tee -a ${LOGS}
+        sleep 5
+        echo "Backing-up game world" | tee -a ${LOGS}
         ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.writecfg"
         sleep 1
-        ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.save"
-        sleep 5
         ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "server.backup"
         sleep 10
     else

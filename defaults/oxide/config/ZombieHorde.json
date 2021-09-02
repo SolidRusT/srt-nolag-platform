@@ -2,7 +2,7 @@
   "Horde Options": {
     "Amount of zombies to spawn when a new horde is created": 3,
     "Maximum amount of spawned zombies per horde": 10,
-    "Maximum amount of hordes at any given time": 15,
+    "Maximum amount of hordes at any given time": 8,
     "Amount of time from when a horde is destroyed until a new horde is created (seconds)": 900,
     "Amount of time before a horde grows in size": 300,
     "Add a zombie to the horde when a horde member kills a player": true,
@@ -12,20 +12,20 @@
     "Amount of time a player needs to be outside of a zombies vision before it forgets about them": 10.0,
     "Force all hordes to roam locally": false,
     "Local roam distance": 150.0,
-    "Use horde profiles for randomly spawned hordes": false,
+    "Restrict chase distance for local hordes (1.5x the maximum roam distance for that horde)": false,
+    "Use horde profiles for randomly spawned hordes": true,
     "Sense nearby gunshots and explosions": true
   },
   "Horde Member Options": {
     "Can target animals": true,
     "Can be targeted by turrets": false,
-    "Can be targeted by turrets set to peacekeeper mode": true,
+    "Can be targeted by turrets set to peacekeeper mode": false,
     "Can be targeted by Bradley APC": false,
     "Can target other NPCs": false,
     "Can target NPCs from HumanNPC": false,
     "Ignore sleeping players": false,
     "Give all zombies glowing eyes": false,
     "Headshots instantly kill zombie": true,
-    "Projectile weapon aimcone override (0 = disabled)": 0.0,
     "Kill NPCs that are under water": true,
     "Disable NPC dormant system. This will allow NPCs to move all the time, but at a cost to performance": true,
     "Loadouts": [
@@ -41,8 +41,7 @@
         "Movement": {
           "Movement speed (running)": 6.2,
           "Movement speed (walking)": 3.1,
-          "Duck speed": 1.5,
-          "Acceleration": 12.0
+          "Duck speed": 1.5
         },
         "Sensory": {
           "Vision range": 30.0
@@ -85,8 +84,7 @@
         "Movement": {
           "Movement speed (running)": 6.2,
           "Movement speed (walking)": 3.1,
-          "Duck speed": 1.5,
-          "Acceleration": 12.0
+          "Duck speed": 1.5
         },
         "Sensory": {
           "Vision range": 30.0
@@ -130,8 +128,7 @@
         "Movement": {
           "Movement speed (running)": 6.2,
           "Movement speed (walking)": 3.1,
-          "Duck speed": 1.5,
-          "Acceleration": 12.0
+          "Duck speed": 1.5
         },
         "Sensory": {
           "Vision range": 30.0
@@ -169,8 +166,7 @@
         "Movement": {
           "Movement speed (running)": 6.2,
           "Movement speed (walking)": 3.1,
-          "Duck speed": 1.5,
-          "Acceleration": 12.0
+          "Duck speed": 1.5
         },
         "Sensory": {
           "Vision range": 30.0
@@ -394,116 +390,120 @@
           "Spawn with": null
         }
       ]
-    }
+    },
+    "Dropped inventory item blacklist (shortnames)": [
+      "exampleitem.shortname1",
+      "exampleitem.shortname2"
+    ]
   },
   "Monument Spawn Options": {
     "Airfield": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 85.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "Dome": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 50.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": null
+      "Horde profile": "Profile1"
     },
     "Junkyard": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 100.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "LargeHarbor": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 120.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "GasStation": {
-      "Enable spawns at this monument": false,
+      "Enable spawns at this monument": true,
       "Distance that this horde can roam from their initial spawn point": 40.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "Powerplant": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 120.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "StoneQuarry": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 40.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "SulfurQuarry": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 40.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "HQMQuarry": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 40.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "Radtown": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 85.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "LaunchSite": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 140.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "Satellite": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 60.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "SmallHarbor": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 85.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "Supermarket": {
-      "Enable spawns at this monument": false,
+      "Enable spawns at this monument": true,
       "Distance that this horde can roam from their initial spawn point": 20.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "Trainyard": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 100.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "Tunnels": {
-      "Enable spawns at this monument": true,
+      "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 90.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "Warehouse": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 40.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     },
     "WaterTreatment": {
       "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 120.0,
       "Maximum amount of members in this horde": 10,
-      "Horde profile": ""
+      "Horde profile": "Profile1"
     }
   },
   "Timed Spawn Options": {
@@ -514,11 +514,8 @@
   },
   "Horde Profiles (profile name, list of applicable loadouts)": {
     "Profile1": [
+      "loadout-0",
       "loadout-1",
-      "loadout-2",
-      "loadout-3"
-    ],
-    "Profile2": [
       "loadout-2",
       "loadout-3"
     ]
@@ -526,6 +523,6 @@
   "Version": {
     "Major": 0,
     "Minor": 3,
-    "Patch": 4
+    "Patch": 5
   }
 }
