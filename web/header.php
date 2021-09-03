@@ -1,3 +1,6 @@
+<?php
+require 'main.conf.php';
+?>
 <!doctype html>
 <html>
 <head>

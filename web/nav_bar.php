@@ -2,7 +2,6 @@
 include 'header.php';
 session_start();
 require 'steamauth/steamauth.php';
-require 'main.conf.php';
 include 'steamauth/userInfo.php';
 include 'functions.php';
 ?>

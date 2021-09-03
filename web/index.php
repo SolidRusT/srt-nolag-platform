@@ -1,12 +1,12 @@
-<?php include('nav_bar.php'); ?>
+<?php include 'nav_bar.php';?>
 <div class="container-fluid" style="margin-top:15px">
 	<div class="row">
     	<div class="col-md-4"><?php
 if (!isset($_SESSION['steamid'])) {
-	echo "<p class=\"bg-warning\">&nbsp; Welcome, Guest. Please <a href=\"/link\">login</a> to access more SRT content.</p>";
+    echo "<p class=\"bg-warning\">&nbsp; Welcome, Guest. Please <a href=\"/link\">login</a> to access more SRT content.</p>";
 } else {
-	include 'steamauth/userInfo.php';
-	$avatar = $steamprofile['avatar'];
+    include 'steamauth/userInfo.php';
+    $avatar = $steamprofile['avatar'];
     $profile_name = $steamprofile['personaname'];
     echo "<p class=\"bg-success\">Welcome, <a href=\"/profile\">$profile_name</a>!</p>";
 }?></div>
@@ -47,4 +47,4 @@ if (!isset($_SESSION['steamid'])) {
 </div>
 </div>
 </div>
-<?php include('footer.php'); ?>
+<?php include 'footer.php';?>
