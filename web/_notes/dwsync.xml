@@ -2,7 +2,7 @@
 <dwsync>
 <file name="main.conf.php" server="dev.solidrust.net//solidrust.net/" local="132731144620304622" remote="132731396400000000" Dst="2" />
 <file name="functions.php" server="dev.solidrust.net//solidrust.net/" local="132714982512631659" remote="132729687600000000" Dst="2" />
-<file name="index.php" server="dev.solidrust.net//solidrust.net/" local="132736200344687921" remote="132736452000000000" Dst="2" />
+<file name="index.php" server="dev.solidrust.net//solidrust.net/" local="132751185931350828" remote="132751437600000000" Dst="2" />
 <file name="discord.php" server="dev.solidrust.net//solidrust.net/" local="132731167740006681" remote="132731419200000000" Dst="2" />
 <file name="complete.php" server="dev.solidrust.net//solidrust.net/" local="132731167963586595" remote="132731419800000000" Dst="2" />
 <file name="api.php" server="dev.solidrust.net//solidrust.net/" local="132714982512592619" remote="132729687600000000" Dst="2" />
@@ -10,9 +10,9 @@
 <file name="ohshit.html" server="dev.solidrust.net//solidrust.net/" local="132714982514507071" remote="132729687600000000" Dst="2" />
 <file name="servers.php" server="dev.solidrust.net//solidrust.net/" local="132714982514497282" remote="132729687600000000" Dst="2" />
 <file name="unlink.php" server="dev.solidrust.net//solidrust.net/" local="132714982514526589" remote="132729687600000000" Dst="2" />
-<file name="nav_bar.php" server="dev.solidrust.net//solidrust.net/" local="132731333804071439" remote="132731585400000000" Dst="2" />
-<file name="header.php" server="dev.solidrust.net//solidrust.net/" local="132731096218277790" remote="132731347800000000" Dst="2" />
-<file name="footer.php" server="dev.solidrust.net//solidrust.net/" local="132731339090629328" remote="132731590800000000" Dst="2" />
+<file name="nav_bar.php" server="dev.solidrust.net//solidrust.net/" local="132731333804071439" remote="132751392000000000" Dst="2" />
+<file name="header.php" server="dev.solidrust.net//solidrust.net/" local="132731096218277790" remote="132751392000000000" Dst="2" />
+<file name="footer.php" server="dev.solidrust.net//solidrust.net/" local="132751184870224299" remote="132751436400000000" Dst="2" />
 <file name="unlink_button.txt" server="dev.solidrust.net//solidrust.net/" local="132729620663291807" remote="132729874200000000" Dst="2" />
 <file name="nav_bar_simple.php" server="dev.solidrust.net//solidrust.net/" local="132731161725527784" remote="132731413200000000" Dst="2" />
 <file name="nav_solo.php" server="dev.solidrust.net//solidrust.net/" local="132731126590094954" remote="132731378400000000" Dst="2" />
