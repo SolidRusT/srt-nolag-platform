@@ -1,5 +1,6 @@
 function update_repo () {
     echo "Downloading repo from s3" | tee -a ${LOGS}
+    mkdir -p ${HOME}/solidrust.net
     aws s3 sync --delete ${S3_REPO} ${HOME}/solidrust.net | grep -v ".git" | tee -a ${LOGS}
     cp ${HOME}/solidrust.net/build.txt ${GAME_ROOT}/
     cat ${GAME_ROOT}/build.txt | head -n 2
