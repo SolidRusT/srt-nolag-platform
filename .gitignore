@@ -33,3 +33,10 @@ build.txt
 defaults/oxide/data/PerformanceMonitor/*
 defaults/oxide/data/Arkan/*
 defaults/oxide/data/Guardian/*
+defaults/oxide/data/KDRGui/*
+defaults/oxide/data/PhonesPlus/*
+defaults/oxide/data/rustio/*
+defaults/oxide/data/SpawnsDatabase/*
+defaults/oxide/data/ZoneManager/*
+defaults/oxide/data/Banks/*
+defaults/oxide/data/Backpacks/*
