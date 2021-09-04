@@ -39,7 +39,7 @@ force | forcewipe | facepunch)
     initialize_srt
     echo "performing a Facepunch Force-wipe" | tee -a ${LOGS}
     notification_restart 3600
-    update_repo
+    update_repo game
     update_server
     update_mods
     update_configs
@@ -59,7 +59,7 @@ force | forcewipe | facepunch)
     initialize_srt
     echo "performing a Standard Wipe" | tee -a ${LOGS}
     notification_restart 3600
-    update_repo
+    update_repo game
     update_server
     update_mods
     update_configs

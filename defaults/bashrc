@@ -102,10 +102,8 @@ fi
 
 # SRT Shell commands
 source ${HOME}/solidrust.net/defaults/funct_common.sh
+source ${HOME}/solidrust.net/defaults/funct_wipe.sh
+source ${HOME}/solidrust.net/defaults/funct_update.sh
+source ${HOME}/solidrust.net/defaults/funct_items.sh
 
 initialize_srt
-
-alias rcon="${GAME_ROOT}/rcon -c ${HOME}/solidrust.net/defaults/rcon.yaml"
-export STEAMUSER="${USER}"
-
-#sudo mount /dev/nvme0n1 ${GAME_ROOT}

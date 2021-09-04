@@ -13,7 +13,7 @@ me=$(basename -- "$0")
 echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
 
 initialize_srt
-update_repo
+update_repo game
 #update_permissions
 
 
