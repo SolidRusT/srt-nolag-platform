@@ -1,16 +1,19 @@
 {
   "userid": 76561198886543733,
-  "name": "SmokeQc",
+  "name": "[God] SmokeQc",
   "names": [
-    "SmokeQc"
+    "SmokeQc",
+    "[God] SmokeQc"
   ],
-  "address": "10.0.2.2",
+  "address": "50.92.183.181",
   "addresses": [
-    "10.0.2.2"
+    "50.64.128.18",
+    "50.92.183.181",
+    "24.80.116.178"
   ],
-  "time_connected": "2021-07-20T20:02:59.549696Z",
-  "time_disconnected": "2021-07-20T22:40:11.219251Z",
-  "time_played": "02:37:11.6695550",
+  "time_connected": "2021-09-02T18:28:31.897644Z",
+  "time_disconnected": "2021-09-02T18:13:50.806052Z",
+  "time_played": "50.07:29:44.6360430",
   "ban_count": 0,
   "ban_reason": "",
   "ban_time": "9999-12-31T23:59:59.9999999",

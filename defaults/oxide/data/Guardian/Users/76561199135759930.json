@@ -1,16 +1,21 @@
 {
   "userid": 76561199135759930,
-  "name": "Ratchet",
+  "name": "FortyTwo",
   "names": [
-    "Ratchet"
+    "Ratchet",
+    "Cognizant",
+    "FortyTwo"
   ],
-  "address": "10.0.2.2",
+  "address": "50.64.128.18",
   "addresses": [
-    "10.0.2.2"
+    "50.92.183.181",
+    "24.80.116.178",
+    "50.64.128.18",
+    "3.19.39.142"
   ],
-  "time_connected": "2021-07-08T05:02:10.695271Z",
-  "time_disconnected": "2021-07-08T05:13:38.959734Z",
-  "time_played": "00:11:28.2644630",
+  "time_connected": "2021-09-02T18:26:47.350309Z",
+  "time_disconnected": "2021-09-02T17:48:33.963697Z",
+  "time_played": "44.23:10:18.1106970",
   "ban_count": 0,
   "ban_reason": "",
   "ban_time": "9999-12-31T23:59:59.9999999",

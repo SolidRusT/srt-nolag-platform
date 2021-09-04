@@ -1,17 +1,18 @@
 {
   "userid": 76561197996782220,
-  "name": "[God] mGucci",
+  "name": "mGucci",
   "names": [
-    "mGucci",
-    "[God] mGucci"
+    "mGucci"
   ],
-  "address": "10.0.2.2",
+  "address": "72.250.49.46",
   "addresses": [
-    "10.0.2.2"
+    "172.58.174.159",
+    "72.250.49.46",
+    "172.58.171.27"
   ],
-  "time_connected": "2021-07-20T19:59:28.090268Z",
-  "time_disconnected": "2021-07-20T22:54:52.149083Z",
-  "time_played": "18:43:25.1173230",
+  "time_connected": "2021-08-07T23:32:17.96819Z",
+  "time_disconnected": "2021-08-08T15:31:12.773843Z",
+  "time_played": "7.08:33:04.8205910",
   "ban_count": 0,
   "ban_reason": "",
   "ban_time": "9999-12-31T23:59:59.9999999",
@@ -23,9 +24,9 @@
   "cripple_timer": "0001-01-01T00:00:00",
   "is_crippled": false,
   "l_position": {
-    "x": 0.0,
-    "y": 0.0,
-    "z": 0.0
+    "x": -0.6912676,
+    "y": 20.2198315,
+    "z": -2.440639
   },
   "v_position": {
     "x": 0.0,

@@ -422,7 +422,7 @@
       "Horde profile": "Profile1"
     },
     "GasStation": {
-      "Enable spawns at this monument": true,
+      "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 40.0,
       "Maximum amount of members in this horde": 10,
       "Horde profile": "Profile1"
@@ -476,7 +476,7 @@
       "Horde profile": "Profile1"
     },
     "Supermarket": {
-      "Enable spawns at this monument": true,
+      "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 20.0,
       "Maximum amount of members in this horde": 10,
       "Horde profile": "Profile1"

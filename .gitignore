@@ -28,3 +28,8 @@ oxide/logs/*
 
 # Build markers
 build.txt
+
+# Application data and logs
+defaults/oxide/data/PerformanceMonitor/*
+defaults/oxide/data/Arkan/*
+defaults/oxide/data/Guardian/*
