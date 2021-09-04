@@ -1,12 +1,13 @@
 #!/bin/bash
 export PULL_FROM="nine"
 export S3_BACKUPS="s3://solidrust.net-backups"
+export S3_REPO="s3://solidrust.net-repository"
 
 mount /dev/nvme0n1 ${GAME_ROOT}
 
 /usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT} +app_update 258550 +quit
 
-aws s3 sync --quiet --delete ${S3_BACKUPS}/repo $HOME/solidrust.net
+aws s3 sync --quiet --delete ${S3_REPO} $HOME/solidrust.net
 chmod +x $HOME/solidrust.net/defaults/*.sh
 /bin/sh -c ${HOME}/solidrust.net/defaults/update_rust_service.sh
 

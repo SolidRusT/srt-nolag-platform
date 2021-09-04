@@ -13,13 +13,12 @@
     "Time to Clear Offense in minutes": 60,
     "Use Offenses clear timer": false,
     "Warn Players with offense amount": false,
-    "Word Filter - Custom Replacement": "Unicorn",
+    "Word Filter - Custom Replacement": "rusthole",
     "Word Filter - Enabled": true,
     "Word Filter - Phrases": [
         "nigger",
-        "nggr",
-        "faggot",
-        "fgt"
+        "fag",
+        "faggot"
     ],
     "Word Filter - Replacement": "*",
     "Word Filter - Use Custom Replacement": true

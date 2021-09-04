@@ -9,7 +9,9 @@ export GAME_ROOT="/game"
 export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
 # Amazon s3 destination for backups
 export S3_BACKUPS="s3://solidrust.net-backups"
-# Amazon s3 destination for backups
+# Amazon s3 destination for source code repository
+export S3_REPO="s3://solidrust.net-repository"
+# Amazon s3 destination for web content
 export S3_WEB="s3://solidrust.net"
 # Amazon s3 destination for srt radio
 export S3_RADIO="s3://solidrust.net-radio"

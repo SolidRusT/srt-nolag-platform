@@ -1,8 +1,8 @@
 #!/bin/bash
 REPO_DIR="/c/Users/shaun/repos/"
 echo "Pushing SRT Defaults"
-aws s3 sync --delete ${REPO_DIR}/solidrust.net/defaults/ s3://solidrust.net-backups/repo/defaults/
+aws s3 sync --delete ${REPO_DIR}/solidrust.net/defaults/ s3://solidrust.net-repository/defaults/
 echo "Pushing SRT Custom Servers"
-aws s3 sync --delete ${REPO_DIR}/solidrust.net/servers/ s3://solidrust.net-backups/repo/servers/
+aws s3 sync --delete ${REPO_DIR}/solidrust.net/servers/ s3://solidrust.net-repository/servers/
 echo "Pushing SRT Web"
-aws s3 sync --delete ${REPO_DIR}/solidrust.net/web/ s3://solidrust.net-backups/repo/web/
+aws s3 sync --delete ${REPO_DIR}/solidrust.net/web/ s3://solidrust.net-repository/web/

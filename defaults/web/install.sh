@@ -21,14 +21,14 @@ sudo apt install -y net-tools apache2 php7.3 libapache2-mod-php7.3 php7.3-common
 # export PATH="${PATH}:${HOME}/.local/bin"
 mkdir -p ${HOME}/solidrust.net
 mkdir -p ${HOME}/solidrust.net/server
-export S3_BACKUPS="s3://solidrust.net-backups"
+export S3_REPO="s3://solidrust.net-repository"
 export LOGS="${HOME}/SolidRusT.log"
 ## If not on AWS, configure your CLI maually
 # aws configure  # add Key, secret, region (us-west-2), and output (text)
 # aws s3 ls  # test permissions to s3
-aws s3 sync --delete ${S3_BACKUPS}/servers/web/web ${HOME}/solidrust.net | tee -a ${LOGS}
-aws s3 sync --delete ${S3_BACKUPS}/servers/web/apache2 ${HOME}/solidrust.net/server/apache2 | tee -a ${LOGS}
-aws s3 sync --delete ${S3_BACKUPS}/servers/web/php ${HOME}/solidrust.net/server/php | tee -a ${LOGS}
+aws s3 sync --delete ${S3_REPO}/servers/web/web ${HOME}/solidrust.net | tee -a ${LOGS}
+aws s3 sync --delete ${S3_REPO}/servers/web/apache2 ${HOME}/solidrust.net/server/apache2 | tee -a ${LOGS}
+aws s3 sync --delete ${S3_REPO}/servers/web/php ${HOME}/solidrust.net/server/php | tee -a ${LOGS}
 sudo rm -rf /etc/apache2/*
 sudo cp -R ${HOME}/solidrust.net/server/apache2 /etc/
 sudo rm -rf /etc/php/*
