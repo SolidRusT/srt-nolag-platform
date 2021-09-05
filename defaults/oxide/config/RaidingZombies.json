@@ -1,6 +1,6 @@
 {
   "Settings": {
-    "chance": 50,
+    "chance": 100,
     "totalExplosives": 2,
     "totalRockets": 2,
     "explosive": "explosive.timed",
