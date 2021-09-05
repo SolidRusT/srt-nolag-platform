@@ -1,8 +1,8 @@
 {
   "Horde Options": {
-    "Amount of zombies to spawn when a new horde is created": 3,
-    "Maximum amount of spawned zombies per horde": 10,
-    "Maximum amount of hordes at any given time": 5,
+    "Amount of zombies to spawn when a new horde is created": 1,
+    "Maximum amount of spawned zombies per horde": 5,
+    "Maximum amount of hordes at any given time": 15,
     "Amount of time from when a horde is destroyed until a new horde is created (seconds)": 900,
     "Amount of time before a horde grows in size": 300,
     "Add a zombie to the horde when a horde member kills a player": true,

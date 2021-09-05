@@ -4,7 +4,7 @@ sudo dpkg --add-architecture i386
 sudo apt update
 sudo apt -y dist-upgrade
 
-NEW_NAME="nine"
+NEW_NAME="demo"
 echo ${NEW_NAME} | sudo tee /etc/hostname
 echo "127.0.0.1    ${NEW_NAME} ${NEW_NAME}.solidrust.net" | sudo tee -a /etc/hosts /etc/cloud/templates/hosts.debian.tmpl
 #echo "10.9.1.58    data data.solidrust.net" | sudo tee -a /etc/hosts /etc/cloud/templates/hosts.debian.tmpl
@@ -21,7 +21,7 @@ sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
 sudo swapon -s
-echo "/swapfile swap swap defaults 0 0" | sudo tee -a /etc/fstab
+echo "/swapfile swap swap defaults 0 0" | sudo tee -a /etc/fstab # TODO move this to NVMe drive
 
 # reboot # Recommended
 
@@ -31,6 +31,8 @@ sudo apt -y autoremove
 sudo apt clean
 sudo apt autoclean
 # Installed required dependencies
+## Buster required lib32gcc1 instead of lib32gcc-s1
+## Bullseye required lib32gcc-s1 instead of lib32gcc1       
 sudo apt-get -y install \
     git \
     apt-transport-https \
@@ -43,7 +45,7 @@ sudo apt-get -y install \
     mailutils \
     software-properties-common \
     screen \
-    lib32gcc1 \
+    lib32gcc-s1 \
     libsdl2-2.0-0:i386 \
     libsdl2* \
     lib32stdc++6 \
@@ -71,6 +73,12 @@ sudo apt-get -y install \
     xfsprogs \
     steamcmd
 
+reboot
+# Done
+
+
+
+### some other shit
 # https://certbot.eff.org/lets-encrypt/debianbuster-nginx
 sudo apt install -y snapd nginx
 sudo snap install core; sudo snap refresh core

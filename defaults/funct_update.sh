@@ -46,7 +46,7 @@ function update_repo() {
 }
 
 function update_mods() {
-  # Sync global Oxide data defaults
+  # Sync global Oxide data defaults 
   OXIDE=(
     oxide/data/BetterLoot/LootTables.json
     oxide/data/FancyDrop.json
@@ -59,6 +59,7 @@ function update_mods() {
     oxide/data/CustomChatCommands.json
   )
   echo "=> Updating plugin data" | tee -a ${LOGS}
+  mkdir -p "${GAME_ROOT}/oxide/data"
   for data in ${OXIDE[@]}; do
     echo " - $data" | tee -a ${LOGS}
     rsync "${SERVER_GLOBAL}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}
@@ -67,11 +68,13 @@ function update_mods() {
     fi
   done
   echo " - oxide/data/copypaste" | tee -a ${LOGS}
+  mkdir -p "${GAME_ROOT}/oxide/data/copypaste"
   rsync -r "${SERVER_GLOBAL}/oxide/data/copypaste/" "${GAME_ROOT}/oxide/data/copypaste" | tee -a ${LOGS}
   if [[ -d "${SERVER_CUSTOM}/oxide/data/copypaste" ]]; then
     rsync -r "${SERVER_CUSTOM}/oxide/data/copypaste/" "${GAME_ROOT}/oxide/data/copypaste" | tee -a ${LOGS}
   fi
   echo " - oxide/data/RaidableBases" | tee -a ${LOGS}
+  mkdir -p "${GAME_ROOT}/oxide/data/RaidableBases"
   rsync -ra --delete "${SERVER_GLOBAL}/oxide/data/RaidableBases/" "${GAME_ROOT}/oxide/data/RaidableBases" | tee -a ${LOGS}
   if [[ -d "${SERVER_CUSTOM}/oxide/data/RaidableBases" ]]; then
     rsync -r "${SERVER_CUSTOM}/oxide/data/RaidableBases/" "${GAME_ROOT}/oxide/data/RaidableBases" | tee -a ${LOGS}
@@ -86,7 +89,7 @@ function update_mods() {
   rsync -r "${SERVER_CUSTOM}/oxide/config/" "${GAME_ROOT}/oxide/config" | tee -a ${LOGS}
   # Merge global default, SRT Custom and other server-specific plugins into a single build
   rm -rf ${BUILD_ROOT}
-  mkdir -p ${BUILD_ROOT}/oxide/plugins
+  mkdir -p "${BUILD_ROOT}/oxide/plugins"
   echo "=> Updating Oxide plugins" | tee -a ${LOGS}
   rsync -ra --delete "${SERVER_GLOBAL}/oxide/plugins/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
   rsync -ra "${SERVER_GLOBAL}/oxide/custom/" "${BUILD_ROOT}/oxide/plugins" | tee -a ${LOGS}
@@ -102,6 +105,7 @@ function update_mods() {
     oxide/lang/ru/Dance.json
   )
   echo "=> Updating plugin language data" | tee -a ${LOGS}
+  mkdir -p "${GAME_ROOT}/oxide/lang/en" "${GAME_ROOT}/oxide/lang/ru"
   for data in ${LANG[@]}; do
     echo " - $data" | tee -a ${LOGS}
     rsync "${SERVER_GLOBAL}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}
