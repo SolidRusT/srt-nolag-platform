@@ -1,0 +1,67 @@
+#!/bin/bash
+## mysqldump -u [username] -p [database] > dump.sql
+## mysql -u [username] -p [database] < [dump_file].sql
+SERVER=$1
+DATABASE=$2
+REPO_DIR="/c/Users/shaun/repos/solidrust.net"
+SERVER_KEYS="/c/Users/shaun/repos/us-west-2-solidrust.pem"
+LOG_DATE=$(date +"%Y_%m_%d_%I_%M_%S_%p")
+ALL_DATABASES=(PermissionGroupSync
+  RustPlayers
+  mysql
+  oxide
+  rustplayers
+  solidrust_demo
+  solidrust_lcy
+  solidrust_players
+  srt_web_auth)
+
+case $SERVER in
+data)
+  SSH_CMD="ssh -i ${SERVER_KEYS} -tq admin@data.solidrust.net"
+  SCP_CMD="scp -i ${SERVER_KEYS} admin@data.solidrust.net"
+  ;;
+*)
+  echo ""
+  echo ""
+  echo "pull_database: Invalid server selection"
+  echo ""
+  echo "Currently supported server(s): data"
+  echo ""
+  echo "Usage: pull_database <server> <database_name>"
+  echo ""
+  exit 1
+  ;;
+esac
+
+if [ -z "${DATABASE}" ]; then
+  echo ""
+  echo ""
+  echo "pull_database: Invalid database selection"
+  echo ""
+  echo "Suggested databases:"
+  echo "  - solidrust_lcy"
+  echo ""
+  echo "Usage: pull_database <server> <database_name>"
+  echo ""
+  exit 1
+else
+  case ${DATABASE} in
+  all | full)
+    for database in ${ALL_DATABASES[@]}; do
+      echo "=> Pulling ${database} database from ${SERVER}.solidrust.net"
+      mkdir -p "${REPO_DIR}/servers/${SERVER}/"
+      ${SSH_CMD} "sudo mysqldump -u root ${database} > /tmp/dump-${LOG_DATE}.sql"
+      ${SCP_CMD}:/tmp/dump-${LOG_DATE}.sql "${REPO_DIR}/servers/${SERVER}/${database}.sql"
+      echo "saved to: ${REPO_DIR}/servers/${SERVER}/${database}.sql"
+    done
+    ;;
+  *)
+    echo "Pulling ${DATABASE} database from ${SERVER}.solidrust.net"
+    mkdir -p "${REPO_DIR}/servers/${SERVER}/"
+    ${SSH_CMD} "sudo mysqldump -u root ${DATABASE} > /tmp/dump-${LOG_DATE}.sql"
+    ${SCP_CMD}:/tmp/dump-${LOG_DATE}.sql "${REPO_DIR}/servers/${SERVER}/${DATABASE}.sql"
+    echo "saved to: ${REPO_DIR}/servers/${SERVER}/${DATABASE}.sql"
+    ;;
+  esac
+fi

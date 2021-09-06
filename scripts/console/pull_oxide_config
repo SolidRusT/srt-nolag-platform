@@ -1,28 +1,53 @@
 #!/bin/bash
 SERVER=$1
 PLUGIN=$2
-REPO_DIR="/c/Users/shaun/repos/solidrust.net/defaults"
+REPO_DIR="/c/Users/shaun/repos/solidrust.net"
 SERVER_KEYS="/c/Users/shaun/repos"
 
-case $SERVER in
+function usage_helper() {
+  echo ""
+  echo "Usage: pull_oxide_config <server> <plugin_name|all>"
+  echo ""
+}
 
-  two)
-    SCP_CMD="scp -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@two.solidrust.net"
-    ;;
-
-  nine)
-    SCP_CMD="scp -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@nine.solidrust.net"
-    ;;
-
-  *)
-    echo "pull_config: Invalid server selection"
-    echo ""
-    echo "Currently supported servers: two, nine"
-    echo ""
-    echo "Usage: pull_config <server> <plugin>"
-    echo ""
-    ;;
+case ${SERVER} in
+demo)
+  SCP_CMD="scp -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@${SERVER}.solidrust.net"
+  SSH_CMD="ssh -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem -tq admin@${SERVER}.solidrust.net"
+  ;;
+nine)
+  SCP_CMD="scp -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@${SERVER}.solidrust.net"
+  SSH_CMD="ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem -tq admin@${SERVER}.solidrust.net"
+  ;;
+*)
+  echo "pull_config: Invalid server selection"
+  echo ""
+  echo "Currently supported servers: nine, demo"
+  usage_helper
+  exit 1
+  ;;
 esac
 
-echo "Pulling ${PLUGIN} config from ${SERVER}"
-$SCP_CMD:/game/oxide/config/${PLUGIN}.json "${REPO_DIR}/oxide/config/"
+if [ -z "${PLUGIN}" ]; then
+  echo "pull_config: no plugin selection detected"
+  echo ""
+  echo "Please specify a plugin to pull from, such as 'AutoDoors'"
+  usage_helper
+  exit 1
+else
+  case ${PLUGIN} in
+  all)
+    echo "do it for Dale"
+    ${SSH_CMD} "cd /game/oxide/plugins; ls -1 *.cs | rev | cut -c4- | rev > /tmp/solidrust_plugins.list"
+    ${SCP_CMD}:/tmp/solidrust_plugins.list "${REPO_DIR}/servers/${SERVER}/"
+    for plugin in $(cat "${REPO_DIR}/servers/${SERVER}/solidrust_plugins.list"); do
+      echo "Doin the $plugin plugin"
+      ${SCP_CMD}:/game/oxide/config/${plugin}.json "${REPO_DIR}/defaults/oxide/config/"
+    done
+    ;;
+  *)
+    echo "Pulling ${PLUGIN} config from ${SERVER}"
+    ${SCP_CMD}:/game/oxide/config/${PLUGIN}.json "${REPO_DIR}/defaults/oxide/config/"
+    ;;
+  esac
+fi
