@@ -33,8 +33,8 @@
         "[Manifest] URI IS",
         "[SpawnHandler] populationCounts",
         ", disk(",
-        "Bone error in SkeletonPropertie",
         "Look rotation viewing vector is zero",
-        "Failed to create agent because it is not close enough to the NavMesh"
+        "Failed to create agent because it is not close enough to the NavMesh",
+        "Bone error in"
     ]
 }
