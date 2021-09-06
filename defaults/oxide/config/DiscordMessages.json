@@ -5,7 +5,7 @@
     "BanSettings": {
         "Color": "3329330",
         "Enabled": false,
-        "WebhookUrl": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+        "WebhookUrl": "https://discord.com/api/webhooks/884239408801406986/w6QuVqVDN19AjxBrAhAo82EVVCVQEnU3m2FhtoWE5E_9g2kAhUsnqtPH5B-EldKIOZgk"
     },
     "ReportSettings": {
         "LogToConsole": true,
@@ -13,7 +13,7 @@
         "Cooldown": 30,
         "Color": "3329330",
         "Enabled": true,
-        "WebhookUrl": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+        "WebhookUrl": "https://discord.com/api/webhooks/884239408801406986/w6QuVqVDN19AjxBrAhAo82EVVCVQEnU3m2FhtoWE5E_9g2kAhUsnqtPH5B-EldKIOZgk"
     },
     "MessageSettings": {
         "LogToConsole": true,
@@ -22,16 +22,16 @@
         "Cooldown": 30,
         "Color": "3329330",
         "Enabled": true,
-        "WebhookUrl": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+        "WebhookUrl": "https://discord.com/api/webhooks/884239408801406986/w6QuVqVDN19AjxBrAhAo82EVVCVQEnU3m2FhtoWE5E_9g2kAhUsnqtPH5B-EldKIOZgk"
     },
     "ChatSettings": {
         "TextToSpeech": false,
         "Enabled": true,
-        "WebhookUrl": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+        "WebhookUrl": "https://discord.com/api/webhooks/884239408801406986/w6QuVqVDN19AjxBrAhAo82EVVCVQEnU3m2FhtoWE5E_9g2kAhUsnqtPH5B-EldKIOZgk"
     },
     "MuteSettings": {
         "Color": "3329330",
         "Enabled": true,
-        "WebhookUrl": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+        "WebhookUrl": "https://discord.com/api/webhooks/884239408801406986/w6QuVqVDN19AjxBrAhAo82EVVCVQEnU3m2FhtoWE5E_9g2kAhUsnqtPH5B-EldKIOZgk"
     }
 }

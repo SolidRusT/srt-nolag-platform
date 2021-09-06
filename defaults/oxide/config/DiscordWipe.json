@@ -14,12 +14,11 @@
         }
     },
     "Send wipe message when server wipes": true,
-    "Wipe Webhook url": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Wipe Webhook url": "https://discord.com/api/webhooks/884239961480646716/EktmshU3GgFRztcmmNS-g8sFGDPVMJSuDqYILULJMI8JN4UA0ebILKqxPe_CmDhNCTot",
     "Send protocol message when server protocol changes": true,
-    "Protocol Webhook url": "https://discord.com/api/webhooks/851921337303433306/0FBg4D3qvi6UBGDpR5RRuVB5TDUMtTaCRc2hSPkloc83ceUXZtMvlFhWxRTkFYSpUiNe",
+    "Protocol Webhook url": "https://discord.com/api/webhooks/884239961480646716/EktmshU3GgFRztcmmNS-g8sFGDPVMJSuDqYILULJMI8JN4UA0ebILKqxPe_CmDhNCTot",
     "Wipe messages": [{
         "Content": "@everyone",
-        "Webhook Override (Overrides the default webhook for this message)": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
         "Send Mode (Always, Random)": "Always",
         "Embed": {
             "Enabled": true,
@@ -63,7 +62,6 @@
     }],
     "Protocol messages": [{
         "Content": "@everyone",
-        "Webhook Override (Overrides the default webhook for this message)": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
         "Send Mode (Always, Random)": "Always",
         "Embed": {
             "Enabled": true,

@@ -19,11 +19,11 @@
       },
       "Max Amount Allowed To Automatically Spawn Per Difficulty (0 = infinite, -1 = disabled)": {
         "Allow Max Amount Increase From Difficulties Disabled On A Specific Day Of The Week": false,
-        "Easy": 0,
-        "Medium": 0,
-        "Hard": 8,
-        "Expert": 4,
-        "Nightmare": 2
+        "Easy": 1,
+        "Medium": 1,
+        "Hard": 1,
+        "Expert": 1,
+        "Nightmare": 1
       },
       "Chance To Automatically Spawn Each Difficulty (-1 = ignore)": {
         "Easy": -1.0,
@@ -48,43 +48,43 @@
         "Tuesday": true,
         "Wednesday": true,
         "Thursday": true,
-        "Friday": false,
-        "Saturday": false,
-        "Sunday": false
+        "Friday": true,
+        "Saturday": true,
+        "Sunday": true
       },
       "Medium Raids Can Spawn On": {
-        "Monday": false,
+        "Monday": true,
         "Tuesday": true,
         "Wednesday": true,
         "Thursday": true,
-        "Friday": false,
-        "Saturday": false,
-        "Sunday": false
+        "Friday": true,
+        "Saturday": true,
+        "Sunday": true
       },
       "Hard Raids Can Spawn On": {
-        "Monday": false,
-        "Tuesday": false,
+        "Monday": true,
+        "Tuesday": true,
         "Wednesday": true,
         "Thursday": true,
         "Friday": true,
-        "Saturday": false,
-        "Sunday": false
+        "Saturday": true,
+        "Sunday": true
       },
       "Expert Raids Can Spawn On": {
-        "Monday": false,
-        "Tuesday": false,
-        "Wednesday": false,
-        "Thursday": false,
+        "Monday": true,
+        "Tuesday": true,
+        "Wednesday": true,
+        "Thursday": true,
         "Friday": true,
         "Saturday": true,
         "Sunday": true
       },
       "Nightmare Raids Can Spawn On": {
-        "Monday": false,
-        "Tuesday": false,
-        "Wednesday": false,
-        "Thursday": false,
-        "Friday": false,
+        "Monday": true,
+        "Tuesday": true,
+        "Wednesday": true,
+        "Thursday": true,
+        "Friday": true,
         "Saturday": true,
         "Sunday": true
       },

@@ -1,8 +1,0 @@
-{
-  "Settings": {
-    "Ammo Types": [
-      "ammo.rifle.explosive"
-    ],
-    "Explosion Effect": "assets/prefabs/weapons/beancan grenade/effects/beancan_grenade_explosion.prefab"
-  }
-}

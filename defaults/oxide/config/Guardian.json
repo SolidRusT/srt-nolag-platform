@@ -112,27 +112,27 @@
     },
     "Discord": {
         "Enabled": true,
-        "WebHook": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT",
+        "WebHook": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5",
         "Filters": {
             "AntiCheat": {
                 "Enabled": true,
-                "WebHook": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+                "WebHook": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5"
             },
             "AntiFlood": {
                 "Enabled": true,
-                "WebHook": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+                "WebHook": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5"
             },
             "IP": {
                 "Enabled": true,
-                "WebHook": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+                "WebHook": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5"
             },
             "Steam": {
                 "Enabled": true,
-                "WebHook": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+                "WebHook": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5"
             },
             "VPN": {
                 "Enabled": true,
-                "WebHook": "https://discord.com/api/webhooks/860406478102855740/p4kG9kBOcjYuZoa2W4Sm9Yzcq4fseLe5aLVMCqdsU3JY6ZN7Re2DHuw3my-DxyIfmSDT"
+                "WebHook": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5"
             }
         }
     },
