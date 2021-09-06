@@ -1,9 +1,9 @@
 {
-    "Frequency to check for updates (hours)": 192.0,
+    "Frequency to check for updates (hours)": 12.0,
     "Ignore lower versions (ignores when the official version is a lower version number)": true,
-    "Check Unloaded Plugins": false,
+    "Check Unloaded Plugins": true,
     "Enable Discord Notifications": true,
-    "Discord Webhook URL": "https://discord.com/api/webhooks/876565289599377410/woK1nsvW4e3bG3OEwd1ZS9d-IVPl1iNszcN_czXgemN5AXMWu0bbC7Ee7trwsOm0uNoh",
+    "Discord Webhook URL": "https://discord.com/api/webhooks/884238435945164940/oe5mREtG5wJMKDsvDVHe8CYVFqPNMxS1dt4LK_h-8HiVP3j2cHCEh7GlRm40KNVWP3zq",
     "Avatar URL": "https://solidrust.net/images/SoldRust_Logo.png",
     "Discord Username": "Plugin Update Notifications",
     "Automatic Blacklist": true,

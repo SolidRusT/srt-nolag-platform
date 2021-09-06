@@ -1,3 +1,7 @@
+#!/bin/bash
+
+echo "pile of hot garbage, stoner notes"
+
 ## Shit notes
 ## WIP
 

@@ -36,30 +36,16 @@ cp ${HOME}/solidrust.net/defaults/bashrc ~/.bashrc
 exit
 sudo su - ${STEAMUSER}
 update_repo game
+# logout/login
+update_repo game
 update_server
 update_mods
-
-/usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT} +app_update 258550 +quit
-/usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT} +app_update 258550 validate +quit
-
-cp ${HOME}/solidrust.net/defaults/bashrc ~/.bashrc
-
-# Create the game service user
-
-# sudo adduser modded --disabled-password --quiet
-#sudo adduser ${STEAMUSER} --disabled-password --quiet --home ${GAME_ROOT}
-#sudo chown -R ${USER}:${USER} ${HOME}
-
-# login as the game user
-#sudo su - ${STEAMUSER}
-
-## Create the game service user
-#export STEAMUSER="root"
-#export GAME_ROOT="/game"
-#echo "export STEAMUSER=\"${STEAMUSER}\"" >> ~/.bashrc
-#echo "export GAME_ROOT=\"${GAME_ROOT}\"" >> ~/.bashrc
-
-# VBox on Hyper-V only
-#/usr/games/steamcmd +login anonymous +app_update 258550 +quit
-#/usr/games/steamcmd +login anonymous +app_update 258550 validate +quit
-# OR,
+#update bashrc with gameroot mount
+#pull default SRT crontab from repo
+reboot
+#configure discord hooks
+#configure mapsize and seed/custom
+update_repo game
+update_mods
+update_configs
+#start_rust

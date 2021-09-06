@@ -49,8 +49,8 @@ function update_mods() {
   # Sync global Oxide data defaults 
   OXIDE=(
     oxide/data/BetterLoot/LootTables.json
-    oxide/data/FancyDrop.json
     oxide/data/Kits/Kits.json
+    oxide/data/FancyDrop.json
     oxide/data/BetterChat.json
     oxide/data/CompoundOptions.json
     oxide/data/death.png
@@ -59,7 +59,7 @@ function update_mods() {
     oxide/data/CustomChatCommands.json
   )
   echo "=> Updating plugin data" | tee -a ${LOGS}
-  mkdir -p "${GAME_ROOT}/oxide/data"
+  mkdir -p "${GAME_ROOT}/oxide/data/BetterLoot" "${GAME_ROOT}/oxide/data/Kits"
   for data in ${OXIDE[@]}; do
     echo " - $data" | tee -a ${LOGS}
     rsync "${SERVER_GLOBAL}/$data" "${GAME_ROOT}/$data" | tee -a ${LOGS}

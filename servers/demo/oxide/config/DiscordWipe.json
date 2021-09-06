@@ -1,0 +1,106 @@
+{
+    "Debug Level (None, Error, Warning, Info)": "Warning",
+    "Command": "dw",
+    "Rust Map Image Settings": {
+        "Map Image Source (None, RustMaps, RustMapApi)": "RustMaps",
+        "RustMaps.com Settings": {
+            "RustMap.com API Key": "9f581a87-3ba8-4f9e-90b6-1485f969dbf0",
+            "Generate Staging Map": false
+        },
+        "RustMapApi Settings": {
+            "Render Name": "Icons",
+            "Image Resolution Scale": 0.5,
+            "File Type (Jpg, Png": "Jpg"
+        }
+    },
+    "Send wipe message when server wipes": true,
+    "Wipe Webhook url": "https://discord.com/api/webhooks/884239961480646716/EktmshU3GgFRztcmmNS-g8sFGDPVMJSuDqYILULJMI8JN4UA0ebILKqxPe_CmDhNCTot",
+    "Send protocol message when server protocol changes": true,
+    "Protocol Webhook url": "https://discord.com/api/webhooks/884239961480646716/EktmshU3GgFRztcmmNS-g8sFGDPVMJSuDqYILULJMI8JN4UA0ebILKqxPe_CmDhNCTot",
+    "Wipe messages": [{
+        "Content": "@everyone",
+        "Send Mode (Always, Random)": "Always",
+        "Embed": {
+            "Enabled": true,
+            "Title": "{server.name}",
+            "Description": "The server has wiped!",
+            "Url": "",
+            "Embed Color": "#de8732",
+            "Image Url": "attachment://map.jpg",
+            "Thumbnail Url": "",
+            "Fields": [{
+                    "Title": "Seed",
+                    "Value": "[{world.seed}](https://rustmaps.com/map/{world.size}_{world.seed})",
+                    "Inline": true,
+                    "Enabled": true
+                },
+                {
+                    "Title": "Size",
+                    "Value": "{world.size}M ({world.size!km^2}km^2)",
+                    "Inline": true,
+                    "Enabled": true
+                },
+                {
+                    "Title": "Protocol",
+                    "Value": "{server.protocol.network}",
+                    "Inline": true,
+                    "Enabled": true
+                },
+                {
+                    "Title": "Click & Connect",
+                    "Value": "steam://connect/{server.address}:{server.port}",
+                    "Inline": false,
+                    "Enabled": true
+                }
+            ],
+            "Footer": {
+                "Icon Url": "",
+                "Text": "",
+                "Enabled": true
+            }
+        }
+    }],
+    "Protocol messages": [{
+        "Content": "@everyone",
+        "Send Mode (Always, Random)": "Always",
+        "Embed": {
+            "Enabled": true,
+            "Title": "{server.name}",
+            "Description": "The server protocol has changed!",
+            "Url": "",
+            "Embed Color": "#de8732",
+            "Image Url": "",
+            "Thumbnail Url": "",
+            "Fields": [{
+                    "Title": "Protocol",
+                    "Value": "{server.protocol.network}",
+                    "Inline": true,
+                    "Enabled": true
+                },
+                {
+                    "Title": "Previous Protocol",
+                    "Value": "{server.protocol.previous}",
+                    "Inline": true,
+                    "Enabled": true
+                },
+                {
+                    "Title": "Mandatory Client Update",
+                    "Value": "This update requires a mandatory client update in order to be able to play on the server",
+                    "Inline": false,
+                    "Enabled": true
+                },
+                {
+                    "Title": "Click & Connect",
+                    "Value": "steam://connect/{server.address}:{server.port}",
+                    "Inline": false,
+                    "Enabled": true
+                }
+            ],
+            "Footer": {
+                "Icon Url": "",
+                "Text": "",
+                "Enabled": true
+            }
+        }
+    }]
+}
