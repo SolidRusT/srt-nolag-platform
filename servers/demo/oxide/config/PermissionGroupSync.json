@@ -4,8 +4,8 @@
     "DatabaseConfiguration": {
         "Host": "data",
         "Port": 3306,
-        "Username": "modded",
-        "Password": "Admin408",
+        "Username": "srt_sl_lcy",
+        "Password": "lcy_402",
         "Database": "solidrust_lcy"
     },
     "GroupPermissions": [{

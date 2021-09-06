@@ -33,8 +33,11 @@ echo "Setting execution bits" | tee -a ${LOGS}
 chmod +x ${HOME}/solidrust.net/defaults/*.sh
 
 cp ${HOME}/solidrust.net/defaults/bashrc ~/.bashrc
+#TODO add database to /etc/hosts for local access
 exit
+
 sudo su - ${STEAMUSER}
+
 update_repo game
 # logout/login
 update_repo game
@@ -49,3 +52,4 @@ update_repo game
 update_mods
 update_configs
 #start_rust
+update_permissions

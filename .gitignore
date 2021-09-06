@@ -30,6 +30,7 @@ oxide/logs/*
 build.txt
 
 # Application data and logs
+servers/*/*.sql
 defaults/oxide/data/Arkan/*
 defaults/oxide/data/Auto*
 defaults/oxide/data/Backpacks.json
