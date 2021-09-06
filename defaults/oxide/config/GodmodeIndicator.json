@@ -1,6 +1,7 @@
 {
-    "UI X position": 0.01,
-    "UI Y position": 0.86,
-    "UI URL": "https://solidrust.net/images/SRT_GodMode.png",
-    "UI Color": "1 1 1 1"
+  "UI X position": 0.01,
+  "UI Y position": 0.86,
+  "UI URL": "https://solidrust.net/images/SRT_GodMode.png",
+  "UI Color": "1 1 1 1",
+  "UI Scale": 1.0
 }

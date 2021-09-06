@@ -5,7 +5,7 @@ using Oxide.Core;
 
 namespace Oxide.Plugins
 {
-    [Info("Compound Options", "FastBurst", "1.1.7")]
+    [Info("Compound Options", "FastBurst", "1.1.8")]
     [Description("Compound monument options")]
     class CompoundOptions : RustPlugin
     {
@@ -206,12 +206,26 @@ namespace Oxide.Plugins
             List<NPCVendingOrder.Entry> temp = new List<NPCVendingOrder.Entry>();
             foreach (var order in data.VendingMachinesOrders[vending.vendingOrders.name])
             {
+                ItemDefinition currencyItem = ItemManager.FindItemDefinition(order.currencyId);
+                if (currencyItem == null)
+                {
+                    PrintError($"Item id {order.currencyId} is invalid. Skipping sell order.");
+                    continue;
+                }
+
+                ItemDefinition sellItem = ItemManager.FindItemDefinition(order.sellId);
+                if (sellItem == null)
+                {
+                    PrintError($"Item id {order.sellId} is invalid. Skipping sell order.");
+                    continue;
+                }
+
                 temp.Add(new NPCVendingOrder.Entry
                 {
                     currencyAmount = order.sellAmount,
                     currencyAsBP = order.currencyAsBP,
-                    currencyItem = ItemManager.FindItemDefinition(order.currencyId),
-                    sellItem = ItemManager.FindItemDefinition(order.sellId),
+                    currencyItem = currencyItem,
+                    sellItem = sellItem,
                     sellItemAmount = order.currencyAmount,
                     sellItemAsBP = order.sellAsBP,
                     weight = 100,

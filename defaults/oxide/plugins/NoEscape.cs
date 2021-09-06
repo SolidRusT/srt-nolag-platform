@@ -15,7 +15,7 @@ using Rust;
 
 namespace Oxide.Plugins
 {
-    [Info ("No Escape", "Calytic", "2.1.33")]
+    [Info ("No Escape", "Calytic", "2.1.34")]
     [Description ("Prevent commands/actions while raid and/or combat is occuring")]
     class NoEscape : RustPlugin
     {
@@ -812,8 +812,8 @@ namespace Oxide.Plugins
                         return _notificationWindow;
                     }
                     return _notificationWindow = new CuiRectTransformComponent () {
-                        AnchorMin = "0.87 0.35",
-                        AnchorMax = "0.99 0.38"
+                        AnchorMin = "0.44 0.15",
+                        AnchorMax = "0.56 0.18"
                     };
                 }
                 set {
@@ -1819,7 +1819,7 @@ namespace Oxide.Plugins
                 var result = CanDo ("craft", player);
                 if (result is string) {
                     SendReply (player, result.ToString ());
-                    return true;
+                    return false;
                 }
             }
 
