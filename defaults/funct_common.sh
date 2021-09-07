@@ -69,48 +69,33 @@ function restore_ebs() {
 
 function start_rust() {
   echo "Start RustDedicated game service" | tee -a ${LOGS}
-  # enter game root
+  # Dynamically generate startup command
   cd ${GAME_ROOT}
-
+  RUST_CMD="./RustDedicated -batchmode -nographics -silent-crashes -logfile ${SERVER_LOGS} \
+      +server.ip 0.0.0.0 \
+      +server.port ${RUST_SERVER_PORT} \
+      +rcon.ip 0.0.0.0 \
+      +rcon.port ${RUST_RCON_PORT} \
+      +app.publicip ${SERVER_IP} \
+      +app.port ${RUST_APP_PORT} \
+      +rcon.web 1 \
+      +rcon.password ${RUST_RCON_ADMIN} \
+      +server.identity ${RUST_IDENTITY} \
+      +server.logoimage ${RUST_AVATAR}"
   if [ ${CUSTOM_MAP} = "enabled" ]; then
     echo "Custom Maps enabled: ${CUSTOM_MAP_URL}" | tee -a ${LOGS}
-    sleep 2
-    ./RustDedicated -batchmode -nographics -silent-crashes -logfile ${SERVER_LOGS} \
-      +server.ip 0.0.0.0 \
-      +server.port 28015 \
-      +rcon.ip 0.0.0.0 \
-      +rcon.port 28016 \
-      +server.tickrate 30 \
-      +app.publicip ${SERVER_IP} \
-      +app.port 28082 \
-      +rcon.web 1 \
-      +rcon.password "NOFAGS" \
-      +server.identity "solidrust" \
-      +server.levelurl ${CUSTOM_MAP_URL} \
-      +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" 2>&1 \
-      ;
+    RUST_START="$RUST_CMD \
+      +server.levelurl ${CUSTOM_MAP_URL}"
   else
     echo "Using ${WORLD_SIZE} ${LEVEL} map with seed: ${SEED} " | tee -a ${LOGS}
-    sleep 2
-    ./RustDedicated -batchmode -nographics -silent-crashes -logfile ${SERVER_LOGS} \
-      +server.ip 0.0.0.0 \
-      +server.port 28015 \
-      +rcon.ip 0.0.0.0 \
-      +rcon.port 28016 \
-      +server.tickrate 30 \
-      +app.publicip ${SERVER_IP} \
-      +app.port 28082 \
-      +rcon.web 1 \
-      +rcon.password "NOFAGS" \
-      +server.identity "solidrust" \
+    RUST_START="$RUST_CMD \
       +server.level ${LEVEL} \
       +server.seed ${SEED} \
-      +server.worldsize ${WORLD_SIZE} \
-      +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" &
+      +server.worldsize ${WORLD_SIZE}"
   fi
-
   # Launch game server
   echo "===> Touching my peepee..." | tee -a ${LOGS}
+  ${RUST_START} &
   sleep 3
   export MY_PID=$(pidof RustDedicated)
   echo "Boosting affinity for RustDedicated PID: ${MY_PID}" | tee -a ${LOGS}

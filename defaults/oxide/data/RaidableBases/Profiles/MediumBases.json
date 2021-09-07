@@ -13,7 +13,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -27,7 +27,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -41,7 +41,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -55,7 +55,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -69,7 +69,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -83,7 +83,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -97,7 +97,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -111,7 +111,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -125,7 +125,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -139,7 +139,7 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
@@ -154,7 +154,7 @@
     },
     {
       "Option": "autoheight",
-      "Value": "true"
+      "Value": "false"
     },
     {
       "Option": "height",

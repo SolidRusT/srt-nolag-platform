@@ -10,8 +10,8 @@ export WORLD_SIZE="2700"
 # toggle map models
 export LEVEL="Barren"  # ignored if using custom maps
 # toggle custom maps
-export CUSTOM_MAP="disabled" # enabled / disabled
-export CUSTOM_MAP_URL="" #  only if CUSTOM_MAP is "enabled"
+export CUSTOM_MAP="enabled" # enabled / disabled
+export CUSTOM_MAP_URL="https://solidrust.net/maps/SRT-NoLAG-Small.map" #  only if CUSTOM_MAP is "enabled"
 # Current Map seed
 export SEED=$(cat ${GAME_ROOT}/server.seed)
 # Discord Settings

@@ -13,11 +13,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard2": [
@@ -27,11 +27,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard3": [
@@ -41,11 +41,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard4": [
@@ -55,11 +55,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard5": [
@@ -69,11 +69,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard6": [
@@ -83,11 +83,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard7": [
@@ -97,11 +97,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard8": [
@@ -111,11 +111,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard9": [
@@ -125,11 +125,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ],
     "raidhard10": [
@@ -139,11 +139,11 @@
       },
       {
         "Option": "autoheight",
-        "Value": "true"
+        "Value": "false"
       },
       {
         "Option": "height",
-        "Value": "3"
+        "Value": "0"
       }
     ]
   },
@@ -158,7 +158,7 @@
     },
     {
       "Option": "height",
-      "Value": "1.0"
+      "Value": "0"
     }
   ],
   "Arena Walls": {

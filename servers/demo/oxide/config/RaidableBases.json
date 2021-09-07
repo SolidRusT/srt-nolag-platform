@@ -170,7 +170,7 @@
     },
     "Map Markers": {
       "Marker Name": "SRT Base Event",
-      "Radius": 0.15,
+      "Radius": 0.2,
       "Use Vending Map Marker": true,
       "Use Explosion Map Marker": false,
       "Create Markers For Buyable Events": true,

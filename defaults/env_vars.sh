@@ -35,6 +35,15 @@ touch ${LOGS}
 export BUILD_ROOT="${HOME}/build-solidrust"
 # Current server external IP
 export SERVER_IP=$(curl -s http://whatismyip.akamai.com/)
+# RustDedicated server identitiy
+export RUST_IDENTITY="solidrust"
+# Rust Server RCON Admin
+export RUST_RCON_ADMIN="NOFAGS"
+# Rust server Avatar
+export RUST_AVATAR="https://solidrust.net/images/SoldRust_Logo.png"
+export RUST_SERVER_PORT="28015"
+export RUST_RCON_PORT="28016"
+export RUST_APP_PORT="28082"
 # SRT default world size
 export WORLD_SIZE="2700"
 # toggle map models
