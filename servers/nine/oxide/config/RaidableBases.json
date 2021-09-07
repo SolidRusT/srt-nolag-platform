@@ -19,9 +19,9 @@
       },
       "Max Amount Allowed To Automatically Spawn Per Difficulty (0 = infinite, -1 = disabled)": {
         "Allow Max Amount Increase From Difficulties Disabled On A Specific Day Of The Week": false,
-        "Easy": 0,
-        "Medium": 0,
-        "Hard": 8,
+        "Easy": 8,
+        "Medium": 8,
+        "Hard": 6,
         "Expert": 4,
         "Nightmare": 2
       },
@@ -170,7 +170,7 @@
     },
     "Map Markers": {
       "Marker Name": "SRT Base Event",
-      "Radius": 0.15,
+      "Radius": 0.125,
       "Use Vending Map Marker": true,
       "Use Explosion Map Marker": false,
       "Create Markers For Buyable Events": true,
@@ -464,12 +464,12 @@
     "Ammo": {
       "AutoTurret": 256,
       "FlameTurret": 128,
-      "FogMachine": 25,
+      "FogMachine": 250,
       "GunTrap": 64,
       "SamSite": 24
     },
     "Tesla Coil": {
-      "Requires A Power Source": false,
+      "Requires A Power Source": true,
       "Max Discharge Self Damage Seconds (0 = None, 120 = Rust default)": 120.0,
       "Max Damage Output": 35.0
     },

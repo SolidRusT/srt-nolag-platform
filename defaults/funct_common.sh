@@ -89,10 +89,8 @@ function start_rust() {
       +server.levelurl ${CUSTOM_MAP_URL} \
       +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" 2>&1 \
       ;
-
   else
-
-    echo "Using ${WORLD_SIZE} Procedural map with seed: ${SEED} " | tee -a ${LOGS}
+    echo "Using ${WORLD_SIZE} ${LEVEL} map with seed: ${SEED} " | tee -a ${LOGS}
     sleep 2
     ./RustDedicated -batchmode -nographics -silent-crashes -logfile ${SERVER_LOGS} \
       +server.ip 0.0.0.0 \
@@ -105,7 +103,7 @@ function start_rust() {
       +rcon.web 1 \
       +rcon.password "NOFAGS" \
       +server.identity "solidrust" \
-      +server.level "Procedural Map" \
+      +server.level ${LEVEL} \
       +server.seed ${SEED} \
       +server.worldsize ${WORLD_SIZE} \
       +server.logoimage "https://solidrust.net/images/SoldRust_Logo.png" &

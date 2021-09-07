@@ -37,8 +37,11 @@ export BUILD_ROOT="${HOME}/build-solidrust"
 export SERVER_IP=$(curl -s http://whatismyip.akamai.com/)
 # SRT default world size
 export WORLD_SIZE="2700"
+# toggle map models
+export LEVEL="Procedural Map"  # ignored if using custom maps
 # Custom map toggle
 export CUSTOM_MAP="disabled" # enabled / disabled
+export CUSTOM_MAP_URL="" #  only if CUSTOM_MAP is "enabled"
 
 # end of env_vars
 echo "++++++= Initialized SolidRusT =++++++" | tee -a ${LOGS}
