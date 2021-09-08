@@ -5,67 +5,67 @@
     "Cycle Messages Every ~N Seconds": 3.0,
     "Messages": [{
             "Top Status": "<color=#ffff00>SRT custom 5x</color>",
-            "Bottom Status": "<color=#add8e6>Use /info to see the chat commands</color>"
+            "Bottom Status": "<color=#add8e6>/info  to see help and the chat commands</color>"
         },
         {
             "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>Use /spawnmini to get your minicopter</color>"
+            "Bottom Status": "<color=#ffff00>/spawnmini  spawn your personal minicopter</color>"
         },
         {
             "Top Status": "<color=#add8e6>SRT custom 5x",
-            "Bottom Status": "<color=#ffff00>Use /buildcar to craft a sedan</color>"
+            "Bottom Status": "<color=#ffff00>/buildcar  craft a sedan with storage</color>"
         },
         {
             "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>Use /recycler.craft to craft Recyclers</color>"
+            "Bottom Status": "<color=#ffff00>/recycler.craft  craft personal Recyclers</color>"
         },
         {
             "Top Status": "<color=#add8e6>SRT custom 5x",
-            "Bottom Status": "<color=#ffff00>Use /heal to instantly heal yourself</color>"
+            "Bottom Status": "<color=#ffff00>/heal  instantly heal yourself</color>"
         },
         {
             "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>Use /outpost to teleport to Outpost</color>"
+            "Bottom Status": "<color=#ffff00>/outpost  teleport to Outpost</color>"
         },
         {
             "Top Status": "<color=#add8e6>SRT custom 5x",
-            "Bottom Status": "<color=#ffff00>Use /bandit to teleport to Bandit Camp</color>"
+            "Bottom Status": "<color=#ffff00>/bandit  teleport to Bandit Camp</color>"
         },
         {
             "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>Use /chute to deploy a parachute</color>"
+            "Bottom Status": "<color=#ffff00>/chute  deploy a parachute while falling</color>"
         },
         {
             "Top Status": "<color=#add8e6>SRT custom 5x",
-            "Bottom Status": "<color=#ffff00>Use /setgenes to change seeds</color>"
+            "Bottom Status": "<color=#ffff00>/setgenes  change seed genes</color>"
         },
         {
             "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>Use /trade to remotely trade with players</color>"
+            "Bottom Status": "<color=#ffff00>/trade  remotely trade with other players</color>"
         },
         {
             "Top Status": "<color=#add8e6>SRT custom 5x",
-            "Bottom Status": "<color=#ffff00>Use /home to set your home spawn</color>"
+            "Bottom Status": "<color=#ffff00>/home  set and teleport to your home base</color>"
         },
         {
             "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>Use /stats to show your current ranking</color>"
+            "Bottom Status": "<color=#ffff00>/stats  show your current player ranking</color>"
         },
         {
             "Top Status": "<color=#add8e6>SRT custom 5x",
-            "Bottom Status": "<color=#ffff00>Use /top to check your kills and deaths</color>"
+            "Bottom Status": "<color=#ffff00>/top  show your kills and deaths</color>"
         },
         {
             "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>Use /skin to change items skins</color>"
+            "Bottom Status": "<color=#ffff00>/skin  change skins on your items</color>"
         },
         {
             "Top Status": "<color=#add8e6>SRT custom 5x",
-            "Bottom Status": "<color=#ffff00>Use /ad to auto-close doors behind you</color>"
+            "Bottom Status": "<color=#ffff00>/ad  automatically close doors behind you</color>"
         },
         {
             "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>Use /kit to redeem your free kits</color>"
+            "Bottom Status": "<color=#ffff00>/kit  redeem your free kits</color>"
         }
     ],
     "Enable Queue Messages": false,
