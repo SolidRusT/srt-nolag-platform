@@ -1,0 +1,4818 @@
+{
+  "default": {
+    "position": {
+      "x": "-469.6835",
+      "y": "27.18117",
+      "z": "756.42"
+    },
+    "rotationdiff": "5.166364",
+    "rotationy": "120.2549"
+  },
+  "entities": [
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.450772",
+        "y": "2.9",
+        "z": "-0.277641"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "-5.894138E-08",
+        "y": "-1.496722",
+        "z": "-2.981551E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.946253",
+        "y": "-0.1000004",
+        "z": "-0.3877559"
+      },
+      "prefabname": "assets/prefabs/building core/foundation.triangle/foundation.triangle.prefab",
+      "rot": {
+        "x": "-5.329071E-14",
+        "y": "-4.638316",
+        "z": "-1.748455E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.450344",
+        "y": "-0.1000004",
+        "z": "-0.2767634"
+      },
+      "prefabname": "assets/prefabs/building core/foundation/foundation.prefab",
+      "rot": {
+        "x": "8.742278E-08",
+        "y": "-3.067519",
+        "z": "-8.742278E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 0,
+      "pos": {
+        "x": "1.664061",
+        "y": "-2.319906",
+        "z": "-0.007716607"
+      },
+      "prefabname": "assets/bundled/prefabs/autospawn/collectable/stone/metal-collectable.prefab",
+      "rot": {
+        "x": "6.154106",
+        "y": "-0.3251362",
+        "z": "6.082797"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.228277",
+        "y": "-0.1000004",
+        "z": "-3.268553"
+      },
+      "prefabname": "assets/prefabs/building core/foundation/foundation.prefab",
+      "rot": {
+        "x": "1.748456E-07",
+        "y": "-3.067519",
+        "z": "-1.748456E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.2676321",
+        "y": "-0.1000004",
+        "z": "-3.157561"
+      },
+      "prefabname": "assets/prefabs/building core/wall.low/wall.low.prefab",
+      "rot": {
+        "x": "-1.880528E-07",
+        "y": "-3.067519",
+        "z": "2.111213E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.9868495",
+        "y": "0",
+        "z": "-3.293941"
+      },
+      "prefabname": "assets/prefabs/deployable/table/table.deployed.prefab",
+      "rot": {
+        "x": "4.075966E-07",
+        "y": "-1.505827",
+        "z": "8.524975E-08"
+      },
+      "skinid": 877940832
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.763541",
+        "y": "-0.1000004",
+        "z": "-3.046568"
+      },
+      "prefabname": "assets/prefabs/building core/foundation/foundation.prefab",
+      "rot": {
+        "x": "2.622683E-07",
+        "y": "-1.496723",
+        "z": "8.742276E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.6968925",
+        "y": "0.01099968",
+        "z": "3.143554"
+      },
+      "prefabname": "assets/prefabs/deployable/locker/locker.deployed.prefab",
+      "rot": {
+        "x": "8.682039E-08",
+        "y": "-4.67544",
+        "z": "-2.048375E-08"
+      },
+      "skinid": 1901223959
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776545,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.07983107",
+        "y": "2.860001",
+        "z": "-0.1623548"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/sirenlight/electric.sirenlight.deployed.prefab",
+      "rot": {
+        "x": "-2.976861E-07",
+        "y": "-1.423814",
+        "z": "3.141593"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.1765013",
+        "y": "-0.1000004",
+        "z": "2.826019"
+      },
+      "prefabname": "assets/prefabs/building core/wall.low/wall.low.prefab",
+      "rot": {
+        "x": "-1.000612E-07",
+        "y": "-3.067519",
+        "z": "-1.143696E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 0,
+      "pos": {
+        "x": "1.206168",
+        "y": "-2.19338",
+        "z": "1.238236"
+      },
+      "prefabname": "assets/bundled/prefabs/autospawn/collectable/stone/metal-collectable.prefab",
+      "rot": {
+        "x": "6.20238",
+        "y": "-2.642517",
+        "z": "0.2031558"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.67241",
+        "y": "-0.1000004",
+        "z": "2.715027"
+      },
+      "prefabname": "assets/prefabs/building core/foundation/foundation.prefab",
+      "rot": {
+        "x": "0",
+        "y": "-4.638315",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.407574",
+        "y": "0",
+        "z": "3.549772"
+      },
+      "prefabname": "assets/prefabs/deployable/sleeping bag/sleepingbag_leather_deployed.prefab",
+      "rot": {
+        "x": "1.809411E-07",
+        "y": "-3.038008",
+        "z": "-1.514596E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.319408",
+        "y": "-0.1000004",
+        "z": "2.937012"
+      },
+      "prefabname": "assets/prefabs/building core/foundation/foundation.prefab",
+      "rot": {
+        "x": "8.742279E-08",
+        "y": "0.07407379",
+        "z": "8.742279E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "On": true
+      },
+      "items": [
+        {
+          "amount": 47,
+          "blueprintTarget": 0,
+          "condition": "0",
+          "id": -151838493,
+          "position": 0,
+          "skinid": 0
+        },
+        {
+          "amount": 2,
+          "blueprintTarget": 0,
+          "condition": "0",
+          "id": -1938052175,
+          "position": 1,
+          "skinid": 0
+        }
+      ],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.350609",
+        "y": "0",
+        "z": "-0.002156985"
+      },
+      "prefabname": "assets/prefabs/misc/twitch/hobobarrel/hobobarrel.deployed.prefab",
+      "rot": {
+        "x": "-8.012788E-08",
+        "y": "-4.600712",
+        "z": "-5.033537E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.541474",
+        "y": "2.9",
+        "z": "-0.05477833"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "1.737444E-07",
+        "y": "-4.638315",
+        "z": "3.309494E-09"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.541474",
+        "y": "-0.1000004",
+        "z": "-0.05477833"
+      },
+      "prefabname": "assets/prefabs/building core/foundation/foundation.prefab",
+      "rot": {
+        "x": "1.748456E-07",
+        "y": "-1.496723",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved4": true
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.53473",
+        "y": "1.572685",
+        "z": "1.439669"
+      },
+      "prefabname": "assets/prefabs/misc/halloween/spiderweb/spiderweba.prefab",
+      "rot": {
+        "x": "6.241088",
+        "y": "-3.067518",
+        "z": "1.305008E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.037384",
+        "y": "-0.1000004",
+        "z": "0.05621419"
+      },
+      "prefabname": "assets/prefabs/building/wall.frame.shopfront/wall.frame.shopfront.metal.prefab",
+      "rot": {
+        "x": "-3.309495E-09",
+        "y": "-3.067518",
+        "z": "1.737444E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.25945",
+        "y": "-0.1000004",
+        "z": "-2.935576"
+      },
+      "prefabname": "assets/prefabs/building/wall.frame.garagedoor/wall.frame.garagedoor.prefab",
+      "rot": {
+        "x": "8.799172E-08",
+        "y": "0.07407427",
+        "z": "-3.254908E-07"
+      },
+      "skinid": 2453499899,
+      "uppermodifier": {
+        "flags": {},
+        "prefabname": "assets/prefabs/misc/doorcloser/doorcloser.prefab"
+      }
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.25945",
+        "y": "-0.1000004",
+        "z": "-2.935576"
+      },
+      "prefabname": "assets/prefabs/building core/wall.frame/wall.frame.prefab",
+      "rot": {
+        "x": "-8.633695E-08",
+        "y": "-3.067518",
+        "z": "2.386186E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.25945",
+        "y": "-0.1000004",
+        "z": "-2.935576"
+      },
+      "prefabname": "assets/prefabs/misc/doorcloser/doorcloser.prefab",
+      "rot": {
+        "x": "8.799172E-08",
+        "y": "0.07407427",
+        "z": "-3.254908E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-6.251268",
+        "y": "-1.5",
+        "z": "-2.713591"
+      },
+      "prefabname": "assets/prefabs/building core/foundation.steps/foundation.steps.prefab",
+      "rot": {
+        "x": "-3.397979E-07",
+        "y": "0.07407379",
+        "z": "7.570264E-10"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.755359",
+        "y": "-1.6",
+        "z": "-2.824583"
+      },
+      "prefabname": "assets/prefabs/building core/foundation/foundation.prefab",
+      "rot": {
+        "x": "3.496911E-07",
+        "y": "-1.496723",
+        "z": "-1.421085E-14"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775365,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.022017",
+        "y": "2.479885",
+        "z": "1.615108"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "1.567431",
+        "y": "0.0740695",
+        "z": "1.570795"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.815317",
+        "y": "-0.1000004",
+        "z": "3.048004"
+      },
+      "prefabname": "assets/prefabs/building/wall.frame.garagedoor/wall.frame.garagedoor.prefab",
+      "rot": {
+        "x": "-1.000612E-07",
+        "y": "0.07407379",
+        "z": "-1.143696E-07"
+      },
+      "skinid": 2453499899,
+      "uppermodifier": {
+        "flags": {},
+        "prefabname": "assets/prefabs/misc/doorcloser/doorcloser.prefab"
+      }
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.815317",
+        "y": "-0.1000004",
+        "z": "3.048004"
+      },
+      "prefabname": "assets/prefabs/building core/wall.frame/wall.frame.prefab",
+      "rot": {
+        "x": "1.000612E-07",
+        "y": "-3.067519",
+        "z": "1.143696E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.815317",
+        "y": "-0.1000004",
+        "z": "3.048004"
+      },
+      "prefabname": "assets/prefabs/misc/doorcloser/doorcloser.prefab",
+      "rot": {
+        "x": "-1.000612E-07",
+        "y": "0.07407379",
+        "z": "-1.143696E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.533293",
+        "y": "2.799999",
+        "z": "0.1672067"
+      },
+      "prefabname": "assets/prefabs/building/floor.grill/floor.grill.prefab",
+      "rot": {
+        "x": "0",
+        "y": "-3.067518",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776472,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.553118",
+        "y": "2.820566",
+        "z": "0.1663612"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/sirenlight/electric.sirenlight.deployed.prefab",
+      "rot": {
+        "x": "0",
+        "y": "-2.400197",
+        "z": "3.141593"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.533293",
+        "y": "2.9",
+        "z": "0.1672067"
+      },
+      "prefabname": "assets/prefabs/building core/floor.frame/floor.frame.prefab",
+      "rot": {
+        "x": "-1.737444E-07",
+        "y": "-1.496722",
+        "z": "-3.309494E-09"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775366,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.253518",
+        "y": "2.429394",
+        "z": "-1.502512"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "1.570106",
+        "y": "-1.495934",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved3": true
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.752345",
+        "y": "1.63332",
+        "z": "-1.49263"
+      },
+      "prefabname": "assets/prefabs/misc/halloween/spiderweb/spiderweba.prefab",
+      "rot": {
+        "x": "0.07204112",
+        "y": "-3.067518",
+        "z": "2.297012E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.037384",
+        "y": "-0.1000004",
+        "z": "0.05621419"
+      },
+      "prefabname": "assets/prefabs/building core/wall.frame/wall.frame.prefab",
+      "rot": {
+        "x": "-3.309495E-09",
+        "y": "-3.067518",
+        "z": "1.737444E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.077081",
+        "y": "-1.8515",
+        "z": "-0.07447209"
+      },
+      "prefabname": "assets/prefabs/deployable/barricades/barricade.concrete.prefab",
+      "rot": {
+        "x": "6.152192",
+        "y": "-1.507869",
+        "z": "0.02078681"
+      },
+      "skinid": 841052771
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.311226",
+        "y": "-1.6",
+        "z": "3.158997"
+      },
+      "prefabname": "assets/prefabs/building core/foundation/foundation.prefab",
+      "rot": {
+        "x": "1.748456E-07",
+        "y": "-1.496723",
+        "z": "-1.748456E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-5.807135",
+        "y": "-1.5",
+        "z": "3.269989"
+      },
+      "prefabname": "assets/prefabs/building core/foundation.steps/foundation.steps.prefab",
+      "rot": {
+        "x": "-1.407508E-07",
+        "y": "0.07407379",
+        "z": "1.780549E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-8.798899",
+        "y": "-3",
+        "z": "3.492001"
+      },
+      "prefabname": "assets/prefabs/building core/foundation.steps/foundation.steps.prefab",
+      "rot": {
+        "x": "1.748456E-07",
+        "y": "0.07407379",
+        "z": "1.748456E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.208375",
+        "y": "0.8999996",
+        "z": "4.432907"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "-1.348941E-08",
+        "y": "-1.496722",
+        "z": "2.207982E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.208375",
+        "y": "-0.1000004",
+        "z": "4.432907"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "-1.096411E-07",
+        "y": "-1.496722",
+        "z": "6.297647E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Increment Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Decrement Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Clear Counter",
+            "type": 0
+          }
+        ],
+        "oldID": 777710,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ],
+        "targetNumber": 10
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.828317",
+        "y": "-0.2927227",
+        "z": "4.129475"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/counter/counter.prefab",
+      "rot": {
+        "x": "8.741699E-08",
+        "y": "-1.496723",
+        "z": "0.0001965433"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.208375",
+        "y": "0.8999996",
+        "z": "4.432907"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "1.326987E-07",
+        "y": "-4.638315",
+        "z": "1.368296E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776784,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.811083",
+        "y": "2.721645",
+        "z": "4.457828"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/simplelight.prefab",
+      "rot": {
+        "x": "-1.143708E-07",
+        "y": "-1.496722",
+        "z": "6.702677E-05"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775364,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.808956",
+        "y": "2.471977",
+        "z": "4.487288"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "1.570796",
+        "y": "-1.49712",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.1769295",
+        "y": "2.9",
+        "z": "2.825142"
+      },
+      "prefabname": "assets/prefabs/building/wall.frame.shopfront/wall.frame.shopfront.metal.prefab",
+      "rot": {
+        "x": "-2.507371E-07",
+        "y": "0.07407427",
+        "z": "2.81495E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.208375",
+        "y": "3.9",
+        "z": "4.432907"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "4.329273E-08",
+        "y": "-1.496723",
+        "z": "-1.034448E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.208375",
+        "y": "3.9",
+        "z": "4.432907"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "4.329273E-08",
+        "y": "-1.496723",
+        "z": "-1.034448E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.208375",
+        "y": "2.9",
+        "z": "4.432907"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "2.023515E-08",
+        "y": "-1.496723",
+        "z": "-3.032509E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.037384",
+        "y": "2.9",
+        "z": "0.05621419"
+      },
+      "prefabname": "assets/prefabs/building core/wall.doorway/wall.doorway.prefab",
+      "rot": {
+        "x": "0",
+        "y": "-3.067518",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.634983",
+        "y": "5.999998",
+        "z": "3.156312"
+      },
+      "prefabname": "assets/prefabs/deployable/barricades/barricade.sandbags.prefab",
+      "rot": {
+        "x": "1.91918E-07",
+        "y": "-3.827353",
+        "z": "-5.727841E-07"
+      },
+      "skinid": 933032659
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.815317",
+        "y": "3.9",
+        "z": "3.048004"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "-3.714712E-08",
+        "y": "-3.067519",
+        "z": "-1.093E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.815317",
+        "y": "3.9",
+        "z": "3.048004"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "-3.714712E-08",
+        "y": "-3.067519",
+        "z": "-1.093E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776814,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.85178",
+        "y": "5.573832",
+        "z": "3.893773"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/simplelight.prefab",
+      "rot": {
+        "x": "0.01011155",
+        "y": "-1.515391",
+        "z": "-5.263475E-05"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.815317",
+        "y": "2.9",
+        "z": "3.048004"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "-9.675173E-08",
+        "y": "-3.067519",
+        "z": "-2.88114E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776905,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.2178806",
+        "y": "2.333677",
+        "z": "4.226803"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/simplelight.prefab",
+      "rot": {
+        "x": "2.367888E-07",
+        "y": "-3.067522",
+        "z": "6.283"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.319408",
+        "y": "2.799999",
+        "z": "2.937012"
+      },
+      "prefabname": "assets/prefabs/building/floor.grill/floor.grill.prefab",
+      "rot": {
+        "x": "-4.198435E-08",
+        "y": "-1.496723",
+        "z": "-7.309406E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.319408",
+        "y": "2.9",
+        "z": "2.937012"
+      },
+      "prefabname": "assets/prefabs/building core/floor.frame/floor.frame.prefab",
+      "rot": {
+        "x": "1.143696E-07",
+        "y": "-4.638315",
+        "z": "-1.000612E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-5.074015",
+        "y": "2.9",
+        "z": "3.015041"
+      },
+      "prefabname": "assets/prefabs/building core/wall.low/wall.low.prefab",
+      "rot": {
+        "x": "9.633021E-08",
+        "y": "-2.54392",
+        "z": "-3.339352E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.422259",
+        "y": "2.9",
+        "z": "1.663102"
+      },
+      "prefabname": "assets/prefabs/building core/floor.triangle.frame/floor.triangle.frame.prefab",
+      "rot": {
+        "x": "3.309417E-09",
+        "y": "0.07407379",
+        "z": "-1.737444E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.644326",
+        "y": "2.9",
+        "z": "-1.328688"
+      },
+      "prefabname": "assets/prefabs/building core/floor.triangle.frame/floor.triangle.frame.prefab",
+      "rot": {
+        "x": "-3.309474E-09",
+        "y": "-3.067518",
+        "z": "1.737444E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775494,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.136514",
+        "y": "5.236296",
+        "z": "0.07161323"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "1.569705",
+        "y": "-1.495547",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.918602",
+        "y": "5.999998",
+        "z": "-0.1611819"
+      },
+      "prefabname": "assets/prefabs/deployable/barricades/barricade.concrete.prefab",
+      "rot": {
+        "x": "1.382123E-07",
+        "y": "-4.636877",
+        "z": "-5.322541E-07"
+      },
+      "skinid": 841052771
+    },
+    {
+      "flags": {
+        "Reserved3": true
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.531272",
+        "y": "4.700689",
+        "z": "1.488115"
+      },
+      "prefabname": "assets/prefabs/misc/halloween/spiderweb/spiderweba.prefab",
+      "rot": {
+        "x": "6.257428",
+        "y": "-3.067516",
+        "z": "-1.555825E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.037384",
+        "y": "2.9",
+        "z": "0.05621419"
+      },
+      "prefabname": "assets/prefabs/building/door.hinged/door.hinged.metal.prefab",
+      "rot": {
+        "x": "0",
+        "y": "0.07407427",
+        "z": "0"
+      },
+      "skinid": 1694095962
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Increment Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Decrement Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Clear Counter",
+            "type": 0
+          }
+        ],
+        "oldID": 777701,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ],
+        "targetNumber": 10
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.013678",
+        "y": "3.94532",
+        "z": "-0.8808765"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/counter/counter.prefab",
+      "rot": {
+        "x": "0",
+        "y": "-4.638315",
+        "z": "6.281481"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-7.270148",
+        "y": "2.9",
+        "z": "1.122353"
+      },
+      "prefabname": "assets/prefabs/building core/wall.low/wall.low.prefab",
+      "rot": {
+        "x": "2.0908E-07",
+        "y": "-2.02032",
+        "z": "-2.081515E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776438,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-6.174643",
+        "y": "2.91568",
+        "z": "0.3470298"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "1.537316",
+        "y": "-3.067508",
+        "z": "4.712399"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-6.029202",
+        "y": "2.9",
+        "z": "0.2781992"
+      },
+      "prefabname": "assets/prefabs/building core/floor.triangle.frame/floor.triangle.frame.prefab",
+      "rot": {
+        "x": "-1.737444E-07",
+        "y": "-1.496722",
+        "z": "-3.309494E-09"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-5.48848",
+        "y": "2.9",
+        "z": "-2.569635"
+      },
+      "prefabname": "assets/prefabs/building core/wall.low/wall.low.prefab",
+      "rot": {
+        "x": "-7.267724E-08",
+        "y": "-3.591117",
+        "z": "-3.373374E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-7.381126",
+        "y": "2.9",
+        "z": "-0.3735152"
+      },
+      "prefabname": "assets/prefabs/building core/wall.low/wall.low.prefab",
+      "rot": {
+        "x": "-1.680121E-07",
+        "y": "-4.114715",
+        "z": "-3.042437E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.874574",
+        "y": "2.9",
+        "z": "-4.542463"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "-1.679373E-07",
+        "y": "-4.638315",
+        "z": "-2.923763E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.062965",
+        "y": "5.999998",
+        "z": "-3.371428"
+      },
+      "prefabname": "assets/prefabs/deployable/barricades/barricade.sandbags.prefab",
+      "rot": {
+        "x": "-6.197386E-07",
+        "y": "0.7470999",
+        "z": "-8.841198E-08"
+      },
+      "skinid": 933032659
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.25945",
+        "y": "2.9",
+        "z": "-2.935576"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "8.964648E-08",
+        "y": "-3.067518",
+        "z": "-4.123631E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.25945",
+        "y": "3.9",
+        "z": "-2.935576"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "-9.698539E-09",
+        "y": "0.07407427",
+        "z": "5.966764E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.25945",
+        "y": "3.9",
+        "z": "-2.935576"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "1.289079E-07",
+        "y": "-3.067519",
+        "z": "-2.390486E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.763541",
+        "y": "2.799999",
+        "z": "-3.046568"
+      },
+      "prefabname": "assets/prefabs/building/floor.grill/floor.grill.prefab",
+      "rot": {
+        "x": "-1.033707E-07",
+        "y": "-3.067518",
+        "z": "5.937478E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.763541",
+        "y": "2.9",
+        "z": "-3.046568"
+      },
+      "prefabname": "assets/prefabs/building core/floor.frame/floor.frame.prefab",
+      "rot": {
+        "x": "2.386187E-07",
+        "y": "-4.638315",
+        "z": "8.633695E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.874574",
+        "y": "0.8999996",
+        "z": "-4.542463"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "3.263086E-07",
+        "y": "-4.638316",
+        "z": "2.200412E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776785,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.450193",
+        "y": "2.786087",
+        "z": "-4.152325"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/simplelight.prefab",
+      "rot": {
+        "x": "-2.386078E-07",
+        "y": "-1.496722",
+        "z": "0.0006247929"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775384,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.465089",
+        "y": "2.425972",
+        "z": "-4.353251"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "1.536913",
+        "y": "0.07406664",
+        "z": "1.570789"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.874574",
+        "y": "-0.1000004",
+        "z": "-4.542463"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "2.667038E-07",
+        "y": "-4.638315",
+        "z": "4.12273E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved3": true
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.74879",
+        "y": "4.660189",
+        "z": "-1.442574"
+      },
+      "prefabname": "assets/prefabs/misc/halloween/spiderweb/spiderweba.prefab",
+      "rot": {
+        "x": "0.1392992",
+        "y": "-3.067518",
+        "z": "1.956098E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.744687",
+        "y": "3",
+        "z": "-3.244041"
+      },
+      "prefabname": "assets/prefabs/deployable/shelves/shelves.prefab",
+      "rot": {
+        "x": "4.851175E-07",
+        "y": "-4.670204",
+        "z": "1.655819E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.450772",
+        "y": "5.800001",
+        "z": "-0.277641"
+      },
+      "prefabname": "assets/prefabs/building/floor.grill/floor.grill.prefab",
+      "rot": {
+        "x": "3.654704E-08",
+        "y": "-1.496722",
+        "z": "-2.099215E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.450772",
+        "y": "5.9",
+        "z": "-0.277641"
+      },
+      "prefabname": "assets/prefabs/building core/floor.frame/floor.frame.prefab",
+      "rot": {
+        "x": "1.671803E-07",
+        "y": "-3.067519",
+        "z": "-4.742158E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.228705",
+        "y": "5.9",
+        "z": "-3.269431"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "1.671804E-07",
+        "y": "-3.067518",
+        "z": "-4.742153E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.098566",
+        "y": "5.999998",
+        "z": "-4.636682"
+      },
+      "prefabname": "assets/prefabs/deployable/barricades/barricade.concrete.prefab",
+      "rot": {
+        "x": "-7.201821E-07",
+        "y": "0.07332277",
+        "z": "-2.38245E-08"
+      },
+      "skinid": 841052771
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776906,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.3672763",
+        "y": "5.62948",
+        "z": "-4.554041"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/simplelight.prefab",
+      "rot": {
+        "x": "-1.923181E-07",
+        "y": "0.07407045",
+        "z": "0.00966203"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved2": true
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.3199493",
+        "y": "4.701469",
+        "z": "-3.257999"
+      },
+      "prefabname": "assets/prefabs/misc/halloween/spiderweb/spiderweba.prefab",
+      "rot": {
+        "x": "0.1893905",
+        "y": "-4.638311",
+        "z": "-1.517246E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.763541",
+        "y": "5.9",
+        "z": "-3.046568"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "-4.123631E-07",
+        "y": "-4.638315",
+        "z": "-8.964646E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776597,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.752027",
+        "y": "5.859999",
+        "z": "-3.041493"
+      },
+      "prefabname": "assets/prefabs/deployable/ceiling light/ceilinglight.deployed.prefab",
+      "rot": {
+        "x": "2.096208E-07",
+        "y": "-2.759514",
+        "z": "-1.907106E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776808,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.436944",
+        "y": "5.647112",
+        "z": "-3.976278"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/simplelight.prefab",
+      "rot": {
+        "x": "5.476139E-07",
+        "y": "-1.496722",
+        "z": "4.518276E-06"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.228277",
+        "y": "2.9",
+        "z": "-3.268553"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "1.772979E-07",
+        "y": "0.07407427",
+        "z": "-1.99047E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved3": true
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.03193026",
+        "y": "1.709433",
+        "z": "-3.28406"
+      },
+      "prefabname": "assets/prefabs/misc/halloween/spiderweb/spiderweba.prefab",
+      "rot": {
+        "x": "6.262537",
+        "y": "-4.638315",
+        "z": "4.424726E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.09921564",
+        "y": "3",
+        "z": "-1.655533"
+      },
+      "prefabname": "assets/prefabs/deployable/large wood storage/box.wooden.large.prefab",
+      "rot": {
+        "x": "3.689135E-08",
+        "y": "0.6920233",
+        "z": "5.889053E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.541474",
+        "y": "5.9",
+        "z": "-0.05477833"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "0",
+        "y": "-4.638315",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776579,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.01907639",
+        "y": "5.79986",
+        "z": "-0.1514101"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/sirenlight/electric.sirenlight.deployed.prefab",
+      "rot": {
+        "x": "2.727858E-08",
+        "y": "-1.504715",
+        "z": "3.141593"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776952,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.689175",
+        "y": "5.999998",
+        "z": "-1.456953"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "-2.079354E-08",
+        "y": "-4.622158",
+        "z": "-5.527613E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776790,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.137361",
+        "y": "5.695597",
+        "z": "0.06026585"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/simplelight.prefab",
+      "rot": {
+        "x": "9.910436E-07",
+        "y": "-1.496722",
+        "z": "0.001491194"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Increment Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Decrement Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Clear Counter",
+            "type": 0
+          }
+        ],
+        "oldID": 777708,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ],
+        "targetNumber": 10
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.013381",
+        "y": "4.650156",
+        "z": "-0.8770304"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/counter/counter.prefab",
+      "rot": {
+        "x": "1.863227E-07",
+        "y": "-4.638315",
+        "z": "6.281696"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Increment Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Decrement Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Clear Counter",
+            "type": 0
+          }
+        ],
+        "oldID": 777706,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ],
+        "targetNumber": 10
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.013773",
+        "y": "4.300043",
+        "z": "-0.8822131"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/counter/counter.prefab",
+      "rot": {
+        "x": "0",
+        "y": "-4.638314",
+        "z": "6.277192"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Increment Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Decrement Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Clear Counter",
+            "type": 0
+          }
+        ],
+        "oldID": 777702,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ],
+        "targetNumber": 10
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.014007",
+        "y": "4.12546",
+        "z": "-0.8852135"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/counter/counter.prefab",
+      "rot": {
+        "x": "5.820766E-11",
+        "y": "-4.638314",
+        "z": "6.282434"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Increment Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Decrement Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Clear Counter",
+            "type": 0
+          }
+        ],
+        "oldID": 777707,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ],
+        "targetNumber": 10
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.01377",
+        "y": "4.477482",
+        "z": "-0.8819401"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/counter/counter.prefab",
+      "rot": {
+        "x": "1.862645E-07",
+        "y": "-4.638315",
+        "z": "6.274065"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.319408",
+        "y": "5.9",
+        "z": "2.937012"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "-2.88114E-07",
+        "y": "-4.638315",
+        "z": "9.675175E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.815317",
+        "y": "5.9",
+        "z": "3.048004"
+      },
+      "prefabname": "assets/prefabs/building core/wall.frame/wall.frame.prefab",
+      "rot": {
+        "x": "1.000612E-07",
+        "y": "-3.067519",
+        "z": "1.143696E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776953,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-2.582835",
+        "y": "5.999998",
+        "z": "1.503664"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "6.298044E-07",
+        "y": "-4.435354",
+        "z": "2.410265E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.672839",
+        "y": "5.9",
+        "z": "2.714149"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "1.671803E-07",
+        "y": "-3.067519",
+        "z": "-4.742164E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.6822258",
+        "y": "3.011",
+        "z": "2.375148"
+      },
+      "prefabname": "assets/prefabs/deployable/locker/locker.deployed.prefab",
+      "rot": {
+        "x": "2.953217E-07",
+        "y": "-4.716839",
+        "z": "9.585125E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.599289",
+        "y": "5.999998",
+        "z": "4.059021"
+      },
+      "prefabname": "assets/prefabs/deployable/barricades/barricade.concrete.prefab",
+      "rot": {
+        "x": "3.921915E-07",
+        "y": "-3.083818",
+        "z": "-6.192192E-07"
+      },
+      "skinid": 841052771
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.1769295",
+        "y": "2.9",
+        "z": "2.825142"
+      },
+      "prefabname": "assets/prefabs/building core/wall.frame/wall.frame.prefab",
+      "rot": {
+        "x": "2.507371E-07",
+        "y": "-3.067518",
+        "z": "-2.81495E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved2": true
+      },
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.311226",
+        "y": "8.9",
+        "z": "3.158997"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "-1.143696E-07",
+        "y": "-1.496723",
+        "z": "1.000612E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776596,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.279687",
+        "y": "5.859999",
+        "z": "2.892215"
+      },
+      "prefabname": "assets/prefabs/deployable/ceiling light/ceilinglight.deployed.prefab",
+      "rot": {
+        "x": "1.870989E-08",
+        "y": "-0.8727002",
+        "z": "2.113902E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.489239",
+        "y": "5.999998",
+        "z": "2.3417"
+      },
+      "prefabname": "assets/prefabs/deployable/barricades/barricade.stone.prefab",
+      "rot": {
+        "x": "3.112577E-07",
+        "y": "-1.74376",
+        "z": "7.970144E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "frequency": 0,
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 777917,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Power Out",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.549376",
+        "y": "5.999998",
+        "z": "3.151714"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/gates/rfreceiver/rfreceiver.prefab",
+      "rot": {
+        "x": "-6.770587E-07",
+        "y": "-4.937984",
+        "z": "-5.2869E-09"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776588,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.642636",
+        "y": "5.859999",
+        "z": "2.6988"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "4.576958E-07",
+        "y": "-2.405216",
+        "z": "3.141593"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.982702",
+        "y": "3.011",
+        "z": "1.545951"
+      },
+      "prefabname": "assets/prefabs/deployable/locker/locker.deployed.prefab",
+      "rot": {
+        "x": "-1.793974E-07",
+        "y": "-3.052943",
+        "z": "5.83746E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.783872",
+        "y": "2.9",
+        "z": "4.210044"
+      },
+      "prefabname": "assets/prefabs/building core/wall/wall.prefab",
+      "rot": {
+        "x": "4.742164E-08",
+        "y": "-1.496723",
+        "z": "1.671803E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776734,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.07245258",
+        "y": "5.785395",
+        "z": "4.438124"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/sirenlight/electric.sirenlight.deployed.prefab",
+      "rot": {
+        "x": "1.570308",
+        "y": "0.07333803",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.294099",
+        "y": "3",
+        "z": "2.761505"
+      },
+      "prefabname": "assets/prefabs/deployable/tier 1 workbench/workbench1.deployed.prefab",
+      "rot": {
+        "x": "-1.551907E-07",
+        "y": "-3.064149",
+        "z": "6.222689E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.298178",
+        "y": "3.9",
+        "z": "0.2639585"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "-1.932878E-08",
+        "y": "-0.973124",
+        "z": "3.742069E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.298178",
+        "y": "3.9",
+        "z": "0.2639585"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "-1.932878E-08",
+        "y": "-0.973124",
+        "z": "3.742069E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.298178",
+        "y": "2.9",
+        "z": "0.2639585"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "-1.005691E-07",
+        "y": "-0.973124",
+        "z": "1.139232E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.946681",
+        "y": "2.9",
+        "z": "-0.3886335"
+      },
+      "prefabname": "assets/prefabs/building/wall.frame.garagedoor/wall.frame.garagedoor.prefab",
+      "rot": {
+        "x": "3.254908E-07",
+        "y": "-3.067518",
+        "z": "8.799172E-08"
+      },
+      "skinid": 2453499899
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.946681",
+        "y": "2.9",
+        "z": "-0.3886335"
+      },
+      "prefabname": "assets/prefabs/building core/wall.frame/wall.frame.prefab",
+      "rot": {
+        "x": "-2.831497E-07",
+        "y": "0.07407427",
+        "z": "-1.638649E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.885068",
+        "y": "2.9",
+        "z": "-0.5737766"
+      },
+      "prefabname": "assets/prefabs/building/floor.triangle.grill/floor.triangle.grill.prefab",
+      "rot": {
+        "x": "2.378876E-07",
+        "y": "-5.161914",
+        "z": "2.389484E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Electric Input",
+            "type": 0
+          }
+        ],
+        "oldID": 777102,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.234918",
+        "y": "0.1792259",
+        "z": "0.1497591"
+      },
+      "prefabname": "assets/prefabs/misc/xmas/neon_sign/sign.neon.xl.prefab",
+      "rot": {
+        "x": "-2.142042E-08",
+        "y": "-2.54392",
+        "z": "0.01084694"
+      },
+      "sign": {
+        "amount": 1,
+        "locked": false,
+        "texture0": "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"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.298178",
+        "y": "2.9",
+        "z": "0.2639585"
+      },
+      "prefabname": "assets/prefabs/building core/floor.triangle.frame/floor.triangle.frame.prefab",
+      "rot": {
+        "x": "-2.876806E-07",
+        "y": "-2.54392",
+        "z": "-9.803269E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.298178",
+        "y": "-0.1000004",
+        "z": "0.2639585"
+      },
+      "prefabname": "assets/prefabs/building core/wall/wall.prefab",
+      "rot": {
+        "x": "9.803281E-08",
+        "y": "-0.9731236",
+        "z": "-2.876806E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.168748",
+        "y": "2.9",
+        "z": "2.603157"
+      },
+      "prefabname": "assets/prefabs/building core/wall/wall.prefab",
+      "rot": {
+        "x": "-2.221203E-07",
+        "y": "0.07407379",
+        "z": "-1.473664E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Electric Input",
+            "type": 0
+          }
+        ],
+        "oldID": 777220,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.310749",
+        "y": "3.004744",
+        "z": "2.760024"
+      },
+      "prefabname": "assets/prefabs/misc/xmas/neon_sign/sign.neon.xl.prefab",
+      "rot": {
+        "x": "1.225353E-07",
+        "y": "-4.638315",
+        "z": "-3.473182E-05"
+      },
+      "sign": {
+        "amount": 1,
+        "locked": false,
+        "texture0": "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"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.54299",
+        "y": "3",
+        "z": "3.609127"
+      },
+      "prefabname": "assets/prefabs/deployable/tool cupboard/cupboard.tool.deployed.prefab",
+      "rot": {
+        "x": "-8.350692E-07",
+        "y": "-3.061108",
+        "z": "-5.848568E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.672839",
+        "y": "2.9",
+        "z": "2.714149"
+      },
+      "prefabname": "assets/prefabs/building core/floor/floor.prefab",
+      "rot": {
+        "x": "2.981551E-07",
+        "y": "0.07407427",
+        "z": "-5.894142E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.168319",
+        "y": "0.8999996",
+        "z": "2.604034"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "5.960467E-08",
+        "y": "-3.067519",
+        "z": "1.788139E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.168319",
+        "y": "-0.1000004",
+        "z": "2.604034"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "0",
+        "y": "0.07407427",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.168319",
+        "y": "0.8999996",
+        "z": "2.604034"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "5.960467E-08",
+        "y": "0.07407427",
+        "z": "1.788139E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved3": true
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.680667",
+        "y": "1.678017",
+        "z": "1.421149"
+      },
+      "prefabname": "assets/prefabs/misc/halloween/spiderweb/spiderweba.prefab",
+      "rot": {
+        "x": "0.05539018",
+        "y": "0.07407045",
+        "z": "1.716266E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.429074",
+        "y": "0.02020073",
+        "z": "3.535135"
+      },
+      "prefabname": "assets/prefabs/deployable/fridge/fridge.deployed.prefab",
+      "rot": {
+        "x": "2.423502E-07",
+        "y": "-3.035206",
+        "z": "-4.079795E-08"
+      },
+      "skinid": 2275251402
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.6295317",
+        "y": "3",
+        "z": "3.550768"
+      },
+      "prefabname": "assets/content/props/fog machine/fogmachine.prefab",
+      "rot": {
+        "x": "-5.20089E-07",
+        "y": "-2.304773",
+        "z": "-6.584484E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.783444",
+        "y": "-0.1000004",
+        "z": "4.210922"
+      },
+      "prefabname": "assets/prefabs/building core/wall/wall.prefab",
+      "rot": {
+        "x": "0",
+        "y": "-1.496723",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775498,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.951518",
+        "y": "2.799999",
+        "z": "-0.4318096"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "6.102584E-08",
+        "y": "-1.608068",
+        "z": "3.141592"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.076594",
+        "y": "4.4",
+        "z": "-2.728683"
+      },
+      "prefabname": "assets/prefabs/building core/stairs.spiral.triangle/block.stair.spiral.triangle.prefab",
+      "rot": {
+        "x": "-5.3209E-07",
+        "y": "0.5976715",
+        "z": "-3.312569E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "5.427578",
+        "y": "3.9",
+        "z": "-2.07685"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "3.290302E-07",
+        "y": "0.07407379",
+        "z": "-1.030951E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "5.427578",
+        "y": "3.9",
+        "z": "-2.07685"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "3.290302E-07",
+        "y": "0.07407379",
+        "z": "-1.030951E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "5.427578",
+        "y": "2.9",
+        "z": "-2.07685"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "2.914234E-07",
+        "y": "0.07407379",
+        "z": "-2.704961E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.076594",
+        "y": "2.9",
+        "z": "-2.728683"
+      },
+      "prefabname": "assets/prefabs/building core/stairs.spiral.triangle/block.stair.spiral.triangle.prefab",
+      "rot": {
+        "x": "5.3209E-07",
+        "y": "-2.543921",
+        "z": "3.312569E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.724186",
+        "y": "3.9",
+        "z": "-3.379546"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.reinforcedglass/wall.window.glass.reinforced.prefab",
+      "rot": {
+        "x": "1.629753E-07",
+        "y": "-3.067519",
+        "z": "1.194391E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.724186",
+        "y": "2.9",
+        "z": "-3.379546"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "-1.237138E-07",
+        "y": "0.07407427",
+        "z": "5.387531E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776609,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.784741",
+        "y": "5.934999",
+        "z": "-0.4633723"
+      },
+      "prefabname": "assets/prefabs/deployable/ceiling light/ceilinglight.deployed.prefab",
+      "rot": {
+        "x": "-3.450482E-07",
+        "y": "-4.916627",
+        "z": "5.218611E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775497,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.919978",
+        "y": "5.749853",
+        "z": "-0.3201327"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "-2.527089E-07",
+        "y": "-1.438707",
+        "z": "3.141593"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 779443,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 779814,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Power Output",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.158969",
+        "y": "4.424999",
+        "z": "-2.762079"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/batteries/smallrechargablebattery.deployed.prefab",
+      "rot": {
+        "x": "1.711156E-07",
+        "y": "0.07456779",
+        "z": "-2.115089E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "On": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Electric Input",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Switch On",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Switch Off",
+            "type": 0
+          }
+        ],
+        "oldID": 777920,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Output",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.72595",
+        "y": "3.536991",
+        "z": "-2.004885"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/app/smartswitch/smartswitch.prefab",
+      "rot": {
+        "x": "1.854787E-07",
+        "y": "-1.496719",
+        "z": "9.220869E-05"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "5.427578",
+        "y": "-0.1000004",
+        "z": "-2.07685"
+      },
+      "prefabname": "assets/prefabs/building core/wall/wall.prefab",
+      "rot": {
+        "x": "2.914235E-07",
+        "y": "0.07407379",
+        "z": "-2.704961E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.076594",
+        "y": "1.4",
+        "z": "-2.728683"
+      },
+      "prefabname": "assets/prefabs/building core/stairs.spiral.triangle/block.stair.spiral.triangle.prefab",
+      "rot": {
+        "x": "-5.3209E-07",
+        "y": "0.5976715",
+        "z": "-3.312569E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.724186",
+        "y": "0.8999996",
+        "z": "-3.379546"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.reinforcedglass/wall.window.glass.reinforced.prefab",
+      "rot": {
+        "x": "-1.284481E-07",
+        "y": "-3.067519",
+        "z": "3.899353E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.076594",
+        "y": "-0.1000004",
+        "z": "-2.728683"
+      },
+      "prefabname": "assets/prefabs/building core/stairs.spiral.triangle/block.stair.spiral.triangle.prefab",
+      "rot": {
+        "x": "5.3209E-07",
+        "y": "-2.543921",
+        "z": "3.312569E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.360676",
+        "y": "0",
+        "z": "-2.76243"
+      },
+      "prefabname": "assets/prefabs/deployable/woodenbox/woodbox_deployed.prefab",
+      "rot": {
+        "x": "-2.213998E-07",
+        "y": "0.1157022",
+        "z": "1.652938E-07"
+      },
+      "skinid": 2577223156
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.724186",
+        "y": "-0.1000004",
+        "z": "-3.379546"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "1.880528E-07",
+        "y": "0.07407379",
+        "z": "-2.111213E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.965062",
+        "y": "0.8999996",
+        "z": "-4.225364"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "3.574946E-07",
+        "y": "-5.161914",
+        "z": "2.390814E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.965062",
+        "y": "0.8999996",
+        "z": "-4.225364"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "3.574946E-07",
+        "y": "-5.161914",
+        "z": "2.390814E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [
+        {
+          "amount": 5,
+          "blueprintTarget": 0,
+          "condition": "0",
+          "id": -946369541,
+          "position": 0,
+          "skinid": 0
+        }
+      ],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.925202",
+        "y": "0.6602192",
+        "z": "-4.415147"
+      },
+      "prefabname": "assets/prefabs/deployable/lantern/lantern.deployed.prefab",
+      "rot": {
+        "x": "0.0003954873",
+        "y": "0.9040451",
+        "z": "0.001806142"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.965062",
+        "y": "-0.1000004",
+        "z": "-4.225364"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "2.978899E-07",
+        "y": "-5.161914",
+        "z": "6.026751E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.076594",
+        "y": "-0.1000004",
+        "z": "-2.728683"
+      },
+      "prefabname": "assets/prefabs/building core/foundation.triangle/foundation.triangle.prefab",
+      "rot": {
+        "x": "3.582653E-07",
+        "y": "-2.543921",
+        "z": "3.199873E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.187199",
+        "y": "-0.1000004",
+        "z": "-1.23191"
+      },
+      "prefabname": "assets/prefabs/building core/foundation.triangle/foundation.triangle.prefab",
+      "rot": {
+        "x": "2.388434E-07",
+        "y": "-3.591118",
+        "z": "-1.748457E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Electric Input",
+            "type": 0
+          }
+        ],
+        "oldID": 777235,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.080577",
+        "y": "1.252037",
+        "z": "-4.892089"
+      },
+      "prefabname": "assets/prefabs/misc/xmas/neon_sign/sign.neon.xl.prefab",
+      "rot": {
+        "x": "-2.021306E-07",
+        "y": "-3.067519",
+        "z": "1.459041E-05"
+      },
+      "sign": {
+        "amount": 1,
+        "locked": false,
+        "texture0": "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"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "0.9687056",
+        "y": "3.814697E-06",
+        "z": "-4.108483"
+      },
+      "prefabname": "assets/prefabs/deployable/repair bench/repairbench_deployed.prefab",
+      "rot": {
+        "x": "-3.353493E-08",
+        "y": "0.121944",
+        "z": "1.577079E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.117244",
+        "y": "-0.1000004",
+        "z": "-4.764449"
+      },
+      "prefabname": "assets/prefabs/building core/wall/wall.prefab",
+      "rot": {
+        "x": "1.99047E-07",
+        "y": "-4.638315",
+        "z": "1.772979E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776880,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.367576",
+        "y": "2.466711",
+        "z": "-4.553984"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/simplelight.prefab",
+      "rot": {
+        "x": "4.429021E-07",
+        "y": "0.07407427",
+        "z": "6.282583"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.874574",
+        "y": "0.8999996",
+        "z": "-4.542463"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "3.263086E-07",
+        "y": "-4.638316",
+        "z": "2.200412E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775507,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.4358295",
+        "y": "0.112154",
+        "z": "-4.072568"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "1.550681",
+        "y": "0.07405996",
+        "z": "1.570783"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.117244",
+        "y": "2.9",
+        "z": "-4.764449"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "-2.099215E-07",
+        "y": "-4.638315",
+        "z": "-3.654704E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Increment Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Decrement Counter",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Clear Counter",
+            "type": 0
+          }
+        ],
+        "oldID": 777709,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ],
+        "targetNumber": 10
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-3.432689",
+        "y": "-0.2786617",
+        "z": "-4.014781"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/counter/counter.prefab",
+      "rot": {
+        "x": "3.39176E-07",
+        "y": "-1.496723",
+        "z": "0.002761305"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.965062",
+        "y": "3.9",
+        "z": "-4.225364"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "3.574945E-07",
+        "y": "-5.161914",
+        "z": "2.390814E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.965062",
+        "y": "3.9",
+        "z": "-4.225364"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "3.574945E-07",
+        "y": "-5.161914",
+        "z": "2.390814E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.965062",
+        "y": "2.9",
+        "z": "-4.225364"
+      },
+      "prefabname": "assets/prefabs/building core/wall.window/wall.window.prefab",
+      "rot": {
+        "x": "2.978899E-07",
+        "y": "-5.161914",
+        "z": "6.026753E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [
+        {
+          "amount": 5,
+          "blueprintTarget": 0,
+          "condition": "0",
+          "id": -946369541,
+          "position": 0,
+          "skinid": 0
+        }
+      ],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.852977",
+        "y": "3.660294",
+        "z": "-4.495247"
+      },
+      "prefabname": "assets/prefabs/deployable/lantern/lantern.deployed.prefab",
+      "rot": {
+        "x": "0.001032472",
+        "y": "0.5271091",
+        "z": "0.001533866"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Force Start",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Force Stop",
+            "type": 0
+          }
+        ],
+        "oldID": 779443,
+        "outputs": [
+          {
+            "connectedID": 779814,
+            "connectedToSlot": 0,
+            "linePoints": [
+              {
+                "x": 0.02909547,
+                "y": 0.315000832,
+                "z": -1.43818164
+              },
+              {
+                "x": -0.578492165,
+                "y": 0.119114347,
+                "z": -1.264024
+              },
+              {
+                "x": -0.524027646,
+                "y": -0.638463557,
+                "z": -1.24594593
+              },
+              {
+                "x": -0.455211729,
+                "y": -0.5755043,
+                "z": 0.643692255
+              },
+              {
+                "x": -0.186668679,
+                "y": -0.570648253,
+                "z": 0.65150857
+              },
+              {
+                "x": 0.8657906,
+                "y": -0.561972,
+                "z": 0.682189643
+              },
+              {
+                "x": 2.19733047,
+                "y": -0.5603455,
+                "z": 0.744979143
+              },
+              {
+                "x": 2.19733047,
+                "y": -0.08121951,
+                "z": 0.744979143
+              },
+              {
+                "x": 2.52928925,
+                "y": -0.07647221,
+                "z": 0.754660845
+              },
+              {
+                "x": 2.53040862,
+                "y": -0.0154237058,
+                "z": 0.754711151
+              },
+              {
+                "x": 2.184617,
+                "y": -0.020903416,
+                "z": 0.744608641
+              },
+              {
+                "x": 2.179201,
+                "y": 0.763428867,
+                "z": 0.7205231
+              },
+              {
+                "x": -0.02903679,
+                "y": 0.784593463,
+                "z": 0.6561285
+              },
+              {
+                "x": -0.09027925,
+                "y": 0.344396442,
+                "z": 0.91612184
+              },
+              {
+                "x": -0.220014721,
+                "y": 0.319999754,
+                "z": 0.00997895
+              }
+            ],
+            "niceName": "Power Out",
+            "type": 0
+          }
+        ]
+      },
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.994186",
+        "y": "4.424999",
+        "z": "-4.02674"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/generators/fuel generator/small_fuel_generator.deployed.prefab",
+      "rot": {
+        "x": "-1.998735E-07",
+        "y": "-3.038362",
+        "z": "2.9006E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 779421,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 779811,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Power Output",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.142075",
+        "y": "4.424999",
+        "z": "-3.207622"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/batteries/smallrechargablebattery.deployed.prefab",
+      "rot": {
+        "x": "1.943131E-07",
+        "y": "0.07957125",
+        "z": "-2.923915E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.117244",
+        "y": "3.9",
+        "z": "-4.764449"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "-1.50317E-07",
+        "y": "-4.638315",
+        "z": "-1.866565E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.117244",
+        "y": "3.9",
+        "z": "-4.764449"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "-1.50317E-07",
+        "y": "-4.638315",
+        "z": "-1.866565E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.874574",
+        "y": "3.9",
+        "z": "-4.542463"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.bars/wall.window.bars.metal.prefab",
+      "rot": {
+        "x": "2.640891E-07",
+        "y": "-1.496722",
+        "z": "4.50198E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-1.874574",
+        "y": "3.9",
+        "z": "-4.542463"
+      },
+      "prefabname": "assets/prefabs/building/wall.window.embrasure/shutter.metal.embrasure.a.prefab",
+      "rot": {
+        "x": "-1.448797E-07",
+        "y": "-4.638315",
+        "z": "-9.257019E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Force Start",
+            "type": 0
+          },
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Force Stop",
+            "type": 0
+          }
+        ],
+        "oldID": 779421,
+        "outputs": [
+          {
+            "connectedID": 779811,
+            "connectedToSlot": 0,
+            "linePoints": [
+              {
+                "x": -0.08126831,
+                "y": 1.68099988,
+                "z": -1.08177269
+              },
+              {
+                "x": -0.397879541,
+                "y": 1.38599992,
+                "z": -0.7056219
+              },
+              {
+                "x": -0.09863748,
+                "y": 2.20204544,
+                "z": 0.5923076
+              },
+              {
+                "x": 2.139786,
+                "y": 2.21960783,
+                "z": 0.665915251
+              },
+              {
+                "x": 2.14551449,
+                "y": 1.38683069,
+                "z": 0.66609
+              },
+              {
+                "x": 2.49082613,
+                "y": 1.38758779,
+                "z": 0.6774912
+              },
+              {
+                "x": 2.49082613,
+                "y": 1.23115849,
+                "z": 0.6774912
+              },
+              {
+                "x": 2.19161749,
+                "y": 1.220424,
+                "z": 0.667627335
+              },
+              {
+                "x": 2.17861748,
+                "y": 0.758138061,
+                "z": 0.6672087
+              },
+              {
+                "x": -0.6667511,
+                "y": 0.7531414,
+                "z": 0.586644
+              },
+              {
+                "x": -0.6422931,
+                "y": 0.7368204,
+                "z": -0.156638861
+              },
+              {
+                "x": -0.6426818,
+                "y": 0.32580775,
+                "z": -0.145350158
+              },
+              {
+                "x": -0.219994053,
+                "y": 0.319999754,
+                "z": 0.009988427
+              }
+            ],
+            "niceName": "Power Out",
+            "type": 0
+          }
+        ]
+      },
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "1.901106",
+        "y": "3.059",
+        "z": "-4.105437"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/generators/fuel generator/small_fuel_generator.deployed.prefab",
+      "rot": {
+        "x": "-1.77413E-07",
+        "y": "-3.034641",
+        "z": "2.086872E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.724614",
+        "y": "5.9",
+        "z": "-3.380424"
+      },
+      "prefabname": "assets/prefabs/building core/wall.low/wall.low.prefab",
+      "rot": {
+        "x": "1.270234E-07",
+        "y": "0.07407475",
+        "z": "-2.276197E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "6.29121",
+        "y": "5.9",
+        "z": "-2.140944"
+      },
+      "prefabname": "assets/prefabs/building core/roof.triangle/roof.triangle.prefab",
+      "rot": {
+        "x": "1.891234E-07",
+        "y": "-1.496723",
+        "z": "2.694255E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.341382",
+        "y": "5.9",
+        "z": "-5.005332"
+      },
+      "prefabname": "assets/prefabs/building core/roof.triangle/roof.triangle.prefab",
+      "rot": {
+        "x": "-6.026755E-08",
+        "y": "-0.4495254",
+        "z": "2.978899E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.946681",
+        "y": "5.9",
+        "z": "-0.3886335"
+      },
+      "prefabname": "assets/prefabs/building core/floor.triangle.frame/floor.triangle.frame.prefab",
+      "rot": {
+        "x": "-4.742161E-08",
+        "y": "-4.638315",
+        "z": "-1.671803E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "3.859557",
+        "y": "5.9",
+        "z": "-0.5866324"
+      },
+      "prefabname": "assets/prefabs/building/floor.triangle.grill/floor.triangle.grill.prefab",
+      "rot": {
+        "x": "-1.189438E-07",
+        "y": "-5.161914",
+        "z": "-1.194742E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776951,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.711862",
+        "y": "6.000147",
+        "z": "-1.82598"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "-7.084509E-08",
+        "y": "-1.157379",
+        "z": "1.529793E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776736,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "5.532982",
+        "y": "5.879728",
+        "z": "-2.008098"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/sirenlight/electric.sirenlight.deployed.prefab",
+      "rot": {
+        "x": "1.570796",
+        "y": "-4.638383",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "4.785489",
+        "y": "5.9",
+        "z": "0.9798316"
+      },
+      "prefabname": "assets/prefabs/building core/roof.triangle/roof.triangle.prefab",
+      "rot": {
+        "x": "-1.95393E-07",
+        "y": "-2.54392",
+        "z": "-7.893347E-08"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776942,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "2.991175",
+        "y": "6.000147",
+        "z": "1.054758"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "1.391476E-07",
+        "y": "-1.550936",
+        "z": "1.419925E-07"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775391,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "5.698302",
+        "y": "7.540628",
+        "z": "1.032065"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "0.8479361",
+        "y": "-2.735505",
+        "z": "2.997149"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775390,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "6.844969",
+        "y": "7.543516",
+        "z": "-2.207446"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "0.8569452",
+        "y": "-1.520607",
+        "z": "3.123539"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 775388,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "5.309217",
+        "y": "7.469267",
+        "z": "-5.087986"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/flasherlight/electric.flasherlight.deployed.prefab",
+      "rot": {
+        "x": "0.8521798",
+        "y": "-0.3089914",
+        "z": "3.247677"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {
+        "Reserved1": true,
+        "Reserved2": true
+      },
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 776735,
+        "outputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "linePoints": [],
+            "niceName": "Passthrough",
+            "type": 0
+          }
+        ]
+      },
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-0.4075806",
+        "y": "5.732466",
+        "z": "-4.751609"
+      },
+      "prefabname": "assets/prefabs/deployable/playerioents/lights/sirenlight/electric.sirenlight.deployed.prefab",
+      "rot": {
+        "x": "1.570796",
+        "y": "-3.067781",
+        "z": "0"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "IOEntity": {
+        "inputs": [
+          {
+            "connectedID": 0,
+            "connectedToSlot": 0,
+            "niceName": "Power In",
+            "type": 0
+          }
+        ],
+        "oldID": 780980,
+        "outputs": []
+      },
+      "items": [
+        {
+          "amount": 600,
+          "blueprintTarget": 0,
+          "condition": "0",
+          "id": -384243979,
+          "position": 0,
+          "skinid": 0
+        }
+      ],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.428939",
+        "y": "8.999998",
+        "z": "3.192018"
+      },
+      "prefabname": "assets/prefabs/npc/sam_site_turret/sam_site_turret_deployed.prefab",
+      "rot": {
+        "x": "-1.064772E-13",
+        "y": "-4.521402",
+        "z": "-3.194481E-14"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.195678",
+        "y": "8.943083",
+        "z": "4.654548"
+      },
+      "prefabname": "assets/prefabs/misc/xmas/christmas_lights/xmas.lightstring.deployed.prefab",
+      "rot": {
+        "x": "8.409843E-07",
+        "y": "0.07407427",
+        "z": "0.01240179"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-4.413394",
+        "y": "8.966261",
+        "z": "1.66247"
+      },
+      "prefabname": "assets/prefabs/misc/xmas/christmas_lights/xmas.lightstring.deployed.prefab",
+      "rot": {
+        "x": "1.004664E-07",
+        "y": "-3.067519",
+        "z": "0.004148317"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-5.806305",
+        "y": "8.962988",
+        "z": "3.280955"
+      },
+      "prefabname": "assets/prefabs/misc/xmas/christmas_lights/xmas.lightstring.deployed.prefab",
+      "rot": {
+        "x": "9.301411E-06",
+        "y": "-1.496723",
+        "z": "-1.773783E-05"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "items": [],
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-6.101545",
+        "y": "-1.500002",
+        "z": "-1.318277"
+      },
+      "prefabname": "assets/prefabs/deployable/mailbox/mailbox.deployed.prefab",
+      "rot": {
+        "x": "4.558374E-14",
+        "y": "-1.523525",
+        "z": "1.32526E-13"
+      },
+      "skinid": 0
+    },
+    {
+      "flags": {},
+      "grade": 3,
+      "ownerid": 76561198283599982,
+      "pos": {
+        "x": "-9.243032",
+        "y": "-3.000002",
+        "z": "-2.491579"
+      },
+      "prefabname": "assets/prefabs/building core/foundation.steps/foundation.steps.prefab",
+      "rot": {
+        "x": "1.421085E-14",
+        "y": "0.07407379",
+        "z": "3.496911E-07"
+      },
+      "skinid": 0
+    }
+  ],
+  "protocol": {
+    "items": 2,
+    "version": {
+      "Major": 4,
+      "Minor": 1,
+      "Patch": 27
+    }
+  }
+}

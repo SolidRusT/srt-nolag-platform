@@ -1,0 +1,536 @@
+{
+  "Настройка постройки для ивента (CopyPaste) | Setting up a building for an event (CopyPaste)": {
+    "Постройки для спавна. (Если более 1 то выбирается рандомная) | Spawn buildings. (If more than 1 then random is selected)": [
+      {
+        "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку) | Setting the height of the building (Required in the setting if you want to place your building)": 2,
+        "файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная) | file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "",
+        "Спавнить NPC вокруг дома ? | Spawn NPCs around the house?": false,
+        "Колличевство NPC | Number of NPCs": 0,
+        "ХП NPC | HP NPC": 0,
+        "Дистанция видимости | Visibility distance": 0,
+        "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 0,
+        "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": false,
+        "Колличевство нпс (Подмога) | Number of NPCs (Help)": 0,
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": false,
+        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 0,
+        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 0
+      },
+      {
+        "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку) | Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная) | file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab1",
+        "Спавнить NPC вокруг дома ? | Spawn NPCs around the house?": true,
+        "Колличевство NPC | Number of NPCs": 8,
+        "ХП NPC | HP NPC": 150,
+        "Дистанция видимости | Visibility distance": 80,
+        "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 30,
+        "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": false,
+        "Колличевство нпс (Подмога) | Number of NPCs (Help)": 4,
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": false,
+        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 50,
+        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 70
+      },
+      {
+        "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку) | Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная) | file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab2",
+        "Спавнить NPC вокруг дома ? | Spawn NPCs around the house?": true,
+        "Колличевство NPC | Number of NPCs": 8,
+        "ХП NPC | HP NPC": 150,
+        "Дистанция видимости | Visibility distance": 80,
+        "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 35,
+        "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": true,
+        "Колличевство нпс (Подмога) | Number of NPCs (Help)": 2,
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": false,
+        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 50,
+        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 50
+      },
+      {
+        "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку) | Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная) | file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab3",
+        "Спавнить NPC вокруг дома ? | Spawn NPCs around the house?": true,
+        "Колличевство NPC | Number of NPCs": 10,
+        "ХП NPC | HP NPC": 170,
+        "Дистанция видимости | Visibility distance": 100,
+        "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 55,
+        "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": true,
+        "Колличевство нпс (Подмога) | Number of NPCs (Help)": 4,
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": true,
+        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 30,
+        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 70
+      },
+      {
+        "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку) | Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная) | file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab4",
+        "Спавнить NPC вокруг дома ? | Spawn NPCs around the house?": true,
+        "Колличевство NPC | Number of NPCs": 8,
+        "ХП NPC | HP NPC": 170,
+        "Дистанция видимости | Visibility distance": 110,
+        "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 60,
+        "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": true,
+        "Колличевство нпс (Подмога) | Number of NPCs (Help)": 5,
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": true,
+        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 40,
+        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 70
+      },
+      {
+        "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку) | Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная) | file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab5",
+        "Спавнить NPC вокруг дома ? | Spawn NPCs around the house?": true,
+        "Колличевство NPC | Number of NPCs": 10,
+        "ХП NPC | HP NPC": 200,
+        "Дистанция видимости | Visibility distance": 140,
+        "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 55,
+        "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": true,
+        "Колличевство нпс (Подмога) | Number of NPCs (Help)": 4,
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": true,
+        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 70,
+        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 50
+      },
+      {
+        "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку) | Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная) | file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab6",
+        "Спавнить NPC вокруг дома ? | Spawn NPCs around the house?": true,
+        "Колличевство NPC | Number of NPCs": 10,
+        "ХП NPC | HP NPC": 230,
+        "Дистанция видимости | Visibility distance": 140,
+        "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 60,
+        "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": true,
+        "Колличевство нпс (Подмога) | Number of NPCs (Help)": 7,
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": true,
+        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 70,
+        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 80
+      }
+    ],
+    "радиус для обнаружения построек игроков | radius for detecting player buildings": 25
+  },
+  "Настройка запуска и остановки ивента | Setting up and stopping an event": {
+    "Минимальное количество игроков для запуска ивента | The minimum number of players to start an event": 1,
+    "Время до начала ивента (Минимальное в секундах) | Time before the start of the event (Minimum in seconds)": 3000,
+    "Время до начала ивента (Максимальное в секундах) | Time before the start of the event (Maximum in seconds)": 7200,
+    "Время до удаления ивента если никто не откроет ящик (Секунды) | Time until the event is deleted if no one opens the box (Seconds)": 900,
+    "Время до удаления ивента после того как разблокируется ящик | The time until the event is deleted after the box is unlocked": 300
+  },
+  "Настройка уведомлений | Configuring notifications": {
+    "ВебХук дискорда (Если не нужны уведомления в дискорд, оставьте поле пустым) | Discord WebHook (If you do not need discord notifications, leave the field blank)": "",
+    "Включить UI Уведомления ? | Enable UI Notifications?": true,
+    "Скрывать автоматически UI уведомления? | Auto hide UI notifications?": true,
+    "Через сколько после показа будет скрываться? (сек) | How long after the show will it hide? (sec)": 15.0,
+    "Цвет заднего фона окна UI | UI window background color": "0.8 0.28 0.2 0.8",
+    "Цвет Кнопки закрытия UI | UI Close Button Color": "0.6784314 0.254902 0.1843137 0.8"
+  },
+  "Настройка радиации в зоне ивента | Setting up radiation in the event area": {
+    "Включить радиацию ? | Turn on radiation?": true,
+    "Количество радиационных частиц | Number of radiation particles": 20
+  },
+  "Отображения ивента на картах | Event display on maps": {
+    "Отметить ивент на карте RustMap? | Mark event on RustMap?": true,
+    "Иконка для карты RustMap | Icon for RustMap": "https://solidrust.net/images/srt_lab_avatar.gif",
+    "Текст для карты RustMap | RustMap text": "SRT lab event",
+    "Отметить ивент на карте G (Требуется https://umod.org/plugins/marker-manager) | Mark the event on the G card (Requires https://umod.org/plugins/marker-manager)": true,
+    "Текст для карты G | Text for map G": "SRT lab event"
+  },
+  "Настройка NPC | NPC setup": {
+    "Рандомные ники нпс | Random nicknames npc": [
+      "SRT guard",
+      "SRT defense"
+    ],
+    "Одежда для NPC | NPC Clothes": [
+      {
+        "ShortName": "roadsign.kilt",
+        "SkinID": 1121447954
+      },
+      {
+        "ShortName": "burlap.shirt",
+        "SkinID": 2076298726
+      },
+      {
+        "ShortName": "shoes.boots",
+        "SkinID": 0
+      },
+      {
+        "ShortName": "roadsign.gloves",
+        "SkinID": 0
+      },
+      {
+        "ShortName": "burlap.trousers",
+        "SkinID": 2076292007
+      },
+      {
+        "ShortName": "metal.facemask",
+        "SkinID": 835028125
+      }
+    ],
+    "Варианты оружия для NPC | Weapon options for NPCs": [
+      {
+        "ShortName": "rifle.lr300",
+        "SkinID": 1975712725
+      },
+      {
+        "ShortName": "rifle.lr300",
+        "SkinID": 1837473292
+      },
+      {
+        "ShortName": "pistol.semiauto",
+        "SkinID": 1557105240
+      },
+      {
+        "ShortName": "rifle.semiauto",
+        "SkinID": 1845735432
+      },
+      {
+        "ShortName": "rifle.ak",
+        "SkinID": 1352726257
+      }
+    ],
+    "Использовать свой лут в нпс ? | Use your loot in NPCs?": true,
+    "Настройка лута в NPC (Если выключенно то будет стандартный) /cl.botitems | Setting up loot in NPC (if disabled, it will be standard) /cl.botitems": [
+      {
+        "ShortName": "halloween.surgeonsuit",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "metal.facemask",
+        "SkinID": 1886184322,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 20,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "door.double.hinged.metal",
+        "SkinID": 191100000,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 2,
+        "Шанс выпадения предмета | Item drop chance": 60,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "rifle.bolt",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": true,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 10,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "rifle.lr300",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 15,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "pistol.revolver",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 3,
+        "Шанс выпадения предмета | Item drop chance": 60,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "supply.signal",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 3,
+        "Шанс выпадения предмета | Item drop chance": 20,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "explosive.satchel",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 3,
+        "Шанс выпадения предмета | Item drop chance": 5,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "grenade.smoke",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 20,
+        "Шанс выпадения предмета | Item drop chance": 45,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "ammo.rifle",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 50,
+        "Максимальное количество | Maximum amount": 120,
+        "Шанс выпадения предмета | Item drop chance": 35,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "scrap",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 100,
+        "Максимальное количество | Maximum amount": 500,
+        "Шанс выпадения предмета | Item drop chance": 20,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "giantcandycanedecor",
+        "SkinID": 0,
+        "Имя предмета | Item name": "Новый год",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 5,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      }
+    ]
+  },
+  "Настройка ящика | Customizing the box": {
+    "Настройка лута в ящике /cl.items | Loot setting in the box /cl.items": [
+      {
+        "ShortName": "pistol.python",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 60,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "multiplegrenadelauncher",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 15,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "sulfur",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 500,
+        "Максимальное количество | Maximum amount": 800,
+        "Шанс выпадения предмета | Item drop chance": 40,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": true
+      },
+      {
+        "ShortName": "gunpowder",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 300,
+        "Максимальное количество | Maximum amount": 400,
+        "Шанс выпадения предмета | Item drop chance": 10,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": true
+      },
+      {
+        "ShortName": "door.hinged.toptier",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": true,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 15,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "wall.external.high.ice",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 5,
+        "Шанс выпадения предмета | Item drop chance": 75,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "ammo.rocket.basic",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 3,
+        "Шанс выпадения предмета | Item drop chance": 25,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "ammo.grenadelauncher.smoke",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 3,
+        "Максимальное количество | Maximum amount": 10,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "ammo.grenadelauncher.he",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 2,
+        "Максимальное количество | Maximum amount": 5,
+        "Шанс выпадения предмета | Item drop chance": 10,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "metal.facemask",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": true,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 15,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "metal.plate.torso",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": true,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 10,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "clatter.helmet",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "carburetor3",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 20,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "crankshaft3",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 10,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "techparts",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 5,
+        "Максимальное количество | Maximum amount": 15,
+        "Шанс выпадения предмета | Item drop chance": 35,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "xmas.lightstring.advanced",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 30,
+        "Максимальное количество | Maximum amount": 70,
+        "Шанс выпадения предмета | Item drop chance": 45,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "largemedkit",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 3,
+        "Максимальное количество | Maximum amount": 5,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "largemedkit",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": true,
+        "Минимальное количество | Minimal amount": 3,
+        "Максимальное количество | Maximum amount": 5,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "metal.fragments",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1000,
+        "Максимальное количество | Maximum amount": 2000,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": true
+      },
+      {
+        "ShortName": "explosives",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 10,
+        "Максимальное количество | Maximum amount": 50,
+        "Шанс выпадения предмета | Item drop chance": 30,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "autoturret",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 60,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "explosive.timed",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 5,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": true
+      }
+    ],
+    "Время разблокировки ящика (Сек) | Box unlocking time (Sec)": 900,
+    "Макcимальное количество предметов в ящике | Maximum number of items in a drawer": 10,
+    "умножать количество лута на количество дней с начала вайпа (на 3й день - лута будет в 3 раза больше) | multiply the amount of loot by the number of days since the start of the wipe (on the 3rd day - there will be 3 times more loot)": false,
+    "Включить сигнализацию ? | Turn on the alarm?": true
+  }
+}
