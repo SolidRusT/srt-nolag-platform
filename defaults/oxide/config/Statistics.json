@@ -50,8 +50,13 @@
     "stones": 0.5,
     "cupboard.tool.deployed": 1.0
   },
+  "Count suicide as death": true,
+  "Count kills of bots": true,
+  "Count kills from bots": true,
+  "Count deaths from teammates": true,
+  "Use value rounding?": false,
   "PlayerDatabase": {
-    "Enabled": false,
+    "Enabled": true,
     "Table": "Statistics"
   }
 }

@@ -1,0 +1,3041 @@
+{
+  "Commands": [
+    "sr",
+    "rewards",
+    "shop",
+    "shops"
+  ],
+  "Load images when logging into the server?": true,
+  "Work with Notify?": true,
+  "Can admins edit? (by flag)": true,
+  "Delay between loading images": 1.0,
+  "Economy": {
+    "Type (Plugin/Item)": "Plugin",
+    "Plugin name": "Economics",
+    "Balance add hook": "Deposit",
+    "Balance remove hook": "Withdraw",
+    "Balance show hook": "Balance",
+    "ShortName": "scrap",
+    "Display Name (empty - default)": "SRT",
+    "Skin": 0
+  },
+  "Shop": [
+    {
+      "Enabled": true,
+      "Title": "Attire",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 0,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "hat.wolf",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 1,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "diving.fins",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 2,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "diving.mask",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 3,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "diving.tank",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 4,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "diving.wetsuit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 5,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "tactical.gloves",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 6,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ghostsheet",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 7,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "halloween.mummysuit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 8,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "scarecrow.suit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 9,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "hat.miner",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 10,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "mask.bandana",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 11,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "attire.ninja.suit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 12,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "attire.banditguard",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 13,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "hazmatsuit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 14,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "hazmatsuit_scientist",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 15,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "hazmatsuit_scientist_peacekeeper",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 16,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "scientistsuit_heavy",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 17,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "jumpsuit.suit.blue",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 18,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "jumpsuit.suit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 19,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "attire.bunny.onesie",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 20,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "halloween.surgeonsuit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 21,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "sunglasses",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Misc",
+      "Permission": "",
+      "Items": []
+    },
+    {
+      "Enabled": true,
+      "Title": "Items",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 22,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "composter",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 23,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "water.barrel",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 24,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "planter.large",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 25,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "sleepingbag",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 26,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "sofa",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Ammunition",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 27,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.grenadelauncher.buckshot",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 28,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.grenadelauncher.he",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 29,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.grenadelauncher.smoke",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 30,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "arrow.hv",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 31,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "arrow.wooden",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 32,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "arrow.fire",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 33,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.pistol",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 34,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.pistol.fire",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 35,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.rifle",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 36,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.rifle.explosive",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 37,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.rifle.hv",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 38,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.shotgun",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 39,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ammo.shotgun.slug",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 40,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "speargun.spear",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Construction",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 41,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "wall.external.high",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 42,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "cupboard.tool",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 43,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "lock.code",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 44,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "building.planner",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Component",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 45,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "carburetor3",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 46,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "crankshaft3",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 47,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "piston3",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 48,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "sparkplug3",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 49,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "valve3",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 50,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "metalpipe",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 51,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "roadsigns",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 52,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "sewingkit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 53,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "metalspring",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 54,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "techparts",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 55,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "riflebody",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 56,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "smgbody",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Traps",
+      "Permission": "",
+      "Items": []
+    },
+    {
+      "Enabled": true,
+      "Title": "Electrical",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 57,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ceilinglight",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 58,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "computerstation",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 59,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "electric.battery.rechargable.large",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 60,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "electric.counter",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 61,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "fluid.switch",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 62,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "electrical.branch",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 63,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "electrical.combiner",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 64,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "electric.solarpanel.large",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 65,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "electric.switch",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 66,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "electric.splitter",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 67,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "electric.sprinkler",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 68,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "waterpump",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 69,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "generator.wind.scrap",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 70,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "hosetool",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 71,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "wiretool",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Fun",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 72,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "firework.boomer.champagne",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 73,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "abovegroundpool",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 74,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "beachchair",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 75,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "beachparasol",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 76,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "beachtable",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 77,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "beachtowel",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 78,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "boogieboard",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 79,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "innertube",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 80,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "paddlingpool",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 81,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "fun.boomboxportable",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 82,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "mobilephone",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Food",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 83,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "cactusflesh",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 84,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "chicken.cooked",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 85,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "waterjug",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 86,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "seed.red.berry",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 87,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "seed.yellow.berry",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 88,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "pumpkin",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 89,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "seed.pumpkin",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 90,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "maxhealthtea.pure",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 91,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "radiationresisttea.pure",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Resources",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 92,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "cctv.camera",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 93,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "cloth",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 94,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "horsedung",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 95,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "hq.metal.ore",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 96,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "metal.refined",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 97,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "leather",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 98,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "lowgradefuel",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 99,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "metal.fragments",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 100,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "metal.ore",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 101,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "stones",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 102,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "sulfur.ore",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 103,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "wood",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Tool",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 104,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "tool.instant_camera",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 105,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "flashlight.held",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 106,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "chainsaw",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 107,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "hammer",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 108,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "rock",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 109,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "torch",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 110,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "bucket.water",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Weapon",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 111,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "multiplegrenadelauncher",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 112,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "knife.combat",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 113,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "pistol.m92",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 114,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "smg.mp5",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 115,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "speargun",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    },
+    {
+      "Enabled": true,
+      "Title": "Medical",
+      "Permission": "",
+      "Items": [
+        {
+          "Type": "Item",
+          "ID": 116,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "antiradpills",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 117,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "largemedkit",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 118,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "syringe.medical",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        },
+        {
+          "Type": "Item",
+          "ID": 119,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "bandage",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 100.0,
+          "Sell Price": 100.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
+        }
+      ]
+    }
+  ],
+  "First Color": "#301703",
+  "Second Color": "#F28633",
+  "Third Color": "#000000",
+  "Fourth Color": "#A0A935",
+  "Fifth Color": "#009900",
+  "Sixth Color": "#800000",
+  "Seventh Color": "#F28633",
+  "NPC Shops (NPC ID - shop categories)": {
+    "1234567": {
+      "Categories (Titles) [* - all]": [
+        "Tool",
+        "Food"
+      ]
+    },
+    "7654321": {
+      "Categories (Titles) [* - all]": [
+        "Weapon",
+        "Ammunition"
+      ]
+    },
+    "4644687478": {
+      "Categories (Titles) [* - all]": [
+        "*"
+      ]
+    }
+  },
+  "Interface": {
+    "Height": 500.0,
+    "Width": 770.0,
+    "Categories On Page": 9,
+    "Categories Margin": 7.5,
+    "Categories Height": 40.0,
+    "Items On String": 4,
+    "Strings": 2,
+    "Item Height": 165.0,
+    "Item Width": 150.0,
+    "Margin": 35.0,
+    "Use scroll in categories?": true,
+    "Enable search?": true,
+    "Number of digits after decimal point for rounding prices": 5
+  }
+}

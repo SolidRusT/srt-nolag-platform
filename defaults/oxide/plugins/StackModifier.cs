@@ -46,13 +46,25 @@ using Newtonsoft.Json.Linq;
  * Update 1.1.1
  * Added support for stacking Miner Hats with fuel + Candle Hats
  *
+ * Update 1.1.2
+ * Fixed Stacking issues with float values not matching due to unity float comparison bug
+ *
+ * Update 1.1.3
+ * Fixed Vendor bug..
+ *
+ * Update 1.1.4
+ * Added OnCardSwipe to fix stack loss when it hits broken stage.
+ *
+ * Update 1.1.5
+ * Fixed High hook time hangs sometimes resulted in server crashes..
+ *
  * TODO
  * Fix? Possible vending machine purchase issues using Vending Machine Plugin with economics/blood??
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.1.1")]
+    [Info("Stack Modifier", "Khan", "1.1.5")]
     [Description("Modify item stack sizes")]
     public class StackModifier : CovalencePlugin
     {
@@ -126,12 +138,24 @@ namespace Oxide.Plugins
                         Modified = item.stackable,
                     });
                 }
-
+                
                 if (_configData.StackCategories[categoryName][item.shortname].Modified >= _configData.StackCategories[categoryName][item.shortname].Vanilla )
                 {
                     item.stackable = _configData.StackCategories[categoryName][item.shortname].Modified;
                 }
-
+            }
+            
+            foreach (var entity in BaseNetworkable.serverEntities.OfType<NPCVendingMachine>())
+            {
+                if (entity == null || entity.vendingOrders == null) continue;
+                foreach (var order in entity.vendingOrders.orders)
+                {
+                    if (order == null) continue;
+                    var cat = order.sellItem.category.ToString();
+                    var sname = order.sellItem.shortname;
+                    if (!_configData.StackCategories.ContainsKey(cat) || !_configData.StackCategories[cat].ContainsKey(sname)) continue;
+                    order.sellItemAmount = _configData.StackCategories[cat][order.sellItem.shortname].Vanilla;
+                }
             }
 
             SaveConfig();
@@ -251,7 +275,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Oxide
-        
+
         private void Unload()
         {
             if (_configData.Reset)
@@ -301,7 +325,7 @@ namespace Oxide.Plugins
                 item.info.itemid != targetItem.info.itemid ||
                 !item.IsValid() ||
                 item.IsBlueprint() && item.blueprintTarget != targetItem.blueprintTarget ||
-                item.maxCondition - targetItem.condition < item.maxCondition ||
+                Math.Ceiling(targetItem.condition) != item.maxCondition ||
                 item.skin != targetItem.skin
             )
             {
@@ -543,11 +567,29 @@ namespace Oxide.Plugins
             x.MarkDirty();
             x.MoveToContainer(player.inventory.containerMain);
             }
+        
+        private object OnCardSwipe(CardReader cardReader, Keycard card, BasePlayer player)
+        {
+            var item = card.GetItem();
+            if (item.amount <= 1) return null;
+
+            int division = item.amount / 1;
+            
+            for (int i = 0; i < division; i++)
+            {
+                Item x = item.SplitItem(1);
+                if (x != null && !x.MoveToContainer(player.inventory.containerMain, -1, false) && (item.parent == null || !x.MoveToContainer(item.parent)))
+                {
+                    x.Drop(player.inventory.containerMain.dropPosition, player.inventory.containerMain.dropVelocity);
+                }
+            }
+
+            return null;
+        }
 
         #endregion
         
         #region Helpers
-        
         private bool CanWaterItemsStack(Item item, Item targetItem)
         {
             if (item.GetHeldEntity()?.GetComponentInChildren<BaseLiquidVessel>() == null)

@@ -1,7 +1,7 @@
 {
     "Text Display Frequency (Seconds)": 0.3,
     "Enable Messages Cyclicity": true,
-    "Use Random Cyclicity (Instead of sequential)": false,
+    "Use Random Cyclicity (Instead of sequential)": true,
     "Cycle Messages Every ~N Seconds": 3.0,
     "Messages": [{
             "Top Status": "<color=#ffff00>SRT custom 1000x</color>",
