@@ -476,7 +476,7 @@
     "Fog Machine Allows Motion Toggle": true,
     "Fog Machine Requires A Power Source": false,
     "SamSite Repairs Every X Minutes (0.0 = disabled)": 5.0,
-    "SamSite Range (350.0 = Rust default)": 350.0,
+    "SamSite Range (350.0 = Rust default)": 75.0,
     "Test Generator Power": 100.0
   }
 }

@@ -1759,26 +1759,6 @@
     "assets/bundled/prefabs/radtown/vehicle_parts.prefab": {
       "Enabled": true,
       "ItemList": {
-        "carburetor3": {
-          "Max": 1,
-          "Min": 1
-        },
-        "crankshaft3": {
-          "Max": 1,
-          "Min": 1
-        },
-        "piston3": {
-          "Max": 2,
-          "Min": 2
-        },
-        "sparkplug3": {
-          "Max": 2,
-          "Min": 2
-        },
-        "valve3": {
-          "Max": 2,
-          "Min": 2
-        },
         "metal.fragments": {
           "Max": 200,
           "Min": 200
@@ -1786,6 +1766,34 @@
         "metal.refined": {
           "Max": 10,
           "Min": 10
+        },
+        "carburetor2": {
+          "Max": 1,
+          "Min": 1
+        },
+        "crankshaft2": {
+          "Max": 1,
+          "Min": 1
+        },
+        "piston2": {
+          "Max": 2,
+          "Min": 2
+        },
+        "sparkplug2": {
+          "Max": 2,
+          "Min": 2
+        },
+        "valve2": {
+          "Max": 2,
+          "Min": 2
+        },
+        "carburetor1": {
+          "Max": 1,
+          "Min": 1
+        },
+        "crankshaft1": {
+          "Max": 1,
+          "Min": 1
         }
       },
       "ItemsMax": 7,
