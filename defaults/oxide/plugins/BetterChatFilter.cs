@@ -1,4 +1,5 @@
 ﻿// Requires: BetterChat
+// Requires: BetterChatMute
 
 
 using System;
@@ -12,7 +13,7 @@ using Oxide.Game.Rust.Libraries;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat Filter", "NooBlet", "1.5.1", ResourceId = 2403)]
+    [Info("Better Chat Filter", "NooBlet", "1.6", ResourceId = 2403)]
     [Description("Filter for Better Chat")]
     public class BetterChatFilter : CovalencePlugin
     {
@@ -27,18 +28,17 @@ namespace Oxide.Plugins
         private object Filter(Dictionary<string, object> messageData)
         {
             IPlayer player = (IPlayer)messageData["Player"];
-            
+           
+
             if (ExcludeTeamChat)
             {
                 if (messageData["ChatChannel"].ToString() == "Team") { return messageData; }
-
             }
 
             if (WordFilter_Enabled)
             {
-               
                 var message = (string)messageData["Message"];
-                messageData["Message"] = FilterText(player, message);               
+                if (!GetIsMuted(ref player)) { messageData["Message"] = FilterText(player, message); }              
                 return messageData;
             }
             
@@ -56,19 +56,15 @@ namespace Oxide.Plugins
         public class OffenseData
         {
             public int offenses { get; set; }
-            public int muteCount { get; set; }
+          
             public DateTime timesinsoffense { get; set; }
             public OffenseData()
             {
-                offenses = 1;
-                muteCount = 0;
-                timesinsoffense = new DateTime(2200, 1, 1, 0, 0, 0);
+                offenses = 1;             
             }
-            public OffenseData(int offenses, int muteCount, DateTime timesinsoffence)
+            public OffenseData(int offenses)
             {
-                this.offenses = offenses;
-                this.muteCount = muteCount;
-                this.timesinsoffense = timesinsoffence;
+                this.offenses = offenses;   
             }
         }
         #endregion
@@ -97,9 +93,7 @@ namespace Oxide.Plugins
         private string regextouse = @"";
         private int clear = 0;
         private bool ExcludeTeamChat = false;
-        private bool warnoffenseamount = false;
-        private bool useclearontime = false;
-        private int timetoclear = 60;
+        private bool warnoffenseamount = false;       
 
         #endregion
 
@@ -119,12 +113,7 @@ namespace Oxide.Plugins
         {
             LoadConfiguration();
             LoadData();
-            permission.RegisterPermission(Name + ".admin", this);
-            if (useclearontime)
-            {
-                OffenseTimer();
-            }
-            
+            permission.RegisterPermission(Name + ".admin", this);          
         }
 
         void Unload()
@@ -137,20 +126,19 @@ namespace Oxide.Plugins
 
         private void Offsense(IPlayer player)
         {
-            var p = player.Object as BasePlayer;
-
+           
             int offenseCount = 0;
            
             if (PlayerOffenses.ContainsKey(player.Id))
             {
                 PlayerOffenses[player.Id].offenses++;
-                offenseCount = PlayerOffenses[player.Id].offenses;
+                offenseCount = PlayerOffenses[player.Id].offenses;               
                 SaveData();
             }
-            else if (!PlayerOffenses.ContainsKey(player.Id))
+            else if (!(PlayerOffenses.ContainsKey(player.Id)))
             {
                 PlayerOffenses.Add(player.Id, new OffenseData());
-                offenseCount = PlayerOffenses[player.Id].offenses;
+                offenseCount = PlayerOffenses[player.Id].offenses;               
                 SaveData();
             }
             if (offenseCount >= MuteCount && MuteCount != 0)
@@ -160,16 +148,10 @@ namespace Oxide.Plugins
                     ClearOffense(player);
                 }
                 //mute check suggested OuTSMoKE
-                if (!GetIsMuted(ref p))
+                if (!GetIsMuted(ref player))
                 {
-                    if (BetterChatMute)
-                    {
-                        server.Command("mute", player.Id, $"{TimeToMute}s", $"{GetLang("MuteReason", player.Id)}");
-                    }
-
-                }
-
-                Mutes(player);
+                    server.Command("mute", player.Id, $"{TimeToMute}s", $"{GetLang("MuteReason", player.Id)}");
+                }               
             }
             if (offenseCount >= KickCount && KickCount != 0)
             {
@@ -192,7 +174,7 @@ namespace Oxide.Plugins
 
                 BanPlayer(player, BanTimeMin, GetLang("BanReason", player.Id));
             }
-            PlayerOffenses[player.Id].timesinsoffense = DateTime.Now;
+            
             SaveData();
             return;
         }
@@ -222,9 +204,9 @@ namespace Oxide.Plugins
             {
                 if (PlayerOffenses.ContainsKey(player.Id))
                 {
-                    if (KickCount > PlayerOffenses[player.Id].offenses)
+                    if (KickCount >= PlayerOffenses[player.Id].offenses)
                     {
-                        if (KickCount <= 0)
+                        if (KickCount == 0)
                         {
                             player.Reply(string.Format(GetLang("OffenseWarning", player.Id), PlayerOffenses[player.Id].offenses + 1));
                         }
@@ -246,39 +228,18 @@ namespace Oxide.Plugins
             }
         }
 
-        private bool GetIsMuted(ref BasePlayer aPlayer)
+        private bool GetIsMuted(ref IPlayer aPlayer)
         {
-            bool isServerMuted = aPlayer.HasPlayerFlag(BasePlayer.PlayerFlags.ChatMute);
+            bool isServerMuted = (bool)BetterChatMute.Call("API_IsMuted", aPlayer);
 
-            if (BetterChatMute != null && !BetterChatMute.IsLoaded)
-            {
-                return isServerMuted || (bool)BetterChatMute.Call("API_IsMuted", aPlayer.IPlayer);
-            }
-            else
-            {
-                return isServerMuted;
-            }
+            return isServerMuted;
         }
 
-        private void Mutes(IPlayer player)
-        {
-            if (!(PlayerOffenses.ContainsKey(player.Id)))
-            {
-                return;
-            }
-            else
-            {
-                int muteCount = PlayerOffenses[player.Id].muteCount;
-                PlayerOffenses[player.Id].muteCount++;
-                SaveData();
-                // TODO: Bigger punishments.
-            }
-        }
+      
         private void LoadDefaultMessages()
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["TimeClear"] = "Your Chat Offenses has been cleared for good behavior",
                 ["KickReason"] = "Bad Language",
                 ["BanReason"] = "Bad Language",
                 ["MuteReason"] = "Bad Language",
@@ -301,8 +262,7 @@ namespace Oxide.Plugins
         {
             if (PlayerOffenses.ContainsKey(player.Id))
             {
-                PlayerOffenses[player.Id].offenses = 0;
-                PlayerOffenses[player.Id].timesinsoffense = new DateTime(2200, 1, 1, 0,0,0);
+                PlayerOffenses[player.Id].offenses = 0;               
                 SaveData();
             }
             else
@@ -323,8 +283,6 @@ namespace Oxide.Plugins
 
         private void LoadConfiguration()
         {
-            CheckCfg<bool>("Use Offenses clear timer", ref useclearontime);
-            CheckCfg<int>("Time to Clear Offense in minutes", ref timetoclear);
             CheckCfg<bool>("Exclude Team Chat", ref ExcludeTeamChat);
             CheckCfg<bool>("Warn Players with offense amount", ref warnoffenseamount);
             CheckCfg<int>("Offenses - Time To Mute", ref TimeToMute);
@@ -447,14 +405,7 @@ namespace Oxide.Plugins
             }
         }
 
-
-        private BasePlayer findPlayer(string name)
-        {
-            BasePlayer target = BasePlayer.FindAwakeOrSleeping(name);
-            return target;
-        }
-
-
+       
         #endregion
 
         #region Word Filter
@@ -478,14 +429,14 @@ namespace Oxide.Plugins
                     }
                 }
                 foreach (string bannedword in WordFilter_Phrases)
-                    if (TranslateLeet(word).ToLower().Contains(bannedword.ToLower()))
-                    {
+                if (TranslateLeet(word).ToLower().Contains(bannedword.ToLower()))
+                {
                         Puts($"BANNED WORDS MATCH :| {player.Name} said: \"{original}\" which contained a bad word: \"{word}\"");
                         filtered = filtered.Replace(word, Replace(word));
                         count++;
                         WarnPlayer(player);
 
-                    }
+                }
             }
 
             if (count > 0)
@@ -501,7 +452,7 @@ namespace Oxide.Plugins
         private string Replace(string original)
         {
             var filtered = string.Empty;
-
+            if(!WordFilter_UseCustomReplacement&& WordFilter_Replacement == "") { return original; }
             if (!WordFilter_UseCustomReplacement)
                 for (; filtered.Count() < original.Count();)
                     filtered += WordFilter_Replacement;
@@ -631,53 +582,6 @@ namespace Oxide.Plugins
         }
 
         #endregion
-
-        #region Timed Offense Helpers
-        private bool istimeup(DateTime start,string id)
-        {
-            int h = 0;
-            int m = 0;
-            if (timetoclear == 0) { PlayerOffenses[id].timesinsoffense = new DateTime(2200, 1, 1, 0, 0, 0); return false; }
-            if (timetoclear == 60) { h = 1;m = 0; }
-            if (timetoclear > 60) { h = 1; m = timetoclear - 60; }
-            if (timetoclear < 60) { h = 0; m = timetoclear; }
-            if (timetoclear == 120) { h = 2; m = 0; }
-            if (timetoclear > 120) { PlayerOffenses[id].timesinsoffense = new DateTime(2200, 1, 1, 0, 0, 0); return false; }
-            TimeSpan time = new TimeSpan(h, m, 0);
-            DateTime end = start.Add(time);
-            if (DateTime.Now >= end)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private void ClearTimedOffences()
-        {
-            foreach (var p in PlayerOffenses)
-            {
-                if (p.Value.timesinsoffense == null) { continue; }
-                if (istimeup(p.Value.timesinsoffense,p.Key))
-                {
-                    var player = findPlayer(p.Key).IPlayer;
-                    if (player == null) { continue; }
-                    ClearOffense(player);
-                    player.Reply(string.Format(GetLang("TimeClear", player.Id)));
-                    Puts($"{player.Name} Offenses cleared for good behavior");
-                }
-
-            }
-        }
-        private void OffenseTimer()
-        {
-            ot = timer.Every(60f, () =>
-            {
-                ClearTimedOffences();
-               
-            });
-        }
-
-        #endregion Timed Offence Helpers
+       
     }
 }

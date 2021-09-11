@@ -404,7 +404,8 @@
                 "respawnbradley.nolock",
                 "respawnbradley.nocosts",
                 "respawnbradley.nocooldown",
-                "zombiehorde.admin"
+                "zombiehorde.admin",
+                "itemcleaner.use"
             ],
             "AdditionalCommands": []
         }
