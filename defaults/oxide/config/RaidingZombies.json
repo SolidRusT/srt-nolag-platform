@@ -4,7 +4,7 @@
     "totalExplosives": 2,
     "totalRockets": 2,
     "explosive": "explosive.timed",
-    "targetPlayerOnly": true
+    "targetPlayerOnly": false
   },
   "Version": {
     "Major": 1,
