@@ -19,7 +19,7 @@ using Time = UnityEngine.Time;
 
 namespace Oxide.Plugins
 {
-    [Info("XDCobaltLaboratory", "DezLife", "1.9.75")]
+    [Info("XDCobaltLaboratory", "Suparious", "1.10.0")]
     public class XDCobaltLaboratory : RustPlugin
     {
         #region Var
@@ -47,14 +47,14 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["XD_IVENT_START"] = "<color=#008000>[Cobalt Lab Event] </color>Ученые разбили на этом острове свою лабораторию под названием Кобальт, скорее всего там находятся ценные вещи, ведь она охраняется!\nКвадрат: <color=#00FF00>{0}</color>",
+                ["XD_IVENT_START"] = "<color=#008000>[SRT Lab Event] </color>Ученые разбили на этом острове свою лабораторию под названием Кобальт, скорее всего там находятся ценные вещи, ведь она охраняется!\nКвадрат: <color=#00FF00>{0}</color>",
                 ["XD_IVENT_STARTUI"] = "Ученые развернули свою Кобальтовую лабораторию!\nКвадрат : {0}",
-                ["XD_IVENT_NOPLAYER"] = "<color=#008000>[Cobalt Lab Event] </color>Ученые закончили свой эксперимент и успешно покинули остров без происшествий",
-                ["XD_IVENT_CRATEHACK"] = "<color=#008000>[Cobalt Lab Event] </color>В лаборатории кобальт <color=#FFD700>{0}</color> начал взлом секретного ящика в квадрате <color=#00FF00>{1}</color>",
-                ["XD_IVENT_CRATEHACKHELP"] = "<color=#008000>[Cobalt Lab Event] </color>В лаборатории кобальт <color=#FFD700>{0}</color> начал взлом секретного ящика в квадрате <color=#00FF00>{1}</color>\nНа это место уже прибыла подмога! Будте осторожней",
-                ["XD_IVENT_CRATEHACKEND"] = "<color=#008000>[Cobalt Lab Event] </color>В лаборатории кобальт был взломан секретный ящик, ученые начинают эвакуацию с острова, у вас осталось <color=#9ACD32>{0} минут</color>, чтобы забрать его!",
-                ["XD_IVENT_CRATELOOTFOUND"] = " <color=#008000>[Cobalt Lab Event] </color>В лаборатории кобальт никто не успел залутать взломанный ящик, лаборатория была эвакуирована и постройка разрушена",
-                ["XD_IVENT_CRATELOOTPLAYER"] = "<color=#008000>[Cobalt Lab Event] </color><color=#FFD700>{0}</color> успешно ограбил лабораторию кобальт и забрал ценные вещи с секретного ящика",
+                ["XD_IVENT_NOPLAYER"] = "<color=#008000>[SRT Lab Event] </color>Ученые закончили свой эксперимент и успешно покинули остров без происшествий",
+                ["XD_IVENT_CRATEHACK"] = "<color=#008000>[SRT Lab Event] </color>В лаборатории кобальт <color=#FFD700>{0}</color> начал взлом секретного ящика в квадрате <color=#00FF00>{1}</color>",
+                ["XD_IVENT_CRATEHACKHELP"] = "<color=#008000>[SRT Lab Event] </color>В лаборатории кобальт <color=#FFD700>{0}</color> начал взлом секретного ящика в квадрате <color=#00FF00>{1}</color>\nНа это место уже прибыла подмога! Будте осторожней",
+                ["XD_IVENT_CRATEHACKEND"] = "<color=#008000>[SRT Lab Event] </color>В лаборатории кобальт был взломан секретный ящик, ученые начинают эвакуацию с острова, у вас осталось <color=#9ACD32>{0} минут</color>, чтобы забрать его!",
+                ["XD_IVENT_CRATELOOTFOUND"] = " <color=#008000>[SRT Lab Event] </color>В лаборатории кобальт никто не успел залутать взломанный ящик, лаборатория была эвакуирована и постройка разрушена",
+                ["XD_IVENT_CRATELOOTPLAYER"] = "<color=#008000>[SRT Lab Event] </color><color=#FFD700>{0}</color> успешно ограбил лабораторию кобальт и забрал ценные вещи с секретного ящика",
                 ["XD_IVENT_HOUSECOBALT"] = "Cobalt laboratory",
                 ["XD_IVENT_START_DISCORD"] = "Ученые разбили на этом острове свою лабораторию под названием Кобальт,скорее всего там находится ценные вещи, ведь он охраняется!\nКвадрат : {0}",
                 ["XD_IVENT_NOPLAYER_DISCORD"] = "Ученые закончили свой эксперимент и успешно покинули остров без происшествий",
@@ -82,19 +82,19 @@ namespace Oxide.Plugins
                 ["XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"] = "Постройка успешно загружена!",
                 ["XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"] = "Ошибка при загрузке постройки!\nПробуем загрузить еще раз",
                 ["XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"] = "Повторная загрузка не была успешной\nОбратитесь к разработчику\nDezLife#1480\nvk.com/dezlife",
-                ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[Cobalt Lab Event] </color>Внутри ящика оказалась ловушка с сигналом в службу охраны Cobalt.\nНа защиту вылетел боевой вертолёт\nВы должны сбить его или выжить в течении 5 минут.",
+                ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[SRT Lab Event] </color>Внутри ящика оказалась ловушка с сигналом в службу охраны Cobalt.\nНа защиту вылетел боевой вертолёт\nВы должны сбить его или выжить в течении 5 минут.",
             }, this, "ru");
 
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["XD_IVENT_START"] = "<color=#008000>[Cobalt Lab Event] </color>Scientists have set up their laboratory on this island called Cobalt, most likely there are valuable things there, because it is protected!\nGrid: <color=#00FF00>{0}</color>",
+                ["XD_IVENT_START"] = "<color=#008000>[SRT Lab Event] </color>Scientists have set up their laboratory on this island called Cobalt, most likely there are valuable things there, because it is protected!\nGrid: <color=#00FF00>{0}</color>",
                 ["XD_IVENT_STARTUI"] = "Scientists have deployed their Cobalt Lab!\nGrid : {0}",
-                ["XD_IVENT_NOPLAYER"] = "<color=#008000>[Cobalt Lab Event] </color>The scientists completed their experiment and successfully left the island without incident",
-                ["XD_IVENT_CRATEHACK"] = "<color=#008000>[Cobalt Lab Event] </color>In the cobalt lab <color=#FFD700>{0}</color> started hacking a secret crate in the grid <color=#00FF00>{1}</color>",
-                ["XD_IVENT_CRATEHACKHELP"] = "<color=#008000>[Cobalt Lab Event] </color>In the cobalt lab <color=#FFD700>{0}</color> started hacking a secret crate in the grid <color=#00FF00>{1}</color>\nHelp has already arrived at this place! Be careful",
-                ["XD_IVENT_CRATEHACKEND"] = "<color=#008000>[Cobalt Lab Event] </color>A secret crate has been hacked in the cobalt lab, scientists are beginning to evacuate the island, you have <color=#9ACD32>{0} minutes</color> left to pick it up!",
-                ["XD_IVENT_CRATELOOTFOUND"] = " <color=#008000>[Cobalt Lab Event] </color>In the cobalt laboratory, no one had time to hack the secret crate, the laboratory was evacuated and the building was destroyed",
-                ["XD_IVENT_CRATELOOTPLAYER"] = "<color=#008000>[Cobalt Lab Event] </color><color=#FFD700>{0}</color> successfully robbed the cobalt lab and took valuables from a secret crate",
+                ["XD_IVENT_NOPLAYER"] = "<color=#008000>[SRT Lab Event] </color>The scientists completed their experiment and successfully left the island without incident",
+                ["XD_IVENT_CRATEHACK"] = "<color=#008000>[SRT Lab Event] </color>In the cobalt lab <color=#FFD700>{0}</color> started hacking a secret crate in the grid <color=#00FF00>{1}</color>",
+                ["XD_IVENT_CRATEHACKHELP"] = "<color=#008000>[SRT Lab Event] </color>In the cobalt lab <color=#FFD700>{0}</color> started hacking a secret crate in the grid <color=#00FF00>{1}</color>\nHelp has already arrived at this place! Be careful",
+                ["XD_IVENT_CRATEHACKEND"] = "<color=#008000>[SRT Lab Event] </color>A secret crate has been hacked in the cobalt lab, scientists are beginning to evacuate the island, you have <color=#9ACD32>{0} minutes</color> left to pick it up!",
+                ["XD_IVENT_CRATELOOTFOUND"] = " <color=#008000>[SRT Lab Event] </color>In the cobalt laboratory, no one had time to hack the secret crate, the laboratory was evacuated and the building was destroyed",
+                ["XD_IVENT_CRATELOOTPLAYER"] = "<color=#008000>[SRT Lab Event] </color><color=#FFD700>{0}</color> successfully robbed the cobalt lab and took valuables from a secret crate",
                 ["XD_IVENT_HOUSECOBALT"] = "Cobalt laboratory",
                 ["XD_IVENT_START_DISCORD"] = "Scientists have set up their laboratory on this island called Cobalt, most likely there are valuable things there, because it is guarded!\nКвадрат : {0}",
                 ["XD_IVENT_NOPLAYER_DISCORD"] = "Scientists finished their experiment and successfully left the island without incident.",
@@ -122,7 +122,7 @@ namespace Oxide.Plugins
                 ["XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"] = "The building has been loaded successfully!",
                 ["XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"] = "Error when loading a building!\nTrying to download again",
                 ["XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"] = "Reload was not successful\nContact the developer\nDezLife#1480\nvk.com/dezlife",
-                ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[Cobalt Lab Event] </color>Inside the box was a trap with a signal to the Cobalt security service.\nA battle helicopter flew to protect the box\nYou need to shoot it down or survive for 5 minutes",
+                ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[SRT Lab Event] </color>Inside the box was a trap with a signal to the Cobalt security service.\nA battle helicopter flew to protect the box\nYou need to shoot it down or survive for 5 minutes",
             }, this);
         }
 
