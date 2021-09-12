@@ -6,7 +6,8 @@
   "Use Blacklist (true/false)": false,
   "Blacklisted Items (Item Shortnames)": [
     "autoturret",
-    "lmg.m249"
+    "lmg.m249",
+    "car.key"
   ],
   "Use Whitelist (true/false)": false,
   "Whitelisted Items (Item Shortnames)": [],
