@@ -5,20 +5,6 @@
   ],
   "Skins": [
     {
-      "Item Shortname": "shortname",
-      "Permission": "",
-      "Skins": [
-        0
-      ]
-    },
-    {
-      "Item Shortname": "Apocalypse",
-      "Permission": "",
-      "Skins": [
-        0
-      ]
-    },
-    {
       "Item Shortname": "horse.armor.roadsign",
       "Permission": "",
       "Skins": [
@@ -57,13 +43,6 @@
         2415085148,
         2411814825,
         2394742340
-      ]
-    },
-    {
-      "Item Shortname": "welding.helmet",
-      "Permission": "",
-      "Skins": [
-        0
       ]
     },
     {

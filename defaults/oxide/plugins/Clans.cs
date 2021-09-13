@@ -15,7 +15,7 @@ namespace Oxide.Plugins
 {
     using ClansEx;
 
-    [Info("Clans", "k1lly0u", "0.2.4")]
+    [Info("Clans", "k1lly0u", "0.2.5")]
     class Clans : CovalencePlugin
     {
         #region Fields        
@@ -256,7 +256,7 @@ namespace Oxide.Plugins
 
         internal bool InvitePlayer(IPlayer inviter, string targetId)
         {
-            IPlayer invitee = (covalence.Players.FindPlayerById(targetId.ToString())?.Object as IPlayer) ?? null;
+            IPlayer invitee = covalence.Players.FindPlayerById(targetId) ?? null;
             if (invitee == null)
             {
                 inviter.Reply(string.Format(Message("Notification.Generic.UnableToFindPlayer", inviter.Id), targetId));
@@ -417,7 +417,7 @@ namespace Oxide.Plugins
             Clan other = storedData.FindClanByID(targetId);
             if (other == null || !clan.Tag.Equals(other.Tag))
             {
-                string Name = covalence.Players.FindPlayer(targetId.ToString())?.Name ?? targetId.ToString();
+                string Name = covalence.Players.FindPlayer(targetId)?.Name ?? targetId;
 
                 promoter.Reply(string.Format(Message("Notification.Promotion.TargetNoClan", promoter.Id), Name));
                 return false;
@@ -441,7 +441,7 @@ namespace Oxide.Plugins
             Clan other = storedData.FindClanByID(targetId);
             if (other == null || !clan.Tag.Equals(other.Tag))
             {
-                string Name = covalence.Players.FindPlayer(targetId.ToString())?.Name ?? targetId.ToString();
+                string Name = covalence.Players.FindPlayer(targetId)?.Name ?? targetId;
 
                 demoter.Reply(string.Format(Message("Notification.Promotion.TargetNoClan", demoter.Id), Name));
                 return false;
@@ -1147,7 +1147,7 @@ namespace Oxide.Plugins
         private string GetClanOf(PlayerSession session) => GetClanOf(session?.SteamId ?? string.Empty);
         #endif
 
-        private List<string> GetClanMembers(string playerId) => storedData.FindClanByID(playerId)?.ClanMembers.Keys.Select(x => x.ToString()).ToList() ?? new List<string>();
+        private List<string> GetClanMembers(string playerId) => storedData.FindClanByID(playerId)?.ClanMembers.Keys.ToList() ?? new List<string>();
                
         private object HasFriend(string ownerId, string playerId)
         {
@@ -1627,9 +1627,9 @@ namespace Oxide.Plugins
             [JsonIgnore]
             private string membersOnline = string.Empty;
 
-#if RUST
+            #if RUST
             internal void PrintClanInfo(BasePlayer player) => PrintClanInfo(player.IPlayer);
-#endif
+            #endif
             internal void PrintClanInfo(IPlayer player)
             {
                 if (string.IsNullOrEmpty(cachedClanInfo))
@@ -1695,9 +1695,9 @@ namespace Oxide.Plugins
                 }
                 return membersOnline;
             }
-#endregion
+            #endregion
 
-#region Roles
+            #region Roles
             internal bool IsOwner(ulong playerId) => IsOwner(playerId.ToString());
 
             internal bool IsOwner(string playerId) => ClanMembers[playerId].Role == Member.MemberRole.Owner;
@@ -1726,7 +1726,7 @@ namespace Oxide.Plugins
 
                 return configData.Colors.Member;
             }
-#endregion
+            #endregion
 
             [Serializable]
             public class Member
@@ -2383,6 +2383,12 @@ namespace Oxide.Plugins
             ["Notification.Clan.DisbandSyntax"] = "[#ffd479]/{0} disband forever[/#] - Disband your clan (this can not be undone)",
             ["Notification.Clan.KickSyntax"] = "[#ffd479]/{0} kick <partialNameOrID>[/#] - Kick a member from your clan",
 
+            ["Notification.Clan.TagColorSyntax"] = "<color=#ffd479>/{0} tagcolor <hex (XXXXXX)></color> - Set a custom clan tag color",
+            ["Notification.Clan.TagColorFormat"] = "<color=#ffd479>The hex string must be 6 characters long, and be a valid hex color</color>",
+            ["Notification.Clan.TagColorReset"] = "<color=#ffd479>You have reset your clan's tag color</color>",
+            ["Notification.Clan.TagColorSet"] = "<color=#ffd479>You have set your clan's tag color to</color> <color=#{0}>{0}</color>",
+            ["Notification.Clan.TagColorDisabled"] = "<color=#ffd479>Custom tag colors are disabled on this server</color>",
+
             ["Notification.Disband.NotOwner"] = "You must be the clan owner to use this command",
             ["Notification.Disband.Success"] = "You have disbanded the clan [#aaff55][{0}][/#]",
             ["Notification.Disband.Reply"] = "The clan has been disbanded",
@@ -2400,9 +2406,9 @@ namespace Oxide.Plugins
             ["Chat.Clan.Prefix"] = "[#a1ff46][CLAN CHAT][/#]: {0}",
             ["Chat.Alliance.Format"] = "[{0}] [{1}]{2}[/#]: {3}",
         };
-#endregion
+        #endregion
 
-#region ClansUI  
+        #region ClansUI  
         #if RUST
         public bool HasFFEnabled(ulong playerID) => false;
 
@@ -2432,7 +2438,7 @@ namespace Oxide.Plugins
 
         internal bool DisbandClan(BasePlayer player) => DisbandClan(player.IPlayer);
         #endif
-#endregion
+        #endregion
     }
 
     namespace ClansEx

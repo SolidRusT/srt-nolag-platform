@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Team Ping", "Gonzi", "2.0.1")]
+    [Info("Team Ping", "Gonzi", "2.0.2")]
     [Description("Creates a Ping with name of the player who sent the ping and distance to it for all team members.")]
     public class TeamPing : RustPlugin
     {
@@ -120,7 +120,7 @@ namespace Oxide.Plugins
             {
                 RaycastHit hit;
 
-                if (!Physics.Raycast(player.eyes.HeadRay(), out hit, config.maxDistance)) return;
+                if (!Physics.Raycast(DetermineHeadRay(player), out hit, config.maxDistance)) return;
 
                 // check if cooldown is active, if not new cooldown starts to prevent spamming
                 if (!cooldowns.ContainsKey(player.UserIDString)) cooldowns.Add(player.UserIDString, 0f);
@@ -172,6 +172,27 @@ namespace Oxide.Plugins
         {
             player.SetPlayerFlag(BasePlayer.PlayerFlags.IsAdmin, state);
             player.SendNetworkUpdateImmediate();
+        }
+
+        private Ray DetermineHeadRay(BasePlayer player)
+        {
+            var computerStation = player.GetMounted() as ComputerStation;
+            if (computerStation != null)
+            {
+                var controlledEntity = computerStation.currentlyControllingEnt.Get(serverside: true);
+                var drone = controlledEntity as Drone;
+                if (drone != null)
+                    return new Ray(drone.transform.position, drone.transform.forward);
+
+                var cctv = controlledEntity as CCTV_RC;
+                if (cctv != null)
+                {
+                    var direction = Quaternion.Euler(0, cctv.yaw.transform.localEulerAngles.y, -cctv.pitch.transform.localEulerAngles.x) * cctv.transform.forward;
+                    return new Ray(cctv.transform.position + direction, direction);
+                }
+            }
+
+            return player.eyes.HeadRay();
         }
 
         private string Lang(string key, string id = null, params object[] args) => string.Format(lang.GetMessage(key, this, id), args);

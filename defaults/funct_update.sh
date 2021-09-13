@@ -349,7 +349,6 @@ NINE_PERMS=(
   turretloadouts.autotoggle
   turretloadouts.manage
   turretloadouts.manage.custom
-  claimrewards.use
   heal.self
   heal.player
   blueprintshare.toggle
@@ -363,21 +362,6 @@ NINE_PERMS=(
   whoknocks.message
   whoknocks.knock
   eventrandomizer.check
-  cctvutilities.help
-  cctvutilities.status.me
-  cctvutilities.status.server
-  cctvutilities.clear
-  cctvutilities.rename
-  cctvutilities.add.me
-  cctvutilities.add.server
-  cctvutilities.add.clear
-  cctvutilities.autoname
-  cctvutilities.autoadd
-  cctvutilities.autoadd.on
-  cctvutilities.autoadd.off
-  cctvutilities.autoadd.toggle
-  cctvutilities.autoadd.me
-  cctvutilities.autoadd.server
   chute.allowed
   buildinggrades.use
   buildinggrades.up.all
@@ -385,8 +369,6 @@ NINE_PERMS=(
   hazmattoscientistsuit.use
   hazmattoscientistsuit.craft
   advancedgather.use
-  deathhistory.use
-  teamping.use
   spawnmini.mini
   customgenetics.use
   warcopter.spawn
@@ -405,8 +387,6 @@ NINE_PERMS=(
   fishing.allowed
   fishing.makepole
   visualcupboard.allowed
-  chillnightvision.use
-  chillnightvision.modify
   dronestorage.deploy
   dronestorage.viewitems
   dronestorage.dropitems
@@ -424,7 +404,6 @@ NINE_PERMS=(
   quicksort.autolootall
   carcommanderlite.use
   unwound.canuse
-  cctvutilities.status.all
   quicksmelt.use
   airstrike.signal.strike
   airstrike.signal.squad
@@ -448,7 +427,6 @@ NINE_PERMS=(
   blueprintmanager.all
   Kits.default
   buildingworkbench.use
-  raidalerts.use
   iteminspector.use
   betterrootcombiners.use
   payforelectricity.use
@@ -478,29 +456,11 @@ DEFAULT_PERMS=(
   farmtools.clone
   farmtools.clone.all
   farmtools.harvest.all
-  claimrewards.use
   blueprintshare.toggle
   blueprintshare.share
   blueprintshare.use
   dance.use
   securitycameras.use
-  cctvutilities.help
-  cctvutilities.status.me
-  cctvutilities.status.server
-  cctvutilities.clear
-  cctvutilities.rename
-  cctvutilities.add.me
-  cctvutilities.add.server
-  cctvutilities.add.clear
-  cctvutilities.autoname
-  cctvutilities.autoadd
-  cctvutilities.autoadd.on
-  cctvutilities.autoadd.off
-  cctvutilities.autoadd.toggle
-  cctvutilities.autoadd.me
-  cctvutilities.autoadd.server
-  deathhistory.use
-  teamping.use
   customgenetics.use
   signartist.url
   signartist.text
@@ -509,12 +469,9 @@ DEFAULT_PERMS=(
   signartist.restoreall
   fishing.allowed
   fishing.makepole
-  chillnightvision.use
-  chillnightvision.modify
   fuelgauge.allow
   phonesplus.use
   privatemessages.allow
-  cctvutilities.status.all
   craftsman.leveling.melee
   craftsman.leveling.ranged
   craftsman.leveling.clothing
@@ -532,7 +489,6 @@ DEFAULT_PERMS=(
   discordmessages.report
   craftchassis.4
   buildingworkbench.use
-  raidalerts.use
   iteminspector.use
   betterrootcombiners.use
   payforelectricity.use

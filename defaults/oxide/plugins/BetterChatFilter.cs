@@ -13,7 +13,7 @@ using Oxide.Game.Rust.Libraries;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat Filter", "NooBlet", "1.6", ResourceId = 2403)]
+    [Info("Better Chat Filter", "NooBlet", "1.6.2", ResourceId = 2403)]
     [Description("Filter for Better Chat")]
     public class BetterChatFilter : CovalencePlugin
     {
@@ -79,8 +79,13 @@ namespace Oxide.Plugins
                 "bitch",
                 "cunt",
                 "nigger",
+                "nig",
                 "faggot",
                 "fuck"
+        };
+        private List<object> WordWhiteList = new List<object> {
+                "night",
+                
         };
         private int MuteCount = 3;
         private int KickCount = 3;
@@ -297,6 +302,7 @@ namespace Oxide.Plugins
             CheckCfg<bool>("Advanced - Use REGEX", ref UseRegex);
             CheckCfg<string>("Advanced - Regex to use", ref regextouse);
             CheckCfg<List<object>>("Word Filter - Phrases", ref WordFilter_Phrases);
+            CheckCfg<List<object>>("Word To White List", ref WordWhiteList);
             CheckCfg<int>("Clear Offense After (0 - Disabled, 1 - All Kick/Mute/ban, 2 - Kick,  3 - Mute,  4 - Ban", ref clear);
             CheckCfg<bool>("Offenses - Broadcast kick", ref BroadcastKick);
             CheckCfg<bool>("Offenses - Broadcast Ban", ref BroadcastBan);
@@ -417,6 +423,7 @@ namespace Oxide.Plugins
             Regex r = new Regex(regextouse, RegexOptions.IgnoreCase);
             foreach (var word in original.Split(' '))
             {
+                if (DoWhiteList(word)) { continue; }
                 if (UseRegex)
                 {
                     Match m = r.Match(word);
@@ -428,6 +435,7 @@ namespace Oxide.Plugins
 
                     }
                 }
+              
                 foreach (string bannedword in WordFilter_Phrases)
                 if (TranslateLeet(word).ToLower().Contains(bannedword.ToLower()))
                 {
@@ -447,7 +455,22 @@ namespace Oxide.Plugins
             return filtered;
         }
 
-
+        private bool DoWhiteList(string word)
+        {
+            var endchar = word.Last();
+            if (Char.IsPunctuation(endchar))
+            {
+                foreach (var w in WordWhiteList)
+                {
+                    if (word.Contains(w.ToString())) { return true; }
+                }
+            }
+            if (WordWhiteList.Contains(word))
+            {
+                return true;
+            }
+            return false;
+        }
 
         private string Replace(string original)
         {
