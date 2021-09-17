@@ -80,26 +80,29 @@ function start_rust() {
       +app.port ${RUST_APP_PORT} \
       +rcon.web 1 \
       +rcon.password ${RUST_RCON_ADMIN} \
+      +server.gamemode vanilla \
       +server.identity ${RUST_IDENTITY} \
       +server.logoimage ${RUST_AVATAR}"
-  if [ ${CUSTOM_MAP} = "enabled" ]; then
-    echo "Custom Maps enabled: ${CUSTOM_MAP_URL}" | tee -a ${LOGS}
-    RUST_START="$RUST_CMD \
-      +server.levelurl ${CUSTOM_MAP_URL}"
-  else
-    echo "Using ${WORLD_SIZE} ${LEVEL} map with seed: ${SEED} " | tee -a ${LOGS}
-    RUST_START="$RUST_CMD \
-      +server.level ${LEVEL} \
-      +server.seed ${SEED} \
-      +server.worldsize ${WORLD_SIZE}"
-  fi
   # Launch game server
   echo "===> Touching my peepee..." | tee -a ${LOGS}
-  ${RUST_START} &
+  if [ ${CUSTOM_MAP} = "enabled" ]; then
+    echo "Custom Maps enabled: ${CUSTOM_MAP_URL}" | tee -a ${LOGS}
+    $RUST_CMD \
+      +server.levelurl ${CUSTOM_MAP_URL} &
+  else
+    echo "Using ${WORLD_SIZE} ${LEVEL} map with seed: ${SEED} " | tee -a ${LOGS}
+    echo "=== Touching my peepee..." | tee -a ${LOGS}
+    $RUST_CMD \
+      +server.level "Procedural Map" \
+      +server.seed "${SEED}" \
+      +server.worldsize ${WORLD_SIZE} &
+  fi
   sleep 3
+  # Bump-up process priority
   export MY_PID=$(pidof RustDedicated)
   echo "Boosting affinity for RustDedicated PID: ${MY_PID}" | tee -a ${LOGS}
   renice -10 ${MY_PID} | tee -a ${LOGS}
+  # Sleep for a bit (required/legacy)
   tail -n 10 ${SERVER_LOGS}
   echo "Delaying for about 8mins while service loads" | tee -a ${LOGS}
   sleep 120
@@ -135,6 +138,7 @@ function stop_rust_now() {
 function show_logs() {
   #find . -type f -exec grep -l samplestring {} \;
   ## TODO: make ${GAME_ROOT}/rcon-default.log useful again
+  # no faggots
   tail -n 20 -F "${HOME}/SolidRusT.log" "${GAME_ROOT}/RustDedicated.log"
 }
 

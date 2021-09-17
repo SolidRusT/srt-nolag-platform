@@ -7,8 +7,6 @@ export GAME_ROOT="/game"
 export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
 # Map stuff
 export WORLD_SIZE="2700"
-# toggle map models
-export LEVEL="Barren"  # ignored if using custom maps
 # toggle custom maps
 export CUSTOM_MAP="enabled" # enabled / disabled
 export CUSTOM_MAP_URL="https://solidrust.net/maps/SRT-NoLAG-Small.map" #  only if CUSTOM_MAP is "enabled"

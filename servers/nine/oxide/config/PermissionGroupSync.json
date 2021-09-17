@@ -405,7 +405,8 @@
                 "respawnbradley.nocosts",
                 "respawnbradley.nocooldown",
                 "zombiehorde.admin",
-                "itemcleaner.use"
+                "itemcleaner.use",
+                "vehicledeployedlocks.masterkey"
             ],
             "AdditionalCommands": []
         }

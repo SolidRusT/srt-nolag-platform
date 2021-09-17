@@ -7,8 +7,6 @@ export GAME_ROOT="/game"
 export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
 # Map stuff
 export WORLD_SIZE="3750"
-# toggle map models
-export LEVEL="Procedural Map"  # ignored if using custom maps
 # toggle custom maps
 export CUSTOM_MAP="disabled" # enabled / disabled
 export CUSTOM_MAP_URL="" #  only if CUSTOM_MAP is "enabled"

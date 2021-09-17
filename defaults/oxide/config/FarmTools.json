@@ -1,3 +1,5 @@
 {
-  "chatIconID": "0"
+  "chatIconID": "0",
+  "printGenesToConsole": true,
+  "geneCooldown": 10.0
 }

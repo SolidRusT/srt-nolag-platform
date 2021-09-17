@@ -3,7 +3,6 @@
   "MaxLoadoutsPerPlayer": 10,
   "DefaultLoadouts": [
     {
-      "Name": "ak47",
       "Weapon": "rifle.ak",
       "Skin": 885146172,
       "Ammo": {
@@ -19,10 +18,10 @@
           "Name": "ammo.rifle",
           "Amount": 128
         }
-      ]
+      ],
+      "Name": "ak47"
     },
     {
-      "Name": "m249",
       "Weapon": "lmg.m249",
       "Skin": 1831294069,
       "Attachments": [
@@ -42,12 +41,12 @@
           "Name": "ammo.rifle.hv",
           "Amount": 128
         }
-      ]
+      ],
+      "Name": "m249"
     }
   ],
   "LoadoutRulesets": [
     {
-      "Name": "onlypistols",
       "AllowedWeapons": [
         "pistol.eoka",
         "pistol.m92",
@@ -61,10 +60,10 @@
         "ammo.pistol": 600,
         "ammo.pistol.hv": 400,
         "ammo.pistol.fire": 200
-      }
+      },
+      "Name": "onlypistols"
     },
     {
-      "Name": "norifles",
       "DisallowedWeapons": [
         "rifle.ak",
         "rifle.bolt",
@@ -73,10 +72,84 @@
         "rifle.m39",
         "rifle.semiauto",
         "lmg.m249"
-      ]
+      ],
+      "Name": "norifles"
     },
     {
       "Name": "unlimited"
+    }
+  ],
+  "DefaultSamSiteLoadouts": [
+    {
+      "ReserveAmmo": [
+        {
+          "Name": "ammo.rocket.sam",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.rocket.sam",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.rocket.sam",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.rocket.sam",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.rocket.sam",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.rocket.sam",
+          "Amount": 128
+        }
+      ],
+      "Name": "fullammo"
+    }
+  ],
+  "DefaultFlameTurretLoadouts": [
+    {
+      "ReserveAmmo": [
+        {
+          "Name": "lowgradefuel",
+          "Amount": 500
+        }
+      ],
+      "Name": "fullammo"
+    }
+  ],
+  "DefaultShotgunTrapLoadouts": [
+    {
+      "ReserveAmmo": [
+        {
+          "Name": "ammo.handmade.shell",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.handmade.shell",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.handmade.shell",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.handmade.shell",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.handmade.shell",
+          "Amount": 128
+        },
+        {
+          "Name": "ammo.handmade.shell",
+          "Amount": 128
+        }
+      ],
+      "Name": "fullammo"
     }
   ]
 }

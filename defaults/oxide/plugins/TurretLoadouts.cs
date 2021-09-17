@@ -12,27 +12,31 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Turret Loadouts", "WhiteThunder", "1.0.2")]
+    [Info("Turret Loadouts", "WhiteThunder", "1.1.0")]
     [Description("Automatically fills turrets with weapons, attachments and ammo, using configurable loadouts.")]
     internal class TurretLoadouts : CovalencePlugin
     {
         #region Fields
 
-        private static TurretLoadouts pluginInstance;
+        private static TurretLoadouts _pluginInstance;
 
         private const int LoadoutNameMaxLength = 20;
 
         private const string Permission_AutoAuth = "turretloadouts.autoauth";
         private const string Permission_AutoToggle = "turretloadouts.autotoggle";
+        private const string Permission_AutoToggleSamSite = "turretloadouts.autotoggle.samsite";
         private const string Permission_Manage = "turretloadouts.manage";
         private const string Permission_ManageCustom = "turretloadouts.manage.custom";
 
-        private const string Permission_DefaultLoadoutPrefix = "turretloadouts.default";
         private const string Permission_RulesetPrefix = "turretloadouts.ruleset";
+        private const string Permission_DefaultLoadoutPrefix = "turretloadouts.default";
+        private const string Permission_DefaultFlameTurretLoadoutPrefix = "turretloadouts.flameturret.default";
+        private const string Permission_DefaultShotgunTrapLoadoutPrefix = "turretloadouts.shotguntrap.default";
+        private const string Permission_DefaultSamSiteLoadoutPrefix = "turretloadouts.samsite.default";
 
-        private readonly Dictionary<string, PlayerData> playerDataCache = new Dictionary<string, PlayerData>();
+        private readonly Dictionary<string, PlayerData> _playerDataCache = new Dictionary<string, PlayerData>();
 
-        private Configuration pluginConfig;
+        private Configuration _pluginConfig;
 
         #endregion
 
@@ -40,20 +44,17 @@ namespace Oxide.Plugins
 
         private void Init()
         {
-            pluginInstance = this;
+            _pluginInstance = this;
 
             permission.RegisterPermission(Permission_AutoAuth, this);
             permission.RegisterPermission(Permission_AutoToggle, this);
+            permission.RegisterPermission(Permission_AutoToggleSamSite, this);
             permission.RegisterPermission(Permission_Manage, this);
             permission.RegisterPermission(Permission_ManageCustom, this);
 
-            foreach (var defaultLoadout in pluginConfig.defaultLoadouts)
-                permission.RegisterPermission(GetDefaultLoadoutPermission(defaultLoadout.name), this);
+            _pluginConfig.Init(this);
 
-            foreach (var permissionConfig in pluginConfig.loadoutRulesets)
-                permission.RegisterPermission(GetLoadoutRulesetPermission(permissionConfig.name), this);
-
-            if (!pluginConfig.lockAutoFilledTurrets)
+            if (!_pluginConfig.LockAutoFilledTurrets)
             {
                 Unsubscribe(nameof(OnTurretToggle));
                 Unsubscribe(nameof(CanMoveItem));
@@ -61,28 +62,32 @@ namespace Oxide.Plugins
             }
         }
 
-        private void OnServerInitialized(bool initialBoot)
+        private void OnServerInitialized()
         {
-            if (initialBoot)
+            // Update locked turrets so they can be picked up and don't drop loot.
+            // This is done even if the config option for locked turrets is off
+            // because there could be locked turrets lingering from a previous configuration.
+            // TBD if there are other plugins locking inventories which could conflict.
+            foreach (var entity in BaseNetworkable.serverEntities)
             {
-                // Update locked turrets so they can be picked up and don't drop loot
-                // This is done even if the config option for locked turrets is off
-                // because there could be locked turrets lingering from a previous configuration
-                foreach (var entity in BaseNetworkable.serverEntities)
+                if (entity is AutoTurret || entity is SamSite)
                 {
-                    var turret = entity as AutoTurret;
-                    if (turret != null && IsTurretLocked(turret))
-                    {
-                        turret.dropChance = 0;
-                        turret.pickup.requireEmptyInv = false;
-                    }
+                    var container = entity as ContainerIOEntity;
+                    if (IsLocked(container))
+                        SetupLockedContainer(container);
+                }
+                else if (entity is FlameTurret || entity is GunTrap)
+                {
+                    var container = entity as StorageContainer;
+                    if (IsLocked(container))
+                        SetupLockedContainer(container);
                 }
             }
         }
 
         private void Unload()
         {
-            pluginInstance = null;
+            _pluginInstance = null;
         }
 
         private void OnEntityBuilt(Planner plan, GameObject go)
@@ -96,77 +101,152 @@ namespace Oxide.Plugins
                 return;
 
             AutoTurret turret = entity as AutoTurret;
-            if (turret == null)
-                return;
-
-            MaybeAuthTurret(turret, ownerPlayer);
-
-            var loadout = GetPlayerActiveLoadout(ownerPlayer.UserIDString);
-            if (loadout != null)
+            if (turret != null)
             {
-                if (loadout.peacekeeper)
-                    turret.SetPeacekeepermode(true);
+                MaybeAuthTurret(turret, ownerPlayer);
 
-                var heldItem = AddHeldEntity(turret, ownerPlayer, loadout);
-                if (heldItem != null)
+                var loadout = GetPlayerActiveLoadout(ownerPlayer.UserIDString);
+                if (loadout != null)
                 {
-                    AddReserveAmmo(turret, loadout, ownerPlayer);
-                    turret.UpdateTotalAmmo();
-                    turret.EnsureReloaded();
+                    if (loadout.Peacekeeper)
+                        turret.SetPeacekeepermode(true);
 
-                    var isInstrument = (heldItem.GetHeldEntity() as HeldEntity)?.IsInstrument() ?? false;
-                    if ((isInstrument || GetTotalAmmo(turret) > 0) && HasPermissionAny(ownerPlayer, Permission_AutoToggle))
+                    var heldItem = AddHeldEntity(turret, ownerPlayer, loadout);
+                    if (heldItem != null)
                     {
-                        turret.SetOnline();
-                        var turretSwitch = turret.GetComponentInChildren<ElectricSwitch>();
-                        if (turretSwitch != null)
-                            turretSwitch.SetSwitch(true);
-                    }
+                        AddReserveAmmo(turret.inventory, loadout, ownerPlayer, firstSlot: 1);
+                        turret.UpdateTotalAmmo();
+                        turret.EnsureReloaded();
 
-                    if (pluginConfig.lockAutoFilledTurrets)
-                    {
-                        heldItem.contents.SetLocked(true);
-                        turret.inventory.SetLocked(true);
-                        turret.dropChance = 0;
-                        turret.pickup.requireEmptyInv = false;
-                    }
+                        var isInstrument = (heldItem.GetHeldEntity() as HeldEntity)?.IsInstrument() ?? false;
+                        if ((isInstrument || GetTotalAmmo(turret) > 0) && HasPermissionAny(ownerPlayer, Permission_AutoToggle))
+                        {
+                            turret.InitiateStartup();
+                            var turretSwitch = turret.GetComponentInChildren<ElectricSwitch>();
+                            if (turretSwitch != null)
+                                turretSwitch.SetSwitch(true);
+                        }
 
-                    if (HasPermissionAny(ownerPlayer, Permission_Manage, Permission_ManageCustom))
-                        ChatMessage(ownerPlayer, "Generic.FilledFromLoadout", loadout.GetDisplayName(ownerPlayer.UserIDString));
+                        if (_pluginConfig.LockAutoFilledTurrets)
+                        {
+                            heldItem.contents.SetLocked(true);
+                            turret.inventory.SetLocked(true);
+                            SetupLockedContainer(turret);
+                        }
+
+                        if (HasPermissionAny(ownerPlayer, Permission_Manage, Permission_ManageCustom))
+                            ChatMessage(ownerPlayer, "Generic.FilledFromLoadout", loadout.GetDisplayName(ownerPlayer.UserIDString));
+                    }
                 }
+
+                turret.SendNetworkUpdate();
+                return;
             }
 
-            turret.SendNetworkUpdate();
+            var samSite = entity as SamSite;
+            if (samSite != null)
+            {
+                var loadout = GetPlayerLastAllowedProfile(_pluginConfig.DefaultSamSiteLoadouts, ownerPlayer.UserIDString);
+                if (loadout != null)
+                {
+                    AddReserveAmmo(samSite.inventory, loadout, ownerPlayer);
+
+                    if (!samSite.inventory.IsEmpty() && HasPermissionAny(ownerPlayer, Permission_AutoToggleSamSite))
+                        samSite.SetFlag(IOEntity.Flag_HasPower, true);
+
+                    if (_pluginConfig.LockAutoFilledTurrets)
+                    {
+                        samSite.inventory.SetLocked(true);
+                        SetupLockedContainer(samSite);
+                    }
+                }
+                return;
+            }
+
+            var flameTurret = entity as FlameTurret;
+            if (flameTurret != null)
+            {
+                var loadout = GetPlayerLastAllowedProfile(_pluginConfig.DefaultFlameTurretLoadouts, ownerPlayer.UserIDString);
+                if (loadout != null)
+                {
+                    AddReserveAmmo(flameTurret.inventory, loadout, ownerPlayer);
+                    if (_pluginConfig.LockAutoFilledTurrets)
+                    {
+                        flameTurret.inventory.SetLocked(true);
+                        SetupLockedContainer(flameTurret);
+                    }
+                }
+                return;
+            }
+
+            var gunTrap = entity as GunTrap;
+            if (gunTrap != null)
+            {
+                var loadout = GetPlayerLastAllowedProfile(_pluginConfig.DefaultShotgunTrapLoadouts, ownerPlayer.UserIDString);
+                if (loadout != null)
+                {
+                    AddReserveAmmo(gunTrap.inventory, loadout, ownerPlayer);
+                    if (_pluginConfig.LockAutoFilledTurrets)
+                    {
+                        gunTrap.inventory.SetLocked(true);
+                        SetupLockedContainer(gunTrap);
+                    }
+                }
+                return;
+            }
+        }
+
+        private void OnEntityPickedUp(StorageContainer container)
+        {
+            if ((container is GunTrap || container is FlameTurret) && IsLocked(container))
+                container.inventory.Clear();
+        }
+
+        private void OnEntityPickedUp(FlameTurret flameTurret)
+        {
+            if (IsLocked(flameTurret))
+                flameTurret.inventory.Clear();
         }
 
         private void OnTurretToggle(AutoTurret turret)
         {
             // Remove items if powering down while locked and out of ammo
             // Otherwise, the turret would be unusable other than picking it up
-            if (turret != null && turret.IsOnline() && IsTurretLocked(turret) && GetTotalAmmo(turret) == 0)
+            if (turret != null && turret.IsOnline() && IsLocked(turret) && GetTotalAmmo(turret) == 0)
             {
                 turret.inventory.Clear();
                 turret.inventory.SetLocked(false);
             }
         }
 
-        private object CanMoveItem(Item item)
+        private bool? CanMoveItem(Item item)
         {
             if (item.parent == null)
                 return null;
 
-            // Fix issue where right-clicking an item in a locked turret inventory allows moving it
-            if (item.parent.entityOwner is AutoTurret && item.parent.IsLocked())
+            // Fix issue where right-clicking an item in a locked turret inventory allows moving it.
+            var containerEntity = item.parent.entityOwner;
+            if ((containerEntity is AutoTurret || containerEntity is SamSite) && item.parent.IsLocked())
                 return false;
 
             return null;
         }
 
         // Compatibility with plugin: Remover Tool (RemoverTool)
-        private object OnDropContainerEntity(AutoTurret turret)
+        private bool? OnDropContainerEntity(ContainerIOEntity container)
         {
-            // Prevent Remover Tool from explicitly dropping the turret inventory
-            if (IsTurretLocked(turret))
+            // Prevent Remover Tool from explicitly dropping the inventory
+            if ((container is AutoTurret || container is SamSite) && IsLocked(container))
+                return false;
+
+            return null;
+        }
+
+        // Compatibility with plugin: Remover Tool (RemoverTool)
+        private bool? OnDropContainerEntity(StorageContainer container)
+        {
+            // Prevent Remover Tool from explicitly dropping the inventory
+            if ((container is FlameTurret || container is GunTrap) && IsLocked(container))
                 return false;
 
             return null;
@@ -274,26 +354,26 @@ namespace Oxide.Plugins
 
             // Prune loadouts that are no longer valid
             // For example, if the player no longer has permission to the weapon type
-            playerData.RestrictAndPruneLoadouts(GetPlayerLoadoutRules(player));
+            playerData.RestrictAndPruneLoadouts(GetPlayerLoadoutRuleset(player));
 
-            var defaultLoadout = GetPlayerDefaultLoadout(player.Id);
-            if (playerData.loadouts.Count == 0 && defaultLoadout == null)
+            var defaultLoadout = GetPlayerLastAllowedProfile(_pluginConfig.DefaultLoadouts, player.Id);
+            if (playerData.Loadouts.Count == 0 && defaultLoadout == null)
             {
                 ReplyToPlayer(player, "Command.List.NoLoadouts");
                 return;
             }
 
-            var loadouts = playerData.loadouts.ToArray();
+            var loadouts = playerData.Loadouts.ToArray();
             Array.Sort(loadouts, SortLoadoutNames);
 
             var sb = new StringBuilder();
             sb.AppendLine(GetMessage(player, "Generic.Header"));
 
             if (defaultLoadout != null)
-                AddListItem(sb, player, defaultLoadout, playerData.activeLoadout);
+                AddListItem(sb, player, defaultLoadout, playerData.ActiveLoadout);
 
             foreach (var loadout in loadouts)
-                AddListItem(sb, player, loadout, playerData.activeLoadout);
+                AddListItem(sb, player, loadout, playerData.ActiveLoadout);
 
             sb.AppendLine();
             sb.AppendLine(GetMessage(player, "Command.List.ToggleHint"));
@@ -303,8 +383,8 @@ namespace Oxide.Plugins
 
         private void AddListItem(StringBuilder sb, IPlayer player, TurretLoadout loadout, string activeLoadout)
         {
-            var weaponDefinition = ItemManager.itemDictionaryByName[loadout.weapon];
-            var activeString = loadout.IsDefault && activeLoadout == null || activeLoadout == loadout.name ? GetMessage(player, "Command.List.Item.Active") : string.Empty;
+            var weaponDefinition = ItemManager.FindItemDefinition(loadout.Weapon);
+            var activeString = loadout.IsDefault && activeLoadout == null || activeLoadout == loadout.Name ? GetMessage(player, "Command.List.Item.Active") : string.Empty;
 
             var attachmentAbbreviations = AbbreviateAttachments(player, loadout);
             var attachmentsString = attachmentAbbreviations == null ? string.Empty : string.Format(" ({0})", string.Join(", ", attachmentAbbreviations));
@@ -314,10 +394,10 @@ namespace Oxide.Plugins
 
         private IEnumerable<string> AbbreviateAttachments(IPlayer player, TurretLoadout loadout)
         {
-            if (loadout.attachments == null || loadout.attachments.Count == 0)
+            if (loadout.Attachments == null || loadout.Attachments.Count == 0)
                 return null;
 
-            return loadout.attachments.Select(attachmentName =>
+            return loadout.Attachments.Select(attachmentName =>
             {
                 var langKey = string.Format("Abbreviation.{0}", attachmentName);
                 var abbreviated = GetMessage(player, langKey);
@@ -347,7 +427,7 @@ namespace Oxide.Plugins
             }
 
             var playerData = GetPlayerData(player);
-            var loadoutRuleset = GetPlayerLoadoutRules(player);
+            var loadoutRuleset = GetPlayerLoadoutRuleset(player);
             playerData.RestrictAndPruneLoadouts(loadoutRuleset);
 
             if (playerData.HasLoadout(loadoutName))
@@ -356,9 +436,9 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (playerData.loadouts.Count >= pluginConfig.maxLoadoutsPerPlayer)
+            if (playerData.Loadouts.Count >= _pluginConfig.MaxLoadoutsPerPlayer)
             {
-                ReplyToPlayer(player, "Command.Save.Error.TooManyLoadouts", pluginConfig.maxLoadoutsPerPlayer);
+                ReplyToPlayer(player, "Command.Save.Error.TooManyLoadouts", _pluginConfig.MaxLoadoutsPerPlayer);
                 return;
             }
 
@@ -373,12 +453,12 @@ namespace Oxide.Plugins
             var disallowedItems = new Dictionary<string, int>();
             if (playerData.ValidateAndPossiblyReduceLoadout(loadout, loadoutRuleset, disallowedItems) == LoadoutManager.ValidationResult.DisallowedWeapon)
             {
-                var itemDefinition = ItemManager.itemDictionaryByName[loadout.weapon];
+                var itemDefinition = ItemManager.FindItemDefinition(loadout.Weapon);
                 ReplyToPlayer(player, "Generic.Error.WeaponNotAllowed", itemDefinition.displayName.translated);
                 return;
             }
 
-            loadout.name = loadoutName;
+            loadout.Name = loadoutName;
             playerData.SaveLoadout(loadout);
 
             var sb = new StringBuilder();
@@ -416,7 +496,7 @@ namespace Oxide.Plugins
                 return;
 
             var playerData = GetPlayerData(player);
-            var loadoutPermission = GetPlayerLoadoutRules(player);
+            var loadoutPermission = GetPlayerLoadoutRuleset(player);
             playerData.RestrictAndPruneLoadouts(loadoutPermission);
 
             TurretLoadout existingLoadout;
@@ -426,12 +506,12 @@ namespace Oxide.Plugins
             var disallowedItems = new Dictionary<string, int>();
             if (playerData.ValidateAndPossiblyReduceLoadout(newLoadout, loadoutPermission, disallowedItems) == LoadoutManager.ValidationResult.DisallowedWeapon)
             {
-                var itemDefinition = ItemManager.itemDictionaryByName[newLoadout.weapon];
+                var itemDefinition = ItemManager.FindItemDefinition(newLoadout.Weapon);
                 ReplyToPlayer(player, "Generic.Error.WeaponNotAllowed", itemDefinition.displayName.translated);
                 return;
             }
 
-            newLoadout.name = loadoutName;
+            newLoadout.Name = loadoutName;
             GetPlayerData(player).TryUpdateLoadout(newLoadout);
 
             var sb = new StringBuilder();
@@ -454,28 +534,28 @@ namespace Oxide.Plugins
         private string PrintLoadoutDetails(IPlayer player, TurretLoadout loadout)
         {
             var sb = new StringBuilder();
-            sb.AppendLine(GetMessage(player, loadout.peacekeeper ? "Command.Default.Mode.Peacekeeper" : "Command.Default.Mode.AttackAll"));
+            sb.AppendLine(GetMessage(player, loadout.Peacekeeper ? "Command.Default.Mode.Peacekeeper" : "Command.Default.Mode.AttackAll"));
 
-            var ammoString = loadout.ammo != null && loadout.ammo.amount > 0
-                ? string.Format(" ({0} {1})", loadout.ammo.amount, GetItemDisplayName(loadout.ammo.name))
+            var ammoString = loadout.Ammo != null && loadout.Ammo.Amount > 0
+                ? string.Format(" ({0} {1})", loadout.Ammo.Amount, GetItemDisplayName(loadout.Ammo.Name))
                 : string.Empty;
 
-            sb.AppendLine(GetMessage(player, "Command.Default.Weapon", GetItemDisplayName(loadout.weapon), ammoString));
+            sb.AppendLine(GetMessage(player, "Command.Default.Weapon", GetItemDisplayName(loadout.Weapon), ammoString));
 
-            if (loadout.attachments != null && loadout.attachments.Count > 0)
+            if (loadout.Attachments != null && loadout.Attachments.Count > 0)
             {
                 sb.AppendLine(GetMessage(player, "Command.Default.Attachments"));
-                foreach (var attachmentName in loadout.attachments)
+                foreach (var attachmentName in loadout.Attachments)
                     sb.AppendLine(string.Format("  {0}", GetItemDisplayName(attachmentName)));
             }
 
-            if (loadout.reserveAmmo != null && !loadout.reserveAmmo.IsEmpty())
+            if (loadout.ReserveAmmo != null && !loadout.ReserveAmmo.IsEmpty())
             {
                 sb.AppendLine(GetMessage(player, "Command.Default.ReserveAmmo"));
-                foreach (var ammo in loadout.reserveAmmo)
+                foreach (var ammo in loadout.ReserveAmmo)
                 {
-                    if (ammo.amount > 0)
-                        sb.AppendLine(string.Format("  {0} {1}", ammo.amount, GetItemDisplayName(ammo.name)));
+                    if (ammo.Amount > 0)
+                        sb.AppendLine(string.Format("  {0} {1}", ammo.Amount, GetItemDisplayName(ammo.Name)));
                 }
             }
 
@@ -513,15 +593,15 @@ namespace Oxide.Plugins
             // Allow renaming if just changing case
             if (existingLoadoutWithNewName != null && loadout != existingLoadoutWithNewName)
             {
-                ReplyToPlayer(player, "Command.Rename.Error.LoadoutNameTaken", existingLoadoutWithNewName.name);
+                ReplyToPlayer(player, "Command.Rename.Error.LoadoutNameTaken", existingLoadoutWithNewName.Name);
                 return;
             }
 
-            var actualOldLoadoutName = loadout.name;
+            var actualOldLoadoutName = loadout.Name;
             playerData.RenameLoadout(loadout, newName);
 
-            if (playerData.activeLoadout == actualOldLoadoutName)
-                playerData.activeLoadout = newName;
+            if (playerData.ActiveLoadout == actualOldLoadoutName)
+                playerData.ActiveLoadout = newName;
 
             ReplyToPlayer(player, "Command.Rename.Success", actualOldLoadoutName, newName);
         }
@@ -550,7 +630,7 @@ namespace Oxide.Plugins
             }
 
             GetPlayerData(player).DeleteLoadout(loadout);
-            ReplyToPlayer(player, "Command.Delete.Success", loadout.name);
+            ReplyToPlayer(player, "Command.Delete.Success", loadout.Name);
         }
 
         private void SubCommandActivate(IPlayer player, string[] args)
@@ -573,13 +653,13 @@ namespace Oxide.Plugins
             var playerData = GetPlayerData(player);
 
             if (loadout.IsDefault)
-                playerData.activeLoadout = playerData.activeLoadout == null ? string.Empty : null;
+                playerData.ActiveLoadout = playerData.ActiveLoadout == null ? string.Empty : null;
             else
-                playerData.activeLoadout = playerData.activeLoadout == loadout.name ? string.Empty : loadout.name;
+                playerData.ActiveLoadout = playerData.ActiveLoadout == loadout.Name ? string.Empty : loadout.Name;
 
             playerData.SaveData();
 
-            if (playerData.activeLoadout == string.Empty)
+            if (playerData.ActiveLoadout == string.Empty)
                 ReplyToPlayer(player, "Command.Activate.Success.Deactivated", loadout.GetDisplayName(player.Id));
             else
             {
@@ -626,7 +706,7 @@ namespace Oxide.Plugins
         private bool VerifyHasLoadout(IPlayer player, string loadoutName, out TurretLoadout loadout, bool matchPartial = false)
         {
             if (MatchesDefaultLoadoutName(player, loadoutName, matchPartial))
-                loadout = GetPlayerDefaultLoadout(player.Id);
+                loadout = GetPlayerLastAllowedProfile(_pluginConfig.DefaultLoadouts, player.Id);
             else
                 loadout = GetPlayerData(player).FindByName(loadoutName, matchPartial);
 
@@ -650,8 +730,20 @@ namespace Oxide.Plugins
 
         #region Helper Methods - Turrets
 
-        private bool IsTurretLocked(AutoTurret turret) =>
-            turret.inventory != null && turret.inventory.IsLocked();
+        private void SetupLockedContainer(ContainerIOEntity container)
+        {
+            container.dropChance = 0;
+            container.pickup.requireEmptyInv = false;
+        }
+
+        private void SetupLockedContainer(StorageContainer container)
+        {
+            container.dropChance = 0;
+            container.pickup.requireEmptyInv = false;
+        }
+
+        private bool IsLocked(IItemContainerEntity containerEntity) =>
+            containerEntity.inventory?.IsLocked() ?? false;
 
         private int GetTotalAmmo(AutoTurret turret)
         {
@@ -668,17 +760,17 @@ namespace Oxide.Plugins
 
         private void MaybeAuthTurret(AutoTurret turret, BasePlayer ownerPlayer)
         {
-            if (HasPermissionAny(ownerPlayer, Permission_AutoAuth))
+            if (!HasPermissionAny(ownerPlayer, Permission_AutoAuth))
+                return;
+
+            if (turret.IsAuthed(ownerPlayer))
+                return;
+
+            turret.authorizedPlayers.Add(new PlayerNameID
             {
-                if (!turret.authorizedPlayers.Any(player => player != null && player.userid == ownerPlayer.userID))
-                {
-                    turret.authorizedPlayers.Add(new PlayerNameID
-                    {
-                        userid = ownerPlayer.userID,
-                        username = ownerPlayer.UserIDString
-                    });
-                }
-            }
+                userid = ownerPlayer.userID,
+                username = ownerPlayer.UserIDString
+            });
         }
 
         private TurretLoadout CreateLoadout(AutoTurret turret)
@@ -693,9 +785,9 @@ namespace Oxide.Plugins
 
             var loadout = new TurretLoadout()
             {
-                weapon = weaponItem.info.shortname,
-                skin = weaponItem.skin,
-                peacekeeper = turret.PeacekeeperMode()
+                Weapon = weaponItem.info.shortname,
+                Skin = weaponItem.skin,
+                Peacekeeper = turret.PeacekeeperMode()
             };
 
             if (weaponItem.contents != null)
@@ -709,16 +801,16 @@ namespace Oxide.Plugins
                 }
 
                 if (attachments.Count > 0)
-                    loadout.attachments = attachments;
+                    loadout.Attachments = attachments;
             }
 
             var weapon = heldEntity as BaseProjectile;
             if (weapon != null && weapon.primaryMagazine.contents > 0)
             {
-                loadout.ammo = new AmmoAmount
+                loadout.Ammo = new AmmoAmount
                 {
-                    name = weapon.primaryMagazine.ammoType.shortname,
-                    amount = weapon.primaryMagazine.contents,
+                    Name = weapon.primaryMagazine.ammoType.shortname,
+                    Amount = weapon.primaryMagazine.contents,
                 };
             }
 
@@ -731,29 +823,29 @@ namespace Oxide.Plugins
 
                 reserveAmmo.Add(new AmmoAmount
                 {
-                    name = ammoItem.info.shortname,
-                    amount = ammoItem.amount
+                    Name = ammoItem.info.shortname,
+                    Amount = ammoItem.amount
                 });
             }
 
             if (reserveAmmo.Count > 0)
-                loadout.reserveAmmo = reserveAmmo;
+                loadout.ReserveAmmo = reserveAmmo;
 
             return loadout;
         }
 
         private Item AddHeldEntity(AutoTurret turret, BasePlayer ownerPlayer, TurretLoadout loadout)
         {
-            var heldItem = ItemManager.CreateByName(loadout.weapon, 1, loadout.skin);
+            var heldItem = ItemManager.CreateByName(loadout.Weapon, 1, loadout.Skin);
             if (heldItem == null)
             {
-                LogError($"Weapon '{loadout.weapon}' is not a valid item. Unable to add weapon to turret for player {ownerPlayer.userID}.");
+                LogError($"Weapon '{loadout.Weapon}' is not a valid item. Unable to add weapon to turret for player {ownerPlayer.userID}.");
                 return null;
             }
 
-            if (loadout.attachments != null)
+            if (loadout.Attachments != null)
             {
-                foreach (var attachmentName in loadout.attachments)
+                foreach (var attachmentName in loadout.Attachments)
                 {
                     var attachmentItem = ItemManager.CreateByName(attachmentName);
                     if (attachmentItem == null)
@@ -762,7 +854,6 @@ namespace Oxide.Plugins
                     }
                     else if (!attachmentItem.MoveToContainer(heldItem.contents))
                     {
-                        LogError($"Unable to move attachment item '{attachmentName}' to weapon for player {ownerPlayer.userID}.");
                         attachmentItem.Remove();
                     }
                 }
@@ -770,7 +861,6 @@ namespace Oxide.Plugins
 
             if (!heldItem.MoveToContainer(turret.inventory, 0))
             {
-                LogError($"Unable to move weapon {heldItem.info.shortname} to turret inventory for player {ownerPlayer.userID}.");
                 heldItem.Remove();
                 return null;
             }
@@ -783,52 +873,65 @@ namespace Oxide.Plugins
                 turret.UpdateAttachedWeapon();
                 turret.CancelInvoke(turret.UpdateAttachedWeapon);
 
-                if (loadout.ammo != null)
+                if (loadout.Ammo != null)
                 {
-                    ItemDefinition loadedAmmoItemDefinition;
-                    if (!ItemManager.itemDictionaryByName.TryGetValue(loadout.ammo.name, out loadedAmmoItemDefinition))
+                    ItemDefinition loadedAmmoItemDefinition = ItemManager.FindItemDefinition(loadout.Ammo.Name);
+                    if (loadedAmmoItemDefinition == null)
                     {
-                        LogError($"Ammo type '{loadout.ammo.name}' is not a valid item. Unable to add ammo to turret for player {ownerPlayer.userID}.");
+                        LogError($"Ammo type '{loadout.Ammo.Name}' is not a valid item. Unable to add ammo to turret for player {ownerPlayer.userID}.");
                         return heldItem;
                     }
 
                     weapon.primaryMagazine.ammoType = loadedAmmoItemDefinition;
-                    weapon.primaryMagazine.contents = Math.Min(weapon.primaryMagazine.capacity, loadout.ammo.amount);
+                    weapon.primaryMagazine.contents = Math.Min(weapon.primaryMagazine.capacity, loadout.Ammo.Amount);
                 }
             }
 
             return heldItem;
         }
 
-        private void AddReserveAmmo(AutoTurret turret, TurretLoadout loadout, BasePlayer ownerPlayer)
+        private void AddReserveAmmo(ItemContainer container, BaseLoadout loadout, BasePlayer ownerPlayer, int firstSlot = 0)
         {
-            if (loadout.reserveAmmo == null)
+            if (loadout.ReserveAmmo == null)
                 return;
 
-            var slot = 1;
-            var maxSlot = 6;
+            var slot = firstSlot;
+            var maxSlot = container.capacity - 1;
 
-            foreach (var ammo in loadout.reserveAmmo)
+            foreach (var ammo in loadout.ReserveAmmo)
             {
                 if (slot > maxSlot)
                     break;
 
-                if (ammo.amount <= 0)
+                if (ammo.Amount <= 0)
                     continue;
 
-                var itemDefinition = ItemManager.itemDictionaryByName[ammo.name];
+                var itemDefinition = ItemManager.FindItemDefinition(ammo.Name);
                 if (itemDefinition == null)
                 {
-                    LogError($"Ammo type '{loadout.ammo.name}' is not a valid item. Unable to add ammo to turret for player {ownerPlayer.userID}.");
+                    LogError($"Ammo type '{ammo.Name}' is not a valid item. Unable to add ammo to turret for player {ownerPlayer.userID}.");
                     continue;
                 }
 
                 // Allow default loadouts to bypass max stack size
-                var amountToAdd = loadout.IsDefault ? ammo.amount : Math.Min(ammo.amount, itemDefinition.stackable);
+                var amountToAdd = loadout.IsDefault ? ammo.Amount : Math.Min(ammo.Amount, itemDefinition.stackable);
                 var ammoItem = ItemManager.Create(itemDefinition, amountToAdd);
-                if (!ammoItem.MoveToContainer(turret.inventory, slot))
+                if (!ammoItem.MoveToContainer(container, slot))
+                    ammoItem.Remove();
+
+                if (ammoItem.parent != container)
                 {
-                    LogError($"Unable to add ammo {ammoItem.amount} '{itemDefinition.shortname}' to turret inventory slot {slot} for player {ownerPlayer.userID}.");
+                    // The item was split due to max stack size.
+                    if (loadout.IsDefault)
+                    {
+                        var destinationItem = container.GetSlot(slot);
+                        if (destinationItem != null)
+                        {
+                            destinationItem.amount = amountToAdd;
+                            destinationItem.MarkDirty();
+                        }
+                    }
+
                     ammoItem.Remove();
                 }
 
@@ -868,11 +971,11 @@ namespace Oxide.Plugins
             GetMessage(userIdString, "Generic.DefaultLoadoutName");
 
         private int SortLoadoutNames(TurretLoadout a, TurretLoadout b) =>
-            a.name.ToLower().CompareTo(b.name.ToLower());
+            a.Name.ToLower().CompareTo(b.Name.ToLower());
 
         private string GetItemDisplayName(string shortname)
         {
-            var itemDefinition = ItemManager.itemDictionaryByName[shortname];
+            var itemDefinition = ItemManager.FindItemDefinition(shortname);
             return itemDefinition == null ? shortname : itemDefinition.displayName.translated;
         }
 
@@ -881,10 +984,6 @@ namespace Oxide.Plugins
             RaycastHit hit;
             return !Physics.Raycast(basePlayer.eyes.HeadRay(), out hit, maxDistance) ? null : hit.GetEntity();
         }
-
-        private string GetDefaultLoadoutPermission(string permissionName) => $"{Permission_DefaultLoadoutPrefix}.{permissionName}";
-
-        private string GetLoadoutRulesetPermission(string permissionName) => $"{Permission_RulesetPrefix}.{permissionName}";
 
         private static void AddToDictKey(Dictionary<string, int> dict, string key, int amount)
         {
@@ -904,15 +1003,15 @@ namespace Oxide.Plugins
         private PlayerData GetPlayerData(string userIdString)
         {
             PlayerData data;
-            if (playerDataCache.TryGetValue(userIdString, out data))
+            if (_playerDataCache.TryGetValue(userIdString, out data))
                 return data;
 
             data = PlayerData.Get(userIdString);
-            playerDataCache[userIdString] = data;
+            _playerDataCache[userIdString] = data;
             return data;
         }
 
-        internal class PlayerData : LoadoutManager
+        private class PlayerData : LoadoutManager
         {
             public static PlayerData Get(string ownerId)
             {
@@ -925,21 +1024,21 @@ namespace Oxide.Plugins
                 return data;
             }
 
-            private static string GetFilepath(string ownerId) => $"{pluginInstance.Name}/{ownerId}";
+            private static string GetFilepath(string ownerId) => $"{_pluginInstance.Name}/{ownerId}";
 
             [JsonProperty("OwnerId")]
-            public string ownerId { get; private set; }
+            public string OwnerId { get; private set; }
 
             [JsonProperty("ActiveLoadout", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public string activeLoadout;
+            public string ActiveLoadout;
 
             public PlayerData(string ownerId)
             {
-                this.ownerId = ownerId;
+                this.OwnerId = ownerId;
             }
 
             public override void SaveData() =>
-                Interface.Oxide.DataFileSystem.WriteObject(GetFilepath(ownerId), this);
+                Interface.Oxide.DataFileSystem.WriteObject(GetFilepath(OwnerId), this);
 
             // Remove loadouts where the player no longer has permission to the weapon type
             // Update other loadouts to remove disallowed items
@@ -947,19 +1046,19 @@ namespace Oxide.Plugins
             {
                 var changed = false;
 
-                for (var i = 0; i < loadouts.Count; i++)
+                for (var i = 0; i < Loadouts.Count; i++)
                 {
-                    var loadout = loadouts[i];
+                    var loadout = Loadouts[i];
                     var validationResult = ValidateAndPossiblyReduceLoadout(loadout, ruleset);
 
                     if (validationResult == ValidationResult.InvalidWeapon)
-                        pluginInstance.LogWarning($"Removed turret loadout '{loadout.name}' for player '{ownerId}' because weapon '{loadout.weapon}' is not a valid item.");
+                        _pluginInstance.LogWarning($"Removed turret loadout '{loadout.Name}' for player '{OwnerId}' because weapon '{loadout.Weapon}' is not a valid item.");
                     else if (validationResult == ValidationResult.DisallowedWeapon)
-                        pluginInstance.LogWarning($"Removed turret loadout '{loadout.name}' for player '{ownerId}' because they are no longer allowed to use loadouts with weapon '{loadout.weapon}'.");
+                        _pluginInstance.LogWarning($"Removed turret loadout '{loadout.Name}' for player '{OwnerId}' because they are no longer allowed to use loadouts with weapon '{loadout.Weapon}'.");
 
                     if (validationResult == ValidationResult.InvalidWeapon || validationResult == ValidationResult.DisallowedWeapon)
                     {
-                        loadouts.RemoveAt(i);
+                        Loadouts.RemoveAt(i);
                         i--;
                     }
 
@@ -972,24 +1071,24 @@ namespace Oxide.Plugins
             }
         }
 
-        internal abstract class LoadoutManager
+        private abstract class LoadoutManager
         {
             public enum ValidationResult { Valid, Changed, InvalidWeapon, DisallowedWeapon }
 
             private static bool MatchesLoadout(TurretLoadout loadout, string name, bool matchPartial = false) =>
                 matchPartial
-                    ? loadout.name.IndexOf(name, StringComparison.CurrentCultureIgnoreCase) >= 0
-                    : loadout.name.Equals(name, StringComparison.CurrentCultureIgnoreCase);
+                    ? loadout.Name.IndexOf(name, StringComparison.CurrentCultureIgnoreCase) >= 0
+                    : loadout.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase);
 
             [JsonProperty("Loadouts")]
-            public List<TurretLoadout> loadouts = new List<TurretLoadout>();
+            public List<TurretLoadout> Loadouts = new List<TurretLoadout>();
 
             public TurretLoadout FindByName(string loadoutName, bool matchPartial = false)
             {
-                if (loadouts == null)
+                if (Loadouts == null)
                     return null;
 
-                foreach (var currentLoadout in loadouts)
+                foreach (var currentLoadout in Loadouts)
                 {
                     if (MatchesLoadout(currentLoadout, loadoutName))
                         return currentLoadout;
@@ -998,7 +1097,7 @@ namespace Oxide.Plugins
                 if (matchPartial)
                 {
                     // Perform partial matching in a second pass so the first pass can get a closer match
-                    foreach (var currentLoadout in loadouts)
+                    foreach (var currentLoadout in Loadouts)
                     {
                         if (MatchesLoadout(currentLoadout, loadoutName, matchPartial: true))
                             return currentLoadout;
@@ -1012,30 +1111,30 @@ namespace Oxide.Plugins
 
             public void SaveLoadout(TurretLoadout loadout)
             {
-                loadouts.Add(loadout);
+                Loadouts.Add(loadout);
                 SaveData();
             }
 
             public bool TryUpdateLoadout(TurretLoadout newLoadout)
             {
-                var existingLoadout = FindByName(newLoadout.name);
+                var existingLoadout = FindByName(newLoadout.Name);
                 if (existingLoadout == null)
                     return false;
 
-                loadouts[loadouts.IndexOf(existingLoadout)] = newLoadout;
+                Loadouts[Loadouts.IndexOf(existingLoadout)] = newLoadout;
                 SaveData();
                 return true;
             }
 
             public void RenameLoadout(TurretLoadout loadout, string newName)
             {
-                loadout.name = newName;
+                loadout.Name = newName;
                 SaveData();
             }
 
             public void DeleteLoadout(TurretLoadout loadout)
             {
-                loadouts.Remove(loadout);
+                Loadouts.Remove(loadout);
                 SaveData();
             }
 
@@ -1047,112 +1146,112 @@ namespace Oxide.Plugins
                 if (disallowedItems == null)
                     disallowedItems = new Dictionary<string, int>();
 
-                var weaponDefinition = ItemManager.itemDictionaryByName[loadout.weapon];
+                var weaponDefinition = ItemManager.FindItemDefinition(loadout.Weapon);
                 if (weaponDefinition == null)
                     return ValidationResult.InvalidWeapon;
 
-                if (!loadoutRuleset.IsWeaponAllowed(loadout.weapon))
+                if (!loadoutRuleset.IsWeaponAllowed(loadout.Weapon))
                 {
-                    disallowedItems[loadout.weapon] = 1;
+                    disallowedItems[loadout.Weapon] = 1;
                     return ValidationResult.DisallowedWeapon;
                 }
 
-                if (loadout.attachments != null)
+                if (loadout.Attachments != null)
                 {
-                    for (var i = 0; i < loadout.attachments.Count; i++)
+                    for (var i = 0; i < loadout.Attachments.Count; i++)
                     {
-                        var attachmentName = loadout.attachments[i];
+                        var attachmentName = loadout.Attachments[i];
                         if (!loadoutRuleset.IsAttachmentAllowed(attachmentName))
                         {
                             disallowedItems[attachmentName] = 1;
-                            loadout.attachments.RemoveAt(i);
+                            loadout.Attachments.RemoveAt(i);
                             i--;
                         }
                     }
                 }
 
-                var allowedAmmo = loadoutRuleset.allowedAmmo;
+                var allowedAmmo = loadoutRuleset.AllowedAmmo;
                 var countedAmmo = new Dictionary<string, int>();
 
                 // Don't impose ammo limits if allowed ammo is null
-                if (loadout.ammo != null && allowedAmmo != null)
+                if (loadout.Ammo != null && allowedAmmo != null)
                 {
-                    var ammo = loadout.ammo;
+                    var ammo = loadout.Ammo;
 
                     // Make sure ammo name exists
-                    if (ItemManager.itemDictionaryByName[ammo.name] == null)
+                    if (ItemManager.FindItemDefinition(ammo.Name) == null)
                     {
-                        pluginInstance.LogWarning($"Ammo type '{ammo.name}' is not a valid item. Removing from loadout.");
-                        ammo.amount = 0;
+                        _pluginInstance.LogWarning($"Ammo type '{ammo.Name}' is not a valid item. Removing from loadout.");
+                        ammo.Amount = 0;
                     }
-                    else if (allowedAmmo.ContainsKey(ammo.name))
+                    else if (allowedAmmo.ContainsKey(ammo.Name))
                     {
-                        var allowedAmount = allowedAmmo[ammo.name];
+                        var allowedAmount = allowedAmmo[ammo.Name];
 
                         // Don't impose a limit if the allowed amount is negative
-                        if (allowedAmount >= 0 && ammo.amount > allowedAmount)
+                        if (allowedAmount >= 0 && ammo.Amount > allowedAmount)
                         {
                             // Reduce ammo to the allowed amount
-                            AddToDictKey(disallowedItems, ammo.name, ammo.amount - allowedAmount);
-                            ammo.amount = allowedAmount;
+                            AddToDictKey(disallowedItems, ammo.Name, ammo.Amount - allowedAmount);
+                            ammo.Amount = allowedAmount;
                         }
                     }
                     else
                     {
                         // Ammo not allowed
-                        AddToDictKey(disallowedItems, ammo.name, ammo.amount);
-                        ammo.amount = 0;
+                        AddToDictKey(disallowedItems, ammo.Name, ammo.Amount);
+                        ammo.Amount = 0;
                     }
 
-                    if (ammo.amount <= 0)
-                        loadout.ammo = null;
+                    if (ammo.Amount <= 0)
+                        loadout.Ammo = null;
                     else
-                        AddToDictKey(countedAmmo, ammo.name, ammo.amount);
+                        AddToDictKey(countedAmmo, ammo.Name, ammo.Amount);
                 }
 
                 // Don't impose ammo limits if allowed ammo is null
-                if (loadout.reserveAmmo != null && allowedAmmo != null)
+                if (loadout.ReserveAmmo != null && allowedAmmo != null)
                 {
-                    for (var i = 0; i < loadout.reserveAmmo.Count; i++)
+                    for (var i = 0; i < loadout.ReserveAmmo.Count; i++)
                     {
-                        var ammo = loadout.reserveAmmo[i];
+                        var ammo = loadout.ReserveAmmo[i];
 
                         // Make sure ammo name exists
-                        if (ItemManager.itemDictionaryByName[ammo.name] == null)
+                        if (ItemManager.FindItemDefinition(ammo.Name) == null)
                         {
-                            pluginInstance.LogWarning($"Ammo type '{ammo.name}' is not a valid item. Removing from loadout.");
-                            ammo.amount = 0;
+                            _pluginInstance.LogWarning($"Ammo type '{ammo.Name}' is not a valid item. Removing from loadout.");
+                            ammo.Amount = 0;
                         }
-                        else if (allowedAmmo.ContainsKey(ammo.name))
+                        else if (allowedAmmo.ContainsKey(ammo.Name))
                         {
                             // Don't impose a limit if the allowed amount is negative
-                            if (allowedAmmo[ammo.name] >= 0)
+                            if (allowedAmmo[ammo.Name] >= 0)
                             {
-                                var countedAmount = countedAmmo.ContainsKey(ammo.name) ? countedAmmo[ammo.name] : 0;
-                                var remainingAllowedAmount = allowedAmmo[ammo.name] - countedAmount;
+                                var countedAmount = countedAmmo.ContainsKey(ammo.Name) ? countedAmmo[ammo.Name] : 0;
+                                var remainingAllowedAmount = allowedAmmo[ammo.Name] - countedAmount;
 
-                                if (ammo.amount > remainingAllowedAmount)
+                                if (ammo.Amount > remainingAllowedAmount)
                                 {
                                     // Reduce ammo to the allowed amount
-                                    AddToDictKey(disallowedItems, ammo.name, ammo.amount - remainingAllowedAmount);
-                                    ammo.amount = remainingAllowedAmount;
+                                    AddToDictKey(disallowedItems, ammo.Name, ammo.Amount - remainingAllowedAmount);
+                                    ammo.Amount = remainingAllowedAmount;
                                 }
                             }
                         }
                         else
                         {
                             // Ammo not allowed
-                            AddToDictKey(disallowedItems, ammo.name, ammo.amount);
-                            ammo.amount = 0;
+                            AddToDictKey(disallowedItems, ammo.Name, ammo.Amount);
+                            ammo.Amount = 0;
                         }
 
-                        if (ammo.amount <= 0)
+                        if (ammo.Amount <= 0)
                         {
-                            loadout.reserveAmmo.RemoveAt(i);
+                            loadout.ReserveAmmo.RemoveAt(i);
                             i--;
                         }
                         else
-                            AddToDictKey(countedAmmo, ammo.name, ammo.amount);
+                            AddToDictKey(countedAmmo, ammo.Name, ammo.Amount);
                     }
                 }
 
@@ -1171,19 +1270,19 @@ namespace Oxide.Plugins
             if (HasPermissionAny(userIdString, Permission_Manage, Permission_ManageCustom))
             {
                 var playerData = GetPlayerData(userIdString);
-                if (playerData.activeLoadout == string.Empty)
+                if (playerData.ActiveLoadout == string.Empty)
                 {
                     // Player has explicitly set no active loadout
                     return null;
                 }
 
-                if (playerData.activeLoadout != null)
+                if (playerData.ActiveLoadout != null)
                 {
-                    var loadout = playerData.FindByName(playerData.activeLoadout);
+                    var loadout = playerData.FindByName(playerData.ActiveLoadout);
                     if (loadout == null)
                         return null;
 
-                    var validationResult = playerData.ValidateAndPossiblyReduceLoadout(loadout, GetPlayerLoadoutRules(userIdString));
+                    var validationResult = playerData.ValidateAndPossiblyReduceLoadout(loadout, GetPlayerLoadoutRuleset(userIdString));
                     if (validationResult == LoadoutManager.ValidationResult.InvalidWeapon ||
                         validationResult == LoadoutManager.ValidationResult.DisallowedWeapon)
                         return null;
@@ -1193,131 +1292,112 @@ namespace Oxide.Plugins
             }
 
             // Player doesn't have permission to use custom loadouts, or they have not set an active one
-            return GetPlayerDefaultLoadout(userIdString);
+            return GetPlayerLastAllowedProfile(_pluginConfig.DefaultLoadouts, userIdString);
         }
 
-        // Returns the last default loadout the player has permission to
-        private TurretLoadout GetPlayerDefaultLoadout(string userIdString)
+        private T GetPlayerLastAllowedProfile<T>(T[] profileList, string userIdString, T defaultProfile = null) where T : BaseProfile
         {
-            if (pluginConfig.defaultLoadouts == null || pluginConfig.defaultLoadouts.Length == 0)
-                return null;
+            if (profileList == null || profileList.Length == 0)
+                return defaultProfile;
 
-            for (var i = pluginConfig.defaultLoadouts.Length - 1; i >= 0; i--)
+            for (var i = profileList.Length - 1; i >= 0; i--)
             {
-                var loadout = pluginConfig.defaultLoadouts[i];
-                if (!string.IsNullOrWhiteSpace(loadout.name) &&
-                    permission.UserHasPermission(userIdString, GetDefaultLoadoutPermission(loadout.name)))
-                {
-                    return loadout;
-                }
+                var profile = profileList[i];
+                if (permission.UserHasPermission(userIdString, profile.Permission))
+                    return profile;
             }
 
-            return null;
+            return defaultProfile;
         }
 
-        private LoadoutRuleset GetPlayerLoadoutRules(IPlayer player) => GetPlayerLoadoutRules(player.Id);
+        private LoadoutRuleset GetPlayerLoadoutRuleset(string userIdString) =>
+            GetPlayerLastAllowedProfile(_pluginConfig.LoadoutRulesets, userIdString, _pluginConfig.emptyLoadoutRuleset);
 
-        // Returns the last loadout ruleset the player has permission to
-        private LoadoutRuleset GetPlayerLoadoutRules(string userIdString)
-        {
-            if (pluginConfig.loadoutRulesets == null || pluginConfig.loadoutRulesets.Length == 0)
-                return pluginConfig.emptyLoadoutRuleset;
+        private LoadoutRuleset GetPlayerLoadoutRuleset(IPlayer player) =>
+            GetPlayerLoadoutRuleset(player.Id);
 
-            for (var i = pluginConfig.loadoutRulesets.Length - 1; i >= 0; i--)
-            {
-                var loadoutRuleset = pluginConfig.loadoutRulesets[i];
-                if (!string.IsNullOrWhiteSpace(loadoutRuleset.name) &&
-                    permission.UserHasPermission(userIdString, GetLoadoutRulesetPermission(loadoutRuleset.name)))
-                {
-                    return loadoutRuleset;
-                }
-            }
-
-            return pluginConfig.emptyLoadoutRuleset;
-        }
-
-        internal class Configuration : SerializableConfiguration
+        private class Configuration : SerializableConfiguration
         {
             [JsonIgnore]
             public LoadoutRuleset emptyLoadoutRuleset = new LoadoutRuleset()
             {
                 // Nothing allowed
-                allowedWeapons = new string[0],
-                allowedAttachments = new string[0],
-                allowedAmmo = new Dictionary<string, int>(),
+                AllowedWeapons = new string[0],
+                AllowedAttachments = new string[0],
+                AllowedAmmo = new Dictionary<string, int>(),
             };
 
             [JsonProperty("LockAutoFilledTurrets")]
-            public bool lockAutoFilledTurrets = false;
+            public bool LockAutoFilledTurrets = false;
 
             [JsonProperty("MaxLoadoutsPerPlayer")]
-            public int maxLoadoutsPerPlayer = 10;
+            public int MaxLoadoutsPerPlayer = 10;
 
             [JsonProperty("DefaultLoadouts")]
-            public DefaultLoadout[] defaultLoadouts = new DefaultLoadout[]
+            public DefaultTurretLoadout[] DefaultLoadouts = new DefaultTurretLoadout[]
             {
-                new DefaultLoadout()
+                new DefaultTurretLoadout
                 {
-                    name = "ak47",
-                    weapon = "rifle.ak",
-                    skin = 885146172,
-                    ammo = new AmmoAmount()
+                    Name = "ak47",
+                    Weapon = "rifle.ak",
+                    Skin = 885146172,
+                    Ammo = new AmmoAmount
                     {
-                        name = "ammo.rifle",
-                        amount = 30,
+                        Name = "ammo.rifle",
+                        Amount = 30,
                     },
-                    reserveAmmo = new List<AmmoAmount>()
+                    ReserveAmmo = new List<AmmoAmount>
                     {
-                        new AmmoAmount()
+                        new AmmoAmount
                         {
-                            name = "ammo.rifle",
-                            amount = 128
+                            Name = "ammo.rifle",
+                            Amount = 128
                         },
-                        new AmmoAmount()
+                        new AmmoAmount
                         {
-                            name = "ammo.rifle",
-                            amount = 128
+                            Name = "ammo.rifle",
+                            Amount = 128
                         }
                     },
                 },
-                new DefaultLoadout()
+                new DefaultTurretLoadout
                 {
-                    name = "m249",
-                    weapon = "lmg.m249",
-                    skin = 1831294069,
-                    attachments = new List<string>()
+                    Name = "m249",
+                    Weapon = "lmg.m249",
+                    Skin = 1831294069,
+                    Attachments = new List<string>
                     {
                         "weapon.mod.lasersight",
                         "weapon.mod.silencer"
                     },
-                    ammo = new AmmoAmount()
+                    Ammo = new AmmoAmount
                     {
-                        name = "ammo.rifle.explosive",
-                        amount = 100
+                        Name = "ammo.rifle.explosive",
+                        Amount = 100
                     },
-                    reserveAmmo = new List<AmmoAmount>()
+                    ReserveAmmo = new List<AmmoAmount>
                     {
-                        new AmmoAmount()
+                        new AmmoAmount
                         {
-                            name = "ammo.rifle.incendiary",
-                            amount = 128,
+                            Name = "ammo.rifle.incendiary",
+                            Amount = 128,
                         },
-                        new AmmoAmount()
+                        new AmmoAmount
                         {
-                            name = "ammo.rifle.hv",
-                            amount = 128
+                            Name = "ammo.rifle.hv",
+                            Amount = 128
                         }
                     },
                 }
             };
 
             [JsonProperty("LoadoutRulesets")]
-            public LoadoutRuleset[] loadoutRulesets = new LoadoutRuleset[]
+            public LoadoutRuleset[] LoadoutRulesets = new LoadoutRuleset[]
             {
-                new LoadoutRuleset()
+                new LoadoutRuleset
                 {
-                    name = "onlypistols",
-                    allowedWeapons = new string[]
+                    Name = "onlypistols",
+                    AllowedWeapons = new string[]
                     {
                         "pistol.eoka",
                         "pistol.m92",
@@ -1327,17 +1407,17 @@ namespace Oxide.Plugins
                         "pistol.semiauto",
                         "pistol.water",
                     },
-                    allowedAmmo = new Dictionary<string, int>()
+                    AllowedAmmo = new Dictionary<string, int>
                     {
                         ["ammo.pistol"] = 600,
                         ["ammo.pistol.hv"] = 400,
                         ["ammo.pistol.fire"] = 200,
                     },
                 },
-                new LoadoutRuleset()
+                new LoadoutRuleset
                 {
-                    name = "norifles",
-                    disallowedWeapons = new string[]
+                    Name = "norifles",
+                    DisallowedWeapons = new string[]
                     {
                         "rifle.ak",
                         "rifle.bolt",
@@ -1348,96 +1428,236 @@ namespace Oxide.Plugins
                         "lmg.m249",
                     }
                 },
-                new LoadoutRuleset()
+                new LoadoutRuleset
                 {
-                    name = "unlimited"
+                    Name = "unlimited"
                 }
             };
+
+            [JsonProperty("DefaultSamSiteLoadouts")]
+            public DefaultBaseLoadout[] DefaultSamSiteLoadouts = new DefaultBaseLoadout[]
+            {
+                new DefaultBaseLoadout
+                {
+                    Name = "fullammo",
+                    ReserveAmmo = new List<AmmoAmount>
+                    {
+                        new AmmoAmount
+                        {
+                            Name = "ammo.rocket.sam",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.rocket.sam",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.rocket.sam",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.rocket.sam",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.rocket.sam",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.rocket.sam",
+                            Amount = 128,
+                        },
+                    },
+                }
+            };
+
+            [JsonProperty("DefaultFlameTurretLoadouts")]
+            public DefaultBaseLoadout[] DefaultFlameTurretLoadouts = new DefaultBaseLoadout[]
+            {
+                new DefaultBaseLoadout
+                {
+                    Name = "fullammo",
+                    ReserveAmmo = new List<AmmoAmount>
+                    {
+                        new AmmoAmount
+                        {
+                            Name = "lowgradefuel",
+                            Amount = 500
+                        }
+                    }
+                }
+            };
+
+            [JsonProperty("DefaultShotgunTrapLoadouts")]
+            public DefaultBaseLoadout[] DefaultShotgunTrapLoadouts = new DefaultBaseLoadout[]
+            {
+                new DefaultBaseLoadout
+                {
+                    Name = "fullammo",
+                    ReserveAmmo = new List<AmmoAmount>
+                    {
+                        new AmmoAmount
+                        {
+                            Name = "ammo.handmade.shell",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.handmade.shell",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.handmade.shell",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.handmade.shell",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.handmade.shell",
+                            Amount = 128,
+                        },
+                        new AmmoAmount
+                        {
+                            Name = "ammo.handmade.shell",
+                            Amount = 128,
+                        },
+                    },
+                }
+            };
+
+            public void Init(TurretLoadouts pluginInstance)
+            {
+                foreach (var loadout in DefaultLoadouts)
+                    loadout.Init(pluginInstance, Permission_DefaultLoadoutPrefix);
+
+                foreach (var loadout in DefaultSamSiteLoadouts)
+                    loadout.Init(pluginInstance, Permission_DefaultSamSiteLoadoutPrefix);
+
+                foreach (var loadout in DefaultFlameTurretLoadouts)
+                    loadout.Init(pluginInstance, Permission_DefaultFlameTurretLoadoutPrefix);
+
+                foreach (var loadout in DefaultShotgunTrapLoadouts)
+                    loadout.Init(pluginInstance, Permission_DefaultShotgunTrapLoadoutPrefix);
+
+                foreach (var ruleset in LoadoutRulesets)
+                    ruleset.Init(pluginInstance, Permission_RulesetPrefix);
+
+            }
         }
 
-        internal class LoadoutRuleset
+        private abstract class BaseProfile
         {
             [JsonProperty("Name")]
-            public string name;
+            public string Name;
 
+            [JsonIgnore]
+            public string Permission;
+
+            public void Init(TurretLoadouts pluginInstance, string permissionPrefix)
+            {
+                if (string.IsNullOrWhiteSpace(Name))
+                    return;
+
+                Permission = $"{permissionPrefix}.{Name}";
+                pluginInstance.permission.RegisterPermission(Permission, pluginInstance);
+            }
+        }
+
+        private class LoadoutRuleset : BaseProfile
+        {
             [JsonProperty("AllowedWeapons", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public string[] allowedWeapons;
+            public string[] AllowedWeapons;
 
             [JsonProperty("DisallowedWeapons", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public string[] disallowedWeapons;
+            public string[] DisallowedWeapons;
 
             [JsonProperty("AllowedAttachments", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public string[] allowedAttachments;
+            public string[] AllowedAttachments;
 
             [JsonProperty("DisallowedAttachments", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public string[] disallowedAttachments;
+            public string[] DisallowedAttachments;
 
             [JsonProperty("AllowedAmmo", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public Dictionary<string, int> allowedAmmo;
+            public Dictionary<string, int> AllowedAmmo;
 
             public bool IsWeaponAllowed(string weaponName)
             {
-                if (allowedWeapons != null)
-                    return allowedWeapons.Contains(weaponName);
-                else if (disallowedWeapons != null)
-                    return !disallowedWeapons.Contains(weaponName);
+                if (AllowedWeapons != null)
+                    return AllowedWeapons.Contains(weaponName);
+                else if (DisallowedWeapons != null)
+                    return !DisallowedWeapons.Contains(weaponName);
 
                 return true;
             }
 
             public bool IsAttachmentAllowed(string attachmentName)
             {
-                if (allowedAttachments != null)
-                    return allowedAttachments.Contains(attachmentName);
-                else if (disallowedAttachments != null)
-                    return !disallowedAttachments.Contains(attachmentName);
+                if (AllowedAttachments != null)
+                    return AllowedAttachments.Contains(attachmentName);
+                else if (DisallowedAttachments != null)
+                    return !DisallowedAttachments.Contains(attachmentName);
 
                 return true;
             }
         }
 
-        internal class TurretLoadout
+        private class BaseLoadout : BaseProfile
         {
-            [JsonProperty("Name")]
-            public string name;
-
-            [JsonProperty("Weapon")]
-            public string weapon;
-
-            [JsonProperty("Skin", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public ulong skin = 0;
-
-            [JsonProperty("Peacekeeper", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public bool peacekeeper = false;
-
-            [JsonProperty("Attachments", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public List<string> attachments;
-
-            [JsonProperty("Ammo", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public AmmoAmount ammo;
-
             [JsonProperty("ReserveAmmo", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public List<AmmoAmount> reserveAmmo;
+            public List<AmmoAmount> ReserveAmmo;
 
             [JsonIgnore]
             public virtual bool IsDefault => false;
-
-            public string GetDisplayName(string userIdString) =>
-                IsDefault ? pluginInstance.GetDefaultLoadoutName(userIdString) : name;
         }
 
-        internal class DefaultLoadout : TurretLoadout
+        private class DefaultBaseLoadout : BaseLoadout
         {
             public override bool IsDefault => true;
         }
 
-        internal class AmmoAmount
+        private class TurretLoadout : BaseLoadout
+        {
+            [JsonProperty("Weapon")]
+            public string Weapon;
+
+            [JsonProperty("Skin", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public ulong Skin = 0;
+
+            [JsonProperty("Peacekeeper", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public bool Peacekeeper = false;
+
+            [JsonProperty("Attachments", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public List<string> Attachments;
+
+            [JsonProperty("Ammo", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public AmmoAmount Ammo;
+
+            public string GetDisplayName(string userIdString) =>
+                IsDefault ? _pluginInstance.GetDefaultLoadoutName(userIdString) : Name;
+        }
+
+        private class DefaultTurretLoadout : TurretLoadout
+        {
+            public override bool IsDefault => true;
+        }
+
+        private class AmmoAmount
         {
             [JsonProperty("Name")]
-            public string name;
+            public string Name;
 
             [JsonProperty("Amount")]
-            public int amount;
+            public int Amount;
         }
 
         private Configuration GetDefaultConfig() => new Configuration();
@@ -1446,14 +1666,14 @@ namespace Oxide.Plugins
 
         #region Configuration Boilerplate
 
-        internal class SerializableConfiguration
+        private class SerializableConfiguration
         {
             public string ToJson() => JsonConvert.SerializeObject(this);
 
             public Dictionary<string, object> ToDictionary() => JsonHelper.Deserialize(ToJson()) as Dictionary<string, object>;
         }
 
-        internal static class JsonHelper
+        private static class JsonHelper
         {
             public static object Deserialize(string json) => ToObject(JToken.Parse(json));
 
@@ -1475,7 +1695,7 @@ namespace Oxide.Plugins
             }
         }
 
-        private bool MaybeUpdateConfig(Configuration config)
+        private bool MaybeUpdateConfig(SerializableConfiguration config)
         {
             var currentWithDefaults = config.ToDictionary();
             var currentRaw = Config.ToDictionary(x => x.Key, x => x.Value);
@@ -1515,27 +1735,28 @@ namespace Oxide.Plugins
             return changed;
         }
 
-        protected override void LoadDefaultConfig() => pluginConfig = GetDefaultConfig();
+        protected override void LoadDefaultConfig() => _pluginConfig = GetDefaultConfig();
 
         protected override void LoadConfig()
         {
             base.LoadConfig();
             try
             {
-                pluginConfig = Config.ReadObject<Configuration>();
-                if (pluginConfig == null)
+                _pluginConfig = Config.ReadObject<Configuration>();
+                if (_pluginConfig == null)
                 {
                     throw new JsonException();
                 }
 
-                if (MaybeUpdateConfig(pluginConfig))
+                if (MaybeUpdateConfig(_pluginConfig))
                 {
                     LogWarning("Configuration appears to be outdated; updating and saving");
                     SaveConfig();
                 }
             }
-            catch
+            catch (Exception e)
             {
+                LogError(e.Message);
                 LogWarning($"Configuration file {Name}.json is invalid; using defaults");
                 LoadDefaultConfig();
             }
@@ -1544,18 +1765,18 @@ namespace Oxide.Plugins
         protected override void SaveConfig()
         {
             Log($"Configuration changes saved to {Name}.json");
-            Config.WriteObject(pluginConfig, true);
+            Config.WriteObject(_pluginConfig, true);
         }
 
         #endregion
 
         #region Localization
 
-        private void ReplyToPlayer(IPlayer player, string messageName, params object[] args) =>
-            player.Reply(string.Format(GetMessage(player, messageName), args));
-
-        private void ChatMessage(BasePlayer basePlayer, string messageName, params object[] args) =>
-            basePlayer.ChatMessage(string.Format(GetMessage(basePlayer, messageName), args));
+        private string GetMessage(string userIdString, string messageName, params object[] args)
+        {
+            var message = lang.GetMessage(messageName, this, userIdString);
+            return args.Length > 0 ? string.Format(message, args) : message;
+        }
 
         private string GetMessage(BasePlayer basePlayer, string messageName, params object[] args) =>
             GetMessage(basePlayer.UserIDString, messageName, args);
@@ -1563,11 +1784,11 @@ namespace Oxide.Plugins
         private string GetMessage(IPlayer player, string messageName, params object[] args) =>
             GetMessage(player.Id, messageName, args);
 
-        private string GetMessage(string userIdString, string messageName, params object[] args)
-        {
-            var message = lang.GetMessage(messageName, this, userIdString);
-            return args.Length > 0 ? string.Format(message, args) : message;
-        }
+        private void ReplyToPlayer(IPlayer player, string messageName, params object[] args) =>
+            player.Reply(string.Format(GetMessage(player, messageName), args));
+
+        private void ChatMessage(BasePlayer basePlayer, string messageName, params object[] args) =>
+            basePlayer.ChatMessage(string.Format(GetMessage(basePlayer, messageName), args));
 
         protected override void LoadDefaultMessages()
         {

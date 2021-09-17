@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Oxide.Core;
@@ -14,7 +13,7 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("Discord Server Stats", "MJSU", "2.0.2")]
+    [Info("Discord Server Stats", "MJSU", "2.0.3")]
     [Description("Displays stats about the server in discord")]
     public class DiscordServerStats : CovalencePlugin
     {
@@ -40,6 +39,8 @@ namespace Oxide.Plugins
         private DateTime _lastUpdate = DateTime.UtcNow;
 
         private Timer _updateTimer;
+
+        private bool _isOnline = false;
         
         public enum DebugEnum { Message, None, Error, Warning, Info }
         #endregion
@@ -48,7 +49,16 @@ namespace Oxide.Plugins
         private void Init()
         {
             _storedData = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(Name);
-            _pluginConfig.DiscordWebhook = _pluginConfig.DiscordWebhook.Replace("/api/webhooks", "/api/v8/webhooks");
+            _pluginConfig.DiscordWebhook = _pluginConfig.DiscordWebhook.Replace("/api/webhooks", "/api/v9/webhooks");
+        }
+
+        protected override void LoadDefaultMessages()
+        {
+            lang.RegisterMessages(new Dictionary<string, string>
+            {
+                [PluginLang.OnlineStatus] = ":green_circle:",
+                [PluginLang.OfflineStatus] = ":red_circle:",
+            }, this);
         }
 
         protected override void LoadDefaultConfig()
@@ -90,6 +100,14 @@ namespace Oxide.Plugins
                     Thumbnail = string.Empty,
                     Fields = new List<FieldConfig>
                     {
+                        new FieldConfig
+                        {
+                            Title = "Status",
+                            Value = "{discordserverstats.status}",
+                            Inline = true,
+                            Enabled = true
+                        },
+                        
                         new FieldConfig
                         {
                             Title = "Online / Max Players",
@@ -233,6 +251,7 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
+            _isOnline = true;
             foreach (IPlayer player in players.Connected)
             {
                 OnUserConnected(player);
@@ -254,6 +273,12 @@ namespace Oxide.Plugins
         private void OnServerSave()
         {
             NextTick(SaveData);
+        }
+
+        private void OnServerShutdown()
+        {
+            _isOnline = false;
+            SendUpdateMessage();
         }
         
         private void Unload()
@@ -363,14 +388,12 @@ namespace Oxide.Plugins
         
         private void OnPlaceholderAPIReady()
         {
-            timer.In(1f, () =>
-            {
-                RegisterPlaceholder("player.joined.last", (player, s) => _storedData.LastConnected, "Displays the name of the player who joined last");
-                RegisterPlaceholder("player.disconnected.last", (player, s) => _storedData.LastDisconnected, "Displays the name of the player who disconnected last");
-                RegisterPlaceholder("player.disconnected.last.duration", (player, s) => _storedData.LastDisconnectedDuration, "Displays duration of the last disconnected player");
-                RegisterPlaceholder("discordserverstats.last.update", (player, s) => _lastUpdate, "Displays the datetime the last update was sent.");
-                SetupMessaging();
-            });
+            RegisterPlaceholder("player.joined.last", (player, s) => _storedData.LastConnected, "Displays the name of the player who joined last");
+            RegisterPlaceholder("player.disconnected.last", (player, s) => _storedData.LastDisconnected, "Displays the name of the player who disconnected last");
+            RegisterPlaceholder("player.disconnected.last.duration", (player, s) => _storedData.LastDisconnectedDuration, "Displays duration of the last disconnected player");
+            RegisterPlaceholder("discordserverstats.last.update", (player, s) => _lastUpdate, "Displays the datetime the last update was sent.");
+            RegisterPlaceholder("discordserverstats.status", (player, s) => _isOnline ? Lang(PluginLang.OnlineStatus) : Lang(PluginLang.OfflineStatus), "Displays if the server is online or offline.");
+            SetupMessaging();
         }
 
         private void RegisterPlaceholder(string key, Func<IPlayer, string, object> action, string description = null)
@@ -416,6 +439,19 @@ namespace Oxide.Plugins
             }
         }
         
+        public string Lang(string key, IPlayer player = null, params object[] args)
+        {
+            try
+            {
+                return string.Format(lang.GetMessage(key, this, player?.Id), args);
+            }
+            catch(Exception ex)
+            {
+                PrintError($"Lang Key '{key}' threw exception\n:{ex}");
+                throw;
+            }
+        }
+        
         private void SaveData() => Interface.Oxide.DataFileSystem.WriteObject(Name, _storedData);
         #endregion
 
@@ -446,6 +482,12 @@ namespace Oxide.Plugins
             public string LastDisconnected { get; set; } = "N/A";
             public TimeSpan LastDisconnectedDuration = TimeSpan.Zero;
         }
+
+        private static class PluginLang
+        {
+            public const string OnlineStatus = nameof(OnlineStatus);
+            public const string OfflineStatus = nameof(OfflineStatus);
+        }
         #endregion
 
         #region Discord Embed
@@ -463,7 +505,7 @@ namespace Oxide.Plugins
                 Debug(DebugEnum.Info, $"{nameof(UpdateDiscordMessage)} message.ToJson()\n{json}");
             }
             
-            webrequest.Enqueue(string.Format(WebhooksMessageCreate, _pluginConfig.DiscordWebhook), json.ToString(), (code, response) => SendDiscordMessageCallback(code, response, callback), this, RequestMethod.POST, _headers);
+            webrequest.Enqueue(string.Format(WebhooksMessageCreate, _pluginConfig.DiscordWebhook), json.ToString(), (code, response) => SendDiscordMessageCallback(code, response, callback), null, RequestMethod.POST, _headers);
         }
 
         /// <summary>
@@ -479,7 +521,7 @@ namespace Oxide.Plugins
                 Debug(DebugEnum.Info, $"{nameof(UpdateDiscordMessage)} message.ToJson()\n{json}");
             }
 
-            webrequest.Enqueue(string.Format(WebhookMessageUpdate, _pluginConfig.DiscordWebhook, message.Id), json.ToString(), (code, response) => SendDiscordMessageCallback(code, response, callback), this, RequestMethod.PATCH, _headers);
+            webrequest.Enqueue(string.Format(WebhookMessageUpdate, _pluginConfig.DiscordWebhook, message.Id), json.ToString(), (code, response) => SendDiscordMessageCallback(code, response, callback), null, RequestMethod.PATCH, _headers);
         }
 
         /// <summary>
@@ -692,6 +734,12 @@ namespace Oxide.Plugins
             /// </summary>
             [JsonProperty("footer")]
             private Footer Footer { get; set; }
+            
+            /// <summary>
+            /// Timestamp for the embed
+            /// </summary>
+            [JsonProperty("timestamp")]
+            private DateTime? Timestamp { get; set; }
 
             /// <summary>
             /// Adds a title to the embed message
@@ -874,6 +922,18 @@ namespace Oxide.Plugins
             public Embed AddVideo(string url, int? width = null, int? height = null)
             {
                 Video = new Video(url, width, height);
+                return this;
+            }
+            
+            public Embed AddTimestamp()
+            {
+                Timestamp = DateTime.UtcNow;
+                return this;
+            }
+            
+            public Embed AddTimestamp(DateTime timestamp)
+            {
+                Timestamp = timestamp;
                 return this;
             }
         }
@@ -1146,6 +1206,9 @@ namespace Oxide.Plugins
             [JsonProperty("Thumbnail Url")]
             public string Thumbnail { get; set; }
             
+            [JsonProperty("Add Timestamp")]
+            public bool Timestamp { get; set; }
+            
             [JsonProperty("Fields")]
             public List<FieldConfig> Fields { get; set; }
             
@@ -1235,6 +1298,11 @@ namespace Oxide.Plugins
                     if (!string.IsNullOrEmpty(thumbnail))
                     {
                         embed.AddThumbnail(thumbnail);
+                    }
+
+                    if (embedConfig.Timestamp)
+                    {
+                        embed.AddTimestamp();
                     }
 
                     foreach (FieldConfig field in embedConfig.Fields.Where(f => f.Enabled))

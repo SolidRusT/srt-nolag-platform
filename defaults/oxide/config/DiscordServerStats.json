@@ -12,6 +12,7 @@
         "Embed Color": "#de8732",
         "Image Url": "",
         "Thumbnail Url": "",
+        "Add Timestamp": false,
         "Fields": [
           {
             "Title": "Online / Max Players",

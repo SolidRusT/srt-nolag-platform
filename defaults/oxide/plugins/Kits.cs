@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Kits", "Mevent", "1.0.21")]
+    [Info("Kits", "Mevent", "1.0.22")]
     public class Kits : RustPlugin
     {
         #region Fields
@@ -1361,7 +1361,7 @@ namespace Oxide.Plugins
                         SaveConfig();
                     }
 
-                    _kitEditing.Remove(player);
+                    StopEditing(player);
 
                     if (!string.IsNullOrEmpty(kit.Permission) && !permission.PermissionExists(kit.Permission))
                         permission.RegisterPermission(kit.Permission, this);

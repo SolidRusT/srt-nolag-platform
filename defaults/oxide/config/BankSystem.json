@@ -1,0 +1,140 @@
+{
+  "Work with Notify?": true,
+  "Commands": [
+    "bank"
+  ],
+  "Permission (example: banksystem.use)": "",
+  "Starting balance": 100,
+  "Card Image": "https://i.imgur.com/Br9z7Ou.png",
+  "Transit Image": "https://i.imgur.com/h2bqMu4.png",
+  "Withdraw Image": "https://i.imgur.com/lwVwxm3.png",
+  "Transfer Image": "https://i.imgur.com/TBIxUnz.png",
+  "Exit Image": "https://i.imgur.com/OGoMu9N.png",
+  "Currency Settings": {
+    "Display Name": "RUSTNote",
+    "Short Name": "sticks",
+    "Skin": 2536195910
+  },
+  "Card expiry date (in days)": 7,
+  "ATM Settings": {
+    "Minimum deposit fee": 0.0,
+    "Maximum deposit fee": 10.0,
+    "Default deposit fee": 1.0,
+    "Step deposit fee": 0.1,
+    "Minimum withdrawal fee": 0.0,
+    "Maximum withdrawal fee": 10.0,
+    "Default withdrawal fee": 1.0,
+    "Step withdrawal fee": 0.1,
+    "Default breakage percentage during operation": 1.0,
+    "Breakage percentage during operation": {
+      "banksystem.vip": 0.7,
+      "banksystem.premium": 0.5
+    },
+    "Repair Settings": {
+      "Items (for 1%)": [
+        {
+          "Short Name": "scrap",
+          "Amount (for 1%)": 2.0,
+          "Skin": 0,
+          "Title (empty - default)": ""
+        },
+        {
+          "Short Name": "metalpipe",
+          "Amount (for 1%)": 1.0,
+          "Skin": 0,
+          "Title (empty - default)": ""
+        },
+        {
+          "Short Name": "metal.fragments",
+          "Amount (for 1%)": 15.0,
+          "Skin": 0,
+          "Title (empty - default)": ""
+        }
+      ]
+    },
+    "Display Name": "ATM",
+    "Skin": 2551771822,
+    "Spawn Settings": {
+      "Monuments": {
+        "compound": {
+          "Enabled": true,
+          "Display Name": "ATM",
+          "Position": {
+            "x": -3.5,
+            "y": 1.15,
+            "z": 2.7
+          },
+          "Rotation": -90.0,
+          "Deposit Fee": 0.0,
+          "Withdraw Fee": 0.0
+        },
+        "bandit": {
+          "Enabled": true,
+          "Display Name": "ATM",
+          "Position": {
+            "x": 34.2,
+            "y": 2.35,
+            "z": -24.7
+          },
+          "Rotation": 135.0,
+          "Deposit Fee": 0.0,
+          "Withdraw Fee": 0.0
+        }
+      }
+    },
+    "Shop Name ({id} {owner})": "ATM #{id}"
+  },
+  "Tracking Settings": {
+    "Cost Table (shortname - cost)": {
+      "sulfur.ore": 0.5,
+      "metal.ore": 0.5,
+      "hq.metal.ore": 0.5,
+      "stones": 0.5,
+      "crate_elite": 10.0,
+      "crate_normal": 7.0,
+      "crate_normal_2": 4.0
+    }
+  },
+  "Wipe Settings": {
+    "Wipe Players?": false,
+    "Wipe Logs?": true,
+    "Wipe ATMs?": true
+  },
+  "NPC Settings": {
+    "NPCs": [
+      "1234567",
+      "7654321",
+      "4644687478"
+    ]
+  },
+  "Economy Settings": {
+    "Use own economic system?": true,
+    "Plugin name": "Economics",
+    "Balance add hook": "Deposit",
+    "Balance remove hook": "Withdraw",
+    "Balance show hook": "Balance"
+  },
+  "Drop Settings": [
+    {
+      "Enabled": true,
+      "Prefab": "assets/bundled/prefabs/radtown/crate_normal.prefab",
+      "Chance": 50,
+      "Min Amount": 2,
+      "Max Amount": 5
+    },
+    {
+      "Enabled": true,
+      "Prefab": "assets/bundled/prefabs/radtown/loot_barrel_2.prefab",
+      "Chance": 5,
+      "Min Amount": 2,
+      "Max Amount": 5
+    },
+    {
+      "Enabled": true,
+      "Prefab": "assets/bundled/prefabs/radtown/loot_barrel_1.prefab",
+      "Chance": 5,
+      "Min Amount": 2,
+      "Max Amount": 5
+    }
+  ]
+}

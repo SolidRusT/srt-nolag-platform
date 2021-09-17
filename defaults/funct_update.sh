@@ -282,7 +282,7 @@ function srt_install() {
 }
 
 # SRT 5x
-NINE_PERMS=(
+DEFAULT_PERMS=(
   vehicledeployedlocks.codelock.duosub
   vehicledeployedlocks.codelock.solosub
   vehicledeployedlocks.keylock.duosub
@@ -304,8 +304,6 @@ NINE_PERMS=(
   carturrets.allmodules
   trade.use
   trade.accept
-  recycle.use
-  discordcalladmin.use
   carturrets.deploy.command
   carturrets.deploy.inventory
   nteleportation.home
@@ -324,24 +322,15 @@ NINE_PERMS=(
   vehiclevendoroptions.ownership.allvehicles
   autodoors.use
   automaticauthorization.use
-  largercarstorage.size.4
   barrelpoints.default
-  discordcore.use
   itemskinrandomizer.use
   itemskinrandomizer.reskin
   instantcraft.use
-  randomrespawner.use
   furnacesplitter.use
-  tcmapmarkers.use
   realistictorch.use
-  fastloot.use
-  boxsorterlite.use
   raidalarm.use
   clearrepair.use
-  mushroomeffects.use
   treeplanter.use
-  bounty.use
-  dronepilot.use
   farmtools.clone
   farmtools.clone.all
   farmtools.harvest.all
@@ -355,28 +344,15 @@ NINE_PERMS=(
   blueprintshare.share
   blueprintshare.use
   recyclerspeed.use
-  discordrewards.use
   dance.use
   securitycameras.use
   simpletime.use
-  whoknocks.message
-  whoknocks.knock
-  eventrandomizer.check
   chute.allowed
   buildinggrades.use
   buildinggrades.up.all
   buildinggrades.down.all
-  hazmattoscientistsuit.use
-  hazmattoscientistsuit.craft
-  advancedgather.use
   spawnmini.mini
   customgenetics.use
-  warcopter.spawn
-  warcopter.cooldown
-  warcopter.fighter
-  warcopter.drone
-  suicidevest.use
-  suicidevest.give
   spawnmini.nomini
   spawnmini.fmini
   signartist.url
@@ -386,11 +362,6 @@ NINE_PERMS=(
   signartist.restoreall
   fishing.allowed
   fishing.makepole
-  visualcupboard.allowed
-  dronestorage.deploy
-  dronestorage.viewitems
-  dronestorage.dropitems
-  dronestorage.capacity.6
   optimalburn.use
   dronepilot.create
   dronelights.searchlight.autodeploy
@@ -402,15 +373,8 @@ NINE_PERMS=(
   quicksort.use
   quicksort.lootall
   quicksort.autolootall
-  carcommanderlite.use
   unwound.canuse
   quicksmelt.use
-  airstrike.signal.strike
-  airstrike.signal.squad
-  airstrike.purchase.strike
-  airstrike.purchase.squad
-  airstrike.chat.strike
-  airstrike.chat.squad
   craftsman.leveling.melee
   craftsman.leveling.ranged
   craftsman.leveling.clothing
@@ -424,70 +388,7 @@ NINE_PERMS=(
   extendedrecycler.use
   statistics.use
   bounty.use
-  blueprintmanager.all
   Kits.default
-  buildingworkbench.use
-  iteminspector.use
-  betterrootcombiners.use
-  payforelectricity.use
-  bloodtrail.allow
-  patrolboat.builder
-  localize.use
-  vehiclevendoroptions.ownership.allvehicles
-)
-
-# SRT Main Vanilla
-DEFAULT_PERMS=(
-  vehicledeployedlocks.codelock.duosub
-  vehicledeployedlocks.codelock.solosub
-  vehicledeployedlocks.keylock.duosub
-  vehicledeployedlocks.keylock.solosub
-  skins.use
-  removertool.normal
-  carlockui.use.codelock
-  trade.use
-  trade.accept
-  discordcalladmin.use
-  securitylights.use
-  furnacesplitter.use
-  realistictorch.use
-  raidalarm.use
-  clearrepair.use
-  farmtools.clone
-  farmtools.clone.all
-  farmtools.harvest.all
-  blueprintshare.toggle
-  blueprintshare.share
-  blueprintshare.use
-  dance.use
-  securitycameras.use
-  customgenetics.use
-  signartist.url
-  signartist.text
-  signartist.restore
-  signartist.raw
-  signartist.restoreall
-  fishing.allowed
-  fishing.makepole
-  fuelgauge.allow
-  phonesplus.use
-  privatemessages.allow
-  craftsman.leveling.melee
-  craftsman.leveling.ranged
-  craftsman.leveling.clothing
-  sleep.allow
-  carcommander.use
-  carcommander.canbuild
-  extendedrecycler.use
-  statistics.use
-  quicksmelt.use
-  recyclerspeed.use
-  buildingworkbench.use
-  buildingworkbench.cancelcraft
-  vehicledeployedlocks.codelock.allvehicles
-  vehicledeployedlocks.keylock.allvehicles
-  discordmessages.report
-  craftchassis.4
   buildingworkbench.use
   iteminspector.use
   betterrootcombiners.use

@@ -28,6 +28,10 @@
         "Kits",
         "Boombox",
         "MiningFarm",
-        "PatrolBoat"
+        "PatrolBoat",
+        "Shop",
+        "Crafts",
+        "Notify",
+        "BankSystem"
     ]
 }
