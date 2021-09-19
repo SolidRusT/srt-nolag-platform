@@ -10,10 +10,10 @@
         "Это команда?(true - команда, false - предмет) || This is item?(true - yes)": false,
         "Команда, которая должна выполняться(Пример: givemoney %STEAMID% кол-во) || The command to be executed": "",
         "Имя получаемого предмета || Name of the item to be received": "МОНЕТА",
-        "Использовать плагин экономики? || Use the economy plugin?": false,
+        "Использовать плагин экономики? || Use the economy plugin?": true,
         "Количество пополняемого баланса || The amount of the balance to be replenished": 0,
         "Хук отвечающий за пополнение баланса || The hook responsible for adding funds to the balance": "AddBalance",
-        "Полное имя плагина с Экономикой || Full name of the plugin with Economy": "RustShop",
+        "Полное имя плагина с Экономикой || Full name of the plugin with Economy": "Economics",
         "ShortName получаемого предмета || Item shortname": "glue",
         "SkinID предмета || Item SkinID": 1984567801
     },

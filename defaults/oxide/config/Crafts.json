@@ -1,14 +1,19 @@
 {
   "Commands": [
     "craft",
-    "crafts"
+    "crafts",
+    "mymini",
+    "spawncar",
+    "recycler.craft",
+    "recycle",
+    "recycler"
   ],
   "Work with Notify?": true,
-  "Permission (ex: crafts.use)": "",
+  "Permission (ex: crafts.use)": "crafts.use",
   "Categories": [
     {
       "Enabled": true,
-      "Permission (ex: crafts.vip)": "",
+      "Permission (ex: crafts.use)": "crafts.use",
       "Title": "Vehicles",
       "Items": [
         {
@@ -17,7 +22,7 @@
           "Title": "Minicopter",
           "Description": "Fast air transport",
           "Command (to give an item)": "givecopter",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "Minicopter",
           "Shortname": "electric.flasherlight",
           "Amount": 1,
@@ -58,7 +63,7 @@
           "Title": "Row Boat",
           "Description": "Slow water transport",
           "Command (to give an item)": "giverowboat",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "Row Boat",
           "Shortname": "coffin.storage",
           "Amount": 1,
@@ -99,7 +104,7 @@
           "Title": "RHIB",
           "Description": "Slow water transport",
           "Command (to give an item)": "giverhibboat",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "RHIB",
           "Shortname": "electric.sirenlight",
           "Amount": 1,
@@ -140,7 +145,7 @@
           "Title": "Hot Air Balloon",
           "Description": "Slow air transport",
           "Command (to give an item)": "givehotair",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "Hot Air Balloon",
           "Shortname": "box.repair.bench",
           "Amount": 1,
@@ -181,7 +186,7 @@
           "Title": "Transport Helicopter",
           "Description": "Fast air transport",
           "Command (to give an item)": "givescrapheli",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "Transport Helicopter",
           "Shortname": "lantern",
           "Amount": 1,
@@ -220,7 +225,7 @@
     },
     {
       "Enabled": true,
-      "Permission (ex: crafts.vip)": "",
+      "Permission (ex: crafts.use)": "crafts.use",
       "Title": "Cars",
       "Items": [
         {
@@ -229,7 +234,7 @@
           "Title": "Sedan",
           "Description": "5KM/H",
           "Command (to give an item)": "givesedan",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "Car",
           "Shortname": "woodcross",
           "Amount": 1,
@@ -270,7 +275,7 @@
           "Title": "Ferrari",
           "Description": "25KM/H",
           "Command (to give an item)": "givemod1",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "Car",
           "Shortname": "electric.flasherlight",
           "Amount": 1,
@@ -320,7 +325,7 @@
     },
     {
       "Enabled": true,
-      "Permission (ex: crafts.vip)": "",
+      "Permission (ex: crafts.use)": "crafts.use",
       "Title": "Misc",
       "Items": [
         {
@@ -329,7 +334,7 @@
           "Title": "Home Recycler",
           "Description": "",
           "Command (to give an item)": "giverecycler",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "Home Recycler",
           "Shortname": "research.table",
           "Amount": 1,
@@ -370,7 +375,7 @@
           "Title": "",
           "Description": "",
           "Command (to give an item)": "givelr300",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.use)": "crafts.use",
           "Display Name": "",
           "Shortname": "rifle.lr300",
           "Amount": 1,
@@ -431,7 +436,7 @@
     "Use DDraw? (showing damage on the recycler)": true,
     "DDraw Radius": 7.5,
     "DDraw Text": "<size=19>RECYCLER</size>\n<size=15>{0}/{1}</size>",
-    "DDraw Color": "#C5D0E6",
+    "DDraw Color": "#DECEBF",
     "DDraw Delay (sec)": 0.75,
     "Enabled pickup?": true,
     "Only owner can pickup": true,
@@ -475,7 +480,7 @@
     },
     "DDraw Radius": 7.5,
     "DDraw Text": "<size=15>{0}/{1}</size>",
-    "DDraw Color": "#C5D0E6",
+    "DDraw Color": "#F28633",
     "DDraw Delay (sec)": 0.75
   }
 }

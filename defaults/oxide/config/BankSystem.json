@@ -108,7 +108,7 @@
     ]
   },
   "Economy Settings": {
-    "Use own economic system?": true,
+    "Use own economic system?": false,
     "Plugin name": "Economics",
     "Balance add hook": "Deposit",
     "Balance remove hook": "Withdraw",

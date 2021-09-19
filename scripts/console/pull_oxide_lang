@@ -9,7 +9,9 @@ case $SERVER in
   nine)
     SCP_CMD="scp -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@nine.solidrust.net"
     ;;
-
+  demo)
+    SCP_CMD="scp -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@demo.solidrust.net"
+    ;;
   *)
     echo "pull_data: Invalid server selection"
     echo ""

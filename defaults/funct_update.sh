@@ -397,6 +397,7 @@ DEFAULT_PERMS=(
   patrolboat.builder
   localize.use
   vehiclevendoroptions.ownership.allvehicles
+  crafts.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

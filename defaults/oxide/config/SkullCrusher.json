@@ -4,7 +4,7 @@
     "RP Per Skull Crush": 20,
     "Scrap Per Skull Crush": 20.0,
     "Send Notification Message": true,
-    "Use Economy": false,
+    "Use Economy": true,
     "Use Scrap as reward": false,
     "Use ServerRewards": false
   },
@@ -20,7 +20,7 @@
     "Use Random Global Crush Messages": false
   },
   "Team Settings": {
-    "Use Clans": false,
+    "Use Clans": true,
     "Use Friends": false,
     "Use Teams": false
   }
