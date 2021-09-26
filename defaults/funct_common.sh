@@ -160,6 +160,31 @@ function show_players() {
   ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "players"
 }
 
+function show_player_groups() {
+  TEMP_OUT="/tmp/player.groups.output"
+  touch ${TEMP_OUT} && cat /dev/null >${TEMP_OUT}
+  for player in $(${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} players | awk '{ print $1 }' | sed 's/id.*//'); do
+    sleep 0.5
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.show user $player" |
+      grep -A 1 "groups:" | tr -d '\n' |
+      sed 's/Player/\n Player/' |
+      sed 's/'\''//g' |
+      sed 's/ Player //' |
+      sed 's/groups://' |
+      sed 's/,//g' |
+      sed 's/ default//g' |
+      sed 's/default //g' |
+      sed 's/default//g' |
+      sed 's/(//g' |
+      sed 's/)//g' |
+      sed 's/  / /g' |
+      sed 's/ /,/g' >>${TEMP_OUT}
+  done
+  sed '/^$/d' ${TEMP_OUT} # | sort | tee ${TEMP_OUT}
+  echo "" && echo ""
+  echo "saved to: ${TEMP_OUT}"
+}
+
 function create_chat_log() {
   echo "parsing the serverlog for player chat" | tee -a ${LOGS}
   tail -n +1 -f ${GAME_ROOT}/RustDedicated.log | while read line; do echo "$line" | grep "CHAT" | tee -a ${GAME_ROOT}/chat-global.out; done

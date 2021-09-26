@@ -1131,6 +1131,30 @@
             "shop.default": 0,
             "shop.vip": 10
           }
+        },
+        {
+          "Type": "Item",
+          "ID": 45,
+          "Image": "",
+          "Title": "",
+          "Command (%steamid%)": "",
+          "Plugin": {
+            "Hook": null,
+            "Plugin Name": null,
+            "Amount": 0
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "ladder.wooden.wall",
+          "Skin": 0,
+          "Amount": 1,
+          "Price": 2.0,
+          "Sell Price": 1.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {
+            "shop.default": 0,
+            "shop.vip": 10
+          }
         }
       ]
     },

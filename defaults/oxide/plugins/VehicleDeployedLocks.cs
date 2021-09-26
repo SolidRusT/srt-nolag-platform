@@ -1,14 +1,17 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Deployed Locks", "WhiteThunder", "1.4.0")]
+    [Info("Vehicle Deployed Locks", "WhiteThunder", "1.5.0")]
     [Description("Allows players to deploy code locks and key locks to vehicles.")]
     internal class VehicleDeployedLocks : CovalencePlugin
     {
@@ -27,12 +30,12 @@ namespace Oxide.Plugins
 
         private const float MaxDeployDistance = 3;
 
-        private VehicleLocksConfig _pluginConfig;
+        private Configuration _pluginConfig;
 
         private CooldownManager _craftCodeLockCooldowns;
         private CooldownManager _craftKeyLockCooldowns;
 
-        private Dictionary<string, VehicleInfo> _customVehicleTypes = new Dictionary<string, VehicleInfo>();
+        private readonly VehicleInfoManager _vehicleInfoManager = new VehicleInfoManager();
 
         private enum PayType { Item, Resources, Free }
 
@@ -42,46 +45,19 @@ namespace Oxide.Plugins
 
         private void Init()
         {
-            _pluginConfig = Config.ReadObject<VehicleLocksConfig>();
-
+            permission.RegisterPermission(Permission_MasterKey, this);
             permission.RegisterPermission(LockInfo_CodeLock.PermissionFree, this);
             permission.RegisterPermission(LockInfo_CodeLock.PermissionAllVehicles, this);
-            permission.RegisterPermission(VehicleInfo_Chinook.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_DuoSub.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_HotAirBalloon.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_Kayak.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_MagnetCrane.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_MiniCopter.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_ModularCar.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_RHIB.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_RidableHorse.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_Rowboat.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_ScrapHeli.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_Sedan.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_SoloSub.CodeLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_Workcart.CodeLockPermission, this);
-
             permission.RegisterPermission(LockInfo_KeyLock.PermissionFree, this);
             permission.RegisterPermission(LockInfo_KeyLock.PermissionAllVehicles, this);
-            permission.RegisterPermission(VehicleInfo_Chinook.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_DuoSub.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_HotAirBalloon.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_Kayak.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_MagnetCrane.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_MiniCopter.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_ModularCar.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_RHIB.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_RidableHorse.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_Rowboat.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_ScrapHeli.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_Sedan.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_SoloSub.KeyLockPermission, this);
-            permission.RegisterPermission(VehicleInfo_Workcart.KeyLockPermission, this);
-
-            permission.RegisterPermission(Permission_MasterKey, this);
 
             _craftKeyLockCooldowns = new CooldownManager(_pluginConfig.CraftCooldownSeconds);
             _craftCodeLockCooldowns = new CooldownManager(_pluginConfig.CraftCooldownSeconds);
+        }
+
+        private void OnServerInitialized()
+        {
+            _vehicleInfoManager.OnServerInitialized(this);
         }
 
         private bool? CanMountEntity(BasePlayer player, BaseMountable entity)
@@ -230,7 +206,7 @@ namespace Oxide.Plugins
             if (vehicle == null)
                 return null;
 
-            var vehicleInfo = GetVehicleInfo(vehicle);
+            var vehicleInfo = _vehicleInfoManager.GetVehicleInfo(vehicle);
             if (vehicleInfo == null)
                 return null;
 
@@ -269,22 +245,14 @@ namespace Oxide.Plugins
 
         private void API_RegisterCustomVehicleType(string vehicleType, Vector3 lockPosition, Quaternion lockRotation, string parentBone, Func<BaseEntity, BaseEntity> determineLockParent)
         {
-            var vehicleInfo = new VehicleInfo()
+            _vehicleInfoManager.RegisterCustomVehicleType(this, new VehicleInfo()
             {
-                PermissionName = vehicleType,
+                VehicleType = vehicleType,
                 LockPosition = lockPosition,
                 LockRotation = lockRotation,
                 ParentBone = parentBone,
                 DetermineLockParent = determineLockParent,
-            };
-
-            if (!_customVehicleTypes.ContainsKey(vehicleType))
-            {
-                permission.RegisterPermission(vehicleInfo.CodeLockPermission, this);
-                permission.RegisterPermission(vehicleInfo.KeyLockPermission, this);
-            }
-
-            _customVehicleTypes[vehicleType] = vehicleInfo;
+            });
         }
 
         #endregion
@@ -307,9 +275,9 @@ namespace Oxide.Plugins
             var basePlayer = player.Object as BasePlayer;
             VehicleInfo vehicleInfo;
             var vehicle = GetVehicleFromEntity(GetLookEntity(basePlayer, MaxDeployDistance), basePlayer);
-            if (vehicle == null || !TryGet(GetVehicleInfo(vehicle), out vehicleInfo))
+            if (vehicle == null || !TryGet(_vehicleInfoManager.GetVehicleInfo(vehicle), out vehicleInfo))
             {
-                ReplyToPlayer(player, "Deploy.Error.NoVehicleFound");
+                ReplyToPlayer(player, Lang.DeployErrorNoVehicleFound);
                 return;
             }
 
@@ -420,7 +388,7 @@ namespace Oxide.Plugins
                 if (provideFeedback)
                 {
                     Effect.server.Run(Prefab_CodeLock_DeniedEffect, baseLock, 0, Vector3.zero, Vector3.forward);
-                    ChatMessage(player, "Generic.Error.VehicleLocked");
+                    ChatMessage(player, Lang.GenericErrorVehicleLocked);
                 }
 
                 return false;
@@ -445,14 +413,7 @@ namespace Oxide.Plugins
             if (parentModule != null)
                 return parentModule.Vehicle;
 
-            foreach (var vehicleConfig in _customVehicleTypes.Values)
-            {
-                var lockParent = vehicleConfig.DetermineLockParent(entity);
-                if (lockParent != null)
-                    return lockParent;
-            }
-
-            return null;
+            return _vehicleInfoManager.GetCustomVehicleParent(entity);
         }
 
         private bool? CanPlayerInteractWithParentVehicle(BasePlayer player, BaseEntity entity, bool provideFeedback = true) =>
@@ -614,8 +575,9 @@ namespace Oxide.Plugins
             if (baseLock == null)
                 return null;
 
-            if (baseLock is KeyLock)
-                (baseLock as KeyLock).keyCode = UnityEngine.Random.Range(1, 100000);
+            var keyLock = baseLock as KeyLock;
+            if (keyLock != null)
+                keyLock.keyCode = UnityEngine.Random.Range(1, 100000);
 
             if (ownerID != 0)
                 baseLock.OwnerID = ownerID;
@@ -623,6 +585,10 @@ namespace Oxide.Plugins
             baseLock.SetParent(parentToEntity, vehicleInfo.ParentBone);
             baseLock.Spawn();
             vehicle.SetSlot(BaseEntity.Slot.Lock, baseLock);
+
+            // Auto lock key locks to be consistent with vanilla.
+            if (ownerID != 0 && keyLock != null)
+                keyLock.SetFlag(BaseEntity.Flags.Locked, true);
 
             Effect.server.Run(Prefab_CodeLock_DeployedEffect, baseLock.transform.position);
             Interface.CallHook("OnVehicleLockDeployed", vehicle, baseLock);
@@ -632,11 +598,19 @@ namespace Oxide.Plugins
 
         private BaseLock DeployLockForPlayer(BaseEntity vehicle, VehicleInfo vehicleInfo, LockInfo lockInfo, BasePlayer player, PayType payType)
         {
+            var originalVehicleOwnerId = vehicle.OwnerID;
+
+            // Temporarily set the player as the owner of the vehicle, for compatibility with AutoCodeLock (OnItemDeployed).
+            vehicle.OwnerID = player.userID;
+
             var baseLock = DeployLock(vehicle, vehicleInfo, lockInfo, player.userID);
             if (baseLock == null)
+            {
+                vehicle.OwnerID = originalVehicleOwnerId;
                 return null;
+            }
 
-            // Allow other plugins to detect the code lock being deployed (e.g., auto lock)
+            // Allow other plugins to detect the code lock being deployed (e.g., to auto lock).
             var lockItem = GetPlayerLockItem(player, lockInfo);
             if (lockItem != null)
             {
@@ -644,7 +618,7 @@ namespace Oxide.Plugins
             }
             else
             {
-                // Temporarily increase the player inventory capacity to ensure there is enough space
+                // Temporarily increase the player inventory capacity to ensure there is enough space.
                 player.inventory.containerMain.capacity++;
                 var temporaryLockItem = ItemManager.CreateByItemID(lockInfo.ItemId);
                 if (player.inventory.GiveItem(temporaryLockItem))
@@ -656,6 +630,9 @@ namespace Oxide.Plugins
                 player.inventory.containerMain.capacity--;
             }
 
+            // Revert the vehicle owner to the original, after OnItemDeployed is called.
+            vehicle.OwnerID = originalVehicleOwnerId;
+
             MaybeChargePlayerForLock(player, lockInfo, payType);
             return baseLock;
         }
@@ -665,7 +642,7 @@ namespace Oxide.Plugins
             if (vehicle == null || IsDead(vehicle))
                 return null;
 
-            var vehicleInfo = GetVehicleInfo(vehicle);
+            var vehicleInfo = _vehicleInfoManager.GetVehicleInfo(vehicle);
             if (vehicleInfo == null
                 || GetVehicleLock(vehicle) != null
                 || !CanVehicleHaveALock(vehicle))
@@ -690,7 +667,7 @@ namespace Oxide.Plugins
             PayType payType;
             return vehicle != null
                 && !IsDead(vehicle)
-                && GetVehicleInfo(vehicle) != null
+                && _vehicleInfoManager.GetVehicleInfo(vehicle) != null
                 && AllowNoOwner(vehicle)
                 && AllowDifferentOwner(player.IPlayer, vehicle)
                 && player.CanBuild()
@@ -703,6 +680,127 @@ namespace Oxide.Plugins
         #endregion
 
         #region Helper Methods - Command Checks
+
+        private bool VerifyDeployDistance(IPlayer player, BaseEntity vehicle)
+        {
+            if (vehicle.Distance(player.Object as BasePlayer) <= MaxDeployDistance)
+                return true;
+
+            ReplyToPlayer(player, Lang.DeployErrorDistance);
+            return false;
+        }
+
+        private bool VerifyPermissionToVehicleAndLockType(IPlayer player, VehicleInfo vehicleInfo, LockInfo lockInfo)
+        {
+            var vehiclePerm = lockInfo == LockInfo_CodeLock
+                ? vehicleInfo.CodeLockPermission
+                : vehicleInfo.KeyLockPermission;
+
+            if (vehiclePerm != null && HasPermissionAny(player, lockInfo.PermissionAllVehicles, vehiclePerm))
+                return true;
+
+            ReplyToPlayer(player, Lang.GenericErrorNoPermission);
+            return false;
+        }
+
+        private bool VerifyVehicleIsNotDead(IPlayer player, BaseEntity vehicle)
+        {
+            if (!IsDead(vehicle))
+                return true;
+
+            ReplyToPlayer(player, Lang.DeployErrorVehicleDead);
+            return false;
+        }
+
+        private bool VerifyNoOwnershipRestriction(IPlayer player, BaseEntity vehicle)
+        {
+            if (!AllowNoOwner(vehicle))
+            {
+                ReplyToPlayer(player, Lang.DeployErrorNoOwner);
+                return false;
+            }
+
+            if (!AllowDifferentOwner(player, vehicle))
+            {
+                ReplyToPlayer(player, Lang.DeployErrorDifferentOwner);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool VerifyCanBuild(IPlayer player, BaseEntity vehicle)
+        {
+            var basePlayer = player.Object as BasePlayer;
+
+            if (vehicle.OwnerID == 0 && _pluginConfig.RequireTCIfNoOwner)
+            {
+                if (!basePlayer.IsBuildingAuthed() || !basePlayer.IsBuildingAuthed(vehicle.WorldSpaceBounds()))
+                {
+                    ReplyToPlayer(player, Lang.DeployErrorNoOwnerRequiresTC);
+                    return false;
+                }
+            }
+            else if (basePlayer.IsBuildingBlocked() || basePlayer.IsBuildingBlocked(vehicle.WorldSpaceBounds()))
+            {
+                ReplyToPlayer(player, Lang.GenericErrorBuildingBlocked);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool VerifyVehicleHasNoLock(IPlayer player, BaseEntity vehicle)
+        {
+            if (GetVehicleLock(vehicle) == null)
+                return true;
+
+            ReplyToPlayer(player, Lang.DeployErrorHasLock);
+            return false;
+        }
+
+        private bool VerifyVehicleCanHaveALock(IPlayer player, BaseEntity vehicle)
+        {
+            if (CanVehicleHaveALock(vehicle))
+                return true;
+
+            ReplyToPlayer(player, Lang.DeployErrorModularCarNoCockpit);
+            return false;
+        }
+
+        private bool VerifyPlayerCanAffordLock(BasePlayer player, LockInfo lockInfo, out PayType payType)
+        {
+            if (CanPlayerAffordLock(player, lockInfo, out payType))
+                return true;
+
+            ChatMessage(player, Lang.DeployErrorInsufficientResources, lockInfo.ItemDefinition.displayName.translated);
+            return false;
+        }
+
+        private bool VerifyOffCooldown(IPlayer player, LockInfo lockInfo, PayType payType)
+        {
+            if (payType != PayType.Resources)
+                return true;
+
+            var secondsRemaining = GetCooldownManager(lockInfo).GetSecondsRemaining(player.Id);
+            if (secondsRemaining <= 0)
+                return true;
+
+            ChatMessage(player.Object as BasePlayer, Lang.GenericErrorCooldown, Math.Ceiling(secondsRemaining));
+            return false;
+        }
+
+        private bool VerifyPlayerCanDeployLock(IPlayer player, LockInfo lockInfo, out PayType payType) =>
+            VerifyPlayerCanAffordLock(player.Object as BasePlayer, lockInfo, out payType) && VerifyOffCooldown(player, lockInfo, payType);
+
+        private bool VerifyNotMounted(IPlayer player, BaseEntity vehicle, VehicleInfo vehicleInfo)
+        {
+            if (!vehicleInfo.IsMounted(vehicle))
+                return true;
+
+            ReplyToPlayer(player, Lang.DeployErrorMounted);
+            return false;
+        }
 
         private bool VerifyCanDeploy(IPlayer player, BaseEntity vehicle, VehicleInfo vehicleInfo, LockInfo lockInfo, out PayType payType)
         {
@@ -720,150 +818,45 @@ namespace Oxide.Plugins
                 && !DeployWasBlocked(vehicle, basePlayer, lockInfo);
         }
 
-        private bool VerifyDeployDistance(IPlayer player, BaseEntity vehicle)
-        {
-            if (vehicle.Distance(player.Object as BasePlayer) <= MaxDeployDistance)
-                return true;
-
-            ReplyToPlayer(player, "Deploy.Error.Distance");
-            return false;
-        }
-
-        private bool VerifyPermissionToVehicleAndLockType(IPlayer player, VehicleInfo vehicleInfo, LockInfo lockInfo)
-        {
-            var vehiclePerm = lockInfo == LockInfo_CodeLock
-                ? vehicleInfo.CodeLockPermission
-                : vehicleInfo.KeyLockPermission;
-
-            if (vehiclePerm != null && HasPermissionAny(player, lockInfo.PermissionAllVehicles, vehiclePerm))
-                return true;
-
-            ReplyToPlayer(player, "Generic.Error.NoPermission");
-            return false;
-        }
-
-        private bool VerifyVehicleIsNotDead(IPlayer player, BaseEntity vehicle)
-        {
-            if (!IsDead(vehicle))
-                return true;
-
-            ReplyToPlayer(player, "Deploy.Error.VehicleDead");
-            return false;
-        }
-
-        private bool VerifyNoOwnershipRestriction(IPlayer player, BaseEntity vehicle)
-        {
-            if (!AllowNoOwner(vehicle))
-            {
-                ReplyToPlayer(player, "Deploy.Error.NoOwner");
-                return false;
-            }
-
-            if (!AllowDifferentOwner(player, vehicle))
-            {
-                ReplyToPlayer(player, "Deploy.Error.DifferentOwner");
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool VerifyCanBuild(IPlayer player, BaseEntity vehicle)
-        {
-            var basePlayer = player.Object as BasePlayer;
-            if (basePlayer.CanBuild() && basePlayer.CanBuild(vehicle.WorldSpaceBounds()))
-                return true;
-
-            ReplyToPlayer(player, "Generic.Error.BuildingBlocked");
-            return false;
-        }
-
-        private bool VerifyVehicleHasNoLock(IPlayer player, BaseEntity vehicle)
-        {
-            if (GetVehicleLock(vehicle) == null)
-                return true;
-
-            ReplyToPlayer(player, "Deploy.Error.HasLock");
-            return false;
-        }
-
-        private bool VerifyVehicleCanHaveALock(IPlayer player, BaseEntity vehicle)
-        {
-            if (CanVehicleHaveALock(vehicle))
-                return true;
-
-            ReplyToPlayer(player, "Deploy.Error.ModularCar.NoCockpit");
-            return false;
-        }
-
-        private bool VerifyPlayerCanAffordLock(BasePlayer player, LockInfo lockInfo, out PayType payType)
-        {
-            if (CanPlayerAffordLock(player, lockInfo, out payType))
-                return true;
-
-            ChatMessage(player, "Deploy.Error.InsufficientResources", lockInfo.ItemDefinition.displayName.translated);
-            return false;
-        }
-
-        private bool VerifyOffCooldown(IPlayer player, LockInfo lockInfo, PayType payType)
-        {
-            if (payType != PayType.Resources)
-                return true;
-
-            var secondsRemaining = GetCooldownManager(lockInfo).GetSecondsRemaining(player.Id);
-            if (secondsRemaining <= 0)
-                return true;
-
-            ChatMessage(player.Object as BasePlayer, "Generic.Error.Cooldown", Math.Ceiling(secondsRemaining));
-            return false;
-        }
-
-        private bool VerifyPlayerCanDeployLock(IPlayer player, LockInfo lockInfo, out PayType payType) =>
-            VerifyPlayerCanAffordLock(player.Object as BasePlayer, lockInfo, out payType) && VerifyOffCooldown(player, lockInfo, payType);
-
-        private bool VerifyNotMounted(IPlayer player, BaseEntity vehicle, VehicleInfo vehicleInfo)
-        {
-            if (!vehicleInfo.IsMounted(vehicle))
-                return true;
-
-            ReplyToPlayer(player, "Deploy.Error.Mounted");
-            return false;
-        }
-
         #endregion
 
         #region Vehicle Info
 
         private class VehicleInfo
         {
-            public string PermissionName;
+            public string VehicleType;
+            public string[] PrefabPaths;
             public Vector3 LockPosition;
             public Quaternion LockRotation;
             public string ParentBone;
 
+            public string CodeLockPermission { get; private set; }
+            public string KeyLockPermission { get; private set; }
+            public uint[] PrefabIds { get; private set; }
+
             public Func<BaseEntity, BaseEntity> DetermineLockParent = (entity) => entity;
 
-            private string _codeLockPermission;
-            public string CodeLockPermission
+            public void OnServerInitialized(VehicleDeployedLocks pluginInstance)
             {
-                get
+                CodeLockPermission = $"{Permission_CodeLock_Prefix}.{VehicleType}";
+                KeyLockPermission = $"{Permission_KeyLock_Prefix}.{VehicleType}";
+
+                pluginInstance.permission.RegisterPermission(CodeLockPermission, pluginInstance);
+                pluginInstance.permission.RegisterPermission(KeyLockPermission, pluginInstance);
+
+                // Custom vehicles aren't currently allowed to specify prefabs since they reuse existing prefabs.
+                if (PrefabPaths != null)
                 {
-                    if (_codeLockPermission == null)
-                        _codeLockPermission = $"{Permission_CodeLock_Prefix}.{PermissionName}";
-
-                    return _codeLockPermission;
-                }
-            }
-
-            private string _keyLockPermission;
-            public string KeyLockPermission
-            {
-                get
-                {
-                    if (_keyLockPermission == null)
-                        _keyLockPermission = $"{Permission_KeyLock_Prefix}.{PermissionName}";
-
-                    return _keyLockPermission;
+                    var prefabIds = new List<uint>();
+                    foreach (var prefabName in PrefabPaths)
+                    {
+                        var prefabId = StringPool.Get(prefabName);
+                        if (prefabId != 0)
+                            prefabIds.Add(prefabId);
+                        else
+                            pluginInstance.LogError($"Invalid prefab. Please alert the plugin maintainer -- {prefabName}");
+                    }
+                    PrefabIds = prefabIds.ToArray();
                 }
             }
 
@@ -882,152 +875,162 @@ namespace Oxide.Plugins
             }
         }
 
-        private readonly VehicleInfo VehicleInfo_Chinook = new VehicleInfo()
+        private class VehicleInfoManager
         {
-            PermissionName = "chinook",
-            LockPosition = new Vector3(-1.175f, 2, 6.5f),
-        };
+            private readonly Dictionary<uint, VehicleInfo> _prefabIdToVehicleInfo = new Dictionary<uint, VehicleInfo>();
+            private readonly Dictionary<string, VehicleInfo> _customVehicleTypes = new Dictionary<string, VehicleInfo>();
 
-        private readonly VehicleInfo VehicleInfo_HotAirBalloon = new VehicleInfo()
-        {
-            PermissionName = "hotairballoon",
-            LockPosition = new Vector3(1.45f, 0.9f, 0),
-        };
-
-        private readonly VehicleInfo VehicleInfo_Kayak = new VehicleInfo()
-        {
-            PermissionName = "kayak",
-            LockPosition = new Vector3(-0.43f, 0.2f, 0.2f),
-            LockRotation = Quaternion.Euler(0, 90, 90),
-        };
-
-        private readonly VehicleInfo VehicleInfo_MagnetCrane = new VehicleInfo()
-        {
-            PermissionName = "magnetcrane",
-            LockPosition = new Vector3(-1.735f, -1.445f, 0.79f),
-            LockRotation = Quaternion.Euler(0, 0, 90),
-            ParentBone = "Top",
-        };
-
-        private readonly VehicleInfo VehicleInfo_MiniCopter = new VehicleInfo()
-        {
-            PermissionName = "minicopter",
-            LockPosition = new Vector3(-0.15f, 0.7f, -0.1f),
-        };
-
-        private readonly VehicleInfo VehicleInfo_ModularCar = new VehicleInfo()
-        {
-            PermissionName = "modularcar",
-            LockPosition = new Vector3(-0.9f, 0.35f, -0.5f),
-            DetermineLockParent = (vehicle) => FindFirstDriverModule((ModularCar)vehicle),
-        };
-
-        private readonly VehicleInfo VehicleInfo_RHIB = new VehicleInfo()
-        {
-            PermissionName = "rhib",
-            LockPosition = new Vector3(-0.68f, 2.00f, 0.7f),
-        };
-
-        private readonly VehicleInfo VehicleInfo_RidableHorse = new VehicleInfo()
-        {
-            PermissionName = "ridablehorse",
-            LockPosition = new Vector3(-0.6f, 0.35f, -0.1f),
-            LockRotation = Quaternion.Euler(0, 95, 90),
-            ParentBone = "Horse_RootBone",
-        };
-
-        private readonly VehicleInfo VehicleInfo_Rowboat = new VehicleInfo()
-        {
-            PermissionName = "rowboat",
-            LockPosition = new Vector3(-0.83f, 0.51f, -0.57f),
-        };
-
-        private readonly VehicleInfo VehicleInfo_ScrapHeli = new VehicleInfo()
-        {
-            PermissionName = "scraptransport",
-            LockPosition = new Vector3(-1.25f, 1.22f, 1.99f),
-        };
-
-        private readonly VehicleInfo VehicleInfo_Sedan = new VehicleInfo()
-        {
-            PermissionName = "sedan",
-            LockPosition = new Vector3(-1.09f, 0.79f, 0.5f),
-        };
-
-        private readonly VehicleInfo VehicleInfo_Workcart = new VehicleInfo()
-        {
-            PermissionName = "workcart",
-            LockPosition = new Vector3(-0.2f, 2.35f, 2.7f),
-        };
-
-        private readonly VehicleInfo VehicleInfo_DuoSub = new VehicleInfo()
-        {
-            PermissionName = "duosub",
-            LockPosition = new Vector3(-0.455f, 1.29f, 0.75f),
-            LockRotation = Quaternion.Euler(0, 180, 10),
-        };
-
-        private readonly VehicleInfo VehicleInfo_SoloSub = new VehicleInfo()
-        {
-            PermissionName = "solosub",
-            LockPosition = new Vector3(0f, 1.85f, 0f),
-            LockRotation = Quaternion.Euler(0, 90, 90),
-        };
-
-        private VehicleInfo GetVehicleInfo(BaseEntity entity)
-        {
-            if (entity is CH47Helicopter)
-                return VehicleInfo_Chinook;
-
-            if (entity is HotAirBalloon)
-                return VehicleInfo_HotAirBalloon;
-
-            if (entity is Kayak)
-                return VehicleInfo_Kayak;
-
-            if (entity is RidableHorse)
-                return VehicleInfo_RidableHorse;
-
-            // Must go before MiniCopter.
-            if (entity is ScrapTransportHelicopter)
-                return VehicleInfo_ScrapHeli;
-
-            if (entity is MiniCopter)
-                return VehicleInfo_MiniCopter;
-
-            if (entity is ModularCar)
-                return VehicleInfo_ModularCar;
-
-            // Must go before MotorRowboat.
-            if (entity is RHIB)
-                return VehicleInfo_RHIB;
-
-            if (entity is MotorRowboat)
-                return VehicleInfo_Rowboat;
-
-            // Must go before BaseSubmarine.
-            if (entity is SubmarineDuo)
-                return VehicleInfo_DuoSub;
-
-            if (entity is BaseSubmarine)
-                return VehicleInfo_SoloSub;
-
-            if (entity is BasicCar)
-                return VehicleInfo_Sedan;
-
-            if (entity is TrainEngine)
-                return VehicleInfo_Workcart;
-
-            if (entity is BaseCrane)
-                return VehicleInfo_MagnetCrane;
-
-            foreach (var vehicleInfo in _customVehicleTypes.Values)
+            public void OnServerInitialized(VehicleDeployedLocks pluginInstance)
             {
-                if (vehicleInfo.DetermineLockParent(entity))
-                    return vehicleInfo;
+                var allVehicles = new VehicleInfo[]
+                {
+                    new VehicleInfo
+                    {
+                        VehicleType = "chinook",
+                        PrefabPaths = new string[] { "assets/prefabs/npc/ch47/ch47.entity.prefab" },
+                        LockPosition = new Vector3(-1.175f, 2, 6.5f),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "duosub",
+                        PrefabPaths = new string[] { "assets/content/vehicles/submarine/submarineduo.entity.prefab" },
+                        LockPosition = new Vector3(-0.455f, 1.29f, 0.75f),
+                        LockRotation = Quaternion.Euler(0, 180, 10),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "hotairballoon",
+                        PrefabPaths = new string[] { "assets/prefabs/deployable/hot air balloon/hotairballoon.prefab" },
+                        LockPosition = new Vector3(1.45f, 0.9f, 0),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "kayak",
+                        PrefabPaths = new string[] { "assets/content/vehicles/boats/kayak/kayak.prefab" },
+                        LockPosition = new Vector3(-0.43f, 0.2f, 0.2f),
+                        LockRotation = Quaternion.Euler(0, 90, 90),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "magnetcrane",
+                        PrefabPaths = new string[] { "assets/content/vehicles/crane_magnet/magnetcrane.entity.prefab" },
+                        LockPosition = new Vector3(-1.735f, -1.445f, 0.79f),
+                        LockRotation = Quaternion.Euler(0, 0, 90),
+                        ParentBone = "Top",
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "minicopter",
+                        PrefabPaths = new string[] { "assets/content/vehicles/minicopter/minicopter.entity.prefab" },
+                        LockPosition = new Vector3(-0.15f, 0.7f, -0.1f),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "modularcar",
+                        PrefabPaths = new string[]
+                        {
+                            "assets/content/vehicles/modularcar/car_chassis_2module.entity.prefab",
+                            "assets/content/vehicles/modularcar/car_chassis_3module.entity.prefab",
+                            "assets/content/vehicles/modularcar/car_chassis_4module.entity.prefab",
+                            "assets/content/vehicles/modularcar/2module_car_spawned.entity.prefab",
+                            "assets/content/vehicles/modularcar/3module_car_spawned.entity.prefab",
+                            "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab",
+                        },
+                        LockPosition = new Vector3(-0.9f, 0.35f, -0.5f),
+                        DetermineLockParent = (vehicle) => FindFirstDriverModule((ModularCar)vehicle),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "rhib",
+                        PrefabPaths = new string[] { "assets/content/vehicles/boats/rhib/rhib.prefab" },
+                        LockPosition = new Vector3(-0.68f, 2.00f, 0.7f),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "ridablehorse",
+                        PrefabPaths = new string[] { "assets/rust.ai/nextai/testridablehorse.prefab" },
+                        LockPosition = new Vector3(-0.6f, 0.35f, -0.1f),
+                        LockRotation = Quaternion.Euler(0, 95, 90),
+                        ParentBone = "Horse_RootBone",
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "rowboat",
+                        PrefabPaths = new string[] { "assets/content/vehicles/boats/rowboat/rowboat.prefab" },
+                        LockPosition = new Vector3(-0.83f, 0.51f, -0.57f),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "scraptransport",
+                        PrefabPaths = new string[] { "assets/content/vehicles/scrap heli carrier/scraptransporthelicopter.prefab" },
+                        LockPosition = new Vector3(-1.25f, 1.22f, 1.99f),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "sedan",
+                        PrefabPaths = new string[] { "assets/content/vehicles/sedan_a/sedantest.entity.prefab" },
+                        LockPosition = new Vector3(-1.09f, 0.79f, 0.5f),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "solosub",
+                        PrefabPaths = new string[] { "assets/content/vehicles/submarine/submarinesolo.entity.prefab" },
+                        LockPosition = new Vector3(0f, 1.85f, 0f),
+                        LockRotation = Quaternion.Euler(0, 90, 90),
+                    },
+                    new VehicleInfo
+                    {
+                        VehicleType = "workcart",
+                        PrefabPaths = new string[] { "assets/content/vehicles/workcart/workcart.entity.prefab" },
+                        LockPosition = new Vector3(-0.2f, 2.35f, 2.7f),
+                    },
+                };
+
+                foreach (var vehicleInfo in allVehicles)
+                {
+                    vehicleInfo.OnServerInitialized(pluginInstance);
+                    foreach (var prefabId in vehicleInfo.PrefabIds)
+                    {
+                        _prefabIdToVehicleInfo[prefabId] = vehicleInfo;
+                    }
+                }
             }
 
-            return null;
+            public void RegisterCustomVehicleType(VehicleDeployedLocks pluginInstance, VehicleInfo vehicleInfo)
+            {
+                if (_customVehicleTypes.ContainsKey(vehicleInfo.VehicleType))
+                    return;
+
+                vehicleInfo.OnServerInitialized(pluginInstance);
+                _customVehicleTypes[vehicleInfo.VehicleType] = vehicleInfo;
+            }
+
+            public VehicleInfo GetVehicleInfo(BaseEntity entity)
+            {
+                VehicleInfo vehicleInfo;
+                if (_prefabIdToVehicleInfo.TryGetValue(entity.prefabID, out vehicleInfo))
+                    return vehicleInfo;
+
+                foreach (var customVehicleInfo in _customVehicleTypes.Values)
+                {
+                    if (customVehicleInfo.DetermineLockParent(entity) != null)
+                        return customVehicleInfo;
+                }
+
+                return null;
+            }
+
+            public BaseEntity GetCustomVehicleParent(BaseEntity entity)
+            {
+                foreach (var vehicleInfo in _customVehicleTypes.Values)
+                {
+                    var lockParent = vehicleInfo.DetermineLockParent(entity);
+                    if (lockParent != null)
+                        return lockParent;
+                }
+
+                return null;
+            }
         }
 
         #endregion
@@ -1102,15 +1105,16 @@ namespace Oxide.Plugins
 
         #region Configuration
 
-        protected override void LoadDefaultConfig() => Config.WriteObject(new VehicleLocksConfig(), true);
-
-        private class VehicleLocksConfig
+        private class Configuration : SerializableConfiguration
         {
             [JsonProperty("AllowIfDifferentOwner")]
             public bool AllowIfDifferentOwner = false;
 
             [JsonProperty("AllowIfNoOwner")]
             public bool AllowIfNoOwner = true;
+
+            [JsonProperty("RequireTCIfNoOwner")]
+            public bool RequireTCIfNoOwner = false;
 
             [JsonProperty("CraftCooldownSeconds")]
             public float CraftCooldownSeconds = 10;
@@ -1143,39 +1147,169 @@ namespace Oxide.Plugins
             public bool Team = false;
         }
 
+        private Configuration GetDefaultConfig() => new Configuration();
+
+        #endregion
+
+        #region Configuration Boilerplate
+
+        private class SerializableConfiguration
+        {
+            public string ToJson() => JsonConvert.SerializeObject(this);
+
+            public Dictionary<string, object> ToDictionary() => JsonHelper.Deserialize(ToJson()) as Dictionary<string, object>;
+        }
+
+        private static class JsonHelper
+        {
+            public static object Deserialize(string json) => ToObject(JToken.Parse(json));
+
+            private static object ToObject(JToken token)
+            {
+                switch (token.Type)
+                {
+                    case JTokenType.Object:
+                        return token.Children<JProperty>()
+                                    .ToDictionary(prop => prop.Name,
+                                                  prop => ToObject(prop.Value));
+
+                    case JTokenType.Array:
+                        return token.Select(ToObject).ToList();
+
+                    default:
+                        return ((JValue)token).Value;
+                }
+            }
+        }
+
+        private bool MaybeUpdateConfig(SerializableConfiguration config)
+        {
+            var currentWithDefaults = config.ToDictionary();
+            var currentRaw = Config.ToDictionary(x => x.Key, x => x.Value);
+            return MaybeUpdateConfigDict(currentWithDefaults, currentRaw);
+        }
+
+        private bool MaybeUpdateConfigDict(Dictionary<string, object> currentWithDefaults, Dictionary<string, object> currentRaw)
+        {
+            bool changed = false;
+
+            foreach (var key in currentWithDefaults.Keys)
+            {
+                object currentRawValue;
+                if (currentRaw.TryGetValue(key, out currentRawValue))
+                {
+                    var defaultDictValue = currentWithDefaults[key] as Dictionary<string, object>;
+                    var currentDictValue = currentRawValue as Dictionary<string, object>;
+
+                    if (defaultDictValue != null)
+                    {
+                        if (currentDictValue == null)
+                        {
+                            currentRaw[key] = currentWithDefaults[key];
+                            changed = true;
+                        }
+                        else if (MaybeUpdateConfigDict(defaultDictValue, currentDictValue))
+                            changed = true;
+                    }
+                }
+                else
+                {
+                    currentRaw[key] = currentWithDefaults[key];
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        protected override void LoadDefaultConfig() => _pluginConfig = GetDefaultConfig();
+
+        protected override void LoadConfig()
+        {
+            base.LoadConfig();
+            try
+            {
+                _pluginConfig = Config.ReadObject<Configuration>();
+                if (_pluginConfig == null)
+                {
+                    throw new JsonException();
+                }
+
+                if (MaybeUpdateConfig(_pluginConfig))
+                {
+                    LogWarning("Configuration appears to be outdated; updating and saving");
+                    SaveConfig();
+                }
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message);
+                LogWarning($"Configuration file {Name}.json is invalid; using defaults");
+                LoadDefaultConfig();
+            }
+        }
+
+        protected override void SaveConfig()
+        {
+            Log($"Configuration changes saved to {Name}.json");
+            Config.WriteObject(_pluginConfig, true);
+        }
+
         #endregion
 
         #region Localization
+
+        private string GetMessage(string playerId, string messageName, params object[] args)
+        {
+            var message = lang.GetMessage(messageName, this, playerId);
+            return args.Length > 0 ? string.Format(message, args) : message;
+        }
+
+        private string GetMessage(IPlayer player, string messageName, params object[] args) =>
+            GetMessage(player.Id, messageName, args);
 
         private void ReplyToPlayer(IPlayer player, string messageName, params object[] args) =>
             player.Reply(string.Format(GetMessage(player, messageName), args));
 
         private void ChatMessage(BasePlayer player, string messageName, params object[] args) =>
-            player.ChatMessage(string.Format(GetMessage(player.IPlayer, messageName), args));
+            player.ChatMessage(string.Format(GetMessage(player.UserIDString, messageName), args));
 
-        private string GetMessage(IPlayer player, string messageName, params object[] args)
+        private class Lang
         {
-            var message = lang.GetMessage(messageName, this, player.Id);
-            return args.Length > 0 ? string.Format(message, args) : message;
+            public const string GenericErrorNoPermission = "Generic.Error.NoPermission";
+            public const string GenericErrorBuildingBlocked = "Generic.Error.BuildingBlocked";
+            public const string GenericErrorCooldown = "Generic.Error.Cooldown";
+            public const string GenericErrorVehicleLocked = "Generic.Error.VehicleLocked";
+            public const string DeployErrorNoVehicleFound = "Deploy.Error.NoVehicleFound";
+            public const string DeployErrorVehicleDead = "Deploy.Error.VehicleDead";
+            public const string DeployErrorDifferentOwner = "Deploy.Error.DifferentOwner";
+            public const string DeployErrorNoOwner = "Deploy.Error.NoOwner";
+            public const string DeployErrorNoOwnerRequiresTC = "Deploy.Error.NoOwner.NoBuildingPrivilege";
+            public const string DeployErrorHasLock = "Deploy.Error.HasLock";
+            public const string DeployErrorInsufficientResources = "Deploy.Error.InsufficientResources";
+            public const string DeployErrorMounted = "Deploy.Error.Mounted";
+            public const string DeployErrorModularCarNoCockpit = "Deploy.Error.ModularCar.NoCockpit";
+            public const string DeployErrorDistance = "Deploy.Error.Distance";
         }
 
         protected override void LoadDefaultMessages()
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["Generic.Error.NoPermission"] = "You don't have permission to do that.",
-                ["Generic.Error.BuildingBlocked"] = "Error: Cannot do that while building blocked.",
-                ["Generic.Error.Cooldown"] = "Please wait <color=red>{0}s</color> and try again.",
-                ["Generic.Error.VehicleLocked"] = "That vehicle is locked.",
-                ["Deploy.Error.NoVehicleFound"] = "Error: No vehicle found.",
-                ["Deploy.Error.VehicleDead"] = "Error: That vehicle is dead.",
-                ["Deploy.Error.DifferentOwner"] = "Error: Someone else owns that vehicle.",
-                ["Deploy.Error.NoOwner"] = "Error: You do not own that vehicle.",
-                ["Deploy.Error.HasLock"] = "Error: That vehicle already has a lock.",
-                ["Deploy.Error.InsufficientResources"] = "Error: Not enough resources to craft a {0}.",
-                ["Deploy.Error.Mounted"] = "Error: That vehicle is currently occupied.",
-                ["Deploy.Error.ModularCar.NoCockpit"] = "Error: That car needs a cockpit module to receive a lock.",
-                ["Deploy.Error.Distance"] = "Error: Too far away."
+                [Lang.GenericErrorNoPermission] = "You don't have permission to do that.",
+                [Lang.GenericErrorBuildingBlocked] = "Error: Cannot do that while building blocked.",
+                [Lang.GenericErrorCooldown] = "Please wait <color=red>{0}s</color> and try again.",
+                [Lang.GenericErrorVehicleLocked] = "That vehicle is locked.",
+                [Lang.DeployErrorNoVehicleFound] = "Error: No vehicle found.",
+                [Lang.DeployErrorVehicleDead] = "Error: That vehicle is dead.",
+                [Lang.DeployErrorDifferentOwner] = "Error: Someone else owns that vehicle.",
+                [Lang.DeployErrorNoOwner] = "Error: You do not own that vehicle.",
+                [Lang.DeployErrorNoOwnerRequiresTC] = "Error: Locking unowned vehicles requires building privilege.",
+                [Lang.DeployErrorHasLock] = "Error: That vehicle already has a lock.",
+                [Lang.DeployErrorInsufficientResources] = "Error: Not enough resources to craft a {0}.",
+                [Lang.DeployErrorMounted] = "Error: That vehicle is currently occupied.",
+                [Lang.DeployErrorModularCarNoCockpit] = "Error: That car needs a cockpit module to receive a lock.",
+                [Lang.DeployErrorDistance] = "Error: Too far away."
             }, this, "en");
         }
 

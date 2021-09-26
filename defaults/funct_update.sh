@@ -398,6 +398,7 @@ DEFAULT_PERMS=(
   localize.use
   vehiclevendoroptions.ownership.allvehicles
   crafts.use
+  instantmixingtable.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

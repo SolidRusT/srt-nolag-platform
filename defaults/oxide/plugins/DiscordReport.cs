@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core;
@@ -11,7 +13,7 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("Discord Report", "misticos", "1.1.0")]
+    [Info("Discord Report", "misticos", "1.2.0")]
     [Description("Send reports from players ingame to a Discord channel")]
     class DiscordReport : CovalencePlugin
     {
@@ -25,71 +27,88 @@ namespace Oxide.Plugins
         private static DiscordReport _ins;
 
         private const string SteamProfileXML = "https://steamcommunity.com/profiles/{0}?xml=1";
-        private const string SteamProfile = "https://steamcommunity.com/profiles/{0}";
+        private const string SteamProfile = "https://steamcommunity.com/profiles/";
 
         private readonly Regex _steamProfileIconRegex =
             new Regex(@"(?<=<avatarIcon>[\w\W]+)https://.+\.jpg(?=[\w\W]+<\/avatarIcon>)", RegexOptions.Compiled);
-        
+
         private Dictionary<string, uint> _cooldownData = new Dictionary<string, uint>();
-        private Dictionary<string, HashSet<string>> _reportLog = new Dictionary<string, HashSet<string>>();
 
         private Time _time = GetLibrary<Time>();
 
         private const string PermissionIgnoreCooldown = "discordreport.ignorecooldown";
         private const string PermissionUse = "discordreport.use";
         private const string PermissionAdmin = "discordreport.admin";
-        
+
         #endregion
-        
+
         #region Configuration
 
         private Configuration _config;
 
         private class Configuration
         {
-            [JsonProperty(PropertyName = "Webhook URL")]
+            [JsonProperty("Webhook URL")]
             public string Webhook = "YOUR WEBHOOK LINK HERE";
-            
-            [JsonProperty(PropertyName = "Embed Title")]
+
+            [JsonProperty("Message Content")]
+            public string MessageContent = "";
+
+            [JsonProperty("Embed Title")]
             public string EmbedTitle = "My Server Report";
-            
-            [JsonProperty(PropertyName = "Embed Description")]
+
+            [JsonProperty("Embed Description")]
             public string EmbedDescription = "Report sent by a player from your server";
-            
-            [JsonProperty(PropertyName = "Embed Color")]
+
+            [JsonProperty("Embed Color")]
             public int EmbedColor = 1484265;
 
-            [JsonProperty(PropertyName = "Set Author Icon From Player Profile")]
+            [JsonProperty("Set Author Icon From Player Profile")]
             public bool AuthorIcon = true;
 
-            [JsonProperty(PropertyName = "Use Reporter (True) Or Suspect (False) As Author")]
+            [JsonProperty("Use Reporter (True) Or Suspect (False) As Author")]
             public bool IsReporterIcon = true;
 
-            [JsonProperty(PropertyName = "Allow Reporting Admins")]
+            [JsonProperty("Allow Reporting Admins")]
             public bool ReportAdmins = false;
 
-            [JsonProperty(PropertyName = "Report Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<string> ReportCommands = new List<string> {"report"};
+            [JsonProperty("Report Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> ReportCommands = new List<string> { "report" };
 
-            [JsonProperty(PropertyName = "Allow Only Online Suspects Reports")]
+            [JsonProperty("Allow Only Online Suspects Reports")]
             public bool OnlyOnlineSuspects = true;
 
-            [JsonProperty(PropertyName = "Threshold Before Sending Reports")]
-            public int Threshold = 2;
+            [JsonProperty("Threshold Before Sending Reports")]
+            public int Threshold = 0;
 
-            #if RUST
-            [JsonProperty(PropertyName = "Show Recent Suspect Combatlog")]
+#if RUST
+            [JsonProperty("Show Recent Suspect Combatlog")]
             public bool ShowCombatlog = false;
-            
-            [JsonProperty(PropertyName = "Recent Combatlog Entries")]
-            public int CombatlogEntries = 3;
-            #endif
 
-            [JsonProperty(PropertyName = "Cooldown In Seconds")]
+            [JsonProperty("Show In-Game Subject")]
+            public bool ShowInGameSubject = true;
+
+            [JsonProperty("Minimum In-Game Report Subject Length")]
+            public int SubjectMinimumGame = 0;
+
+            [JsonProperty("Minimum In-Game Report Message Length")]
+            public int MessageMinimumGame = 0;
+
+            [JsonProperty("Allowed In-Game Report Types", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public string[] AllowedTypes = { "cheat", "abusive", "name", "spam" };
+
+            [JsonProperty("Recent Combatlog Entries")]
+            public int CombatlogEntries = 2;
+#endif
+
+            [JsonProperty("Cooldown In Seconds")]
             public uint Cooldown = 300;
 
-            [JsonProperty(PropertyName = "Old User Cache Purge In Seconds")]
-            public uint UserCachePurge = 86400;
+            [JsonProperty("User Cache Validity In Seconds")]
+            public uint UserCacheValidity = 86400;
+
+            [JsonProperty("Minimum Message Length")]
+            public int MessageMinimum = 0;
         }
 
         protected override void LoadConfig()
@@ -113,129 +132,112 @@ namespace Oxide.Plugins
         protected override void LoadDefaultConfig() => _config = new Configuration();
 
         #endregion
-        
+
         #region Work with Data
 
-        private PluginData _data;
+        private Dictionary<string, PlayerData> _loadedData = new Dictionary<string, PlayerData>();
 
-        private void SaveData() => Interface.Oxide.DataFileSystem.WriteObject(Name, _data);
-
-        private void LoadData()
+        private void SaveData(string id)
         {
+            PlayerData data;
+            if (!_loadedData.TryGetValue(id, out data))
+                return;
+
+            Interface.Oxide.DataFileSystem.WriteObject(nameof(DiscordReport) + '/' + id, data);
+        }
+
+        private PlayerData GetOrLoadData(string id)
+        {
+            PlayerData data;
+            if (_loadedData.TryGetValue(id, out data))
+                return data;
+
             try
             {
-                _data = Interface.Oxide.DataFileSystem.ReadObject<PluginData>(Name);
+                data = Interface.Oxide.DataFileSystem.ReadObject<PlayerData>(nameof(DiscordReport) + '/' + id);
             }
             catch (Exception e)
             {
                 PrintError(e.ToString());
             }
 
-            if (_data == null) _data = new PluginData();
+            return _loadedData[id] = data ?? new PlayerData();
         }
 
-        private class PluginData
+        private class PlayerData
         {
-            public List<UserCache> Cache = new List<UserCache>();
+            public string ImageURL = string.Empty;
+            public string LastKnownAddress = string.Empty;
 
-            public class UserCache
-            {
-                public string ID = string.Empty;
-                public string ImageURL = string.Empty;
-                public string LastKnownAddress = string.Empty;
-                public uint LastUpdate = 0;
+            public HashSet<string> Reporters = new HashSet<string>();
 
-                public static int FindIndex(string id)
-                {
-                    for (var i = 0; i < _ins._data.Cache.Count; i++)
-                    {
-                        var cache = _ins._data.Cache[i];
-                        if (cache.ID == id)
-                            return i;
-                    }
-
-                    return -1;
-                }
-
-                public static UserCache Find(string id)
-                {
-                    var index = FindIndex(id);
-                    return index == -1 ? null : _ins._data.Cache[index];
-                }
-
-                public static UserCache TryFind(string id)
-                {
-                    var cache = Find(id);
-                    if (cache != null)
-                        return cache;
-                    
-                    cache = new UserCache {ID = id};
-                    _ins._data.Cache.Add(cache);
-
-                    return cache;
-                }
-            }
+            public uint LastImageUpdate = 0;
         }
 
         #endregion
-        
+
         #region Discord Classes
+
         // ReSharper disable NotAccessedField.Local
 
         private class WebhookBody
         {
-            [JsonProperty(PropertyName = "embeds")]
-            public EmbedBody[] Embeds;
+            [JsonProperty("embeds")]
+            public List<EmbedBody> Embeds;
+
+            [JsonProperty("content")]
+            public string Content = null;
         }
 
         private class EmbedBody
         {
-            [JsonProperty(PropertyName = "title")]
+            [JsonProperty("title")]
             public string Title;
 
-            [JsonProperty(PropertyName = "type")]
+            [JsonProperty("type")]
             public string Type;
-            
-            [JsonProperty(PropertyName = "description")]
+
+            [JsonProperty("description")]
             public string Description;
 
-            [JsonProperty(PropertyName = "color")]
+            [JsonProperty("color")]
             public int Color;
 
-            [JsonProperty(PropertyName = "author")]
+            [JsonProperty("author")]
             public AuthorBody Author;
 
-            [JsonProperty(PropertyName = "fields")]
-            public FieldBody[] Fields;
+            [JsonProperty("fields")]
+            public List<FieldBody> Fields;
 
             public class AuthorBody
             {
-                [JsonProperty(PropertyName = "name")]
+                [JsonProperty("name")]
                 public string Name;
-                
-                [JsonProperty(PropertyName = "url")]
+
+                [JsonProperty("url")]
                 public string AuthorURL;
-                
-                [JsonProperty(PropertyName = "icon_url")]
+
+                [JsonProperty("icon_url")]
                 public string AuthorIconURL;
             }
 
             public class FieldBody
             {
-                [JsonProperty(PropertyName = "name")]
+                [JsonProperty("name")]
                 public string Name;
-                
-                [JsonProperty(PropertyName = "value")]
+
+                [JsonProperty("value")]
                 public string Value;
-                
-                [JsonProperty(PropertyName = "inline")]
+
+                [JsonProperty("inline")]
                 public bool Inline;
             }
         }
-        
+
         // ReSharper restore NotAccessedField.Local
+
         #endregion
-        
+
         #region Hooks
 
         protected override void LoadDefaultMessages()
@@ -244,7 +246,7 @@ namespace Oxide.Plugins
             {
                 { "Webhook: Reporter Data Title", "Reporter" },
                 { "Webhook: Suspect Data Title", "Suspect" },
-                #if RUST
+#if RUST
                 { "Webhook: Combatlog Title", "Suspect's Combatlog #{n}" },
                 { "Webhook: Combatlog Attacker Title", "Attacker" },
                 { "Webhook: Combatlog Target Title", "Target" },
@@ -255,77 +257,73 @@ namespace Oxide.Plugins
                 { "Webhook: Combatlog Old HP Title", "Old HP" },
                 { "Webhook: Combatlog New HP Title", "New HP" },
                 { "Webhook: Combatlog Info Title", "Info" },
-                #endif
-                { "Webhook: Reporter Data", "{name} ({id}). IP: {ip}.\n" +
-                                            "Ping: {ping}ms. Connected: {connected}" },
-                { "Webhook: Suspect Data", "{name} ({id}). IP: {ip}.\n" +
-                                           "Ping: {ping}ms. Connected: {connected}" },
+#endif
+                {
+                    "Webhook: Reporter Data", "#{discordreport.total} {name} ({id}). IP: {ip}.\n" +
+                                              "Ping: {ping}ms. Connected: {connected}"
+                },
+                {
+                    "Webhook: Suspect Data", "#{discordreport.total} {name} ({id}). IP: {ip}.\n" +
+                                             "Ping: {ping}ms. Connected: {connected}"
+                },
                 { "Webhook: Report Subject", "Report Subject" },
                 { "Webhook: Report Message", "Report Message" },
-                { "Webhook: Report Message If Empty", "No message specified" },
-                { "Command: Syntax", "Syntax:\n" +
-                                     "report (ID / Name) \"(Subject)\" \"<Message>\"\n" +
-                                     "WARNING! Use quotes for names, subject and message." },
+                {
+                    "Command: Syntax", "Syntax:\n" +
+                                       "report (ID / \"Name\") (Message)\n" +
+                                       "WARNING! Use quotes for names."
+                },
                 { "Command: User Not Found", "We were unable to find this user or multiple were found." },
                 { "Command: Report Sent", "Thank you for your report, it was sent to our administration." },
                 { "Command: Exceeded Cooldown", "You have exceeded your cooldown on reports." },
                 { "Command: Cannot Report Admins", "You cannot report admins." },
-                { "Command: Cannot Use", "You cannot use this command since you do not have enough permissions." }
+                { "Command: Cannot Use", "You cannot use this command since you do not have enough permissions." },
+                { "Command: Message Length", "Please add more information to the message." }
             }, this);
         }
 
         private void Init()
         {
             _ins = this;
-            
+
             permission.RegisterPermission(PermissionIgnoreCooldown, this);
             permission.RegisterPermission(PermissionUse, this);
             permission.RegisterPermission(PermissionAdmin, this);
 
-            LoadData();
-
             foreach (var command in _config.ReportCommands)
                 AddCovalenceCommand(command, nameof(CommandReport));
-        }
-
-        private void OnServerSave()
-        {
-            var currentTime = _time.GetUnixTimestamp();
-            for (var i = _data.Cache.Count - 1; i >= 0; i--)
-            {
-                var user = _data.Cache[i];
-                if (user.LastUpdate + _config.UserCachePurge < currentTime)
-                    _data.Cache.RemoveAt(i);
-            }
-            
-            SaveData();
         }
 
         private void Loaded()
         {
             foreach (var player in players.Connected)
                 OnUserConnected(player);
-            
-            SaveData();
         }
 
         private void Unload()
         {
             _ins = null;
         }
-        
+
         private void OnUserConnected(IPlayer player)
         {
-            if (_config.AuthorIcon)
-                UpdateCachedImage(player);
+            var user = GetOrLoadData(player.Id);
 
-            PluginData.UserCache.TryFind(player.Id).LastKnownAddress = player.Address;
-            PluginData.UserCache.TryFind(player.Id).LastUpdate = _time.GetUnixTimestamp();
+            if (_config.AuthorIcon)
+                UpdateCachedImage(player, user);
+
+            user.LastKnownAddress = player.Address;
+
+            SaveData(player.Id);
         }
 
         private void OnPlaceholderAPIReady()
         {
-            _placeholderProcessor = _placeholders.Call<Action<IPlayer, StringBuilder, bool>>("GetProcessPlaceholders", 1);
+            _placeholderProcessor =
+                _placeholders.Call<Action<IPlayer, StringBuilder, bool>>("GetProcessPlaceholders", 1);
+
+            _placeholders.Call("AddPlaceholder", this, "discordreport.total", new Func<IPlayer, string, object>(
+                (player, s) => GetOrLoadData(player.Id).Reporters.Count));
         }
 
         private void OnPluginUnloaded(Plugin plugin)
@@ -336,12 +334,24 @@ namespace Oxide.Plugins
             _placeholderProcessor = null;
         }
 
-        #if RUST
-
+#if RUST
         private void OnPlayerReported(BasePlayer player, string targetName, string targetId, string subject,
             string message, string type)
         {
             if (player == null)
+                return;
+
+            // Empty message will not be shown
+            if (_config.MessageMinimumGame != 0 && !string.IsNullOrEmpty(message) &&
+                message.Length < _config.MessageMinimumGame)
+                return;
+
+            subject = subject.Substring(3 + type.Length);
+            if (_config.SubjectMinimumGame != 0 && _config.ShowInGameSubject &&
+                subject.Length < _config.SubjectMinimumGame)
+                return;
+
+            if (_config.AllowedTypes.Length != 0 && !_config.AllowedTypes.Contains(type))
                 return;
 
             var suspect = players.FindPlayer(targetId);
@@ -360,13 +370,12 @@ namespace Oxide.Plugins
             if (ExceedsCooldown(player.IPlayer))
                 return;
 
-            SendReport(player.IPlayer, suspect, subject, message);
+            SendReport(player.IPlayer, suspect, _config.ShowInGameSubject ? subject : string.Empty, message);
         }
-
-        #endif
+#endif
 
         #endregion
-        
+
         #region Commands
 
         private void CommandReport(IPlayer player, string command, string[] args)
@@ -376,9 +385,16 @@ namespace Oxide.Plugins
                 player.Reply(GetMsg("Command: Cannot Use", player.Id));
                 return;
             }
-            
+
             if (args.Length < 2)
                 goto syntax;
+
+            var message = string.Join(" ", args.Skip(1));
+            if (_config.MessageMinimum != 0 && message.Length < _config.MessageMinimum)
+            {
+                player.Reply(GetMsg("Command: Message Length", player.Id));
+                return;
+            }
 
             var suspect = players.FindPlayer(args[0]);
             if (suspect == null || !suspect.IsConnected && _config.OnlyOnlineSuspects)
@@ -399,214 +415,255 @@ namespace Oxide.Plugins
                 return;
             }
 
-            SendReport(player, suspect, args[1], args.Length > 2 ? args[2] : string.Empty);
+            SendReport(player, suspect, string.Empty, message);
             player.Reply(GetMsg("Command: Report Sent", player.Id));
             return;
-            
+
             syntax:
             player.Reply(GetMsg("Command: Syntax", player.Id));
         }
-        
+
         #endregion
-        
+
         #region Helpers
 
-        private void UpdateCachedImage(IPlayer player)
+        private void UpdateCachedImage(IPlayer player, PlayerData data)
         {
+            var now = _time.GetUnixTimestamp();
+
+            // If cached and still valid, return
+            if (!string.IsNullOrEmpty(data.ImageURL) &&
+                data.LastImageUpdate + _config.UserCacheValidity > now)
+                return;
+
             webrequest.Enqueue(string.Format(SteamProfileXML, player.Id), string.Empty,
                 (code, result) =>
                 {
-                    var cache = PluginData.UserCache.TryFind(player.Id);
-                    cache.ImageURL = _steamProfileIconRegex.Match(result).Value;
-                    cache.LastUpdate =  _time.GetUnixTimestamp();
+                    data.ImageURL = _steamProfileIconRegex.Match(result).Value;
+                    data.LastImageUpdate = now;
+
+                    SaveData(player.Id);
                 },
                 this);
         }
-        
+
         #region Webhook
 
         private void SendReport(IPlayer reporter, IPlayer suspect, string subject, string message)
         {
             // Threshold
 
-            HashSet<string> reporters;
-            if (_reportLog.TryGetValue(suspect.Id, out reporters))
-                reporters.Add(reporter.Id);
-            else
-                _reportLog.Add(suspect.Id, reporters = new HashSet<string> {reporter.Id});
+            var cached = GetOrLoadData(suspect.Id);
 
-            if (reporters.Count < _config.Threshold)
+            cached.Reporters.Add(reporter.Id);
+            if (cached.Reporters.Count < _config.Threshold)
                 return;
-            
+
             // Author Icon
-            
+
             var authorIconURL = string.Empty;
             var author = _config.IsReporterIcon ? reporter : suspect;
             if (_config.AuthorIcon)
             {
-                authorIconURL = PluginData.UserCache.Find(author.Id)?.ImageURL ?? string.Empty;
-                UpdateCachedImage(author); // Won't get update now but will be for any other reports for this user
+                var user = GetOrLoadData(author.Id);
+                if (!string.IsNullOrEmpty(user.ImageURL))
+                    authorIconURL = user.ImageURL;
+
+                UpdateCachedImage(author, user); // Won't get update now but will be for any other reports for this user
             }
-            
+
             // Embed data
 
             const string type = "rich";
             var body = new WebhookBody
             {
-                Embeds = new[]
-                {
-                    new EmbedBody
-                    {
-                        Title = _config.EmbedTitle,
-                        Description = _config.EmbedDescription,
-                        Type = type,
-                        Color = _config.EmbedColor,
-                        Author = new EmbedBody.AuthorBody
-                        {
-                            AuthorIconURL = authorIconURL,
-                            AuthorURL = string.Format(SteamProfile, author.Id),
-                            Name = author.Name
-                        },
-                        Fields = new[]
-                        {
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Report Subject"),
-                                Value = subject,
-                                Inline = false
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Report Message"),
-                                Value = string.IsNullOrEmpty(message)
-                                    ? GetMsg("Webhook: Report Message If Empty")
-                                    : message,
-                                Inline = false
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Reporter Data Title"),
-                                Value =
-                                    FormatUserDetails(new StringBuilder(GetMsg("Webhook: Reporter Data")), reporter),
-                                Inline = false
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Suspect Data Title"),
-                                Value = FormatUserDetails(new StringBuilder(GetMsg("Webhook: Suspect Data")), suspect),
-                                Inline = false
-                            }
-                        }
-                    }
-                }
+                Embeds = Pool.GetList<EmbedBody>(),
+                Content = string.IsNullOrEmpty(_config.MessageContent) ? null : _config.MessageContent
             };
 
+            var fields = Pool.GetList<EmbedBody.FieldBody>();
+
+            if (!string.IsNullOrEmpty(subject))
+            {
+                fields.Add(new EmbedBody.FieldBody
+                {
+                    Name = GetMsg("Webhook: Report Subject"),
+                    Value = subject,
+                    Inline = false
+                });
+            }
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                fields.Add(new EmbedBody.FieldBody
+                {
+                    Name = GetMsg("Webhook: Report Message"),
+                    Value = message,
+                    Inline = false
+                });
+            }
+
+            fields.Add(new EmbedBody.FieldBody
+            {
+                Name = GetMsg("Webhook: Reporter Data Title"),
+                Value =
+                    FormatUserDetails(new StringBuilder(GetMsg("Webhook: Reporter Data")), reporter),
+                Inline = false
+            });
+
+            fields.Add(new EmbedBody.FieldBody
+            {
+                Name = GetMsg("Webhook: Suspect Data Title"),
+                Value = FormatUserDetails(new StringBuilder(GetMsg("Webhook: Suspect Data")), suspect),
+                Inline = false
+            });
+
+            body.Embeds.Add(new EmbedBody
+            {
+                Title = _config.EmbedTitle,
+                Description = _config.EmbedDescription,
+                Type = type,
+                Color = _config.EmbedColor,
+                Author = new EmbedBody.AuthorBody
+                {
+                    AuthorIconURL = authorIconURL,
+                    AuthorURL = SteamProfile + author.Id,
+                    Name = author.Name
+                },
+                Fields = fields
+            });
+
             // Rust-specific embed data
-            
-            #if RUST
+
+#if RUST
             if (_config.ShowCombatlog && suspect.Object is BasePlayer)
             {
-                var events = CombatLog.Get(((BasePlayer) suspect.Object).userID).ToArray();
+                var events = CombatLog.Get(((BasePlayer)suspect.Object).userID).ToArray();
                 for (var i = 1; i <= _config.CombatlogEntries && i <= events.Length; i++)
                 {
                     var combat = events[events.Length - i];
-                    
-                    Array.Resize(ref body.Embeds, 1 + i);
-                    body.Embeds[i] = new EmbedBody
+
+                    var combatFields = Pool.GetList<EmbedBody.FieldBody>();
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog Attacker Title"),
+                        Value = combat.attacker,
+                        Inline = true
+                    });
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog Target Title"),
+                        Value = combat.target,
+                        Inline = true
+                    });
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog Time Title"),
+                        Value = (UnityEngine.Time.realtimeSinceStartup - combat.time).ToString("0.0s"),
+                        Inline = true
+                    });
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog Weapon Title"),
+                        Value = combat.weapon,
+                        Inline = true
+                    });
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog Ammo Title"),
+                        Value = combat.ammo,
+                        Inline = true
+                    });
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog Distance Title"),
+                        Value = combat.distance.ToString("0.0m"),
+                        Inline = true
+                    });
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog Old HP Title"),
+                        Value = combat.health_old.ToString("0.0"),
+                        Inline = true
+                    });
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog New HP Title"),
+                        Value = combat.health_new.ToString("0.0"),
+                        Inline = true
+                    });
+
+                    combatFields.Add(new EmbedBody.FieldBody
+                    {
+                        Name = GetMsg("Webhook: Combatlog Info Title"),
+                        Value = string.IsNullOrEmpty(combat.info) ? "none" : combat.info,
+                        Inline = true
+                    });
+
+                    body.Embeds.Add(new EmbedBody
                     {
                         Title = GetMsg("Webhook: Combatlog Title").Replace("{n}", $"{i}"),
                         Type = type,
                         Color = _config.EmbedColor,
-                        Fields = new[]
-                        {
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog Attacker Title"),
-                                Value = combat.attacker,
-                                Inline = true
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog Target Title"),
-                                Value = combat.target,
-                                Inline = true
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog Time Title"),
-                                Value = (UnityEngine.Time.realtimeSinceStartup - combat.time).ToString("0.0s"),
-                                Inline = true
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog Weapon Title"),
-                                Value = combat.weapon,
-                                Inline = true
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog Ammo Title"),
-                                Value = combat.ammo,
-                                Inline = true
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog Distance Title"),
-                                Value = combat.distance.ToString("0.0m"),
-                                Inline = true
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog Old HP Title"),
-                                Value = combat.health_old.ToString("0.0"),
-                                Inline = true
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog New HP Title"),
-                                Value = combat.health_new.ToString("0.0"),
-                                Inline = true
-                            },
-                            new EmbedBody.FieldBody
-                            {
-                                Name = GetMsg("Webhook: Combatlog Info Title"),
-                                Value = string.IsNullOrEmpty(combat.info) ? "none" : combat.info,
-                                Inline = true
-                            }
-                        }
-                    };
+                        Fields = combatFields
+                    });
                 }
             }
-            #endif
-            
+#endif
+
             // Send a web request
 
             webrequest.Enqueue(_config.Webhook, JObject.FromObject(body).ToString(),
-                (code, result) => SetCooldown(reporter), this, RequestMethod.POST,
-                new Dictionary<string, string> {{"Content-Type", "application/json"}});
+                (code, result) =>
+                {
+                    if (code == 204)
+                    {
+                        SetCooldown(reporter);
+                    }
+                    else
+                    {
+                        PrintWarning($"Discord Webhook returned {code}:\n{result}");
+                    }
+                }, this, RequestMethod.POST,
+                new Dictionary<string, string> { { "Content-Type", "application/json" } });
+
+            foreach (var embed in body.Embeds)
+            {
+                Pool.FreeList(ref embed.Fields);
+            }
+
+            Pool.FreeList(ref body.Embeds);
         }
 
         private string FormatUserDetails(StringBuilder builder, IPlayer player)
         {
             // Apply placeholders if possible
             _placeholderProcessor?.Invoke(player, builder, false);
-            
+
             return builder
-                .Replace("{name}", player.Name).Replace("{id}", player.Id).Replace("{ip}",
-                    PluginData.UserCache.Find(player.Id)?.LastKnownAddress ?? "Unknown")
+                .Replace("{name}", player.Name).Replace("{id}", player.Id)
+                .Replace("{ip}", GetOrLoadData(player.Id)?.LastKnownAddress ?? "Unknown")
                 .Replace("{ping}", player.IsConnected ? player.Ping.ToString() : "0")
                 .Replace("{connected}", player.IsConnected.ToString()).ToString();
         }
 
         #endregion
-        
+
         #region Cooldown
 
         private bool ExceedsCooldown(IPlayer player)
         {
             if (player.HasPermission(PermissionIgnoreCooldown))
                 return false;
-            
+
             var currentTime = _time.GetUnixTimestamp();
             if (_cooldownData.ContainsKey(player.Id))
                 return _cooldownData[player.Id] - currentTime < _config.Cooldown;
@@ -615,7 +672,7 @@ namespace Oxide.Plugins
         }
 
         private void SetCooldown(IPlayer player) => _cooldownData[player.Id] = _time.GetUnixTimestamp();
-        
+
         #endregion
 
         private bool CanUse(IPlayer player) => player.HasPermission(PermissionUse);
