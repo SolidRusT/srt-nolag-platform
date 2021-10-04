@@ -1,0 +1,7 @@
+{
+  "Explosion force": 500.0,
+  "Explosion radius": 15.0,
+  "Check visibility from explosion to object (less performant)": false,
+  "Affect ragdolls": true,
+  "Affect dropped items": true
+}

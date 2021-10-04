@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Kits", "Mevent", "1.0.22")]
+    [Info("Kits", "Mevent", "1.0.24")]
     public class Kits : RustPlugin
     {
         #region Fields
@@ -72,6 +72,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Work with Notify?")]
             public bool UseNotify = true;
+
+            [JsonProperty(PropertyName = "Use Spectating mode when editing kits?")]
+            public bool UseSpectating = true;
 
             [JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public string[] Commands = { "kit", "kits" };
@@ -810,7 +813,7 @@ namespace Oxide.Plugins
                 CuiHelper.DestroyUi(player, EditingLayer);
                 CuiHelper.DestroyUi(player, ModalLayer);
 
-                if (_kitEditing.ContainsKey(player) || _itemEditing.ContainsKey(player))
+                if (_config.UseSpectating && (_kitEditing.ContainsKey(player) || _itemEditing.ContainsKey(player)))
                     player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
             }
 
@@ -2253,7 +2256,8 @@ namespace Oxide.Plugins
                     });
                 }
 
-                player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
+                if (_config.UseSpectating)
+                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
 
                 Subscribe(nameof(CanSpectateTarget));
             }
@@ -2561,7 +2565,8 @@ namespace Oxide.Plugins
                         ["Position"] = slot
                     });
 
-                player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
+                if (_config.UseSpectating)
+                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
 
                 Subscribe(nameof(CanSpectateTarget));
             }
@@ -3853,7 +3858,9 @@ namespace Oxide.Plugins
         {
             _itemEditing.Remove(player);
             _kitEditing.Remove(player);
-            player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
+
+            if (_config.UseSpectating)
+                player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
 
             if (_itemEditing.Count == 0 && _kitEditing.Count == 0)
                 Unsubscribe(nameof(CanSpectateTarget));
@@ -4348,12 +4355,12 @@ namespace Oxide.Plugins
             return _data.Kits.Select(kit => kit.Name).ToArray();
         }
 
-        private object GetKitInfo(string kitname)
+        private object GetKitInfo(string kitName)
         {
-            var kit = _data.Kits.Find(x => x.Name == kitname);
+            var kit = _data.Kits.Find(x => x.Name == kitName);
             if (kit == null) return null;
 
-            var obj = new JObject
+            return new JObject
             {
                 ["name"] = kit.Name,
                 ["displayname"] = kit.DisplayName,
@@ -4362,27 +4369,25 @@ namespace Oxide.Plugins
                 ["image"] = kit.Image,
                 ["hide"] = kit.Hide,
                 ["amount"] = kit.Amount,
-                ["cooldown"] = kit.Cooldown
+                ["cooldown"] = kit.Cooldown,
+                ["items"] = new JArray(kit.Items.Select(itemEntry => new JObject
+                {
+                    ["type"] = itemEntry.Type.ToString(),
+                    ["command"] = itemEntry.Command,
+                    ["shortname"] = itemEntry.ShortName,
+                    ["itemid"] = ItemManager.FindItemDefinition(itemEntry.ShortName)?.itemid ?? 0,
+                    ["amount"] = itemEntry.Amount,
+                    ["blueprint"] = itemEntry.Blueprint,
+                    ["skinid"] = itemEntry.SkinID,
+                    ["container"] = itemEntry.Container,
+                    ["condition"] = itemEntry.Condition,
+                    ["chance"] = itemEntry.Chance,
+                    ["mods"] = new JArray(itemEntry.Content?.Select(x =>
+                        ItemManager.FindItemDefinition(x.ShortName).itemid) ?? new List<int>())
+                }))
             };
-
-            var items = new JArray();
-            foreach (var item in kit.Items.Select(itemEntry => new JObject
-            {
-                ["type"] = itemEntry.Type.ToString(),
-                ["command"] = itemEntry.Command,
-                ["shortname"] = itemEntry.ShortName,
-                ["amount"] = itemEntry.Amount,
-                ["blueprint"] = itemEntry.Blueprint,
-                ["skinid"] = itemEntry.SkinID,
-                ["container"] = itemEntry.Container,
-                ["condition"] = itemEntry.Condition,
-                ["chance"] = itemEntry.Chance
-            }))
-                items.Add(item);
-
-            obj["items"] = items;
-            return obj;
         }
+
 
         private string[] GetKitContents(string kitname)
         {

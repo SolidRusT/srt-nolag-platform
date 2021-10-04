@@ -531,6 +531,8 @@
     "Время разблокировки ящика (Сек) | Box unlocking time (Sec)": 900,
     "Макcимальное количество предметов в ящике | Maximum number of items in a drawer": 10,
     "умножать количество лута на количество дней с начала вайпа (на 3й день - лута будет в 3 раза больше) | multiply the amount of loot by the number of days since the start of the wipe (on the 3rd day - there will be 3 times more loot)": false,
-    "Включить сигнализацию ? | Turn on the alarm?": true
+    "Включить сигнализацию ? | Turn on the alarm?": true,
+    "Использовать AlphaLoot для заполнения ящика ? | Use AlphaLoot to fill the box?": false,
+    "Использовать EcoLootUI для заполнения ящика ? | Use EcoLootUI to fill the box?": false
   }
 }

@@ -19,7 +19,7 @@ using Time = UnityEngine.Time;
 
 namespace Oxide.Plugins
 {
-    [Info("XDCobaltLaboratory", "Suparious", "1.10.0")]
+    [Info("XDCobaltLaboratory", "DezLife", "1.9.83")]
     public class XDCobaltLaboratory : RustPlugin
     {
         #region Var
@@ -32,14 +32,15 @@ namespace Oxide.Plugins
         private NpcZones npcZones = null;
         private List<UInt64> HideUIUser = new List<UInt64>();
         private string PosIvent;
+        private HackableLockedCrate CrateEnt;
         private int maxTry = 250000;
         private const int MaxRadius = 5;
-        public Timer SpawnHouseTime;
-        public Timer RemoveHouseTime;
-        public static DateTime TimeCreatedSave = SaveRestore.SaveCreatedTime.Date;
-        public static DateTime RealTime = DateTime.Now.Date;
-        public static int SaveCreated = RealTime.Subtract(TimeCreatedSave).Days;
-        Configuration.BuildingPasteSettings.PasteBuild labIndex = null;
+        private Timer SpawnHouseTime;
+        private Timer RemoveHouseTime;
+        private static DateTime TimeCreatedSave = SaveRestore.SaveCreatedTime.Date;
+        private static DateTime RealTime = DateTime.Now.Date;
+        private static int SaveCreated = RealTime.Subtract(TimeCreatedSave).Days;
+        private Configuration.BuildingPasteSettings.PasteBuild labIndex = null;
         #endregion
 
         #region Lang
@@ -47,14 +48,14 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["XD_IVENT_START"] = "<color=#008000>[SRT Lab Event] </color>Ученые разбили на этом острове свою лабораторию под названием Кобальт, скорее всего там находятся ценные вещи, ведь она охраняется!\nКвадрат: <color=#00FF00>{0}</color>",
+                ["XD_IVENT_START"] = "<color=#008000>[Cobalt Lab Event] </color>Ученые разбили на этом острове свою лабораторию под названием Кобальт, скорее всего там находятся ценные вещи, ведь она охраняется!\nКвадрат: <color=#00FF00>{0}</color>",
                 ["XD_IVENT_STARTUI"] = "Ученые развернули свою Кобальтовую лабораторию!\nКвадрат : {0}",
-                ["XD_IVENT_NOPLAYER"] = "<color=#008000>[SRT Lab Event] </color>Ученые закончили свой эксперимент и успешно покинули остров без происшествий",
-                ["XD_IVENT_CRATEHACK"] = "<color=#008000>[SRT Lab Event] </color>В лаборатории кобальт <color=#FFD700>{0}</color> начал взлом секретного ящика в квадрате <color=#00FF00>{1}</color>",
-                ["XD_IVENT_CRATEHACKHELP"] = "<color=#008000>[SRT Lab Event] </color>В лаборатории кобальт <color=#FFD700>{0}</color> начал взлом секретного ящика в квадрате <color=#00FF00>{1}</color>\nНа это место уже прибыла подмога! Будте осторожней",
-                ["XD_IVENT_CRATEHACKEND"] = "<color=#008000>[SRT Lab Event] </color>В лаборатории кобальт был взломан секретный ящик, ученые начинают эвакуацию с острова, у вас осталось <color=#9ACD32>{0} минут</color>, чтобы забрать его!",
-                ["XD_IVENT_CRATELOOTFOUND"] = " <color=#008000>[SRT Lab Event] </color>В лаборатории кобальт никто не успел залутать взломанный ящик, лаборатория была эвакуирована и постройка разрушена",
-                ["XD_IVENT_CRATELOOTPLAYER"] = "<color=#008000>[SRT Lab Event] </color><color=#FFD700>{0}</color> успешно ограбил лабораторию кобальт и забрал ценные вещи с секретного ящика",
+                ["XD_IVENT_NOPLAYER"] = "<color=#008000>[Cobalt Lab Event] </color>Ученые закончили свой эксперимент и успешно покинули остров без происшествий",
+                ["XD_IVENT_CRATEHACK"] = "<color=#008000>[Cobalt Lab Event] </color>В лаборатории кобальт <color=#FFD700>{0}</color> начал взлом секретного ящика в квадрате <color=#00FF00>{1}</color>",
+                ["XD_IVENT_CRATEHACKHELP"] = "<color=#008000>[Cobalt Lab Event] </color>В лаборатории кобальт <color=#FFD700>{0}</color> начал взлом секретного ящика в квадрате <color=#00FF00>{1}</color>\nНа это место уже прибыла подмога! Будте осторожней",
+                ["XD_IVENT_CRATEHACKEND"] = "<color=#008000>[Cobalt Lab Event] </color>В лаборатории кобальт был взломан секретный ящик, ученые начинают эвакуацию с острова, у вас осталось <color=#9ACD32>{0} минут</color>, чтобы забрать его!",
+                ["XD_IVENT_CRATELOOTFOUND"] = " <color=#008000>[Cobalt Lab Event] </color>В лаборатории кобальт никто не успел залутать взломанный ящик, лаборатория была эвакуирована и постройка разрушена",
+                ["XD_IVENT_CRATELOOTPLAYER"] = "<color=#008000>[Cobalt Lab Event] </color><color=#FFD700>{0}</color> успешно ограбил лабораторию кобальт и забрал ценные вещи с секретного ящика",
                 ["XD_IVENT_HOUSECOBALT"] = "Cobalt laboratory",
                 ["XD_IVENT_START_DISCORD"] = "Ученые разбили на этом острове свою лабораторию под названием Кобальт,скорее всего там находится ценные вещи, ведь он охраняется!\nКвадрат : {0}",
                 ["XD_IVENT_NOPLAYER_DISCORD"] = "Ученые закончили свой эксперимент и успешно покинули остров без происшествий",
@@ -82,19 +83,19 @@ namespace Oxide.Plugins
                 ["XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"] = "Постройка успешно загружена!",
                 ["XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"] = "Ошибка при загрузке постройки!\nПробуем загрузить еще раз",
                 ["XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"] = "Повторная загрузка не была успешной\nОбратитесь к разработчику\nDezLife#1480\nvk.com/dezlife",
-                ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[SRT Lab Event] </color>Внутри ящика оказалась ловушка с сигналом в службу охраны Cobalt.\nНа защиту вылетел боевой вертолёт\nВы должны сбить его или выжить в течении 5 минут.",
+                ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[Cobalt Lab Event] </color>Внутри ящика оказалась ловушка с сигналом в службу охраны Cobalt.\nНа защиту вылетел боевой вертолёт\nВы должны сбить его или выжить в течении 5 минут.",
             }, this, "ru");
 
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["XD_IVENT_START"] = "<color=#008000>[SRT Lab Event] </color>Scientists have set up their laboratory on this island called Cobalt, most likely there are valuable things there, because it is protected!\nGrid: <color=#00FF00>{0}</color>",
+                ["XD_IVENT_START"] = "<color=#008000>[Cobalt Lab Event] </color>Scientists have set up their laboratory on this island called Cobalt, most likely there are valuable things there, because it is protected!\nGrid: <color=#00FF00>{0}</color>",
                 ["XD_IVENT_STARTUI"] = "Scientists have deployed their Cobalt Lab!\nGrid : {0}",
-                ["XD_IVENT_NOPLAYER"] = "<color=#008000>[SRT Lab Event] </color>The scientists completed their experiment and successfully left the island without incident",
-                ["XD_IVENT_CRATEHACK"] = "<color=#008000>[SRT Lab Event] </color>In the cobalt lab <color=#FFD700>{0}</color> started hacking a secret crate in the grid <color=#00FF00>{1}</color>",
-                ["XD_IVENT_CRATEHACKHELP"] = "<color=#008000>[SRT Lab Event] </color>In the cobalt lab <color=#FFD700>{0}</color> started hacking a secret crate in the grid <color=#00FF00>{1}</color>\nHelp has already arrived at this place! Be careful",
-                ["XD_IVENT_CRATEHACKEND"] = "<color=#008000>[SRT Lab Event] </color>A secret crate has been hacked in the cobalt lab, scientists are beginning to evacuate the island, you have <color=#9ACD32>{0} minutes</color> left to pick it up!",
-                ["XD_IVENT_CRATELOOTFOUND"] = " <color=#008000>[SRT Lab Event] </color>In the cobalt laboratory, no one had time to hack the secret crate, the laboratory was evacuated and the building was destroyed",
-                ["XD_IVENT_CRATELOOTPLAYER"] = "<color=#008000>[SRT Lab Event] </color><color=#FFD700>{0}</color> successfully robbed the cobalt lab and took valuables from a secret crate",
+                ["XD_IVENT_NOPLAYER"] = "<color=#008000>[Cobalt Lab Event] </color>The scientists completed their experiment and successfully left the island without incident",
+                ["XD_IVENT_CRATEHACK"] = "<color=#008000>[Cobalt Lab Event] </color>In the cobalt lab <color=#FFD700>{0}</color> started hacking a secret crate in the grid <color=#00FF00>{1}</color>",
+                ["XD_IVENT_CRATEHACKHELP"] = "<color=#008000>[Cobalt Lab Event] </color>In the cobalt lab <color=#FFD700>{0}</color> started hacking a secret crate in the grid <color=#00FF00>{1}</color>\nHelp has already arrived at this place! Be careful",
+                ["XD_IVENT_CRATEHACKEND"] = "<color=#008000>[Cobalt Lab Event] </color>A secret crate has been hacked in the cobalt lab, scientists are beginning to evacuate the island, you have <color=#9ACD32>{0} minutes</color> left to pick it up!",
+                ["XD_IVENT_CRATELOOTFOUND"] = " <color=#008000>[Cobalt Lab Event] </color>In the cobalt laboratory, no one had time to hack the secret crate, the laboratory was evacuated and the building was destroyed",
+                ["XD_IVENT_CRATELOOTPLAYER"] = "<color=#008000>[Cobalt Lab Event] </color><color=#FFD700>{0}</color> successfully robbed the cobalt lab and took valuables from a secret crate",
                 ["XD_IVENT_HOUSECOBALT"] = "Cobalt laboratory",
                 ["XD_IVENT_START_DISCORD"] = "Scientists have set up their laboratory on this island called Cobalt, most likely there are valuable things there, because it is guarded!\nКвадрат : {0}",
                 ["XD_IVENT_NOPLAYER_DISCORD"] = "Scientists finished their experiment and successfully left the island without incident.",
@@ -122,7 +123,7 @@ namespace Oxide.Plugins
                 ["XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"] = "The building has been loaded successfully!",
                 ["XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"] = "Error when loading a building!\nTrying to download again",
                 ["XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"] = "Reload was not successful\nContact the developer\nDezLife#1480\nvk.com/dezlife",
-                ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[SRT Lab Event] </color>Inside the box was a trap with a signal to the Cobalt security service.\nA battle helicopter flew to protect the box\nYou need to shoot it down or survive for 5 minutes",
+                ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[Cobalt Lab Event] </color>Inside the box was a trap with a signal to the Cobalt security service.\nA battle helicopter flew to protect the box\nYou need to shoot it down or survive for 5 minutes",
             }, this);
         }
 
@@ -312,6 +313,10 @@ namespace Oxide.Plugins
                 public bool lootWipePlus = false;
                 [JsonProperty("Включить сигнализацию ? | Turn on the alarm?")]
                 public bool signaling = true;
+                [JsonProperty("Использовать AlphaLoot для заполнения ящика ? | Use AlphaLoot to fill the box?")]
+                public bool AlphaLootUse = false;
+                [JsonProperty("Использовать EcoLootUI для заполнения ящика ? | Use EcoLootUI to fill the box?")]
+                public bool EcoLootUIUse = false;
             }
             internal class NotiferSettings
             {
@@ -918,10 +923,16 @@ namespace Oxide.Plugins
 
         object CanUILootSpawn(LootContainer container)
         {
-            if (container.OwnerID == 3566257)
-                return null;
-            return true;
-        }     
+            if (container == CrateEnt)
+                return false;
+            return null;
+        }
+        object CanPopulateLoot(LootContainer container)
+        {
+            if (container == CrateEnt)
+                return false;
+            return null;
+        }
         void Unload()
         {
             foreach (BaseEntity iventEnt in HouseCobaltLab)
@@ -938,7 +949,12 @@ namespace Oxide.Plugins
             RemoveMapMarker();
             Cui.DestroyAllPlayer();
         }
-        void Init() => UnscribeHook();
+        void Init() 
+        {
+            UnscribeHook();
+            Unsubscribe("CanPopulateLoot");
+            Unsubscribe("CanUILootSpawn");       
+        }
 
         private void OnServerInitialized()
         {
@@ -966,11 +982,15 @@ namespace Oxide.Plugins
             });
             GenerateIvent();
             LoadDataCopyPaste();
+            if(!config.boxSetting.AlphaLootUse)
+                Subscribe("CanPopulateLoot");
+            if (!config.boxSetting.EcoLootUIUse)
+                Subscribe("CanUILootSpawn");
         }
 
         private void CanHackCrate(BasePlayer player, HackableLockedCrate crate)
         {
-            if (crate.OwnerID == 3566257)
+            if (crate == CrateEnt)
             {
                 if (RemoveHouseTime != null)
                     RemoveHouseTime.Destroy();
@@ -1002,7 +1022,7 @@ namespace Oxide.Plugins
         }
         void OnCrateHackEnd(HackableLockedCrate crate)
         {
-            if (crate.OwnerID == 3566257)
+            if (crate == CrateEnt)
             {
                 if (RemoveHouseTime != null)
                     RemoveHouseTime.Destroy();
@@ -1016,7 +1036,7 @@ namespace Oxide.Plugins
         }
         void CanLootEntity(BasePlayer player, StorageContainer container)
         {
-            if (container is HackableLockedCrate && container.OwnerID == 3566257)
+            if (container is HackableLockedCrate && container == CrateEnt)
             {
                 SendChatAll("XD_IVENT_CRATELOOTPLAYER", player.displayName);
                 if (RemoveHouseTime != null)
@@ -1025,16 +1045,16 @@ namespace Oxide.Plugins
                 {
                     StopIvent();
                 });
-                container.OwnerID = 123425345634634;
+                Unsubscribe("CanLootEntity");
             }
         }
         void OnCorpsePopulate(Scientist npc, NPCPlayerCorpse corpse)
         {
             if (npc?.GetComponent<NPCMonitor>() != null && corpse != null)
             {
-                if (config.npcController.useCustomLoot && config.npcController.lootNpcs?.Count > 0)
+                if (config.npcController.useCustomLoot && config.npcController.lootNpcs?.Count > 0 && corpse.containers[0]?.itemList != null)
                 {
-                    corpse.containers[0]?.itemList.Clear();
+                    corpse.containers[0]?.itemList?.Clear();
                     for (int i = 0; i < config.npcController.lootNpcs.Count; i++)
                     {
                         var main = config.npcController.lootNpcs[i];
@@ -1425,10 +1445,10 @@ namespace Oxide.Plugins
         }
         private BaseEntity CrateHackableLocked(BaseEntity box)
         {
-            HackableLockedCrate CrateEnt = GameManager.server.CreateEntity("assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate.prefab", new Vector3(box.transform.position.x, box.transform.position.y + 1f, box.transform.position.z), box.transform.rotation, true) as HackableLockedCrate;
+            CrateEnt = GameManager.server.CreateEntity("assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate.prefab", new Vector3(box.transform.position.x, box.transform.position.y + 1f, box.transform.position.z), box.transform.rotation, true) as HackableLockedCrate;
             CrateEnt.enableSaving = false;
             CrateEnt.Spawn();
-            CrateEnt.OwnerID = 3566257;
+
             CrateEnt.inventory.itemList.Clear();
             for (int i = 0; i < config.boxSetting.lootBoxes.Count; i++)
             {
@@ -1450,7 +1470,7 @@ namespace Oxide.Plugins
                     {
                         int s = random.Next(cfg.MinimalAmount, cfg.MaximumAmount);
                         if (config.boxSetting.lootWipePlus && cfg.wipeCheck)
-                            s = s * 2;
+                            s = s * SaveCreated;
 
                         Item GiveItem = ItemManager.CreateByName(cfg.Shortname, s, cfg.SkinID);
                         if (!string.IsNullOrEmpty(cfg.DisplayName))
@@ -1517,7 +1537,6 @@ namespace Oxide.Plugins
             Unsubscribe("OnCrateHackEnd");
             Unsubscribe("CanHackCrate");
             Unsubscribe("OnEntityMounted");
-            Unsubscribe("OnEntityDismounted");
         }
         private void SubscribeHook()
         {
@@ -1527,7 +1546,6 @@ namespace Oxide.Plugins
             Subscribe("OnCrateHackEnd");
             Subscribe("CanHackCrate");
             Subscribe("OnEntityMounted");
-            Subscribe("OnEntityDismounted");
         }
 
 
@@ -1666,13 +1684,6 @@ namespace Oxide.Plugins
                 }
             }
         }
-        void OnEntityDismounted(BaseMountable entity, BasePlayer player)
-        {
-            if (entity.OwnerID == 342968945867)
-            {
-                npcZones.AddToTrigger(player);
-            }
-        }
         public class NPCMonitor : FacepunchBehaviour
         {
             public NPCPlayerApex player
@@ -1772,14 +1783,12 @@ namespace Oxide.Plugins
         {
             private Vector3 Position;
             private float Radius;
-            TriggerRadiation Rads = null;
+            private TriggerRadiation Radiation;
+
             private void Awake()
             {
-                gameObject.layer = (int)Layer.Reserved1;
+                gameObject.layer = (int)Rust.Layer.Reserved1;
                 gameObject.name = "NpcZonesOrRadiation";
-                var rigidbody = gameObject.AddComponent<Rigidbody>();
-                rigidbody.useGravity = false;
-                rigidbody.isKinematic = true;
             }
             public void Activate(BaseEntity box, float radius, bool rad)
             {
@@ -1788,34 +1797,48 @@ namespace Oxide.Plugins
                 transform.position = Position;
                 transform.rotation = new Quaternion();
                 UpdateCollider();
-                gameObject.SetActive(true);
                 enabled = true;
                 if (rad)
                 {
-                    UpdateCollider();
-                    gameObject.SetActive(true);
-                    enabled = true;
-                    Rads = gameObject.GetComponent<TriggerRadiation>();
-                    Rads = Rads ?? gameObject.AddComponent<TriggerRadiation>();
-                    Rads.RadiationAmountOverride = _.config.radiationConroller.radCount;
-                    Rads.interestLayers = LayerMask.GetMask("Player (Server)");
-                    Rads.enabled = true;
+                    Radiation = gameObject.AddComponent<TriggerRadiation>();
+                    Radiation.RadiationAmountOverride = _.config.radiationConroller.radCount;
+                    Radiation.interestLayers = LayerMask.GetMask("Player (Server)");
+                    Radiation.enabled = true;
+                }
+                gameObject.SetActive(true);
+                enabled = true;
+            }
+
+            private void OnTriggerEnter(Collider other)
+            {
+                BasePlayer player = other.GetComponent<BasePlayer>();
+                if (player != null && player.IsNpc == false && Radiation != null)
+                {
+                    if (Radiation.entityContents == null)
+                        Radiation.entityContents = new HashSet<BaseEntity>();
+
+                    Radiation.entityContents.Add(player);
+                    player.EnterTrigger(Radiation);
                 }
             }
-            public void AddToTrigger(BasePlayer player)
-            {
-                if (Rads.entityContents == null)
-                    Rads.entityContents = new HashSet<BaseEntity>();
 
-                Rads.entityContents.Add(player);
-                player.EnterTrigger(Rads);
+            private void OnTriggerExit(Collider other)
+            {
+                BasePlayer player = other.GetComponent<BasePlayer>();
+                if (player != null && player.IsNpc == false && Radiation != null)
+                {
+                    if (Radiation.entityContents != null)
+                        Radiation.entityContents.Remove(player);
+
+                    player.LeaveTrigger(Radiation);
+                }
             }
             private void OnDestroy()
             {
                 foreach (var player in BasePlayer.activePlayerList)
                 {
-                    Rads.entityContents.Remove(player);
-                    player.LeaveTrigger(Rads);
+                    Radiation.entityContents.Remove(player);
+                    player.LeaveTrigger(Radiation);
                 }
                 Destroy(gameObject);
             }
@@ -1852,7 +1875,7 @@ namespace Oxide.Plugins
 
             int xCube = (int)(pos.x / cubeSize);
             int zCube = (int)(pos.z / cubeSize);
-            //int yNumber = skykey;
+           // int yNumber = skykey;
             int firstLetterIndex = (int)(xCube / alpha.Length) - 1;
             string firstLetter = "";
             if (firstLetterIndex >= 0)

@@ -2,6 +2,7 @@
   "Automatic wipe on wipe": false,
   "Default Kit Color": "#F28633",
   "Work with Notify?": true,
+  "Use Spectating mode when editing kits?": true,
   "Commands": [
     "kit",
     "kits"
@@ -143,5 +144,6 @@
       "OffsetMin": "0 -100",
       "OffsetMax": "0 -75"
     }
-  }
+  },
+  "Steampowered API key": "!!! You can get it HERE > https://steamcommunity.com/dev/apikey < and you need to insert HERE !!!"
 }

@@ -8,6 +8,7 @@
   "Load images when logging into the server?": true,
   "Work with Notify?": true,
   "Can admins edit? (by flag)": true,
+  "Block (NoEscape)": false,
   "Delay between loading images": 1.0,
   "Economy": {
     "Type (Plugin/Item)": "Plugin",

@@ -17,14 +17,14 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.18")]
+    [Info("Shop", "Mevent", "1.0.19")]
     public class Shop : RustPlugin
     {
         //TODO: Transfer of currency between players
 
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, ItemCostCalculator, HumanNPC, Notify;
+        [PluginReference] private Plugin ImageLibrary, ItemCostCalculator, HumanNPC, Notify, NoEscape;
 
         private static Shop _instance;
 
@@ -139,7 +139,7 @@ namespace Oxide.Plugins
         private class Configuration
         {
             [JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public string[] Commands = {"shop", "shops"};
+            public string[] Commands = { "shop", "shops" };
 
             [JsonProperty(PropertyName = "Load images when logging into the server?")]
             public bool LoginImages = true;
@@ -149,6 +149,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Can admins edit? (by flag)")]
             public bool FlagAdmin = true;
+
+            [JsonProperty(PropertyName = "Block (NoEscape)")]
+            public bool BlockNoEscape;
 
             [JsonProperty(PropertyName = "Delay between loading images")]
             public float ImagesDelay = 1f;
@@ -408,22 +411,22 @@ namespace Oxide.Plugins
 
             public ShopItem(Dictionary<string, object> dictionary)
             {
-                ID = (int) dictionary["ID"];
-                Type = (ItemType) dictionary["Type"];
-                Image = (string) dictionary["Image"];
-                Title = (string) dictionary["Title"];
-                Command = (string) dictionary["Command"];
-                DisplayName = (string) dictionary["DisplayName"];
-                ShortName = (string) dictionary["ShortName"];
-                Skin = (ulong) dictionary["Skin"];
-                Amount = (int) dictionary["Amount"];
-                Price = (double) dictionary["Price"];
-                SellPrice = (double) dictionary["SellPrice"];
+                ID = (int)dictionary["ID"];
+                Type = (ItemType)dictionary["Type"];
+                Image = (string)dictionary["Image"];
+                Title = (string)dictionary["Title"];
+                Command = (string)dictionary["Command"];
+                DisplayName = (string)dictionary["DisplayName"];
+                ShortName = (string)dictionary["ShortName"];
+                Skin = (ulong)dictionary["Skin"];
+                Amount = (int)dictionary["Amount"];
+                Price = (double)dictionary["Price"];
+                SellPrice = (double)dictionary["SellPrice"];
                 Plugin = new PluginItem
                 {
-                    Hook = (string) dictionary["Plugin_Hook"],
-                    Plugin = (string) dictionary["Plugin_Name"],
-                    Amount = (int) dictionary["Plugin_Amount"]
+                    Hook = (string)dictionary["Plugin_Hook"],
+                    Plugin = (string)dictionary["Plugin_Name"],
+                    Amount = (int)dictionary["Plugin_Amount"]
                 };
                 Discount = new Dictionary<string, int>();
             }
@@ -540,7 +543,7 @@ namespace Oxide.Plugins
                 {
                     case "Economics":
                     {
-                        plug.Call(Hook, player.userID, (double) Amount * count);
+                        plug.Call(Hook, player.userID, (double)Amount * count);
                         break;
                     }
                     default:
@@ -616,7 +619,7 @@ namespace Oxide.Plugins
                         {
                             case "BankSystem":
                             case "ServerRewards":
-                                plugin.Call(AddHook, player.userID, (int) amount);
+                                plugin.Call(AddHook, player.userID, (int)amount);
                                 break;
                             default:
                                 plugin.Call(AddHook, player.userID, amount);
@@ -627,7 +630,7 @@ namespace Oxide.Plugins
                     }
                     case EconomyType.Item:
                     {
-                        var am = (int) amount;
+                        var am = (int)amount;
 
                         var item = ToItem(am);
                         if (item == null) return;
@@ -653,7 +656,7 @@ namespace Oxide.Plugins
                         {
                             case "BankSystem":
                             case "ServerRewards":
-                                plugin.Call(RemoveHook, player.userID, (int) amount);
+                                plugin.Call(RemoveHook, player.userID, (int)amount);
                                 break;
                             default:
                                 plugin.Call(RemoveHook, player.userID, amount);
@@ -665,7 +668,7 @@ namespace Oxide.Plugins
                     case EconomyType.Item:
                     {
                         var playerItems = player.inventory.AllItems();
-                        var am = (int) amount;
+                        var am = (int)amount;
 
                         if (ItemCount(playerItems, ShortName, Skin) < am) return false;
 
@@ -853,7 +856,7 @@ namespace Oxide.Plugins
         {
             if (player == null) return;
 
-            itemsToUpdate.Remove(player);
+            _itemsToUpdate.Remove(player);
 
             if (itemEditing.ContainsKey(player))
             {
@@ -874,7 +877,7 @@ namespace Oxide.Plugins
 
         private object CanSpectateTarget(BasePlayer player, string filter)
         {
-            return player != null && itemEditing.ContainsKey(player) ? (object) true : null;
+            return player != null && itemEditing.ContainsKey(player) ? (object)true : null;
         }
 
         private void OnUseNPC(BasePlayer npc, BasePlayer player)
@@ -909,7 +912,7 @@ namespace Oxide.Plugins
             {
                 case "closeui":
                 {
-                    itemsToUpdate.Remove(player);
+                    _itemsToUpdate.Remove(player);
                     OpenedShops.Remove(player);
                     break;
                 }
@@ -1054,6 +1057,16 @@ namespace Oxide.Plugins
                     var price = playerCart.GetPrice(player);
                     if (price <= 0) return;
 
+                    if (_config.BlockNoEscape && NoEscape != null)
+                    {
+                        var success = NoEscape?.Call("IsBlocked", player);
+                        if (success is bool && (bool)success)
+                        {
+                            ErrorUi(player, Msg(player, BuyRaidBlocked));
+                            return;
+                        }
+                    }
+
                     var totalcount = playerCart.GetTotalAmount();
 
                     var slots = player.inventory.containerBelt.capacity -
@@ -1081,7 +1094,7 @@ namespace Oxide.Plugins
 
                     CuiHelper.DestroyUi(player, Layer);
                     _carts.Remove(player.userID);
-                    itemsToUpdate.Remove(player);
+                    _itemsToUpdate.Remove(player);
 
                     SendNotify(player, ReceivedItems, 0);
                     break;
@@ -1119,6 +1132,16 @@ namespace Oxide.Plugins
                         return;
                     }
 
+                    if (_config.BlockNoEscape && NoEscape != null)
+                    {
+                        var success = NoEscape?.Call("IsBlocked", player);
+                        if (success is bool && (bool)success)
+                        {
+                            ErrorUi(player, Msg(player, SellRaidBlocked));
+                            return;
+                        }
+                    }
+
                     var totalAmount = item.Amount * amount;
                     var playerItems = player.inventory.AllItems();
 
@@ -1134,14 +1157,14 @@ namespace Oxide.Plugins
 
                     SetCooldown(player, item, false, true);
 
-                    if (itemsToUpdate.ContainsKey(player))
+                    if (_itemsToUpdate.ContainsKey(player))
                     {
-                        if (!itemsToUpdate[player].Contains(item))
-                            itemsToUpdate[player].Add(item);
+                        if (!_itemsToUpdate[player].Contains(item))
+                            _itemsToUpdate[player].Add(item);
                     }
                     else
                     {
-                        itemsToUpdate.Add(player, new List<ShopItem> {item});
+                        _itemsToUpdate.Add(player, new List<ShopItem> { item });
                     }
 
 
@@ -1268,14 +1291,14 @@ namespace Oxide.Plugins
 
                     var newItem = new ShopItem(edit);
 
-                    var generated = (bool) edit["Generated"];
+                    var generated = (bool)edit["Generated"];
                     if (generated)
                     {
                         _config.Shop[category].Items.Add(newItem);
                     }
                     else
                     {
-                        var shopItem = FindItemById((int) edit["ID"]);
+                        var shopItem = FindItemById((int)edit["ID"]);
                         if (shopItem != null)
                         {
                             shopItem.Type = newItem.Type;
@@ -1321,7 +1344,7 @@ namespace Oxide.Plugins
                     var editing = itemEditing[player];
                     if (editing == null) return;
 
-                    var shopItem = FindItemById((int) editing["ID"]);
+                    var shopItem = FindItemById((int)editing["ID"]);
                     if (shopItem == null) return;
 
                     _config.Shop.ForEach(x => x.Items.Remove(shopItem));
@@ -1412,7 +1435,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                     Image =
                     {
                         Color = "0 0 0 0.9",
@@ -1423,12 +1446,13 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                    Text = {Text = ""},
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    Text = { Text = "" },
                     Button =
                     {
                         Color = "0 0 0 0",
-                        Close = Layer
+                        Close = Layer,
+                        Command = "UI_Shop closeui"
                     }
                 }, Layer);
 
@@ -1589,9 +1613,9 @@ namespace Oxide.Plugins
             var cdItems = inPageItems.FindAll(x =>
                 GetCooldownTime(player.userID, x, true) > 0 || GetCooldownTime(player.userID, x, false) > 0);
             if (cdItems.Count > 0)
-                itemsToUpdate[player] = cdItems;
+                _itemsToUpdate[player] = cdItems;
             else
-                itemsToUpdate.Remove(player);
+                _itemsToUpdate.Remove(player);
 
             foreach (var shopItem in inPageItems)
             {
@@ -1697,7 +1721,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiLabel
                 {
-                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                     Text =
                     {
                         Text = $"{shopItem.Amount}",
@@ -1730,7 +1754,7 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiLabel
                     {
-                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                         Text =
                         {
                             Text = $"-{discount}%",
@@ -1765,7 +1789,7 @@ namespace Oxide.Plugins
                         {
                             AnchorMin = "0 0", AnchorMax = "1 1"
                         },
-                        Text = {Text = ""},
+                        Text = { Text = "" },
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -1811,7 +1835,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiLabel
                 {
-                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                     Text =
                     {
                         Text = string.IsNullOrEmpty(search) ? Msg(player, SearchTitle) : $"{search}",
@@ -2010,7 +2034,7 @@ namespace Oxide.Plugins
 
             if (_config.UI.UseScrollCategories)
             {
-                var pages = (int) Math.Ceiling((double) shopCategories.Count / _config.UI.CategoriesOnString);
+                var pages = (int)Math.Ceiling((double)shopCategories.Count / _config.UI.CategoriesOnString);
 
                 if (pages > 1)
                 {
@@ -2020,7 +2044,7 @@ namespace Oxide.Plugins
                         {
                             AnchorMin = "1 0", AnchorMax = "1 1", OffsetMin = "-20 15", OffsetMax = "-10 -65"
                         },
-                        Image = {Color = "0 0 0 0"}
+                        Image = { Color = "0 0 0 0" }
                     }, Layer + ".Categories", Layer + ".Pages");
 
                     var size = 1.0 / pages;
@@ -2031,13 +2055,13 @@ namespace Oxide.Plugins
                     {
                         container.Add(new CuiButton
                         {
-                            RectTransform = {AnchorMin = $"0 {pSwitch}", AnchorMax = $"1 {pSwitch + size}"},
+                            RectTransform = { AnchorMin = $"0 {pSwitch}", AnchorMax = $"1 {pSwitch + size}" },
                             Button =
                             {
                                 Command = $"UI_Shop changeicat {catPage} {z}",
                                 Color = z == iCategory ? _secondColor : _firstColor
                             },
-                            Text = {Text = ""}
+                            Text = { Text = "" }
                         }, Layer + ".Pages");
 
                         pSwitch += size;
@@ -2479,8 +2503,8 @@ namespace Oxide.Plugins
                 {
                     new CuiPanel
                     {
-                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                        Image = {Color = HexToCuiColor(_config.ThirdColor, 99)}
+                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                        Image = { Color = HexToCuiColor(_config.ThirdColor, 99) }
                     },
                     "Overlay", ModalLayer
                 },
@@ -2550,7 +2574,7 @@ namespace Oxide.Plugins
                             FontSize = 10,
                             Color = "1 1 1 1"
                         },
-                        Button = {Color = HexToCuiColor(_config.SecondColor, 33), Close = ModalLayer}
+                        Button = { Color = HexToCuiColor(_config.SecondColor, 33), Close = ModalLayer }
                     },
                     ModalLayer
                 }
@@ -2568,8 +2592,8 @@ namespace Oxide.Plugins
                 {
                     new CuiPanel
                     {
-                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                        Image = {Color = HexToCuiColor(_config.ThirdColor, 98)},
+                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                        Image = { Color = HexToCuiColor(_config.ThirdColor, 98) },
                         CursorEnabled = true
                     },
                     "Overlay", ModalLayer
@@ -2584,7 +2608,7 @@ namespace Oxide.Plugins
                             OffsetMin = "-127.5 -75",
                             OffsetMax = "127.5 140"
                         },
-                        Image = {Color = _fifthColor}
+                        Image = { Color = _fifthColor }
                     },
                     ModalLayer, ModalLayer + ".Main"
                 },
@@ -2639,7 +2663,7 @@ namespace Oxide.Plugins
                             FontSize = 12,
                             Color = "1 1 1 1"
                         },
-                        Button = {Color = _seventhColor, Close = ModalLayer}
+                        Button = { Color = _seventhColor, Close = ModalLayer }
                     },
                     ModalLayer + ".Main"
                 }
@@ -2655,16 +2679,16 @@ namespace Oxide.Plugins
 
             container.Add(new CuiPanel
             {
-                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                Image = {Color = HexToCuiColor(_config.ThirdColor, 98)},
+                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                Image = { Color = HexToCuiColor(_config.ThirdColor, 98) },
                 CursorEnabled = true
             }, "Overlay", ModalLayer);
 
             container.Add(new CuiButton
             {
-                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                Text = {Text = ""},
-                Button = {Color = "0 0 0 0", Close = ModalLayer}
+                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                Text = { Text = "" },
+                Button = { Color = "0 0 0 0", Close = ModalLayer }
             }, ModalLayer);
 
             container.Add(new CuiPanel
@@ -2852,7 +2876,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiLabel
             {
-                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                 Text =
                 {
                     Text = Msg(player, BalanceTitle, _config.Economy.ShowBalance(player)),
@@ -2919,8 +2943,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                    Image = {Color = HexToCuiColor(_config.FirstColor, 95)},
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    Image = { Color = HexToCuiColor(_config.FirstColor, 95) },
                     CursorEnabled = true
                 }, "Overlay", EditingLayer);
             }
@@ -2953,7 +2977,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = {Color = _firstColor}
+                Image = { Color = _firstColor }
             }, EditingLayer + ".Main", EditingLayer + ".Header");
 
             container.Add(new CuiLabel
@@ -3087,7 +3111,7 @@ namespace Oxide.Plugins
 
             #region Item
 
-            var shortName = (string) edit["ShortName"];
+            var shortName = (string)edit["ShortName"];
 
             #region Image
 
@@ -3098,7 +3122,7 @@ namespace Oxide.Plugins
                     AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                     OffsetMin = "-240 -290", OffsetMax = "-100 -150"
                 },
-                Image = {Color = _firstColor}
+                Image = { Color = _firstColor }
             }, EditingLayer + ".Main", EditingLayer + ".Image");
 
             if (!string.IsNullOrEmpty(shortName) && ImageLibrary)
@@ -3108,7 +3132,7 @@ namespace Oxide.Plugins
                     Components =
                     {
                         new CuiRawImageComponent
-                            {Png = ImageLibrary.Call<string>("GetImage", shortName, edit["Skin"])},
+                            { Png = ImageLibrary.Call<string>("GetImage", shortName, edit["Skin"]) },
                         new CuiRectTransformComponent
                         {
                             AnchorMin = "0 0", AnchorMax = "1 1",
@@ -3258,7 +3282,7 @@ namespace Oxide.Plugins
 
             #endregion
 
-            var generated = (bool) edit["Generated"];
+            var generated = (bool)edit["Generated"];
 
 
             #region Save Button
@@ -3366,7 +3390,7 @@ namespace Oxide.Plugins
                     AnchorMin = "0 0", AnchorMax = "1 1",
                     OffsetMin = "0 0", OffsetMax = "0 -20"
                 },
-                Image = {Color = "0 0 0 0"}
+                Image = { Color = "0 0 0 0" }
             }, name, $"{name}.Value");
 
             container.Add(new CuiLabel
@@ -3422,8 +3446,8 @@ namespace Oxide.Plugins
 
             container.Add(new CuiButton
             {
-                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                Text = {Text = ""},
+                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                Text = { Text = "" },
                 Button =
                 {
                     Close = ModalLayer,
@@ -3544,7 +3568,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{xSwitch} {ySwitch - Height}",
                         OffsetMax = $"{xSwitch + Width} {ySwitch}"
                     },
-                    Image = {Color = _firstColor}
+                    Image = { Color = _firstColor }
                 }, ModalLayer + ".Main", ModalLayer + $".Item.{item}");
 
                 if (ImageLibrary)
@@ -3553,7 +3577,7 @@ namespace Oxide.Plugins
                         Parent = ModalLayer + $".Item.{item}",
                         Components =
                         {
-                            new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", item)},
+                            new CuiRawImageComponent { Png = ImageLibrary.Call<string>("GetImage", item) },
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "1 1",
@@ -3564,8 +3588,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                    Text = {Text = ""},
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    Text = { Text = "" },
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -3598,7 +3622,7 @@ namespace Oxide.Plugins
                     AnchorMin = "0.5 0", AnchorMax = "0.5 0",
                     OffsetMin = "-90 10", OffsetMax = "90 35"
                 },
-                Image = {Color = _secondColor}
+                Image = { Color = _secondColor }
             }, ModalLayer + ".Main", ModalLayer + ".Search");
 
             container.Add(new CuiLabel
@@ -3804,8 +3828,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                    Text = {Text = ""},
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    Text = { Text = "" },
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -3921,8 +3945,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                    Text = {Text = ""},
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    Text = { Text = "" },
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -3971,7 +3995,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{size} 0",
                         OffsetMax = $"-{size} {size}"
                     },
-                    Image = {Color = color}
+                    Image = { Color = color }
                 },
                 parent);
             container.Add(new CuiPanel
@@ -3983,7 +4007,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{size} -{size}",
                         OffsetMax = $"-{size} 0"
                     },
-                    Image = {Color = color}
+                    Image = { Color = color }
                 },
                 parent);
             container.Add(new CuiPanel
@@ -3994,7 +4018,7 @@ namespace Oxide.Plugins
                         OffsetMin = "0 0",
                         OffsetMax = $"{size} 0"
                     },
-                    Image = {Color = color}
+                    Image = { Color = color }
                 },
                 parent);
             container.Add(new CuiPanel
@@ -4006,7 +4030,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"-{size} 0",
                         OffsetMax = "0 0"
                     },
-                    Image = {Color = color}
+                    Image = { Color = color }
                 },
                 parent);
         }
@@ -4044,7 +4068,7 @@ namespace Oxide.Plugins
                 if (dict.ContainsKey(itemCategory))
                     dict[itemCategory].Add(item);
                 else
-                    dict.Add(itemCategory, new List<ItemDefinition> {item});
+                    dict.Add(itemCategory, new List<ItemDefinition> { item });
             });
 
             var id = 0;
@@ -4130,7 +4154,7 @@ namespace Oxide.Plugins
                 }
                 else
                 {
-                    _itemsCategories.Add(itemCategory, new List<string> {item.shortname});
+                    _itemsCategories.Add(itemCategory, new List<string> { item.shortname });
                 }
             });
 
@@ -4174,7 +4198,7 @@ namespace Oxide.Plugins
             var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
             var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
 
-            return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {alpha / 100f}";
+            return $"{(double)r / 255} {(double)g / 255} {(double)b / 255} {alpha / 100f}";
         }
 
         private static int ItemCount(Item[] items, string shortname, ulong skin)
@@ -4283,10 +4307,10 @@ namespace Oxide.Plugins
 
         #region Cooldown
 
-        private readonly Dictionary<BasePlayer, List<ShopItem>> itemsToUpdate =
+        private readonly Dictionary<BasePlayer, List<ShopItem>> _itemsToUpdate =
             new Dictionary<BasePlayer, List<ShopItem>>();
 
-        private readonly Dictionary<ulong, Cooldown> Cooldowns = new Dictionary<ulong, Cooldown>();
+        private readonly Dictionary<ulong, Cooldown> _cooldowns = new Dictionary<ulong, Cooldown>();
 
         private void ItemsUpdateController()
         {
@@ -4294,7 +4318,7 @@ namespace Oxide.Plugins
 
             var toRemove2 = Pool.GetList<KeyValuePair<BasePlayer, ShopItem>>();
 
-            foreach (var check in itemsToUpdate)
+            foreach (var check in _itemsToUpdate)
             {
                 if (check.Key == null)
                 {
@@ -4304,14 +4328,17 @@ namespace Oxide.Plugins
 
                 var container = new CuiElementContainer();
 
-                check.Value.ToList().ForEach(caseData =>
+                check.Value.ToList().ForEach(shopItem =>
                 {
-                    BuyButtonUi(check.Key, ref container, caseData);
-                    SellButtonUi(check.Key, ref container, caseData);
+                    if (shopItem.Price > 0.0)
+                        BuyButtonUi(check.Key, ref container, shopItem);
 
-                    if (GetCooldownTime(check.Key.userID, caseData, true) <= 0 &&
-                        GetCooldownTime(check.Key.userID, caseData, false) <= 0)
-                        toRemove2.Add(new KeyValuePair<BasePlayer, ShopItem>(check.Key, caseData));
+                    if (shopItem.SellPrice > 0.0)
+                        SellButtonUi(check.Key, ref container, shopItem);
+
+                    if (GetCooldownTime(check.Key.userID, shopItem, true) <= 0 &&
+                        GetCooldownTime(check.Key.userID, shopItem, false) <= 0)
+                        toRemove2.Add(new KeyValuePair<BasePlayer, ShopItem>(check.Key, shopItem));
                 });
 
                 CuiHelper.AddUi(check.Key, container);
@@ -4319,7 +4346,7 @@ namespace Oxide.Plugins
 
             toRemove2.ForEach(x => RemoveCooldown(x.Key, x.Value));
 
-            toRemove.ForEach(x => itemsToUpdate.Remove(x));
+            toRemove.ForEach(x => _itemsToUpdate.Remove(x));
 
             Pool.FreeList(ref toRemove);
             Pool.FreeList(ref toRemove2);
@@ -4328,7 +4355,7 @@ namespace Oxide.Plugins
         private Cooldown GetCooldown(ulong player)
         {
             Cooldown cooldown;
-            return Cooldowns.TryGetValue(player, out cooldown) ? cooldown : null;
+            return _cooldowns.TryGetValue(player, out cooldown) ? cooldown : null;
         }
 
         private CooldownData GetCooldown(ulong player, ShopItem item)
@@ -4345,38 +4372,38 @@ namespace Oxide.Plugins
         {
             if ((buy ? item.BuyCooldown : item.SellCooldown) <= 0) return;
 
-            if (Cooldowns.ContainsKey(player.userID))
-                Cooldowns[player.userID].SetCooldown(item, buy);
+            if (_cooldowns.ContainsKey(player.userID))
+                _cooldowns[player.userID].SetCooldown(item, buy);
             else
-                Cooldowns.Add(player.userID, new Cooldown().SetCooldown(item, buy));
+                _cooldowns.Add(player.userID, new Cooldown().SetCooldown(item, buy));
 
             if (needUpdate)
             {
-                if (itemsToUpdate.ContainsKey(player))
+                if (_itemsToUpdate.ContainsKey(player))
                 {
-                    if (!itemsToUpdate[player].Contains(item))
-                        itemsToUpdate[player].Add(item);
+                    if (!_itemsToUpdate[player].Contains(item))
+                        _itemsToUpdate[player].Add(item);
                 }
                 else
                 {
-                    itemsToUpdate.Add(player, new List<ShopItem> {item});
+                    _itemsToUpdate.Add(player, new List<ShopItem> { item });
                 }
             }
         }
 
         private void RemoveCooldown(BasePlayer player, ShopItem item)
         {
-            if (!Cooldowns.ContainsKey(player.userID)) return;
+            if (!_cooldowns.ContainsKey(player.userID)) return;
 
-            itemsToUpdate[player].Remove(item);
+            _itemsToUpdate[player].Remove(item);
 
-            Cooldowns[player.userID].RemoveCooldown(item);
+            _cooldowns[player.userID].RemoveCooldown(item);
 
-            if (Cooldowns[player.userID].Data.Count == 0)
+            if (_cooldowns[player.userID].Data.Count == 0)
             {
-                Cooldowns.Remove(player.userID);
+                _cooldowns.Remove(player.userID);
 
-                itemsToUpdate.Remove(player);
+                _itemsToUpdate.Remove(player);
             }
         }
 
@@ -4402,7 +4429,7 @@ namespace Oxide.Plugins
                 var data = GetCooldown(item);
                 if (data == null) return -1;
 
-                return (int) ((buy ? data.LastBuyTime : data.LastSellTime).AddSeconds(
+                return (int)((buy ? data.LastBuyTime : data.LastSellTime).AddSeconds(
                     buy ? item.BuyCooldown : item.SellCooldown) - DateTime.Now).TotalSeconds;
             }
 
@@ -4439,6 +4466,8 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            BuyRaidBlocked = "BuyRaidBlocked",
+            SellRaidBlocked = "SellRaidBlocked",
             DaysFormat = "DaysFormat",
             HoursFormat = "HoursFormat",
             MinutesFormat = "MinutesFormat",
@@ -4547,7 +4576,9 @@ namespace Oxide.Plugins
                 [SellCooldownMessage] = "You cannot sell the '{0}' item! Wait {1}",
                 [BtnBack] = "▲",
                 [BtnNext] = "▼",
-                [SellNotify] = "You have successfully sold {0} pcs of {1}"
+                [SellNotify] = "You have successfully sold {0} pcs of {1}",
+                [BuyRaidBlocked] = "You can't buy while blocked!",
+                [SellRaidBlocked] = "You can't sell while blocked!"
             }, this);
         }
 

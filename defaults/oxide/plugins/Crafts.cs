@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.0.0")]
+    [Info("Crafts", "Mevent", "2.1.0")]
     public class Crafts : RustPlugin
     {
         #region Fields
@@ -399,6 +399,102 @@ namespace Oxide.Plugins
                 Color = "#C5D0E6",
                 Delay = 0.75f
             };
+
+            [JsonProperty(PropertyName = "UI Settings")]
+            public UserInterface UI = new UserInterface
+            {
+                CatWidth = 90,
+                CatMargin = 5,
+                CatHeight = 25,
+                CraftWidth = 125,
+                CraftHeight = 125,
+                CraftMargin = 10,
+                CraftYIndent = -115,
+                CraftStrings = 2,
+                CraftAmountOnString = 5,
+                PageSize = 25,
+                PageSelectedSize = 40,
+                PagesMargin = 5,
+                ItemMargin = 40,
+                ItemWidth = 130,
+                Color1 = new IColor("#0E0E10", 100),
+                Color2 = new IColor("#161617", 100),
+                Color3 = new IColor("#FFFFFF", 100),
+                Color4 = new IColor("#4B68FF", 100),
+                Color5 = new IColor("#74884A", 100),
+                Color6 = new IColor("#CD4632", 100),
+                Color7 = new IColor("#595651", 100),
+                BackgroundImage = string.Empty
+            };
+        }
+
+        private class UserInterface
+        {
+            [JsonProperty(PropertyName = "Category Width")]
+            public float CatWidth;
+
+            [JsonProperty(PropertyName = "Category Height")]
+            public float CatHeight;
+
+            [JsonProperty(PropertyName = "Category Margin")]
+            public float CatMargin;
+
+            [JsonProperty(PropertyName = "Craft Width")]
+            public float CraftWidth;
+
+            [JsonProperty(PropertyName = "Craft Height")]
+            public float CraftHeight;
+
+            [JsonProperty(PropertyName = "Craft Margin")]
+            public float CraftMargin;
+
+            [JsonProperty(PropertyName = "Craft Y Indent")]
+            public float CraftYIndent;
+
+            [JsonProperty(PropertyName = "Craft Amount On String")]
+            public int CraftAmountOnString;
+
+            [JsonProperty(PropertyName = "Craft Strings")]
+            public int CraftStrings;
+
+            [JsonProperty(PropertyName = "Page Size")]
+            public float PageSize;
+
+            [JsonProperty(PropertyName = "Page Selected Size")]
+            public float PageSelectedSize;
+
+            [JsonProperty(PropertyName = "Pages Margin")]
+            public float PagesMargin;
+
+            [JsonProperty(PropertyName = "Item Width")]
+            public float ItemWidth;
+
+            [JsonProperty(PropertyName = "Item Margin")]
+            public float ItemMargin;
+
+            [JsonProperty(PropertyName = "Color 1")]
+            public IColor Color1;
+
+            [JsonProperty(PropertyName = "Color 2")]
+            public IColor Color2;
+
+            [JsonProperty(PropertyName = "Color 3")]
+            public IColor Color3;
+
+            [JsonProperty(PropertyName = "Color 4")]
+            public IColor Color4;
+
+            [JsonProperty(PropertyName = "Color 5")]
+            public IColor Color5;
+
+            [JsonProperty(PropertyName = "Color 6")]
+            public IColor Color6;
+
+            [JsonProperty(PropertyName = "Color 7")]
+            public IColor Color7;
+
+            [JsonProperty(PropertyName = "Background Image")]
+            public string BackgroundImage;
         }
 
         private class Category
@@ -957,6 +1053,13 @@ namespace Oxide.Plugins
             var player = cov?.Object as BasePlayer;
             if (player == null) return;
 
+            if (!string.IsNullOrEmpty(_config.Permission) &&
+                !permission.UserHasPermission(player.UserIDString, _config.Permission))
+            {
+                SendNotify(player, NoPermission, 1);
+                return;
+            }
+
             MainUi(player, first: true);
         }
 
@@ -1023,6 +1126,12 @@ namespace Oxide.Plugins
                     var craft = GetPlayerCategories(player)[category].Crafts.Find(x => x.ID == itemId);
                     if (craft == null) return;
 
+                    if (!HasWorkbench(player, craft.Level))
+                    {
+                        Reply(player, NotWorkbench);
+                        return;
+                    }
+
                     var allItems = player.inventory.AllItems();
 
                     if (craft.Items.Exists(item => !HasAmount(allItems, item.ShortName, item.SkinID, item.Amount)))
@@ -1057,6 +1166,8 @@ namespace Oxide.Plugins
             int totalAmount;
             float margin;
             float ySwitch;
+            float height;
+
             if (first)
             {
                 CuiHelper.DestroyUi(player, Layer);
@@ -1086,7 +1197,7 @@ namespace Oxide.Plugins
                 #region Workbenches
 
                 totalAmount = 3;
-                var height = 15f;
+                height = 15f;
                 margin = 5f;
 
                 ySwitch = (totalAmount * height + (totalAmount - 1) * margin) / 2f;
@@ -1158,6 +1269,21 @@ namespace Oxide.Plugins
                         Color = "1 1 1 0.5"
                     }
                 }, Layer);
+
+                if (!string.IsNullOrEmpty(_config.UI.BackgroundImage))
+                    container.Add(new CuiElement
+                    {
+                        Parent = Layer,
+                        Components =
+                        {
+                            new CuiRawImageComponent
+                                { Png = ImageLibrary.Call<string>("GetImage", _config.UI.BackgroundImage) },
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0 0", AnchorMax = "1 1"
+                            }
+                        }
+                    });
             }
 
             #endregion
@@ -1174,7 +1300,7 @@ namespace Oxide.Plugins
                 },
                 Image =
                 {
-                    Color = HexToCuiColor("#0E0E10")
+                    Color = _config.UI.Color1.Get()
                 }
             }, Layer, Layer + ".Main");
 
@@ -1188,7 +1314,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = HexToCuiColor("#161617") }
+                Image = { Color = _config.UI.Color2.Get() }
             }, Layer + ".Main", Layer + ".Header");
 
             container.Add(new CuiLabel
@@ -1205,7 +1331,7 @@ namespace Oxide.Plugins
                     Align = TextAnchor.MiddleLeft,
                     Font = "robotocondensed-bold.ttf",
                     FontSize = 14,
-                    Color = HexToCuiColor("#FFFFFF")
+                    Color = _config.UI.Color3.Get()
                 }
             }, Layer + ".Header");
 
@@ -1223,12 +1349,12 @@ namespace Oxide.Plugins
                     Align = TextAnchor.MiddleCenter,
                     Font = "robotocondensed-bold.ttf",
                     FontSize = 10,
-                    Color = HexToCuiColor("#FFFFFF")
+                    Color = _config.UI.Color3.Get()
                 },
                 Button =
                 {
                     Close = Layer,
-                    Color = HexToCuiColor("#4B68FF")
+                    Color = _config.UI.Color4.Get()
                 }
             }, Layer + ".Header");
 
@@ -1236,8 +1362,8 @@ namespace Oxide.Plugins
 
             #region Categories
 
-            var width = 90f;
-            margin = 5f;
+            var width = _config.UI.CatWidth;
+            margin = _config.UI.CatMargin;
 
             var xSwitch = 25f;
 
@@ -1250,7 +1376,7 @@ namespace Oxide.Plugins
                     RectTransform =
                     {
                         AnchorMin = "0 1", AnchorMax = "0 1",
-                        OffsetMin = $"{xSwitch} -95",
+                        OffsetMin = $"{xSwitch} {-70 - _config.UI.CatHeight}",
                         OffsetMax = $"{xSwitch + width} -70"
                     },
                     Text =
@@ -1263,7 +1389,7 @@ namespace Oxide.Plugins
                     },
                     Button =
                     {
-                        Color = i == category ? HexToCuiColor("#4B68FF") : HexToCuiColor("#161617"),
+                        Color = i == category ? _config.UI.Color4.Get() : _config.UI.Color2.Get(),
                         Command = $"UI_Crafts page {i} 0"
                     }
                 }, Layer + ".Main");
@@ -1275,16 +1401,16 @@ namespace Oxide.Plugins
 
             #region Crafts
 
-            width = 125f;
-            var Height = 125f;
-            margin = 10f;
+            width = _config.UI.CraftWidth;
+            height = _config.UI.CraftHeight;
+            margin = _config.UI.CraftMargin;
 
-            var amountOnString = 5;
-            var lines = 2;
+            var amountOnString = _config.UI.CraftAmountOnString;
+            var lines = _config.UI.CraftStrings;
             totalAmount = amountOnString * lines;
 
             xSwitch = -(amountOnString * width + (amountOnString - 1) * margin) / 2f;
-            ySwitch = -115f;
+            ySwitch = _config.UI.CraftYIndent;
 
             var playerCrafts = GetPlayerCrafts(player, categories[category]);
             var crafts = playerCrafts.Skip(page * totalAmount).Take(totalAmount)
@@ -1299,12 +1425,12 @@ namespace Oxide.Plugins
                         RectTransform =
                         {
                             AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                            OffsetMin = $"{xSwitch} {ySwitch - Height}",
+                            OffsetMin = $"{xSwitch} {ySwitch - height}",
                             OffsetMax = $"{xSwitch + width} {ySwitch}"
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _config.UI.Color2.Get()
                         }
                     }, Layer + ".Main", Layer + $".Craft.{i}");
 
@@ -1390,7 +1516,7 @@ namespace Oxide.Plugins
 
                     if ((i + 1) % amountOnString == 0)
                     {
-                        ySwitch = ySwitch - Height - margin;
+                        ySwitch = ySwitch - height - margin;
                         xSwitch = -(amountOnString * width + (amountOnString - 1) * margin) / 2f;
                     }
                     else
@@ -1403,9 +1529,9 @@ namespace Oxide.Plugins
 
             #region Pages
 
-            var pageSize = 25f;
-            var selPageSize = 40f;
-            margin = 5f;
+            var pageSize = _config.UI.PageSize;
+            var selPageSize = _config.UI.PageSelectedSize;
+            margin = _config.UI.PagesMargin;
 
             var pages = Mathf.CeilToInt((float)playerCrafts.Count / totalAmount);
             if (pages > 1)
@@ -1435,7 +1561,7 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
+                            Color = _config.UI.Color4.Get(),
                             Command = $"UI_Crafts page {category} {j}"
                         }
                     }, Layer + ".Main");
@@ -1486,6 +1612,21 @@ namespace Oxide.Plugins
                 }
             }, Layer);
 
+            if (!string.IsNullOrEmpty(_config.UI.BackgroundImage))
+                container.Add(new CuiElement
+                {
+                    Parent = Layer,
+                    Components =
+                    {
+                        new CuiRawImageComponent
+                            { Png = ImageLibrary.Call<string>("GetImage", _config.UI.BackgroundImage) },
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = "0 0", AnchorMax = "1 1"
+                        }
+                    }
+                });
+
             #endregion
 
             #region Title
@@ -1511,12 +1652,12 @@ namespace Oxide.Plugins
 
             #region Items
 
-            var Width = 130f;
-            var Margin = 35f;
+            var width = _config.UI.ItemWidth;
+            var margin = _config.UI.ItemMargin;
 
             var notItem = false;
 
-            var xSwitch = -(craft.Items.Count * Width + (craft.Items.Count - 1) * Margin) /
+            var xSwitch = -(craft.Items.Count * width + (craft.Items.Count - 1) * margin) /
                           2f;
             craft.Items.ForEach(item =>
             {
@@ -1526,7 +1667,7 @@ namespace Oxide.Plugins
                     {
                         AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                         OffsetMin = $"{xSwitch} -450",
-                        OffsetMax = $"{xSwitch + Width} -285"
+                        OffsetMax = $"{xSwitch + width} -285"
                     },
                     Image =
                     {
@@ -1580,12 +1721,12 @@ namespace Oxide.Plugins
                     },
                     Image =
                     {
-                        Color = hasAmount ? HexToCuiColor("#74884A") : HexToCuiColor("#CD4632"),
+                        Color = hasAmount ? _config.UI.Color5.Get() : _config.UI.Color6.Get(),
                         Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat"
                     }
                 }, Layer + $".Item.{xSwitch}");
 
-                xSwitch += Width + Margin;
+                xSwitch += width + margin;
             });
 
             #endregion
@@ -1610,7 +1751,7 @@ namespace Oxide.Plugins
                 },
                 Button =
                 {
-                    Color = notItem ? HexToCuiColor("#595651") : HexToCuiColor("#4B68FF"),
+                    Color = notItem ? _config.UI.Color7.Get() : _config.UI.Color4.Get(),
                     Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat",
                     Command = notItem ? "" : $"UI_Crafts craft {category} {page} {itemId}",
                     Close = Layer
@@ -1635,7 +1776,7 @@ namespace Oxide.Plugins
                 },
                 Button =
                 {
-                    Color = HexToCuiColor("#595651"),
+                    Color = _config.UI.Color7.Get(),
                     Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat",
                     Close = Layer,
                     Command = $"UI_Crafts back {category} {page}"
@@ -1663,6 +1804,10 @@ namespace Oxide.Plugins
                 var imagesList = new Dictionary<string, string>();
 
                 var itemIcons = new List<KeyValuePair<string, ulong>>();
+
+                if (!string.IsNullOrEmpty(_config.UI.BackgroundImage) &&
+                    !imagesList.ContainsKey(_config.UI.BackgroundImage))
+                    imagesList.Add(_config.UI.BackgroundImage, _config.UI.BackgroundImage);
 
                 _crafts.ForEach(item =>
                 {
@@ -1718,19 +1863,6 @@ namespace Oxide.Plugins
             return category.Crafts.FindAll(craft => craft.Enabled && (string.IsNullOrEmpty(craft.Permission) ||
                                                                       permission.UserHasPermission(player.UserIDString,
                                                                           craft.Permission)));
-        }
-
-        private static string HexToCuiColor(string hex, float alpha = 100)
-        {
-            if (string.IsNullOrEmpty(hex)) hex = "#FFFFFF";
-
-            var str = hex.Trim('#');
-            if (str.Length != 6) throw new Exception(hex);
-            var r = byte.Parse(str.Substring(0, 2), NumberStyles.HexNumber);
-            var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
-            var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
-
-            return $"{(double)r / 255} {(double)g / 255} {(double)b / 255} {alpha / 100f}";
         }
 
         private static Color HexToUnityColor(string hex)
@@ -1840,6 +1972,17 @@ namespace Oxide.Plugins
                 obj.RemoveFromContainer();
 
             Pool.FreeList(ref list);
+        }
+
+        private static bool HasWorkbench(BasePlayer player, WorkbenchLevel level)
+        {
+            return level == WorkbenchLevel.Three ? player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench3)
+                : level == WorkbenchLevel.Two ? player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench3) ||
+                                                player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench2)
+                : level == WorkbenchLevel.One ? player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench3) ||
+                                                player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench2) ||
+                                                player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench1)
+                : level == WorkbenchLevel.None;
         }
 
         #endregion
@@ -2285,6 +2428,7 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            NotWorkbench = "NotWorkbench",
             CraftsDescription = "CraftsDescription",
             WorkbenchLvl = "WorkbenchLvl",
             GotCraft = "GotCraft",
@@ -2332,7 +2476,8 @@ namespace Oxide.Plugins
                 [GotCraft] = "You got a '{0}'",
                 [WorkbenchLvl] = "Workbench LVL {0}",
                 [CraftsDescription] =
-                    "Select the desired item from the list of all items, sort them by category, after which you can find out the cost of manufacturing and the most efficient way to create an item."
+                    "Select the desired item from the list of all items, sort them by category, after which you can find out the cost of manufacturing and the most efficient way to create an item.",
+                [NotWorkbench] = "Not enough workbench level for craft!"
             }, this);
         }
 
