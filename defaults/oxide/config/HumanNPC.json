@@ -1,4 +1,12 @@
 {
-  "Chat": "<color=#FA58AC>{0}:</color> ",
-  "Place Npc in teams": true
+  "Settings": {
+    "Chat": "<color=#FA58AC>{0}:</color> ",
+    "NpcInTeams": false,
+    "NpcUseRadius": 5.0
+  },
+  "Version": {
+    "Major": 0,
+    "Minor": 3,
+    "Patch": 52
+  }
 }

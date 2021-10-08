@@ -7,7 +7,7 @@ using Rust;
 
 namespace Oxide.Plugins
 {
-    [Info("Monuments Recycler", "Dana", "0.2.4")]
+    [Info("Monuments Recycler", "Dana", "0.2.5")]
     [Description("Adds recyclers to monuments including the cargo ship.")]
     internal class MonumentsRecycler : RustPlugin
     {
@@ -21,7 +21,7 @@ namespace Oxide.Plugins
         const string FishingVillageSmallAPrefab = "assets/bundled/prefabs/autospawn/monument/fishing_village/fishing_village_c.prefab";
 
         private List<BaseEntity> _recyclers = new List<BaseEntity>();
-        private SpawnData _domeSpawnData = new SpawnData(new Vector3(19.9f, 32.23f, 16.57f), new Vector3(0, 235, 0));
+		private SpawnData _domeSpawnData = new SpawnData(new Vector3(19.9f, 37.8f, 16.57f), new Vector3(0, 235, 0));
         private readonly Dictionary<string, SpawnData> _smallOilRigRecyclerPositions = new Dictionary<string, SpawnData>
         {
             {"3",  new SpawnData(new Vector3(21.01f, 22.5f, -30.8f),new Vector3(0, 180, 0) )},

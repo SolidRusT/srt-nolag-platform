@@ -1,339 +1,366 @@
-//#define DEBUG //This line enables debug output
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using Newtonsoft.Json;
+
+using Facepunch;
+
+using Oxide.Core.Libraries.Covalence;
+
 using UnityEngine;
-using Arg = ConsoleSystem.Arg;
 
 namespace Oxide.Plugins
 {
-	[Info("Entity Cleanup", "2CHEVSKII", "3.0.3")]
-	[Description("Easy way to cleanup your server from unnecessary entities")]
-	public class EntityCleanup : RustPlugin
-	{
-		#region Fields
+    [Info("Entity Cleanup", "2CHEVSKII", "4.0.0")]
+    [Description("Easy way to cleanup your server from unnecessary entities.")]
+    public class EntityCleanup : CovalencePlugin
+    {
+        const string PERMISSION_USE = "entitycleanup.use";
 
+        const string M_PREFIX           = "Chat prefix",
+                     M_NO_PERMISSION    = "No permission",
+                     M_INVALID_USAGE    = "Invalid usage",
+                     M_CLEANUP_STARTED  = "Cleanup started",
+                     M_CLEANUP_FINISHED = "Cleanup finished",
+                     M_CLEANUP_RUNNING  = "Cleanup running";
 
-		private PluginSettings Settings { get; set; }
-		private const string PERMISSION = "entitycleanup.use";
+        PluginSettings settings;
+        CleanupHandler handler;
 
-		private HashSet<string> Deployables { get; } = new HashSet<string>();
-		private Timer ScheduleTimer { get; set; }
+        #region Command handler
 
+        void CommandHandler(IPlayer player, string command, string[] args)
+        {
+            if (!player.HasPermission(PERMISSION_USE))
+            {
+                Message(player, M_NO_PERMISSION);
+                return;
+            }
 
-		#endregion
+            switch (args.Length)
+            {
+                case 0:
+                    if (!handler.TryStartCleanup())
+                    {
+                        Message(player, M_CLEANUP_RUNNING);
+                    }
 
-		#region Config
+                    return;
+                default:
+                    Message(player, M_INVALID_USAGE);
+                    break;
+            }
+        }
 
+        #endregion
+        
+        #region Oxide hooks
 
-		private class PluginSettings
-		{
-			[JsonProperty(PropertyName = "Scheduled cleanup seconds (x <= 0 to disable)")]
-			internal int ScheduledCleanup { get; set; }
-			[JsonProperty(PropertyName = "Scheduled cleanup building blocks")]
-			internal bool ScheduledCleanupBuildings { get; set; }
-			[JsonProperty(PropertyName = "Scheduled cleanup deployables")]
-			internal bool ScheduledCleanupDeployables { get; set; }
-			[JsonProperty(PropertyName = "Scheduled cleanup outside cupboard range")]
-			internal bool ScheduledCleanupOutsideCupRange { get; set; }
-			[JsonProperty(PropertyName = "Scheduled cleanup entities with hp less than specified (x = [0.0-1.0])")]
-			internal float ScheduledCleanupDamaged { get; set; }
-		}
+        void Init()
+        {
+            permission.RegisterPermission(PERMISSION_USE, this);
+            AddCovalenceCommand("entitycleanup", "CommandHandler");
+        }
 
-		protected override void LoadConfig()
-		{
-			base.LoadConfig();
-			try
-			{
-				Settings = Config.ReadObject<PluginSettings>();
-				if(Settings == null)
-					throw new JsonException("Can't read config...");
-				else
-					Puts("Configuration loaded...");
-			}
-			catch
-			{
-				LoadDefaultConfig();
-			}
-		}
+        void OnServerInitialized()
+        {
+            handler = ServerMgr.Instance.gameObject.AddComponent<CleanupHandler>();
+            handler.Init(this);
+        }
 
-		protected override void LoadDefaultConfig()
-		{
-			Config.Clear();
-			Settings = GetDefaultSettings();
-			SaveConfig();
-			PrintWarning("Default configuration created...");
-		}
+        void Unload()
+        {
+            handler.Shutdown();
+        }
 
-		protected override void SaveConfig() => Config.WriteObject(Settings, true);
+        #endregion
 
-		private PluginSettings GetDefaultSettings() => new PluginSettings {
-			ScheduledCleanup = 3600,
-			ScheduledCleanupBuildings = true,
-			ScheduledCleanupDeployables = true,
-			ScheduledCleanupOutsideCupRange = true,
-			ScheduledCleanupDamaged = 0f
-		};
+        #region LangAPI
 
+        protected override void LoadDefaultMessages()
+        {
+            lang.RegisterMessages(
+                new Dictionary<string, string> {
+                    [M_PREFIX] = "[Entity Cleanup] ",
+                    [M_NO_PERMISSION] = "<color=red>You have no access to this command</color>",
+                    [M_INVALID_USAGE] = "Invalid command usage",
+                    [M_CLEANUP_STARTED] = "Cleaning up old server entities...",
+                    [M_CLEANUP_FINISHED] = "Cleanup completed, purged <color=#34ebba>{0}</color> old entities",
+                    [M_CLEANUP_RUNNING] = "Cleanup is already running, wait until it completes"
+                },
+                this
+            );
+        }
 
-		#endregion
+        string GetMessage(IPlayer player, string langKey)
+        {
+            return lang.GetMessage(langKey, this, player.Id);
+        }
 
-		#region LangAPI
+        void Message(IPlayer player, string langKey, params object[] args)
+        {
+            var prefix = GetMessage(player, M_PREFIX);
+            var format = GetMessage(player, langKey);
+            var message = string.Format(format, args);
 
+            player.Message(prefix + message);
+        }
 
-		private const string mhelp = "Help message";
-		private const string mnoperm = "No permissions";
-		private const string mannounce = "Announcement";
+        void Announce(string langKey, params object[] args)
+        {
+            foreach (IPlayer player in players.Connected)
+            {
+                Message(player, langKey, args);
+            }
+        }
 
-		private Dictionary<string, string> DefaultMessages_EN { get; } = new Dictionary<string, string>
-		{
-			{ mhelp, "Usage: cleanup (<all/buildings/deployables/deployable partial name>) (all)" },
-			{ mnoperm, "You have no access to that command" },
-			{ mannounce, "Server is cleaning up <color=#00FF5D>{0}</color> entities..." }
-		};
+        #endregion
 
-		protected override void LoadDefaultMessages() => lang.RegisterMessages(DefaultMessages_EN, this, "en");
+        #region Configuration load
 
-		private string GetReply(BasePlayer player, string message, params object[] args) => string.Format(lang.GetMessage(message, this, player?.UserIDString), args);
+        protected override void LoadDefaultConfig()
+        {
+            settings = PluginSettings.Default;
+            SaveConfig();
+        }
 
+        protected override void LoadConfig()
+        {
+            base.LoadConfig();
 
-		#endregion
+            try
+            {
+                settings = Config.ReadObject<PluginSettings>();
 
-		#region Hooks
+                if (settings == null)
+                {
+                    throw new Exception("Configuration is null");
+                }
+            }
+            catch (Exception e)
+            {
+                LogError("Could not read configuration file:\n{0}", e.Message);
+                LoadDefaultConfig();
+            }
+        }
 
+        protected override void SaveConfig()
+        {
+            Config.WriteObject(settings);
+        }
 
-		private void Init()
-		{
-			permission.RegisterPermission(PERMISSION, this);
-			permission.GrantGroupPermission("admin", PERMISSION, this);
-			cmd.AddConsoleCommand("cleanup", this, delegate (Arg arg)
-			{
-				return CommandHandler(arg);
-			});
-			InitDeployables();
-		}
+        #endregion
 
-		private void OnServerInitialized()
-		{
-			if(Settings.ScheduledCleanup > 0)
-				StartScheduleTimer();
-		}
+        #region Nested types
 
+        #region CleanupHandler
 
-		#endregion
+        class CleanupHandler : MonoBehaviour
+        {
+            PluginSettings        settings;
+            List<BaseNetworkable> entityList;
+            Coroutine             cleanupRoutine;
+            HashSet<string>       deployables;
 
-		#region Commands
+            bool IsCleanupRunning => cleanupRoutine != null;
 
+            event Action      OnCleanupStarted;
+            event Action<int> OnCleanupComplete;
 
-		private bool CommandHandler(Arg arg)
-		{
-			BasePlayer player = arg.Player();
+            public void Init(EntityCleanup plugin)
+            {
+                settings = plugin.settings;
 
-			if(player && !permission.UserHasPermission(player.UserIDString, PERMISSION))
-				arg.ReplyWith(GetReply(player, mnoperm));
-			else if(!arg.HasArgs())
-				ScheduledCleanup();
-			else
-			{
-				switch(arg.Args.Length)
-				{
-					case 1:
-						switch(arg.Args[0].ToLower())
-						{
-							case "all":
-								ServerMgr.Instance.StartCoroutine(CollectData(new List<BaseEntity>()));
-								break;
-							default:
-								ServerMgr.Instance.StartCoroutine(CollectData(new List<BaseEntity>(), false, arg.Args[0]));
-								break;
-						}
-						break;
-					case 2:
-						switch(arg.Args[0].ToLower())
-						{
-							case "all":
-								if(arg.Args[1].ToLower() == "all")
-									ServerMgr.Instance.StartCoroutine(CollectData(new List<BaseEntity>(), true));
-								else
-									arg.ReplyWith(GetReply(player, mhelp));
-								break;
-							default:
-								if(arg.Args[1].ToLower() == "all")
-									ServerMgr.Instance.StartCoroutine(CollectData(new List<BaseEntity>(), true, arg.Args[1]));
-								else
-									arg.ReplyWith(GetReply(player, mhelp));
-								break;
-						}
-						break;
-					default:
-						arg.ReplyWith(GetReply(player, mhelp));
-						break;
-				}
-			}
-			return true;
-		}
+                OnCleanupStarted = () =>
+                {
+                    plugin.Announce(M_CLEANUP_STARTED);
+                };
 
+                OnCleanupComplete = purgedEntityCount =>
+                {
+                    plugin.Announce(M_CLEANUP_FINISHED, purgedEntityCount);
+                };
 
-		#endregion
+                entityList = Pool.GetList<BaseNetworkable>();
+                deployables = Pool.Get<HashSet<string>>();
 
-		#region Core
+                var modDeployables = from itemDef in ItemManager.GetItemDefinitions()
+                                     group itemDef by itemDef.GetComponent<ItemModDeployable>()
+                                     into deps where deps.Key != null select deps.Key;
 
+                foreach (var prefab in from depl in modDeployables select depl.entityPrefab.resourcePath)
+                {
+                    deployables.Add(prefab);
+                }
+            }
 
-		private IEnumerator CollectData(List<BaseEntity> entities, bool all = false, string name = null)
-		{
-			IEnumerator<BaseNetworkable> enumerator = BaseNetworkable.serverEntities.GetEnumerator();
-#if(DEBUG)
-			Puts("Started data collect");
-#endif
-			while(enumerator.MoveNext())
-			{
-				BaseEntity baseEntity = enumerator.Current as BaseEntity;
+            public void Shutdown()
+            {
+                CancelInvoke();
 
-				var parentEntity = baseEntity?.GetParentEntity();
+                if (IsCleanupRunning)
+                {
+                    StopCoroutine(cleanupRoutine);
+                    cleanupRoutine = null;
+                }
 
-				while(parentEntity != null && !parentEntity.IsDestroyed)
-				{
-					baseEntity = parentEntity;
-					parentEntity = baseEntity?.GetParentEntity();
-				}
+                Pool.FreeList(ref entityList);
+                deployables.Clear();
+                Pool.Free(ref deployables);
+                Destroy(this);
+            }
 
-				if(baseEntity == null)
-				{
-#if(DEBUG)
-					Puts("Skipped not a baseEntity");
-#endif
-					yield return new WaitForEndOfFrame();
-					continue;
-				}
+            public bool TryStartCleanup()
+            {
+                if (IsCleanupRunning)
+                {
+                    return false;
+                }
 
-				if(baseEntity.OwnerID == 0)
-				{
-					#if(DEBUG)
-					Puts("Skipped baseEntity without ownerid");
-					#endif
-					yield return new WaitForEndOfFrame();
+                StartCleanup();
+                InitializeTimedCleanup();
 
-					continue;
-				}
+                return true;
+            }
 
-				if(baseEntity.GetBuildingPrivilege() != null && !all && (baseEntity.Health() / baseEntity.MaxHealth()) > Settings.ScheduledCleanupDamaged)
-				{
-#if(DEBUG)
-					Puts("Skipped BE with BP or HP");
-#endif
-					yield return new WaitForEndOfFrame();
-					continue;
-				}
+            #region Unity messages
 
-				if((name == null || name.ToLower() == "buildings") && baseEntity is StabilityEntity)
-				{
-#if(DEBUG)
-					Puts("Added building block");
-#endif
-					entities.Add(baseEntity);
-					yield return new WaitForEndOfFrame();
-					continue;
-				}
+            void Start()
+            {
+                InitializeTimedCleanup();
+            }
 
-				if(((name == null || name.ToLower() == "deployables") && Deployables.Contains(baseEntity.gameObject.name))
-					|| (name != null && baseEntity.gameObject.name.Contains(name, CompareOptions.IgnoreCase)))
-				{
-#if(DEBUG)
-					Puts("Added deployable");
-#endif
-					entities.Add(baseEntity);
-					yield return new WaitForEndOfFrame();
-					continue;
-				}
-			}
+            #endregion
 
-			if(entities.Count < 1)
-			{
-#if(DEBUG)
-				Puts("Attempting to clean, but nothing to be cleaned");
-#endif
-				yield break;
-			}
+            void InitializeTimedCleanup()
+            {
+                CancelInvoke(nameof(StartCleanup));
 
-			ServerMgr.Instance.StartCoroutine(Cleanup(entities));
-		}
+                if (settings.Interval > 0)
+                {
+                    InvokeRepeating(nameof(StartCleanup), settings.Interval, settings.Interval);
+                }
+            }
 
-		private IEnumerator Cleanup(List<BaseEntity> entities)
-		{
-			Server.Broadcast(GetReply(null, mannounce, entities.Count));
+            void StartCleanup()
+            {
+                if (IsCleanupRunning)
+                {
+                    return;
+                }
 
-			for(int i = 0; i < entities.Count; i++)
-			{
-				if(!entities[i].IsDestroyed)
-				{
-					entities[i].Kill(BaseNetworkable.DestroyMode.None);
-					yield return new WaitForSeconds(0.05f);
-				}
-			}
-#if(DEBUG)
-			Puts($"Cleanup finished, {entities.Count} entities cleaned.");
-#endif
-		}
+                cleanupRoutine = StartCoroutine(Cleanup());
+            }
 
+            IEnumerator Cleanup()
+            {
+                entityList.AddRange(BaseNetworkable.serverEntities);
+                int cleanedCount = 0;
 
-		#endregion
+                OnCleanupStarted();
 
-		#region Utility
+                for (int i = 0; i < entityList.Count; i++)
+                {
+                    var entity = entityList[i] as BaseEntity;
 
+                    if (entity && IsCleanupCandidate(entity))
+                    {
+                        entity.Kill(BaseNetworkable.DestroyMode.Gib);
+                        cleanedCount++;
+                    }
 
-		private void InitDeployables()
-		{
-			IEnumerable<ItemModDeployable> deps = from def in ItemManager.GetItemDefinitions()
-												  where def.GetComponent<ItemModDeployable>() != null
-												  select def.GetComponent<ItemModDeployable>();
+                    yield return new WaitForEndOfFrame();
+                }
 
-			Puts($"Found {deps.Count()} deployables definitions");
+                OnCleanupComplete(cleanedCount);
 
-			foreach(ItemModDeployable dep in deps)
-				if(!Deployables.Contains(dep.entityPrefab.resourcePath))
-					Deployables.Add(dep.entityPrefab.resourcePath);
-		}
+                cleanupRoutine = null;
+            }
 
-		private void StartScheduleTimer()
-		{
-			if(ScheduleTimer != null && !ScheduleTimer.Destroyed)
-				ScheduleTimer.Destroy();
-			ScheduleTimer = timer.Once(Settings.ScheduledCleanup, () => ScheduledCleanup());
-		}
+            bool IsCleanupCandidate(BaseEntity entity)
+            {
+                if (entity.parentEntity.IsSet())
+                {
+                    return false;
+                }
 
-		private void ScheduledCleanup()
-		{
-#if(DEBUG)
-			Puts("Scheduled CU triggered");
-#endif
-			if(Settings.ScheduledCleanupBuildings && Settings.ScheduledCleanupDeployables)
-			{
-#if(DEBUG)
-				Puts("Scheduled CU all");
-#endif
-				ServerMgr.Instance.StartCoroutine(CollectData(new List<BaseEntity>()));
-			}
-			else if(Settings.ScheduledCleanupBuildings)
-			{
-#if(DEBUG)
-				Puts("Scheduled CU building");
-#endif
-				ServerMgr.Instance.StartCoroutine(CollectData(new List<BaseEntity>(), false, "buildings"));
-			}
-			else if(Settings.ScheduledCleanupDeployables)
-			{
-#if(DEBUG)
-				Puts("Scheduled CU deployable");
-#endif
-				ServerMgr.Instance.StartCoroutine(CollectData(new List<BaseEntity>(), false, "deployables"));
-				if(Settings.ScheduledCleanup > 0)
-					StartScheduleTimer();
-			}
-		}
+                if (entity.OwnerID == 0ul)
+                {
+                    return false;
+                }
 
+                if (
+                    settings.Whitelist.Contains(entity.ShortPrefabName) ||
+                    settings.Whitelist.Contains(entity.PrefabName)
+                )
+                {
+                    return false;
+                }
 
-		#endregion
-	}
+                if (entity is StabilityEntity && settings.CleanupBuildings ||
+                    deployables.Contains(entity.gameObject.name) && settings.CleanupDeployables)
+                {
+                    BuildingPrivlidge buildingPrivilege = entity.GetBuildingPrivilege();
+                    bool hasBuildingPrivilege = buildingPrivilege != null;
+
+                    if (hasBuildingPrivilege)
+                    {
+                        if (!settings.RemoveInsidePrivilege)
+                        {
+                            return false;
+                        }
+
+                        if (settings.CheckOwnerIdPrivilegeAuthorized && buildingPrivilege.IsAuthed(entity.OwnerID))
+                        {
+                            return false;
+                        }
+
+                        return settings.InsideHealthFractionTheshold == 0f || entity.Health() / entity.MaxHealth() < settings.InsideHealthFractionTheshold;
+                    }
+
+                    if (!settings.RemoveOutsidePrivilege)
+                    {
+                        return false;
+                    }
+                    
+                    return settings.OutsideHealthFractionTheshold == 0f || entity.Health() / entity.MaxHealth() < settings.OutsideHealthFractionTheshold;;
+                }
+
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region PluginSettings
+
+        class PluginSettings
+        {
+            public static PluginSettings Default => new PluginSettings {
+                Interval = 3600,
+                CleanupBuildings = true,
+                CleanupDeployables = true,
+                RemoveOutsidePrivilege = true,
+                OutsideHealthFractionTheshold = 0.2f,
+                RemoveInsidePrivilege = false,
+                InsideHealthFractionTheshold = 0f,
+                Whitelist = Array.Empty<string>(),
+                CheckOwnerIdPrivilegeAuthorized = true
+            };
+
+            public int      Interval                        { get; set; }
+            public bool     CleanupBuildings                { get; set; }
+            public bool     CleanupDeployables              { get; set; }
+            public bool     RemoveOutsidePrivilege          { get; set; }
+            public float    OutsideHealthFractionTheshold   { get; set; }
+            public bool     RemoveInsidePrivilege           { get; set; }
+            public float    InsideHealthFractionTheshold    { get; set; }
+            public string[] Whitelist                       { get; set; }
+            public bool     CheckOwnerIdPrivilegeAuthorized { get; set; }
+        }
+
+        #endregion
+
+        #endregion
+    }
 }

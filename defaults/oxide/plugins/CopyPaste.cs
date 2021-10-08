@@ -12,9 +12,13 @@ using System.Linq;
 using Facepunch;
 using Newtonsoft.Json;
 using Oxide.Core;
+using Oxide.Core.Libraries.Covalence;
+using Oxide.Game.Rust.Libraries.Covalence;
 using ProtoBuf;
 using UnityEngine;
 using Graphics = System.Drawing.Graphics;
+
+// ReSharper disable SpecifyACultureInStringConversionExplicitly
 
 /*
  * CREDITS
@@ -24,15 +28,20 @@ using Graphics = System.Drawing.Graphics;
  * bsdinis - Wire fix
  * nivex - Ownership option, sign fix
  * DezLife - CCTV fix
+ * Wulf - Skipping 4.1.24 :D
  * 
  */
 
 namespace Oxide.Plugins
 {
-    [Info("Copy Paste", "misticos", "4.1.27")] // Wulf skipped 24 :(
+    [Info("Copy Paste", "misticos", "4.1.31")]
     [Description("Copy and paste buildings to save them or move them")]
-    public class CopyPaste : RustPlugin
+    public class CopyPaste : CovalencePlugin
     {
+        // ReSharper disable once Unity.IncorrectMonoBehaviourInstantiation
+        private readonly Item _emptyItem = new Item { info = new ItemDefinition() };
+        private readonly IPlayer _consolePlayer = new RustConsolePlayer();
+
         private int _copyLayer =
                 LayerMask.GetMask("Construction", "Prevent Building", "Construction Trigger", "Trigger", "Deployed",
                     "Default", "Ragdoll"),
@@ -46,7 +55,6 @@ namespace Oxide.Plugins
             _pastePermission = "copypaste.paste",
             _pastebackPermission = "copypaste.pasteback",
             _undoPermission = "copypaste.undo",
-            _serverId = "Server",
             _subDirectory = "copypaste/";
 
         private Dictionary<string, Stack<List<BaseEntity>>> _lastPastes =
@@ -55,28 +63,28 @@ namespace Oxide.Plugins
         private Dictionary<string, SignSize> _signSizes = new Dictionary<string, SignSize>
         {
             //{"spinner.wheel.deployed", new SignSize(512, 512)},
-            {"sign.pictureframe.landscape", new SignSize(256, 128)},
-            {"sign.pictureframe.tall", new SignSize(128, 512)},
-            {"sign.pictureframe.portrait", new SignSize(128, 256)},
-            {"sign.pictureframe.xxl", new SignSize(1024, 512)},
-            {"sign.pictureframe.xl", new SignSize(512, 512)},
-            {"sign.small.wood", new SignSize(128, 64)},
-            {"sign.medium.wood", new SignSize(256, 128)},
-            {"sign.large.wood", new SignSize(256, 128)},
-            {"sign.huge.wood", new SignSize(512, 128)},
-            {"sign.hanging.banner.large", new SignSize(64, 256)},
-            {"sign.pole.banner.large", new SignSize(64, 256)},
-            {"sign.post.single", new SignSize(128, 64)},
-            {"sign.post.double", new SignSize(256, 256)},
-            {"sign.post.town", new SignSize(256, 128)},
-            {"sign.post.town.roof", new SignSize(256, 128)},
-            {"sign.hanging", new SignSize(128, 256)},
-            {"sign.hanging.ornate", new SignSize(256, 128)},
-            {"sign.neon.xl.animated", new SignSize(250, 250)},
-            {"sign.neon.xl", new SignSize(250, 250)},
-            {"sign.neon.125x215.animated", new SignSize(215, 125)},
-            {"sign.neon.125x215", new SignSize(215, 125)},
-            {"sign.neon.125x125", new SignSize(125, 125)},
+            { "sign.pictureframe.landscape", new SignSize(256, 128) },
+            { "sign.pictureframe.tall", new SignSize(128, 512) },
+            { "sign.pictureframe.portrait", new SignSize(128, 256) },
+            { "sign.pictureframe.xxl", new SignSize(1024, 512) },
+            { "sign.pictureframe.xl", new SignSize(512, 512) },
+            { "sign.small.wood", new SignSize(128, 64) },
+            { "sign.medium.wood", new SignSize(256, 128) },
+            { "sign.large.wood", new SignSize(256, 128) },
+            { "sign.huge.wood", new SignSize(512, 128) },
+            { "sign.hanging.banner.large", new SignSize(64, 256) },
+            { "sign.pole.banner.large", new SignSize(64, 256) },
+            { "sign.post.single", new SignSize(128, 64) },
+            { "sign.post.double", new SignSize(256, 256) },
+            { "sign.post.town", new SignSize(256, 128) },
+            { "sign.post.town.roof", new SignSize(256, 128) },
+            { "sign.hanging", new SignSize(128, 256) },
+            { "sign.hanging.ornate", new SignSize(256, 128) },
+            { "sign.neon.xl.animated", new SignSize(250, 250) },
+            { "sign.neon.xl", new SignSize(250, 250) },
+            { "sign.neon.125x215.animated", new SignSize(215, 125) },
+            { "sign.neon.125x215", new SignSize(215, 125) },
+            { "sign.neon.125x125", new SignSize(125, 125) },
         };
 
         private List<BaseEntity.Slot> _checkSlots = new List<BaseEntity.Slot>
@@ -249,10 +257,9 @@ namespace Oxide.Plugins
 
         private object TryCopyFromSteamId(ulong userId, string filename, string[] args, Action callback = null)
         {
-            var player = BasePlayer.FindByID(userId);
-
+            var player = players.FindPlayerById(userId.ToString())?.Object as BasePlayer;
             if (player == null)
-                return Lang("NOT_FOUND_PLAYER", userId.ToString());
+                return Lang("NOT_FOUND_PLAYER");
 
             RaycastHit hit;
 
@@ -260,29 +267,29 @@ namespace Oxide.Plugins
                 return Lang("NO_ENTITY_RAY", player.UserIDString);
 
             return TryCopy(hit.point, hit.GetEntity().GetNetworkRotation().eulerAngles, filename,
-                DegreeToRadian(player.GetNetworkRotation().eulerAngles.y), args, player, callback);
+                DegreeToRadian(player.GetNetworkRotation().eulerAngles.y), args, player.IPlayer, callback);
         }
 
         private object TryPasteFromSteamId(ulong userId, string filename, string[] args, Action callback = null)
         {
-            var player = BasePlayer.FindByID(userId);
-
+            var player = players.FindPlayerById(userId.ToString())?.Object as BasePlayer;
             if (player == null)
-                return Lang("NOT_FOUND_PLAYER", player.UserIDString);
+                return Lang("NOT_FOUND_PLAYER");
 
             RaycastHit hit;
 
             if (!Physics.Raycast(player.eyes.HeadRay(), out hit, 1000f, _rayPaste))
                 return Lang("NO_ENTITY_RAY", player.UserIDString);
 
-            return TryPaste(hit.point, filename, player, DegreeToRadian(player.GetNetworkRotation().eulerAngles.y),
+            return TryPaste(hit.point, filename, player.IPlayer,
+                DegreeToRadian(player.GetNetworkRotation().eulerAngles.y),
                 args, callback: callback);
         }
 
         private object TryPasteFromVector3(Vector3 pos, float rotationCorrection, string filename, string[] args,
             Action callback = null)
         {
-            return TryPaste(pos, filename, null, rotationCorrection, args, callback: callback);
+            return TryPaste(pos, filename, _consolePlayer, rotationCorrection, args, callback: callback);
         }
 
         #endregion
@@ -293,7 +300,7 @@ namespace Oxide.Plugins
         {
             foreach (var entityobj in entities)
             {
-                if (Physics.CheckSphere((Vector3) entityobj["position"], radius, _copyLayer))
+                if (Physics.CheckSphere((Vector3)entityobj["position"], radius, _copyLayer))
                     return Lang("BLOCKING_PASTE");
             }
 
@@ -304,59 +311,38 @@ namespace Oxide.Plugins
         {
             const float maxDiff = 0.01f;
 
-            var ents = new List<BaseEntity>();
-            Vis.Entities(pos, maxDiff, ents);
-
-            foreach (var ent in ents)
+            var ents = Pool.GetList<BaseEntity>();
+            try
             {
-                if (ent.PrefabName != prefabname)
-                    continue;
+                Vis.Entities(pos, maxDiff, ents);
 
-                if (Vector3.Distance(ent.transform.position, pos) > maxDiff)
+                foreach (var ent in ents)
                 {
-                    continue;
+                    if (ent.PrefabName != prefabname)
+                        continue;
+
+                    if (Vector3.Distance(ent.transform.position, pos) > maxDiff)
+                    {
+                        continue;
+                    }
+
+                    if (Vector3.Distance(ent.transform.rotation.eulerAngles, rot.eulerAngles) > maxDiff)
+                    {
+                        continue;
+                    }
+
+                    return true;
                 }
 
-                if (Vector3.Distance(ent.transform.rotation.eulerAngles, rot.eulerAngles) > maxDiff)
-                {
-                    continue;
-                }
-
-                return true;
+                return false;
             }
-
-            return false;
+            finally
+            {
+                Pool.FreeList(ref ents);
+            }
         }
 
-        private object CmdPasteBack(BasePlayer player, string[] args)
-        {
-            var userIdString = player == null ? _serverId : player.UserIDString;
-
-            if (args.Length < 1)
-                return Lang("SYNTAX_PASTEBACK", userIdString);
-
-            var success = TryPasteBack(args[0], player, args.Skip(1).ToArray());
-
-            if (success is string)
-                return (string) success;
-
-            return true;
-        }
-
-        private object CmdUndo(string userIdString, string[] args)
-        {
-            var player = BasePlayer.Find(userIdString);
-            if (!_lastPastes.ContainsKey(userIdString))
-                return Lang("NO_PASTED_STRUCTURE", userIdString);
-
-            var entities = new HashSet<BaseEntity>(_lastPastes[userIdString].Pop().ToList());
-
-            UndoLoop(entities, player);
-
-            return true;
-        }
-
-        private void UndoLoop(HashSet<BaseEntity> entities, BasePlayer player, int count = 0)
+        private void UndoLoop(HashSet<BaseEntity> entities, IPlayer player, int count = 0)
         {
             foreach (var storageContainer in entities.OfType<StorageContainer>().Where(x => !x.IsDestroyed))
             {
@@ -378,6 +364,12 @@ namespace Oxide.Plugins
                         ore.CleanupBonus();
                     }
 
+                    var io = p as IOEntity;
+                    if (io != null)
+                    {
+                        io.ClearConnections();
+                    }
+
                     if (p != null && !p.IsDestroyed)
                         p.Kill();
                 });
@@ -385,10 +377,7 @@ namespace Oxide.Plugins
             // If it gets stuck in infinite loop break the loop.
             if (count != 0 && entities.Count != 0 && entities.Count == count)
             {
-                if (player != null)
-                    SendReply(player, "Undo cancelled because of infinite loop.");
-                else
-                    Puts("Undo cancelled because of infinite loop.");
+                player.Reply("Undo cancelled because of infinite loop.");
                 return;
             }
 
@@ -396,18 +385,15 @@ namespace Oxide.Plugins
                 NextTick(() => UndoLoop(entities, player, entities.Count));
             else
             {
-                if (player != null)
-                    SendReply(player, Lang("UNDO_SUCCESS", player.UserIDString));
-                else
-                    Puts(Lang("UNDO_SUCCESS"));
+                player.Reply(Lang("UNDO_SUCCESS", player.Id));
 
-                if (_lastPastes[player?.UserIDString ?? _serverId].Count == 0)
-                    _lastPastes.Remove(player?.UserIDString ?? _serverId);
+                if (_lastPastes.ContainsKey(player.Id) && _lastPastes[player.Id].Count == 0)
+                    _lastPastes.Remove(player.Id);
             }
         }
 
         private void Copy(Vector3 sourcePos, Vector3 sourceRot, string filename, float rotationCorrection,
-            CopyMechanics copyMechanics, float range, bool saveTree, bool saveShare, bool eachToEach, BasePlayer player,
+            CopyMechanics copyMechanics, float range, bool saveTree, bool saveShare, bool eachToEach, IPlayer player,
             Action callback)
         {
             var currentLayer = _copyLayer;
@@ -428,13 +414,13 @@ namespace Oxide.Plugins
                 SourcePos = sourcePos,
                 SourceRot = sourceRot,
                 Player = player,
+                BasePlayer = player.Object as BasePlayer,
                 Callback = callback
             };
 
             copyData.CheckFrom.Push(sourcePos);
 
             NextTick(() => CopyLoop(copyData));
-            ;
         }
 
         // Main loop for copy, will fetch all the data needed. Is called every tick untill copy is done (can't find any entities)
@@ -452,33 +438,43 @@ namespace Oxide.Plugins
                     break;
 
                 var list = Pool.GetList<BaseEntity>();
-                Vis.Entities(checkFrom.Pop(), copyData.Range, list, copyData.CurrentLayer);
-
-                foreach (var entity in list)
+                try
                 {
-                    if (!houseList.Add(entity))
-                        continue;
+                    Vis.Entities(checkFrom.Pop(), copyData.Range, list, copyData.CurrentLayer);
 
-                    if (copyMechanics == CopyMechanics.Building)
+                    foreach (var entity in list)
                     {
-                        var buildingBlock = entity.GetComponentInParent<BuildingBlock>();
+                        if (!houseList.Add(entity))
+                            continue;
 
-                        if (buildingBlock != null)
+                        if (copyMechanics == CopyMechanics.Building)
                         {
-                            if (buildingId == 0)
-                                buildingId = buildingBlock.buildingID;
+                            var buildingBlock = entity.GetComponentInParent<BuildingBlock>();
 
-                            if (buildingId != buildingBlock.buildingID)
-                                continue;
+                            if (buildingBlock != null)
+                            {
+                                if (buildingId == 0)
+                                    buildingId = buildingBlock.buildingID;
+
+                                if (buildingId != buildingBlock.buildingID)
+                                    continue;
+                            }
                         }
-                    }
 
-                    if (copyData.EachToEach)
-                        checkFrom.Push(entity.transform.position);
-                    if (entity.GetComponent<BaseLock>() != null)
-                        continue;
-                    copyData.RawData.Add(EntityData(entity, entity.transform.position,
-                        entity.transform.rotation.eulerAngles / 57.29578f, copyData));
+                        var transform = entity.transform;
+                        if (copyData.EachToEach)
+                            checkFrom.Push(transform.position);
+
+                        if (entity.GetComponent<BaseLock>() != null)
+                            continue;
+
+                        copyData.RawData.Add(EntityData(entity, transform.position,
+                            transform.rotation.eulerAngles / 57.29578f, copyData));
+                    }
+                }
+                finally
+                {
+                    Pool.FreeList(ref list);
                 }
 
                 copyData.BuildingId = buildingId;
@@ -502,25 +498,25 @@ namespace Oxide.Plugins
                     {
                         "position", new Dictionary<string, object>
                         {
-                            {"x", sourcePos.x.ToString()},
-                            {"y", sourcePos.y.ToString()},
-                            {"z", sourcePos.z.ToString()}
+                            { "x", sourcePos.x.ToString() },
+                            { "y", sourcePos.y.ToString() },
+                            { "z", sourcePos.z.ToString() }
                         }
                     },
-                    {"rotationy", copyData.SourceRot.y.ToString()},
-                    {"rotationdiff", copyData.RotCor.ToString()}
+                    { "rotationy", copyData.SourceRot.y.ToString() },
+                    { "rotationdiff", copyData.RotCor.ToString() }
                 };
 
                 datafile["entities"] = copyData.RawData;
                 datafile["protocol"] = new Dictionary<string, object>
                 {
-                    {"items", 2},
-                    {"version", Version}
+                    { "items", 2 },
+                    { "version", Version }
                 };
 
                 Interface.Oxide.DataFileSystem.SaveDatafile(path);
 
-                SendReply(copyData.Player, Lang("COPY_SUCCESS", copyData.Player.UserIDString, copyData.Filename));
+                copyData.Player.Reply(Lang("COPY_SUCCESS", copyData.Player.Id, copyData.Filename));
 
                 copyData.Callback?.Invoke();
 
@@ -530,7 +526,7 @@ namespace Oxide.Plugins
 
         private float DegreeToRadian(float angle)
         {
-            return (float) (Math.PI * angle / 180.0f);
+            return (float)(Math.PI * angle / 180.0f);
         }
 
         private Dictionary<string, object> EntityData(BaseEntity entity, Vector3 entPos, Vector3 entRot,
@@ -542,27 +538,43 @@ namespace Oxide.Plugins
 
             var data = new Dictionary<string, object>
             {
-                {"prefabname", entity.PrefabName},
-                {"skinid", entity.skinID},
-                {"flags", TryCopyFlags(entity)},
+                { "prefabname", entity.PrefabName },
+                { "skinid", entity.skinID },
+                { "flags", TryCopyFlags(entity) },
                 {
                     "pos", new Dictionary<string, object>
                     {
-                        {"x", normalizedPos.x.ToString()},
-                        {"y", normalizedPos.y.ToString()},
-                        {"z", normalizedPos.z.ToString()}
+                        { "x", normalizedPos.x.ToString() },
+                        { "y", normalizedPos.y.ToString() },
+                        { "z", normalizedPos.z.ToString() }
                     }
                 },
                 {
                     "rot", new Dictionary<string, object>
                     {
-                        {"x", entRot.x.ToString()},
-                        {"y", entRot.y.ToString()},
-                        {"z", entRot.z.ToString()}
+                        { "x", entRot.x.ToString() },
+                        { "y", entRot.y.ToString() },
+                        { "z", entRot.z.ToString() }
                     }
                 },
-                {"ownerid", entity.OwnerID}
+                { "ownerid", entity.OwnerID }
             };
+
+            var growableEntity = entity as GrowableEntity;
+            if (growableEntity != null)
+            {
+                var genes = GrowableGeneEncoding.EncodeGenesToInt(growableEntity.Genes);
+                if (genes > 0)
+                {
+                    data.Add("genes", genes);
+                }
+
+                var perent = growableEntity.GetParentEntity();
+                if (perent != null)
+                {
+                    data.Add("hasParent", true);
+                }
+            }
 
             TryCopySlots(entity, data, copyData.SaveShare);
 
@@ -582,12 +594,13 @@ namespace Oxide.Plugins
                 {
                     var itemdata = new Dictionary<string, object>
                     {
-                        {"condition", item.condition.ToString()},
-                        {"id", item.info.itemid},
-                        {"amount", item.amount},
-                        {"skinid", item.skin},
-                        {"position", item.position},
-                        {"blueprintTarget", item.blueprintTarget}
+                        { "condition", item.condition.ToString() },
+                        { "id", item.info.itemid },
+                        { "amount", item.amount },
+                        { "skinid", item.skin },
+                        { "position", item.position },
+                        { "blueprintTarget", item.blueprintTarget },
+                        { "dataInt", item.instanceData?.dataInt ?? 0 }
                     };
 
                     if (!string.IsNullOrEmpty(item.text))
@@ -607,7 +620,7 @@ namespace Oxide.Plugins
                             {
                                 itemdata.Add("magazine", new Dictionary<string, object>
                                 {
-                                    {magazine.ammoType.itemid.ToString(), magazine.contents}
+                                    { magazine.ammoType.itemid.ToString(), magazine.contents }
                                 });
                             }
                         }
@@ -621,8 +634,8 @@ namespace Oxide.Plugins
                         {
                             contents.Add(new Dictionary<string, object>
                             {
-                                {"id", itemContains.info.itemid},
-                                {"amount", itemContains.amount}
+                                { "id", itemContains.info.itemid },
+                                { "amount", itemContains.amount }
                             });
                         }
 
@@ -644,12 +657,13 @@ namespace Oxide.Plugins
                 {
                     var itemdata = new Dictionary<string, object>
                     {
-                        {"condition", item.condition.ToString()},
-                        {"id", item.info.itemid},
-                        {"amount", item.amount},
-                        {"skinid", item.skin},
-                        {"position", item.position},
-                        {"blueprintTarget", item.blueprintTarget}
+                        { "condition", item.condition.ToString() },
+                        { "id", item.info.itemid },
+                        { "amount", item.amount },
+                        { "skinid", item.skin },
+                        { "position", item.position },
+                        { "blueprintTarget", item.blueprintTarget },
+                        { "dataInt", item.instanceData?.dataInt ?? 0 }
                     };
 
                     if (!string.IsNullOrEmpty(item.text))
@@ -669,7 +683,7 @@ namespace Oxide.Plugins
                             {
                                 itemdata.Add("magazine", new Dictionary<string, object>
                                 {
-                                    {magazine.ammoType.itemid.ToString(), magazine.contents}
+                                    { magazine.ammoType.itemid.ToString(), magazine.contents }
                                 });
                             }
                         }
@@ -683,8 +697,8 @@ namespace Oxide.Plugins
                         {
                             contents.Add(new Dictionary<string, object>
                             {
-                                {"id", itemContains.info.itemid},
-                                {"amount", itemContains.amount}
+                                { "id", itemContains.info.itemid },
+                                { "amount", itemContains.amount }
                             });
                         }
 
@@ -702,12 +716,12 @@ namespace Oxide.Plugins
             {
                 data.Add("sign", new Dictionary<string, object>
                 {
-                    {"locked", sign.IsLocked()}
+                    { "locked", sign.IsLocked() }
                 });
 
-                var signData = (Dictionary<string, object>) data["sign"];
+                var signData = (Dictionary<string, object>)data["sign"];
 
-                for (int num = 0; num < sign.textureIDs.Length; num++)
+                for (var num = 0; num < sign.textureIDs.Length; num++)
                 {
                     var textureId = sign.textureIDs[num];
                     if (textureId == 0)
@@ -723,6 +737,13 @@ namespace Oxide.Plugins
                 signData["amount"] = sign.textureIDs.Length;
             }
 
+            var lights = entity as AdvancedChristmasLights;
+            if (lights != null)
+            {
+                data.Add("points", lights.points.Select(x => new { x.normal, x.point }));
+                data.Add("animationStyle", lights.animationStyle);
+            }
+
             if (copyData.SaveShare)
             {
                 var sleepingBag = entity as SleepingBag;
@@ -731,9 +752,9 @@ namespace Oxide.Plugins
                 {
                     data.Add("sleepingbag", new Dictionary<string, object>
                     {
-                        {"niceName", sleepingBag.niceName},
-                        {"deployerUserID", sleepingBag.deployerUserID},
-                        {"isPublic", sleepingBag.IsPublic()}
+                        { "niceName", sleepingBag.niceName },
+                        { "deployerUserID", sleepingBag.deployerUserID },
+                        { "isPublic", sleepingBag.IsPublic() }
                     });
                 }
 
@@ -743,7 +764,7 @@ namespace Oxide.Plugins
                 {
                     data.Add("cupboard", new Dictionary<string, object>
                     {
-                        {"authorizedPlayers", cupboard.authorizedPlayers.Select(y => y.userid).ToList()}
+                        { "authorizedPlayers", cupboard.authorizedPlayers.Select(y => y.userid).ToList() }
                     });
                 }
 
@@ -753,7 +774,7 @@ namespace Oxide.Plugins
                 {
                     data.Add("autoturret", new Dictionary<string, object>
                     {
-                        {"authorizedPlayers", autoTurret.authorizedPlayers.Select(p => p.userid).ToList()}
+                        { "authorizedPlayers", autoTurret.authorizedPlayers.Select(p => p.userid).ToList() }
                     });
                 }
             }
@@ -763,9 +784,9 @@ namespace Oxide.Plugins
             {
                 data.Add("cctv", new Dictionary<string, object>
                 {
-                    {"yaw", cctvRc.yawAmount},
-                    {"pitch", cctvRc.pitchAmount},
-                    {"rcIdentifier", cctvRc.rcIdentifier}
+                    { "yaw", cctvRc.yawAmount },
+                    { "pitch", cctvRc.pitchAmount },
+                    { "rcIdentifier", cctvRc.rcIdentifier }
                 });
             }
 
@@ -779,21 +800,21 @@ namespace Oxide.Plugins
                 {
                     sellOrders.Add(new Dictionary<string, object>
                     {
-                        {"itemToSellID", vendItem.itemToSellID},
-                        {"itemToSellAmount", vendItem.itemToSellAmount},
-                        {"currencyID", vendItem.currencyID},
-                        {"currencyAmountPerItem", vendItem.currencyAmountPerItem},
-                        {"inStock", vendItem.inStock},
-                        {"currencyIsBP", vendItem.currencyIsBP},
-                        {"itemToSellIsBP", vendItem.itemToSellIsBP}
+                        { "itemToSellID", vendItem.itemToSellID },
+                        { "itemToSellAmount", vendItem.itemToSellAmount },
+                        { "currencyID", vendItem.currencyID },
+                        { "currencyAmountPerItem", vendItem.currencyAmountPerItem },
+                        { "inStock", vendItem.inStock },
+                        { "currencyIsBP", vendItem.currencyIsBP },
+                        { "itemToSellIsBP", vendItem.itemToSellIsBP }
                     });
                 }
 
                 data.Add("vendingmachine", new Dictionary<string, object>
                 {
-                    {"shopName", vendingMachine.shopName},
-                    {"isBroadcasting", vendingMachine.IsBroadcasting()},
-                    {"sellOrders", sellOrders}
+                    { "shopName", vendingMachine.shopName },
+                    { "isBroadcasting", vendingMachine.IsBroadcasting() },
+                    { "sellOrders", sellOrders }
                 });
             }
 
@@ -804,10 +825,10 @@ namespace Oxide.Plugins
                 var ioData = new Dictionary<string, object>();
                 var inputs = ioEntity.inputs.Select(input => new Dictionary<string, object>
                     {
-                        {"connectedID", input.connectedTo.entityRef.uid},
-                        {"connectedToSlot", input.connectedToSlot},
-                        {"niceName", input.niceName},
-                        {"type", (int) input.type}
+                        { "connectedID", input.connectedTo.entityRef.uid },
+                        { "connectedToSlot", input.connectedToSlot },
+                        { "niceName", input.niceName },
+                        { "type", (int)input.type }
                     })
                     .Cast<object>()
                     .ToList();
@@ -819,11 +840,11 @@ namespace Oxide.Plugins
                 {
                     var ioConnection = new Dictionary<string, object>
                     {
-                        {"connectedID", output.connectedTo.entityRef.uid},
-                        {"connectedToSlot", output.connectedToSlot},
-                        {"niceName", output.niceName},
-                        {"type", (int) output.type},
-                        {"linePoints", output.linePoints?.ToList() ?? new List<Vector3>()}
+                        { "connectedID", output.connectedTo.entityRef.uid },
+                        { "connectedToSlot", output.connectedToSlot },
+                        { "niceName", output.niceName },
+                        { "type", (int)output.type },
+                        { "linePoints", output.linePoints?.ToList() ?? new List<Vector3>() }
                     };
 
                     outputs.Add(ioConnection);
@@ -867,13 +888,14 @@ namespace Oxide.Plugins
 
             foreach (var entity in entities)
             {
-                if (((string) entity["prefabname"]).Contains("/foundation/"))
+                var prefab = (string)entity["prefabname"];
+                if (prefab.Contains("/foundation/") || prefab.Contains("/foundation.triangle/"))
                 {
-                    var foundHeight = GetGround((Vector3) entity["position"]);
+                    var foundHeight = GetGround((Vector3)entity["position"]);
 
                     if (foundHeight != null)
                     {
-                        var height = (Vector3) foundHeight;
+                        var height = (Vector3)foundHeight;
 
                         if (height.y > maxHeight)
                             maxHeight = height.y;
@@ -938,9 +960,9 @@ namespace Oxide.Plugins
             return itemId;
         }
 
-        private bool HasAccess(BasePlayer player, string permName)
+        private bool HasAccess(IPlayer player, string permName)
         {
-            return player.IsAdmin || permission.UserHasPermission(player.UserIDString, permName);
+            return player.IsAdmin || player.HasPermission(permName);
         }
 
         private byte[] ImageResize(byte[] imageBytes, int width, int height)
@@ -963,10 +985,10 @@ namespace Oxide.Plugins
         private Vector3 NormalizePosition(Vector3 initialPos, Vector3 currentPos, float diffRot)
         {
             var transformedPos = currentPos - initialPos;
-            var newX = transformedPos.x * (float) Math.Cos(-diffRot) +
-                       transformedPos.z * (float) Math.Sin(-diffRot);
-            var newZ = transformedPos.z * (float) Math.Cos(-diffRot) -
-                       transformedPos.x * (float) Math.Sin(-diffRot);
+            var newX = transformedPos.x * (float)Math.Cos(-diffRot) +
+                       transformedPos.z * (float)Math.Sin(-diffRot);
+            var newZ = transformedPos.z * (float)Math.Cos(-diffRot) -
+                       transformedPos.x * (float)Math.Sin(-diffRot);
 
             transformedPos.x = newX;
             transformedPos.z = newZ;
@@ -975,13 +997,9 @@ namespace Oxide.Plugins
         }
 
         private void Paste(ICollection<Dictionary<string, object>> entities, Dictionary<string, object> protocol,
-            bool ownership, Vector3 startPos, BasePlayer player, bool stability, float rotationCorrection,
+            bool ownership, Vector3 startPos, IPlayer player, bool stability, float rotationCorrection,
             float heightAdj, bool auth, Action callback, string filename)
         {
-
-            var ioEntities = new Dictionary<uint, Dictionary<string, object>>();
-            uint buildingId = 0;
-
             //Settings
 
             var isItemReplace = !protocol.ContainsKey("items");
@@ -995,6 +1013,7 @@ namespace Oxide.Plugins
                 IsItemReplace = isItemReplace,
                 Entities = entities,
                 Player = player,
+                BasePlayer = player.Object as BasePlayer,
                 QuaternionRotation = quaternionRotation,
                 StartPos = startPos,
                 Stability = stability,
@@ -1011,17 +1030,16 @@ namespace Oxide.Plugins
         {
             var entities = pasteData.Entities;
             var todo = entities.Take(_config.PasteBatchSize).ToArray();
-            var player = pasteData.Player;
 
             foreach (var data in todo)
             {
                 entities.Remove(data);
-                var prefabname = (string) data["prefabname"];
+                var prefabname = (string)data["prefabname"];
                 var skinid = ulong.Parse(data["skinid"].ToString());
-                var pos = (Vector3) data["position"];
-                var rot = (Quaternion) data["rotation"];
+                var pos = (Vector3)data["position"];
+                var rot = (Quaternion)data["rotation"];
 
-                var ownerId = player?.userID ?? 0;
+                var ownerId = pasteData.BasePlayer?.userID ?? 0;
                 if (data.ContainsKey("ownerid"))
                 {
                     ownerId = Convert.ToUInt64(data["ownerid"]);
@@ -1042,11 +1060,12 @@ namespace Oxide.Plugins
                 if (entity == null)
                     continue;
 
-                entity.transform.position = pos;
-                entity.transform.rotation = rot;
+                var transform = entity.transform;
+                transform.position = pos;
+                transform.rotation = rot;
 
-                if (player != null)
-                    entity.SendMessage("SetDeployedBy", player, SendMessageOptions.DontRequireReceiver);
+                if (pasteData.BasePlayer != null)
+                    entity.SendMessage("SetDeployedBy", pasteData.BasePlayer, SendMessageOptions.DontRequireReceiver);
 
                 if (pasteData.Ownership)
                     entity.OwnerID = ownerId;
@@ -1056,7 +1075,7 @@ namespace Oxide.Plugins
                 if (buildingBlock != null)
                 {
                     buildingBlock.blockDefinition = PrefabAttribute.server.Find<Construction>(buildingBlock.prefabID);
-                    buildingBlock.SetGrade((BuildingGrade.Enum) data["grade"]);
+                    buildingBlock.SetGrade((BuildingGrade.Enum)data["grade"]);
                     if (!pasteData.Stability)
                         buildingBlock.grounded = true;
                 }
@@ -1095,7 +1114,14 @@ namespace Oxide.Plugins
                 var box = entity as StorageContainer;
                 if (box != null)
                 {
-                    box.inventory.Clear();
+                    if (box.inventory == null)
+                    {
+                        box.inventory = new ItemContainer();
+                        box.inventory.ServerInitialize(null, box.inventorySlots);
+                        box.inventory.GiveUID();
+                        box.inventory.entityOwner = box;
+                    }
+                    else box.inventory.Clear();
 
                     var items = new List<object>();
 
@@ -1109,6 +1135,45 @@ namespace Oxide.Plugins
                         var itemamount = Convert.ToInt32(item["amount"]);
                         var itemskin = ulong.Parse(item["skinid"].ToString());
                         var itemcondition = Convert.ToSingle(item["condition"]);
+                        var dataInt = 0;
+                        if (item.ContainsKey("dataInt"))
+                        {
+                            dataInt = Convert.ToInt32(item["dataInt"]);
+                        }
+
+                        var growableEntity = entity as GrowableEntity;
+                        if (growableEntity != null)
+                        {
+                            if (data.ContainsKey("genes"))
+                            {
+                                var genesData = (int)data["genes"];
+
+                                if (genesData > 0)
+                                {
+                                    GrowableGeneEncoding.DecodeIntToGenes(genesData, growableEntity.Genes);
+                                }
+                            }
+
+                            if (data.ContainsKey("hasParent"))
+                            {
+                                var isParented = (bool)data["hasParent"];
+
+                                if (isParented)
+                                {
+                                    RaycastHit hitInfo;
+
+                                    if (Physics.Raycast(growableEntity.transform.position, Vector3.down, out hitInfo,
+                                        .5f, Rust.Layers.DefaultDeployVolumeCheck))
+                                    {
+                                        var parentEntity = hitInfo.GetEntity();
+                                        if (parentEntity != null)
+                                        {
+                                            growableEntity.SetParent(parentEntity, true);
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
                         if (pasteData.IsItemReplace)
                             itemid = GetItemId(itemid);
@@ -1130,6 +1195,15 @@ namespace Oxide.Plugins
                                     blueprintTarget = GetItemId(blueprintTarget);
 
                                 i.blueprintTarget = blueprintTarget;
+                            }
+
+                            if (dataInt > 0)
+                            {
+                                i.instanceData = new ProtoBuf.Item.InstanceData()
+                                {
+                                    ShouldPool = false,
+                                    dataInt = dataInt
+                                };
                             }
 
                             if (item.ContainsKey("magazine"))
@@ -1198,8 +1272,9 @@ namespace Oxide.Plugins
                             .Select(Convert.ToUInt64).ToList();
                     }
 
-                    if (player != null && !authorizedPlayers.Contains(player.userID) && pasteData.Auth)
-                        authorizedPlayers.Add(player.userID);
+                    if (pasteData.BasePlayer != null && !authorizedPlayers.Contains(pasteData.BasePlayer.userID) &&
+                        pasteData.Auth)
+                        authorizedPlayers.Add(pasteData.BasePlayer.userID);
 
                     foreach (var userId in authorizedPlayers)
                     {
@@ -1216,7 +1291,12 @@ namespace Oxide.Plugins
                 var containerIo = entity as ContainerIOEntity;
                 if (containerIo != null)
                 {
-                    containerIo.inventory.Clear();
+                    if (containerIo.inventory == null)
+                    {
+                        containerIo.CreateInventory(true);
+                        containerIo.OnInventoryFirstCreated(containerIo.inventory);
+                    }
+                    else containerIo.inventory.Clear();
 
                     var items = new List<object>();
 
@@ -1230,6 +1310,11 @@ namespace Oxide.Plugins
                         var itemamount = Convert.ToInt32(itemJson["amount"]);
                         var itemskin = ulong.Parse(itemJson["skinid"].ToString());
                         var itemcondition = Convert.ToSingle(itemJson["condition"]);
+                        var dataInt = 0;
+                        if (itemJson.ContainsKey("dataInt"))
+                        {
+                            dataInt = Convert.ToInt32(itemJson["dataInt"]);
+                        }
 
                         if (pasteData.IsItemReplace)
                             itemid = GetItemId(itemid);
@@ -1251,6 +1336,15 @@ namespace Oxide.Plugins
                                     blueprintTarget = GetItemId(blueprintTarget);
 
                                 item.blueprintTarget = blueprintTarget;
+                            }
+
+                            if (dataInt > 0)
+                            {
+                                item.instanceData = new ProtoBuf.Item.InstanceData()
+                                {
+                                    ShouldPool = false,
+                                    dataInt = dataInt
+                                };
                             }
 
                             if (itemJson.ContainsKey("magazine"))
@@ -1323,7 +1417,7 @@ namespace Oxide.Plugins
                         int amount;
                         if (int.TryParse(signData["amount"].ToString(), out amount))
                         {
-                            for (int num = 0; num < amount; num++)
+                            for (var num = 0; num < amount; num++)
                             {
                                 if (signData.ContainsKey($"texture{num}"))
                                 {
@@ -1345,6 +1439,24 @@ namespace Oxide.Plugins
                         sign.SetFlag(BaseEntity.Flags.Locked, true);
 
                     sign.SendNetworkUpdate();
+                }
+
+                var lights = entity as AdvancedChristmasLights;
+                if (lights != null)
+                {
+                    if (data.ContainsKey("points"))
+                    {
+                        foreach (Dictionary<string, object> point in data["points"] as List<object>)
+                        {
+                            lights.points.Add(new AdvancedChristmasLights.pointEntry
+                                { normal = (Vector3)point["normal"], point = (Vector3)point["point"] });
+                        }
+                    }
+
+                    if (data.ContainsKey("animationStyle"))
+                    {
+                        lights.animationStyle = (AdvancedChristmasLights.AnimationType)data["animationStyle"];
+                    }
                 }
 
                 var sleepingBag = entity as SleepingBag;
@@ -1369,8 +1481,9 @@ namespace Oxide.Plugins
                             .ToList();
                     }
 
-                    if (player != null && !authorizedPlayers.Contains(player.userID) && pasteData.Auth)
-                        authorizedPlayers.Add(player.userID);
+                    if (pasteData.BasePlayer != null && !authorizedPlayers.Contains(pasteData.BasePlayer.userID) &&
+                        pasteData.Auth)
+                        authorizedPlayers.Add(pasteData.BasePlayer.userID);
 
                     foreach (var userId in authorizedPlayers)
                     {
@@ -1387,7 +1500,7 @@ namespace Oxide.Plugins
                 var cctvRc = entity as CCTV_RC;
                 if (cctvRc != null && data.ContainsKey("cctv"))
                 {
-                    var cctv = (Dictionary<string, object>) data["cctv"];
+                    var cctv = (Dictionary<string, object>)data["cctv"];
                     cctvRc.yawAmount = Convert.ToSingle(cctv["yaw"]);
                     cctvRc.pitchAmount = Convert.ToSingle(cctv["pitch"]);
                     cctvRc.rcIdentifier = cctv["rcIdentifier"].ToString();
@@ -1455,7 +1568,7 @@ namespace Oxide.Plugins
                     ioData.Add("entity", ioEntity);
                     ioData.Add("newId", ioEntity.net.ID);
 
-                    object oldIdObject = 0;
+                    object oldIdObject;
                     if (ioData.TryGetValue("oldID", out oldIdObject))
                     {
                         var oldId = Convert.ToUInt32(oldIdObject);
@@ -1555,9 +1668,6 @@ namespace Oxide.Plugins
                                     ioEntity.inputs[index] = new IOEntity.IOSlot();
 
                                 var ioConnection = pasteData.IoEntities[oldId];
-
-                                object temp;
-
                                 if (ioConnection.ContainsKey("newId"))
                                 {
                                     ioEntity.inputs[index].connectedTo.entityRef.uid =
@@ -1603,7 +1713,7 @@ namespace Oxide.Plugins
 
                                     ioOutput.niceName = output["niceName"] as string;
 
-                                    ioOutput.type = (IOEntity.IOType) Convert.ToInt32(output["type"]);
+                                    ioOutput.type = (IOEntity.IOType)Convert.ToInt32(output["type"]);
                                 }
 
                                 if (output.ContainsKey("linePoints"))
@@ -1639,22 +1749,15 @@ namespace Oxide.Plugins
                     entity.UpdateStability();
                 }
 
-                if (player != null)
-                {
-                    SendReply(player, Lang("PASTE_SUCCESS", player.UserIDString));
+                pasteData.Player.Reply(Lang("PASTE_SUCCESS", pasteData.Player.Id));
 #if DEBUG
-                    SendReply(player, $"Stopwatch took: {pasteData.Sw.Elapsed.TotalMilliseconds} ms");
+                pasteData.Player.Reply($"Stopwatch took: {pasteData.Sw.Elapsed.TotalMilliseconds} ms");
 #endif
-                }
-                else
-                {
-                    Puts(Lang("PASTE_SUCCESS"));
-                }
 
-                if (!_lastPastes.ContainsKey(player?.UserIDString ?? _serverId))
-                    _lastPastes[player?.UserIDString ?? _serverId] = new Stack<List<BaseEntity>>();
+                if (!_lastPastes.ContainsKey(pasteData.Player.Id))
+                    _lastPastes[pasteData.Player.Id] = new Stack<List<BaseEntity>>();
 
-                _lastPastes[player?.UserIDString ?? _serverId].Push(pasteData.PastedEntities);
+                _lastPastes[pasteData.Player.Id].Push(pasteData.PastedEntities);
 
                 pasteData.Callback?.Invoke();
 
@@ -1669,43 +1772,41 @@ namespace Oxide.Plugins
             var quaternionRotation = Quaternion.EulerRotation(eulerRotation);
             var preloaddata = new HashSet<Dictionary<string, object>>();
 
-            foreach (var entity in entities)
+            foreach (Dictionary<string, object> entity in entities)
             {
-                var data = entity as Dictionary<string, object>;
-
-                if (!deployables && !data.ContainsKey("grade"))
+                if (!deployables && !entity.ContainsKey("grade"))
                     continue;
 
-                var pos = (Dictionary<string, object>) data["pos"];
-                var rot = (Dictionary<string, object>) data["rot"];
+                var pos = (Dictionary<string, object>)entity["pos"];
+                var rot = (Dictionary<string, object>)entity["rot"];
 
-                data.Add("position",
+                entity.Add("position",
                     quaternionRotation * new Vector3(Convert.ToSingle(pos["x"]), Convert.ToSingle(pos["y"]),
                         Convert.ToSingle(pos["z"])) + startPos);
-                data.Add("rotation",
+                entity.Add("rotation",
                     Quaternion.EulerRotation(eulerRotation + new Vector3(Convert.ToSingle(rot["x"]),
                         Convert.ToSingle(rot["y"]), Convert.ToSingle(rot["z"]))));
 
-                if (!inventories && data.ContainsKey("items"))
-                    data["items"] = new List<object>();
+                if (!inventories && entity.ContainsKey("items"))
+                    entity["items"] = new List<object>();
 
-                if (!vending && data["prefabname"].ToString().Contains("vendingmachine"))
-                    data.Remove("vendingmachine");
+                if (!vending && entity["prefabname"].ToString().Contains("vendingmachine"))
+                    entity.Remove("vendingmachine");
 
-                preloaddata.Add(data);
+                preloaddata.Add(entity);
             }
 
             return preloaddata;
         }
 
         private object TryCopy(Vector3 sourcePos, Vector3 sourceRot, string filename, float rotationCorrection,
-            string[] args, BasePlayer player, Action callback)
+            string[] args, IPlayer player, Action callback)
         {
             bool saveShare = _config.Copy.Share, saveTree = _config.Copy.Tree, eachToEach = _config.Copy.EachToEach;
             var copyMechanics = CopyMechanics.Proximity;
             var radius = _config.Copy.Radius;
 
-            for (var i = 0;; i = i + 2)
+            for (var i = 0;; i += 2)
             {
                 if (i >= args.Length)
                     break;
@@ -1789,8 +1890,8 @@ namespace Oxide.Plugins
 
                 var codedata = new Dictionary<string, object>
                 {
-                    {"prefabname", slotEntity.PrefabName},
-                    {"flags", TryCopyFlags(ent)}
+                    { "prefabname", slotEntity.PrefabName },
+                    { "flags", TryCopyFlags(ent) }
                 };
 
                 if (slotEntity.GetComponent<CodeLock>())
@@ -1841,10 +1942,10 @@ namespace Oxide.Plugins
             return flags;
         }
 
-        private object TryPaste(Vector3 startPos, string filename, BasePlayer player, float rotationCorrection,
+        private object TryPaste(Vector3 startPos, string filename, IPlayer player, float rotationCorrection,
             string[] args, bool autoHeight = true, Action callback = null)
         {
-            var userId = player?.UserIDString;
+            var userId = player?.Id;
 
             var path = _subDirectory + filename;
 
@@ -1864,7 +1965,7 @@ namespace Oxide.Plugins
                 stability = _config.Paste.Stability,
                 ownership = _config.Paste.EntityOwner;
 
-            for (var i = 0;; i = i + 2)
+            for (var i = 0;; i += 2)
             {
                 if (i >= args.Length)
                     break;
@@ -1940,6 +2041,16 @@ namespace Oxide.Plugins
 
                         break;
 
+                    case "position":
+                        startPos = args[valueIndex].ToVector3();
+                        break;
+
+                    case "rotation":
+                        if (!float.TryParse(args[valueIndex], out rotationCorrection))
+                            return Lang("SYNTAX_FLOAT", userId, param);
+
+                        break;
+
                     default:
                         return Lang("SYNTAX_PASTE_OR_PASTEBACK", userId);
                 }
@@ -1957,11 +2068,11 @@ namespace Oxide.Plugins
                 if (bestHeight is string)
                     return bestHeight;
 
-                heightAdj += (float) bestHeight - startPos.y;
+                heightAdj += (float)bestHeight - startPos.y;
 
                 foreach (var entity in preloadData)
                 {
-                    var pos = (Vector3) entity["position"];
+                    var pos = (Vector3)entity["position"];
                     pos.y += heightAdj;
 
                     entity["position"] = pos;
@@ -1999,14 +2110,13 @@ namespace Oxide.Plugins
                     continue;
 
                 var slotData = structure[slotName] as Dictionary<string, object>;
-                var slotEntity = GameManager.server.CreateEntity((string) slotData["prefabname"], Vector3.zero);
-
+                var slotEntity = GameManager.server.CreateEntity((string)slotData?["prefabname"], Vector3.zero);
                 if (slotEntity == null)
                     continue;
 
                 slotEntity.gameObject.Identity();
                 slotEntity.SetParent(ent, slotName);
-                slotEntity.OnDeployed(ent, null);
+                slotEntity.OnDeployed(ent, null, _emptyItem);
                 slotEntity.Spawn();
 
                 ent.SetSlot(slot, slotEntity);
@@ -2018,7 +2128,7 @@ namespace Oxide.Plugins
 
                 if (slotEntity.GetComponent<CodeLock>())
                 {
-                    var code = (string) slotData["code"];
+                    var code = (string)slotData["code"];
 
                     if (!string.IsNullOrEmpty(code))
                     {
@@ -2026,12 +2136,12 @@ namespace Oxide.Plugins
                         codeLock.code = code;
                         codeLock.hasCode = true;
 
-                        if (pasteData.Auth && pasteData.Player != null)
-                            codeLock.whitelistPlayers.Add(pasteData.Player.userID);
+                        if (pasteData.Auth && pasteData.BasePlayer != null)
+                            codeLock.whitelistPlayers.Add(pasteData.BasePlayer.userID);
 
                         if (slotData.ContainsKey("whitelistPlayers"))
                         {
-                            foreach (var userId in slotData["whitelistPlayers"] as List<object>)
+                            foreach (var userId in (List<object>)slotData["whitelistPlayers"])
                             {
                                 codeLock.whitelistPlayers.Add(Convert.ToUInt64(userId));
                             }
@@ -2039,14 +2149,14 @@ namespace Oxide.Plugins
 
                         if (slotData.ContainsKey("guestCode"))
                         {
-                            var guestCode = (string) slotData["guestCode"];
+                            var guestCode = (string)slotData["guestCode"];
 
                             codeLock.guestCode = guestCode;
                             codeLock.hasGuestCode = true;
 
                             if (slotData.ContainsKey("guestPlayers"))
                             {
-                                foreach (var userId in slotData["guestPlayers"] as List<object>)
+                                foreach (var userId in (List<object>)slotData["guestPlayers"])
                                 {
                                     codeLock.guestPlayers.Add(Convert.ToUInt64(userId));
                                 }
@@ -2078,82 +2188,82 @@ namespace Oxide.Plugins
             return entitySlots;
         }
 
-        private object TryPasteBack(string filename, BasePlayer player, string[] args)
+        private object TryPasteBack(string filename, IPlayer player, string[] args)
         {
             var path = _subDirectory + filename;
 
             if (!Interface.Oxide.DataFileSystem.ExistsDatafile(path))
-                return Lang("FILE_NOT_EXISTS", player?.UserIDString);
+                return Lang("FILE_NOT_EXISTS", player?.Id);
 
             var data = Interface.Oxide.DataFileSystem.GetDatafile(path);
 
             if (data["default"] == null || data["entities"] == null)
-                return Lang("FILE_BROKEN", player?.UserIDString);
+                return Lang("FILE_BROKEN", player?.Id);
 
             var defaultdata = data["default"] as Dictionary<string, object>;
-            var pos = defaultdata["position"] as Dictionary<string, object>;
-            var rotationCorrection = Convert.ToSingle(defaultdata["rotationdiff"]);
-            var startPos = new Vector3(Convert.ToSingle(pos["x"]), Convert.ToSingle(pos["y"]),
-                Convert.ToSingle(pos["z"]));
+            var pos = defaultdata?["position"] as Dictionary<string, object>;
+            var rotationCorrection = Convert.ToSingle(defaultdata?["rotationdiff"]);
+            var startPos = new Vector3(Convert.ToSingle(pos?["x"]), Convert.ToSingle(pos?["y"]),
+                Convert.ToSingle(pos?["z"]));
 
-            return TryPaste(startPos, filename, player, rotationCorrection, args, autoHeight: false);
+            return TryPaste(startPos, filename, player, rotationCorrection, args, false);
         }
 
-        //Сhat commands
-
-        [ChatCommand("copy")]
-        private void CmdChatCopy(BasePlayer player, string command, string[] args)
+        [Command("copy")]
+        private void CmdCopy(IPlayer player, string command, string[] args)
         {
             if (!HasAccess(player, _copyPermission))
             {
-                SendReply(player, Lang("NO_ACCESS", player.UserIDString));
+                player.Reply(Lang("NO_ACCESS", player.Id));
                 return;
             }
 
             if (args.Length < 1)
             {
-                SendReply(player, Lang("SYNTAX_COPY", player.UserIDString));
+                player.Reply(Lang("SYNTAX_COPY", player.Id));
                 return;
             }
 
+            var basePlayer = player.Object as BasePlayer;
             var savename = args[0];
-            var success = TryCopyFromSteamId(player.userID, savename, args.Skip(1).ToArray());
+            var success =
+                TryCopyFromSteamId(basePlayer == null ? 0ul : basePlayer.userID, savename,
+                    args.Skip(1).ToArray()) as string;
 
-            if (success is string)
-            {
-                SendReply(player, (string) success);
-            }
+            if (!string.IsNullOrEmpty(success))
+                player.Reply(success);
         }
 
-        [ChatCommand("paste")]
-        private void CmdChatPaste(BasePlayer player, string command, string[] args)
+        [Command("paste")]
+        private void CmdPaste(IPlayer player, string command, string[] args)
         {
             if (!HasAccess(player, _pastePermission))
             {
-                SendReply(player, Lang("NO_ACCESS", player.UserIDString));
+                player.Reply(Lang("NO_ACCESS", player.Id));
                 return;
             }
 
             if (args.Length < 1)
             {
-                SendReply(player, Lang("SYNTAX_PASTE_OR_PASTEBACK", player.UserIDString));
+                player.Reply(Lang("SYNTAX_PASTE_OR_PASTEBACK", player.Id));
                 return;
             }
 
-            var success = TryPasteFromSteamId(player.userID, args[0], args.Skip(1).ToArray());
+            var basePlayer = player.Object as BasePlayer;
+            var success =
+                TryPasteFromSteamId(basePlayer == null ? 0ul : basePlayer.userID, args[0],
+                    args.Skip(1).ToArray()) as string;
 
-            if (success is string)
-            {
-                SendReply(player, (string) success);
-            }
+            if (!string.IsNullOrEmpty(success))
+                player.Reply(success);
         }
 
-        [ChatCommand("copylist")]
-        private void CmdChatList(BasePlayer player, string command, string[] args)
+        [Command("copylist")]
+        private void CmdList(IPlayer player, string command, string[] args)
         {
             if (!HasAccess(player, _listPermission))
             {
-                SendReply(player, Lang("NO_ACCESS", player.UserIDString));
+                player.Reply(Lang("NO_ACCESS", player.Id));
                 return;
             }
 
@@ -2168,461 +2278,449 @@ namespace Oxide.Plugins
                 fileList.Add(justfile);
             }
 
-            SendReply(player, Lang("AVAILABLE_STRUCTURES", player.UserIDString));
-            SendReply(player, string.Join(", ", fileList.ToArray()));
+            player.Reply(Lang("AVAILABLE_STRUCTURES", player.Id));
+            player.Reply(string.Join(", ", fileList.ToArray()));
         }
 
-        [ChatCommand("pasteback")]
-        private void CmdChatPasteBack(BasePlayer player, string command, string[] args)
+        [Command("pasteback")]
+        private void CmdPasteBack(IPlayer player, string command, string[] args)
         {
             if (!HasAccess(player, _pastebackPermission))
             {
-                SendReply(player, Lang("NO_ACCESS", player.UserIDString));
+                player.Reply(Lang("NO_ACCESS", player.Id));
                 return;
             }
 
-            var result = CmdPasteBack(player, args);
+            if (args.Length < 1)
+            {
+                player.Reply(Lang("SYNTAX_PASTEBACK", player.Id));
+                return;
+            }
 
-            if (result is string)
-                SendReply(player, (string) result);
+            var success = TryPasteBack(args[0], player, args.Skip(1).ToArray()) as string;
+            if (!string.IsNullOrEmpty(success))
+                player.Reply(success);
         }
 
-        [ChatCommand("undo")]
-        private void CmdChatUndo(BasePlayer player, string command, string[] args)
+        [Command("undo")]
+        private void CmdUndo(IPlayer player, string command, string[] args)
         {
             if (!HasAccess(player, _undoPermission))
             {
-                SendReply(player, Lang("NO_ACCESS", player.UserIDString));
+                player.Reply(Lang("NO_ACCESS", player.Id));
                 return;
             }
 
-            CmdUndo(player.UserIDString, args);
-        }
-
-        //Console commands [From Server]
-
-        [ConsoleCommand("pasteback")]
-        private void CmdConsolePasteBack(ConsoleSystem.Arg arg)
-        {
-            if (!arg.IsAdmin)
+            if (!_lastPastes.ContainsKey(player.Id))
+            {
+                player.Reply(Lang("NO_PASTED_STRUCTURE", player.Id));
                 return;
+            }
 
-            var result = CmdPasteBack(arg.Player(), arg.Args);
+            var entities = new HashSet<BaseEntity>(_lastPastes[player.Id].Pop().ToList());
 
-            if (result is string)
-                SendReply(arg, (string) result);
-        }
-
-        [ConsoleCommand("undo")]
-        private void CmdConsoleUndo(ConsoleSystem.Arg arg)
-        {
-            if (!arg.IsAdmin)
-                return;
-
-            var player = arg.Player();
-
-            CmdUndo(player == null ? _serverId : player.UserIDString, arg.Args);
+            UndoLoop(entities, player);
         }
 
         //Replace between old ItemID to new ItemID
 
         private static readonly Dictionary<int, int> ReplaceItemId = new Dictionary<int, int>
         {
-            {-1461508848, 1545779598},
-            {2115555558, 588596902},
-            {-533875561, 785728077},
-            {1621541165, 51984655},
-            {-422893115, -1691396643},
-            {815896488, -1211166256},
-            {805088543, -1321651331},
-            {449771810, 605467368},
-            {1152393492, 1712070256},
-            {1578894260, -742865266},
-            {1436532208, 1638322904},
-            {542276424, -1841918730},
-            {1594947829, -17123659},
-            {-1035059994, -1685290200},
-            {1818890814, -1036635990},
-            {1819281075, -727717969},
-            {1685058759, -1432674913},
-            {93029210, 1548091822},
-            {-1565095136, 352130972},
-            {-1775362679, 215754713},
-            {-1775249157, 14241751},
-            {-1280058093, -1023065463},
-            {-420273765, -1234735557},
-            {563023711, -2139580305},
-            {790921853, -262590403},
-            {-337261910, -2072273936},
-            {498312426, -1950721390},
-            {504904386, 1655650836},
-            {-1221200300, -559599960},
-            {510887968, 15388698},
-            {-814689390, 866889860},
-            {1024486167, 1382263453},
-            {2021568998, 609049394},
-            {97329, 1099314009},
-            {1046072789, -582782051},
-            {97409, -1273339005},
-            {-1480119738, -1262185308},
-            {1611480185, 1931713481},
-            {-1386464949, 1553078977},
-            {93832698, 1776460938},
-            {-1063412582, -586342290},
-            {-1887162396, -996920608},
-            {-55660037, 1588298435},
-            {919780768, 1711033574},
-            {-365801095, 1719978075},
-            {68998734, 613961768},
-            {-853695669, 1443579727},
-            {271534758, 833533164},
-            {-770311783, -180129657},
-            {-1192532973, 1424075905},
-            {-307490664, 1525520776},
-            {707427396, 602741290},
-            {707432758, -761829530},
-            {-2079677721, 1783512007},
-            {-1342405573, -1316706473},
-            {-139769801, 1946219319},
-            {-1043746011, -700591459},
-            {2080339268, 1655979682},
-            {-171664558, -1941646328},
-            {1050986417, -1557377697},
-            {-1693683664, 1789825282},
-            {523409530, 1121925526},
-            {1300054961, 634478325},
-            {-2095387015, 1142993169},
-            {1428021640, 1104520648},
-            {94623429, 1534542921},
-            {1436001773, -1938052175},
-            {1711323399, 1973684065},
-            {1734319168, -1848736516},
-            {-1658459025, -1440987069},
-            {-726947205, -751151717},
-            {-341443994, 363467698},
-            {1540879296, 2009734114},
-            {94756378, -858312878},
-            {3059095, 204391461},
-            {3059624, 1367190888},
-            {2045107609, -778875547},
-            {583366917, 998894949},
-            {2123300234, 1965232394},
-            {1983936587, -321733511},
-            {1257201758, -97956382},
-            {-1144743963, 296519935},
-            {-1144542967, -113413047},
-            {-1144334585, -2022172587},
-            {1066729526, -1101924344},
-            {-1598790097, 1390353317},
-            {-933236257, 1221063409},
-            {-1575287163, -1336109173},
-            {-2104481870, -2067472972},
-            {-1571725662, 1353298668},
-            {1456441506, 1729120840},
-            {1200628767, -1112793865},
-            {-778796102, 1409529282},
-            {1526866730, 674734128},
-            {1925723260, -1519126340},
-            {1891056868, 1401987718},
-            {1295154089, -1878475007},
-            {498591726, 1248356124},
-            {1755466030, -592016202},
-            {726730162, 798638114},
-            {-1034048911, -1018587433},
-            {252529905, 274502203},
-            {471582113, -1065444793},
-            {-1138648591, 16333305},
-            {305916740, 649305914},
-            {305916742, 649305916},
-            {305916744, 649305918},
-            {1908328648, -1535621066},
-            {-2078972355, 1668129151},
-            {-533484654, 989925924},
-            {1571660245, 1569882109},
-            {1045869440, -1215753368},
-            {1985408483, 528668503},
-            {97513422, 304481038},
-            {1496470781, -196667575},
-            {1229879204, 952603248},
-            {-1722829188, 936496778},
-            {1849912854, 1948067030},
-            {-1266285051, 1413014235},
-            {-1749787215, -1000573653},
-            {28178745, -946369541},
-            {-505639592, -1999722522},
-            {1598149413, -1992717673},
-            {-1779401418, -691113464},
-            {-57285700, -335089230},
-            {98228420, 479143914},
-            {1422845239, 999690781},
-            {277631078, -1819763926},
-            {115739308, 1366282552},
-            {-522149009, -690276911},
-            {3175989, -1899491405},
-            {718197703, -746030907},
-            {384204160, 1840822026},
-            {-1308622549, 143803535},
-            {-217113639, -2124352573},
-            {-1580059655, -265876753},
-            {-1832205789, 1070894649},
-            {305916741, 649305917},
-            {936777834, 3222790},
-            {-1224598842, 200773292},
-            {-1976561211, -1506397857},
-            {-1406876421, 1675639563},
-            {-1397343301, -23994173},
-            {1260209393, 850280505},
-            {-1035315940, 1877339384},
-            {-1381682752, 1714496074},
-            {696727039, -1022661119},
-            {-2128719593, -803263829},
-            {-1178289187, -1903165497},
-            {1351172108, 1181207482},
-            {-450738836, -1539025626},
-            {-966287254, -324675402},
-            {340009023, 671063303},
-            {124310981, -1478212975},
-            {1501403549, -2094954543},
-            {698310895, -1252059217},
-            {523855532, 1266491000},
-            {2045246801, -886280491},
-            {583506109, -237809779},
-            {-148163128, 794356786},
-            {-132588262, -1773144852},
-            {-1666761111, 196700171},
-            {-465236267, 442289265},
-            {-1211618504, 1751045826},
-            {2133577942, -1982036270},
-            {-1014825244, -682687162},
-            {-991829475, 1536610005},
-            {-642008142, -1709878924},
-            {661790782, 1272768630},
-            {-1440143841, -1780802565},
-            {569119686, 1746956556},
-            {1404466285, -1102429027},
-            {-1616887133, -48090175},
-            {-1167640370, -1163532624},
-            {-1284735799, 1242482355},
-            {-1278649848, -1824943010},
-            {776005741, 1814288539},
-            {108061910, -316250604},
-            {255101535, -1663759755},
-            {-51678842, 1658229558},
-            {-789202811, 254522515},
-            {516382256, -132516482},
-            {50834473, 1381010055},
-            {-975723312, 1159991980},
-            {1908195100, -850982208},
-            {-1097452776, -110921842},
-            {146685185, -1469578201},
-            {-1716193401, -1812555177},
-            {193190034, -2069578888},
-            {371156815, -852563019},
-            {3343606, -1966748496},
-            {825308669, -1137865085},
-            {830965940, -586784898},
-            {1662628660, -163828118},
-            {1662628661, -163828117},
-            {1662628662, -163828112},
-            {-1832205788, 1070894648},
-            {-1832205786, 1070894646},
-            {1625090418, 181590376},
-            {-1269800768, -874975042},
-            {429648208, -1190096326},
-            {-1832205787, 1070894647},
-            {-1832205785, 1070894645},
-            {107868, 696029452},
-            {997973965, -2012470695},
-            {-46188931, -702051347},
-            {-46848560, -194953424},
-            {-2066726403, -989755543},
-            {-2043730634, 1873897110},
-            {1325935999, -1520560807},
-            {-225234813, -78533081},
-            {-202239044, -1509851560},
-            {-322501005, 1422530437},
-            {-1851058636, 1917703890},
-            {-1828062867, -1162759543},
-            {-1966381470, -1130350864},
-            {968732481, 1391703481},
-            {991728250, -242084766},
-            {-253819519, 621915341},
-            {-1714986849, 1827479659},
-            {-1691991080, 813023040},
-            {179448791, -395377963},
-            {431617507, -1167031859},
-            {688032252, 69511070},
-            {-1059362949, -4031221},
-            {1265861812, 1110385766},
-            {374890416, 317398316},
-            {1567404401, 1882709339},
-            {-1057402571, 95950017},
-            {-758925787, -1130709577},
-            {-1411620422, 1052926200},
-            {88869913, -542577259},
-            {-2094080303, 1318558775},
-            {843418712, -1962971928},
-            {-1569356508, -1405508498},
-            {-1569280852, 1478091698},
-            {449769971, 1953903201},
-            {590532217, -2097376851},
-            {3387378, 1414245162},
-            {1767561705, 1992974553},
-            {106433500, 237239288},
-            {-1334615971, -1778159885},
-            {-135651869, 1722154847},
-            {-1595790889, 1850456855},
-            {-459156023, -1695367501},
-            {106434956, -1779183908},
-            {-578028723, -1302129395},
-            {-586116979, 286193827},
-            {-1379225193, -75944661},
-            {-930579334, 649912614},
-            {548699316, 818877484},
-            {142147109, 1581210395},
-            {148953073, 1903654061},
-            {102672084, 980333378},
-            {640562379, -1651220691},
-            {-1732316031, -1622660759},
-            {-2130280721, 756517185},
-            {-1725510067, -722241321},
-            {1974032895, -1673693549},
-            {-225085592, -567909622},
-            {509654999, 1898094925},
-            {466113771, -1511285251},
-            {2033918259, 1373971859},
-            {2069925558, -1736356576},
-            {-1026117678, 803222026},
-            {1987447227, -1861522751},
-            {540154065, -544317637},
-            {1939428458, 176787552},
-            {-288010497, -2002277461},
-            {-847065290, 1199391518},
-            {3506021, 963906841},
-            {649603450, 442886268},
-            {3506418, 1414245522},
-            {569935070, -1104881824},
-            {113284, -1985799200},
-            {1916127949, -277057363},
-            {-1775234707, -1978999529},
-            {-388967316, 1326180354},
-            {2007564590, -575483084},
-            {-1705696613, 177226991},
-            {670655301, -253079493},
-            {1148128486, -1958316066},
-            {-141135377, 567235583},
-            {109266897, -932201673},
-            {-527558546, 2087678962},
-            {-1745053053, -904863145},
-            {1223860752, 573926264},
-            {-419069863, 1234880403},
-            {-1617374968, -1994909036},
-            {2057749608, 1950721418},
-            {24576628, -2025184684},
-            {-1659202509, 1608640313},
-            {2107229499, -1549739227},
-            {191795897, -765183617},
-            {-1009492144, 795371088},
-            {2077983581, -1367281941},
-            {378365037, 352499047},
-            {-529054135, -1199897169},
-            {-529054134, -1199897172},
-            {486166145, -1023374709},
-            {1628490888, 23352662},
-            {1498516223, 1205607945},
-            {-632459882, -1647846966},
-            {-626812403, -845557339},
-            {385802761, -1370759135},
-            {2117976603, 121049755},
-            {1338515426, -996185386},
-            {-1455694274, 98508942},
-            {1579245182, 2070189026},
-            {-587434450, 1521286012},
-            {-163742043, 1542290441},
-            {-1224714193, -1832422579},
-            {644359987, 826309791},
-            {-1962514734, -143132326},
-            {-705305612, 1153652756},
-            {-357728804, -1819233322},
-            {-698499648, -1138208076},
-            {1213686767, -1850571427},
-            {386382445, -855748505},
-            {1859976884, 553887414},
-            {960793436, 996293980},
-            {1001265731, 2048317869},
-            {1253290621, -1754948969},
-            {470729623, -1293296287},
-            {1051155022, -369760990},
-            {865679437, -1878764039},
-            {927253046, -1039528932},
-            {109552593, 1796682209},
-            {-2092529553, 1230323789},
-            {691633666, -363689972},
-            {-2055888649, 1629293099},
-            {621575320, -41440462},
-            {-2118132208, 1602646136},
-            {-1127699509, 1540934679},
-            {-685265909, -92759291},
-            {552706886, -1100422738},
-            {1835797460, -1021495308},
-            {-892259869, 642482233},
-            {-1623330855, -465682601},
-            {-1616524891, 1668858301},
-            {789892804, 171931394},
-            {-1289478934, -1583967946},
-            {-892070738, -2099697608},
-            {-891243783, -1581843485},
-            {889398893, -1157596551},
-            {-1625468793, 1397052267},
-            {1293049486, 1975934948},
-            {1369769822, 559147458},
-            {586484018, 1079279582},
-            {110115790, 593465182},
-            {1490499512, 1523195708},
-            {3552619, 2019042823},
-            {1471284746, 73681876},
-            {456448245, -1758372725},
-            {110547964, 795236088},
-            {1588977225, -1667224349},
-            {918540912, -209869746},
-            {-471874147, 1686524871},
-            {205978836, 1723747470},
-            {-1044400758, -129230242},
-            {-2073307447, -1331212963},
-            {435230680, 2106561762},
-            {-864578046, 223891266},
-            {1660607208, 935692442},
-            {260214178, -1478445584},
-            {-1847536522, 198438816},
-            {-496055048, -967648160},
-            {-1792066367, 99588025},
-            {562888306, -956706906},
-            {-427925529, -1429456799},
-            {995306285, 1451568081},
-            {-378017204, -1117626326},
-            {447918618, -148794216},
-            {313836902, 1516985844},
-            {1175970190, -796583652},
-            {525244071, -148229307},
-            {-1021702157, -819720157},
-            {-402507101, 671706427},
-            {-1556671423, -1183726687},
-            {61936445, -1614955425},
-            {112903447, -1779180711},
-            {1817873886, -1100168350},
-            {1824679850, -132247350},
-            {-1628526499, -1863559151},
-            {547302405, -119235651},
-            {1840561315, 2114754781},
-            {-460592212, -1379835144},
-            {3655341, -151838493},
-            {1554697726, 418081930},
-            {-1883959124, 832133926},
-            {-481416622, 1524187186},
-            {-481416621, -41896755},
-            {-481416620, -1607980696},
-            {-1151126752, 1058261682},
-            {-1926458555, 794443127}
+            { -1461508848, 1545779598 },
+            { 2115555558, 588596902 },
+            { -533875561, 785728077 },
+            { 1621541165, 51984655 },
+            { -422893115, -1691396643 },
+            { 815896488, -1211166256 },
+            { 805088543, -1321651331 },
+            { 449771810, 605467368 },
+            { 1152393492, 1712070256 },
+            { 1578894260, -742865266 },
+            { 1436532208, 1638322904 },
+            { 542276424, -1841918730 },
+            { 1594947829, -17123659 },
+            { -1035059994, -1685290200 },
+            { 1818890814, -1036635990 },
+            { 1819281075, -727717969 },
+            { 1685058759, -1432674913 },
+            { 93029210, 1548091822 },
+            { -1565095136, 352130972 },
+            { -1775362679, 215754713 },
+            { -1775249157, 14241751 },
+            { -1280058093, -1023065463 },
+            { -420273765, -1234735557 },
+            { 563023711, -2139580305 },
+            { 790921853, -262590403 },
+            { -337261910, -2072273936 },
+            { 498312426, -1950721390 },
+            { 504904386, 1655650836 },
+            { -1221200300, -559599960 },
+            { 510887968, 15388698 },
+            { -814689390, 866889860 },
+            { 1024486167, 1382263453 },
+            { 2021568998, 609049394 },
+            { 97329, 1099314009 },
+            { 1046072789, -582782051 },
+            { 97409, -1273339005 },
+            { -1480119738, -1262185308 },
+            { 1611480185, 1931713481 },
+            { -1386464949, 1553078977 },
+            { 93832698, 1776460938 },
+            { -1063412582, -586342290 },
+            { -1887162396, -996920608 },
+            { -55660037, 1588298435 },
+            { 919780768, 1711033574 },
+            { -365801095, 1719978075 },
+            { 68998734, 613961768 },
+            { -853695669, 1443579727 },
+            { 271534758, 833533164 },
+            { -770311783, -180129657 },
+            { -1192532973, 1424075905 },
+            { -307490664, 1525520776 },
+            { 707427396, 602741290 },
+            { 707432758, -761829530 },
+            { -2079677721, 1783512007 },
+            { -1342405573, -1316706473 },
+            { -139769801, 1946219319 },
+            { -1043746011, -700591459 },
+            { 2080339268, 1655979682 },
+            { -171664558, -1941646328 },
+            { 1050986417, -1557377697 },
+            { -1693683664, 1789825282 },
+            { 523409530, 1121925526 },
+            { 1300054961, 634478325 },
+            { -2095387015, 1142993169 },
+            { 1428021640, 1104520648 },
+            { 94623429, 1534542921 },
+            { 1436001773, -1938052175 },
+            { 1711323399, 1973684065 },
+            { 1734319168, -1848736516 },
+            { -1658459025, -1440987069 },
+            { -726947205, -751151717 },
+            { -341443994, 363467698 },
+            { 1540879296, 2009734114 },
+            { 94756378, -858312878 },
+            { 3059095, 204391461 },
+            { 3059624, 1367190888 },
+            { 2045107609, -778875547 },
+            { 583366917, 998894949 },
+            { 2123300234, 1965232394 },
+            { 1983936587, -321733511 },
+            { 1257201758, -97956382 },
+            { -1144743963, 296519935 },
+            { -1144542967, -113413047 },
+            { -1144334585, -2022172587 },
+            { 1066729526, -1101924344 },
+            { -1598790097, 1390353317 },
+            { -933236257, 1221063409 },
+            { -1575287163, -1336109173 },
+            { -2104481870, -2067472972 },
+            { -1571725662, 1353298668 },
+            { 1456441506, 1729120840 },
+            { 1200628767, -1112793865 },
+            { -778796102, 1409529282 },
+            { 1526866730, 674734128 },
+            { 1925723260, -1519126340 },
+            { 1891056868, 1401987718 },
+            { 1295154089, -1878475007 },
+            { 498591726, 1248356124 },
+            { 1755466030, -592016202 },
+            { 726730162, 798638114 },
+            { -1034048911, -1018587433 },
+            { 252529905, 274502203 },
+            { 471582113, -1065444793 },
+            { -1138648591, 16333305 },
+            { 305916740, 649305914 },
+            { 305916742, 649305916 },
+            { 305916744, 649305918 },
+            { 1908328648, -1535621066 },
+            { -2078972355, 1668129151 },
+            { -533484654, 989925924 },
+            { 1571660245, 1569882109 },
+            { 1045869440, -1215753368 },
+            { 1985408483, 528668503 },
+            { 97513422, 304481038 },
+            { 1496470781, -196667575 },
+            { 1229879204, 952603248 },
+            { -1722829188, 936496778 },
+            { 1849912854, 1948067030 },
+            { -1266285051, 1413014235 },
+            { -1749787215, -1000573653 },
+            { 28178745, -946369541 },
+            { -505639592, -1999722522 },
+            { 1598149413, -1992717673 },
+            { -1779401418, -691113464 },
+            { -57285700, -335089230 },
+            { 98228420, 479143914 },
+            { 1422845239, 999690781 },
+            { 277631078, -1819763926 },
+            { 115739308, 1366282552 },
+            { -522149009, -690276911 },
+            { 3175989, -1899491405 },
+            { 718197703, -746030907 },
+            { 384204160, 1840822026 },
+            { -1308622549, 143803535 },
+            { -217113639, -2124352573 },
+            { -1580059655, -265876753 },
+            { -1832205789, 1070894649 },
+            { 305916741, 649305917 },
+            { 936777834, 3222790 },
+            { -1224598842, 200773292 },
+            { -1976561211, -1506397857 },
+            { -1406876421, 1675639563 },
+            { -1397343301, -23994173 },
+            { 1260209393, 850280505 },
+            { -1035315940, 1877339384 },
+            { -1381682752, 1714496074 },
+            { 696727039, -1022661119 },
+            { -2128719593, -803263829 },
+            { -1178289187, -1903165497 },
+            { 1351172108, 1181207482 },
+            { -450738836, -1539025626 },
+            { -966287254, -324675402 },
+            { 340009023, 671063303 },
+            { 124310981, -1478212975 },
+            { 1501403549, -2094954543 },
+            { 698310895, -1252059217 },
+            { 523855532, 1266491000 },
+            { 2045246801, -886280491 },
+            { 583506109, -237809779 },
+            { -148163128, 794356786 },
+            { -132588262, -1773144852 },
+            { -1666761111, 196700171 },
+            { -465236267, 442289265 },
+            { -1211618504, 1751045826 },
+            { 2133577942, -1982036270 },
+            { -1014825244, -682687162 },
+            { -991829475, 1536610005 },
+            { -642008142, -1709878924 },
+            { 661790782, 1272768630 },
+            { -1440143841, -1780802565 },
+            { 569119686, 1746956556 },
+            { 1404466285, -1102429027 },
+            { -1616887133, -48090175 },
+            { -1167640370, -1163532624 },
+            { -1284735799, 1242482355 },
+            { -1278649848, -1824943010 },
+            { 776005741, 1814288539 },
+            { 108061910, -316250604 },
+            { 255101535, -1663759755 },
+            { -51678842, 1658229558 },
+            { -789202811, 254522515 },
+            { 516382256, -132516482 },
+            { 50834473, 1381010055 },
+            { -975723312, 1159991980 },
+            { 1908195100, -850982208 },
+            { -1097452776, -110921842 },
+            { 146685185, -1469578201 },
+            { -1716193401, -1812555177 },
+            { 193190034, -2069578888 },
+            { 371156815, -852563019 },
+            { 3343606, -1966748496 },
+            { 825308669, -1137865085 },
+            { 830965940, -586784898 },
+            { 1662628660, -163828118 },
+            { 1662628661, -163828117 },
+            { 1662628662, -163828112 },
+            { -1832205788, 1070894648 },
+            { -1832205786, 1070894646 },
+            { 1625090418, 181590376 },
+            { -1269800768, -874975042 },
+            { 429648208, -1190096326 },
+            { -1832205787, 1070894647 },
+            { -1832205785, 1070894645 },
+            { 107868, 696029452 },
+            { 997973965, -2012470695 },
+            { -46188931, -702051347 },
+            { -46848560, -194953424 },
+            { -2066726403, -989755543 },
+            { -2043730634, 1873897110 },
+            { 1325935999, -1520560807 },
+            { -225234813, -78533081 },
+            { -202239044, -1509851560 },
+            { -322501005, 1422530437 },
+            { -1851058636, 1917703890 },
+            { -1828062867, -1162759543 },
+            { -1966381470, -1130350864 },
+            { 968732481, 1391703481 },
+            { 991728250, -242084766 },
+            { -253819519, 621915341 },
+            { -1714986849, 1827479659 },
+            { -1691991080, 813023040 },
+            { 179448791, -395377963 },
+            { 431617507, -1167031859 },
+            { 688032252, 69511070 },
+            { -1059362949, -4031221 },
+            { 1265861812, 1110385766 },
+            { 374890416, 317398316 },
+            { 1567404401, 1882709339 },
+            { -1057402571, 95950017 },
+            { -758925787, -1130709577 },
+            { -1411620422, 1052926200 },
+            { 88869913, -542577259 },
+            { -2094080303, 1318558775 },
+            { 843418712, -1962971928 },
+            { -1569356508, -1405508498 },
+            { -1569280852, 1478091698 },
+            { 449769971, 1953903201 },
+            { 590532217, -2097376851 },
+            { 3387378, 1414245162 },
+            { 1767561705, 1992974553 },
+            { 106433500, 237239288 },
+            { -1334615971, -1778159885 },
+            { -135651869, 1722154847 },
+            { -1595790889, 1850456855 },
+            { -459156023, -1695367501 },
+            { 106434956, -1779183908 },
+            { -578028723, -1302129395 },
+            { -586116979, 286193827 },
+            { -1379225193, -75944661 },
+            { -930579334, 649912614 },
+            { 548699316, 818877484 },
+            { 142147109, 1581210395 },
+            { 148953073, 1903654061 },
+            { 102672084, 980333378 },
+            { 640562379, -1651220691 },
+            { -1732316031, -1622660759 },
+            { -2130280721, 756517185 },
+            { -1725510067, -722241321 },
+            { 1974032895, -1673693549 },
+            { -225085592, -567909622 },
+            { 509654999, 1898094925 },
+            { 466113771, -1511285251 },
+            { 2033918259, 1373971859 },
+            { 2069925558, -1736356576 },
+            { -1026117678, 803222026 },
+            { 1987447227, -1861522751 },
+            { 540154065, -544317637 },
+            { 1939428458, 176787552 },
+            { -288010497, -2002277461 },
+            { -847065290, 1199391518 },
+            { 3506021, 963906841 },
+            { 649603450, 442886268 },
+            { 3506418, 1414245522 },
+            { 569935070, -1104881824 },
+            { 113284, -1985799200 },
+            { 1916127949, -277057363 },
+            { -1775234707, -1978999529 },
+            { -388967316, 1326180354 },
+            { 2007564590, -575483084 },
+            { -1705696613, 177226991 },
+            { 670655301, -253079493 },
+            { 1148128486, -1958316066 },
+            { -141135377, 567235583 },
+            { 109266897, -932201673 },
+            { -527558546, 2087678962 },
+            { -1745053053, -904863145 },
+            { 1223860752, 573926264 },
+            { -419069863, 1234880403 },
+            { -1617374968, -1994909036 },
+            { 2057749608, 1950721418 },
+            { 24576628, -2025184684 },
+            { -1659202509, 1608640313 },
+            { 2107229499, -1549739227 },
+            { 191795897, -765183617 },
+            { -1009492144, 795371088 },
+            { 2077983581, -1367281941 },
+            { 378365037, 352499047 },
+            { -529054135, -1199897169 },
+            { -529054134, -1199897172 },
+            { 486166145, -1023374709 },
+            { 1628490888, 23352662 },
+            { 1498516223, 1205607945 },
+            { -632459882, -1647846966 },
+            { -626812403, -845557339 },
+            { 385802761, -1370759135 },
+            { 2117976603, 121049755 },
+            { 1338515426, -996185386 },
+            { -1455694274, 98508942 },
+            { 1579245182, 2070189026 },
+            { -587434450, 1521286012 },
+            { -163742043, 1542290441 },
+            { -1224714193, -1832422579 },
+            { 644359987, 826309791 },
+            { -1962514734, -143132326 },
+            { -705305612, 1153652756 },
+            { -357728804, -1819233322 },
+            { -698499648, -1138208076 },
+            { 1213686767, -1850571427 },
+            { 386382445, -855748505 },
+            { 1859976884, 553887414 },
+            { 960793436, 996293980 },
+            { 1001265731, 2048317869 },
+            { 1253290621, -1754948969 },
+            { 470729623, -1293296287 },
+            { 1051155022, -369760990 },
+            { 865679437, -1878764039 },
+            { 927253046, -1039528932 },
+            { 109552593, 1796682209 },
+            { -2092529553, 1230323789 },
+            { 691633666, -363689972 },
+            { -2055888649, 1629293099 },
+            { 621575320, -41440462 },
+            { -2118132208, 1602646136 },
+            { -1127699509, 1540934679 },
+            { -685265909, -92759291 },
+            { 552706886, -1100422738 },
+            { 1835797460, -1021495308 },
+            { -892259869, 642482233 },
+            { -1623330855, -465682601 },
+            { -1616524891, 1668858301 },
+            { 789892804, 171931394 },
+            { -1289478934, -1583967946 },
+            { -892070738, -2099697608 },
+            { -891243783, -1581843485 },
+            { 889398893, -1157596551 },
+            { -1625468793, 1397052267 },
+            { 1293049486, 1975934948 },
+            { 1369769822, 559147458 },
+            { 586484018, 1079279582 },
+            { 110115790, 593465182 },
+            { 1490499512, 1523195708 },
+            { 3552619, 2019042823 },
+            { 1471284746, 73681876 },
+            { 456448245, -1758372725 },
+            { 110547964, 795236088 },
+            { 1588977225, -1667224349 },
+            { 918540912, -209869746 },
+            { -471874147, 1686524871 },
+            { 205978836, 1723747470 },
+            { -1044400758, -129230242 },
+            { -2073307447, -1331212963 },
+            { 435230680, 2106561762 },
+            { -864578046, 223891266 },
+            { 1660607208, 935692442 },
+            { 260214178, -1478445584 },
+            { -1847536522, 198438816 },
+            { -496055048, -967648160 },
+            { -1792066367, 99588025 },
+            { 562888306, -956706906 },
+            { -427925529, -1429456799 },
+            { 995306285, 1451568081 },
+            { -378017204, -1117626326 },
+            { 447918618, -148794216 },
+            { 313836902, 1516985844 },
+            { 1175970190, -796583652 },
+            { 525244071, -148229307 },
+            { -1021702157, -819720157 },
+            { -402507101, 671706427 },
+            { -1556671423, -1183726687 },
+            { 61936445, -1614955425 },
+            { 112903447, -1779180711 },
+            { 1817873886, -1100168350 },
+            { 1824679850, -132247350 },
+            { -1628526499, -1863559151 },
+            { 547302405, -119235651 },
+            { 1840561315, 2114754781 },
+            { -460592212, -1379835144 },
+            { 3655341, -151838493 },
+            { 1554697726, 418081930 },
+            { -1883959124, 832133926 },
+            { -481416622, 1524187186 },
+            { -481416621, -41896755 },
+            { -481416620, -1607980696 },
+            { -1151126752, 1058261682 },
+            { -1926458555, 794443127 }
         };
 
         //Languages phrases
@@ -2633,25 +2731,25 @@ namespace Oxide.Plugins
                 {
                     "FILE_NOT_EXISTS", new Dictionary<string, string>
                     {
-                        {"en", "File does not exist"},
-                        {"ru", "Файл не существует"},
-                        {"nl", "Bestand bestaat niet."}
+                        { "en", "File does not exist" },
+                        { "ru", "Файл не существует" },
+                        { "nl", "Bestand bestaat niet." }
                     }
                 },
                 {
                     "FILE_BROKEN", new Dictionary<string, string>
                     {
-                        {"en", "Something went wrong during pasting because of a error in the file."},
-                        {"ru", "Файл поврежден, вставка невозможна"},
-                        {"nl", "Er is iets misgegaan tijdens het plakken door een beschadigd bestand."}
+                        { "en", "Something went wrong during pasting because of a error in the file." },
+                        { "ru", "Файл поврежден, вставка невозможна" },
+                        { "nl", "Er is iets misgegaan tijdens het plakken door een beschadigd bestand." }
                     }
                 },
                 {
                     "NO_ACCESS", new Dictionary<string, string>
                     {
-                        {"en", "You don't have the permissions to use this command"},
-                        {"ru", "У вас нет прав доступа к данной команде"},
-                        {"nl", "U heeft geen toestemming/permissie om dit commando te gebruiken."}
+                        { "en", "You don't have the permissions to use this command" },
+                        { "ru", "У вас нет прав доступа к данной команде" },
+                        { "nl", "U heeft geen toestemming/permissie om dit commando te gebruiken." }
                     }
                 },
                 {
@@ -2663,7 +2761,9 @@ namespace Oxide.Plugins
                                   "vending - Information and sellings in vending machine\n" +
                                   "stability <true/false> - Wether or not to disable stability\n" +
                                   "deployables <true/false> - Wether or not to copy deployables\n" +
-                                  "auth <true/false> - Wether or not to copy lock and cupboard whitelists"
+                                  "auth <true/false> - Wether or not to copy lock and cupboard whitelists\n" +
+                                  "position <x,y,z> - Override position\n" +
+                                  "rotation <X> - Override rotation"
                         },
                         {
                             "ru", "Синтаксис: /pasteback <Название Объекта> <опция значение>\n" +
@@ -2691,7 +2791,9 @@ namespace Oxide.Plugins
                                   "deployables true/false - false to remove deployables\n" +
                                   "inventories true/false - false to ignore inventories\n" +
                                   "vending - Information and sellings in vending machine\n" +
-                                  "stability <true/false> - Wether or not to disable stability on the building"
+                                  "stability <true/false> - Wether or not to disable stability on the building\n" +
+                                  "position <x,y,z> - Override position\n" +
+                                  "rotation <X> - Override rotation"
                         },
                         {
                             "ru", "Синтаксис: /paste or /pasteback <Название Объекта> <опция значение>\n" +
@@ -2716,17 +2818,17 @@ namespace Oxide.Plugins
                 {
                     "PASTEBACK_SUCCESS", new Dictionary<string, string>
                     {
-                        {"en", "You've successfully placed back the structure"},
-                        {"ru", "Постройка успешно вставлена на старое место"},
-                        {"nl", "Het gebouw is succesvol teruggeplaatst."}
+                        { "en", "You've successfully placed back the structure" },
+                        { "ru", "Постройка успешно вставлена на старое место" },
+                        { "nl", "Het gebouw is succesvol teruggeplaatst." }
                     }
                 },
                 {
                     "PASTE_SUCCESS", new Dictionary<string, string>
                     {
-                        {"en", "You've successfully pasted the structure"},
-                        {"ru", "Постройка успешно вставлена"},
-                        {"nl", "Het gebouw is succesvol geplaatst."}
+                        { "en", "You've successfully pasted the structure" },
+                        { "ru", "Постройка успешно вставлена" },
+                        { "nl", "Het gebouw is succesvol geplaatst." }
                     }
                 },
                 {
@@ -2758,99 +2860,111 @@ namespace Oxide.Plugins
                 {
                     "NO_ENTITY_RAY", new Dictionary<string, string>
                     {
-                        {"en", "Couldn't ray something valid in front of you"},
-                        {"ru", "Не удалось найти какой-либо объект перед вами"},
-                        {"nl", "U kijkt niet naar een geschikt object om een kopie op te starten."}
+                        { "en", "Couldn't ray something valid in front of you" },
+                        { "ru", "Не удалось найти какой-либо объект перед вами" },
+                        { "nl", "U kijkt niet naar een geschikt object om een kopie op te starten." }
                     }
                 },
                 {
                     "COPY_SUCCESS", new Dictionary<string, string>
                     {
-                        {"en", "The structure was successfully copied as {0}"},
-                        {"ru", "Постройка успешно скопирована под названием: {0}"},
-                        {"nl", "Gebouw is succesvol gekopieërd"}
+                        { "en", "The structure was successfully copied as {0}" },
+                        { "ru", "Постройка успешно скопирована под названием: {0}" },
+                        { "nl", "Gebouw is succesvol gekopieërd" }
                     }
                 },
                 {
                     "NO_PASTED_STRUCTURE", new Dictionary<string, string>
                     {
-                        {"en", "You must paste structure before undoing it"},
-                        {"ru", "Вы должны вставить постройку перед тем, как отменить действие"},
-                        {"nl", "U moet eerst een gebouw terugplaatsen alvorens deze ongedaan gemaakt kan worden (duhh)"}
+                        { "en", "You must paste structure before undoing it" },
+                        { "ru", "Вы должны вставить постройку перед тем, как отменить действие" },
+                        {
+                            "nl",
+                            "U moet eerst een gebouw terugplaatsen alvorens deze ongedaan gemaakt kan worden (duhh)"
+                        }
                     }
                 },
                 {
                     "UNDO_SUCCESS", new Dictionary<string, string>
                     {
-                        {"en", "You've successfully undid what you pasted"},
-                        {"ru", "Вы успешно снесли вставленную постройку"},
-                        {"nl", "Laatse geplaatste gebouw is succesvol ongedaan gemaakt."}
+                        { "en", "You've successfully undid what you pasted" },
+                        { "ru", "Вы успешно снесли вставленную постройку" },
+                        { "nl", "Laatse geplaatste gebouw is succesvol ongedaan gemaakt." }
                     }
                 },
                 {
                     "NOT_FOUND_PLAYER", new Dictionary<string, string>
                     {
-                        {"en", "Couldn't find the player"},
-                        {"ru", "Не удалось найти игрока"},
-                        {"nl", "Speler niet gevonden."}
+                        { "en", "Couldn't find the player" },
+                        { "ru", "Не удалось найти игрока" },
+                        { "nl", "Speler niet gevonden." }
                     }
                 },
                 {
                     "SYNTAX_BOOL", new Dictionary<string, string>
                     {
-                        {"en", "Option {0} must be true/false"},
-                        {"ru", "Опция {0} принимает значения true/false"},
-                        {"nl", "Optie {0} moet true of false zijn"}
+                        { "en", "Option {0} must be true/false" },
+                        { "ru", "Опция {0} принимает значения true/false" },
+                        { "nl", "Optie {0} moet true of false zijn" }
+                    }
+                },
+                {
+                    "SYNTAX_FLOAT", new Dictionary<string, string>
+                    {
+                        { "en", "Option {0} must be a decimal" },
+                        { "ru", "Опция {0} принимает только числовые значения с точкой" },
+                        { "nl", "Optie {0} moet een decimal zijn" }
                     }
                 },
                 {
                     "SYNTAX_HEIGHT", new Dictionary<string, string>
                     {
-                        {"en", "Option height must be a number"},
-                        {"ru", "Опция height принимает только числовые значения"},
-                        {"nl", "De optie height accepteert alleen nummers"}
+                        { "en", "Option height must be a number" },
+                        { "ru", "Опция height принимает только числовые значения" },
+                        { "nl", "De optie height accepteert alleen nummers" }
                     }
                 },
                 {
                     "SYNTAX_BLOCKCOLLISION", new Dictionary<string, string>
                     {
-                        {"en", "Option blockcollision must be a number, 0 will deactivate the option"},
+                        { "en", "Option blockcollision must be a number, 0 will deactivate the option" },
                         {
                             "ru",
                             "Опция blockcollision принимает только числовые значения, 0 позволяет отключить проверку"
                         },
-                        {"nl", "Optie blockcollision accepteert alleen nummers, 0 schakelt deze functionaliteit uit"}
+                        { "nl", "Optie blockcollision accepteert alleen nummers, 0 schakelt deze functionaliteit uit" }
                     }
                 },
                 {
                     "SYNTAX_RADIUS", new Dictionary<string, string>
                     {
-                        {"en", "Option radius must be a number"},
-                        {"ru", "Опция radius принимает только числовые значения"},
-                        {"nl", "Optie height accepteert alleen nummers"}
+                        { "en", "Option radius must be a number" },
+                        { "ru", "Опция radius принимает только числовые значения" },
+                        { "nl", "Optie height accepteert alleen nummers" }
                     }
                 },
                 {
                     "BLOCKING_PASTE", new Dictionary<string, string>
                     {
-                        {"en", "Something is blocking the paste"},
-                        {"ru", "Что-то препятствует вставке"},
-                        {"nl", "Iets blokkeert het plaatsen van dit gebouw"}
+                        { "en", "Something is blocking the paste" },
+                        { "ru", "Что-то препятствует вставке" },
+                        { "nl", "Iets blokkeert het plaatsen van dit gebouw" }
                     }
                 },
                 {
                     "AVAILABLE_STRUCTURES", new Dictionary<string, string>
                     {
-                        {"ru", "<color=orange>Доступные постройки:</color>"},
-                        {"en", "<color=orange>Available structures:</color>"},
-                        {"nl", "Beschikbare bestanden om te plaatsen zijn:"}
+                        { "ru", "<color=orange>Доступные постройки:</color>" },
+                        { "en", "<color=orange>Available structures:</color>" },
+                        { "nl", "Beschikbare bestanden om te plaatsen zijn:" }
                     }
                 }
             };
 
         public class CopyData
         {
-            public BasePlayer Player;
+            public IPlayer Player;
+            public BasePlayer BasePlayer;
             public Stack<Vector3> CheckFrom = new Stack<Vector3>();
             public HashSet<BaseEntity> HouseList = new HashSet<BaseEntity>();
             public List<object> RawData = new List<object>();
@@ -2882,7 +2996,8 @@ namespace Oxide.Plugins
             public Dictionary<uint, Dictionary<string, object>> IoEntities =
                 new Dictionary<uint, Dictionary<string, object>>();
 
-            public BasePlayer Player;
+            public IPlayer Player;
+            public BasePlayer BasePlayer;
             public List<StabilityEntity> StabilityEntities = new List<StabilityEntity>();
             public Quaternion QuaternionRotation;
             public Action Callback;
