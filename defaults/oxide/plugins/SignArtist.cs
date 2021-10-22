@@ -1,6 +1,7 @@
 // Reference: System.Drawing
 using Newtonsoft.Json;
 using Oxide.Core;
+using Oxide.Core.Plugins;
 using Oxide.Plugins.SignArtistClasses;
 using System;
 using System.Collections;
@@ -19,7 +20,7 @@ using Steamworks;
 
 namespace Oxide.Plugins
 {
-    [Info("Sign Artist", "Whispers88", "1.2.6")]
+    [Info("Sign Artist", "Whispers88", "1.3.0")]
     [Description("Allows players with the appropriate permission to import images from the internet on paintable objects")]
 
     /*********************************************************************************
@@ -148,7 +149,7 @@ namespace Oxide.Plugins
             public bool Hor { get; }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="DownloadRequest" /> class.
+            /// Initializes a new instance of the <see cref="DownloadRequest" ></see> class.
             /// </summary>
             /// <param name="url">The URL to download the image from. </param>
             /// <param name="player">The player that requested the download. </param>
@@ -174,7 +175,7 @@ namespace Oxide.Plugins
             public bool Raw { get; }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="RestoreRequest" /> class.
+            /// Initializes a new instance of the <see cref="RestoreRequest" ></see> class.
             /// </summary>
             /// <param name="player">The player that requested the restore. </param>
             /// <param name="sign">The sign to restore the image from. </param>
@@ -198,7 +199,7 @@ namespace Oxide.Plugins
             public int ImageHeight { get; }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="ImageSize" /> class.
+            /// Initializes a new instance of the <see cref="ImageSize" ></see> class.
             /// </summary>
             /// <param name="width">The width of the canvas and the image. </param>
             /// <param name="height">The height of the canvas and the image. </param>
@@ -207,7 +208,7 @@ namespace Oxide.Plugins
             }
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="ImageSize" /> class.
+            /// Initializes a new instance of the <see cref="ImageSize" ></see> class.
             /// </summary>
             /// <param name="width">The width of the canvas. </param>
             /// <param name="height">The height of the canvas. </param>
@@ -345,7 +346,7 @@ namespace Oxide.Plugins
             /// <summary>
             /// Downloads the image and adds it to the sign.
             /// </summary>
-            /// <param name="request">The requested <see cref="DownloadRequest"/> instance. </param>
+            /// <param name="request">The requested <see cref="DownloadRequest"></see> instance. </param>
             private IEnumerator DownloadImage(DownloadRequest request)
             {
                 if (ItemManager.itemDictionaryByName.ContainsKey(request.Url))
@@ -448,7 +449,7 @@ namespace Oxide.Plugins
                 signArtist.SendMessage(request.Sender, "ImageLoaded");
 
                 // Call the Oxide hook 'OnSignUpdated' to notify other plugins of the update event.
-                Interface.Oxide.CallHook("OnSignUpdated", request.Sign, request.Sender);
+                Interface.Oxide.CallHook("OnSignUpdated", request.Sign.Entity, request.Sender);
 
                 if (request.Sender != null)
                 {
@@ -527,7 +528,7 @@ namespace Oxide.Plugins
             /// <summary>
             /// Restores the image and adds it to the sign again.
             /// </summary>
-            /// <param name="request">The requested <see cref="RestoreRequest"/> instance. </param>
+            /// <param name="request">The requested <see cref="RestoreRequest"></see> instance. </param>
             /// <returns></returns>
             private IEnumerator RestoreImage(RestoreRequest request)
             {
@@ -578,14 +579,14 @@ namespace Oxide.Plugins
                 signArtist.SendMessage(request.Sender, "ImageRestored");
 
                 // Call the Oxide hook 'OnSignUpdated' to notify other plugins of the update event.
-                Interface.Oxide.CallHook("OnSignUpdated", request.Sign, request.Sender);
+                Interface.Oxide.CallHook("OnSignUpdated", request.Sign.Entity, request.Sender);
 
                 // Attempt to start the next download.
                 StartNextRestore(true);
             }
 
             /// <summary>
-            /// Gets the target image size for a <see cref="Signage"/>.
+            /// Gets the target image size for a <see cref="Signage"></see>.
             /// </summary>
             /// <param name="signage"></param>
             private ImageSize GetImageSizeFor(IPaintableEntity signage)
@@ -599,7 +600,7 @@ namespace Oxide.Plugins
             }
 
             /// <summary>
-            /// Converts the <see cref="Texture2D"/> from the webrequest to a <see cref="byte"/> array.
+            /// Converts the <see cref="Texture2D"></see> from the webrequest to a <see cref="byte"></see> array.
             /// </summary>
             /// <param name="www">The completed webrequest. </param>
             private byte[] GetImageBytes(UnityWebRequest www)
@@ -984,7 +985,7 @@ namespace Oxide.Plugins
             imageDownloader.QueueDownload(args[0], player, sign, raw, hor);
 
             // Call external hook
-            Interface.Oxide.CallHook("OnImagePost", player, args[0]);
+            Interface.Oxide.CallHook("OnImagePost", player, args[0], raw, sign.Entity);
 
             // Set the cooldown on the command for the player if the cooldown setting is enabled.
             SetCooldown(player);
@@ -1049,7 +1050,7 @@ namespace Oxide.Plugins
 
             imageDownloader.QueueDownload(shortname, player, sign, false, hor);
 
-            Interface.Oxide.CallHook("OnImagePost", player, shortname);
+            Interface.Oxide.CallHook("OnImagePost", player, shortname, false, sign.Entity);
 
             SetCooldown(player);
         }
@@ -1076,7 +1077,7 @@ namespace Oxide.Plugins
             url = json.response.publishedfiledetails[0].preview_url;
             imageDownloader.QueueDownload(url, player, sign, false, hor);
 
-            Interface.Oxide.CallHook("OnImagePost", player, held.info.shortname);
+            Interface.Oxide.CallHook("OnImagePost", player, url, false, sign.Entity);
 
             SetCooldown(player);
         }
@@ -1207,7 +1208,7 @@ namespace Oxide.Plugins
             imageDownloader.QueueDownload(url, player, sign, raw, hor);
 
             // Call external hook
-            Interface.Oxide.CallHook("OnImagePost", player, url);
+            Interface.Oxide.CallHook("OnImagePost", player, url, raw, sign.Entity);
 
             // Set the cooldown on the command for the player if the cooldown setting is enabled.
             SetCooldown(player);
@@ -1289,7 +1290,7 @@ namespace Oxide.Plugins
 
         #region Methods
         /// <summary>
-        /// Check if the given <see cref="BasePlayer"/> is able to use the command.
+        /// Check if the given <see cref="BasePlayer"></see> is able to use the command.
         /// </summary>
         /// <param name="player">The player to check. </param>
         private bool HasCooldown(BasePlayer player)
@@ -1317,7 +1318,7 @@ namespace Oxide.Plugins
         }
 
         /// <summary>
-        /// Returns the cooldown in seconds for the given <see cref="BasePlayer"/>.
+        /// Returns the cooldown in seconds for the given <see cref="BasePlayer"></see>.
         /// </summary>
         /// <param name="player">The player to obtain the cooldown of. </param>
         private float GetCooldown(BasePlayer player)
@@ -1326,7 +1327,7 @@ namespace Oxide.Plugins
         }
 
         /// <summary>
-        /// Sets the last use for the cooldown handling of the command for the given <see cref="BasePlayer"/>.
+        /// Sets the last use for the cooldown handling of the command for the given <see cref="BasePlayer"></see>.
         /// </summary>
         /// <param name="player">The player to put the command on cooldown for. </param>
         private void SetCooldown(BasePlayer player)
@@ -1392,10 +1393,10 @@ namespace Oxide.Plugins
         }
 
         /// <summary>
-        /// Checks if the <see cref="BasePlayer"/> is looking at a valid <see cref="Signage"/> object.
+        /// Checks if the <see cref="BasePlayer"></see> is looking at a valid <see cref="Signage"></see> object.
         /// </summary>
         /// <param name="player">The player to check. </param>
-        /// <param name="sign">When this method returns, contains the <see cref="Signage"/> the player contained in <paramref name="player" /> is looking at, or null if the player isn't looking at a sign. </param>
+        /// <param name="sign">When this method returns, contains the <see cref="Signage"></see> the player contained in <paramref name="player" /> is looking at, or null if the player isn't looking at a sign. </param>
         private bool IsLookingAtSign(BasePlayer player, out IPaintableEntity sign)
         {
             RaycastHit hit;
@@ -1423,7 +1424,7 @@ namespace Oxide.Plugins
         }
 
         /// <summary>
-        /// Checks if the <see cref="BasePlayer"/> is allowed to change the drawing on the <see cref="Signage"/> object.
+        /// Checks if the <see cref="BasePlayer"></see> is allowed to change the drawing on the <see cref="Signage"></see> object.
         /// </summary>
         /// <param name="player">The player to check. </param>
         /// <param name="sign">The sign to check. </param>
@@ -1434,7 +1435,7 @@ namespace Oxide.Plugins
         }
 
         /// <summary>
-        /// Checks if the given <see cref="BasePlayer"/> has the specified permission.
+        /// Checks if the given <see cref="BasePlayer"></see> has the specified permission.
         /// </summary>
         /// <param name="player">The player to check a permission on. </param>
         /// <param name="perm">The permission to check for. </param>
@@ -1581,6 +1582,7 @@ namespace Oxide.Plugins
 
         #region Public Helpers
         // This can be Call(ed) by other plugins to put text on a sign
+        [HookMethod("API_SignText")]
         public void API_SignText(BasePlayer player, Signage sign, string message, int fontsize = 30, string color = "FFFFFF", string bgcolor = "000000")
         {
             //Puts($"signText called with {message}");
@@ -1597,6 +1599,7 @@ namespace Oxide.Plugins
             imageDownloader.QueueDownload(url, player, new PaintableSignage(sign), false);
         }
 
+        [HookMethod("API_SkinSign")]
         public void API_SkinSign(BasePlayer player, Signage sign, string url, bool raw = false)
         {
             if (sign == null)
@@ -1618,6 +1621,25 @@ namespace Oxide.Plugins
             imageDownloader.QueueDownload(url, player, new PaintableSignage(sign), raw, hor);
         }
 
+        [HookMethod("API_SkinPhotoFrame")]
+        public void API_SkinPhotoFrame(BasePlayer player, PhotoFrame sign, string url, bool raw = false)
+        {
+            if (sign == null)
+            {
+                PrintWarning("PhotoFrame is null in API call");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(url))
+            {
+                PrintWarning("Url is empty in API call");
+                return;
+            }
+
+            // Queue the download of the specified image.
+            imageDownloader.QueueDownload(url, player, new PaintableFrame(sign), raw, false);
+        }
+
 
         //TODO add image byte[] api 
         #endregion
@@ -1627,19 +1649,19 @@ namespace Oxide.Plugins
     namespace SignArtistClasses
     {
         /// <summary>
-        /// Extension class with extension methods used by the <see cref="SignArtist"/> plugin.
+        /// Extension class with extension methods used by the <see cref="SignArtist"></see> plugin.
         /// </summary>
         public static class Extensions
         {
             /// <summary>
-            /// Resizes an image from the <see cref="byte"/> array to a new image with a specific width and height.
+            /// Resizes an image from the <see cref="byte"></see> array to a new image with a specific width and height.
             /// </summary>
             /// <param name="bytes">Source image. </param>
             /// <param name="width">New image canvas width. </param>
             /// <param name="height">New image canvas height. </param>
             /// <param name="targetWidth">New image width. </param>
             /// <param name="targetHeight">New image height. </param>
-            /// <param name="enforceJpeg"><see cref="bool"/> value, true to save the images as JPG, false for PNG. </param>
+            /// <param name="enforceJpeg"><see cref="bool"></see> value, true to save the images as JPG, false for PNG. </param>
             /// <param name="rotation"></param>
             public static byte[] ResizeImage(this byte[] bytes, int width, int height, int targetWidth, int targetHeight, bool enforceJpeg, RotateFlipType rotation = RotateFlipType.RotateNoneFlipNone)
             {

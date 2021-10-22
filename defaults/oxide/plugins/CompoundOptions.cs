@@ -5,7 +5,7 @@ using Oxide.Core;
 
 namespace Oxide.Plugins
 {
-    [Info("Compound Options", "FastBurst", "1.1.8")]
+    [Info("Compound Options", "FastBurst", "1.1.9")]
     [Description("Compound monument options")]
     class CompoundOptions : RustPlugin
     {
@@ -139,8 +139,8 @@ namespace Oxide.Plugins
                     sellAsBP = order.sellItemAsBP,
                     currencyId = order.currencyItem.itemid,
                     weight = 100,
-                    refillAmount = 100,
-                    refillDelay = 10.0f
+                    refillAmount = 100000,
+                    refillDelay = 0.0f
                 });
             }
             if (def)
@@ -194,8 +194,8 @@ namespace Oxide.Plugins
                     sellItemAmount = order.currencyAmount,
                     sellItemAsBP = order.sellAsBP,
                     weight = 100,
-                    refillAmount = 100,
-                    refillDelay = 10.0f
+                    refillAmount = 100000,
+                    refillDelay = 0.0f
                 });
             }
             return temp.ToArray();
@@ -229,8 +229,8 @@ namespace Oxide.Plugins
                     sellItemAmount = order.currencyAmount,
                     sellItemAsBP = order.sellAsBP,
                     weight = 100,
-                    refillAmount = 100,
-                    refillDelay = 10.0f
+                    refillAmount = 100000,
+                    refillDelay = 0.0f
                 });
             }
             return temp.ToArray();

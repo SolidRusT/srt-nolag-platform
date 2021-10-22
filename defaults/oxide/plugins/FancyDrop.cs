@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("FancyDrop", "FastBurst", "2.9.4")]
+    [Info("FancyDrop", "FastBurst", "2.9.5")]
     [Description("The Next Level of a fancy airdrop-toolset")]
     class FancyDrop : RustPlugin
     {
@@ -354,7 +354,7 @@ namespace Oxide.Plugins
         string SimpleUI_ShadowColor;
 
         private const string SMOKE_EFFECT = "assets/bundled/prefabs/fx/smoke_signal_full.prefab";
-        private const string SIRENLIGHT_EFFECT = "assets/prefabs/deployable/playerioents/lights/sirenlight/electric.sirenlight.deployed.prefab";
+        private const string SIRENLIGHT_EFFECT = "assets/prefabs/io/electric/lights/sirenlightorange.prefab";
         private const string SIRENALARM_EFFECT = "assets/prefabs/deployable/playerioents/alarms/audioalarm.prefab";
 
         object GetConfig(string menu, string datavalue, object defaultValue)
@@ -781,10 +781,10 @@ namespace Oxide.Plugins
 
         private static void CreateSirenAlarms(BaseEntity entity)
         {
-            var SirenAlarm = GameManager.server.CreateEntity(SIRENALARM_EFFECT, default(Vector3), default(Quaternion), true);
+            var SirenAlarm = GameManager.server.CreateEntity(SIRENALARM_EFFECT, new Vector3(0f, 0f, 0f), default(Quaternion), true);
 
             SirenAlarm.gameObject.Identity();
-            SirenAlarm.SetParent(entity as LootContainer, "parachute_attach");
+            SirenAlarm.SetParent(entity);
             SirenAlarm.Spawn();
             SirenAlarm.SetFlag(BaseEntity.Flags.Reserved8, true);
         }

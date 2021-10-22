@@ -59,17 +59,28 @@ using Oxide.Core.Libraries.Covalence;
  * Update 1.1.5
  * Fixed High hook time hangs sometimes resulted in server crashes..
  *
- * TODO
- * Fix? Possible vending machine purchase issues using Vending Machine Plugin with economics/blood??
+ * Update 1.1.7
+ * Fixes all vendor problems when booting/rebooting servers
+ * Added Chat command to manually reset the vendors that you talk to only /resetvendors
+ *
+ * Update 1.1.8
+ * Pulled due to false reports.
+ * Reverted back to original patch of 1.1.7
+ * 
+ * Update 1.1.9
+ * Fixes custom items that have different custom names applied with the same skinids from stacking.
+ * Fixes resetting stacks to default if ( true ) in config.
+ *
+ * Update 1.2.0
+ * Added Global Category Group Stack Setting options
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.1.8")]
+    [Info("Stack Modifier", "Khan", "1.2.0")]
     [Description("Modify item stack sizes")]
     public class StackModifier : CovalencePlugin
     {
-        
         #region Fields
         
         private Dictionary<uint, List<ProtoBuf.VendingMachine.SellOrder>> _sellOrders = new Dictionary<uint, List<ProtoBuf.VendingMachine.SellOrder>>();
@@ -78,7 +89,7 @@ namespace Oxide.Plugins
 
         private Dictionary<string, int> defaults = new Dictionary<string, int>
         {
-            { "hat.wolf", 1 },
+            {"hat.wolf", 1 },
             {"diving.fins", 1 },
             {"diving.mask", 1 },
             {"diving.tank", 1 },
@@ -843,6 +854,11 @@ namespace Oxide.Plugins
                 string categoryName = item.category.ToString();
 
                 Dictionary<string, _Items> stackCategory;
+                
+                if (!_configData.StackCategoryMultipliers.ContainsKey(categoryName))
+                {
+                    _configData.StackCategoryMultipliers[categoryName] = 1;
+                }
 
                 if (!_configData.StackCategories.TryGetValue(categoryName, out stackCategory))
                 {
@@ -860,9 +876,14 @@ namespace Oxide.Plugins
                     });
                 }
 
+                if (_configData.StackCategoryMultipliers[categoryName] >= 1)
+                {
+                    item.stackable = _configData.StackCategoryMultipliers[categoryName];
+                }
+
                 foreach (var i in defaults)
                 {
-                    if (_configData.StackCategories[categoryName][item.shortname].Modified >= i.Value)
+                    if (_configData.StackCategories[categoryName][item.shortname].Modified >= i.Value && _configData.StackCategories[categoryName][item.shortname].Modified >= _configData.StackCategoryMultipliers[categoryName])
                     {
                         item.stackable = _configData.StackCategories[categoryName][item.shortname].Modified;
                     }
@@ -888,9 +909,12 @@ namespace Oxide.Plugins
             [JsonProperty("Blocked Stackable Items", Order = 4)]
             public List<string> Blocked { get; set; }
 
-            [JsonProperty("Stack Categories", Order = 5)]
+            [JsonProperty("Category Stack Multipliers", Order = 5)] 
+            public Dictionary<string, int> StackCategoryMultipliers = new Dictionary<string, int>();
+
+            [JsonProperty("Stack Categories", Order = 6)]
             public Dictionary<string, Dictionary<string, _Items>> StackCategories = new Dictionary<string, Dictionary<string, _Items>>();
-            
+
             public string ToJson() => JsonConvert.SerializeObject(this);
 
             public Dictionary<string, object> ToDictionary() => JsonConvert.DeserializeObject<Dictionary<string, object>>(ToJson());
@@ -1007,10 +1031,6 @@ namespace Oxide.Plugins
                 {
                     _sellOrders[entity.net.ID] = (entity as NPCVendingMachine).sellOrders.sellOrders;
                 }
-                else if (entity is InvisibleVendingMachine)
-                {
-                    _sellOrders[entity.net.ID] = (entity as InvisibleVendingMachine).sellOrders.sellOrders;
-                }
             }
             permission.RegisterPermission(ByPass, this);
             CheckConfig();
@@ -1025,14 +1045,19 @@ namespace Oxide.Plugins
                     e.sellOrders.sellOrders = _sellOrders[entity.net.ID];
                     e.InstallFromVendingOrders();
                 }
-                else if (entity is InvisibleVendingMachine)
+                var vending = entity as InvisibleVendingMachine;
+                if (entity is InvisibleVendingMachine)
                 {
-                    var e = entity as InvisibleVendingMachine;
-                    e.ClearSellOrders();
-                    e.ClearPendingOrder();
-                    e.inventory.Clear();
-                    e.sellOrders.sellOrders = _sellOrders[entity.net.ID];
-                    e.InstallFromVendingOrders();
+                    if (vending != null && !vending.IsDestroyed)
+                    {
+                        foreach (var s in vending.vendingOrders.orders)
+                        {
+                            if (defaults.ContainsKey(s.sellItem.shortname))
+                            {
+                                s.sellItemAmount = defaults[s.sellItem.shortname];
+                            }
+                        }
+                    }
                 }
             }
             
@@ -1046,7 +1071,7 @@ namespace Oxide.Plugins
             {
                 return null;
             }
-            
+
             /*if (_configData.VendingMachineAmmoFix && item.GetRootContainer()?.entityOwner is VendingMachine)
             {
                 return true;
@@ -1069,7 +1094,8 @@ namespace Oxide.Plugins
                 !item.IsValid() ||
                 item.IsBlueprint() && item.blueprintTarget != targetItem.blueprintTarget ||
                 Math.Ceiling(targetItem.condition) != item.maxCondition ||
-                item.skin != targetItem.skin
+                item.skin != targetItem.skin ||
+                item.name != targetItem.name
             )
             {
                 return false;
@@ -1146,15 +1172,10 @@ namespace Oxide.Plugins
 
             return true;
         }
-        
+
         private object CanCombineDroppedItem(DroppedItem item, DroppedItem targetItem)
         {
-            if (item.skinID == 0 && targetItem.skinID == 0)
-            {
-                return null;
-            }
-            
-            if (item.skinID != targetItem.skinID)
+            if (item.skinID != targetItem.skinID || item.item.name != targetItem.item.name)
             {
                 return false;
             }
@@ -1306,9 +1327,9 @@ namespace Oxide.Plugins
             x.amount = amount;
             x._condition = item._condition;
             x._maxCondition = item._maxCondition;
-            x.MarkDirty();
+            //x.MarkDirty();
             x.MoveToContainer(player.inventory.containerMain);
-            }
+        }
         
         private object OnCardSwipe(CardReader cardReader, Keycard card, BasePlayer player)
         {
@@ -1355,7 +1376,9 @@ namespace Oxide.Plugins
                 if (!_configData.StackCategories.ContainsKey(itemDefinition.category.ToString())) continue;
                 Dictionary<string, _Items> stackCategory = _configData.StackCategories[itemDefinition.category.ToString()];
                 if (!stackCategory.ContainsKey(itemDefinition.shortname)) continue;
-                itemDefinition.stackable = defaults[itemDefinition.shortname]; //stackCategory[itemDefinition.shortname].Vanilla;
+                if (!defaults.ContainsKey(itemDefinition.shortname)) continue;
+                int a = defaults[itemDefinition.shortname];
+                itemDefinition.stackable = a;
             }
         }
 
@@ -1366,23 +1389,21 @@ namespace Oxide.Plugins
         {
             foreach (var entity in BaseNetworkable.serverEntities)
             {
-                if (entity is NPCVendingMachine && !(entity is InvisibleVendingMachine))
+                var vending = entity as InvisibleVendingMachine;
+                if (entity is InvisibleVendingMachine)
                 {
-                    var e = entity as NPCVendingMachine;
-                    e.ClearSellOrders();
-                    e.ClearPendingOrder();
-                    e.inventory.Clear();
-                    e.sellOrders.sellOrders = _sellOrders[entity.net.ID];
-                    e.InstallFromVendingOrders();
-                }
-                else if (entity is InvisibleVendingMachine)
-                {
-                    var e = entity as InvisibleVendingMachine;
-                    e.ClearSellOrders();
-                    e.ClearPendingOrder();
-                    e.inventory.Clear();
-                    e.sellOrders.sellOrders = _sellOrders[entity.net.ID];
-                    e.InstallFromVendingOrders();
+                    if (vending != null && !vending.IsDestroyed)
+                    {
+                        vending.InstallFromVendingOrders();
+                        foreach (var s in vending.vendingOrders.orders)
+                        {
+                            if (defaults.ContainsKey(s.sellItem.shortname))
+                            {
+                                s.sellItemAmount = defaults[s.sellItem.shortname];
+                            }
+                        }
+                        vending.SendNetworkUpdate();
+                    }
                 }
             }
         }

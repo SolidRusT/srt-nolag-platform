@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.1.0")]
+    [Info("Crafts", "Mevent", "2.3.0")]
     public class Crafts : RustPlugin
     {
         #region Fields
@@ -98,9 +98,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             }
                         },
                         new CraftConf
@@ -125,9 +125,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             }
                         },
                         new CraftConf
@@ -152,9 +152,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             }
                         },
                         new CraftConf
@@ -179,9 +179,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             }
                         },
                         new CraftConf
@@ -206,9 +206,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             }
                         }
                     }
@@ -242,9 +242,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             }
                         },
                         new CraftConf
@@ -269,9 +269,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             },
                             Modular = new ModularCarConf
                             {
@@ -319,9 +319,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             }
                         },
                         new CraftConf
@@ -346,9 +346,9 @@ namespace Oxide.Plugins
                             Structure = true,
                             Items = new List<ItemForCraft>
                             {
-                                new ItemForCraft("gears", 5, 0),
-                                new ItemForCraft("roadsigns", 5, 0),
-                                new ItemForCraft("metal.fragments", 2000, 0)
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
                             }
                         }
                     }
@@ -702,6 +702,8 @@ namespace Oxide.Plugins
 
         private class ItemForCraft
         {
+            [JsonProperty(PropertyName = "Image")] public string Image;
+
             [JsonProperty(PropertyName = "Shortname")]
             public string ShortName;
 
@@ -733,8 +735,9 @@ namespace Oxide.Plugins
                 }
             }
 
-            public ItemForCraft(string shortname, int amount, ulong skin)
+            public ItemForCraft(string image, string shortname, int amount, ulong skin)
             {
+                Image = image;
                 ShortName = shortname;
                 Amount = amount;
                 SkinID = skin;
@@ -1065,14 +1068,26 @@ namespace Oxide.Plugins
 
         private void CmdGiveCrafts(IPlayer cov, string command, string[] args)
         {
-            var player = cov?.Object as BasePlayer;
-            if (player == null) return;
+            if (!cov.IsAdmin) return;
+
+            if (args.Length == 0)
+            {
+                cov?.Reply($"Error syntax! Use: /{command} [name/steamId]");
+                return;
+            }
 
             var craft = _crafts.Find(x => x.CmdToGive == command);
             if (craft == null) return;
 
-            craft.Give(player);
-            SendNotify(player, GotCraft, 0, craft.PublicTitle);
+            var target = covalence.Players.FindPlayer(args[0])?.Object as BasePlayer;
+            if (target == null)
+            {
+                PrintError($"Player '{args[0]}' not found!");
+                return;
+            }
+
+            GiveCraft(target, craft);
+            SendNotify(target, GotCraft, 0, craft.PublicTitle);
         }
 
         [ConsoleCommand("UI_Crafts")]
@@ -1142,8 +1157,7 @@ namespace Oxide.Plugins
 
                     craft.Items.ForEach(item => Take(allItems, item.ShortName, item.SkinID, item.Amount));
 
-                    craft.Give(player);
-
+                    GiveCraft(player, craft);
                     SendNotify(player, SuccessfulCraft, 0, craft.PublicTitle);
                     break;
                 }
@@ -1681,7 +1695,12 @@ namespace Oxide.Plugins
                     Components =
                     {
                         new CuiRawImageComponent
-                            { Png = ImageLibrary.Call<string>("GetImage", item.ShortName, item.SkinID) },
+                        {
+                            Png =
+                                !string.IsNullOrEmpty(item.Image)
+                                    ? ImageLibrary.Call<string>("GetImage", item.Image)
+                                    : ImageLibrary.Call<string>("GetImage", item.ShortName, item.SkinID)
+                        },
                         new CuiRectTransformComponent
                         {
                             AnchorMin = "0.5 1", AnchorMax = "0.5 1",
@@ -1809,13 +1828,22 @@ namespace Oxide.Plugins
                     !imagesList.ContainsKey(_config.UI.BackgroundImage))
                     imagesList.Add(_config.UI.BackgroundImage, _config.UI.BackgroundImage);
 
-                _crafts.ForEach(item =>
+                _crafts.ForEach(craft =>
                 {
-                    if (!string.IsNullOrEmpty(item.Image)
-                        && !imagesList.ContainsKey(item.Image))
-                        imagesList.Add(item.Image, item.Image);
+                    if (!string.IsNullOrEmpty(craft.Image)
+                        && !imagesList.ContainsKey(craft.Image))
+                        imagesList.Add(craft.Image, craft.Image);
 
-                    itemIcons.Add(new KeyValuePair<string, ulong>(item.ShortName, item.SkinID));
+                    craft.Items.ForEach(item =>
+                    {
+                        if (!string.IsNullOrEmpty(item.Image)
+                            && !imagesList.ContainsKey(item.Image))
+                            imagesList.Add(item.Image, item.Image);
+
+                        itemIcons.Add(new KeyValuePair<string, ulong>(item.ShortName, item.SkinID));
+                    });
+
+                    itemIcons.Add(new KeyValuePair<string, ulong>(craft.ShortName, craft.SkinID));
                 });
 
                 if (itemIcons.Count > 0) ImageLibrary?.Call("LoadImageList", Title, itemIcons, null);

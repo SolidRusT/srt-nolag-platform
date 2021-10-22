@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Modular Car Turrets", "WhiteThunder", "1.3.0")]
+    [Info("Modular Car Turrets", "WhiteThunder", "1.4.0")]
     [Description("Allows players to deploy auto turrets onto modular cars.")]
     internal class CarTurrets : CovalencePlugin
     {
@@ -869,8 +869,18 @@ namespace Oxide.Plugins
                 output.type = IOEntity.IOType.Generic;
         }
 
-        private static Quaternion GetIdealTurretRotation(ModularCar car, BaseVehicleModule vehicleModule) =>
-            vehicleModule.FirstSocketIndex + 1 > (car.TotalSockets + 1) / 2 ? TurretBackwardRotation : Quaternion.identity;
+        private static Quaternion GetIdealTurretRotation(ModularCar car, BaseVehicleModule vehicleModule)
+        {
+            var lastSocketIndex = vehicleModule.FirstSocketIndex + vehicleModule.GetNumSocketsTaken() - 1;
+
+            var faceForward = car.TotalSockets == 2
+                ? vehicleModule.FirstSocketIndex == 0
+                : car.TotalSockets == 3
+                ? lastSocketIndex <= 1
+                : vehicleModule.FirstSocketIndex <= 1;
+
+            return faceForward ? Quaternion.identity : TurretBackwardRotation;
+        }
 
         private static void RemoveProblemComponents(BaseEntity ent)
         {
@@ -1144,7 +1154,8 @@ namespace Oxide.Plugins
                 ["vehicle.1mod.taxi"] = new Vector3(0, 1.38f, -0.13f),
                 ["vehicle.2mod.flatbed"] = new Vector3(0, 0.06f, -0.7f),
                 ["vehicle.2mod.fuel.tank"] = new Vector3(0, 1.28f, -0.85f),
-                ["vehicle.2mod.passengers"] = new Vector3(0, 1.4f, -0.9f)
+                ["vehicle.2mod.passengers"] = new Vector3(0, 1.4f, -0.9f),
+                ["vehicle.2mod.camper"] = new Vector3(0, 1.4f, -1.6f),
             };
         }
 
@@ -1170,7 +1181,8 @@ namespace Oxide.Plugins
                 ["vehicle.1mod.taxi"] = 0,
                 ["vehicle.2mod.flatbed"] = 0,
                 ["vehicle.2mod.fuel.tank"] = 0,
-                ["vehicle.2mod.passengers"] = 0
+                ["vehicle.2mod.passengers"] = 0,
+                ["vehicle.2mod.camper"] = 0,
             };
 
             [JsonIgnore]
