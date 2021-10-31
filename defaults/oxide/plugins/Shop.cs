@@ -17,11 +17,9 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.19")]
+    [Info("Shop", "Mevent", "1.0.21")]
     public class Shop : RustPlugin
     {
-        //TODO: Transfer of currency between players
-
         #region Fields
 
         [PluginReference] private Plugin ImageLibrary, ItemCostCalculator, HumanNPC, Notify, NoEscape;
@@ -40,6 +38,8 @@ namespace Oxide.Plugins
         private const string Layer = "UI.Shop";
 
         private const string ModalLayer = "UI.Shop.Modal";
+
+        private const string EditingLayer = "UI.Shop.Editing";
 
         private const string PermAdmin = "Shop.admin";
 
@@ -110,13 +110,16 @@ namespace Oxide.Plugins
             #endregion
         }
 
-        private readonly Dictionary<BasePlayer, NPCShop> OpenedShops = new Dictionary<BasePlayer, NPCShop>();
+        private readonly Dictionary<BasePlayer, NPCShop> _openedShops = new Dictionary<BasePlayer, NPCShop>();
 
         private NPCShop GetShopByPlayer(BasePlayer player)
         {
             NPCShop shop;
-            return OpenedShops.TryGetValue(player, out shop) ? shop : null;
+            return _openedShops.TryGetValue(player, out shop) ? shop : null;
         }
+
+        private readonly Dictionary<BasePlayer, Dictionary<string, object>> _itemEditing =
+            new Dictionary<BasePlayer, Dictionary<string, object>>();
 
         #endregion
 
@@ -146,6 +149,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Work with Notify?")]
             public bool UseNotify = true;
+
+            [JsonProperty(PropertyName = "Use Spectating mode when editing kits?")]
+            public bool UseSpectating = true;
 
             [JsonProperty(PropertyName = "Can admins edit? (by flag)")]
             public bool FlagAdmin = true;
@@ -239,6 +245,8 @@ namespace Oxide.Plugins
                 EnableSearch = true,
                 RoundDigits = 5
             };
+
+            public VersionNumber Version;
         }
 
         private class UserInterface
@@ -321,6 +329,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Title")] public string Title;
 
+            [JsonProperty(PropertyName = "Description")]
+            public string Description;
+
             [JsonProperty(PropertyName = "Command (%steamid%)")]
             public string Command;
 
@@ -350,7 +361,15 @@ namespace Oxide.Plugins
             public float SellCooldown;
 
             [JsonProperty(PropertyName = "Discount (%)", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<string, int> Discount;
+            public Dictionary<string, int> Discount = new Dictionary<string, int>();
+
+            [JsonProperty(PropertyName = "Sell Limits (0 - no limit)",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<string, int> SellLimits = new Dictionary<string, int>();
+
+            [JsonProperty(PropertyName = "Buy Limits (0 - no limit)",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<string, int> BuyLimits = new Dictionary<string, int>();
 
             [JsonIgnore] private string _publicTitle;
 
@@ -444,6 +463,18 @@ namespace Oxide.Plugins
             public int GetDiscount(BasePlayer player)
             {
                 return (from check in Discount
+                    where _instance.permission.UserHasPermission(player.UserIDString, check.Key)
+                    select check.Value).Prepend(0).Max();
+            }
+
+            public int GetLimit(BasePlayer player, bool buy = true)
+            {
+                var dict = buy ? BuyLimits : SellLimits;
+
+                if (dict.Count == 0)
+                    return 0;
+
+                return (from check in dict
                     where _instance.permission.UserHasPermission(player.UserIDString, check.Key)
                     select check.Value).Prepend(0).Max();
             }
@@ -702,6 +733,10 @@ namespace Oxide.Plugins
             {
                 _config = Config.ReadObject<Configuration>();
                 if (_config == null) throw new Exception();
+
+                if (_config.Version < Version)
+                    UpdateConfigValues();
+
                 SaveConfig();
             }
             catch
@@ -721,6 +756,39 @@ namespace Oxide.Plugins
             _config = new Configuration();
         }
 
+        private void UpdateConfigValues()
+        {
+            PrintWarning("Config update detected! Updating config values...");
+
+            if (_config.Version == default(VersionNumber) && _config.Version < new VersionNumber(1, 0, 21))
+            {
+                _data = Interface.Oxide.DataFileSystem.ReadObject<PluginData>(Name);
+                if (_data != null)
+                    Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Players", _data);
+            }
+
+            if (_config.Version < new VersionNumber(1, 0, 21))
+                _config.Shop.ForEach(shop =>
+                {
+                    shop.Items.ForEach(item =>
+                    {
+                        item.SellLimits = new Dictionary<string, int>
+                        {
+                            ["shop.default"] = 0,
+                            ["shop.vip"] = 0
+                        };
+                        item.BuyLimits = new Dictionary<string, int>
+                        {
+                            ["shop.default"] = 0,
+                            ["shop.vip"] = 0
+                        };
+                    });
+                });
+
+            _config.Version = Version;
+            PrintWarning("Config update completed!");
+        }
+
         #endregion
 
         #region Data
@@ -729,19 +797,40 @@ namespace Oxide.Plugins
 
         private void SaveData()
         {
+            SavePlayers();
+
+            SaveCooldown();
+
+            SaveLimits();
+        }
+
+        private void SavePlayers()
+        {
             _data.PlayerCarts.Clear();
 
             foreach (var check in _carts)
                 _data.PlayerCarts.Add(check.Key, check.Value.ToPlayerCart());
 
-            Interface.Oxide.DataFileSystem.WriteObject(Name, _data);
+            Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Players", _data);
+        }
+
+        private void SaveCooldown()
+        {
+            Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Cooldown", _cooldown);
+        }
+
+        private void SaveLimits()
+        {
+            Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Limits", _limits);
         }
 
         private void LoadData()
         {
             try
             {
-                _data = Interface.Oxide.DataFileSystem.ReadObject<PluginData>(Name);
+                _data = Interface.Oxide.DataFileSystem.ReadObject<PluginData>($"{Name}/Players");
+                _cooldown = Interface.Oxide.DataFileSystem.ReadObject<Dictionary<ulong, Cooldown>>($"{Name}/Cooldown");
+                _limits = Interface.Oxide.DataFileSystem.ReadObject<PlayerLimits>($"{Name}/Limits");
             }
             catch (Exception e)
             {
@@ -749,6 +838,8 @@ namespace Oxide.Plugins
             }
 
             if (_data == null) _data = new PluginData();
+            if (_cooldown == null) _cooldown = new Dictionary<ulong, Cooldown>();
+            if (_limits == null) _limits = new PlayerLimits();
         }
 
         private class PluginData
@@ -858,12 +949,14 @@ namespace Oxide.Plugins
 
             _itemsToUpdate.Remove(player);
 
-            if (itemEditing.ContainsKey(player))
+            if (_itemEditing.ContainsKey(player))
             {
-                player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-                itemEditing.Remove(player);
+                if (_config.UseSpectating)
+                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
 
-                if (itemEditing.Count == 0)
+                _itemEditing.Remove(player);
+
+                if (_itemEditing.Count == 0)
                     Unsubscribe(nameof(CanSpectateTarget));
             }
 
@@ -877,7 +970,7 @@ namespace Oxide.Plugins
 
         private object CanSpectateTarget(BasePlayer player, string filter)
         {
-            return player != null && itemEditing.ContainsKey(player) ? (object)true : null;
+            return player != null && _itemEditing.ContainsKey(player) ? (object)true : null;
         }
 
         private void OnUseNPC(BasePlayer npc, BasePlayer player)
@@ -886,6 +979,8 @@ namespace Oxide.Plugins
 
             NPCShop npcShop;
             if (!_config.NPCs.TryGetValue(npc.UserIDString, out npcShop) || npcShop == null) return;
+
+            _openedShops[player] = npcShop;
 
             MainUi(player, npcShop: npcShop, first: true);
         }
@@ -913,7 +1008,7 @@ namespace Oxide.Plugins
                 case "closeui":
                 {
                     _itemsToUpdate.Remove(player);
-                    OpenedShops.Remove(player);
+                    _openedShops.Remove(player);
                     break;
                 }
 
@@ -1085,11 +1180,22 @@ namespace Oxide.Plugins
                         return;
                     }
 
+                    if (playerCart.Items.Any(x =>
+                    {
+                        var limit = GetLimit(player, x.Key, true);
+                        if (limit != 0) return false;
+
+                        ErrorUi(player, Msg(player, BuyLimitReached, x.Key.PublicTitle));
+                        return true;
+                    }))
+                        return;
+
                     foreach (var cartItem in playerCart.Items)
                     {
                         cartItem.Key?.Get(player, cartItem.Value);
 
                         SetCooldown(player, cartItem.Key, true);
+                        UseLimit(player, cartItem.Key, true);
                     }
 
                     CuiHelper.DestroyUi(player, Layer);
@@ -1142,6 +1248,13 @@ namespace Oxide.Plugins
                         }
                     }
 
+                    var limit = GetLimit(player, item, false);
+                    if (limit == 0)
+                    {
+                        ErrorUi(player, Msg(player, SellLimitReached, item.PublicTitle));
+                        return;
+                    }
+
                     var totalAmount = item.Amount * amount;
                     var playerItems = player.inventory.AllItems();
 
@@ -1156,6 +1269,7 @@ namespace Oxide.Plugins
                     _config.Economy.AddBalance(player, item.SellPrice * amount);
 
                     SetCooldown(player, item, false, true);
+                    UseLimit(player, item, false);
 
                     if (_itemsToUpdate.ContainsKey(player))
                     {
@@ -1185,9 +1299,9 @@ namespace Oxide.Plugins
                         !int.TryParse(arg.Args[2], out page) ||
                         !int.TryParse(arg.Args[3], out id)) return;
 
-                    itemEditing.Remove(player);
+                    _itemEditing.Remove(player);
 
-                    if (itemEditing.Count == 0)
+                    if (_itemEditing.Count == 0)
                         Unsubscribe(nameof(CanSpectateTarget));
 
                     EditUi(player, category, page, id, true);
@@ -1203,7 +1317,7 @@ namespace Oxide.Plugins
                     var key = arg.Args[3];
                     var value = arg.Args[4];
 
-                    if (itemEditing.ContainsKey(player) && itemEditing[player].ContainsKey(key))
+                    if (_itemEditing.ContainsKey(player) && _itemEditing[player].ContainsKey(key))
                     {
                         object newValue = null;
 
@@ -1263,7 +1377,7 @@ namespace Oxide.Plugins
                             }
                         }
 
-                        itemEditing[player][key] = newValue;
+                        _itemEditing[player][key] = newValue;
                     }
 
                     EditUi(player, category, page);
@@ -1272,10 +1386,12 @@ namespace Oxide.Plugins
 
                 case "closeediting":
                 {
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-                    itemEditing.Remove(player);
+                    if (_config.UseSpectating)
+                        player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
 
-                    if (itemEditing.Count == 0)
+                    _itemEditing.Remove(player);
+
+                    if (_itemEditing.Count == 0)
                         Unsubscribe(nameof(CanSpectateTarget));
                     break;
                 }
@@ -1286,7 +1402,7 @@ namespace Oxide.Plugins
                     if (!IsAdmin(player) || !arg.HasArgs(3) || !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page)) return;
 
-                    var edit = itemEditing[player];
+                    var edit = _itemEditing[player];
                     if (edit == null) return;
 
                     var newItem = new ShopItem(edit);
@@ -1318,10 +1434,12 @@ namespace Oxide.Plugins
                             ImageLibrary.Call("AddImage", newItem.Image, newItem.Image);
                     }
 
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-                    itemEditing.Remove(player);
+                    if (_config.UseSpectating)
+                        player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
 
-                    if (itemEditing.Count == 0)
+                    _itemEditing.Remove(player);
+
+                    if (_itemEditing.Count == 0)
                         Unsubscribe(nameof(CanSpectateTarget));
 
                     SaveConfig();
@@ -1341,7 +1459,7 @@ namespace Oxide.Plugins
                     if (!IsAdmin(player) || !arg.HasArgs(2) || !int.TryParse(arg.Args[1], out category)) return;
 
 
-                    var editing = itemEditing[player];
+                    var editing = _itemEditing[player];
                     if (editing == null) return;
 
                     var shopItem = FindItemById((int)editing["ID"]);
@@ -1349,10 +1467,12 @@ namespace Oxide.Plugins
 
                     _config.Shop.ForEach(x => x.Items.Remove(shopItem));
 
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-                    itemEditing.Remove(player);
+                    if (_config.UseSpectating)
+                        player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
 
-                    if (itemEditing.Count == 0)
+                    _itemEditing.Remove(player);
+
+                    if (_itemEditing.Count == 0)
                         Unsubscribe(nameof(CanSpectateTarget));
 
                     SaveConfig();
@@ -1391,9 +1511,29 @@ namespace Oxide.Plugins
                     if (!IsAdmin(player) || !arg.HasArgs(4) || !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page)) return;
 
-                    itemEditing[player]["ShortName"] = arg.Args[3];
+                    _itemEditing[player]["ShortName"] = arg.Args[3];
 
                     EditUi(player, category, page);
+                    break;
+                }
+
+                case "item_info":
+                {
+                    int itemId, catPage, shopPage;
+                    bool status;
+                    if (!arg.HasArgs(5) ||
+                        !int.TryParse(arg.Args[1], out itemId) ||
+                        !int.TryParse(arg.Args[2], out catPage) ||
+                        !int.TryParse(arg.Args[3], out shopPage) ||
+                        !bool.TryParse(arg.Args[4], out status)) return;
+
+                    var item = FindItemById(itemId);
+                    if (item == null) return;
+
+                    var container = new CuiElementContainer();
+                    ItemUi(player, item, ref container, catPage, shopPage, !status);
+                    CuiHelper.DestroyUi(player, Layer + $".Item.{item.ID}");
+                    CuiHelper.AddUi(player, container);
                     break;
                 }
             }
@@ -1596,333 +1736,171 @@ namespace Oxide.Plugins
 
             #endregion
 
-            #region Items
-
-            var xSwitch = MainSwitch;
-            var ySwitch = -70f;
-
-            var i = 1;
-            var shopItems = string.IsNullOrEmpty(search)
-                ? shopCategories[catPage].Items
-                : shopCategories.SelectMany(x => x.Items).Where(
-                    item => item.PublicTitle.StartsWith(search) || item.PublicTitle.Contains(search) ||
-                            item.ShortName.StartsWith(search) || item.ShortName.Contains(search)).ToList();
-
-            var inPageItems = shopItems.Skip(shopPage * MainTotalAmount).Take(MainTotalAmount).ToList();
-
-            var cdItems = inPageItems.FindAll(x =>
-                GetCooldownTime(player.userID, x, true) > 0 || GetCooldownTime(player.userID, x, false) > 0);
-            if (cdItems.Count > 0)
-                _itemsToUpdate[player] = cdItems;
-            else
-                _itemsToUpdate.Remove(player);
-
-            foreach (var shopItem in inPageItems)
+            if (shopCategories.Count > 0)
             {
-                container.Add(new CuiPanel
-                {
-                    RectTransform =
-                    {
-                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                        OffsetMin = $"{xSwitch} {ySwitch - _config.UI.ItemHeight}",
-                        OffsetMax = $"{xSwitch + _config.UI.ItemWidth} {ySwitch}"
-                    },
-                    Image =
-                    {
-                        Color = "0 0 0 0"
-                    }
-                }, Layer + ".Main", Layer + $".Item.{shopItem.ID}");
+                #region Items
 
-                container.Add(new CuiPanel
-                {
-                    RectTransform =
-                    {
-                        AnchorMin = "0 1", AnchorMax = "1 1",
-                        OffsetMin = "0 -150", OffsetMax = "0 0"
-                    },
-                    Image =
-                    {
-                        Color = _firstColor
-                    }
-                }, Layer + $".Item.{shopItem.ID}");
+                var xSwitch = MainSwitch;
+                var ySwitch = -70f;
 
-                container.Add(new CuiElement
+                var shopItems = string.IsNullOrEmpty(search)
+                    ? shopCategories[catPage].Items
+                    : shopCategories.SelectMany(x => x.Items).Where(
+                        item => item.PublicTitle.StartsWith(search) || item.PublicTitle.Contains(search) ||
+                                item.ShortName.StartsWith(search) || item.ShortName.Contains(search)).ToList();
+
+
+                var inPageItems = shopItems.Skip(shopPage * MainTotalAmount).Take(MainTotalAmount).ToList();
+
+                var cdItems = inPageItems.FindAll(x =>
+                    GetCooldownTime(player.userID, x, true) > 0 || GetCooldownTime(player.userID, x, false) > 0);
+                if (cdItems.Count > 0)
+                    _itemsToUpdate[player] = cdItems;
+                else
+                    _itemsToUpdate.Remove(player);
+
+                for (var i = 0; i < inPageItems.Count; i++)
                 {
-                    Name = Layer + $".Item.{shopItem.ID}.Image",
-                    Parent = Layer + $".Item.{shopItem.ID}",
-                    Components =
+                    var shopItem = inPageItems[i];
+                    container.Add(new CuiPanel
                     {
-                        new CuiRawImageComponent
-                        {
-                            Png = !string.IsNullOrEmpty(shopItem.Image)
-                                ? ImageLibrary.Call<string>("GetImage", shopItem.Image)
-                                : ImageLibrary.Call<string>("GetImage", shopItem.ShortName, shopItem.Skin)
-                        },
-                        new CuiRectTransformComponent
+                        RectTransform =
                         {
                             AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                            OffsetMin = "-35 -85", OffsetMax = "35 -15"
+                            OffsetMin = $"{xSwitch} {ySwitch - _config.UI.ItemHeight}",
+                            OffsetMax = $"{xSwitch + _config.UI.ItemWidth} {ySwitch}"
+                        },
+                        Image =
+                        {
+                            Color = "0 0 0 0"
                         }
-                    }
-                });
+                    }, Layer + ".Main", Layer + $".Item.{shopItem.ID}.Background");
 
-                #region Name
+                    ItemUi(player, shopItem, ref container, catPage, shopPage);
 
-                container.Add(new CuiLabel
-                {
-                    RectTransform =
+                    if ((i + 1) % _config.UI.ItemsOnString == 0)
                     {
-                        AnchorMin = "0 1", AnchorMax = "1 1",
-                        OffsetMin = "0 -100", OffsetMax = "0 -85"
-                    },
-                    Text =
-                    {
-                        Text = $"{shopItem.PublicTitle}",
-                        Align = TextAnchor.MiddleCenter,
-                        Font = "robotocondensed-regular.ttf",
-                        FontSize = 12,
-                        Color = "1 1 1 0.95"
+                        xSwitch = MainSwitch;
+                        ySwitch = ySwitch - _config.UI.Margin - _config.UI.ItemHeight;
                     }
-                }, Layer + $".Item.{shopItem.ID}");
+                    else
+                    {
+                        xSwitch += _config.UI.Margin + _config.UI.ItemWidth;
+                    }
+                }
 
                 #endregion
 
-                #region Amount
+                #region Search
 
-                container.Add(new CuiLabel
-                {
-                    RectTransform =
-                    {
-                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                        OffsetMin = "-65 -130", OffsetMax = "-5 -110"
-                    },
-                    Text =
-                    {
-                        Text = Msg(player, ItemAmount),
-                        Align = TextAnchor.MiddleCenter,
-                        Font = "robotocondensed-regular.ttf",
-                        FontSize = 12,
-                        Color = "1 1 1 1"
-                    }
-                }, Layer + $".Item.{shopItem.ID}");
-
-                container.Add(new CuiPanel
-                {
-                    RectTransform =
-                    {
-                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                        OffsetMin = "-10 -130", OffsetMax = "30 -110"
-                    },
-                    Image =
-                    {
-                        Color = HexToCuiColor(_config.SecondColor, 33)
-                    }
-                }, Layer + $".Item.{shopItem.ID}", Layer + $".Item.{shopItem.ID}.Amount");
-
-                container.Add(new CuiLabel
-                {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text =
-                    {
-                        Text = $"{shopItem.Amount}",
-                        Align = TextAnchor.MiddleCenter,
-                        Font = "robotocondensed-regular.ttf",
-                        FontSize = 12,
-                        Color = "1 1 1 1"
-                    }
-                }, Layer + $".Item.{shopItem.ID}.Amount");
-
-                #endregion
-
-                #region Discount
-
-                var discount = shopItem.GetDiscount(player);
-                if (discount > 0)
+                var enableSearch = _config.UI.EnableSearch;
+                if (enableSearch)
                 {
                     container.Add(new CuiPanel
                     {
                         RectTransform =
                         {
-                            AnchorMin = "1 1", AnchorMax = "1 1",
-                            OffsetMin = "-30 -45", OffsetMax = "10 -25"
+                            AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                            OffsetMin = "-140 20",
+                            OffsetMax = "60 55"
                         },
                         Image =
                         {
-                            Color = _fourthColor
+                            Color = _sixthColor
                         }
-                    }, Layer + $".Item.{shopItem.ID}", Layer + $".Item.{shopItem.ID}.Discount");
+                    }, Layer + ".Main", Layer + ".Search");
 
                     container.Add(new CuiLabel
                     {
                         RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                         Text =
                         {
-                            Text = $"-{discount}%",
+                            Text = string.IsNullOrEmpty(search) ? Msg(player, SearchTitle) : $"{search}",
                             Align = TextAnchor.MiddleCenter,
-                            Font = "robotocondensed-bold.ttf",
+                            Font = "robotocondensed-regular.ttf",
                             FontSize = 12,
-                            Color = "1 1 1 1"
+                            Color = "1 1 1 0.65"
                         }
-                    }, Layer + $".Item.{shopItem.ID}.Discount");
-                }
+                    }, Layer + ".Search");
 
-                #endregion
-
-                #region Button
-
-                if (shopItem.Price > 0.0) BuyButtonUi(player, ref container, shopItem);
-
-                #endregion
-
-                #region Sell
-
-                if (shopItem.SellPrice > 0.0) SellButtonUi(player, ref container, shopItem);
-
-                #endregion
-
-                #region Edit
-
-                if (IsAdmin(player))
-                    container.Add(new CuiButton
+                    container.Add(new CuiElement
                     {
-                        RectTransform =
+                        Parent = Layer + ".Search",
+                        Components =
                         {
-                            AnchorMin = "0 0", AnchorMax = "1 1"
-                        },
-                        Text = { Text = "" },
-                        Button =
-                        {
-                            Color = "0 0 0 0",
-                            Command = $"UI_Shop startedititem {catPage} {shopPage} {shopItem.ID}"
+                            new CuiInputFieldComponent
+                            {
+                                FontSize = 12,
+                                Align = TextAnchor.MiddleCenter,
+                                Font = "robotocondensed-regular.ttf",
+                                Command = catPage != -1 && shopPage != 0
+                                    ? "UI_Shop main_page -1 0 "
+                                    : $"UI_Shop main_page -1 {shopPage} ",
+                                Color = "1 1 1 0.95",
+                                CharsLimit = 32
+                            },
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0 0", AnchorMax = "1 1"
+                            }
                         }
-                    }, Layer + $".Item.{shopItem.ID}.Image");
+                    });
+                }
 
                 #endregion
 
-                if (i % _config.UI.ItemsOnString == 0)
-                {
-                    xSwitch = MainSwitch;
-                    ySwitch = ySwitch - _config.UI.Margin - _config.UI.ItemHeight;
-                }
-                else
-                {
-                    xSwitch += _config.UI.Margin + _config.UI.ItemWidth;
-                }
+                #region Pages
 
-                i++;
-            }
-
-            #endregion
-
-            #region Search
-
-            var enableSearch = _config.UI.EnableSearch;
-            if (enableSearch)
-            {
-                container.Add(new CuiPanel
+                container.Add(new CuiButton
                 {
                     RectTransform =
                     {
                         AnchorMin = "0.5 0", AnchorMax = "0.5 0",
-                        OffsetMin = "-140 20",
-                        OffsetMax = "60 55"
+                        OffsetMin = $"{(enableSearch ? 65 : -37.5f)} 20",
+                        OffsetMax = $"{(enableSearch ? 100 : -2.5f)} 55"
                     },
-                    Image =
-                    {
-                        Color = _sixthColor
-                    }
-                }, Layer + ".Main", Layer + ".Search");
-
-                container.Add(new CuiLabel
-                {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                     Text =
                     {
-                        Text = string.IsNullOrEmpty(search) ? Msg(player, SearchTitle) : $"{search}",
+                        Text = Msg(player, BackPage),
                         Align = TextAnchor.MiddleCenter,
                         Font = "robotocondensed-regular.ttf",
                         FontSize = 12,
-                        Color = "1 1 1 0.65"
-                    }
-                }, Layer + ".Search");
-
-                container.Add(new CuiElement
-                {
-                    Parent = Layer + ".Search",
-                    Components =
+                        Color = "1 1 1 1"
+                    },
+                    Button =
                     {
-                        new CuiInputFieldComponent
-                        {
-                            FontSize = 12,
-                            Align = TextAnchor.MiddleCenter,
-                            Font = "robotocondensed-regular.ttf",
-                            Command = catPage != -1 && shopPage != 0
-                                ? "UI_Shop main_page -1 0 "
-                                : $"UI_Shop main_page -1 {shopPage} ",
-                            Color = "1 1 1 0.95",
-                            CharsLimit = 32
-                        },
-                        new CuiRectTransformComponent
-                        {
-                            AnchorMin = "0 0", AnchorMax = "1 1"
-                        }
+                        Color = _sixthColor,
+                        Command = shopPage != 0 ? $"UI_Shop main_page {catPage} {shopPage - 1} {search}" : ""
                     }
-                });
+                }, Layer + ".Main");
+
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                        OffsetMin = $"{(enableSearch ? 105 : 2.5f)} 20",
+                        OffsetMax = $"{(enableSearch ? 140 : 37.5f)} 55"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, NextPage),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 12,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = _secondColor,
+                        Command = shopItems.Count > (shopPage + 1) * MainTotalAmount
+                            ? $"UI_Shop main_page {catPage} {shopPage + 1} {search}"
+                            : ""
+                    }
+                }, Layer + ".Main");
+
+                #endregion
             }
-
-            #endregion
-
-            #region Pages
-
-            container.Add(new CuiButton
-            {
-                RectTransform =
-                {
-                    AnchorMin = "0.5 0", AnchorMax = "0.5 0",
-                    OffsetMin = $"{(enableSearch ? 65 : -37.5f)} 20",
-                    OffsetMax = $"{(enableSearch ? 100 : -2.5f)} 55"
-                },
-                Text =
-                {
-                    Text = Msg(player, BackPage),
-                    Align = TextAnchor.MiddleCenter,
-                    Font = "robotocondensed-regular.ttf",
-                    FontSize = 12,
-                    Color = "1 1 1 1"
-                },
-                Button =
-                {
-                    Color = _sixthColor,
-                    Command = shopPage != 0 ? $"UI_Shop main_page {catPage} {shopPage - 1} {search}" : ""
-                }
-            }, Layer + ".Main");
-
-            container.Add(new CuiButton
-            {
-                RectTransform =
-                {
-                    AnchorMin = "0.5 0", AnchorMax = "0.5 0",
-                    OffsetMin = $"{(enableSearch ? 105 : 2.5f)} 20",
-                    OffsetMax = $"{(enableSearch ? 140 : 37.5f)} 55"
-                },
-                Text =
-                {
-                    Text = Msg(player, NextPage),
-                    Align = TextAnchor.MiddleCenter,
-                    Font = "robotocondensed-regular.ttf",
-                    FontSize = 12,
-                    Color = "1 1 1 1"
-                },
-                Button =
-                {
-                    Color = _secondColor,
-                    Command = shopItems.Count > (shopPage + 1) * MainTotalAmount
-                        ? $"UI_Shop main_page {catPage} {shopPage + 1} {search}"
-                        : ""
-                }
-            }, Layer + ".Main");
-
-            #endregion
 
             #endregion
 
@@ -2635,7 +2613,7 @@ namespace Oxide.Plugins
                     {
                         RectTransform =
                         {
-                            AnchorMin = "0 1", AnchorMax = "1 1", OffsetMin = "0 -175", OffsetMax = "0 -155"
+                            AnchorMin = "0 1", AnchorMax = "1 1", OffsetMin = "0 -175", OffsetMax = "0 -135"
                         },
                         Text =
                         {
@@ -2890,24 +2868,19 @@ namespace Oxide.Plugins
             CuiHelper.DestroyUi(player, Layer + ".Balance");
         }
 
-        private const string EditingLayer = "UI.Shop.Editing";
-
-        private readonly Dictionary<BasePlayer, Dictionary<string, object>> itemEditing =
-            new Dictionary<BasePlayer, Dictionary<string, object>>();
-
         private void EditUi(BasePlayer player, int category, int page, int itemId = 0, bool First = false)
         {
             var container = new CuiElementContainer();
 
             #region Dictionary
 
-            if (!itemEditing.ContainsKey(player))
+            if (!_itemEditing.ContainsKey(player))
             {
                 var shopItem = FindItemById(itemId);
                 if (shopItem != null)
-                    itemEditing[player] = shopItem.ToDictionary();
+                    _itemEditing[player] = shopItem.ToDictionary();
                 else
-                    itemEditing[player] = new Dictionary<string, object>
+                    _itemEditing[player] = new Dictionary<string, object>
                     {
                         ["Generated"] = true,
                         ["ID"] = GetId(),
@@ -2926,14 +2899,15 @@ namespace Oxide.Plugins
                         ["Plugin_Amount"] = 1
                     };
 
-                player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
+                if (_config.UseSpectating)
+                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
 
                 Subscribe(nameof(CanSpectateTarget));
             }
 
             #endregion
 
-            var edit = itemEditing[player];
+            var edit = _itemEditing[player];
 
             #region Background
 
@@ -3958,6 +3932,225 @@ namespace Oxide.Plugins
             CuiHelper.DestroyUi(player, Layer + $".Item.{shopItem.ID}.Sell");
         }
 
+        private void ItemUi(BasePlayer player, ShopItem shopItem, ref CuiElementContainer container, int catPage,
+            int shopPage, bool status = false)
+        {
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "1 1",
+                    OffsetMin = "0 -150", OffsetMax = "0 0"
+                },
+                Image =
+                {
+                    Color = _firstColor
+                }
+            }, Layer + $".Item.{shopItem.ID}.Background", Layer + $".Item.{shopItem.ID}");
+
+            if (status)
+            {
+                container.Add(new CuiLabel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 1", AnchorMax = "1 1",
+                        OffsetMin = "0 -135", OffsetMax = "0 0"
+                    },
+                    Text =
+                    {
+                        Text = $"{shopItem.Description}",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 14,
+                        Color = "1 1 1 1"
+                    }
+                }, Layer + $".Item.{shopItem.ID}");
+            }
+            else
+            {
+                container.Add(new CuiElement
+                {
+                    Name = Layer + $".Item.{shopItem.ID}.Image",
+                    Parent = Layer + $".Item.{shopItem.ID}",
+                    Components =
+                    {
+                        new CuiRawImageComponent
+                        {
+                            Png = !string.IsNullOrEmpty(shopItem.Image)
+                                ? ImageLibrary.Call<string>("GetImage", shopItem.Image)
+                                : ImageLibrary.Call<string>("GetImage", shopItem.ShortName, shopItem.Skin)
+                        },
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                            OffsetMin = "-35 -85", OffsetMax = "35 -15"
+                        }
+                    }
+                });
+
+                #region Name
+
+                container.Add(new CuiLabel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 1", AnchorMax = "1 1",
+                        OffsetMin = "0 -100", OffsetMax = "0 -85"
+                    },
+                    Text =
+                    {
+                        Text = $"{shopItem.PublicTitle}",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 12,
+                        Color = "1 1 1 0.95"
+                    }
+                }, Layer + $".Item.{shopItem.ID}");
+
+                #endregion
+            }
+
+            #region Amount
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = "-65 -130", OffsetMax = "-5 -110"
+                },
+                Text =
+                {
+                    Text = Msg(player, ItemAmount),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 12,
+                    Color = "1 1 1 1"
+                }
+            }, Layer + $".Item.{shopItem.ID}");
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = "-10 -130", OffsetMax = "30 -110"
+                },
+                Image =
+                {
+                    Color = HexToCuiColor(_config.SecondColor, 33)
+                }
+            }, Layer + $".Item.{shopItem.ID}", Layer + $".Item.{shopItem.ID}.Amount");
+
+            container.Add(new CuiLabel
+            {
+                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                Text =
+                {
+                    Text = $"{shopItem.Amount}",
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 12,
+                    Color = "1 1 1 1"
+                }
+            }, Layer + $".Item.{shopItem.ID}.Amount");
+
+            #endregion
+
+            #region Info
+
+            if (!string.IsNullOrEmpty(shopItem.Description))
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                        OffsetMin = "35 -130", OffsetMax = "55 -110"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, InfoTitle),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 14,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = HexToCuiColor("#000000"),
+                        Command = $"UI_Shop item_info {shopItem.ID} {catPage} {shopPage} {status}"
+                    }
+                }, Layer + $".Item.{shopItem.ID}");
+
+            #endregion
+
+            #region Discount
+
+            var discount = shopItem.GetDiscount(player);
+            if (discount > 0)
+            {
+                container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "1 1", AnchorMax = "1 1",
+                        OffsetMin = "-30 -45", OffsetMax = "10 -25"
+                    },
+                    Image =
+                    {
+                        Color = _fourthColor
+                    }
+                }, Layer + $".Item.{shopItem.ID}", Layer + $".Item.{shopItem.ID}.Discount");
+
+                container.Add(new CuiLabel
+                {
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    Text =
+                    {
+                        Text = $"-{discount}%",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 12,
+                        Color = "1 1 1 1"
+                    }
+                }, Layer + $".Item.{shopItem.ID}.Discount");
+            }
+
+            #endregion
+
+            #region Button
+
+            if (shopItem.Price > 0.0) BuyButtonUi(player, ref container, shopItem);
+
+            #endregion
+
+            #region Sell
+
+            if (shopItem.SellPrice > 0.0) SellButtonUi(player, ref container, shopItem);
+
+            #endregion
+
+            #region Edit
+
+            if (IsAdmin(player))
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1"
+                    },
+                    Text = { Text = "" },
+                    Button =
+                    {
+                        Color = "0 0 0 0",
+                        Command = $"UI_Shop startedititem {catPage} {shopPage} {shopItem.ID}"
+                    }
+                }, Layer + $".Item.{shopItem.ID}.Image");
+
+            #endregion
+        }
+
         #endregion
 
         #region Utils
@@ -4108,6 +4301,16 @@ namespace Oxide.Plugins
                                 {
                                     ["shop.default"] = 0,
                                     ["shop.vip"] = 10
+                                },
+                                SellLimits = new Dictionary<string, int>
+                                {
+                                    ["shop.default"] = 0,
+                                    ["shop.vip"] = 0
+                                },
+                                BuyLimits = new Dictionary<string, int>
+                                {
+                                    ["shop.default"] = 0,
+                                    ["shop.vip"] = 0
                                 }
                             });
                         });
@@ -4165,16 +4368,15 @@ namespace Oxide.Plugins
                     id = GetId();
                 _shopItems.Add(id, item);
 
-                foreach (var check in item.Discount.Where(check => !permission.PermissionExists(check.Key)))
-                    permission.RegisterPermission(check.Key, this);
+                if (item.Discount != null)
+                    foreach (var check in item.Discount.Where(check =>
+                        !string.IsNullOrEmpty(check.Key) && !permission.PermissionExists(check.Key)))
+                        permission.RegisterPermission(check.Key, this);
 
-                var itemDefinition = !string.IsNullOrEmpty(item.ShortName)
-                    ? ItemManager.FindItemDefinition(item.ShortName)
-                    : null;
-
-                item.Definition = item.Type == ItemType.Item && !string.IsNullOrEmpty(item.ShortName)
-                    ? itemDefinition
-                    : null;
+                if (item.Type == ItemType.Item && !string.IsNullOrEmpty(item.ShortName))
+                    item.Definition = !string.IsNullOrEmpty(item.ShortName)
+                        ? ItemManager.FindItemDefinition(item.ShortName)
+                        : null;
             }));
         }
 
@@ -4310,7 +4512,7 @@ namespace Oxide.Plugins
         private readonly Dictionary<BasePlayer, List<ShopItem>> _itemsToUpdate =
             new Dictionary<BasePlayer, List<ShopItem>>();
 
-        private readonly Dictionary<ulong, Cooldown> _cooldowns = new Dictionary<ulong, Cooldown>();
+        private Dictionary<ulong, Cooldown> _cooldown = new Dictionary<ulong, Cooldown>();
 
         private void ItemsUpdateController()
         {
@@ -4355,7 +4557,7 @@ namespace Oxide.Plugins
         private Cooldown GetCooldown(ulong player)
         {
             Cooldown cooldown;
-            return _cooldowns.TryGetValue(player, out cooldown) ? cooldown : null;
+            return _cooldown.TryGetValue(player, out cooldown) ? cooldown : null;
         }
 
         private CooldownData GetCooldown(ulong player, ShopItem item)
@@ -4372,10 +4574,10 @@ namespace Oxide.Plugins
         {
             if ((buy ? item.BuyCooldown : item.SellCooldown) <= 0) return;
 
-            if (_cooldowns.ContainsKey(player.userID))
-                _cooldowns[player.userID].SetCooldown(item, buy);
+            if (_cooldown.ContainsKey(player.userID))
+                _cooldown[player.userID].SetCooldown(item, buy);
             else
-                _cooldowns.Add(player.userID, new Cooldown().SetCooldown(item, buy));
+                _cooldown.Add(player.userID, new Cooldown().SetCooldown(item, buy));
 
             if (needUpdate)
             {
@@ -4393,15 +4595,15 @@ namespace Oxide.Plugins
 
         private void RemoveCooldown(BasePlayer player, ShopItem item)
         {
-            if (!_cooldowns.ContainsKey(player.userID)) return;
+            if (!_cooldown.ContainsKey(player.userID)) return;
 
             _itemsToUpdate[player].Remove(item);
 
-            _cooldowns[player.userID].RemoveCooldown(item);
+            _cooldown[player.userID].RemoveCooldown(item);
 
-            if (_cooldowns[player.userID].Data.Count == 0)
+            if (_cooldown[player.userID].Data.Count == 0)
             {
-                _cooldowns.Remove(player.userID);
+                _cooldown.Remove(player.userID);
 
                 _itemsToUpdate.Remove(player);
             }
@@ -4463,9 +4665,80 @@ namespace Oxide.Plugins
 
         #endregion
 
+        #region Limits
+
+        private PlayerLimits _limits;
+
+        private class PlayerLimits
+        {
+            [JsonProperty(PropertyName = "Players", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<ulong, PlayerLimitData> Players = new Dictionary<ulong, PlayerLimitData>();
+
+            public static PlayerLimitData GetOrAdd(ulong member)
+            {
+                if (!_instance._limits.Players.ContainsKey(member))
+                    _instance._limits.Players.Add(member, new PlayerLimitData());
+
+                return _instance._limits.Players[member];
+            }
+        }
+
+        private class PlayerLimitData
+        {
+            [JsonProperty(PropertyName = "Limits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public readonly Dictionary<int, ItemLimitData> ItemsLimits = new Dictionary<int, ItemLimitData>();
+
+            public void AddItem(ShopItem item, bool buy)
+            {
+                if (!ItemsLimits.ContainsKey(item.ID)) ItemsLimits.Add(item.ID, new ItemLimitData());
+
+                if (buy)
+                    ItemsLimits[item.ID].Buy++;
+                else
+                    ItemsLimits[item.ID].Sell++;
+            }
+
+            public int GetLimit(ShopItem item, bool buy)
+            {
+                ItemLimitData data;
+                if (ItemsLimits.TryGetValue(item.ID, out data))
+                    return buy ? data.Buy : data.Sell;
+
+                return 0;
+            }
+        }
+
+        private class ItemLimitData
+        {
+            public int Sell;
+
+            public int Buy;
+        }
+
+        private void UseLimit(BasePlayer player, ShopItem item, bool buy)
+        {
+            PlayerLimits.GetOrAdd(player.userID).AddItem(item, buy);
+        }
+
+        private int GetLimit(BasePlayer player, ShopItem item, bool buy)
+        {
+            var hasLimit = item.GetLimit(player, buy);
+            if (hasLimit == 0)
+                return -1;
+
+            var used = PlayerLimits.GetOrAdd(player.userID).GetLimit(item, buy);
+
+            return hasLimit - used;
+        }
+
+        #endregion
+
         #region Lang
 
         private const string
+            SellLimitReached = "SellLimitReached",
+            BuyLimitReached = "BuyLimitReached",
+            InfoTitle = "InfoTitle",
             BuyRaidBlocked = "BuyRaidBlocked",
             SellRaidBlocked = "SellRaidBlocked",
             DaysFormat = "DaysFormat",
@@ -4578,7 +4851,10 @@ namespace Oxide.Plugins
                 [BtnNext] = "▼",
                 [SellNotify] = "You have successfully sold {0} pcs of {1}",
                 [BuyRaidBlocked] = "You can't buy while blocked!",
-                [SellRaidBlocked] = "You can't sell while blocked!"
+                [SellRaidBlocked] = "You can't sell while blocked!",
+                [InfoTitle] = "i",
+                [BuyLimitReached] = "You cannot buy the '{0}'. You have reached the limit",
+                [SellLimitReached] = "You cannot sell the '{0}'. You have reached the limit"
             }, this);
         }
 
