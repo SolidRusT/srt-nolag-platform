@@ -3,14 +3,14 @@
     "shortname": "sulfur",
     "amount": 500,
     "skin": 0,
-    "amountMin": 1000,
+    "amountMin": 100,
     "probability": 1.0
   },
   {
     "shortname": "metal.fragments",
-    "amount": 2500,
+    "amount": 250,
     "skin": 0,
-    "amountMin": 5000,
+    "amountMin": 500,
     "probability": 1.0
   },
   {
