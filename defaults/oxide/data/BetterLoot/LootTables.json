@@ -190,15 +190,15 @@
           "Max": 1,
           "Min": 1
         },
-        "tunalight": {
-          "Max": 1,
-          "Min": 1
+        "explosive.satchel": {
+          "Max": 5,
+          "Min": 2
         }
       },
       "ItemsMax": 8,
       "ItemsMin": 5,
       "MaxBPs": 0,
-      "Scrap": 25
+      "Scrap": 30
     },
     "assets/bundled/prefabs/radtown/crate_elite.prefab": {
       "Enabled": true,
@@ -539,8 +539,8 @@
           "Min": 2
         },
         "explosive.satchel": {
-          "Max": 1,
-          "Min": 1
+          "Max": 10,
+          "Min": 2
         },
         "fuse": {
           "Max": 2,
@@ -555,7 +555,7 @@
           "Min": 2
         },
         "hazmatsuit": {
-          "Max": 1,
+          "Max": 2,
           "Min": 1
         },
         "jacket": {
@@ -609,14 +609,6 @@
         "targeting.computer": {
           "Max": 3,
           "Min": 2
-        },
-        "weapon.mod.flashlight": {
-          "Max": 1,
-          "Min": 1
-        },
-        "weapon.mod.silencer": {
-          "Max": 1,
-          "Min": 1
         },
         "hoodie": {
           "Max": 1,
@@ -1825,8 +1817,8 @@
           "Min": 1
         },
         "explosives": {
-          "Max": 35,
-          "Min": 35
+          "Max": 50,
+          "Min": 25
         },
         "hazmatsuit": {
           "Max": 1,
@@ -1861,8 +1853,8 @@
           "Min": 1
         },
         "rifle.ak": {
-          "Max": 1,
-          "Min": 1
+          "Max": 2,
+          "Min": 2
         },
         "rifle.bolt": {
           "Max": 1,
@@ -1938,7 +1930,7 @@
           "Min": 1
         },
         "explosive.satchel": {
-          "Max": 2,
+          "Max": 10,
           "Min": 2
         },
         "explosive.timed": {
@@ -1950,8 +1942,8 @@
           "Min": 10
         },
         "grenade.f1": {
-          "Max": 3,
-          "Min": 2
+          "Max": 1,
+          "Min": 1
         },
         "hoodie": {
           "Max": 1,
@@ -1991,7 +1983,7 @@
         },
         "scrap": {
           "Max": 160,
-          "Min": 149
+          "Min": 100
         },
         "sheetmetal": {
           "Max": 10,
@@ -2043,7 +2035,7 @@
           "Min": 5
         },
         "explosive.timed": {
-          "Max": 1,
+          "Max": 2,
           "Min": 1
         },
         "lmg.m249": {
@@ -2055,7 +2047,7 @@
           "Min": 1
         },
         "rifle.ak": {
-          "Max": 1,
+          "Max": 2,
           "Min": 1
         },
         "rifle.bolt": {
@@ -2071,10 +2063,6 @@
           "Min": 1
         },
         "rifle.m39": {
-          "Max": 1,
-          "Min": 1
-        },
-        "shotgun.spas12": {
           "Max": 1,
           "Min": 1
         },
@@ -2112,20 +2100,20 @@
       "Enabled": true,
       "ItemList": {
         "ammo.rocket.basic": {
-          "Max": 3,
+          "Max": 5,
           "Min": 3
         },
         "ammo.rocket.fire": {
-          "Max": 5,
-          "Min": 5
+          "Max": 2,
+          "Min": 1
         },
         "ammo.rocket.hv": {
-          "Max": 3,
+          "Max": 5,
           "Min": 3
         },
         "explosive.timed": {
-          "Max": 2,
-          "Min": 2
+          "Max": 3,
+          "Min": 1
         },
         "explosives": {
           "Max": 35,
@@ -2136,20 +2124,20 @@
           "Min": 1
         },
         "pistol.m92": {
-          "Max": 1,
-          "Min": 1
+          "Max": 3,
+          "Min": 0
         },
         "rifle.l96": {
           "Max": 1,
           "Min": 1
         },
         "rifle.lr300": {
-          "Max": 1,
-          "Min": 1
+          "Max": 2,
+          "Min": 0
         },
         "shotgun.spas12": {
-          "Max": 1,
-          "Min": 1
+          "Max": 2,
+          "Min": 0
         },
         "smg.mp5": {
           "Max": 1,
@@ -2163,7 +2151,7 @@
       "ItemsMax": 6,
       "ItemsMin": 5,
       "MaxBPs": 0,
-      "Scrap": 0
+      "Scrap": 100
     }
   }
 }
