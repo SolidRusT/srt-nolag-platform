@@ -3,70 +3,70 @@
     "shortname": "ammo.pistol",
     "amount": 40,
     "skin": 0,
-    "amountMin": 40,
+    "amountMin": 20,
     "probability": 1.0
   },
   {
     "shortname": "ammo.pistol.fire",
-    "amount": 40,
+    "amount": 10,
     "skin": 0,
-    "amountMin": 40,
+    "amountMin": 0,
     "probability": 1.0
   },
   {
     "shortname": "ammo.pistol.hv",
-    "amount": 40,
+    "amount": 10,
     "skin": 0,
-    "amountMin": 40,
+    "amountMin": 0,
     "probability": 1.0
   },
   {
     "shortname": "ammo.rifle",
-    "amount": 60,
+    "amount": 30,
     "skin": 0,
-    "amountMin": 60,
+    "amountMin": 10,
     "probability": 1.0
   },
   {
     "shortname": "ammo.rifle.explosive",
-    "amount": 60,
+    "amount": 40,
     "skin": 0,
-    "amountMin": 60,
+    "amountMin": 0,
     "probability": 1.0
   },
   {
     "shortname": "ammo.rifle.hv",
-    "amount": 60,
+    "amount": 20,
     "skin": 0,
-    "amountMin": 60,
+    "amountMin": 0,
     "probability": 1.0
   },
   {
     "shortname": "ammo.rifle.incendiary",
-    "amount": 60,
+    "amount": 40,
     "skin": 0,
-    "amountMin": 60,
+    "amountMin": 0,
     "probability": 1.0
   },
   {
     "shortname": "ammo.shotgun",
     "amount": 24,
     "skin": 0,
-    "amountMin": 24,
+    "amountMin": 0,
     "probability": 1.0
   },
   {
     "shortname": "ammo.shotgun.slug",
-    "amount": 40,
+    "amount": 10,
     "skin": 0,
-    "amountMin": 40,
+    "amountMin": 0,
     "probability": 1.0
   },
   {
     "shortname": "surveycharge",
-    "amount": 20,
+    "amount": 10,
     "skin": 0,
-    "amountMin": 20,
+    "amountMin": 5,
     "probability": 1.0
   },
   {
@@ -94,14 +94,14 @@
     "shortname": "explosive.timed",
     "amount": 1,
     "skin": 0,
-    "amountMin": 1,
-    "probability": 1.0
+    "amountMin": 0,
+    "probability": 0.60
   },
   {
     "shortname": "metal.facemask",
     "amount": 1,
     "skin": 0,
-    "amountMin": 1,
+    "amountMin": 0,
     "probability": 1.0
   },
   {
@@ -109,14 +109,14 @@
     "amount": 1,
     "skin": 0,
     "amountMin": 1,
-    "probability": 1.0
+    "probability": 0.80
   },
   {
     "shortname": "mining.quarry",
     "amount": 1,
     "skin": 0,
-    "amountMin": 1,
-    "probability": 1.0
+    "amountMin": 0,
+    "probability": 0.10
   },
   {
     "shortname": "pistol.m92",
@@ -129,22 +129,22 @@
     "shortname": "rifle.ak",
     "amount": 1,
     "skin": 0,
-    "amountMin": 1,
-    "probability": 1.0
+    "amountMin": 0,
+    "probability": 0.33
   },
   {
     "shortname": "rifle.bolt",
     "amount": 1,
     "skin": 0,
-    "amountMin": 1,
-    "probability": 1.0
+    "amountMin": 0,
+    "probability": 0.40
   },
   {
     "shortname": "rifle.lr300",
     "amount": 1,
     "skin": 0,
     "amountMin": 1,
-    "probability": 1.0
+    "probability": 0.20
   },
   {
     "shortname": "shotgun.pump",
@@ -172,7 +172,7 @@
     "amount": 1,
     "skin": 0,
     "amountMin": 1,
-    "probability": 1.0
+    "probability": 0.60
   },
   {
     "shortname": "smg.thompson",
@@ -185,8 +185,8 @@
     "shortname": "supply.signal",
     "amount": 1,
     "skin": 0,
-    "amountMin": 1,
-    "probability": 1.0
+    "amountMin": 0,
+    "probability": 0.70
   },
   {
     "shortname": "targeting.computer",
@@ -211,30 +211,30 @@
   },
   {
     "shortname": "sulfur",
-    "amount": 7500,
+    "amount": 500,
     "skin": 0,
-    "amountMin": 2500,
-    "probability": 1.0
+    "amountMin": 20,
+    "probability": 0.90
   },
   {
     "shortname": "metal.fragments",
-    "amount": 7500,
+    "amount": 500,
     "skin": 0,
-    "amountMin": 2500,
+    "amountMin": 200,
     "probability": 1.0
   },
   {
     "shortname": "charcoal",
-    "amount": 5000,
+    "amount": 500,
     "skin": 0,
-    "amountMin": 1000,
+    "amountMin": 100,
     "probability": 1.0
   },
   {
     "shortname": "gunpowder",
-    "amount": 3500,
+    "amount": 300,
     "skin": 0,
-    "amountMin": 1000,
+    "amountMin": 100,
     "probability": 1.0
   },
   {
