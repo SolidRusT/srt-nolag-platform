@@ -9,7 +9,7 @@ using Oxide.Core.Libraries.Covalence;
 
 namespace Oxide.Plugins
 {
-    [Info("Master Key", "FastBurst", "0.7.6")]
+    [Info("Master Key", "FastBurst", "0.7.7")]
     [Description("Gain access and/or authorization to any locked object.")]
     public class MasterKey : CovalencePlugin
     {
@@ -17,7 +17,7 @@ namespace Oxide.Plugins
         #region Initialization
 
         private readonly DynamicConfigFile dataFile = Interface.Oxide.DataFileSystem.GetFile("MasterKey");
-        private readonly string[] lockableTypes = { "box", "cell", "door", "gate", "hatch", "shop", "cupboard", "locker", "fridge", "hackable", "turret", "coffin", "furnace", "composter", "refinery", "mining", "pumpjack", "hitchtroughcombo", "planter" };
+        private readonly string[] lockableTypes = { "box", "cell", "door", "gate", "hatch", "shop", "cupboard", "locker", "fridge", "hackable", "turret", "coffin", "furnace", "composter", "refinery", "mining", "pumpjack", "hitchtroughcombo", "planter", "mixingtable" };
         private Dictionary<string, bool> playerPrefs = new Dictionary<string, bool>();
         private const string permCom = "masterkey.command";
         private bool logUsage;

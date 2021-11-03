@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Furnace Splitter", "FastBurst", "2.3.2")]
+    [Info("Furnace Splitter", "FastBurst", "2.3.3")]
     [Description("Splits up resources in furnaces automatically and shows useful furnace information")]
     public class FurnaceSplitter : RustPlugin
     {
@@ -102,6 +102,7 @@ namespace Oxide.Plugins
         {
             "bbq.deployed",
             "bbq.static",
+            "bbq.campermodule",
             "campfire",
             "campfire.static",
             "cursedcauldron.deployed",
@@ -215,6 +216,7 @@ namespace Oxide.Plugins
                 {"furnace.static", 3},
                 {"furnace_static", 3},
                 {"bbq.deployed", 9},
+                {"bbq.campermodule", 9},
                 {"bbq.static", 9},
                 {"campfire", 2},
                 {"campfire.static", 2},
