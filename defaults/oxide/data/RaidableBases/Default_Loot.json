@@ -95,7 +95,7 @@
     "amount": 1,
     "skin": 0,
     "amountMin": 0,
-    "probability": 0.60
+    "probability": 0.6
   },
   {
     "shortname": "metal.facemask",
@@ -109,14 +109,14 @@
     "amount": 1,
     "skin": 0,
     "amountMin": 1,
-    "probability": 0.80
+    "probability": 0.8
   },
   {
     "shortname": "mining.quarry",
     "amount": 1,
     "skin": 0,
     "amountMin": 0,
-    "probability": 0.10
+    "probability": 0.1
   },
   {
     "shortname": "pistol.m92",
@@ -137,14 +137,14 @@
     "amount": 1,
     "skin": 0,
     "amountMin": 0,
-    "probability": 0.40
+    "probability": 0.4
   },
   {
     "shortname": "rifle.lr300",
     "amount": 1,
     "skin": 0,
     "amountMin": 1,
-    "probability": 0.20
+    "probability": 0.2
   },
   {
     "shortname": "shotgun.pump",
@@ -172,7 +172,7 @@
     "amount": 1,
     "skin": 0,
     "amountMin": 1,
-    "probability": 0.60
+    "probability": 0.6
   },
   {
     "shortname": "smg.thompson",
@@ -186,7 +186,7 @@
     "amount": 1,
     "skin": 0,
     "amountMin": 0,
-    "probability": 0.70
+    "probability": 0.7
   },
   {
     "shortname": "targeting.computer",
@@ -214,7 +214,7 @@
     "amount": 500,
     "skin": 0,
     "amountMin": 20,
-    "probability": 0.90
+    "probability": 0.9
   },
   {
     "shortname": "metal.fragments",

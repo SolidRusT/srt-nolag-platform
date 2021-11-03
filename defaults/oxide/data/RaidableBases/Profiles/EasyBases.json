@@ -1,5 +1,11 @@
 {
   "Difficulty (0 = easy, 1 = medium, 2 = hard, 3 = expert, 4 = nightmare)": 0,
+  "Advanced Protection Radius": {
+    "Buyable Events": 50.0,
+    "Maintained Events": 50.0,
+    "Manual Events": 50.0,
+    "Scheduled Events": 50.0
+  },
   "Entities Not Allowed To Be Picked Up": [
     "generator.small",
     "generator.static",
@@ -181,45 +187,91 @@
     "Spawn Inside Bases": {
       "Spawn On Floors": false,
       "Spawn On Beds": true,
-      "Spawn On Rugs": true
+      "Spawn On Rugs": true,
+      "Spawn On Rugs With Skin Only": 1,
+      "Spawn Murderers Outside": true,
+      "Spawn Scientists Outside": true
     },
-    "Murderer Items": [
-      "metal.facemask",
-      "metal.plate.torso",
-      "pants",
-      "tactical.gloves",
-      "boots.frog",
-      "tshirt",
-      "machete"
-    ],
-    "Scientist Items": [
-      "syringe.medical"
-    ],
+    "Murderer (Items)": {
+      "Helm": [
+        "metal.facemask"
+      ],
+      "Torso": [
+        "metal.plate.torso"
+      ],
+      "Pants": [
+        "pants"
+      ],
+      "Gloves": [
+        "tactical.gloves"
+      ],
+      "Boots": [
+        "boots.frog"
+      ],
+      "Shirt": [
+        "tshirt"
+      ],
+      "Weapon": [
+        "machete"
+      ]
+    },
+    "Scientist (Items)": {
+      "Helm": [],
+      "Torso": [
+        "hazmatsuit_scientist_peacekeeper"
+      ],
+      "Pants": [],
+      "Gloves": [],
+      "Boots": [],
+      "Shirt": [],
+      "Weapon": [
+        "rifle.ak"
+      ]
+    },
     "Murderer Kits": [],
     "Scientist Kits": [
       "scieasy"
     ],
+    "Murderer Items Dropped On Death": [
+      {
+        "shortname": "ammo.pistol",
+        "amount": 30,
+        "skin": 0,
+        "amountMin": 1,
+        "probability": 1.0
+      }
+    ],
+    "Scientist Items Dropped On Death": [
+      {
+        "shortname": "ammo.rifle",
+        "amount": 30,
+        "skin": 0,
+        "amountMin": 1,
+        "probability": 1.0
+      }
+    ],
     "Random Names": [],
-    "Amount To Spawn": 8,
+    "Enabled": false,
     "Aggression Range": 70.0,
     "Despawn Inventory On Death": true,
-    "Enabled": false,
-    "Health For Murderers (100 min, 5000 max)": 150.0,
-    "Health For Scientists (100 min, 5000 max)": 150.0,
+    "Amount To Spawn": 8,
     "Minimum Amount To Spawn": 1,
-    "Use Dangerous Treasures NPCs": false,
-    "Spawn Murderers And Scientists": true,
-    "Scientist Weapon Accuracy (0 - 100)": 25.0,
-    "Spawn Murderers": false,
     "Spawn Random Amount": false,
+    "Spawn Murderers And Scientists": true,
+    "Spawn Murderers": false,
     "Spawn Scientists Only": false,
-    "Player Traps And Turrets Ignore Npcs": false
+    "Use Dangerous Treasures NPCs": false,
+    "Player Traps And Turrets Ignore Npcs": false,
+    "Scientist Weapon Accuracy (0 - 100)": 25.0,
+    "Health For Murderers (100 min, 5000 max)": 150.0,
+    "Health For Scientists (100 min, 5000 max)": 150.0
   },
   "Rewards": {
     "Custom Currency": {
       "Enabled": false,
       "Item Shortname": "scrap",
-      "Amount": 0
+      "Amount": 0,
+      "Skin": 0
     },
     "Economics Money": 0.0,
     "ServerRewards Points": 0,
@@ -250,7 +302,14 @@
       "rifle.ak"
     ]
   },
+  "Player Building Restrictions": {
+    "Wooden": false,
+    "Stone": false,
+    "Metal": false,
+    "HQM": false
+  },
   "Profile Enabled": true,
+  "Maximum Elevation Level": 2.5,
   "Add Code Lock To Unlocked Or KeyLocked Doors": true,
   "Add Code Lock To Tool Cupboards": false,
   "Add Code Lock To Boxes": false,
@@ -259,6 +318,7 @@
   "Allow Duplicate Items": true,
   "Allow Players To Pickup Deployables": false,
   "Allow Players To Deploy A Cupboard": true,
+  "Allow Players To Deploy Barricades": true,
   "Allow PVP": true,
   "Allow Friendly Fire (Teams)": true,
   "Minimum Amount Of Items To Spawn (0 = Use Max Value)": 0,
@@ -272,9 +332,11 @@
   "Boxes Are Invulnerable": false,
   "Spawn Silently (No Notifcation, No Dome, No Map Marker)": false,
   "Divide Loot Into All Containers": true,
+  "Drop Tool Cupboard Loot After Raid Is Completed": false,
   "Drop Container Loot X Seconds After It Is Looted": 0.0,
   "Drop Container Loot Applies Only To Boxes And Cupboards": true,
   "Create Dome Around Event Using Spheres (0 = disabled, recommended = 5)": 0,
+  "Enable Stability Foundation Wipe": false,
   "Empty All Containers Before Spawning Loot": true,
   "Eject Corpses From Enemy Raids (Advanced Users Only)": true,
   "Eject Enemies From Purchased PVE Raids": false,
@@ -287,7 +349,6 @@
   "Loot Amount Multiplier": 1.0,
   "Maximum Respawn Npc X Seconds After Death": 0.0,
   "Minimum Respawn Npc X Seconds After Death": 0.0,
-  "Protection Radius": 50.0,
   "Penalize Players On Death In PVE (ZLevels)": true,
   "Penalize Players On Death In PVP (ZLevels)": true,
   "Require Cupboard Access To Loot": false,

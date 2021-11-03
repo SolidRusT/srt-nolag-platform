@@ -1,156 +1,156 @@
-[{
-        "shortname": "sulfur",
-        "amount": 5000,
-        "skin": 0,
-        "amountMin": 1000,
-        "probability": 1.0
-    },
-    {
-        "shortname": "metal.refined",
-        "amount": 1500,
-        "skin": 0,
-        "amountMin": 500,
-        "probability": 1.0
-    },
-    {
-        "shortname": "metal.fragments",
-        "amount": 5000,
-        "skin": 0,
-        "amountMin": 1000,
-        "probability": 1.0
-    },
-    {
-        "shortname": "explosive.timed",
-        "amount": 20,
-        "skin": 0,
-        "amountMin": 10,
-        "probability": 1.0
-    },
-    {
-        "shortname": "explosives",
-        "amount": 240,
-        "skin": 0,
-        "amountMin": 120,
-        "probability": 1.0
-    },
-    {
-        "shortname": "ammo.rocket.basic",
-        "amount": 36,
-        "skin": 0,
-        "amountMin": 24,
-        "probability": 1.0
-    },
-    {
-        "shortname": "rocket.launcher",
-        "amount": 3,
-        "skin": 0,
-        "amountMin": 1,
-        "probability": 1.0
-    },
-    {
-        "shortname": "samsite",
-        "amount": 1,
-        "skin": 0,
-        "amountMin": 1,
-        "probability": 1.0
-    },
-    {
-        "shortname": "ammo.rocket.hv",
-        "amount": 24,
-        "skin": 0,
-        "amountMin": 12,
-        "probability": 1.0
-    },
-    {
-        "shortname": "explosive.satchel",
-        "amount": 40,
-        "skin": 0,
-        "amountMin": 20,
-        "probability": 1.0
-    },
-    {
-        "shortname": "multiplegrenadelauncher",
-        "amount": 4,
-        "skin": 0,
-        "amountMin": 2,
-        "probability": 1.0
-    },
-    {
-        "shortname": "ammo.grenadelauncher.buckshot",
-        "amount": 36,
-        "skin": 0,
-        "amountMin": 16,
-        "probability": 1.0
-    },
-    {
-        "shortname": "ammo.grenadelauncher.he",
-        "amount": 36,
-        "skin": 0,
-        "amountMin": 16,
-        "probability": 1.0
-    },
-    {
-        "shortname": "ammo.grenadelauncher.smoke",
-        "amount": 24,
-        "skin": 0,
-        "amountMin": 12,
-        "probability": 1.0
-    },
-    {
-        "shortname": "grenade.f1",
-        "amount": 32,
-        "skin": 0,
-        "amountMin": 12,
-        "probability": 1.0
-    },
-    {
-        "shortname": "metal.facemask",
-        "amount": 4,
-        "skin": 0,
-        "amountMin": 2,
-        "probability": 1.0
-    },
-    {
-        "shortname": "metal.plate.torso",
-        "amount": 4,
-        "skin": 0,
-        "amountMin": 2,
-        "probability": 1.0
-    },
-    {
-        "shortname": "tactical.gloves",
-        "amount": 4,
-        "skin": 0,
-        "amountMin": 2,
-        "probability": 1.0
-    },
-    {
-        "shortname": "shoes.boots",
-        "amount": 4,
-        "skin": 0,
-        "amountMin": 2,
-        "probability": 1.0
-    },
-    {
-        "shortname": "hoodie",
-        "amount": 4,
-        "skin": 0,
-        "amountMin": 2,
-        "probability": 1.0
-    },
-    {
-        "shortname": "roadsign.kilt",
-        "amount": 4,
-        "skin": 0,
-        "amountMin": 2,
-        "probability": 1.0
-    },
-
-    {
-        "shortname": "charcoal",
-        "amount": 10000,
-        "skin": 0,
-        "amountMin": 5000,
-        "probability": 1.0
-    }
+[
+  {
+    "shortname": "sulfur",
+    "amount": 5000,
+    "skin": 0,
+    "amountMin": 1000,
+    "probability": 1.0
+  },
+  {
+    "shortname": "metal.refined",
+    "amount": 1500,
+    "skin": 0,
+    "amountMin": 500,
+    "probability": 1.0
+  },
+  {
+    "shortname": "metal.fragments",
+    "amount": 5000,
+    "skin": 0,
+    "amountMin": 1000,
+    "probability": 1.0
+  },
+  {
+    "shortname": "explosive.timed",
+    "amount": 20,
+    "skin": 0,
+    "amountMin": 10,
+    "probability": 1.0
+  },
+  {
+    "shortname": "explosives",
+    "amount": 240,
+    "skin": 0,
+    "amountMin": 120,
+    "probability": 1.0
+  },
+  {
+    "shortname": "ammo.rocket.basic",
+    "amount": 36,
+    "skin": 0,
+    "amountMin": 24,
+    "probability": 1.0
+  },
+  {
+    "shortname": "rocket.launcher",
+    "amount": 3,
+    "skin": 0,
+    "amountMin": 1,
+    "probability": 1.0
+  },
+  {
+    "shortname": "samsite",
+    "amount": 1,
+    "skin": 0,
+    "amountMin": 1,
+    "probability": 1.0
+  },
+  {
+    "shortname": "ammo.rocket.hv",
+    "amount": 24,
+    "skin": 0,
+    "amountMin": 12,
+    "probability": 1.0
+  },
+  {
+    "shortname": "explosive.satchel",
+    "amount": 40,
+    "skin": 0,
+    "amountMin": 20,
+    "probability": 1.0
+  },
+  {
+    "shortname": "multiplegrenadelauncher",
+    "amount": 4,
+    "skin": 0,
+    "amountMin": 2,
+    "probability": 1.0
+  },
+  {
+    "shortname": "ammo.grenadelauncher.buckshot",
+    "amount": 36,
+    "skin": 0,
+    "amountMin": 16,
+    "probability": 1.0
+  },
+  {
+    "shortname": "ammo.grenadelauncher.he",
+    "amount": 36,
+    "skin": 0,
+    "amountMin": 16,
+    "probability": 1.0
+  },
+  {
+    "shortname": "ammo.grenadelauncher.smoke",
+    "amount": 24,
+    "skin": 0,
+    "amountMin": 12,
+    "probability": 1.0
+  },
+  {
+    "shortname": "grenade.f1",
+    "amount": 32,
+    "skin": 0,
+    "amountMin": 12,
+    "probability": 1.0
+  },
+  {
+    "shortname": "metal.facemask",
+    "amount": 4,
+    "skin": 0,
+    "amountMin": 2,
+    "probability": 1.0
+  },
+  {
+    "shortname": "metal.plate.torso",
+    "amount": 4,
+    "skin": 0,
+    "amountMin": 2,
+    "probability": 1.0
+  },
+  {
+    "shortname": "tactical.gloves",
+    "amount": 4,
+    "skin": 0,
+    "amountMin": 2,
+    "probability": 1.0
+  },
+  {
+    "shortname": "shoes.boots",
+    "amount": 4,
+    "skin": 0,
+    "amountMin": 2,
+    "probability": 1.0
+  },
+  {
+    "shortname": "hoodie",
+    "amount": 4,
+    "skin": 0,
+    "amountMin": 2,
+    "probability": 1.0
+  },
+  {
+    "shortname": "roadsign.kilt",
+    "amount": 4,
+    "skin": 0,
+    "amountMin": 2,
+    "probability": 1.0
+  },
+  {
+    "shortname": "charcoal",
+    "amount": 10000,
+    "skin": 0,
+    "amountMin": 5000,
+    "probability": 1.0
+  }
 ]
