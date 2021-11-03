@@ -1,11 +1,41 @@
 {
   "Ignore Admins": true,
+  "Enable UI Editor": false,
+  "Sets editor command": "stackmodifier",
+  "Sets Reset Vendors command": "resetvenders",
+  "Sets Default Category to open": "Attire",
+  "Stack Modifier UI Title": "Stack Modifier Editor ◝(⁰▿⁰)◜",
+  "UI - Stack Size Label": "Stack Size",
+  "UI - Set Stack Label": "Set Stack",
+  "UI - Back Button Text": "◀",
+  "UI - Forward Button Text": "▶",
+  "UI - Close Label": "✖",
+  "UI - Set Color": "#FFFFFF",
+  "UI - Text Color": "#FFFFFF",
+  "UI - Background Image Url": "https://i.imgur.com/Jej3cwR.png",
+  "Sets any item to this image if image library does not have one for it.": "https://imgur.com/BPM9UR4.png",
   "Revert to Vanilla Stacks on unload (Recommended true if removing plugin)": false,
   "Disable Ammo/Fuel duplication fix (Recommended false)": false,
   "Enable VendingMachine Ammo Fix (Recommended)": true,
   "Blocked Stackable Items": [
     "shortname"
   ],
+  "Category Stack Multipliers": {
+    "Attire": 1,
+    "Misc": 1,
+    "Items": 1,
+    "Ammunition": 1,
+    "Construction": 1,
+    "Component": 1,
+    "Traps": 1,
+    "Electrical": 1,
+    "Fun": 1,
+    "Food": 1,
+    "Resources": 1,
+    "Tool": 1,
+    "Weapon": 1,
+    "Medical": 1
+  },
   "Stack Categories": {
     "Attire": {
       "hat.wolf": {
@@ -407,6 +437,46 @@
       "jumpsuit.suit.blue": {
         "DisplayName": "Blue Jumpsuit",
         "Modified": 1
+      },
+      "lumberjack hoodie": {
+        "DisplayName": "Lumberjack Hoodie",
+        "Modified": 1
+      },
+      "frankensteins.monster.01.head": {
+        "DisplayName": "Light Frankenstein Head",
+        "Modified": 1
+      },
+      "frankensteins.monster.01.legs": {
+        "DisplayName": "Light Frankenstein Legs",
+        "Modified": 1
+      },
+      "frankensteins.monster.01.torso": {
+        "DisplayName": "Light Frankenstein Torso",
+        "Modified": 1
+      },
+      "frankensteins.monster.02.head": {
+        "DisplayName": "Medium Frankenstein Head",
+        "Modified": 1
+      },
+      "frankensteins.monster.02.legs": {
+        "DisplayName": "Medium Frankenstein Legs",
+        "Modified": 1
+      },
+      "frankensteins.monster.02.torso": {
+        "DisplayName": "Medium Frankenstein Torso",
+        "Modified": 1
+      },
+      "frankensteins.monster.03.head": {
+        "DisplayName": "Heavy Frankenstein Head",
+        "Modified": 1
+      },
+      "frankensteins.monster.03.legs": {
+        "DisplayName": "Heavy Frankenstein Legs",
+        "Modified": 1
+      },
+      "frankensteins.monster.03.torso": {
+        "DisplayName": "Heavy Frankenstein Torso",
+        "Modified": 1
       }
     },
     "Misc": {
@@ -444,7 +514,7 @@
       },
       "blueprintbase": {
         "DisplayName": "Blueprint",
-        "Modified": 10000
+        "Modified": 1000
       },
       "easterbasket": {
         "DisplayName": "Egg Basket",
@@ -472,23 +542,23 @@
       },
       "easter.bronzeegg": {
         "DisplayName": "Bronze Egg",
-        "Modified": 1000
+        "Modified": 10
       },
       "easter.goldegg": {
         "DisplayName": "Gold Egg",
-        "Modified": 1000
+        "Modified": 10
       },
       "easter.paintedeggs": {
         "DisplayName": "Painted Egg",
-        "Modified": 10000
+        "Modified": 1000
       },
       "easter.silveregg": {
         "DisplayName": "Silver Egg",
-        "Modified": 1000
+        "Modified": 10
       },
       "halloween.candy": {
         "DisplayName": "Halloween Candy",
-        "Modified": 10000
+        "Modified": 1000
       },
       "largecandles": {
         "DisplayName": "Large Candle Set",
@@ -516,19 +586,19 @@
       },
       "wall.graveyard.fence": {
         "DisplayName": "Graveyard Fence",
-        "Modified": 1000
+        "Modified": 10
       },
       "halloween.lootbag.large": {
         "DisplayName": "Large Loot Bag",
-        "Modified": 1000
+        "Modified": 10
       },
       "halloween.lootbag.medium": {
         "DisplayName": "Medium Loot Bag",
-        "Modified": 1000
+        "Modified": 10
       },
       "halloween.lootbag.small": {
         "DisplayName": "Small Loot Bag",
-        "Modified": 1000
+        "Modified": 10
       },
       "pumpkinbasket": {
         "DisplayName": "Pumpkin Bucket",
@@ -536,7 +606,7 @@
       },
       "spiderweb": {
         "DisplayName": "Spider Webs",
-        "Modified": 1000
+        "Modified": 10
       },
       "spookyspeaker": {
         "DisplayName": "Spooky Speaker",
@@ -564,11 +634,11 @@
       },
       "xmas.present.medium": {
         "DisplayName": "Medium Present",
-        "Modified": 500
+        "Modified": 5
       },
       "xmas.present.small": {
         "DisplayName": "Small Present",
-        "Modified": 1000
+        "Modified": 10
       },
       "snowmachine": {
         "DisplayName": "Snow Machine",
@@ -625,6 +695,10 @@
       "submarinesolo": {
         "DisplayName": "Solo Submarine",
         "Modified": 1
+      },
+      "captainslog": {
+        "DisplayName": "Captain's Log",
+        "Modified": 1
       }
     },
     "Items": {
@@ -646,7 +720,7 @@
       },
       "chair": {
         "DisplayName": "Chair",
-        "Modified": 500
+        "Modified": 5
       },
       "composter": {
         "DisplayName": "Composter",
@@ -658,7 +732,7 @@
       },
       "dropbox": {
         "DisplayName": "Drop Box",
-        "Modified": 500
+        "Modified": 5
       },
       "fireplace.stone": {
         "DisplayName": "Stone Fireplace",
@@ -718,11 +792,11 @@
       },
       "planter.large": {
         "DisplayName": "Large Planter Box",
-        "Modified": 1000
+        "Modified": 10
       },
       "planter.small": {
         "DisplayName": "Small Planter Box",
-        "Modified": 1000
+        "Modified": 10
       },
       "box.repair.bench": {
         "DisplayName": "Repair Bench",
@@ -742,11 +816,11 @@
       },
       "secretlabchair": {
         "DisplayName": "Secret Lab Chair",
-        "Modified": 500
+        "Modified": 5
       },
       "shelves": {
         "DisplayName": "Salvaged Shelves",
-        "Modified": 1000
+        "Modified": 10
       },
       "sign.hanging.banner.large": {
         "DisplayName": "Large Banner Hanging",
@@ -822,11 +896,11 @@
       },
       "stash.small": {
         "DisplayName": "Small Stash",
-        "Modified": 500
+        "Modified": 5
       },
       "sofa": {
         "DisplayName": "Sofa",
-        "Modified": 200
+        "Modified": 2
       },
       "spinner.wheel": {
         "DisplayName": "Spinning wheel",
@@ -834,7 +908,7 @@
       },
       "fishtrap.small": {
         "DisplayName": "Survival Fish Trap",
-        "Modified": 500
+        "Modified": 5
       },
       "table": {
         "DisplayName": "Table",
@@ -890,7 +964,7 @@
       },
       "scarecrow": {
         "DisplayName": "Scarecrow",
-        "Modified": 500
+        "Modified": 5
       },
       "skulldoorknocker": {
         "DisplayName": "Skull Door Knocker",
@@ -918,11 +992,11 @@
       },
       "xmas.lightstring": {
         "DisplayName": "Christmas Lights",
-        "Modified": 2000
+        "Modified": 20
       },
       "xmas.door.garland": {
         "DisplayName": "Festive Doorway Garland",
-        "Modified": 1000
+        "Modified": 10
       },
       "pookie.bear": {
         "DisplayName": "Pookie Bear",
@@ -930,7 +1004,7 @@
       },
       "snowman": {
         "DisplayName": "Snowman",
-        "Modified": 500
+        "Modified": 5
       },
       "stocking.large": {
         "DisplayName": "SUPER Stocking",
@@ -938,11 +1012,11 @@
       },
       "stocking.small": {
         "DisplayName": "Small Stocking",
-        "Modified": 500
+        "Modified": 5
       },
       "xmas.window.garland": {
         "DisplayName": "Festive Window Garland",
-        "Modified": 1000
+        "Modified": 10
       },
       "xmasdoorwreath": {
         "DisplayName": "Christmas Door Wreath",
@@ -955,116 +1029,124 @@
       "map": {
         "DisplayName": "Paper Map",
         "Modified": 1
+      },
+      "frankensteintable": {
+        "DisplayName": "Frankenstein Table",
+        "Modified": 1
+      },
+      "carvable.pumpkin": {
+        "DisplayName": "Carvable Pumpkin",
+        "Modified": 1
       }
     },
     "Ammunition": {
       "ammo.grenadelauncher.buckshot": {
         "DisplayName": "40mm Shotgun Round",
-        "Modified": 1024
+        "Modified": 48
       },
       "ammo.grenadelauncher.he": {
         "DisplayName": "40mm HE Grenade",
-        "Modified": 1024
+        "Modified": 24
       },
       "ammo.grenadelauncher.smoke": {
         "DisplayName": "40mm Smoke Grenade",
-        "Modified": 1024
+        "Modified": 24
       },
       "arrow.hv": {
         "DisplayName": "High Velocity Arrow",
-        "Modified": 4096
+        "Modified": 128
       },
       "arrow.wooden": {
         "DisplayName": "Wooden Arrow",
-        "Modified": 4096
+        "Modified": 128
       },
       "arrow.bone": {
         "DisplayName": "Bone Arrow",
-        "Modified": 4096
+        "Modified": 128
       },
       "arrow.fire": {
         "DisplayName": "Fire Arrow",
-        "Modified": 4096
+        "Modified": 128
       },
       "ammo.handmade.shell": {
         "DisplayName": "Handmade Shell",
-        "Modified": 4096
+        "Modified": 128
       },
       "ammo.nailgun.nails": {
         "DisplayName": "Nailgun Nails",
-        "Modified": 4096
+        "Modified": 128
       },
       "ammo.pistol": {
         "DisplayName": "Pistol Bullet",
-        "Modified": 4096
+        "Modified": 256
       },
       "ammo.pistol.fire": {
         "DisplayName": "Incendiary Pistol Bullet",
-        "Modified": 4096
+        "Modified": 256
       },
       "ammo.pistol.hv": {
         "DisplayName": "HV Pistol Ammo",
-        "Modified": 4096
+        "Modified": 256
       },
       "ammo.rifle": {
         "DisplayName": "5.56 Rifle Ammo",
-        "Modified": 4096
+        "Modified": 256
       },
       "ammo.rifle.explosive": {
         "DisplayName": "Explosive 5.56 Rifle Ammo",
-        "Modified": 4096
+        "Modified": 256
       },
       "ammo.rifle.incendiary": {
         "DisplayName": "Incendiary 5.56 Rifle Ammo",
-        "Modified": 4096
+        "Modified": 256
       },
       "ammo.rifle.hv": {
         "DisplayName": "HV 5.56 Rifle Ammo",
-        "Modified": 4096
+        "Modified": 256
       },
       "ammo.rocket.basic": {
         "DisplayName": "Rocket",
-        "Modified": 600
+        "Modified": 6
       },
       "ammo.rocket.fire": {
         "DisplayName": "Incendiary Rocket",
-        "Modified": 600
+        "Modified": 6
       },
       "ammo.rocket.hv": {
         "DisplayName": "High Velocity Rocket",
-        "Modified": 600
+        "Modified": 6
       },
       "ammo.rocket.smoke": {
-        "DisplayName": "Smoking Rocket",
-        "Modified": 1024
+        "DisplayName": "Smoke Rocket WIP!!!!",
+        "Modified": 6
       },
       "ammo.shotgun": {
         "DisplayName": "12 Gauge Buckshot",
-        "Modified": 4096
+        "Modified": 128
       },
       "ammo.shotgun.fire": {
         "DisplayName": "12 Gauge Incendiary Shell",
-        "Modified": 4096
+        "Modified": 128
       },
       "ammo.shotgun.slug": {
         "DisplayName": "12 Gauge Slug",
-        "Modified": 4096
+        "Modified": 128
       },
       "ammo.snowballgun": {
         "DisplayName": "",
-        "Modified": 25600
+        "Modified": 256
       },
       "ammo.rocket.sam": {
         "DisplayName": "SAM Ammo",
-        "Modified": 20000
+        "Modified": 2000
       },
       "speargun.spear": {
         "DisplayName": "Speargun Spear",
-        "Modified": 6400
+        "Modified": 64
       },
       "submarine.torpedo.straight": {
         "DisplayName": "Torpedo",
-        "Modified": 10000
+        "Modified": 100
       }
     },
     "Construction": {
@@ -1094,7 +1176,7 @@
       },
       "floor.grill": {
         "DisplayName": "Floor grill",
-        "Modified": 1000
+        "Modified": 10
       },
       "floor.ladder.hatch": {
         "DisplayName": "Ladder Hatch",
@@ -1102,7 +1184,7 @@
       },
       "floor.triangle.grill": {
         "DisplayName": "Floor triangle grill",
-        "Modified": 1000
+        "Modified": 10
       },
       "floor.triangle.ladder.hatch": {
         "DisplayName": "Triangle Ladder Hatch",
@@ -1118,15 +1200,15 @@
       },
       "ladder.wooden.wall": {
         "DisplayName": "Wooden Ladder",
-        "Modified": 500
+        "Modified": 5
       },
       "wall.external.high.stone": {
         "DisplayName": "High External Stone Wall",
-        "Modified": 1000
+        "Modified": 10
       },
       "wall.external.high": {
         "DisplayName": "High External Wooden Wall",
-        "Modified": 1000
+        "Modified": 10
       },
       "wall.frame.cell.gate": {
         "DisplayName": "Prison Cell Gate",
@@ -1134,7 +1216,7 @@
       },
       "wall.frame.cell": {
         "DisplayName": "Prison Cell Wall",
-        "Modified": 1000
+        "Modified": 10
       },
       "wall.frame.fence.gate": {
         "DisplayName": "Chainlink Fence Gate",
@@ -1142,7 +1224,7 @@
       },
       "wall.frame.fence": {
         "DisplayName": "Chainlink Fence",
-        "Modified": 1000
+        "Modified": 10
       },
       "wall.frame.garagedoor": {
         "DisplayName": "Garage Door",
@@ -1150,7 +1232,7 @@
       },
       "wall.frame.netting": {
         "DisplayName": "Netting",
-        "Modified": 500
+        "Modified": 5
       },
       "wall.frame.shopfront": {
         "DisplayName": "Shop Front",
@@ -1162,63 +1244,63 @@
       },
       "wall.window.bars.metal": {
         "DisplayName": "Metal Window Bars",
-        "Modified": 1000
+        "Modified": 10
       },
       "wall.window.bars.toptier": {
         "DisplayName": "Reinforced Glass Window",
-        "Modified": 1000
+        "Modified": 10
       },
       "wall.window.bars.wood": {
         "DisplayName": "Wooden Window Bars",
-        "Modified": 1000
+        "Modified": 10
       },
       "shutter.metal.embrasure.a": {
         "DisplayName": "Metal horizontal embrasure",
-        "Modified": 2000
+        "Modified": 20
       },
       "shutter.metal.embrasure.b": {
         "DisplayName": "Metal Vertical embrasure",
-        "Modified": 2000
+        "Modified": 20
       },
       "wall.window.glass.reinforced": {
         "DisplayName": "Strengthened Glass Window",
-        "Modified": 1000
+        "Modified": 10
       },
       "shutter.wood.a": {
         "DisplayName": "Wood Shutters",
-        "Modified": 2000
+        "Modified": 20
       },
       "watchtower.wood": {
         "DisplayName": "Watch Tower",
-        "Modified": 500
+        "Modified": 5
       },
       "barricade.concrete": {
         "DisplayName": "Concrete Barricade",
-        "Modified": 1000
+        "Modified": 10
       },
       "barricade.wood.cover": {
         "DisplayName": "Wooden Barricade Cover",
-        "Modified": 1000
+        "Modified": 10
       },
       "barricade.metal": {
         "DisplayName": "Metal Barricade",
-        "Modified": 1000
+        "Modified": 10
       },
       "barricade.sandbags": {
         "DisplayName": "Sandbag Barricade",
-        "Modified": 1000
+        "Modified": 10
       },
       "barricade.stone": {
         "DisplayName": "Stone Barricade",
-        "Modified": 1000
+        "Modified": 10
       },
       "barricade.wood": {
         "DisplayName": "Wooden Barricade",
-        "Modified": 1000
+        "Modified": 10
       },
       "barricade.woodwire": {
         "DisplayName": "Barbed Wooden Barricade",
-        "Modified": 1000
+        "Modified": 10
       },
       "mining.pumpjack": {
         "DisplayName": "Pump Jack",
@@ -1242,11 +1324,11 @@
       },
       "lock.key": {
         "DisplayName": "Key Lock",
-        "Modified": 1000
+        "Modified": 10
       },
       "lock.code": {
         "DisplayName": "Code Lock",
-        "Modified": 1000
+        "Modified": 10
       },
       "door.closer": {
         "DisplayName": "Door Closer",
@@ -1258,11 +1340,11 @@
       },
       "wall.ice.wall": {
         "DisplayName": "Short Ice Wall",
-        "Modified": 1000
+        "Modified": 10
       },
       "wall.external.high.ice": {
         "DisplayName": "High Ice Wall",
-        "Modified": 1000
+        "Modified": 10
       },
       "building.planner": {
         "DisplayName": "Building Plan",
@@ -1272,139 +1354,139 @@
     "Component": {
       "bleach": {
         "DisplayName": "Bleach",
-        "Modified": 2000
+        "Modified": 20
       },
       "ducttape": {
         "DisplayName": "Duct Tape",
-        "Modified": 2000
+        "Modified": 20
       },
       "carburetor1": {
         "DisplayName": "Low Quality Carburetor",
-        "Modified": 1500
+        "Modified": 15
       },
       "carburetor2": {
         "DisplayName": "Medium Quality Carburetor",
-        "Modified": 1500
+        "Modified": 15
       },
       "carburetor3": {
         "DisplayName": "High Quality Carburetor",
-        "Modified": 1500
+        "Modified": 15
       },
       "crankshaft1": {
         "DisplayName": "Low Quality Crankshaft",
-        "Modified": 1500
+        "Modified": 15
       },
       "crankshaft2": {
         "DisplayName": "Medium Quality Crankshaft",
-        "Modified": 1500
+        "Modified": 15
       },
       "crankshaft3": {
         "DisplayName": "High Quality Crankshaft",
-        "Modified": 1500
+        "Modified": 15
       },
       "piston1": {
         "DisplayName": "Low Quality Pistons",
-        "Modified": 3000
+        "Modified": 30
       },
       "piston2": {
         "DisplayName": "Medium Quality Pistons",
-        "Modified": 3000
+        "Modified": 30
       },
       "piston3": {
         "DisplayName": "High Quality Pistons",
-        "Modified": 3000
+        "Modified": 30
       },
       "sparkplug1": {
         "DisplayName": "Low Quality Spark Plugs",
-        "Modified": 6000
+        "Modified": 60
       },
       "sparkplug2": {
         "DisplayName": "Medium Quality Spark Plugs",
-        "Modified": 6000
+        "Modified": 60
       },
       "sparkplug3": {
         "DisplayName": "High Quality Spark Plugs",
-        "Modified": 6000
+        "Modified": 60
       },
       "valve1": {
         "DisplayName": "Low Quality Valves",
-        "Modified": 4500
+        "Modified": 45
       },
       "valve2": {
         "DisplayName": "Medium Quality Valves",
-        "Modified": 4500
+        "Modified": 45
       },
       "valve3": {
         "DisplayName": "High Quality Valves",
-        "Modified": 4500
+        "Modified": 45
       },
       "fuse": {
         "DisplayName": "Electric Fuse",
-        "Modified": 1000
+        "Modified": 10
       },
       "gears": {
         "DisplayName": "Gears",
-        "Modified": 10000
+        "Modified": 100
       },
       "glue": {
         "DisplayName": "Glue",
-        "Modified": 1000
+        "Modified": 10
       },
       "metalblade": {
         "DisplayName": "Metal Blade",
-        "Modified": 10000
+        "Modified": 100
       },
       "metalpipe": {
         "DisplayName": "Metal Pipe",
-        "Modified": 10000
+        "Modified": 100
       },
       "propanetank": {
         "DisplayName": "Empty Propane Tank",
-        "Modified": 2500
+        "Modified": 25
       },
       "roadsigns": {
         "DisplayName": "Road Signs",
-        "Modified": 10000
+        "Modified": 100
       },
       "rope": {
         "DisplayName": "Rope",
-        "Modified": 35000
+        "Modified": 350
       },
       "sewingkit": {
         "DisplayName": "Sewing Kit",
-        "Modified": 10000
+        "Modified": 100
       },
       "sheetmetal": {
         "DisplayName": "Sheet Metal",
-        "Modified": 10000
+        "Modified": 100
       },
       "metalspring": {
         "DisplayName": "Metal Spring",
-        "Modified": 10000
+        "Modified": 100
       },
       "sticks": {
         "DisplayName": "Sticks",
-        "Modified": 50000
+        "Modified": 500
       },
       "tarp": {
         "DisplayName": "Tarp",
-        "Modified": 10000
+        "Modified": 100
       },
       "techparts": {
         "DisplayName": "Tech Trash",
-        "Modified": 15000
+        "Modified": 150
       },
       "riflebody": {
         "DisplayName": "Rifle Body",
-        "Modified": 3000
+        "Modified": 30
       },
       "semibody": {
         "DisplayName": "Semi Automatic Body",
-        "Modified": 3000
+        "Modified": 30
       },
       "smgbody": {
         "DisplayName": "SMG Body",
-        "Modified": 3000
+        "Modified": 30
       },
       "vehicle.chassis.2mod": {
         "DisplayName": "Small Chassis",
@@ -1473,20 +1555,24 @@
       "vehicle.module": {
         "DisplayName": "Generic vehicle module",
         "Modified": 1
+      },
+      "vehicle.2mod.camper": {
+        "DisplayName": "Camper Vehicle Module",
+        "Modified": 1
       }
     },
     "Traps": {
       "trap.bear": {
         "DisplayName": "Snap Trap",
-        "Modified": 300
+        "Modified": 3
       },
       "spikes.floor": {
         "DisplayName": "Wooden Floor Spikes",
-        "Modified": 1000
+        "Modified": 10
       },
       "trap.landmine": {
         "DisplayName": "Land Mine",
-        "Modified": 500
+        "Modified": 5
       },
       "guntrap": {
         "DisplayName": "Shotgun Trap",
@@ -1504,7 +1590,7 @@
     "Electrical": {
       "ceilinglight": {
         "DisplayName": "Ceiling Light",
-        "Modified": 3000
+        "Modified": 30
       },
       "computerstation": {
         "DisplayName": "Computer Station",
@@ -1512,7 +1598,7 @@
       },
       "elevator": {
         "DisplayName": "Elevator",
-        "Modified": 500
+        "Modified": 5
       },
       "modularcarlift": {
         "DisplayName": "Modular Car Lift",
@@ -1520,15 +1606,15 @@
       },
       "electric.audioalarm": {
         "DisplayName": "Audio Alarm",
-        "Modified": 1500
+        "Modified": 15
       },
       "smart.alarm": {
         "DisplayName": "Smart Alarm",
-        "Modified": 1500
+        "Modified": 15
       },
       "smart.switch": {
         "DisplayName": "Smart Switch",
-        "Modified": 1500
+        "Modified": 15
       },
       "storage.monitor": {
         "DisplayName": "Storage Monitor",
@@ -1548,11 +1634,11 @@
       },
       "electric.button": {
         "DisplayName": "Button",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.counter": {
         "DisplayName": "Counter",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.hbhfsensor": {
         "DisplayName": "HBHF Sensor",
@@ -1560,7 +1646,7 @@
       },
       "electric.laserdetector": {
         "DisplayName": "Laser Detector",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.pressurepad": {
         "DisplayName": "Pressure Pad",
@@ -1568,19 +1654,19 @@
       },
       "electric.doorcontroller": {
         "DisplayName": "Door Controller",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.heater": {
         "DisplayName": "Electric Heater",
-        "Modified": 1500
+        "Modified": 15
       },
       "fluid.combiner": {
         "DisplayName": "Fluid Combiner",
-        "Modified": 1500
+        "Modified": 15
       },
       "fluid.splitter": {
         "DisplayName": "Fluid Splitter",
-        "Modified": 1500
+        "Modified": 15
       },
       "fluid.switch": {
         "DisplayName": "Fluid Switch & Pump",
@@ -1588,31 +1674,31 @@
       },
       "electric.andswitch": {
         "DisplayName": "AND Switch",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.blocker": {
         "DisplayName": "Blocker",
-        "Modified": 1500
+        "Modified": 15
       },
       "electrical.branch": {
         "DisplayName": "Electrical Branch",
-        "Modified": 1500
+        "Modified": 15
       },
       "electrical.combiner": {
         "DisplayName": "Root Combiner",
-        "Modified": 1500
+        "Modified": 15
       },
       "electrical.memorycell": {
         "DisplayName": "Memory Cell",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.orswitch": {
         "DisplayName": "OR Switch",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.random.switch": {
         "DisplayName": "RAND Switch",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.rf.broadcaster": {
         "DisplayName": "RF Broadcaster",
@@ -1624,27 +1710,27 @@
       },
       "electric.xorswitch": {
         "DisplayName": "XOR Switch",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.fuelgenerator.small": {
         "DisplayName": "Small Generator",
-        "Modified": 100
+        "Modified": 1
       },
       "electric.generator.small": {
         "DisplayName": "Test Generator",
-        "Modified": 100
+        "Modified": 1
       },
       "electric.solarpanel.large": {
         "DisplayName": "Large Solar Panel",
-        "Modified": 900
+        "Modified": 9
       },
       "electric.igniter": {
         "DisplayName": "Igniter",
-        "Modified": 900
+        "Modified": 9
       },
       "electric.flasherlight": {
         "DisplayName": "Flasher Light",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.simplelight": {
         "DisplayName": "Simple Light",
@@ -1652,7 +1738,7 @@
       },
       "electric.sirenlight": {
         "DisplayName": "Siren Light",
-        "Modified": 1500
+        "Modified": 15
       },
       "powered.water.purifier": {
         "DisplayName": "Powered Water Purifier",
@@ -1660,15 +1746,15 @@
       },
       "electric.switch": {
         "DisplayName": "Switch",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.splitter": {
         "DisplayName": "Splitter",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.sprinkler": {
         "DisplayName": "Sprinkler",
-        "Modified": 1000
+        "Modified": 10
       },
       "electric.teslacoil": {
         "DisplayName": "Tesla Coil",
@@ -1676,7 +1762,7 @@
       },
       "electric.timer": {
         "DisplayName": "Timer",
-        "Modified": 1500
+        "Modified": 15
       },
       "electric.cabletunnel": {
         "DisplayName": "Cable Tunnel",
@@ -1720,7 +1806,7 @@
       },
       "xmas.lightstring.advanced": {
         "DisplayName": "Deluxe Christmas Lights",
-        "Modified": 30000
+        "Modified": 300
       },
       "autoturret": {
         "DisplayName": "Auto Turret",
@@ -1742,55 +1828,55 @@
     "Fun": {
       "firework.boomer.blue": {
         "DisplayName": "Blue Boomer",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.boomer.champagne": {
         "DisplayName": "Champagne Boomer",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.boomer.green": {
         "DisplayName": "Green Boomer",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.boomer.orange": {
         "DisplayName": "Orange Boomer",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.boomer.red": {
         "DisplayName": "Red Boomer",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.boomer.violet": {
         "DisplayName": "Violet Boomer",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.romancandle.blue": {
         "DisplayName": "Blue Roman Candle",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.romancandle.green": {
         "DisplayName": "Green Roman Candle",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.romancandle.red": {
         "DisplayName": "Red Roman Candle",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.romancandle.violet": {
         "DisplayName": "Violet Roman Candle",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.volcano": {
         "DisplayName": "White Volcano Firework",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.volcano.red": {
         "DisplayName": "Red Volcano Firework",
-        "Modified": 2000
+        "Modified": 20
       },
       "firework.volcano.violet": {
         "DisplayName": "Violet Volcano Firework",
-        "Modified": 2000
+        "Modified": 20
       },
       "fun.bass": {
         "DisplayName": "Shovel Bass",
@@ -1996,7 +2082,7 @@
     "Food": {
       "apple": {
         "DisplayName": "Apple",
-        "Modified": 5000
+        "Modified": 50
       },
       "apple.spoiled": {
         "DisplayName": "Rotten Apple",
@@ -2008,147 +2094,147 @@
       },
       "blueberries": {
         "DisplayName": "Blueberries",
-        "Modified": 10000
+        "Modified": 100
       },
       "cactusflesh": {
         "DisplayName": "Cactus Flesh",
-        "Modified": 5000
+        "Modified": 50
       },
       "can.beans": {
         "DisplayName": "Can of Beans",
-        "Modified": 5000
+        "Modified": 50
       },
       "can.tuna": {
         "DisplayName": "Can of Tuna",
-        "Modified": 5000
+        "Modified": 50
       },
       "chocholate": {
         "DisplayName": "Chocolate Bar",
-        "Modified": 5000
+        "Modified": 50
       },
       "fish.cooked": {
         "DisplayName": "Cooked Fish",
-        "Modified": 10000
+        "Modified": 100
       },
       "fish.raw": {
         "DisplayName": "Raw Fish",
-        "Modified": 10000
+        "Modified": 100
       },
       "fish.minnows": {
         "DisplayName": "Minnows",
-        "Modified": 10000
+        "Modified": 100
       },
       "fish.troutsmall": {
         "DisplayName": "Small Trout",
-        "Modified": 10000
+        "Modified": 100
       },
       "granolabar": {
         "DisplayName": "Granola Bar",
-        "Modified": 10000
+        "Modified": 100
       },
       "chicken.burned": {
         "DisplayName": "Burnt Chicken",
-        "Modified": 10000
+        "Modified": 100
       },
       "chicken.cooked": {
         "DisplayName": "Cooked Chicken",
-        "Modified": 10000
+        "Modified": 100
       },
       "chicken.raw": {
         "DisplayName": "Raw Chicken Breast",
-        "Modified": 10000
+        "Modified": 100
       },
       "chicken.spoiled": {
         "DisplayName": "Spoiled Chicken",
-        "Modified": 10000
+        "Modified": 100
       },
       "deermeat.burned": {
         "DisplayName": "Burnt Deer Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "deermeat.cooked": {
         "DisplayName": "Cooked Deer Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "deermeat.raw": {
         "DisplayName": "Raw Deer Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "horsemeat.burned": {
         "DisplayName": "Burnt Horse Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "horsemeat.cooked": {
         "DisplayName": "Cooked Horse Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "horsemeat.raw": {
         "DisplayName": "Raw Horse Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "humanmeat.burned": {
         "DisplayName": "Burnt Human Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "humanmeat.cooked": {
         "DisplayName": "Cooked Human Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "humanmeat.raw": {
         "DisplayName": "Raw Human Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "humanmeat.spoiled": {
         "DisplayName": "Spoiled Human Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "bearmeat.burned": {
         "DisplayName": "Burnt Bear Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "bearmeat.cooked": {
         "DisplayName": "Cooked Bear Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "bearmeat": {
         "DisplayName": "Raw Bear Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "wolfmeat.burned": {
         "DisplayName": "Burnt Wolf Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "wolfmeat.cooked": {
         "DisplayName": "Cooked Wolf Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "wolfmeat.raw": {
         "DisplayName": "Raw Wolf Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "wolfmeat.spoiled": {
         "DisplayName": "Spoiled Wolf Meat",
-        "Modified": 10000
+        "Modified": 100
       },
       "meat.pork.burned": {
         "DisplayName": "Burnt Pork",
-        "Modified": 10000
+        "Modified": 100
       },
       "meat.pork.cooked": {
         "DisplayName": "Cooked Pork",
-        "Modified": 10000
+        "Modified": 100
       },
       "meat.boar": {
         "DisplayName": "Raw Pork",
-        "Modified": 10000
+        "Modified": 100
       },
       "mushroom": {
         "DisplayName": "Mushroom",
-        "Modified": 5000
+        "Modified": 50
       },
       "jar.pickle": {
         "DisplayName": "Pickles",
-        "Modified": 5000
+        "Modified": 50
       },
       "smallwaterbottle": {
         "DisplayName": "Small Water Bottle",
@@ -2164,203 +2250,203 @@
       },
       "black.berry": {
         "DisplayName": "Black Berry",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.black.berry": {
         "DisplayName": "Black Berry Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.black.berry": {
         "DisplayName": "Black Berry Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "blue.berry": {
         "DisplayName": "Blue Berry",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.blue.berry": {
         "DisplayName": "Blue Berry Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.blue.berry": {
         "DisplayName": "Blue Berry Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "green.berry": {
         "DisplayName": "Green Berry",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.green.berry": {
         "DisplayName": "Green Berry Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.green.berry": {
         "DisplayName": "Green Berry Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "red.berry": {
         "DisplayName": "Red Berry",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.red.berry": {
         "DisplayName": "Red Berry Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.red.berry": {
         "DisplayName": "Red Berry Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "white.berry": {
         "DisplayName": "White Berry",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.white.berry": {
         "DisplayName": "White Berry Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.white.berry": {
         "DisplayName": "White Berry Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "yellow.berry": {
         "DisplayName": "Yellow Berry",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.yellow.berry": {
         "DisplayName": "Yellow Berry Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.yellow.berry": {
         "DisplayName": "Yellow Berry Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "corn": {
         "DisplayName": "Corn",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.corn": {
         "DisplayName": "Corn Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.corn": {
         "DisplayName": "Corn Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "clone.hemp": {
         "DisplayName": "Hemp Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.hemp": {
         "DisplayName": "Hemp Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "potato": {
         "DisplayName": "Potato",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.potato": {
         "DisplayName": "Potato Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.potato": {
         "DisplayName": "Potato Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "pumpkin": {
         "DisplayName": "Pumpkin",
-        "Modified": 10000
+        "Modified": 100
       },
       "clone.pumpkin": {
         "DisplayName": "Pumpkin Plant Clone",
-        "Modified": 15000
+        "Modified": 150
       },
       "seed.pumpkin": {
         "DisplayName": "Pumpkin Seed",
-        "Modified": 15000
+        "Modified": 150
       },
       "healingtea.advanced": {
         "DisplayName": "Advanced Healing Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "healingtea": {
         "DisplayName": "Basic Healing Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "healingtea.pure": {
         "DisplayName": "Pure Healing Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "maxhealthtea.advanced": {
         "DisplayName": "Advanced Max Health Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "maxhealthtea": {
         "DisplayName": "Basic Max Health Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "maxhealthtea.pure": {
         "DisplayName": "Pure Max Health Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "oretea.advanced": {
         "DisplayName": "Advanced Ore Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "oretea": {
         "DisplayName": "Basic Ore Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "oretea.pure": {
         "DisplayName": "Pure Ore Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "radiationremovetea.advanced": {
         "DisplayName": "Advanced Rad. Removal Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "radiationremovetea": {
         "DisplayName": "Rad. Removal Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "radiationremovetea.pure": {
         "DisplayName": "Pure Rad. Removal Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "radiationresisttea.advanced": {
         "DisplayName": "Adv. Anti-Rad Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "radiationresisttea": {
         "DisplayName": "Anti-Rad Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "radiationresisttea.pure": {
         "DisplayName": "Pure Anti-Rad Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "scraptea.advanced": {
         "DisplayName": "Advanced Scrap Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "scraptea": {
         "DisplayName": "Basic Scrap Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "scraptea.pure": {
         "DisplayName": "Pure Scrap Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "woodtea.advanced": {
         "DisplayName": "Advanced Wood Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "woodtea": {
         "DisplayName": "Basic Wood Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "woodtea.pure": {
         "DisplayName": "Pure Wood Tea",
-        "Modified": 300
+        "Modified": 30
       },
       "grub": {
         "DisplayName": "Grub",
@@ -2401,6 +2487,10 @@
       "fish.yellowperch": {
         "DisplayName": "Yellow Perch",
         "Modified": 10
+      },
+      "bottle.vodka": {
+        "DisplayName": "Vodka Bottle",
+        "Modified": 1
       }
     },
     "Resources": {
@@ -2414,111 +2504,111 @@
       },
       "fat.animal": {
         "DisplayName": "Animal Fat",
-        "Modified": 150000
+        "Modified": 5000
       },
       "battery.small": {
         "DisplayName": "Battery - Small",
-        "Modified": 50
+        "Modified": 5
       },
       "bone.fragments": {
         "DisplayName": "Bone Fragments",
-        "Modified": 150000
+        "Modified": 5000
       },
       "cctv.camera": {
         "DisplayName": "CCTV Camera",
-        "Modified": 4096
+        "Modified": 128
       },
       "charcoal": {
         "DisplayName": "Charcoal",
-        "Modified": 150000
+        "Modified": 5000
       },
       "cloth": {
         "DisplayName": "Cloth",
-        "Modified": 150000
+        "Modified": 5000
       },
       "crude.oil": {
         "DisplayName": "Crude Oil",
-        "Modified": 13500
+        "Modified": 3500
       },
       "diesel_barrel": {
         "DisplayName": "Diesel Fuel",
-        "Modified": 15000
+        "Modified": 100
       },
       "can.beans.empty": {
         "DisplayName": "Empty Can Of Beans",
-        "Modified": 500
+        "Modified": 50
       },
       "can.tuna.empty": {
         "DisplayName": "Empty Tuna Can",
-        "Modified": 500
+        "Modified": 50
       },
       "explosives": {
         "DisplayName": "Explosives",
-        "Modified": 5000
+        "Modified": 500
       },
       "fertilizer": {
         "DisplayName": "Fertilizer",
-        "Modified": 150000
+        "Modified": 5000
       },
       "gunpowder": {
         "DisplayName": "Gun Powder",
-        "Modified": 150000
+        "Modified": 5000
       },
       "horsedung": {
         "DisplayName": "Horse Dung",
-        "Modified": 2500
+        "Modified": 250
       },
       "hq.metal.ore": {
         "DisplayName": "High Quality Metal Ore",
-        "Modified": 150000
+        "Modified": 5000
       },
       "metal.refined": {
         "DisplayName": "High Quality Metal",
-        "Modified": 10000
+        "Modified": 500
       },
       "leather": {
         "DisplayName": "Leather",
-        "Modified": 150000
+        "Modified": 5000
       },
       "lowgradefuel": {
         "DisplayName": "Low Grade Fuel",
-        "Modified": 150000
+        "Modified": 3500
       },
       "metal.fragments": {
         "DisplayName": "Metal Fragments",
-        "Modified": 150000
+        "Modified": 5000
       },
       "metal.ore": {
         "DisplayName": "Metal Ore",
-        "Modified": 150000
+        "Modified": 5000
       },
       "paper": {
         "DisplayName": "Paper",
-        "Modified": 150000
+        "Modified": 5000
       },
       "plantfiber": {
         "DisplayName": "Plant Fiber",
-        "Modified": 150000
+        "Modified": 5000
       },
       "researchpaper": {
         "DisplayName": "Research Paper",
-        "Modified": 150000
+        "Modified": 5000
       },
       "scrap": {
         "DisplayName": "Scrap",
-        "Modified": 150000
+        "Modified": 5000
       },
       "stones": {
         "DisplayName": "Stones",
-        "Modified": 150000
+        "Modified": 5000
       },
       "sulfur.ore": {
         "DisplayName": "Sulfur Ore",
-        "Modified": 150000
+        "Modified": 5000
       },
       "sulfur": {
         "DisplayName": "Sulfur",
-        "Modified": 150000
+        "Modified": 5000
       },
       "targeting.computer": {
         "DisplayName": "Targeting Computer",
@@ -2530,7 +2620,7 @@
       },
       "wood": {
         "DisplayName": "Wood",
-        "Modified": 150000
+        "Modified": 5000
       }
     },
     "Tool": {
@@ -2644,6 +2734,14 @@
       },
       "fishingrod.handmade": {
         "DisplayName": "Handmade Fishing Rod",
+        "Modified": 1
+      },
+      "fishing.tackle": {
+        "DisplayName": "Fishing Tackle",
+        "Modified": 1
+      },
+      "skull": {
+        "DisplayName": "Skull",
         "Modified": 1
       }
     },
@@ -2884,19 +2982,19 @@
       },
       "antiradpills": {
         "DisplayName": "Anti-Radiation Pills",
-        "Modified": 1000
+        "Modified": 15
       },
       "largemedkit": {
         "DisplayName": "Large Medkit",
-        "Modified": 200
+        "Modified": 1
       },
       "syringe.medical": {
         "DisplayName": "Medical Syringe",
-        "Modified": 1000
+        "Modified": 10
       },
       "bandage": {
         "DisplayName": "Bandage",
-        "Modified": 3000
+        "Modified": 15
       }
     }
   }
