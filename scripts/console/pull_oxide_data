@@ -24,6 +24,10 @@ kits|Kits)
   echo "Pulling Kits data from ${SERVER}"
   $SCP_CMD:/game/oxide/data/Kits/Kits.json "${REPO_DIR}/oxide/data/Kits/"
   ;;
+shop|Shop)
+  echo "Pulling Shop data from ${SERVER}"
+  $SCP_CMD:/game/oxide/data/Shop.json "${REPO_DIR}/oxide/data/"
+  ;;
 copypaste|CopyPaste)
   echo "Pulling CopyPaste data from ${SERVER}"
   $SCP_CMD:/game/oxide/data/copypaste/*.json "${REPO_DIR}/oxide/data/copypaste/"
