@@ -70,7 +70,7 @@ wolf.population
 boar.population
 ```
 
-
+knoppiness
 
 
 #### Notes
