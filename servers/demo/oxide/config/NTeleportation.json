@@ -43,8 +43,8 @@
     "Use Economics": true,
     "Use Server Rewards": false,
     "Wipe On Upgrade Or Change": true,
-    "Auto Generate Outpost Location": true,
-    "Auto Generate Bandit Location": true,
+    "Auto Generate Outpost Location": false,
+    "Auto Generate Bandit Location": false,
     "Show Time As Seconds Instead": false
   },
   "Admin": {
@@ -255,7 +255,7 @@
       "Bypass": 10
     },
     "Outpost": {
-      "Command Enabled": true,
+      "Command Enabled": false,
       "Allow TPB": true,
       "Allow Cave": false,
       "Cooldown": 600,
@@ -297,7 +297,7 @@
       "Bypass": 10
     },
     "Bandit": {
-      "Command Enabled": true,
+      "Command Enabled": false,
       "Allow TPB": true,
       "Allow Cave": false,
       "Cooldown": 600,

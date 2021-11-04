@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core.Plugins;
@@ -96,11 +95,14 @@ using WebSocketSharp;
  * Update 1.3.21
  * Updated Input checks
  * Fixed spectating players while using the UI Editor..
+ *
+ * Update 1.3.22
+ * Expanded the UI Editor Search parameters a bit
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.3.21")]
+    [Info("Stack Modifier", "Khan", "1.3.22")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
@@ -887,14 +889,13 @@ namespace Oxide.Plugins
                     });
                 }
 
-                if (_config.StackCategoryMultipliers[categoryName] >= 1 && _config.StackCategories[categoryName][item.shortname].Modified <= _config.StackCategoryMultipliers[categoryName])
-                {
-                    item.stackable = _config.StackCategoryMultipliers[categoryName];
-                }
-
                 foreach (var i in defaults)
                 {
-                    if (_config.StackCategories[categoryName][item.shortname].Modified >= i.Value)
+                    if (_config.StackCategoryMultipliers[categoryName] >= 1 && _config.StackCategories[categoryName][item.shortname].Modified <= i.Value)
+                    {
+                        item.stackable = _config.StackCategoryMultipliers[categoryName];
+                    }
+                    else if (_config.StackCategories[categoryName][item.shortname].Modified >= i.Value)
                     {
                         item.stackable = _config.StackCategories[categoryName][item.shortname].Modified;
                     }
@@ -1421,7 +1422,7 @@ namespace Oxide.Plugins
             x.amount = amount;
             x._condition = item._condition;
             x._maxCondition = item._maxCondition;
-            //x.MarkDirty();
+            x.MarkDirty();
             x.MoveToContainer(player.inventory.containerMain);
         }
         
@@ -2008,7 +2009,7 @@ namespace Oxide.Plugins
                         if (_config.StackCategories[catid].ContainsKey(shortname))
                         {
                             _Items cItem = _config.StackCategories[catid][shortname];
-                            if (cItem.DisplayName.Replace(" ", "").ToLower().Contains(input.Replace("_", " ").ToLower()))
+                            if (cItem.DisplayName.ToLower().Contains(input.Replace("_", " ").ToLower()))
                                 cItems.Add(cItem);
                         }
                     }
@@ -2092,8 +2093,7 @@ namespace Oxide.Plugins
             string catName = arg.GetString(0).Replace("_", " ");
             string item = arg.GetString(1).Replace("_", " ");
             int amount = arg.GetInt(2);
-            bool isMatch = Regex.IsMatch(item, @"\d");
-            if (isMatch || amount == 0 || amount.ToString().IsNullOrEmpty()) return;
+            if (amount == 0 || amount.ToString().IsNullOrEmpty()) return;
             var cat = _config.StackCategories[catName];
             foreach (var shortname in cat.Keys)
             {
@@ -2130,9 +2130,8 @@ namespace Oxide.Plugins
         {
             BasePlayer player = arg.Player();
             string catid = arg.GetString(0);
-            string input = arg.GetString(1) + arg.GetString(2) + arg.GetString(3) + arg.GetString(4);
-            bool isMatch = Regex.IsMatch(input, @"\d");
-            if (input.IsNullOrEmpty() || isMatch) return;
+            string input = arg.GetString(1) + arg.GetString(2) + arg.GetString(3) + arg.GetString(4) + arg.GetString(5);
+            if (input.IsNullOrEmpty()) return;
             if (player == null || !permission.UserHasPermission(player.UserIDString, Admin)) return; 
             ShowEditor(player, catid,1, arg.GetInt(1), false, false, true, input);
         }

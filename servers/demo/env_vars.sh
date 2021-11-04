@@ -9,7 +9,7 @@ export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
 export WORLD_SIZE="2700"
 # toggle custom maps
 export CUSTOM_MAP="enabled" # enabled / disabled
-export CUSTOM_MAP_URL="https://solidrust.net/maps/SRT-NoLAG-Small.map" #  only if CUSTOM_MAP is "enabled"
+export CUSTOM_MAP_URL="https://solidrust.net/maps/SRT-NoLAG-20211104.map" #  only if CUSTOM_MAP is "enabled"
 # Current Map seed
 export SEED=$(cat ${GAME_ROOT}/server.seed)
 # Discord Settings

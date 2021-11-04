@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-    [Info("Chute", "ColonBlow", "2.0.7")]
+    [Info("Chute", "ColonBlow", "2.0.8")]
     [Description("Allows authorized players to parachute from there current location or predefined height")]
     class Chute : RustPlugin
     {
@@ -195,7 +195,7 @@ namespace Oxide.Plugins
             var hasstab = chutemount.GetComponent<StabilityEntity>();
             if (hasstab) hasstab.grounded = true;
             var hasmount = chutemount.GetComponent<BaseMountable>();
-            if (hasmount) hasmount.isMobile = true;
+            if (hasmount) hasmount.needsVehicleTick = true;
             chutemount.skinID = 1311472987;
             chutemount?.Spawn();
             if (chutemount != null)

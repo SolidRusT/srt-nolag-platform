@@ -23,7 +23,7 @@ using System.Reflection;
 
 namespace Oxide.Plugins
 {
-    [Info("Raiding Zombies", "Razor", "2.0.5", ResourceId = 23)]
+    [Info("Raiding Zombies", "Razor", "2.0.9", ResourceId = 23)]
     [Description("Make zombies toss C4")]
     public class RaidingZombies : RustPlugin
     {
@@ -33,6 +33,7 @@ namespace Oxide.Plugins
         private int totalC4z;
         private int totalRz;
         public bool theSwitch = false;
+        public List<uint> raidingZombie = new List<uint>();
 
         #region Config
 
@@ -50,6 +51,8 @@ namespace Oxide.Plugins
                 public string explosive { get; set; }
                 public bool targetPlayerOnly { get; set; }
                 public float BaseScanDistance { get; set; }
+                public float DamageScale { get; set; }
+                public List<string> OnlyHordProfiles { get; set; }
             }
 
             public Oxide.Core.VersionNumber Version { get; set; }
@@ -78,7 +81,9 @@ namespace Oxide.Plugins
                     totalRockets = 2,
                     explosive = "explosive.timed",
                     targetPlayerOnly = true,
-                    BaseScanDistance = 40f
+                    BaseScanDistance = 40f,
+                    DamageScale = 10f,
+                    OnlyHordProfiles = new List<string>()
                 },
 
                 Version = Version
@@ -112,7 +117,19 @@ namespace Oxide.Plugins
                     int rando = UnityEngine.Random.Range(0, 100);
                     if (rando <= configData.settings.chance)
                     {
-                        npc?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(npc.GetComponent<ZombieHorde.HordeMember>()));
+                        ZombieHorde.HordeMember member = npc?.GetComponent<ZombieHorde.HordeMember>();
+
+                        if (member != null && ZombieHorde.configData.Horde.UseProfiles && !string.IsNullOrEmpty(member.Manager.hordeProfile) && configData.settings.OnlyHordProfiles.Count > 0)
+                        {
+                            if (configData.settings.OnlyHordProfiles.Contains(member.Manager.hordeProfile))
+                            {
+                                 npc?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(npc.GetComponent<ZombieHorde.HordeMember>()));
+                            }
+                        }
+                        else if (configData.settings.OnlyHordProfiles == null || configData.settings.OnlyHordProfiles.Count <= 0)
+                        {
+                            npc?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(npc.GetComponent<ZombieHorde.HordeMember>()));
+                        }
                     }
                 }
             });
@@ -121,6 +138,11 @@ namespace Oxide.Plugins
         private void OnServerInitialized()
         {
             _instance = this;
+            if (configData.settings.OnlyHordProfiles == null)
+            {
+                configData.settings.OnlyHordProfiles = new List<string>();
+                SaveConfig();
+            }
             if (configData.settings.explosive == null || configData.settings.explosive == "")
             {
                 configData.settings.explosive = "explosive.timed";
@@ -134,8 +156,19 @@ namespace Oxide.Plugins
                         int rando = UnityEngine.Random.Range(0, 100);
                         if (rando <= configData.settings.chance)
                         {
-                            g?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(g.GetComponent<ZombieHorde.HordeMember>()));
-                            totalZombies++;
+                            if (ZombieHorde.configData.Horde.UseProfiles && !string.IsNullOrEmpty(g.Manager.hordeProfile) && configData.settings.OnlyHordProfiles.Count > 0)
+                            {
+                                if (configData.settings.OnlyHordProfiles.Contains(g.Manager.hordeProfile))
+                                {
+                                    g?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(g.GetComponent<ZombieHorde.HordeMember>()));
+                                    totalZombies++;
+                                }
+                            }
+                            else if (configData.settings.OnlyHordProfiles == null || configData.settings.OnlyHordProfiles.Count <= 0)
+                            {
+                                g?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(g.GetComponent<ZombieHorde.HordeMember>()));
+                                totalZombies++;
+                            }
                         }
                     }
                 isInit = true;
@@ -163,22 +196,22 @@ namespace Oxide.Plugins
             private bool DoNotMove;
             private bool notActive;
 			private Vector3 destination = Vector3.zero;
-			
+			private bool isSetup { get; set; }
             public mynewclass(ZombieHorde.HordeMember hordeMember) : base(AIState.Cooldown)
             {
                 this.hordeMember = hordeMember;
-                setup();
             }
 
-            private void setup()
+            public void setup()
             {
+				isSetup = true;
 				if (_instance.theSwitch == false && _instance.configData.settings.totalExplosives > 0)
                 {
                     _instance.totalC4z++;
                     totalBoom = _instance.configData.settings.totalExplosives;
 					if (_instance.configData.settings.totalRockets <= 0)
 						_instance.theSwitch = false;
-                    _instance.theSwitch = true;
+                    else _instance.theSwitch = true;
 				}
 				
                 else if (_instance.configData.settings.totalRockets > 0)
@@ -191,7 +224,10 @@ namespace Oxide.Plugins
             }
 
             public override float GetWeight()
-            {
+            {	
+				if (!isSetup) setup();
+                if (notActive) return 0f;
+
                 if (nextTargetTime < Time.time)
                     lookForTarget();
 
@@ -242,14 +278,31 @@ namespace Oxide.Plugins
 
             public override void StateEnter()
             {
+                if (!_instance.raidingZombie.Contains(hordeMember.Entity.net.ID))
+                    _instance.raidingZombie.Add(hordeMember.Entity.net.ID);
                 hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
                 hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, false);
                 base.StateEnter();
             }
 
+            public override void StateLeave()
+            {
+                if (_instance.raidingZombie.Contains(hordeMember.Entity.net.ID))
+                    _instance.raidingZombie.Remove(hordeMember.Entity.net.ID);
+                hordeMember.Entity.SetDucked(false);
+                base.StateLeave();
+            }
+
             public override StateStatus StateThink(float delta)
             {
                 base.StateThink(delta);
+                if (hordeMember.Manager.HasInterestPoint && targetEntity != null)
+                {
+                    hordeMember.Manager.SetPrimaryTarget(targetEntity);
+                }
+
+                if (hordeMember.Entity.IsDormant)
+                    hordeMember.Entity.IsDormant = false;
 
                 if (targetEntity == null)
                 {
@@ -267,17 +320,29 @@ namespace Oxide.Plugins
                 else
                 {
                     if (!DoNotMove)
-                    {
-                        if (Time.time > nextPositionUpdateTime)
+                    {   
+                        if (TargetInThrowableRange() && Time.time < nextThrowTime)
+                        {
+                            hordeMember.Entity.SetAimDirection((nextPosition - hordeMember.Entity.transform.position).normalized);
+                            hordeMember.Entity.Stop();
+                        }
+                        else if (Time.time > nextPositionUpdateTime)
                         {
 							if (!isC4) destination = hordeMember.Entity.GetRandomPositionAround(nextPosition, 10f, 11f);
-							else destination = hordeMember.Entity.GetRandomPositionAround(nextPosition, 1f, 2f);
+							else destination = hordeMember.Entity.GetRandomPositionAround(nextPosition, 2f, 3f);
 							
                             hordeMember.SetDestination(destination);
-							
-                            if (distanceToTarget < 5f)
+
+                            if (distanceToTarget < 9f)
+                            {
+                                hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, true);
                                 hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Walk);
-                            else hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
+                            }
+                            else
+                            {
+                                hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, false);
+                                hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
+                            }
                             nextPositionUpdateTime = Time.time + 3f;
                         }
                     }
@@ -295,8 +360,8 @@ namespace Oxide.Plugins
 
             private void lookForTarget()
             {
-                nextTargetTime = Time.time + 20f;
-                if (notActive || hordeMember.Entity.currentTarget != null || nextThrowTime > Time.time || targetEntity != null || isThrowingWeapon) return;
+                nextTargetTime = Time.time + 15f;
+                if (notActive || nextThrowTime > Time.time || targetEntity != null || isThrowingWeapon) return; //hordeMember.Entity.currentTarget != null
 
                 ulong targetID = 0;
                 if (_instance.configData.settings.targetPlayerOnly)
@@ -310,7 +375,7 @@ namespace Oxide.Plugins
                 float closest = float.MaxValue;
                 foreach (BaseCombatEntity entity in nearby.Distinct().ToList())
                 {
-                    if (entity == null || entity.OwnerID == 0 || entity is BasePlayer || entity.IsNpc) continue;
+                    if (entity == null || entity.OwnerID == 0 || entity is BasePlayer || entity.IsNpc || entity is ZombieHorde.HordeMember || entity == hordeMember.Entity) continue;
 
                     if (isBuilding((entity)))
                     {
@@ -395,23 +460,26 @@ namespace Oxide.Plugins
                         hordeMember.Entity.SetAimDirection((nextPosition - hordeMember.Entity.transform.position).normalized);
                         yield return CoroutineEx.waitForSeconds(0.8f);
                         fireRocket();
+                        yield return CoroutineEx.waitForSeconds(2.0f);
                         DoNotMove = false;
                     }
 
-                    nextThrowTime = Time.time + 15f;
+                    nextThrowTime = Time.time + 15f;					
                 }
 
                 yield return CoroutineEx.waitForSeconds(1f);
                 hordeMember.Entity.SetDucked(false);
                 hordeMember.Entity.EquipWeapon();
                 removeweapons();
-                yield return CoroutineEx.waitForSeconds(1f);
+                yield return CoroutineEx.waitForSeconds(0.1f);
 
                 totalTossed++;
                 if (totalTossed >= totalBoom)
+				{
                     notActive = true;
-
+				}
                 isThrowingWeapon = false;
+				ServerMgr.Instance.StopCoroutine(ThrowWeaponBoom());
             }
 
             private void EquipThrowable()
@@ -476,6 +544,8 @@ namespace Oxide.Plugins
 			if (hitinfo == null || hitinfo.WeaponPrefab == null || hitinfo.Initiator == null) return null;
 			if (hitinfo.WeaponPrefab.ShortPrefabName.Contains("rocket") && hitinfo.Initiator is ScientistNPC)
 				return false;
+			if (hitinfo.WeaponPrefab.ShortPrefabName.Contains("timed") && hitinfo.Initiator is ScientistNPC)
+				return false;
 			return null;
 		}
 		
@@ -483,6 +553,41 @@ namespace Oxide.Plugins
         {
             if (hitinfo?.Initiator is ScientistNPC) return true;
             return null;
-        }		
+        }
+		object CanEntityTakeDamage(ScientistNPC entity, HitInfo hitinfo)
+        {
+            if (hitinfo == null || hitinfo.WeaponPrefab == null || hitinfo.Initiator == null) return null;
+			if (hitinfo.WeaponPrefab.ShortPrefabName.Contains("rocket") && hitinfo.Initiator is ScientistNPC)
+				return false;
+			if (hitinfo.WeaponPrefab.ShortPrefabName.Contains("timed") && hitinfo.Initiator is ScientistNPC)
+				return false;
+			return null;
+        }
+		
+        private void OnEntityTakeDamage(BuildingBlock baseCombatEntity, HitInfo hitInfo)
+        {
+            if (hitInfo != null && baseCombatEntity != null && configData.settings.DamageScale > 0f)
+            {
+				if (hitInfo.WeaponPrefab != null && hitInfo.WeaponPrefab.ShortPrefabName.Contains("beancan")) return;
+				
+				if (hitInfo.damageTypes == null || hitInfo.damageTypes.Get(DamageType.Explosion) <= 0) return;
+				
+                ZombieHorde.HordeMember hordeMember;
+
+                if (hitInfo.InitiatorPlayer != null && hitInfo.InitiatorPlayer.net != null && raidingZombie.Contains(hitInfo.InitiatorPlayer.net.ID))
+                {
+                    hordeMember = hitInfo.InitiatorPlayer.GetComponent<ZombieHorde.HordeMember>();
+                    if (hordeMember != null)
+                    {
+                        if (hitInfo.damageTypes.Get(DamageType.Explosion) > 0)
+                        {
+                            hitInfo.damageTypes.Scale(DamageType.Explosion, configData.settings.DamageScale);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+		
     }
 }
