@@ -38,19 +38,19 @@
           "Items For Craft": [
             {
               "Shortname": "gears",
-              "Amount": 5,
+              "Amount": 20,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
-              "Shortname": "roadsigns",
-              "Amount": 5,
+              "Shortname": "metalblade",
+              "Amount": 10,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
-              "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Shortname": "metal.refined",
+              "Amount": 100,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -84,14 +84,14 @@
               "Title (empty - default)": null
             },
             {
-              "Shortname": "roadsigns",
-              "Amount": 5,
+              "Shortname": "carburetor3",
+              "Amount": 1,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
-              "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Shortname": "wood",
+              "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -202,19 +202,19 @@
           "Items For Craft": [
             {
               "Shortname": "gears",
-              "Amount": 5,
+              "Amount": 30,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
-              "Shortname": "roadsigns",
-              "Amount": 5,
+              "Shortname": "sheetmetal",
+              "Amount": 20,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 10000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -262,7 +262,7 @@
             },
             {
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 4000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -303,7 +303,7 @@
             },
             {
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 10000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -362,7 +362,7 @@
             },
             {
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
             }
