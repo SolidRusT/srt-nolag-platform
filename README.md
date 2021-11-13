@@ -1,107 +1,121 @@
-# SolidRusT Server Configuration
+# SolidRusT Installation
+## SolidRusT Game Server
+ * [Installing SRT Game server](INSTALL.md)
+ * [Useful Admin commands](docs/)
 
- - no lag gameplay
- - #ffe300
- - git config --global core.autocrlf false
- - git add --renormalize .
+# SolidRusT Game Server Releases
+This document describes the workflow for creating, managing and deploying releases to SolidRusT servers.
 
-## Install Rust Server
+## Getting Started
+Create a local copy of this code repository
+* [How to use GitHub](https://docs.github.com/en/get-started/quickstart/set-up-git) Reference for setting up your local github command line tools
+*  [Clone GitHub Repo](#clone-remote-github-pepository) Clone this remote github repository to your local machine
+*  [Update GitHub Repo](#update-local-github-repository) Update your local clone with the remote repository
 
-`install_1_system.sh`
+## Updating SolidRusT's next release
+SolidRusT releases get auto-deployed every server wipe. Here are the steps involved for making changes to an upcomming SolidRusT release.
+*  [Commit Changes](#commit-local-changes) commit your changes to your local copy of this github repository
+*  [Update GitHub](#push-local-repository-changes) push and merge your local changes into the remote github repository
+*  [Update SRT Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
 
-`install_2_server.sh`
+## Deploying the release before a scheduled wipe
+These steps are to manually deploy the current SolidRusT without waiting for the scheduled wipe and auto-deployment jobs.
+*  [Update SRT Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
+*  [Deploy SRT Release](#deploy-srt-release) deploy game server release from the SolidRusT distribution server
+*  [Reload Plugins](#load-and-reload-plugins) load and reload any new or updated plugins
 
-create the initial `server/solidrust/cfg/server/cfg` file, ot use one from another server's backup.
+## Save running SolidRusT game server configurations into the Release
+When making changes to plugins like `Kits`, using the in-game user interface, these changes will need to be downloaded into the release.
+*  [Update Repo](#update-local-github-repository) update local repository with remote repository
+*  [Pull running configs](#pull-running-configs) pull configs from a running server
+*  [Commit Changes](#commit-local-changes) commit your changes to your local copy of this github repository
+*  [Update GitHub](#push-local-repository-changes) push and merge your local changes into the remote github repository
+*  [Update SRT Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
 
-`solidrust.sh`
+# SRT Playbooks (how-to)
+#### Clone remote GitHub Repository
 
-Once Rust Community server is working great, then we can get to the mods.
-
-Stop the server.
-
-`install_3_mods.sh`
-
-`solidrust.sh`
-
-## Backups
-
-`backup.sh`
-
-## Updates - First Tuseday of each month
-
-from the game F1 console
-
-```
-server.writecfg
-server.backup
-server.save
-server.stop( string "Getting FacePunched monthy" )
-```
-
-Then apply the latest patch from Steam.
-
+To create a local copy of this repository, choose from the following methods:
+* Clone Using website username and password
 ```bash
-steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 +quit
-steamcmd +login anonymous +force_install_dir ~/ +app_update 258550 validate +quit
+git clone https://github.com/suparious/solidrust.net.git
+cd solidrust.net
+```
+* Clone Using SSH keys
+See: [Adding SSH keys to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) for more information on this method.
+```bash
+git clone git@github.com:suparious/solidrust.net.git
+cd solidrust.net
 ```
 
-Now, re-run the mods installer.
-
-`install_3_mods.sh`
-
-Start the service.
-
-`solidrust.sh`
-
-
-### Emergency restarting
-
+#### Update local GitHub Repository
+Syncronize your local files with the remote Github repository.
+```bash
+cd solidrust.net # Optional, if you are already in this folder
+git checkout master && git pull
 ```
-#restart <seconds> <message>
-restart 120 “Don’t wander too far off!”
-```
+If you get some error messages, then you need to read and follow their suggestions OR just trash the `solidrust.net` folder and clone it from the remote repository to start over.
 
-### Other
-
-```
-bear.population
-stag.population
-wolf.population
-boar.population
+#### Commit local changes
+Once you are happy with your edits, commit them with a comment to indicate what you have changed.
+```bash
+cd solidrust.net                        # Optional, if you are already in this folder
+git config --global core.autocrlf false # need this if you use a Windows PC
+git add --renormalize .                 # need this if you use a Windows PC
+git add .       # Add any file that was changed into the release
+git commit -m "Type a breif description of what you changed here"
 ```
 
-knoppiness
+#### Push local repository changes
+Update GitHub with your local commit(s), by pushing and merging your changes with the remote GitHub repository.
+```bash
+cd solidrust.net # Optional, if you are already in this folder
+git push
+```
+
+#### Update SRT Distribution
+```bash
+sync_repo
+```
+
+#### Login to the Game server
+```bash
+<server_name_ssh>
+sudo su - <game_user>
+```
+
+#### Logout of the Game server
+```bash
+exit  # exit from game service user
+exit  # exit from game server SSH session
+```
+
+#### Deploy SRT Release
+This happens automatically every 5-15mins depending on the server's `crontab` configuration. To make this happen immediately, use the following steps:
+*  [Login to the Game server](#login-to-the-game-server) Starting from your admin console, login to the game server using SSH.
+* Update the game server from the SolidRusT distribution's current release.
+```bash
+update_repo game && update_mods
+```
+*  [Logout of the Game server](#logout-of-the-game-server)
+
+#### Load and Reload Plugins
+*  [Login to the Game server](#login-to-the-game-server) Starting from your admin console, login to the game server using SSH.
+```bash
+rcon "o.load *"
+rcon "o.reload <plugin_name>"
+```
+*  [Logout of the Game server](#logout-of-the-game-server)
+
+#### Pull running configs
+```
+pull_oxide_config <server_name> <plugin_name>
+```
+
+#### Pull plugin data
+```
+pull_oxide_data <server_name> <plugin_name>
+```
 
 
-#### Notes
-
-Universal:
-- SRBOT (SolidRust)
-- "Discord API Key": "ODA0OTkyMjk1NzM2NzA1MDI0.YBUZfw.a3N3MhU9x_dR63AlqcMzlWaBjgE",
-- "Enable Discord Extension Debugging": false,
-- "Bot Guild ID (Can be left blank if bot in only 1 guild)": "800206928562880522",
-- "Discord Join Code": "xgGEdzv2bw",
-
-SRVerify:
-- CaptainBanHammer: https://discord.com/api/webhooks/805028753985503244/s9K-0aAiyyCficw5ToVpoRRwIz3I6dGCM9mAqZ3Yv9aPQktXeL3_cGP6iSZQNOXKeD-E
-- SnitchBot: https://discord.com/api/webhooks/805028639921930260/O9g8bbaDpH0jnl3UXvZeLjTDf3KJo1a3GDcNpmjqCr5jwPUJvptFCUQclathu9jcAzxf
-- PlzHelps: https://discord.com/api/webhooks/805027533107626014/ZT3nzjTjuT52r9Kwtl3QvfDPl0_Y7I4U_FBMQRSn4YLLdR-oQ-k2uljAXkxaWtZYyeUS
-- GlobalChat: https://discord.com/api/webhooks/804099330939158559/IJhKfkLlm_wOxywNF4dxpPV9iIL7spYCZG3lViycnsGkTgsFDTe8pfc1K4CsVOETACvT
-- MuteChat: https://discord.com/api/webhooks/805028314170654761/1SUHRGqHJpORAi3sRpQLGKLk0Df8kJK1fe0YA0hsIfRxVLZA28AJiRPUxfk5ShjQdEfY
-- DeathNotes: https://discord.com/api/webhooks/804914766237270028/1SmwGIc0_8QNep3B1kL-ZSlz2qSNJ5iCRL9cpGK6NKrwPLVnuhyOQtQNqIVq05MlfplX
-
-West:
-- ServerStats
-- https://discord.com/api/webhooks/804915479436722207/tHhjh4mxP6-ObVzAy_2LZJEcsnUZX7xMxJYd0Y1BgVqZNosNFlXxv4cy-bworQ2V5GM1
-
-Connect:
-- https://discord.com/api/webhooks/804915117413105664/yrpsyVxGP91rPwMG3JauK22Hj8qbARlrYPTJJOe8f5ugSmyEdBuOVxyLZJxNa38PxLSZ
-Disconnect:
-- https://discord.com/api/webhooks/804915479436722207/tHhjh4mxP6-ObVzAy_2LZJEcsnUZX7xMxJYd0Y1BgVqZNosNFlXxv4cy-bworQ2V5GM1
-ServerStatus:
-- https://discord.com/api/webhooks/804915479436722207/tHhjh4mxP6-ObVzAy_2LZJEcsnUZX7xMxJYd0Y1BgVqZNosNFlXxv4cy-bworQ2V5GM1
-
-East:
-- ServerStats
-- https://discord.com/api/webhooks/805604705739997225/HtdsphVKtiu3SS6rrlzhBgK9B4dAf1KSFpaLXcNmbQX_jg-ZgDjggtYrqdd7U_PEc6kC
-
+[StackEdit](https://stackedit.io) - _StackEdit’s Markdown syntax highlighting is unique. The refined text formatting of the editor helps you visualize the final rendering of your files._
