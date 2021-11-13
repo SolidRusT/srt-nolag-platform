@@ -5,18 +5,18 @@ This document describes the workflow for creating, managing and deploying releas
 ## Getting Started
 Create a local copy of this code repository
 * [How to use GitHub](https://docs.github.com/en/get-started/quickstart/set-up-git) Reference for setting up your local github command line tools
-*  [Clone GitHub Repo](#clone-github-pepository) Clone this remote github repository to your local machine
+*  [Clone GitHub Repo](#clone-remote-github-pepository) Clone this remote github repository to your local machine
 *  [Update GitHub Repo](#update-local-github-repository) Update your local clone with the remote repository
 
 ## Updating SolidRusT's next release
 SolidRusT releases get auto-deployed every server wipe. Here are the steps involved for making changes to an upcomming SolidRusT release.
 *  [Commit Changes](#commit-local-changes) commit your changes to your local copy of this github repository
-*  [Push Release](#push-local-repository-changes) push and merge your local changes into the remote github repository
-*  [Update Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
+*  [Update GitHub](#push-local-repository-changes) push and merge your local changes into the remote github repository
+*  [Update SRT Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
 
 ## Deploying the release before a scheduled wipe
 These steps are to manually deploy the current SolidRusT without waiting for the scheduled wipe and auto-deployment jobs.
-*  [Update Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
+*  [Update SRT Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
 *  [Deploy SRT Release](#deploy-srt-release) deploy game server release from the SolidRusT distribution server
 *  [Reload Plugins](#load-and-reload-plugins) load and reload any new or updated plugins
 
@@ -25,8 +25,8 @@ When making changes to plugins like `Kits`, using the in-game user interface, th
 *  [Update Repo](#update-local-github-repository) update local repository with remote repository
 *  [Pull running configs](#pull-running-configs) pull configs from a running server
 *  [Commit Changes](#commit-local-changes) commit your changes to your local copy of this github repository
-*  [Push Release](#push-local-repository-changes) push and merge your local changes into the remote github repository
-*  [Update Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
+*  [Update GitHub](#push-local-repository-changes) push and merge your local changes into the remote github repository
+*  [Update SRT Distribution](#update-srt-distribution) update SolidRusT distribution server from the remote github repository
 
 ### SRT Playbooks (how-to)
 #### Clone remote GitHub Repository
@@ -61,7 +61,7 @@ git commit -m "Type a breif description of what you changed here"
 ```
 
 #### Push local repository changes
-Once you have made a commit to the release, push and merge your changes with the remote repository
+Update GitHub with your local commit(s), by pushing and merging your changes with the remote GitHub repository.
 ```bash
 cd solidrust.net # Optional, if you are already in this folder
 git push
