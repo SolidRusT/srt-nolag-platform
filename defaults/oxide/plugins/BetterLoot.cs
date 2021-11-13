@@ -17,7 +17,7 @@ using Facepunch.Extend;
 
 namespace Oxide.Plugins
 {
-    [Info("BetterLoot", "Default", "3.5.4")]
+    [Info("BetterLoot", "Default & Tryhard", "3.5.5")]
     [Description("A light loot container modification system")]
     public class BetterLoot : RustPlugin
     {
@@ -90,7 +90,15 @@ namespace Oxide.Plugins
                 "assets/bundled/prefabs/radtown/underwater_labs/crate_medical.prefab",
                 "assets/bundled/prefabs/radtown/underwater_labs/crate_fuel.prefab",
                 "assets/bundled/prefabs/radtown/underwater_labs/tech_parts_2.prefab",
-                //"assets/prefabs/npc/scientist/scientist_corpse.prefab"
+                "assets/content/props/roadsigns/roadsign1.prefab",
+                "assets/content/props/roadsigns/roadsign2.prefab",
+                "assets/content/props/roadsigns/roadsign3.prefab",
+                "assets/content/props/roadsigns/roadsign4.prefab",
+                "assets/content/props/roadsigns/roadsign5.prefab",
+                "assets/content/props/roadsigns/roadsign6.prefab",
+                "assets/content/props/roadsigns/roadsign7.prefab",
+                "assets/content/props/roadsigns/roadsign8.prefab",
+                "assets/content/props/roadsigns/roadsign9.prefab"
             };
             return dp;
         }

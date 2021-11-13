@@ -24,9 +24,9 @@
     "Attire": 1,
     "Misc": 1,
     "Items": 1,
+    "Component": 1,
     "Ammunition": 1,
     "Construction": 1,
-    "Component": 1,
     "Traps": 1,
     "Electrical": 1,
     "Fun": 1,
@@ -39,2960 +39,3708 @@
   "Stack Categories": {
     "Attire": {
       "hat.wolf": {
+        "ShortName": "hat.wolf",
         "DisplayName": "Wolf Headdress",
         "Modified": 1
       },
       "diving.fins": {
+        "ShortName": "diving.fins",
         "DisplayName": "Diving Fins",
         "Modified": 1
       },
       "diving.mask": {
+        "ShortName": "diving.mask",
         "DisplayName": "Diving Mask",
         "Modified": 1
       },
       "diving.tank": {
+        "ShortName": "diving.tank",
         "DisplayName": "Diving Tank",
         "Modified": 1
       },
       "diving.wetsuit": {
+        "ShortName": "diving.wetsuit",
         "DisplayName": "Wetsuit",
         "Modified": 1
       },
       "boots.frog": {
+        "ShortName": "boots.frog",
         "DisplayName": "Frog Boots",
         "Modified": 1
       },
       "barrelcostume": {
+        "ShortName": "barrelcostume",
         "DisplayName": "A Barrel Costume",
         "Modified": 1
       },
       "cratecostume": {
+        "ShortName": "cratecostume",
         "DisplayName": "Crate Costume",
         "Modified": 1
       },
       "hat.gas.mask": {
+        "ShortName": "hat.gas.mask",
         "DisplayName": "Gas Mask",
         "Modified": 1
       },
       "burlap.gloves.new": {
+        "ShortName": "burlap.gloves.new",
         "DisplayName": "Burlap Gloves",
         "Modified": 1
       },
       "burlap.gloves": {
+        "ShortName": "burlap.gloves",
         "DisplayName": "Leather Gloves",
         "Modified": 1
       },
       "roadsign.gloves": {
+        "ShortName": "roadsign.gloves",
         "DisplayName": "Roadsign Gloves",
         "Modified": 1
       },
       "tactical.gloves": {
+        "ShortName": "tactical.gloves",
         "DisplayName": "Tactical Gloves",
         "Modified": 1
       },
       "ghostsheet": {
+        "ShortName": "ghostsheet",
         "DisplayName": "Ghost Costume",
         "Modified": 1
       },
       "halloween.mummysuit": {
+        "ShortName": "halloween.mummysuit",
         "DisplayName": "Mummy Suit",
         "Modified": 1
       },
       "scarecrow.suit": {
+        "ShortName": "scarecrow.suit",
         "DisplayName": "Scarecrow Suit",
         "Modified": 1
       },
       "scarecrowhead": {
+        "ShortName": "scarecrowhead",
         "DisplayName": "Scarecrow Wrap",
         "Modified": 1
       },
       "attire.hide.helterneck": {
+        "ShortName": "attire.hide.helterneck",
         "DisplayName": "Hide Halterneck",
         "Modified": 1
       },
       "hat.beenie": {
+        "ShortName": "hat.beenie",
         "DisplayName": "Beenie Hat",
         "Modified": 1
       },
       "hat.boonie": {
+        "ShortName": "hat.boonie",
         "DisplayName": "Boonie Hat",
         "Modified": 1
       },
       "bucket.helmet": {
+        "ShortName": "bucket.helmet",
         "DisplayName": "Bucket Helmet",
         "Modified": 1
       },
       "burlap.headwrap": {
+        "ShortName": "burlap.headwrap",
         "DisplayName": "Burlap Headwrap",
         "Modified": 1
       },
       "hat.candle": {
+        "ShortName": "hat.candle",
         "DisplayName": "Candle Hat",
         "Modified": 1
       },
       "hat.cap": {
+        "ShortName": "hat.cap",
         "DisplayName": "Baseball Cap",
         "Modified": 1
       },
       "clatter.helmet": {
+        "ShortName": "clatter.helmet",
         "DisplayName": "Clatter Helmet",
         "Modified": 1
       },
       "coffeecan.helmet": {
+        "ShortName": "coffeecan.helmet",
         "DisplayName": "Coffee Can Helmet",
         "Modified": 1
       },
       "deer.skull.mask": {
+        "ShortName": "deer.skull.mask",
         "DisplayName": "Bone Helmet",
         "Modified": 1
       },
       "heavy.plate.helmet": {
+        "ShortName": "heavy.plate.helmet",
         "DisplayName": "Heavy Plate Helmet",
         "Modified": 1
       },
       "hat.miner": {
+        "ShortName": "hat.miner",
         "DisplayName": "Miners Hat",
         "Modified": 1
       },
       "partyhat": {
+        "ShortName": "partyhat",
         "DisplayName": "Party Hat",
         "Modified": 1
       },
       "riot.helmet": {
+        "ShortName": "riot.helmet",
         "DisplayName": "Riot Helmet",
         "Modified": 1
       },
       "wood.armor.helmet": {
+        "ShortName": "wood.armor.helmet",
         "DisplayName": "Wood Armor Helmet",
         "Modified": 1
       },
       "hoodie": {
+        "ShortName": "hoodie",
         "DisplayName": "Hoodie",
         "Modified": 1
       },
       "bone.armor.suit": {
+        "ShortName": "bone.armor.suit",
         "DisplayName": "Bone Armor",
         "Modified": 1
       },
       "heavy.plate.jacket": {
+        "ShortName": "heavy.plate.jacket",
         "DisplayName": "Heavy Plate Jacket",
         "Modified": 1
       },
       "jacket.snow": {
+        "ShortName": "jacket.snow",
         "DisplayName": "Snow Jacket",
         "Modified": 1
       },
       "jacket": {
+        "ShortName": "jacket",
         "DisplayName": "Jacket",
         "Modified": 1
       },
       "wood.armor.jacket": {
+        "ShortName": "wood.armor.jacket",
         "DisplayName": "Wood Chestplate",
         "Modified": 1
       },
       "mask.balaclava": {
+        "ShortName": "mask.balaclava",
         "DisplayName": "Improvised Balaclava",
         "Modified": 1
       },
       "mask.bandana": {
+        "ShortName": "mask.bandana",
         "DisplayName": "Bandana Mask",
         "Modified": 1
       },
       "metal.facemask": {
+        "ShortName": "metal.facemask",
         "DisplayName": "Metal Facemask",
         "Modified": 1
       },
       "nightvisiongoggles": {
+        "ShortName": "nightvisiongoggles",
         "DisplayName": "Night Vision Goggles",
         "Modified": 1
       },
       "attire.ninja.suit": {
+        "ShortName": "attire.ninja.suit",
         "DisplayName": "Ninja Suit",
         "Modified": 1
       },
       "burlap.trousers": {
+        "ShortName": "burlap.trousers",
         "DisplayName": "Burlap Trousers",
         "Modified": 1
       },
       "heavy.plate.pants": {
+        "ShortName": "heavy.plate.pants",
         "DisplayName": "Heavy Plate Pants",
         "Modified": 1
       },
       "attire.hide.pants": {
+        "ShortName": "attire.hide.pants",
         "DisplayName": "Hide Pants",
         "Modified": 1
       },
       "roadsign.kilt": {
+        "ShortName": "roadsign.kilt",
         "DisplayName": "Road Sign Kilt",
         "Modified": 1
       },
       "pants.shorts": {
+        "ShortName": "pants.shorts",
         "DisplayName": "Shorts",
         "Modified": 1
       },
       "wood.armor.pants": {
+        "ShortName": "wood.armor.pants",
         "DisplayName": "Wood Armor Pants",
         "Modified": 1
       },
       "pants": {
+        "ShortName": "pants",
         "DisplayName": "Pants",
         "Modified": 1
       },
       "attire.hide.poncho": {
+        "ShortName": "attire.hide.poncho",
         "DisplayName": "Hide Poncho",
         "Modified": 1
       },
       "burlap.shirt": {
+        "ShortName": "burlap.shirt",
         "DisplayName": "Burlap Shirt",
         "Modified": 1
       },
       "shirt.collared": {
+        "ShortName": "shirt.collared",
         "DisplayName": "Shirt",
         "Modified": 1
       },
       "attire.hide.vest": {
+        "ShortName": "attire.hide.vest",
         "DisplayName": "Hide Vest",
         "Modified": 1
       },
       "shirt.tanktop": {
+        "ShortName": "shirt.tanktop",
         "DisplayName": "Tank Top",
         "Modified": 1
       },
       "shoes.boots": {
+        "ShortName": "shoes.boots",
         "DisplayName": "Boots",
         "Modified": 1
       },
       "burlap.shoes": {
+        "ShortName": "burlap.shoes",
         "DisplayName": "Burlap Shoes",
         "Modified": 1
       },
       "attire.hide.boots": {
+        "ShortName": "attire.hide.boots",
         "DisplayName": "Hide Boots",
         "Modified": 1
       },
       "attire.hide.skirt": {
+        "ShortName": "attire.hide.skirt",
         "DisplayName": "Hide Skirt",
         "Modified": 1
       },
       "attire.banditguard": {
+        "ShortName": "attire.banditguard",
         "DisplayName": "Bandit Guard Gear",
         "Modified": 1
       },
       "hazmatsuit": {
+        "ShortName": "hazmatsuit",
         "DisplayName": "Hazmat Suit",
         "Modified": 1
       },
       "hazmatsuit_scientist": {
+        "ShortName": "hazmatsuit_scientist",
         "DisplayName": "Scientist Suit",
         "Modified": 1
       },
       "hazmatsuit_scientist_peacekeeper": {
+        "ShortName": "hazmatsuit_scientist_peacekeeper",
         "DisplayName": "Scientist Suit",
         "Modified": 1
       },
       "hazmatsuit.spacesuit": {
+        "ShortName": "hazmatsuit.spacesuit",
         "DisplayName": "Space Suit",
         "Modified": 1
       },
       "scientistsuit_heavy": {
+        "ShortName": "scientistsuit_heavy",
         "DisplayName": "Heavy Scientist Suit",
         "Modified": 1
       },
       "jumpsuit.suit": {
+        "ShortName": "jumpsuit.suit",
         "DisplayName": "Jumpsuit",
         "Modified": 1
       },
       "tshirt.long": {
+        "ShortName": "tshirt.long",
         "DisplayName": "Longsleeve T-Shirt",
         "Modified": 1
       },
       "tshirt": {
+        "ShortName": "tshirt",
         "DisplayName": "T-Shirt",
         "Modified": 1
       },
       "metal.plate.torso": {
+        "ShortName": "metal.plate.torso",
         "DisplayName": "Metal Chest Plate",
         "Modified": 1
       },
       "roadsign.jacket": {
+        "ShortName": "roadsign.jacket",
         "DisplayName": "Road Sign Jacket",
         "Modified": 1
       },
       "hat.dragonmask": {
+        "ShortName": "hat.dragonmask",
         "DisplayName": "Dragon Mask",
         "Modified": 1
       },
       "hat.oxmask": {
+        "ShortName": "hat.oxmask",
         "DisplayName": "Ox Mask",
         "Modified": 1
       },
       "hat.ratmask": {
+        "ShortName": "hat.ratmask",
         "DisplayName": "Rat Mask",
         "Modified": 1
       },
       "attire.bunnyears": {
+        "ShortName": "attire.bunnyears",
         "DisplayName": "Bunny Ears",
         "Modified": 1
       },
       "attire.bunny.onesie": {
+        "ShortName": "attire.bunny.onesie",
         "DisplayName": "Bunny Onesie",
         "Modified": 1
       },
       "hat.bunnyhat": {
+        "ShortName": "hat.bunnyhat",
         "DisplayName": "Bunny Hat",
         "Modified": 1
       },
       "attire.nesthat": {
+        "ShortName": "attire.nesthat",
         "DisplayName": "Nest Hat",
         "Modified": 1
       },
       "halloween.surgeonsuit": {
+        "ShortName": "halloween.surgeonsuit",
         "DisplayName": "Surgeon Scrubs",
         "Modified": 1
       },
       "movembermoustachecard": {
+        "ShortName": "movembermoustachecard",
         "DisplayName": "Card Movember Moustache",
         "Modified": 1
       },
       "movembermoustache": {
+        "ShortName": "movembermoustache",
         "DisplayName": "Movember Moustache",
         "Modified": 1
       },
       "sunglasses02black": {
+        "ShortName": "sunglasses02black",
         "DisplayName": "Sunglasses",
         "Modified": 1
       },
       "sunglasses02camo": {
+        "ShortName": "sunglasses02camo",
         "DisplayName": "Sunglasses",
         "Modified": 1
       },
       "sunglasses02red": {
+        "ShortName": "sunglasses02red",
         "DisplayName": "Sunglasses",
         "Modified": 1
       },
       "sunglasses03black": {
+        "ShortName": "sunglasses03black",
         "DisplayName": "Sunglasses",
         "Modified": 1
       },
       "sunglasses03chrome": {
+        "ShortName": "sunglasses03chrome",
         "DisplayName": "Sunglasses",
         "Modified": 1
       },
       "sunglasses03gold": {
+        "ShortName": "sunglasses03gold",
         "DisplayName": "Sunglasses",
         "Modified": 1
       },
       "sunglasses": {
+        "ShortName": "sunglasses",
         "DisplayName": "Sunglasses",
         "Modified": 1
       },
       "twitchsunglasses": {
+        "ShortName": "twitchsunglasses",
         "DisplayName": "Purple Sunglasses",
         "Modified": 1
       },
       "twitch.headset": {
+        "ShortName": "twitch.headset",
         "DisplayName": "Headset",
         "Modified": 1
       },
       "attire.reindeer.headband": {
+        "ShortName": "attire.reindeer.headband",
         "DisplayName": "Reindeer Antlers",
         "Modified": 1
       },
       "santabeard": {
+        "ShortName": "santabeard",
         "DisplayName": "Santa Beard",
         "Modified": 1
       },
       "santahat": {
+        "ShortName": "santahat",
         "DisplayName": "Santa Hat",
         "Modified": 1
       },
       "gloweyes": {
+        "ShortName": "gloweyes",
         "DisplayName": "Glowing Eyes",
         "Modified": 1
       },
       "horse.armor.roadsign": {
+        "ShortName": "horse.armor.roadsign",
         "DisplayName": "Roadsign Horse Armor",
         "Modified": 1
       },
       "horse.armor.wood": {
+        "ShortName": "horse.armor.wood",
         "DisplayName": "Wooden Horse Armor",
         "Modified": 1
       },
       "horse.saddle": {
+        "ShortName": "horse.saddle",
         "DisplayName": "Horse Saddle",
         "Modified": 1
       },
       "horse.saddlebag": {
+        "ShortName": "horse.saddlebag",
         "DisplayName": "Saddle bag",
         "Modified": 1
       },
       "horse.shoes.advanced": {
+        "ShortName": "horse.shoes.advanced",
         "DisplayName": "High Quality Horse Shoes",
         "Modified": 1
       },
       "horse.shoes.basic": {
+        "ShortName": "horse.shoes.basic",
         "DisplayName": "Basic Horse Shoes",
         "Modified": 1
       },
       "jumpsuit.suit.blue": {
+        "ShortName": "jumpsuit.suit.blue",
         "DisplayName": "Blue Jumpsuit",
         "Modified": 1
       },
       "lumberjack hoodie": {
+        "ShortName": "lumberjack hoodie",
         "DisplayName": "Lumberjack Hoodie",
         "Modified": 1
       },
       "frankensteins.monster.01.head": {
+        "ShortName": "frankensteins.monster.01.head",
         "DisplayName": "Light Frankenstein Head",
         "Modified": 1
       },
       "frankensteins.monster.01.legs": {
+        "ShortName": "frankensteins.monster.01.legs",
         "DisplayName": "Light Frankenstein Legs",
         "Modified": 1
       },
       "frankensteins.monster.01.torso": {
+        "ShortName": "frankensteins.monster.01.torso",
         "DisplayName": "Light Frankenstein Torso",
         "Modified": 1
       },
       "frankensteins.monster.02.head": {
+        "ShortName": "frankensteins.monster.02.head",
         "DisplayName": "Medium Frankenstein Head",
         "Modified": 1
       },
       "frankensteins.monster.02.legs": {
+        "ShortName": "frankensteins.monster.02.legs",
         "DisplayName": "Medium Frankenstein Legs",
         "Modified": 1
       },
       "frankensteins.monster.02.torso": {
+        "ShortName": "frankensteins.monster.02.torso",
         "DisplayName": "Medium Frankenstein Torso",
         "Modified": 1
       },
       "frankensteins.monster.03.head": {
+        "ShortName": "frankensteins.monster.03.head",
         "DisplayName": "Heavy Frankenstein Head",
         "Modified": 1
       },
       "frankensteins.monster.03.legs": {
+        "ShortName": "frankensteins.monster.03.legs",
         "DisplayName": "Heavy Frankenstein Legs",
         "Modified": 1
       },
       "frankensteins.monster.03.torso": {
+        "ShortName": "frankensteins.monster.03.torso",
         "DisplayName": "Heavy Frankenstein Torso",
         "Modified": 1
       }
     },
     "Misc": {
       "fogmachine": {
+        "ShortName": "fogmachine",
         "DisplayName": "Fogger-3000",
         "Modified": 1
       },
       "strobelight": {
+        "ShortName": "strobelight",
         "DisplayName": "Strobe Light",
         "Modified": 1
       },
       "minihelicopter.repair": {
+        "ShortName": "minihelicopter.repair",
         "DisplayName": "MC repair",
         "Modified": 1
       },
       "scraptransportheli.repair": {
+        "ShortName": "scraptransportheli.repair",
         "DisplayName": "ScrapTransportHeliRepair",
         "Modified": 1
       },
       "workcart": {
+        "ShortName": "workcart",
         "DisplayName": "Work Cart",
         "Modified": 1
       },
       "habrepair": {
+        "ShortName": "habrepair",
         "DisplayName": "Hab Repair",
         "Modified": 1
       },
       "car.key": {
+        "ShortName": "car.key",
         "DisplayName": "Car Key",
         "Modified": 1
       },
       "door.key": {
+        "ShortName": "door.key",
         "DisplayName": "Door Key",
         "Modified": 1
       },
       "blueprintbase": {
+        "ShortName": "blueprintbase",
         "DisplayName": "Blueprint",
         "Modified": 1000
       },
       "easterbasket": {
+        "ShortName": "easterbasket",
         "DisplayName": "Egg Basket",
         "Modified": 1
       },
       "rustige_egg_a": {
+        "ShortName": "rustige_egg_a",
         "DisplayName": "Rustigé Egg - Red",
         "Modified": 1
       },
       "rustige_egg_b": {
+        "ShortName": "rustige_egg_b",
         "DisplayName": "Rustigé Egg - Blue",
         "Modified": 1
       },
       "rustige_egg_c": {
+        "ShortName": "rustige_egg_c",
         "DisplayName": "Rustigé Egg - Purple",
         "Modified": 1
       },
       "rustige_egg_d": {
+        "ShortName": "rustige_egg_d",
         "DisplayName": "Rustigé Egg - Ivory",
         "Modified": 1
       },
       "rustige_egg_e": {
+        "ShortName": "rustige_egg_e",
         "DisplayName": "Rustigé Egg - Green",
         "Modified": 1
       },
       "easter.bronzeegg": {
+        "ShortName": "easter.bronzeegg",
         "DisplayName": "Bronze Egg",
         "Modified": 10
       },
       "easter.goldegg": {
+        "ShortName": "easter.goldegg",
         "DisplayName": "Gold Egg",
         "Modified": 10
       },
       "easter.paintedeggs": {
+        "ShortName": "easter.paintedeggs",
         "DisplayName": "Painted Egg",
         "Modified": 1000
       },
       "easter.silveregg": {
+        "ShortName": "easter.silveregg",
         "DisplayName": "Silver Egg",
         "Modified": 10
       },
       "halloween.candy": {
+        "ShortName": "halloween.candy",
         "DisplayName": "Halloween Candy",
         "Modified": 1000
       },
       "largecandles": {
+        "ShortName": "largecandles",
         "DisplayName": "Large Candle Set",
         "Modified": 1
       },
       "smallcandles": {
+        "ShortName": "smallcandles",
         "DisplayName": "Small Candle Set",
         "Modified": 1
       },
       "coffin.storage": {
+        "ShortName": "coffin.storage",
         "DisplayName": "Coffin",
         "Modified": 1
       },
       "cursedcauldron": {
+        "ShortName": "cursedcauldron",
         "DisplayName": "Cursed Cauldron",
         "Modified": 1
       },
       "gravestone": {
+        "ShortName": "gravestone",
         "DisplayName": "Gravestone",
         "Modified": 1
       },
       "woodcross": {
+        "ShortName": "woodcross",
         "DisplayName": "Wooden Cross",
         "Modified": 1
       },
       "wall.graveyard.fence": {
+        "ShortName": "wall.graveyard.fence",
         "DisplayName": "Graveyard Fence",
         "Modified": 10
       },
       "halloween.lootbag.large": {
+        "ShortName": "halloween.lootbag.large",
         "DisplayName": "Large Loot Bag",
         "Modified": 10
       },
       "halloween.lootbag.medium": {
+        "ShortName": "halloween.lootbag.medium",
         "DisplayName": "Medium Loot Bag",
         "Modified": 10
       },
       "halloween.lootbag.small": {
+        "ShortName": "halloween.lootbag.small",
         "DisplayName": "Small Loot Bag",
         "Modified": 10
       },
       "pumpkinbasket": {
+        "ShortName": "pumpkinbasket",
         "DisplayName": "Pumpkin Bucket",
         "Modified": 1
       },
       "spiderweb": {
+        "ShortName": "spiderweb",
         "DisplayName": "Spider Webs",
         "Modified": 10
       },
       "spookyspeaker": {
+        "ShortName": "spookyspeaker",
         "DisplayName": "Spooky Speaker",
         "Modified": 1
       },
       "note": {
+        "ShortName": "note",
         "DisplayName": "Note",
         "Modified": 1
       },
       "photo": {
+        "ShortName": "photo",
         "DisplayName": "Photograph",
         "Modified": 1
       },
       "giantcandycanedecor": {
+        "ShortName": "giantcandycanedecor",
         "DisplayName": "Giant Candy Decor",
         "Modified": 1
       },
       "giantlollipops": {
+        "ShortName": "giantlollipops",
         "DisplayName": "Giant Lollipop Decor",
         "Modified": 1
       },
       "xmas.present.large": {
+        "ShortName": "xmas.present.large",
         "DisplayName": "Large Present",
         "Modified": 1
       },
       "xmas.present.medium": {
+        "ShortName": "xmas.present.medium",
         "DisplayName": "Medium Present",
         "Modified": 5
       },
       "xmas.present.small": {
+        "ShortName": "xmas.present.small",
         "DisplayName": "Small Present",
         "Modified": 10
       },
       "snowmachine": {
+        "ShortName": "snowmachine",
         "DisplayName": "Snow Machine",
         "Modified": 1
       },
       "xmas.decoration.baubels": {
+        "ShortName": "xmas.decoration.baubels",
         "DisplayName": "Decorative Baubels",
         "Modified": 1
       },
       "xmas.decoration.candycanes": {
+        "ShortName": "xmas.decoration.candycanes",
         "DisplayName": "Decorative Plastic Candy Canes",
         "Modified": 1
       },
       "xmas.decoration.gingerbreadmen": {
+        "ShortName": "xmas.decoration.gingerbreadmen",
         "DisplayName": "Decorative Gingerbread Men",
         "Modified": 1
       },
       "xmas.decoration.lights": {
+        "ShortName": "xmas.decoration.lights",
         "DisplayName": "Tree Lights",
         "Modified": 1
       },
       "xmas.decoration.pinecone": {
+        "ShortName": "xmas.decoration.pinecone",
         "DisplayName": "Decorative Pinecones",
         "Modified": 1
       },
       "xmas.decoration.star": {
+        "ShortName": "xmas.decoration.star",
         "DisplayName": "Star Tree Topper",
         "Modified": 1
       },
       "xmas.decoration.tinsel": {
+        "ShortName": "xmas.decoration.tinsel",
         "DisplayName": "Decorative Tinsel",
         "Modified": 1
       },
       "keycard_blue": {
+        "ShortName": "keycard_blue",
         "DisplayName": "Blue Keycard",
         "Modified": 1
       },
       "keycard_green": {
+        "ShortName": "keycard_green",
         "DisplayName": "Green Keycard",
         "Modified": 1
       },
       "keycard_red": {
+        "ShortName": "keycard_red",
         "DisplayName": "Red Keycard",
         "Modified": 1
       },
       "sickle": {
+        "ShortName": "sickle",
         "DisplayName": "Sickle",
         "Modified": 1
       },
       "submarineduo": {
+        "ShortName": "submarineduo",
         "DisplayName": "Duo Submarine",
         "Modified": 1
       },
       "submarinesolo": {
+        "ShortName": "submarinesolo",
         "DisplayName": "Solo Submarine",
         "Modified": 1
       },
+      "mlrs": {
+        "ShortName": "mlrs",
+        "DisplayName": "MLRS",
+        "Modified": 1
+      },
       "captainslog": {
+        "ShortName": "captainslog",
         "DisplayName": "Captain's Log",
         "Modified": 1
       }
     },
     "Items": {
       "kayak": {
+        "ShortName": "kayak",
         "DisplayName": "Kayak",
         "Modified": 1
       },
       "bbq": {
+        "ShortName": "bbq",
         "DisplayName": "Barbeque",
         "Modified": 1
       },
       "bed": {
+        "ShortName": "bed",
         "DisplayName": "Bed",
         "Modified": 1
       },
       "campfire": {
+        "ShortName": "campfire",
         "DisplayName": "Camp Fire",
         "Modified": 1
       },
       "chair": {
+        "ShortName": "chair",
         "DisplayName": "Chair",
         "Modified": 5
       },
       "composter": {
+        "ShortName": "composter",
         "DisplayName": "Composter",
         "Modified": 1
       },
       "drone": {
+        "ShortName": "drone",
         "DisplayName": "Drone",
         "Modified": 1
       },
       "dropbox": {
+        "ShortName": "dropbox",
         "DisplayName": "Drop Box",
         "Modified": 5
       },
       "fireplace.stone": {
+        "ShortName": "fireplace.stone",
         "DisplayName": "Stone Fireplace",
         "Modified": 1
       },
       "fridge": {
+        "ShortName": "fridge",
         "DisplayName": "Fridge",
         "Modified": 1
       },
       "furnace.large": {
+        "ShortName": "furnace.large",
         "DisplayName": "Large Furnace",
         "Modified": 1
       },
       "furnace": {
+        "ShortName": "furnace",
         "DisplayName": "Furnace",
         "Modified": 1
       },
       "hitchtroughcombo": {
+        "ShortName": "hitchtroughcombo",
         "DisplayName": "Hitch & Trough",
         "Modified": 1
       },
       "jackolantern.angry": {
+        "ShortName": "jackolantern.angry",
         "DisplayName": "Jack O Lantern Angry",
         "Modified": 1
       },
       "jackolantern.happy": {
+        "ShortName": "jackolantern.happy",
         "DisplayName": "Jack O Lantern Happy",
         "Modified": 1
       },
       "lantern": {
+        "ShortName": "lantern",
         "DisplayName": "Lantern",
         "Modified": 1
       },
       "box.wooden.large": {
+        "ShortName": "box.wooden.large",
         "DisplayName": "Large Wood Box",
         "Modified": 1
       },
       "water.barrel": {
+        "ShortName": "water.barrel",
         "DisplayName": "Water Barrel",
         "Modified": 1
       },
       "locker": {
+        "ShortName": "locker",
         "DisplayName": "Locker",
         "Modified": 1
       },
       "mailbox": {
+        "ShortName": "mailbox",
         "DisplayName": "Mail Box",
         "Modified": 1
       },
       "mixingtable": {
+        "ShortName": "mixingtable",
         "DisplayName": "Mixing Table",
         "Modified": 1
       },
       "small.oil.refinery": {
+        "ShortName": "small.oil.refinery",
         "DisplayName": "Small Oil Refinery",
         "Modified": 1
       },
       "planter.large": {
+        "ShortName": "planter.large",
         "DisplayName": "Large Planter Box",
         "Modified": 10
       },
       "planter.small": {
+        "ShortName": "planter.small",
         "DisplayName": "Small Planter Box",
         "Modified": 10
       },
       "box.repair.bench": {
+        "ShortName": "box.repair.bench",
         "DisplayName": "Repair Bench",
         "Modified": 1
       },
       "research.table": {
+        "ShortName": "research.table",
         "DisplayName": "Research Table",
         "Modified": 1
       },
       "rug.bear": {
+        "ShortName": "rug.bear",
         "DisplayName": "Rug Bear Skin",
         "Modified": 1
       },
       "rug": {
+        "ShortName": "rug",
         "DisplayName": "Rug",
         "Modified": 1
       },
       "secretlabchair": {
+        "ShortName": "secretlabchair",
         "DisplayName": "Secret Lab Chair",
         "Modified": 5
       },
       "shelves": {
+        "ShortName": "shelves",
         "DisplayName": "Salvaged Shelves",
         "Modified": 10
       },
       "sign.hanging.banner.large": {
+        "ShortName": "sign.hanging.banner.large",
         "DisplayName": "Large Banner Hanging",
         "Modified": 1
       },
       "sign.hanging": {
+        "ShortName": "sign.hanging",
         "DisplayName": "Two Sided Hanging Sign",
         "Modified": 1
       },
       "sign.hanging.ornate": {
+        "ShortName": "sign.hanging.ornate",
         "DisplayName": "Two Sided Ornate Hanging Sign",
         "Modified": 1
       },
       "sign.pictureframe.landscape": {
+        "ShortName": "sign.pictureframe.landscape",
         "DisplayName": "Landscape Picture Frame",
         "Modified": 1
       },
       "sign.pictureframe.portrait": {
+        "ShortName": "sign.pictureframe.portrait",
         "DisplayName": "Portrait Picture Frame",
         "Modified": 1
       },
       "sign.pictureframe.tall": {
+        "ShortName": "sign.pictureframe.tall",
         "DisplayName": "Tall Picture Frame",
         "Modified": 1
       },
       "sign.pictureframe.xl": {
+        "ShortName": "sign.pictureframe.xl",
         "DisplayName": "XL Picture Frame",
         "Modified": 1
       },
       "sign.pictureframe.xxl": {
+        "ShortName": "sign.pictureframe.xxl",
         "DisplayName": "XXL Picture Frame",
         "Modified": 1
       },
       "sign.pole.banner.large": {
+        "ShortName": "sign.pole.banner.large",
         "DisplayName": "Large Banner on pole",
         "Modified": 1
       },
       "sign.post.double": {
+        "ShortName": "sign.post.double",
         "DisplayName": "Double Sign Post",
         "Modified": 1
       },
       "sign.post.single": {
+        "ShortName": "sign.post.single",
         "DisplayName": "Single Sign Post",
         "Modified": 1
       },
       "sign.post.town": {
+        "ShortName": "sign.post.town",
         "DisplayName": "One Sided Town Sign Post",
         "Modified": 1
       },
       "sign.post.town.roof": {
+        "ShortName": "sign.post.town.roof",
         "DisplayName": "Two Sided Town Sign Post",
         "Modified": 1
       },
       "sign.wooden.huge": {
+        "ShortName": "sign.wooden.huge",
         "DisplayName": "Huge Wooden Sign",
         "Modified": 1
       },
       "sign.wooden.large": {
+        "ShortName": "sign.wooden.large",
         "DisplayName": "Large Wooden Sign",
         "Modified": 1
       },
       "sign.wooden.medium": {
+        "ShortName": "sign.wooden.medium",
         "DisplayName": "Medium Wooden Sign",
         "Modified": 1
       },
       "sign.wooden.small": {
+        "ShortName": "sign.wooden.small",
         "DisplayName": "Small Wooden Sign",
         "Modified": 1
       },
       "sleepingbag": {
+        "ShortName": "sleepingbag",
         "DisplayName": "Sleeping Bag",
         "Modified": 1
       },
       "stash.small": {
+        "ShortName": "stash.small",
         "DisplayName": "Small Stash",
         "Modified": 5
       },
       "sofa": {
+        "ShortName": "sofa",
         "DisplayName": "Sofa",
         "Modified": 2
       },
       "spinner.wheel": {
+        "ShortName": "spinner.wheel",
         "DisplayName": "Spinning wheel",
         "Modified": 1
       },
       "fishtrap.small": {
+        "ShortName": "fishtrap.small",
         "DisplayName": "Survival Fish Trap",
         "Modified": 5
       },
       "table": {
+        "ShortName": "table",
         "DisplayName": "Table",
         "Modified": 1
       },
       "workbench1": {
+        "ShortName": "workbench1",
         "DisplayName": "Work Bench Level 1",
         "Modified": 1
       },
       "workbench2": {
+        "ShortName": "workbench2",
         "DisplayName": "Work Bench Level 2",
         "Modified": 1
       },
       "workbench3": {
+        "ShortName": "workbench3",
         "DisplayName": "Work Bench Level 3",
         "Modified": 1
       },
       "tunalight": {
+        "ShortName": "tunalight",
         "DisplayName": "Tuna Can Lamp",
         "Modified": 1
       },
       "vending.machine": {
+        "ShortName": "vending.machine",
         "DisplayName": "Vending Machine",
         "Modified": 1
       },
       "water.purifier": {
+        "ShortName": "water.purifier",
         "DisplayName": "Water Purifier",
         "Modified": 1
       },
       "box.wooden": {
+        "ShortName": "box.wooden",
         "DisplayName": "Wood Storage Box",
         "Modified": 1
       },
       "botabag": {
+        "ShortName": "botabag",
         "DisplayName": "Bota Bag",
         "Modified": 1
       },
       "chineselantern": {
+        "ShortName": "chineselantern",
         "DisplayName": "Chinese Lantern",
         "Modified": 1
       },
       "dragondoorknocker": {
+        "ShortName": "dragondoorknocker",
         "DisplayName": "Dragon Door Knocker",
         "Modified": 1
       },
       "arcade.machine.chippy": {
+        "ShortName": "arcade.machine.chippy",
         "DisplayName": "Chippy Arcade Game",
         "Modified": 1
       },
       "easterdoorwreath": {
+        "ShortName": "easterdoorwreath",
         "DisplayName": "Easter Door Wreath",
         "Modified": 1
       },
       "scarecrow": {
+        "ShortName": "scarecrow",
         "DisplayName": "Scarecrow",
         "Modified": 5
       },
       "skulldoorknocker": {
+        "ShortName": "skulldoorknocker",
         "DisplayName": "Skull Door Knocker",
         "Modified": 1
       },
       "skull_fire_pit": {
+        "ShortName": "skull_fire_pit",
         "DisplayName": "Skull Fire Pit",
         "Modified": 1
       },
       "photoframe.landscape": {
+        "ShortName": "photoframe.landscape",
         "DisplayName": "Landscape Photo Frame",
         "Modified": 1
       },
       "photoframe.large": {
+        "ShortName": "photoframe.large",
         "DisplayName": "Large Photo Frame",
         "Modified": 1
       },
       "photoframe.portrait": {
+        "ShortName": "photoframe.portrait",
         "DisplayName": "Portrait Photo Frame",
         "Modified": 1
       },
       "hobobarrel": {
+        "ShortName": "hobobarrel",
         "DisplayName": "Hobo Barrel",
         "Modified": 1
       },
       "xmas.lightstring": {
+        "ShortName": "xmas.lightstring",
         "DisplayName": "Christmas Lights",
         "Modified": 20
       },
       "xmas.door.garland": {
+        "ShortName": "xmas.door.garland",
         "DisplayName": "Festive Doorway Garland",
         "Modified": 10
       },
       "pookie.bear": {
+        "ShortName": "pookie.bear",
         "DisplayName": "Pookie Bear",
         "Modified": 1
       },
       "snowman": {
+        "ShortName": "snowman",
         "DisplayName": "Snowman",
         "Modified": 5
       },
       "stocking.large": {
+        "ShortName": "stocking.large",
         "DisplayName": "SUPER Stocking",
         "Modified": 1
       },
       "stocking.small": {
+        "ShortName": "stocking.small",
         "DisplayName": "Small Stocking",
         "Modified": 5
       },
       "xmas.window.garland": {
+        "ShortName": "xmas.window.garland",
         "DisplayName": "Festive Window Garland",
         "Modified": 10
       },
       "xmasdoorwreath": {
+        "ShortName": "xmasdoorwreath",
         "DisplayName": "Christmas Door Wreath",
         "Modified": 1
       },
       "xmas.tree": {
+        "ShortName": "xmas.tree",
         "DisplayName": "Christmas Tree",
         "Modified": 1
       },
       "map": {
+        "ShortName": "map",
         "DisplayName": "Paper Map",
         "Modified": 1
       },
       "frankensteintable": {
+        "ShortName": "frankensteintable",
         "DisplayName": "Frankenstein Table",
         "Modified": 1
       },
       "carvable.pumpkin": {
+        "ShortName": "carvable.pumpkin",
         "DisplayName": "Carvable Pumpkin",
         "Modified": 1
       }
     },
     "Ammunition": {
       "ammo.grenadelauncher.buckshot": {
+        "ShortName": "ammo.grenadelauncher.buckshot",
         "DisplayName": "40mm Shotgun Round",
         "Modified": 48
       },
       "ammo.grenadelauncher.he": {
+        "ShortName": "ammo.grenadelauncher.he",
         "DisplayName": "40mm HE Grenade",
         "Modified": 24
       },
       "ammo.grenadelauncher.smoke": {
+        "ShortName": "ammo.grenadelauncher.smoke",
         "DisplayName": "40mm Smoke Grenade",
         "Modified": 24
       },
       "arrow.hv": {
+        "ShortName": "arrow.hv",
         "DisplayName": "High Velocity Arrow",
         "Modified": 128
       },
       "arrow.wooden": {
+        "ShortName": "arrow.wooden",
         "DisplayName": "Wooden Arrow",
         "Modified": 128
       },
       "arrow.bone": {
+        "ShortName": "arrow.bone",
         "DisplayName": "Bone Arrow",
         "Modified": 128
       },
       "arrow.fire": {
+        "ShortName": "arrow.fire",
         "DisplayName": "Fire Arrow",
         "Modified": 128
       },
       "ammo.handmade.shell": {
+        "ShortName": "ammo.handmade.shell",
         "DisplayName": "Handmade Shell",
         "Modified": 128
       },
       "ammo.nailgun.nails": {
+        "ShortName": "ammo.nailgun.nails",
         "DisplayName": "Nailgun Nails",
         "Modified": 128
       },
       "ammo.pistol": {
+        "ShortName": "ammo.pistol",
         "DisplayName": "Pistol Bullet",
         "Modified": 256
       },
       "ammo.pistol.fire": {
+        "ShortName": "ammo.pistol.fire",
         "DisplayName": "Incendiary Pistol Bullet",
         "Modified": 256
       },
       "ammo.pistol.hv": {
+        "ShortName": "ammo.pistol.hv",
         "DisplayName": "HV Pistol Ammo",
         "Modified": 256
       },
       "ammo.rifle": {
+        "ShortName": "ammo.rifle",
         "DisplayName": "5.56 Rifle Ammo",
         "Modified": 256
       },
       "ammo.rifle.explosive": {
+        "ShortName": "ammo.rifle.explosive",
         "DisplayName": "Explosive 5.56 Rifle Ammo",
         "Modified": 256
       },
       "ammo.rifle.incendiary": {
+        "ShortName": "ammo.rifle.incendiary",
         "DisplayName": "Incendiary 5.56 Rifle Ammo",
         "Modified": 256
       },
       "ammo.rifle.hv": {
+        "ShortName": "ammo.rifle.hv",
         "DisplayName": "HV 5.56 Rifle Ammo",
         "Modified": 256
       },
       "ammo.rocket.basic": {
+        "ShortName": "ammo.rocket.basic",
         "DisplayName": "Rocket",
         "Modified": 6
       },
       "ammo.rocket.fire": {
+        "ShortName": "ammo.rocket.fire",
         "DisplayName": "Incendiary Rocket",
         "Modified": 6
       },
       "ammo.rocket.hv": {
+        "ShortName": "ammo.rocket.hv",
         "DisplayName": "High Velocity Rocket",
         "Modified": 6
       },
       "ammo.rocket.smoke": {
+        "ShortName": "ammo.rocket.smoke",
         "DisplayName": "Smoke Rocket WIP!!!!",
         "Modified": 6
       },
       "ammo.shotgun": {
+        "ShortName": "ammo.shotgun",
         "DisplayName": "12 Gauge Buckshot",
         "Modified": 128
       },
       "ammo.shotgun.fire": {
+        "ShortName": "ammo.shotgun.fire",
         "DisplayName": "12 Gauge Incendiary Shell",
         "Modified": 128
       },
       "ammo.shotgun.slug": {
+        "ShortName": "ammo.shotgun.slug",
         "DisplayName": "12 Gauge Slug",
         "Modified": 128
       },
       "ammo.snowballgun": {
+        "ShortName": "ammo.snowballgun",
         "DisplayName": "",
         "Modified": 256
       },
       "ammo.rocket.sam": {
+        "ShortName": "ammo.rocket.sam",
         "DisplayName": "SAM Ammo",
         "Modified": 2000
       },
       "speargun.spear": {
+        "ShortName": "speargun.spear",
         "DisplayName": "Speargun Spear",
         "Modified": 64
       },
       "submarine.torpedo.straight": {
+        "ShortName": "submarine.torpedo.straight",
         "DisplayName": "Torpedo",
         "Modified": 100
+      },
+      "ammo.rocket.mlrs": {
+        "ShortName": "ammo.rocket.mlrs",
+        "DisplayName": "MLRS Rocket",
+        "Modified": 6
       }
     },
     "Construction": {
       "door.double.hinged.metal": {
+        "ShortName": "door.double.hinged.metal",
         "DisplayName": "Sheet Metal Double Door",
         "Modified": 1
       },
       "door.double.hinged.toptier": {
+        "ShortName": "door.double.hinged.toptier",
         "DisplayName": "Armored Double Door",
         "Modified": 1
       },
       "door.double.hinged.wood": {
+        "ShortName": "door.double.hinged.wood",
         "DisplayName": "Wood Double Door",
         "Modified": 1
       },
       "door.hinged.metal": {
+        "ShortName": "door.hinged.metal",
         "DisplayName": "Sheet Metal Door",
         "Modified": 1
       },
       "door.hinged.toptier": {
+        "ShortName": "door.hinged.toptier",
         "DisplayName": "Armored Door",
         "Modified": 1
       },
       "door.hinged.wood": {
+        "ShortName": "door.hinged.wood",
         "DisplayName": "Wooden Door",
         "Modified": 1
       },
       "floor.grill": {
+        "ShortName": "floor.grill",
         "DisplayName": "Floor grill",
         "Modified": 10
       },
       "floor.ladder.hatch": {
+        "ShortName": "floor.ladder.hatch",
         "DisplayName": "Ladder Hatch",
         "Modified": 1
       },
       "floor.triangle.grill": {
+        "ShortName": "floor.triangle.grill",
         "DisplayName": "Floor triangle grill",
         "Modified": 10
       },
       "floor.triangle.ladder.hatch": {
+        "ShortName": "floor.triangle.ladder.hatch",
         "DisplayName": "Triangle Ladder Hatch",
         "Modified": 1
       },
       "gates.external.high.stone": {
+        "ShortName": "gates.external.high.stone",
         "DisplayName": "High External Stone Gate",
         "Modified": 1
       },
       "gates.external.high.wood": {
+        "ShortName": "gates.external.high.wood",
         "DisplayName": "High External Wooden Gate",
         "Modified": 1
       },
       "ladder.wooden.wall": {
+        "ShortName": "ladder.wooden.wall",
         "DisplayName": "Wooden Ladder",
         "Modified": 5
       },
       "wall.external.high.stone": {
+        "ShortName": "wall.external.high.stone",
         "DisplayName": "High External Stone Wall",
         "Modified": 10
       },
       "wall.external.high": {
+        "ShortName": "wall.external.high",
         "DisplayName": "High External Wooden Wall",
         "Modified": 10
       },
       "wall.frame.cell.gate": {
+        "ShortName": "wall.frame.cell.gate",
         "DisplayName": "Prison Cell Gate",
         "Modified": 1
       },
       "wall.frame.cell": {
+        "ShortName": "wall.frame.cell",
         "DisplayName": "Prison Cell Wall",
         "Modified": 10
       },
       "wall.frame.fence.gate": {
+        "ShortName": "wall.frame.fence.gate",
         "DisplayName": "Chainlink Fence Gate",
         "Modified": 1
       },
       "wall.frame.fence": {
+        "ShortName": "wall.frame.fence",
         "DisplayName": "Chainlink Fence",
         "Modified": 10
       },
       "wall.frame.garagedoor": {
+        "ShortName": "wall.frame.garagedoor",
         "DisplayName": "Garage Door",
         "Modified": 1
       },
       "wall.frame.netting": {
+        "ShortName": "wall.frame.netting",
         "DisplayName": "Netting",
         "Modified": 5
       },
       "wall.frame.shopfront": {
+        "ShortName": "wall.frame.shopfront",
         "DisplayName": "Shop Front",
         "Modified": 1
       },
       "wall.frame.shopfront.metal": {
+        "ShortName": "wall.frame.shopfront.metal",
         "DisplayName": "Metal Shop Front",
         "Modified": 1
       },
       "wall.window.bars.metal": {
+        "ShortName": "wall.window.bars.metal",
         "DisplayName": "Metal Window Bars",
         "Modified": 10
       },
       "wall.window.bars.toptier": {
+        "ShortName": "wall.window.bars.toptier",
         "DisplayName": "Reinforced Glass Window",
         "Modified": 10
       },
       "wall.window.bars.wood": {
+        "ShortName": "wall.window.bars.wood",
         "DisplayName": "Wooden Window Bars",
         "Modified": 10
       },
       "shutter.metal.embrasure.a": {
+        "ShortName": "shutter.metal.embrasure.a",
         "DisplayName": "Metal horizontal embrasure",
         "Modified": 20
       },
       "shutter.metal.embrasure.b": {
+        "ShortName": "shutter.metal.embrasure.b",
         "DisplayName": "Metal Vertical embrasure",
         "Modified": 20
       },
       "wall.window.glass.reinforced": {
+        "ShortName": "wall.window.glass.reinforced",
         "DisplayName": "Strengthened Glass Window",
         "Modified": 10
       },
       "shutter.wood.a": {
+        "ShortName": "shutter.wood.a",
         "DisplayName": "Wood Shutters",
         "Modified": 20
       },
       "watchtower.wood": {
+        "ShortName": "watchtower.wood",
         "DisplayName": "Watch Tower",
         "Modified": 5
       },
       "barricade.concrete": {
+        "ShortName": "barricade.concrete",
         "DisplayName": "Concrete Barricade",
         "Modified": 10
       },
       "barricade.wood.cover": {
+        "ShortName": "barricade.wood.cover",
         "DisplayName": "Wooden Barricade Cover",
         "Modified": 10
       },
       "barricade.metal": {
+        "ShortName": "barricade.metal",
         "DisplayName": "Metal Barricade",
         "Modified": 10
       },
       "barricade.sandbags": {
+        "ShortName": "barricade.sandbags",
         "DisplayName": "Sandbag Barricade",
         "Modified": 10
       },
       "barricade.stone": {
+        "ShortName": "barricade.stone",
         "DisplayName": "Stone Barricade",
         "Modified": 10
       },
       "barricade.wood": {
+        "ShortName": "barricade.wood",
         "DisplayName": "Wooden Barricade",
         "Modified": 10
       },
       "barricade.woodwire": {
+        "ShortName": "barricade.woodwire",
         "DisplayName": "Barbed Wooden Barricade",
         "Modified": 10
       },
       "mining.pumpjack": {
+        "ShortName": "mining.pumpjack",
         "DisplayName": "Pump Jack",
         "Modified": 1
       },
       "mining.quarry": {
+        "ShortName": "mining.quarry",
         "DisplayName": "Mining Quarry",
         "Modified": 1
       },
       "cupboard.tool": {
+        "ShortName": "cupboard.tool",
         "DisplayName": "Tool Cupboard",
         "Modified": 1
       },
       "water.catcher.large": {
+        "ShortName": "water.catcher.large",
         "DisplayName": "Large Water Catcher",
         "Modified": 1
       },
       "water.catcher.small": {
+        "ShortName": "water.catcher.small",
         "DisplayName": "Small Water Catcher",
         "Modified": 1
       },
       "lock.key": {
+        "ShortName": "lock.key",
         "DisplayName": "Key Lock",
         "Modified": 10
       },
       "lock.code": {
+        "ShortName": "lock.code",
         "DisplayName": "Code Lock",
         "Modified": 10
       },
       "door.closer": {
+        "ShortName": "door.closer",
         "DisplayName": "Door Closer",
         "Modified": 1
       },
       "door.hinged.industrial.a": {
+        "ShortName": "door.hinged.industrial.a",
         "DisplayName": "Industrial Door",
         "Modified": 1
       },
       "wall.ice.wall": {
+        "ShortName": "wall.ice.wall",
         "DisplayName": "Short Ice Wall",
         "Modified": 10
       },
       "wall.external.high.ice": {
+        "ShortName": "wall.external.high.ice",
         "DisplayName": "High Ice Wall",
         "Modified": 10
       },
       "building.planner": {
+        "ShortName": "building.planner",
         "DisplayName": "Building Plan",
         "Modified": 1
       }
     },
     "Component": {
       "bleach": {
+        "ShortName": "bleach",
         "DisplayName": "Bleach",
         "Modified": 20
       },
       "ducttape": {
+        "ShortName": "ducttape",
         "DisplayName": "Duct Tape",
         "Modified": 20
       },
       "carburetor1": {
+        "ShortName": "carburetor1",
         "DisplayName": "Low Quality Carburetor",
         "Modified": 15
       },
       "carburetor2": {
+        "ShortName": "carburetor2",
         "DisplayName": "Medium Quality Carburetor",
         "Modified": 15
       },
       "carburetor3": {
+        "ShortName": "carburetor3",
         "DisplayName": "High Quality Carburetor",
         "Modified": 15
       },
       "crankshaft1": {
+        "ShortName": "crankshaft1",
         "DisplayName": "Low Quality Crankshaft",
         "Modified": 15
       },
       "crankshaft2": {
+        "ShortName": "crankshaft2",
         "DisplayName": "Medium Quality Crankshaft",
         "Modified": 15
       },
       "crankshaft3": {
+        "ShortName": "crankshaft3",
         "DisplayName": "High Quality Crankshaft",
         "Modified": 15
       },
       "piston1": {
+        "ShortName": "piston1",
         "DisplayName": "Low Quality Pistons",
         "Modified": 30
       },
       "piston2": {
+        "ShortName": "piston2",
         "DisplayName": "Medium Quality Pistons",
         "Modified": 30
       },
       "piston3": {
+        "ShortName": "piston3",
         "DisplayName": "High Quality Pistons",
         "Modified": 30
       },
       "sparkplug1": {
+        "ShortName": "sparkplug1",
         "DisplayName": "Low Quality Spark Plugs",
         "Modified": 60
       },
       "sparkplug2": {
+        "ShortName": "sparkplug2",
         "DisplayName": "Medium Quality Spark Plugs",
         "Modified": 60
       },
       "sparkplug3": {
+        "ShortName": "sparkplug3",
         "DisplayName": "High Quality Spark Plugs",
         "Modified": 60
       },
       "valve1": {
+        "ShortName": "valve1",
         "DisplayName": "Low Quality Valves",
         "Modified": 45
       },
       "valve2": {
+        "ShortName": "valve2",
         "DisplayName": "Medium Quality Valves",
         "Modified": 45
       },
       "valve3": {
+        "ShortName": "valve3",
         "DisplayName": "High Quality Valves",
         "Modified": 45
       },
       "fuse": {
+        "ShortName": "fuse",
         "DisplayName": "Electric Fuse",
         "Modified": 10
       },
       "gears": {
+        "ShortName": "gears",
         "DisplayName": "Gears",
         "Modified": 100
       },
       "glue": {
+        "ShortName": "glue",
         "DisplayName": "Glue",
         "Modified": 10
       },
       "metalblade": {
+        "ShortName": "metalblade",
         "DisplayName": "Metal Blade",
         "Modified": 100
       },
       "metalpipe": {
+        "ShortName": "metalpipe",
         "DisplayName": "Metal Pipe",
         "Modified": 100
       },
       "propanetank": {
+        "ShortName": "propanetank",
         "DisplayName": "Empty Propane Tank",
         "Modified": 25
       },
       "roadsigns": {
+        "ShortName": "roadsigns",
         "DisplayName": "Road Signs",
         "Modified": 100
       },
       "rope": {
+        "ShortName": "rope",
         "DisplayName": "Rope",
         "Modified": 350
       },
       "sewingkit": {
+        "ShortName": "sewingkit",
         "DisplayName": "Sewing Kit",
         "Modified": 100
       },
       "sheetmetal": {
+        "ShortName": "sheetmetal",
         "DisplayName": "Sheet Metal",
         "Modified": 100
       },
       "metalspring": {
+        "ShortName": "metalspring",
         "DisplayName": "Metal Spring",
         "Modified": 100
       },
       "sticks": {
+        "ShortName": "sticks",
         "DisplayName": "Sticks",
         "Modified": 500
       },
       "tarp": {
+        "ShortName": "tarp",
         "DisplayName": "Tarp",
         "Modified": 100
       },
       "techparts": {
+        "ShortName": "techparts",
         "DisplayName": "Tech Trash",
         "Modified": 150
       },
       "riflebody": {
+        "ShortName": "riflebody",
         "DisplayName": "Rifle Body",
         "Modified": 30
       },
       "semibody": {
+        "ShortName": "semibody",
         "DisplayName": "Semi Automatic Body",
         "Modified": 30
       },
       "smgbody": {
+        "ShortName": "smgbody",
         "DisplayName": "SMG Body",
         "Modified": 30
       },
       "vehicle.chassis.2mod": {
+        "ShortName": "vehicle.chassis.2mod",
         "DisplayName": "Small Chassis",
         "Modified": 1
       },
       "vehicle.chassis.3mod": {
+        "ShortName": "vehicle.chassis.3mod",
         "DisplayName": "Medium Chassis",
         "Modified": 1
       },
       "vehicle.chassis.4mod": {
+        "ShortName": "vehicle.chassis.4mod",
         "DisplayName": "Large Chassis",
         "Modified": 1
       },
       "vehicle.chassis": {
+        "ShortName": "vehicle.chassis",
         "DisplayName": "Generic vehicle chassis",
         "Modified": 1
       },
       "vehicle.1mod.cockpit": {
+        "ShortName": "vehicle.1mod.cockpit",
         "DisplayName": "Cockpit Vehicle Module",
         "Modified": 1
       },
       "vehicle.1mod.cockpit.armored": {
+        "ShortName": "vehicle.1mod.cockpit.armored",
         "DisplayName": "Armored Cockpit Vehicle Module",
         "Modified": 1
       },
       "vehicle.1mod.cockpit.with.engine": {
+        "ShortName": "vehicle.1mod.cockpit.with.engine",
         "DisplayName": "Cockpit With Engine Vehicle Module",
         "Modified": 1
       },
       "vehicle.1mod.engine": {
+        "ShortName": "vehicle.1mod.engine",
         "DisplayName": "Engine Vehicle Module",
         "Modified": 1
       },
       "vehicle.1mod.flatbed": {
+        "ShortName": "vehicle.1mod.flatbed",
         "DisplayName": "Flatbed Vehicle Module",
         "Modified": 1
       },
       "vehicle.1mod.passengers.armored": {
+        "ShortName": "vehicle.1mod.passengers.armored",
         "DisplayName": "Armored Passenger Vehicle Module",
         "Modified": 1
       },
       "vehicle.1mod.rear.seats": {
+        "ShortName": "vehicle.1mod.rear.seats",
         "DisplayName": "Rear Seats Vehicle Module",
         "Modified": 1
       },
       "vehicle.1mod.storage": {
+        "ShortName": "vehicle.1mod.storage",
         "DisplayName": "Storage Vehicle Module",
         "Modified": 1
       },
       "vehicle.1mod.taxi": {
+        "ShortName": "vehicle.1mod.taxi",
         "DisplayName": "Taxi Vehicle Module",
         "Modified": 1
       },
       "vehicle.2mod.flatbed": {
+        "ShortName": "vehicle.2mod.flatbed",
         "DisplayName": "Large Flatbed Vehicle Module",
         "Modified": 1
       },
       "vehicle.2mod.fuel.tank": {
+        "ShortName": "vehicle.2mod.fuel.tank",
         "DisplayName": "Fuel Tank Vehicle Module",
         "Modified": 1
       },
       "vehicle.2mod.passengers": {
+        "ShortName": "vehicle.2mod.passengers",
         "DisplayName": "Passenger Vehicle Module",
         "Modified": 1
       },
       "vehicle.module": {
+        "ShortName": "vehicle.module",
         "DisplayName": "Generic vehicle module",
         "Modified": 1
       },
+      "aiming.module.mlrs": {
+        "ShortName": "aiming.module.mlrs",
+        "DisplayName": "MLRS Aiming Module",
+        "Modified": 1
+      },
       "vehicle.2mod.camper": {
+        "ShortName": "vehicle.2mod.camper",
         "DisplayName": "Camper Vehicle Module",
         "Modified": 1
       }
     },
     "Traps": {
       "trap.bear": {
+        "ShortName": "trap.bear",
         "DisplayName": "Snap Trap",
         "Modified": 3
       },
       "spikes.floor": {
+        "ShortName": "spikes.floor",
         "DisplayName": "Wooden Floor Spikes",
         "Modified": 10
       },
       "trap.landmine": {
+        "ShortName": "trap.landmine",
         "DisplayName": "Land Mine",
         "Modified": 5
       },
       "guntrap": {
+        "ShortName": "guntrap",
         "DisplayName": "Shotgun Trap",
         "Modified": 1
       },
       "flameturret": {
+        "ShortName": "flameturret",
         "DisplayName": "Flame Turret",
         "Modified": 1
       },
       "samsite": {
+        "ShortName": "samsite",
         "DisplayName": "SAM Site",
         "Modified": 1
       }
     },
     "Electrical": {
       "ceilinglight": {
+        "ShortName": "ceilinglight",
         "DisplayName": "Ceiling Light",
         "Modified": 30
       },
       "computerstation": {
+        "ShortName": "computerstation",
         "DisplayName": "Computer Station",
         "Modified": 1
       },
       "elevator": {
+        "ShortName": "elevator",
         "DisplayName": "Elevator",
         "Modified": 5
       },
       "modularcarlift": {
+        "ShortName": "modularcarlift",
         "DisplayName": "Modular Car Lift",
         "Modified": 1
       },
       "electric.audioalarm": {
+        "ShortName": "electric.audioalarm",
         "DisplayName": "Audio Alarm",
         "Modified": 15
       },
       "smart.alarm": {
+        "ShortName": "smart.alarm",
         "DisplayName": "Smart Alarm",
         "Modified": 15
       },
       "smart.switch": {
+        "ShortName": "smart.switch",
         "DisplayName": "Smart Switch",
         "Modified": 15
       },
       "storage.monitor": {
+        "ShortName": "storage.monitor",
         "DisplayName": "Storage Monitor",
         "Modified": 1
       },
       "electric.battery.rechargable.large": {
+        "ShortName": "electric.battery.rechargable.large",
         "DisplayName": "Large Rechargeable Battery",
         "Modified": 1
       },
       "electric.battery.rechargable.medium": {
+        "ShortName": "electric.battery.rechargable.medium",
         "DisplayName": "Medium Rechargeable Battery",
         "Modified": 1
       },
       "electric.battery.rechargable.small": {
+        "ShortName": "electric.battery.rechargable.small",
         "DisplayName": "Small Rechargeable Battery",
         "Modified": 1
       },
       "electric.button": {
+        "ShortName": "electric.button",
         "DisplayName": "Button",
         "Modified": 15
       },
       "electric.counter": {
+        "ShortName": "electric.counter",
         "DisplayName": "Counter",
         "Modified": 15
       },
       "electric.hbhfsensor": {
+        "ShortName": "electric.hbhfsensor",
         "DisplayName": "HBHF Sensor",
         "Modified": 1
       },
       "electric.laserdetector": {
+        "ShortName": "electric.laserdetector",
         "DisplayName": "Laser Detector",
         "Modified": 15
       },
       "electric.pressurepad": {
+        "ShortName": "electric.pressurepad",
         "DisplayName": "Pressure Pad",
         "Modified": 1
       },
       "electric.doorcontroller": {
+        "ShortName": "electric.doorcontroller",
         "DisplayName": "Door Controller",
         "Modified": 15
       },
       "electric.heater": {
+        "ShortName": "electric.heater",
         "DisplayName": "Electric Heater",
         "Modified": 15
       },
       "fluid.combiner": {
+        "ShortName": "fluid.combiner",
         "DisplayName": "Fluid Combiner",
         "Modified": 15
       },
       "fluid.splitter": {
+        "ShortName": "fluid.splitter",
         "DisplayName": "Fluid Splitter",
         "Modified": 15
       },
       "fluid.switch": {
+        "ShortName": "fluid.switch",
         "DisplayName": "Fluid Switch & Pump",
         "Modified": 1
       },
       "electric.andswitch": {
+        "ShortName": "electric.andswitch",
         "DisplayName": "AND Switch",
         "Modified": 15
       },
       "electric.blocker": {
+        "ShortName": "electric.blocker",
         "DisplayName": "Blocker",
         "Modified": 15
       },
       "electrical.branch": {
+        "ShortName": "electrical.branch",
         "DisplayName": "Electrical Branch",
         "Modified": 15
       },
       "electrical.combiner": {
+        "ShortName": "electrical.combiner",
         "DisplayName": "Root Combiner",
         "Modified": 15
       },
       "electrical.memorycell": {
+        "ShortName": "electrical.memorycell",
         "DisplayName": "Memory Cell",
         "Modified": 15
       },
       "electric.orswitch": {
+        "ShortName": "electric.orswitch",
         "DisplayName": "OR Switch",
         "Modified": 15
       },
       "electric.random.switch": {
+        "ShortName": "electric.random.switch",
         "DisplayName": "RAND Switch",
         "Modified": 15
       },
       "electric.rf.broadcaster": {
+        "ShortName": "electric.rf.broadcaster",
         "DisplayName": "RF Broadcaster",
         "Modified": 1
       },
       "electric.rf.receiver": {
+        "ShortName": "electric.rf.receiver",
         "DisplayName": "RF Receiver",
         "Modified": 1
       },
       "electric.xorswitch": {
+        "ShortName": "electric.xorswitch",
         "DisplayName": "XOR Switch",
         "Modified": 15
       },
       "electric.fuelgenerator.small": {
+        "ShortName": "electric.fuelgenerator.small",
         "DisplayName": "Small Generator",
         "Modified": 1
       },
       "electric.generator.small": {
+        "ShortName": "electric.generator.small",
         "DisplayName": "Test Generator",
         "Modified": 1
       },
       "electric.solarpanel.large": {
+        "ShortName": "electric.solarpanel.large",
         "DisplayName": "Large Solar Panel",
         "Modified": 9
       },
       "electric.igniter": {
+        "ShortName": "electric.igniter",
         "DisplayName": "Igniter",
         "Modified": 9
       },
       "electric.flasherlight": {
+        "ShortName": "electric.flasherlight",
         "DisplayName": "Flasher Light",
         "Modified": 15
       },
       "electric.simplelight": {
+        "ShortName": "electric.simplelight",
         "DisplayName": "Simple Light",
         "Modified": 1
       },
       "electric.sirenlight": {
+        "ShortName": "electric.sirenlight",
         "DisplayName": "Siren Light",
         "Modified": 15
       },
       "powered.water.purifier": {
+        "ShortName": "powered.water.purifier",
         "DisplayName": "Powered Water Purifier",
         "Modified": 1
       },
       "electric.switch": {
+        "ShortName": "electric.switch",
         "DisplayName": "Switch",
         "Modified": 15
       },
       "electric.splitter": {
+        "ShortName": "electric.splitter",
         "DisplayName": "Splitter",
         "Modified": 15
       },
       "electric.sprinkler": {
+        "ShortName": "electric.sprinkler",
         "DisplayName": "Sprinkler",
         "Modified": 10
       },
       "electric.teslacoil": {
+        "ShortName": "electric.teslacoil",
         "DisplayName": "Tesla Coil",
         "Modified": 3
       },
       "electric.timer": {
+        "ShortName": "electric.timer",
         "DisplayName": "Timer",
         "Modified": 15
       },
       "electric.cabletunnel": {
+        "ShortName": "electric.cabletunnel",
         "DisplayName": "Cable Tunnel",
         "Modified": 1
       },
       "waterpump": {
+        "ShortName": "waterpump",
         "DisplayName": "Water Pump",
         "Modified": 1
       },
       "target.reactive": {
+        "ShortName": "target.reactive",
         "DisplayName": "Reactive Target",
         "Modified": 1
       },
       "searchlight": {
+        "ShortName": "searchlight",
         "DisplayName": "Search Light",
         "Modified": 1
       },
       "generator.wind.scrap": {
+        "ShortName": "generator.wind.scrap",
         "DisplayName": "Wind Turbine",
         "Modified": 1
       },
       "sign.neon.125x125": {
+        "ShortName": "sign.neon.125x125",
         "DisplayName": "Small Neon Sign",
         "Modified": 1
       },
       "sign.neon.125x215.animated": {
+        "ShortName": "sign.neon.125x215.animated",
         "DisplayName": "Medium Animated Neon Sign",
         "Modified": 1
       },
       "sign.neon.125x215": {
+        "ShortName": "sign.neon.125x215",
         "DisplayName": "Medium Neon Sign",
         "Modified": 1
       },
       "sign.neon.xl.animated": {
+        "ShortName": "sign.neon.xl.animated",
         "DisplayName": "Large Animated Neon Sign",
         "Modified": 1
       },
       "sign.neon.xl": {
+        "ShortName": "sign.neon.xl",
         "DisplayName": "Large Neon Sign",
         "Modified": 1
       },
       "xmas.lightstring.advanced": {
+        "ShortName": "xmas.lightstring.advanced",
         "DisplayName": "Deluxe Christmas Lights",
         "Modified": 300
       },
       "autoturret": {
+        "ShortName": "autoturret",
         "DisplayName": "Auto Turret",
         "Modified": 1
       },
       "hosetool": {
+        "ShortName": "hosetool",
         "DisplayName": "Hose Tool",
         "Modified": 1
       },
       "rf_pager": {
+        "ShortName": "rf_pager",
         "DisplayName": "RF Pager",
         "Modified": 1
       },
       "wiretool": {
+        "ShortName": "wiretool",
         "DisplayName": "Wire Tool",
         "Modified": 1
       }
     },
     "Fun": {
       "firework.boomer.blue": {
+        "ShortName": "firework.boomer.blue",
         "DisplayName": "Blue Boomer",
         "Modified": 20
       },
       "firework.boomer.champagne": {
+        "ShortName": "firework.boomer.champagne",
         "DisplayName": "Champagne Boomer",
         "Modified": 20
       },
       "firework.boomer.green": {
+        "ShortName": "firework.boomer.green",
         "DisplayName": "Green Boomer",
         "Modified": 20
       },
       "firework.boomer.orange": {
+        "ShortName": "firework.boomer.orange",
         "DisplayName": "Orange Boomer",
         "Modified": 20
       },
       "firework.boomer.red": {
+        "ShortName": "firework.boomer.red",
         "DisplayName": "Red Boomer",
         "Modified": 20
       },
       "firework.boomer.violet": {
+        "ShortName": "firework.boomer.violet",
         "DisplayName": "Violet Boomer",
         "Modified": 20
       },
       "firework.romancandle.blue": {
+        "ShortName": "firework.romancandle.blue",
         "DisplayName": "Blue Roman Candle",
         "Modified": 20
       },
       "firework.romancandle.green": {
+        "ShortName": "firework.romancandle.green",
         "DisplayName": "Green Roman Candle",
         "Modified": 20
       },
       "firework.romancandle.red": {
+        "ShortName": "firework.romancandle.red",
         "DisplayName": "Red Roman Candle",
         "Modified": 20
       },
       "firework.romancandle.violet": {
+        "ShortName": "firework.romancandle.violet",
         "DisplayName": "Violet Roman Candle",
         "Modified": 20
       },
       "firework.volcano": {
+        "ShortName": "firework.volcano",
         "DisplayName": "White Volcano Firework",
         "Modified": 20
       },
       "firework.volcano.red": {
+        "ShortName": "firework.volcano.red",
         "DisplayName": "Red Volcano Firework",
         "Modified": 20
       },
       "firework.volcano.violet": {
+        "ShortName": "firework.volcano.violet",
         "DisplayName": "Violet Volcano Firework",
         "Modified": 20
       },
       "fun.bass": {
+        "ShortName": "fun.bass",
         "DisplayName": "Shovel Bass",
         "Modified": 1
       },
       "fun.cowbell": {
+        "ShortName": "fun.cowbell",
         "DisplayName": "Cowbell",
         "Modified": 1
       },
       "drumkit": {
+        "ShortName": "drumkit",
         "DisplayName": "Junkyard Drum Kit",
         "Modified": 1
       },
       "fun.flute": {
+        "ShortName": "fun.flute",
         "DisplayName": "Pan Flute",
         "Modified": 1
       },
       "fun.guitar": {
+        "ShortName": "fun.guitar",
         "DisplayName": "Acoustic Guitar",
         "Modified": 1
       },
       "fun.jerrycanguitar": {
+        "ShortName": "fun.jerrycanguitar",
         "DisplayName": "Jerry Can Guitar",
         "Modified": 1
       },
       "piano": {
+        "ShortName": "piano",
         "DisplayName": "Wheelbarrow Piano",
         "Modified": 1
       },
       "fun.tambourine": {
+        "ShortName": "fun.tambourine",
         "DisplayName": "Canbourine",
         "Modified": 1
       },
       "fun.trumpet": {
+        "ShortName": "fun.trumpet",
         "DisplayName": "Plumber's Trumpet",
         "Modified": 1
       },
       "fun.tuba": {
+        "ShortName": "fun.tuba",
         "DisplayName": "Sousaphone",
         "Modified": 1
       },
       "xylophone": {
+        "ShortName": "xylophone",
         "DisplayName": "Xylobone",
         "Modified": 1
       },
       "newyeargong": {
+        "ShortName": "newyeargong",
         "DisplayName": "New Year Gong",
         "Modified": 1
       },
       "lunar.firecrackers": {
+        "ShortName": "lunar.firecrackers",
         "DisplayName": "Firecracker String",
         "Modified": 5
       },
       "skullspikes.candles": {
+        "ShortName": "skullspikes.candles",
         "DisplayName": "Skull Spikes",
         "Modified": 1
       },
       "skullspikes.pumpkin": {
+        "ShortName": "skullspikes.pumpkin",
         "DisplayName": "Skull Spikes",
         "Modified": 1
       },
       "skullspikes": {
+        "ShortName": "skullspikes",
         "DisplayName": "Skull Spikes",
         "Modified": 1
       },
       "skull.trophy.jar": {
+        "ShortName": "skull.trophy.jar",
         "DisplayName": "Skull Trophy",
         "Modified": 1
       },
       "skull.trophy.jar2": {
+        "ShortName": "skull.trophy.jar2",
         "DisplayName": "Skull Trophy",
         "Modified": 1
       },
       "skull.trophy.table": {
+        "ShortName": "skull.trophy.table",
         "DisplayName": "Skull Trophy",
         "Modified": 1
       },
       "skull.trophy": {
+        "ShortName": "skull.trophy",
         "DisplayName": "Skull Trophy",
         "Modified": 1
       },
       "abovegroundpool": {
+        "ShortName": "abovegroundpool",
         "DisplayName": "Above Ground Pool",
         "Modified": 1
       },
       "beachchair": {
+        "ShortName": "beachchair",
         "DisplayName": "Beach Chair",
         "Modified": 1
       },
       "beachparasol": {
+        "ShortName": "beachparasol",
         "DisplayName": "Beach Parasol",
         "Modified": 1
       },
       "beachtable": {
+        "ShortName": "beachtable",
         "DisplayName": "Beach Table",
         "Modified": 1
       },
       "beachtowel": {
+        "ShortName": "beachtowel",
         "DisplayName": "Beach Towel",
         "Modified": 1
       },
       "boogieboard": {
+        "ShortName": "boogieboard",
         "DisplayName": "Boogie Board",
         "Modified": 1
       },
       "innertube": {
+        "ShortName": "innertube",
         "DisplayName": "Inner Tube",
         "Modified": 1
       },
       "innertube.horse": {
+        "ShortName": "innertube.horse",
         "DisplayName": "Inner Tube",
         "Modified": 1
       },
       "innertube.unicorn": {
+        "ShortName": "innertube.unicorn",
         "DisplayName": "Inner Tube",
         "Modified": 1
       },
       "paddlingpool": {
+        "ShortName": "paddlingpool",
         "DisplayName": "Paddling Pool",
         "Modified": 1
       },
       "sled.xmas": {
+        "ShortName": "sled.xmas",
         "DisplayName": "Sled",
         "Modified": 1
       },
       "sled": {
+        "ShortName": "sled",
         "DisplayName": "Sled",
         "Modified": 1
       },
       "wrappedgift": {
+        "ShortName": "wrappedgift",
         "DisplayName": "Wrapped Gift",
         "Modified": 1
       },
       "wrappingpaper": {
+        "ShortName": "wrappingpaper",
         "DisplayName": "Wrapping Paper",
         "Modified": 1
       },
       "boombox": {
+        "ShortName": "boombox",
         "DisplayName": "Boom Box",
         "Modified": 1
       },
       "fun.boomboxportable": {
+        "ShortName": "fun.boomboxportable",
         "DisplayName": "Portable Boom Box",
         "Modified": 1
       },
       "cassette": {
+        "ShortName": "cassette",
         "DisplayName": "Cassette - Long",
         "Modified": 1
       },
       "cassette.medium": {
+        "ShortName": "cassette.medium",
         "DisplayName": "Cassette - Medium",
         "Modified": 1
       },
       "cassette.short": {
+        "ShortName": "cassette.short",
         "DisplayName": "Cassette - Short",
         "Modified": 1
       },
       "fun.casetterecorder": {
+        "ShortName": "fun.casetterecorder",
         "DisplayName": "Cassette Recorder",
         "Modified": 1
       },
       "discoball": {
+        "ShortName": "discoball",
         "DisplayName": "Disco Ball",
         "Modified": 5
       },
       "discofloor": {
+        "ShortName": "discofloor",
         "DisplayName": "Disco Floor",
         "Modified": 5
       },
       "discofloor.largetiles": {
+        "ShortName": "discofloor.largetiles",
         "DisplayName": "Disco Floor",
         "Modified": 5
       },
       "connected.speaker": {
+        "ShortName": "connected.speaker",
         "DisplayName": "Connected Speaker",
         "Modified": 5
       },
       "laserlight": {
+        "ShortName": "laserlight",
         "DisplayName": "Laser Light",
         "Modified": 5
       },
       "megaphone": {
+        "ShortName": "megaphone",
         "DisplayName": "Megaphone",
         "Modified": 1
       },
       "microphonestand": {
+        "ShortName": "microphonestand",
         "DisplayName": "Microphone Stand",
         "Modified": 5
       },
       "mobilephone": {
+        "ShortName": "mobilephone",
         "DisplayName": "Mobile Phone",
         "Modified": 1
       },
       "soundlight": {
+        "ShortName": "soundlight",
         "DisplayName": "Sound Light",
         "Modified": 5
       },
       "telephone": {
+        "ShortName": "telephone",
         "DisplayName": "Telephone",
         "Modified": 1
       }
     },
     "Food": {
       "apple": {
+        "ShortName": "apple",
         "DisplayName": "Apple",
         "Modified": 50
       },
       "apple.spoiled": {
+        "ShortName": "apple.spoiled",
         "DisplayName": "Rotten Apple",
         "Modified": 1
       },
       "black.raspberries": {
+        "ShortName": "black.raspberries",
         "DisplayName": "Black Raspberries",
         "Modified": 1
       },
       "blueberries": {
+        "ShortName": "blueberries",
         "DisplayName": "Blueberries",
         "Modified": 100
       },
       "cactusflesh": {
+        "ShortName": "cactusflesh",
         "DisplayName": "Cactus Flesh",
         "Modified": 50
       },
       "can.beans": {
+        "ShortName": "can.beans",
         "DisplayName": "Can of Beans",
         "Modified": 50
       },
       "can.tuna": {
+        "ShortName": "can.tuna",
         "DisplayName": "Can of Tuna",
         "Modified": 50
       },
       "chocholate": {
+        "ShortName": "chocholate",
         "DisplayName": "Chocolate Bar",
         "Modified": 50
       },
       "fish.cooked": {
+        "ShortName": "fish.cooked",
         "DisplayName": "Cooked Fish",
         "Modified": 100
       },
       "fish.raw": {
+        "ShortName": "fish.raw",
         "DisplayName": "Raw Fish",
         "Modified": 100
       },
       "fish.minnows": {
+        "ShortName": "fish.minnows",
         "DisplayName": "Minnows",
         "Modified": 100
       },
       "fish.troutsmall": {
+        "ShortName": "fish.troutsmall",
         "DisplayName": "Small Trout",
         "Modified": 100
       },
       "granolabar": {
+        "ShortName": "granolabar",
         "DisplayName": "Granola Bar",
         "Modified": 100
       },
       "chicken.burned": {
+        "ShortName": "chicken.burned",
         "DisplayName": "Burnt Chicken",
         "Modified": 100
       },
       "chicken.cooked": {
+        "ShortName": "chicken.cooked",
         "DisplayName": "Cooked Chicken",
         "Modified": 100
       },
       "chicken.raw": {
+        "ShortName": "chicken.raw",
         "DisplayName": "Raw Chicken Breast",
         "Modified": 100
       },
       "chicken.spoiled": {
+        "ShortName": "chicken.spoiled",
         "DisplayName": "Spoiled Chicken",
         "Modified": 100
       },
       "deermeat.burned": {
+        "ShortName": "deermeat.burned",
         "DisplayName": "Burnt Deer Meat",
         "Modified": 100
       },
       "deermeat.cooked": {
+        "ShortName": "deermeat.cooked",
         "DisplayName": "Cooked Deer Meat",
         "Modified": 100
       },
       "deermeat.raw": {
+        "ShortName": "deermeat.raw",
         "DisplayName": "Raw Deer Meat",
         "Modified": 100
       },
       "horsemeat.burned": {
+        "ShortName": "horsemeat.burned",
         "DisplayName": "Burnt Horse Meat",
         "Modified": 100
       },
       "horsemeat.cooked": {
+        "ShortName": "horsemeat.cooked",
         "DisplayName": "Cooked Horse Meat",
         "Modified": 100
       },
       "horsemeat.raw": {
+        "ShortName": "horsemeat.raw",
         "DisplayName": "Raw Horse Meat",
         "Modified": 100
       },
       "humanmeat.burned": {
+        "ShortName": "humanmeat.burned",
         "DisplayName": "Burnt Human Meat",
         "Modified": 100
       },
       "humanmeat.cooked": {
+        "ShortName": "humanmeat.cooked",
         "DisplayName": "Cooked Human Meat",
         "Modified": 100
       },
       "humanmeat.raw": {
+        "ShortName": "humanmeat.raw",
         "DisplayName": "Raw Human Meat",
         "Modified": 100
       },
       "humanmeat.spoiled": {
+        "ShortName": "humanmeat.spoiled",
         "DisplayName": "Spoiled Human Meat",
         "Modified": 100
       },
       "bearmeat.burned": {
+        "ShortName": "bearmeat.burned",
         "DisplayName": "Burnt Bear Meat",
         "Modified": 100
       },
       "bearmeat.cooked": {
+        "ShortName": "bearmeat.cooked",
         "DisplayName": "Cooked Bear Meat",
         "Modified": 100
       },
       "bearmeat": {
+        "ShortName": "bearmeat",
         "DisplayName": "Raw Bear Meat",
         "Modified": 100
       },
       "wolfmeat.burned": {
+        "ShortName": "wolfmeat.burned",
         "DisplayName": "Burnt Wolf Meat",
         "Modified": 100
       },
       "wolfmeat.cooked": {
+        "ShortName": "wolfmeat.cooked",
         "DisplayName": "Cooked Wolf Meat",
         "Modified": 100
       },
       "wolfmeat.raw": {
+        "ShortName": "wolfmeat.raw",
         "DisplayName": "Raw Wolf Meat",
         "Modified": 100
       },
       "wolfmeat.spoiled": {
+        "ShortName": "wolfmeat.spoiled",
         "DisplayName": "Spoiled Wolf Meat",
         "Modified": 100
       },
       "meat.pork.burned": {
+        "ShortName": "meat.pork.burned",
         "DisplayName": "Burnt Pork",
         "Modified": 100
       },
       "meat.pork.cooked": {
+        "ShortName": "meat.pork.cooked",
         "DisplayName": "Cooked Pork",
         "Modified": 100
       },
       "meat.boar": {
+        "ShortName": "meat.boar",
         "DisplayName": "Raw Pork",
         "Modified": 100
       },
       "mushroom": {
+        "ShortName": "mushroom",
         "DisplayName": "Mushroom",
         "Modified": 50
       },
       "jar.pickle": {
+        "ShortName": "jar.pickle",
         "DisplayName": "Pickles",
         "Modified": 50
       },
       "smallwaterbottle": {
+        "ShortName": "smallwaterbottle",
         "DisplayName": "Small Water Bottle",
         "Modified": 1
       },
       "waterjug": {
+        "ShortName": "waterjug",
         "DisplayName": "Water Jug",
         "Modified": 1
       },
       "candycane": {
+        "ShortName": "candycane",
         "DisplayName": "Candy Cane",
         "Modified": 5
       },
       "black.berry": {
+        "ShortName": "black.berry",
         "DisplayName": "Black Berry",
         "Modified": 100
       },
       "clone.black.berry": {
+        "ShortName": "clone.black.berry",
         "DisplayName": "Black Berry Clone",
         "Modified": 150
       },
       "seed.black.berry": {
+        "ShortName": "seed.black.berry",
         "DisplayName": "Black Berry Seed",
         "Modified": 150
       },
       "blue.berry": {
+        "ShortName": "blue.berry",
         "DisplayName": "Blue Berry",
         "Modified": 100
       },
       "clone.blue.berry": {
+        "ShortName": "clone.blue.berry",
         "DisplayName": "Blue Berry Clone",
         "Modified": 150
       },
       "seed.blue.berry": {
+        "ShortName": "seed.blue.berry",
         "DisplayName": "Blue Berry Seed",
         "Modified": 150
       },
       "green.berry": {
+        "ShortName": "green.berry",
         "DisplayName": "Green Berry",
         "Modified": 100
       },
       "clone.green.berry": {
+        "ShortName": "clone.green.berry",
         "DisplayName": "Green Berry Clone",
         "Modified": 150
       },
       "seed.green.berry": {
+        "ShortName": "seed.green.berry",
         "DisplayName": "Green Berry Seed",
         "Modified": 150
       },
       "red.berry": {
+        "ShortName": "red.berry",
         "DisplayName": "Red Berry",
         "Modified": 100
       },
       "clone.red.berry": {
+        "ShortName": "clone.red.berry",
         "DisplayName": "Red Berry Clone",
         "Modified": 150
       },
       "seed.red.berry": {
+        "ShortName": "seed.red.berry",
         "DisplayName": "Red Berry Seed",
         "Modified": 150
       },
       "white.berry": {
+        "ShortName": "white.berry",
         "DisplayName": "White Berry",
         "Modified": 100
       },
       "clone.white.berry": {
+        "ShortName": "clone.white.berry",
         "DisplayName": "White Berry Clone",
         "Modified": 150
       },
       "seed.white.berry": {
+        "ShortName": "seed.white.berry",
         "DisplayName": "White Berry Seed",
         "Modified": 150
       },
       "yellow.berry": {
+        "ShortName": "yellow.berry",
         "DisplayName": "Yellow Berry",
         "Modified": 100
       },
       "clone.yellow.berry": {
+        "ShortName": "clone.yellow.berry",
         "DisplayName": "Yellow Berry Clone",
         "Modified": 150
       },
       "seed.yellow.berry": {
+        "ShortName": "seed.yellow.berry",
         "DisplayName": "Yellow Berry Seed",
         "Modified": 150
       },
       "corn": {
+        "ShortName": "corn",
         "DisplayName": "Corn",
         "Modified": 100
       },
       "clone.corn": {
+        "ShortName": "clone.corn",
         "DisplayName": "Corn Clone",
         "Modified": 150
       },
       "seed.corn": {
+        "ShortName": "seed.corn",
         "DisplayName": "Corn Seed",
         "Modified": 150
       },
       "clone.hemp": {
+        "ShortName": "clone.hemp",
         "DisplayName": "Hemp Clone",
         "Modified": 150
       },
       "seed.hemp": {
+        "ShortName": "seed.hemp",
         "DisplayName": "Hemp Seed",
         "Modified": 150
       },
       "potato": {
+        "ShortName": "potato",
         "DisplayName": "Potato",
         "Modified": 100
       },
       "clone.potato": {
+        "ShortName": "clone.potato",
         "DisplayName": "Potato Clone",
         "Modified": 150
       },
       "seed.potato": {
+        "ShortName": "seed.potato",
         "DisplayName": "Potato Seed",
         "Modified": 150
       },
       "pumpkin": {
+        "ShortName": "pumpkin",
         "DisplayName": "Pumpkin",
         "Modified": 100
       },
       "clone.pumpkin": {
+        "ShortName": "clone.pumpkin",
         "DisplayName": "Pumpkin Plant Clone",
         "Modified": 150
       },
       "seed.pumpkin": {
+        "ShortName": "seed.pumpkin",
         "DisplayName": "Pumpkin Seed",
         "Modified": 150
       },
       "healingtea.advanced": {
+        "ShortName": "healingtea.advanced",
         "DisplayName": "Advanced Healing Tea",
         "Modified": 30
       },
       "healingtea": {
+        "ShortName": "healingtea",
         "DisplayName": "Basic Healing Tea",
         "Modified": 30
       },
       "healingtea.pure": {
+        "ShortName": "healingtea.pure",
         "DisplayName": "Pure Healing Tea",
         "Modified": 30
       },
       "maxhealthtea.advanced": {
+        "ShortName": "maxhealthtea.advanced",
         "DisplayName": "Advanced Max Health Tea",
         "Modified": 30
       },
       "maxhealthtea": {
+        "ShortName": "maxhealthtea",
         "DisplayName": "Basic Max Health Tea",
         "Modified": 30
       },
       "maxhealthtea.pure": {
+        "ShortName": "maxhealthtea.pure",
         "DisplayName": "Pure Max Health Tea",
         "Modified": 30
       },
       "oretea.advanced": {
+        "ShortName": "oretea.advanced",
         "DisplayName": "Advanced Ore Tea",
         "Modified": 30
       },
       "oretea": {
+        "ShortName": "oretea",
         "DisplayName": "Basic Ore Tea",
         "Modified": 30
       },
       "oretea.pure": {
+        "ShortName": "oretea.pure",
         "DisplayName": "Pure Ore Tea",
         "Modified": 30
       },
       "radiationremovetea.advanced": {
+        "ShortName": "radiationremovetea.advanced",
         "DisplayName": "Advanced Rad. Removal Tea",
         "Modified": 30
       },
       "radiationremovetea": {
+        "ShortName": "radiationremovetea",
         "DisplayName": "Rad. Removal Tea",
         "Modified": 30
       },
       "radiationremovetea.pure": {
+        "ShortName": "radiationremovetea.pure",
         "DisplayName": "Pure Rad. Removal Tea",
         "Modified": 30
       },
       "radiationresisttea.advanced": {
+        "ShortName": "radiationresisttea.advanced",
         "DisplayName": "Adv. Anti-Rad Tea",
         "Modified": 30
       },
       "radiationresisttea": {
+        "ShortName": "radiationresisttea",
         "DisplayName": "Anti-Rad Tea",
         "Modified": 30
       },
       "radiationresisttea.pure": {
+        "ShortName": "radiationresisttea.pure",
         "DisplayName": "Pure Anti-Rad Tea",
         "Modified": 30
       },
       "scraptea.advanced": {
+        "ShortName": "scraptea.advanced",
         "DisplayName": "Advanced Scrap Tea",
         "Modified": 30
       },
       "scraptea": {
+        "ShortName": "scraptea",
         "DisplayName": "Basic Scrap Tea",
         "Modified": 30
       },
       "scraptea.pure": {
+        "ShortName": "scraptea.pure",
         "DisplayName": "Pure Scrap Tea",
         "Modified": 30
       },
       "woodtea.advanced": {
+        "ShortName": "woodtea.advanced",
         "DisplayName": "Advanced Wood Tea",
         "Modified": 30
       },
       "woodtea": {
+        "ShortName": "woodtea",
         "DisplayName": "Basic Wood Tea",
         "Modified": 30
       },
       "woodtea.pure": {
+        "ShortName": "woodtea.pure",
         "DisplayName": "Pure Wood Tea",
         "Modified": 30
       },
       "grub": {
+        "ShortName": "grub",
         "DisplayName": "Grub",
         "Modified": 20
       },
       "worm": {
+        "ShortName": "worm",
         "DisplayName": "Worm",
         "Modified": 20
       },
       "fish.anchovy": {
+        "ShortName": "fish.anchovy",
         "DisplayName": "Anchovy",
         "Modified": 10
       },
       "fish.catfish": {
+        "ShortName": "fish.catfish",
         "DisplayName": "Catfish",
         "Modified": 5
       },
       "fish.herring": {
+        "ShortName": "fish.herring",
         "DisplayName": "Herring",
         "Modified": 10
       },
       "fish.orangeroughy": {
+        "ShortName": "fish.orangeroughy",
         "DisplayName": "Orange Roughy",
         "Modified": 5
       },
       "fish.salmon": {
+        "ShortName": "fish.salmon",
         "DisplayName": "Salmon",
         "Modified": 10
       },
       "fish.sardine": {
+        "ShortName": "fish.sardine",
         "DisplayName": "Sardine",
         "Modified": 10
       },
       "fish.smallshark": {
+        "ShortName": "fish.smallshark",
         "DisplayName": "Small Shark",
         "Modified": 5
       },
       "fish.yellowperch": {
+        "ShortName": "fish.yellowperch",
         "DisplayName": "Yellow Perch",
         "Modified": 10
       },
       "bottle.vodka": {
+        "ShortName": "bottle.vodka",
         "DisplayName": "Vodka Bottle",
         "Modified": 1
       }
     },
     "Resources": {
       "skull.human": {
+        "ShortName": "skull.human",
         "DisplayName": "Human Skull",
         "Modified": 1
       },
       "coal": {
+        "ShortName": "coal",
         "DisplayName": "Coal :(",
         "Modified": 1
       },
       "fat.animal": {
+        "ShortName": "fat.animal",
         "DisplayName": "Animal Fat",
         "Modified": 5000
       },
       "battery.small": {
+        "ShortName": "battery.small",
         "DisplayName": "Battery - Small",
         "Modified": 5
       },
       "bone.fragments": {
+        "ShortName": "bone.fragments",
         "DisplayName": "Bone Fragments",
         "Modified": 5000
       },
       "cctv.camera": {
+        "ShortName": "cctv.camera",
         "DisplayName": "CCTV Camera",
         "Modified": 128
       },
       "charcoal": {
+        "ShortName": "charcoal",
         "DisplayName": "Charcoal",
         "Modified": 5000
       },
       "cloth": {
+        "ShortName": "cloth",
         "DisplayName": "Cloth",
         "Modified": 5000
       },
       "crude.oil": {
+        "ShortName": "crude.oil",
         "DisplayName": "Crude Oil",
         "Modified": 3500
       },
       "diesel_barrel": {
+        "ShortName": "diesel_barrel",
         "DisplayName": "Diesel Fuel",
         "Modified": 100
       },
       "can.beans.empty": {
+        "ShortName": "can.beans.empty",
         "DisplayName": "Empty Can Of Beans",
         "Modified": 50
       },
       "can.tuna.empty": {
+        "ShortName": "can.tuna.empty",
         "DisplayName": "Empty Tuna Can",
         "Modified": 50
       },
       "explosives": {
+        "ShortName": "explosives",
         "DisplayName": "Explosives",
         "Modified": 500
       },
       "fertilizer": {
+        "ShortName": "fertilizer",
         "DisplayName": "Fertilizer",
         "Modified": 5000
       },
       "gunpowder": {
+        "ShortName": "gunpowder",
         "DisplayName": "Gun Powder",
         "Modified": 5000
       },
       "horsedung": {
+        "ShortName": "horsedung",
         "DisplayName": "Horse Dung",
         "Modified": 250
       },
       "hq.metal.ore": {
+        "ShortName": "hq.metal.ore",
         "DisplayName": "High Quality Metal Ore",
         "Modified": 5000
       },
       "metal.refined": {
+        "ShortName": "metal.refined",
         "DisplayName": "High Quality Metal",
         "Modified": 500
       },
       "leather": {
+        "ShortName": "leather",
         "DisplayName": "Leather",
         "Modified": 5000
       },
       "lowgradefuel": {
+        "ShortName": "lowgradefuel",
         "DisplayName": "Low Grade Fuel",
         "Modified": 3500
       },
       "metal.fragments": {
+        "ShortName": "metal.fragments",
         "DisplayName": "Metal Fragments",
         "Modified": 5000
       },
       "metal.ore": {
+        "ShortName": "metal.ore",
         "DisplayName": "Metal Ore",
         "Modified": 5000
       },
       "paper": {
+        "ShortName": "paper",
         "DisplayName": "Paper",
         "Modified": 5000
       },
       "plantfiber": {
+        "ShortName": "plantfiber",
         "DisplayName": "Plant Fiber",
         "Modified": 5000
       },
       "researchpaper": {
+        "ShortName": "researchpaper",
         "DisplayName": "Research Paper",
         "Modified": 5000
       },
       "scrap": {
+        "ShortName": "scrap",
         "DisplayName": "Scrap",
         "Modified": 5000
       },
       "stones": {
+        "ShortName": "stones",
         "DisplayName": "Stones",
         "Modified": 5000
       },
       "sulfur.ore": {
+        "ShortName": "sulfur.ore",
         "DisplayName": "Sulfur Ore",
         "Modified": 5000
       },
       "sulfur": {
+        "ShortName": "sulfur",
         "DisplayName": "Sulfur",
         "Modified": 5000
       },
       "targeting.computer": {
+        "ShortName": "targeting.computer",
         "DisplayName": "Targeting Computer",
         "Modified": 128
       },
       "skull.wolf": {
+        "ShortName": "skull.wolf",
         "DisplayName": "Wolf Skull",
         "Modified": 1
       },
       "wood": {
+        "ShortName": "wood",
         "DisplayName": "Wood",
         "Modified": 5000
       }
     },
     "Tool": {
       "tool.instant_camera": {
+        "ShortName": "tool.instant_camera",
         "DisplayName": "Instant Camera",
         "Modified": 1
       },
       "tool.binoculars": {
+        "ShortName": "tool.binoculars",
         "DisplayName": "Binoculars",
         "Modified": 1
       },
       "explosive.timed": {
+        "ShortName": "explosive.timed",
         "DisplayName": "Timed Explosive Charge",
         "Modified": 20
       },
       "tool.camera": {
+        "ShortName": "tool.camera",
         "DisplayName": "Camera",
         "Modified": 1
       },
       "rf.detonator": {
+        "ShortName": "rf.detonator",
         "DisplayName": "RF Transmitter",
         "Modified": 1
       },
       "flare": {
+        "ShortName": "flare",
         "DisplayName": "Flare",
         "Modified": 5
       },
       "flashlight.held": {
+        "ShortName": "flashlight.held",
         "DisplayName": "Flashlight",
         "Modified": 1
       },
       "geiger.counter": {
+        "ShortName": "geiger.counter",
         "DisplayName": "Geiger Counter",
         "Modified": 1
       },
       "jackhammer": {
+        "ShortName": "jackhammer",
         "DisplayName": "Jackhammer",
         "Modified": 1
       },
       "grenade.smoke": {
+        "ShortName": "grenade.smoke",
         "DisplayName": "Smoke Grenade",
         "Modified": 3
       },
       "supply.signal": {
+        "ShortName": "supply.signal",
         "DisplayName": "Supply Signal",
         "Modified": 1
       },
       "surveycharge": {
+        "ShortName": "surveycharge",
         "DisplayName": "Survey Charge",
         "Modified": 10
       },
       "cakefiveyear": {
+        "ShortName": "cakefiveyear",
         "DisplayName": "Birthday Cake",
         "Modified": 1
       },
       "chainsaw": {
+        "ShortName": "chainsaw",
         "DisplayName": "Chainsaw",
         "Modified": 1
       },
       "hammer": {
+        "ShortName": "hammer",
         "DisplayName": "Hammer",
         "Modified": 1
       },
       "hatchet": {
+        "ShortName": "hatchet",
         "DisplayName": "Hatchet",
         "Modified": 1
       },
       "pickaxe": {
+        "ShortName": "pickaxe",
         "DisplayName": "Pickaxe",
         "Modified": 1
       },
       "rock": {
+        "ShortName": "rock",
         "DisplayName": "Rock",
         "Modified": 1
       },
       "axe.salvaged": {
+        "ShortName": "axe.salvaged",
         "DisplayName": "Salvaged Axe",
         "Modified": 1
       },
       "hammer.salvaged": {
+        "ShortName": "hammer.salvaged",
         "DisplayName": "Salvaged Hammer",
         "Modified": 1
       },
       "icepick.salvaged": {
+        "ShortName": "icepick.salvaged",
         "DisplayName": "Salvaged Icepick",
         "Modified": 1
       },
       "explosive.satchel": {
+        "ShortName": "explosive.satchel",
         "DisplayName": "Satchel Charge",
         "Modified": 20
       },
       "stonehatchet": {
+        "ShortName": "stonehatchet",
         "DisplayName": "Stone Hatchet",
         "Modified": 1
       },
       "stone.pickaxe": {
+        "ShortName": "stone.pickaxe",
         "DisplayName": "Stone Pickaxe",
         "Modified": 1
       },
       "toolgun": {
+        "ShortName": "toolgun",
         "DisplayName": "Garry's Mod Tool Gun",
         "Modified": 1
       },
       "torch": {
+        "ShortName": "torch",
         "DisplayName": "Torch",
         "Modified": 1
       },
       "bucket.water": {
+        "ShortName": "bucket.water",
         "DisplayName": "Water Bucket",
         "Modified": 1
       },
       "fishingrod.handmade": {
+        "ShortName": "fishingrod.handmade",
         "DisplayName": "Handmade Fishing Rod",
         "Modified": 1
       },
       "fishing.tackle": {
+        "ShortName": "fishing.tackle",
         "DisplayName": "Fishing Tackle",
         "Modified": 1
       },
       "skull": {
+        "ShortName": "skull",
         "DisplayName": "Skull",
         "Modified": 1
       }
     },
     "Weapon": {
       "gun.water": {
+        "ShortName": "gun.water",
         "DisplayName": "Water Gun",
         "Modified": 1
       },
       "pistol.water": {
+        "ShortName": "pistol.water",
         "DisplayName": "Water Pistol",
         "Modified": 1
       },
       "candycaneclub": {
+        "ShortName": "candycaneclub",
         "DisplayName": "Candy Cane Club",
         "Modified": 1
       },
       "snowball": {
+        "ShortName": "snowball",
         "DisplayName": "Snowball",
         "Modified": 1
       },
       "snowballgun": {
+        "ShortName": "snowballgun",
         "DisplayName": "Snowball Gun",
         "Modified": 1
       },
       "fishingrod.handmade": {
+        "ShortName": null,
         "DisplayName": "Handmade Fishing Rod",
         "Modified": 1
       },
       "weapon.mod.8x.scope": {
+        "ShortName": "weapon.mod.8x.scope",
         "DisplayName": "16x Zoom Scope",
         "Modified": 1
       },
       "weapon.mod.flashlight": {
+        "ShortName": "weapon.mod.flashlight",
         "DisplayName": "Weapon flashlight",
         "Modified": 1
       },
       "weapon.mod.holosight": {
+        "ShortName": "weapon.mod.holosight",
         "DisplayName": "Holosight",
         "Modified": 1
       },
       "weapon.mod.lasersight": {
+        "ShortName": "weapon.mod.lasersight",
         "DisplayName": "Weapon Lasersight",
         "Modified": 1
       },
       "weapon.mod.muzzleboost": {
+        "ShortName": "weapon.mod.muzzleboost",
         "DisplayName": "Muzzle Boost",
         "Modified": 1
       },
       "weapon.mod.muzzlebrake": {
+        "ShortName": "weapon.mod.muzzlebrake",
         "DisplayName": "Muzzle Brake",
         "Modified": 1
       },
       "weapon.mod.simplesight": {
+        "ShortName": "weapon.mod.simplesight",
         "DisplayName": "Simple Handmade Sight",
         "Modified": 1
       },
       "weapon.mod.silencer": {
+        "ShortName": "weapon.mod.silencer",
         "DisplayName": "Silencer",
         "Modified": 1
       },
       "weapon.mod.small.scope": {
+        "ShortName": "weapon.mod.small.scope",
         "DisplayName": "8x Zoom Scope",
         "Modified": 1
       },
       "rifle.ak": {
+        "ShortName": "rifle.ak",
         "DisplayName": "Assault Rifle",
         "Modified": 1
       },
       "grenade.beancan": {
+        "ShortName": "grenade.beancan",
         "DisplayName": "Beancan Grenade",
         "Modified": 10
       },
       "rifle.bolt": {
+        "ShortName": "rifle.bolt",
         "DisplayName": "Bolt Action Rifle",
         "Modified": 1
       },
       "bone.club": {
+        "ShortName": "bone.club",
         "DisplayName": "Bone Club",
         "Modified": 1
       },
       "knife.bone": {
+        "ShortName": "knife.bone",
         "DisplayName": "Bone Knife",
         "Modified": 1
       },
       "bow.hunting": {
+        "ShortName": "bow.hunting",
         "DisplayName": "Hunting Bow",
         "Modified": 1
       },
       "salvaged.cleaver": {
+        "ShortName": "salvaged.cleaver",
         "DisplayName": "Salvaged Cleaver",
         "Modified": 1
       },
       "bow.compound": {
+        "ShortName": "bow.compound",
         "DisplayName": "Compound Bow",
         "Modified": 1
       },
       "crossbow": {
+        "ShortName": "crossbow",
         "DisplayName": "Crossbow",
         "Modified": 1
       },
       "shotgun.double": {
+        "ShortName": "shotgun.double",
         "DisplayName": "Double Barrel Shotgun",
         "Modified": 1
       },
       "pistol.eoka": {
+        "ShortName": "pistol.eoka",
         "DisplayName": "Eoka Pistol",
         "Modified": 1
       },
       "grenade.f1": {
+        "ShortName": "grenade.f1",
         "DisplayName": "F1 Grenade",
         "Modified": 5
       },
       "flamethrower": {
+        "ShortName": "flamethrower",
         "DisplayName": "Flame Thrower",
         "Modified": 1
       },
       "multiplegrenadelauncher": {
+        "ShortName": "multiplegrenadelauncher",
         "DisplayName": "Multiple Grenade Launcher",
         "Modified": 1
       },
       "knife.butcher": {
+        "ShortName": "knife.butcher",
         "DisplayName": "Butcher Knife",
         "Modified": 1
       },
       "pitchfork": {
+        "ShortName": "pitchfork",
         "DisplayName": "Pitchfork",
         "Modified": 1
       },
       "knife.combat": {
+        "ShortName": "knife.combat",
         "DisplayName": "Combat Knife",
         "Modified": 1
       },
       "rifle.l96": {
+        "ShortName": "rifle.l96",
         "DisplayName": "L96 Rifle",
         "Modified": 1
       },
       "rifle.lr300": {
+        "ShortName": "rifle.lr300",
         "DisplayName": "LR-300 Assault Rifle",
         "Modified": 1
       },
       "lmg.m249": {
+        "ShortName": "lmg.m249",
         "DisplayName": "M249",
         "Modified": 1
       },
       "rifle.m39": {
+        "ShortName": "rifle.m39",
         "DisplayName": "M39 Rifle",
         "Modified": 1
       },
       "pistol.m92": {
+        "ShortName": "pistol.m92",
         "DisplayName": "M92 Pistol",
         "Modified": 1
       },
       "mace": {
+        "ShortName": "mace",
         "DisplayName": "Mace",
         "Modified": 1
       },
       "machete": {
+        "ShortName": "machete",
         "DisplayName": "Machete",
         "Modified": 1
       },
       "smg.mp5": {
+        "ShortName": "smg.mp5",
         "DisplayName": "MP5A4",
         "Modified": 1
       },
       "pistol.nailgun": {
+        "ShortName": "pistol.nailgun",
         "DisplayName": "Nailgun",
         "Modified": 1
       },
       "paddle": {
+        "ShortName": "paddle",
         "DisplayName": "Paddle",
         "Modified": 1
       },
       "shotgun.waterpipe": {
+        "ShortName": "shotgun.waterpipe",
         "DisplayName": "Waterpipe Shotgun",
         "Modified": 1
       },
       "pistol.python": {
+        "ShortName": "pistol.python",
         "DisplayName": "Python Revolver",
         "Modified": 1
       },
       "pistol.revolver": {
+        "ShortName": "pistol.revolver",
         "DisplayName": "Revolver",
         "Modified": 1
       },
       "rocket.launcher": {
+        "ShortName": "rocket.launcher",
         "DisplayName": "Rocket Launcher",
         "Modified": 1
       },
       "shotgun.pump": {
+        "ShortName": "shotgun.pump",
         "DisplayName": "Pump Shotgun",
         "Modified": 1
       },
       "pistol.semiauto": {
+        "ShortName": "pistol.semiauto",
         "DisplayName": "Semi-Automatic Pistol",
         "Modified": 1
       },
       "rifle.semiauto": {
+        "ShortName": "rifle.semiauto",
         "DisplayName": "Semi-Automatic Rifle",
         "Modified": 1
       },
       "smg.2": {
+        "ShortName": "smg.2",
         "DisplayName": "Custom SMG",
         "Modified": 1
       },
       "shotgun.spas12": {
+        "ShortName": "shotgun.spas12",
         "DisplayName": "Spas-12 Shotgun",
         "Modified": 1
       },
       "spear.stone": {
+        "ShortName": "spear.stone",
         "DisplayName": "Stone Spear",
         "Modified": 1
       },
       "longsword": {
+        "ShortName": "longsword",
         "DisplayName": "Longsword",
         "Modified": 1
       },
       "salvaged.sword": {
+        "ShortName": "salvaged.sword",
         "DisplayName": "Salvaged Sword",
         "Modified": 1
       },
       "smg.thompson": {
+        "ShortName": "smg.thompson",
         "DisplayName": "Thompson",
         "Modified": 1
       },
       "spear.wooden": {
+        "ShortName": "spear.wooden",
         "DisplayName": "Wooden Spear",
         "Modified": 1
       },
       "speargun": {
+        "ShortName": "speargun",
         "DisplayName": "Speargun",
         "Modified": 1
       }
     },
     "Medical": {
       "blood": {
+        "ShortName": "blood",
         "DisplayName": "Blood",
         "Modified": 2500
       },
       "antiradpills": {
+        "ShortName": "antiradpills",
         "DisplayName": "Anti-Radiation Pills",
         "Modified": 15
       },
       "largemedkit": {
+        "ShortName": "largemedkit",
         "DisplayName": "Large Medkit",
         "Modified": 1
       },
       "syringe.medical": {
+        "ShortName": "syringe.medical",
         "DisplayName": "Medical Syringe",
         "Modified": 10
       },
       "bandage": {
+        "ShortName": "bandage",
         "DisplayName": "Bandage",
         "Modified": 15
       }

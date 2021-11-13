@@ -2,7 +2,10 @@
   "Settings": {
     "Chat Command Color": "#FFFF00",
     "Chat Command Argument Color": "#FFA500",
+    "Enable Popup Support": false,
+    "TPB Available After X Seconds": 0.0,
     "Interrupt TP": {
+      "Interrupt Teleport At Specific Monuments": [],
       "Above Water": false,
       "Balloon": true,
       "Boats": false,
@@ -12,6 +15,7 @@
       "Hot": false,
       "Hostile": false,
       "Hurt": true,
+      "Junkpiles": false,
       "Lift": true,
       "Monument": false,
       "Ignore Monument Marker Prefab": false,

@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Zone Manager", "k1lly0u", "3.0.21")]
+    [Info("Zone Manager", "k1lly0u", "3.0.22")]
     [Description("An advanced management system for creating in-game zones")]
     public class ZoneManager : RustPlugin
     {
@@ -27,13 +27,13 @@ namespace Oxide.Plugins
 
         private DynamicConfigFile data;
 
-        private Hash<string, Zone> zones = new Hash<string, Zone>();
+        private readonly Hash<string, Zone> zones = new Hash<string, Zone>();
 
-        private Hash<ulong, EntityZones> zonedPlayers = new Hash<ulong, EntityZones>();
+        private readonly Hash<ulong, EntityZones> zonedPlayers = new Hash<ulong, EntityZones>();
 
-        private Hash<uint, EntityZones> zonedEntities = new Hash<uint, EntityZones>();
+        private readonly Hash<uint, EntityZones> zonedEntities = new Hash<uint, EntityZones>();
 
-        private Dictionary<ulong, string> lastPlayerZone = new Dictionary<ulong, string>();
+        private readonly Dictionary<ulong, string> lastPlayerZone = new Dictionary<ulong, string>();
 
 
         private ZoneFlags globalFlags;
@@ -53,19 +53,16 @@ namespace Oxide.Plugins
         #endregion
 
         #region Oxide Hooks
-        private void Loaded()
+        private void Init()
         {
+            Instance = this;
+
             lang.RegisterMessages(Messages, this);
-
-            data = Interface.Oxide.DataFileSystem.GetFile("ZoneManager/zone_data");
-            data.Settings.Converters = new JsonConverter[] { new StringEnumConverter(), new Vector3Converter() };
-
+            
             permission.RegisterPermission(PERMISSION_ZONE, this);
 
             foreach (object flag in Enum.GetValues(typeof(ZoneFlags)))
                 permission.RegisterPermission(PERMISSION_IGNORE_FLAG + flag.ToString().ToLower(), this);
-
-            Instance = this;
 
             LoadData();
         }
@@ -82,7 +79,7 @@ namespace Oxide.Plugins
 
         private void OnEntityKill(BaseEntity baseEntity)
         {
-            if (baseEntity == null || !baseEntity.IsValid() || baseEntity.IsDestroyed)
+            if (!baseEntity || !baseEntity.IsValid() || baseEntity.IsDestroyed)
                 return;
 
             EntityZones entityZones;
@@ -165,7 +162,7 @@ namespace Oxide.Plugins
                     }
 
                     BasePlayer player = playerUpdateQueue.Dequeue();
-                    if (player == null || !player.IsConnected)
+                    if (!player || !player.IsConnected)
                         continue;
 
                     Instance.UpdatePlayerZones(player);
@@ -180,11 +177,11 @@ namespace Oxide.Plugins
         private void OnEntityBuilt(Planner planner, GameObject gObject)
         {
             BasePlayer player = planner?.GetOwnerPlayer();
-            if (player == null)
+            if (!player)
                 return;
 
             BaseEntity entity = gObject?.ToBaseEntity();
-            if (entity == null)
+            if (!entity)
                 return;
 
             if (entity is BuildingBlock || entity is SimpleBuildingBlock)
@@ -229,7 +226,7 @@ namespace Oxide.Plugins
         private void OnItemDeployed(Deployer deployer, BaseEntity deployedEntity)
         {
             BasePlayer player = deployer.GetOwnerPlayer();
-            if (player == null)
+            if (!player)
                 return;
 
             if (HasPlayerFlag(player, ZoneFlags.NoDeploy, true))
@@ -242,7 +239,7 @@ namespace Oxide.Plugins
         private void OnItemUse(Item item, int amount)
         {
             BaseEntity entity = item?.parent?.entityOwner;
-            if (entity == null)
+            if (!entity)
                 return;
 
             if (entity is FlameTurret || entity is AutoTurret || entity is GunTrap)
@@ -271,7 +268,7 @@ namespace Oxide.Plugins
         private void OnRunPlayerMetabolism(PlayerMetabolism metabolism, BaseCombatEntity ownerEntity, float delta)
         {
             BasePlayer player = ownerEntity as BasePlayer;
-            if (player == null)
+            if (!player)
                 return;
 
             if (metabolism.bleeding.value > 0 && HasPlayerFlag(player, ZoneFlags.NoBleed, false))
@@ -282,7 +279,7 @@ namespace Oxide.Plugins
 
         private object OnPlayerChat(BasePlayer player, string message, ConVar.Chat.ChatChannel channel)
         {
-            if (player == null)
+            if (!player)
                 return null;
 
             if (HasPlayerFlag(player, ZoneFlags.NoChat, true))
@@ -312,7 +309,7 @@ namespace Oxide.Plugins
         private object OnServerCommand(ConsoleSystem.Arg arg)
         {
             BasePlayer player = arg.Player();
-            if (player == null || arg.cmd?.Name == null)
+            if (!player || string.IsNullOrEmpty(arg.cmd?.Name))
                 return null;
 
             if (arg.cmd.Name == "kill" && HasPlayerFlag(player, ZoneFlags.NoSuicide, false))
@@ -325,7 +322,7 @@ namespace Oxide.Plugins
 
         private void OnPlayerDisconnected(BasePlayer player)
         {
-            if (player == null)
+            if (!player)
                 return;
 
             if (HasPlayerFlag(player, ZoneFlags.KillSleepers, true))
@@ -343,7 +340,7 @@ namespace Oxide.Plugins
                 for (int i = 0; i < entityZones.Count; i++)
                 {
                     Zone zone = entityZones.Zones.ElementAt(i);
-                    if (zone == null)
+                    if (!zone)
                         continue;
 
                     if (HasFlag(zone, ZoneFlags.EjectSleepers))
@@ -357,7 +354,7 @@ namespace Oxide.Plugins
 
         private object OnEntityTakeDamage(BaseCombatEntity entity, HitInfo hitinfo)
         {
-            if (entity == null || entity.GetComponent<ResourceDispenser>() != null)
+            if (!entity || entity.GetComponent<ResourceDispenser>() != null)
                 return null;
 
             BasePlayer attacker = hitinfo.InitiatorPlayer;
@@ -711,14 +708,14 @@ namespace Oxide.Plugins
         #region Additional KillSleeper Checks
         private void OnPlayerSleep(BasePlayer player)
         {
-            if (player == null)
+            if (!player)
                 return;
 
             //player.Invoke(()=> UpdatePlayerZones(player), 1f); // Manually update the zones a player is in. Sleeping players don't trigger OnTriggerEnter or OnTriggerExit            
 
             timer.In(2f, () =>
             {
-                if (player == null || !player.IsSleeping())
+                if (!player || !player.IsSleeping())
                     return;
 
                 if (!player.IsConnected)
@@ -733,7 +730,7 @@ namespace Oxide.Plugins
                     {
                         player.Invoke(() =>
                         {
-                            if (player == null || !player.IsSleeping())
+                            if (!player || !player.IsSleeping())
                                 return;
 
                             EntityZones entityZones;
@@ -743,7 +740,7 @@ namespace Oxide.Plugins
                             for (int i = 0; i < entityZones.Count; i++)
                             {
                                 Zone zone = entityZones.Zones.ElementAt(i);
-                                if (zone == null)
+                                if (!zone)
                                     return;
 
                                 if (HasFlag(zone, ZoneFlags.EjectSleepers))
@@ -761,7 +758,7 @@ namespace Oxide.Plugins
 
         private void KillSleepingPlayer(BasePlayer player)
         {
-            if (player == null || !player.IsSleeping())
+            if (!player || !player.IsSleeping())
                 return;
 
             if (HasPlayerFlag(player, ZoneFlags.KillSleepers, true))
@@ -774,7 +771,7 @@ namespace Oxide.Plugins
 
         private void UpdatePlayerZones(BasePlayer player)
         {
-            if (player == null)
+            if (!player)
                 return;
 
             EntityZones entityZones;
@@ -783,7 +780,7 @@ namespace Oxide.Plugins
                 for (int i = entityZones.Count - 1; i >= 0; i--)
                 {
                     Zone zone = entityZones.Zones.ElementAt(i);
-                    if (zone == null || !zone.definition.Enabled)
+                    if (!zone || !zone.definition.Enabled)
                         continue;
 
                     if (zone.definition.Size != Vector3.zero)
@@ -802,7 +799,7 @@ namespace Oxide.Plugins
             for (int i = 0; i < zones.Count; i++)
             {
                 Zone zone = zones.ElementAt(i).Value;
-                if (zone == null)
+                if (!zone)
                     continue;
 
                 if (entityZones != null && entityZones.Zones.Contains(zone))
@@ -940,7 +937,7 @@ namespace Oxide.Plugins
         private void ShowZone(BasePlayer player, string zoneId, float time = 30)
         {
             Zone zone = GetZoneByID(zoneId);
-            if (zone == null)
+            if (!zone)
                 return;
 
             if (zone.definition.Size != Vector3.zero)
@@ -999,19 +996,15 @@ namespace Oxide.Plugins
 
             internal Collider collider;
 
-            internal Bounds bounds;
+            internal Bounds colliderBounds;
 
-            private TriggerRadiation radiation;
+            private ChildSphereTrigger<TriggerRadiation> radiation;
 
-            private TriggerComfort comfort;
+            private ChildSphereTrigger<TriggerComfort> comfort;
 
-            private TriggerTemperature temperature;
+            private ChildSphereTrigger<TriggerTemperature> temperature;
 
             private TriggerSafeZone safeZone;
-
-            private GameObject radiationChild;
-
-            private GameObject safeZoneChild;
 
             private bool isTogglingLights = false;
 
@@ -1019,6 +1012,7 @@ namespace Oxide.Plugins
             {
                 gameObject.layer = (int)Layer.Reserved1;
                 gameObject.name = "ZoneManager";
+                enabled = false;
             }
 
             private void OnDestroy()
@@ -1088,6 +1082,8 @@ namespace Oxide.Plugins
                     if (rigidbody != null)
                         DestroyImmediate(rigidbody);
                 }
+
+                enabled = definition.Enabled;
             }
 
             public void FindZoneParent()
@@ -1139,13 +1135,13 @@ namespace Oxide.Plugins
                     if (sphereCollider != null)
                         Destroy(sphereCollider);
 
-                    if (boxCollider == null)
+                    if (!boxCollider)
                     {
                         boxCollider = gameObject.AddComponent<BoxCollider>();
                         boxCollider.isTrigger = true;
                     }
                     boxCollider.size = definition.Size;
-                    bounds = boxCollider.bounds;
+                    colliderBounds = boxCollider.bounds;
                     collider = boxCollider;
                 }
                 else
@@ -1153,13 +1149,13 @@ namespace Oxide.Plugins
                     if (boxCollider != null)
                         Destroy(boxCollider);
 
-                    if (sphereCollider == null)
+                    if (!sphereCollider)
                     {
                         sphereCollider = gameObject.AddComponent<SphereCollider>();
                         sphereCollider.isTrigger = true;
                     }
                     sphereCollider.radius = definition.Radius;
-                    bounds = sphereCollider.bounds;
+                    colliderBounds = sphereCollider.bounds;
                     collider = sphereCollider;
                 }
             }
@@ -1167,43 +1163,54 @@ namespace Oxide.Plugins
 
             #region Triggers
             private void InitializeRadiation()
-            {
-                radiation = gameObject.GetComponent<TriggerRadiation>();
+            {                
                 if (definition.Radiation > 0)
                 {
-                    radiation = radiation ?? gameObject.AddComponent<TriggerRadiation>();
-                    if (collider is BoxCollider)
-                    {
-                        radiationChild = gameObject.CreateChild();
-                        SphereCollider sphereCollider = radiationChild.AddComponent<SphereCollider>();
-                        sphereCollider.radius = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
-                    }
-                    radiation.RadiationAmountOverride = definition.Radiation;
-                    radiation.interestLayers = PLAYER_MASK;
-                    radiation.enabled = this.enabled;
-                }
-                else
-                {
-                    if (radiation != null)
-                        Destroy(radiation);
+                    if (radiation == null)
+                        radiation = new ChildSphereTrigger<TriggerRadiation>(gameObject, "Radiation");
 
-                    if (radiationChild != null)
-                        Destroy(radiationChild);
+                    radiation.Trigger.RadiationAmountOverride = definition.Radiation;
+                    radiation.Collider.radius = collider is SphereCollider ? definition.Radius : Mathf.Min(definition.Size.x, definition.Size.y, definition.Size.z) * 0.5f;
+                    radiation.Trigger.enabled = this.enabled;
                 }
+                else radiation?.Destroy();
+            }
+
+            private void InitializeComfort()
+            {
+                if (definition.Comfort > 0)
+                {
+                    if (comfort == null)
+                        comfort = new ChildSphereTrigger<TriggerComfort>(gameObject, "Comfort");
+
+                    comfort.Trigger.baseComfort = definition.Comfort;
+                    comfort.Trigger.triggerSize = comfort.Collider.radius = collider is SphereCollider ? definition.Radius : Mathf.Min(definition.Size.x, definition.Size.y, definition.Size.z) * 0.5f;
+                    comfort.Trigger.enabled = this.enabled;
+                }
+                else comfort?.Destroy();
+            }
+
+            private void InitializeTemperature()
+            {
+                if (definition.Temperature != 0)
+                {
+                    if (temperature == null)
+                        temperature = new ChildSphereTrigger<TriggerTemperature>(gameObject, "Temperature");
+
+                    temperature.Trigger.Temperature = definition.Temperature;
+                    temperature.Trigger.triggerSize = temperature.Collider.radius = collider is SphereCollider ? definition.Radius : Mathf.Min(definition.Size.x, definition.Size.y, definition.Size.z) * 0.5f;
+                    temperature.Trigger.enabled = this.enabled;
+                }
+                else temperature?.Destroy();
             }
 
             private void InitializeSafeZone()
             {
-                safeZone = gameObject.GetComponent<TriggerSafeZone>();
                 if (definition.SafeZone)
                 {
-                    safeZone = safeZone ?? gameObject.AddComponent<TriggerSafeZone>();
-                    if (collider is BoxCollider)
-                    {
-                        safeZoneChild = gameObject.CreateChild();
-                        SphereCollider sphereCollider = safeZoneChild.AddComponent<SphereCollider>();
-                        sphereCollider.radius = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
-                    }
+                    if (safeZone == null)
+                        safeZone = gameObject.AddComponent<TriggerSafeZone>();
+
                     safeZone.interestLayers = PLAYER_MASK;
                     safeZone.enabled = this.enabled;
                 }
@@ -1211,82 +1218,47 @@ namespace Oxide.Plugins
                 {
                     if (safeZone != null)
                         Destroy(safeZone);
-
-                    if (safeZoneChild != null)
-                        Destroy(safeZoneChild);
                 }
             }
-
-            private void InitializeComfort()
-            {
-                comfort = gameObject.GetComponent<TriggerComfort>();
-                if (definition.Comfort > 0)
-                {
-                    comfort = comfort ?? gameObject.AddComponent<TriggerComfort>();
-                    comfort.baseComfort = definition.Comfort;
-                    comfort.triggerSize = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
-                    comfort.interestLayers = PLAYER_MASK;
-                    comfort.enabled = this.enabled;
-                }
-                else
-                {
-                    if (comfort != null)
-                        Destroy(comfort);
-                }
-            }
-
-            private void InitializeTemperature()
-            {
-                temperature = gameObject.GetComponent<TriggerTemperature>();
-                if (definition.Temperature != 0)
-                {
-                    temperature = temperature ?? gameObject.AddComponent<TriggerTemperature>();
-                    temperature.Temperature = definition.Temperature;
-                    temperature.triggerSize = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
-                    temperature.interestLayers = PLAYER_MASK;
-                    temperature.enabled = true;
-                }
-                else
-                {
-                    if (temperature != null)                    
-                        Destroy(temperature);                    
-                }
-            }
-
+                        
             private void AddToTrigger(TriggerBase triggerBase, BasePlayer player)
             {
-                if (triggerBase == null || player == null)
+                if (!triggerBase || !player)
                     return;
 
                 if (triggerBase.entityContents == null)
                     triggerBase.entityContents = new HashSet<BaseEntity>();
 
-                triggerBase.entityContents.Add(player);
-                player.EnterTrigger(triggerBase);
-
-                if (triggerBase is TriggerSafeZone)
+                if (!triggerBase.entityContents.Contains(player))
                 {
-                    if (player.IsItemHoldRestricted(player.inventory.containerBelt.FindItemByUID(player.svActiveItemID)))                    
-                        player.UpdateActiveItem(0);
+                    triggerBase.entityContents.Add(player);
+                    player.EnterTrigger(triggerBase);
 
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.SafeZone, true);
+                    if (triggerBase is TriggerSafeZone)
+                    {
+                        if (player.IsItemHoldRestricted(player.inventory.containerBelt.FindItemByUID(player.svActiveItemID)))
+                            player.UpdateActiveItem(0);
+
+                        player.SetPlayerFlag(BasePlayer.PlayerFlags.SafeZone, true);
+                    }
                 }
             }
 
             private void RemoveFromTrigger(TriggerBase triggerBase, BasePlayer player)
             {
-                if (triggerBase == null || player == null)
+                if (!triggerBase || !player)
                     return;
 
-                if (triggerBase.entityContents != null)
-                    triggerBase.entityContents.Remove(player);
-
-                player.LeaveTrigger(triggerBase);
-
-                if (triggerBase is TriggerSafeZone)
+                if (triggerBase.entityContents != null && triggerBase.entityContents.Contains(player))
                 {
-                    if (!player.InSafeZone())
-                        player.SetPlayerFlag(BasePlayer.PlayerFlags.SafeZone, false);
+                    triggerBase.entityContents.Remove(player);
+                    player.LeaveTrigger(triggerBase);
+
+                    if (triggerBase is TriggerSafeZone)
+                    {
+                        if (!player.InSafeZone())
+                            player.SetPlayerFlag(BasePlayer.PlayerFlags.SafeZone, false);
+                    }
                 }
             }
 
@@ -1296,24 +1268,60 @@ namespace Oxide.Plugins
                 {
                     BasePlayer player = players[i];
 
-                    AddToTrigger(radiation, player);
                     AddToTrigger(safeZone, player);
-                    AddToTrigger(comfort, player);
-                    AddToTrigger(temperature, player);
+
+                    if (radiation != null)
+                        AddToTrigger(radiation.Trigger, player);
+
+                    if (comfort != null)
+                        AddToTrigger(comfort.Trigger, player);
+
+                    if (temperature != null)
+                        AddToTrigger(temperature.Trigger, player);
                 }
             }
 
             private void RemoveAllPlayers()
             {
-                for (int i = 0; i < players.Count; i++)
+                for (int i = 0; i < players.Count; i++)                    
                 {
                     BasePlayer player = players[i];
 
-                    RemoveFromTrigger(radiation, player);
                     RemoveFromTrigger(safeZone, player);
-                    RemoveFromTrigger(comfort, player);
-                    RemoveFromTrigger(temperature, player);
+
+                    if (radiation != null)
+                        RemoveFromTrigger(radiation.Trigger, player);
+
+                    if (comfort != null)
+                        RemoveFromTrigger(comfort.Trigger, player);
+
+                    if (temperature != null)
+                        RemoveFromTrigger(temperature.Trigger, player);
                 }
+            }
+
+            private class ChildSphereTrigger<T> where T : TriggerBase
+            {
+                public GameObject Object { get; private set; }
+
+                public SphereCollider Collider { get; private set; }
+
+                public T Trigger { get; private set; }
+
+                public ChildSphereTrigger(GameObject parent, string name)
+                {
+                    Object = parent.CreateChild();
+                    Object.name = name;
+                    Object.layer = (int)Layer.TransparentFX;
+
+                    Collider = Object.AddComponent<SphereCollider>();
+                    Collider.isTrigger = true;
+
+                    Trigger = Object.AddComponent<T>();
+                    Trigger.interestLayers = 0;
+                }
+
+                public void Destroy() => UnityEngine.Object.Destroy(Object);
             }
             #endregion
 
@@ -1418,11 +1426,11 @@ namespace Oxide.Plugins
             #region Entity Detection            
             private void OnTriggerEnter(Collider col)
             {
-                if (!definition.Enabled)
+                if (!definition.Enabled || !col || !col.gameObject)
                     return;
 
-                BaseEntity baseEntity = col?.ToBaseEntity();
-                if (!baseEntity?.IsValid() ?? false)
+                BaseEntity baseEntity = col.gameObject.ToBaseEntity();
+                if (!baseEntity || !baseEntity.IsValid())
                     return;
 
                 if (baseEntity is BasePlayer)
@@ -1431,6 +1439,7 @@ namespace Oxide.Plugins
 
                     if (parent != null)
                         Instance.UpdateZoneFlags(this);
+
                     return;
                 }
 
@@ -1439,11 +1448,11 @@ namespace Oxide.Plugins
 
             private void OnTriggerExit(Collider col)
             {
-                if (!definition.Enabled)
+                if (!definition.Enabled || !col || !col.gameObject)
                     return;
 
-                BaseEntity baseEntity = col?.ToBaseEntity();
-                if (!baseEntity?.IsValid() ?? false)
+                BaseEntity baseEntity = col.gameObject.ToBaseEntity();
+                if (!baseEntity || !baseEntity.IsValid())
                     return;
 
                 if (baseEntity is BasePlayer)
@@ -1461,20 +1470,32 @@ namespace Oxide.Plugins
                 if (!players.Contains(player))
                     players.Add(player);
 
-                AddToTrigger(radiation, player);
                 AddToTrigger(safeZone, player);
-                AddToTrigger(comfort, player);
-                AddToTrigger(temperature, player);
+
+                if (radiation != null)
+                    AddToTrigger(radiation.Trigger, player);
+
+                if (comfort != null)
+                    AddToTrigger(comfort.Trigger, player);
+
+                if (temperature != null)
+                    AddToTrigger(temperature.Trigger, player);
             }
 
             public void OnPlayerExitZone(BasePlayer player)
             {
                 players.Remove(player);
 
-                RemoveFromTrigger(radiation, player);
                 RemoveFromTrigger(safeZone, player);
-                RemoveFromTrigger(comfort, player);
-                RemoveFromTrigger(temperature, player);
+
+                if (radiation != null)
+                    RemoveFromTrigger(radiation.Trigger, player);
+
+                if (comfort != null)
+                    RemoveFromTrigger(comfort.Trigger, player);
+
+                if (temperature != null)
+                    RemoveFromTrigger(temperature.Trigger, player);
             }
 
             public void OnEntityEnterZone(BaseEntity baseEntity)
@@ -1598,7 +1619,7 @@ namespace Oxide.Plugins
         #region Entity Management
         private void OnPlayerEnterZone(BasePlayer player, Zone zone)
         {
-            if (player == null || player.IsNpc)
+            if (!player || player.IsNpc)
                 return;
 
             if (!zone.CanEnterZone(player))
@@ -1680,7 +1701,7 @@ namespace Oxide.Plugins
 
         private void OnPlayerExitZone(BasePlayer player, Zone zone)
         {
-            if (player == null || player.IsNpc)
+            if (!player || player.IsNpc)
                 return;
 
             if (HasFlag(zone, ZoneFlags.KeepVehiclesIn) && player.isMounted)
@@ -1805,7 +1826,7 @@ namespace Oxide.Plugins
 
         private bool HasPlayerFlag(BasePlayer player, ZoneFlags flag, bool canBypass)
         {
-            if (player == null)
+            if (!player)
                 return false;
 
             if (canBypass && IsAdmin(player))
@@ -1863,7 +1884,7 @@ namespace Oxide.Plugins
         private bool IsPositionInZone(string zoneID, Vector3 position)
         {
             Zone zone = GetZoneByID(zoneID);
-            if (zone == null)
+            if (!zone)
                 return false;
 
             if (zone.definition.Size != Vector3.zero)
@@ -1874,7 +1895,7 @@ namespace Oxide.Plugins
         private List<BasePlayer> GetPlayersInZone(string zoneID)
         {
             Zone zone = GetZoneByID(zoneID);
-            if (zone == null)
+            if (!zone)
                 return new List<BasePlayer>();
 
             return new List<BasePlayer>(zone.players);
@@ -1883,7 +1904,7 @@ namespace Oxide.Plugins
         private List<BaseEntity> GetEntitiesInZone(string zoneId)
         {
             Zone zone = GetZoneByID(zoneId);
-            if (zone == null)
+            if (!zone)
                 return new List<BaseEntity>();
 
             return new List<BaseEntity>(zone.entities);
@@ -1894,7 +1915,7 @@ namespace Oxide.Plugins
         private bool IsPlayerInZone(string zoneID, BasePlayer player)
         {
             Zone zone = GetZoneByID(zoneID);
-            if (zone == null)
+            if (!zone)
                 return false;
 
             return zone.players.Contains(player);
@@ -1903,7 +1924,7 @@ namespace Oxide.Plugins
         private bool IsEntityInZone(string zoneID, BaseEntity entity)
         {
             Zone zone = GetZoneByID(zoneID);
-            if (zone == null)
+            if (!zone)
                 return false;
 
             return zone.entities.Contains(entity);
@@ -2077,7 +2098,7 @@ namespace Oxide.Plugins
         private Dictionary<string, string> ZoneFieldList(string zoneId)
         {
             Zone zone = GetZoneByID(zoneId);
-            if (zone == null)
+            if (!zone)
                 return null;
 
             Dictionary<string, string> fields = new Dictionary<string, string>
@@ -2109,7 +2130,7 @@ namespace Oxide.Plugins
         private bool AddPlayerToZoneKeepinlist(string zoneId, BasePlayer player)
         {
             Zone zone = GetZoneByID(zoneId);
-            if (zone == null)
+            if (!zone)
                 return false;
 
             AddToKeepinlist(zone, player);
@@ -2119,7 +2140,7 @@ namespace Oxide.Plugins
         private bool RemovePlayerFromZoneKeepinlist(string zoneId, BasePlayer player)
         {
             Zone zone = GetZoneByID(zoneId);
-            if (zone == null)
+            if (!zone)
                 return false;
 
             RemoveFromKeepinlist(zone, player);
@@ -2129,7 +2150,7 @@ namespace Oxide.Plugins
         private bool AddPlayerToZoneWhitelist(string zoneId, BasePlayer player)
         {
             Zone zone = GetZoneByID(zoneId);
-            if (zone == null)
+            if (!zone)
                 return false;
 
             AddToWhitelist(zone, player);
@@ -2139,7 +2160,7 @@ namespace Oxide.Plugins
         private bool RemovePlayerFromZoneWhitelist(string zoneId, BasePlayer player)
         {
             Zone zone = GetZoneByID(zoneId);
-            if (zone == null)
+            if (!zone)
                 return false;
 
             RemoveFromWhitelist(zone, player);
@@ -2165,7 +2186,7 @@ namespace Oxide.Plugins
 
         private bool PlayerHasFlag(BasePlayer player, string flagStr)
         {
-            if (player == null)
+            if (!player)
                 return false;
 
             try
@@ -2181,7 +2202,7 @@ namespace Oxide.Plugins
         }
         #endregion
 
-        #region Third Party Plugin Integration
+        #region Plugin Integration
         private object CanRedeemKit(BasePlayer player) => HasPlayerFlag(player, ZoneFlags.NoKits, false) ? "You may not redeem a kit inside this area" : null;
 
         private object CanTeleport(BasePlayer player) => HasPlayerFlag(player, ZoneFlags.NoTp, false) ? "You may not teleport in this area" : null;
@@ -2340,7 +2361,7 @@ namespace Oxide.Plugins
             for (int i = 0; i < zones.Count; i++)
             {
                 Zone zone = zones.ElementAt(i).Value;
-                if (zone == null)
+                if (!zone)
                     continue;
 
                 globalFlags |= zone.definition.Flags;
@@ -2354,7 +2375,7 @@ namespace Oxide.Plugins
             for (int i = 0; i < zones.Count; i++)
             {
                 Zone zone = zones.ElementAt(i).Value;
-                if (zone == null)
+                if (!zone)
                     continue;
 
                 tempFlags |= zone.definition.Flags;
@@ -2891,7 +2912,7 @@ namespace Oxide.Plugins
             if (args != null && args.Length > 0)
             {
                 targetPlayer = BasePlayer.Find(args[0]);
-                if (targetPlayer == null)
+                if (!targetPlayer)
                 {
                     SendMessage(player, "Unable to find a player with the specified information");
                     return;
@@ -3007,7 +3028,7 @@ namespace Oxide.Plugins
         private void OpenFlagEditor(BasePlayer player, string zoneId)
         {
             Zone zone = GetZoneByID(zoneId);
-            if (zone == null)
+            if (!zone)
             {
                 SendReply(player, $"Error getting zone object with ID: {zoneId}");
                 CuiHelper.DestroyUi(player, ZMUI);
@@ -3063,7 +3084,7 @@ namespace Oxide.Plugins
         private void ccmdEditFlag(ConsoleSystem.Arg arg)
         {
             BasePlayer player = arg.Connection.player as BasePlayer;
-            if (player == null)
+            if (!player)
                 return;
 
             string zoneId = arg.GetString(0);
@@ -3073,7 +3094,7 @@ namespace Oxide.Plugins
             else
             {
                 Zone zone = GetZoneByID(zoneId);
-                if (zone == null)
+                if (!zone)
                 {
                     SendReply(player, $"Error getting zone object with ID: {zoneId}");
                     CuiHelper.DestroyUi(player, ZMUI);
@@ -3201,14 +3222,12 @@ namespace Oxide.Plugins
 
         private void LoadData()
         {
-            try
-            {
-                storedData = data.ReadObject<StoredData>();
-            }
-            catch
-            {
+            data = Interface.Oxide.DataFileSystem.GetFile("ZoneManager/zone_data");
+            data.Settings.Converters = new JsonConverter[] { new StringEnumConverter(), new Vector3Converter() };
+
+            storedData = data.ReadObject<StoredData>();
+            if (storedData == null)
                 storedData = new StoredData();
-            }
         }
 
         private class StoredData
@@ -3249,7 +3268,7 @@ namespace Oxide.Plugins
                 for (int i = 0; i < Zones.Count; i++)
                 {
                     Zone zone = Zones.ElementAt(i);
-                    if (zone == null)
+                    if (!zone)
                         continue;
 
                     AddFlags(zone.definition.Flags & ~zone.disabledFlags);
@@ -3258,7 +3277,7 @@ namespace Oxide.Plugins
                 for (int i = 0; i < Zones.Count; i++)
                 {
                     Zone zone = Zones.ElementAt(i);
-                    if (zone == null)
+                    if (!zone)
                         continue;
 
                     if (zone.parent != null && Zones.Contains(zone.parent))

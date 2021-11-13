@@ -13,7 +13,7 @@ using Oxide.Game.Rust.Libraries;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat Filter", "NooBlet", "1.6.2", ResourceId = 2403)]
+    [Info("Better Chat Filter", "NooBlet", "1.6.3", ResourceId = 2403)]
     [Description("Filter for Better Chat")]
     public class BetterChatFilter : CovalencePlugin
     {
@@ -70,7 +70,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Cached Variables
-        private Timer ot;
+       
         private bool WordFilter_Enabled = true;
         private string WordFilter_Replacement = "*";
         private bool WordFilter_UseCustomReplacement = false;
@@ -123,10 +123,7 @@ namespace Oxide.Plugins
 
         void Unload()
         {
-            if (ot != null)
-            {
-                ot.Destroy();
-            }            
+            
         }
 
         private void Offsense(IPlayer player)
@@ -456,18 +453,26 @@ namespace Oxide.Plugins
         }
 
         private bool DoWhiteList(string word)
-        {
+        { 
+            if (word == null || word == ""|| word == " ") { return false; }
             var endchar = word.Last();
+            if (endchar == 0) { return false; }
+            var _whitelist = WordWhiteList.ToList();
             if (Char.IsPunctuation(endchar))
             {
-                foreach (var w in WordWhiteList)
+                foreach (var w in _whitelist)
                 {
                     if (word.Contains(w.ToString())) { return true; }
                 }
+                return false;
             }
-            if (WordWhiteList.Contains(word))
+            if (_whitelist.Contains(word))
             {
                 return true;
+            }
+            foreach (var w in _whitelist)
+            {
+                if (word.Contains(w.ToString())) { return true; }
             }
             return false;
         }
