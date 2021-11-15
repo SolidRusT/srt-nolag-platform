@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("FancyDrop", "FastBurst", "3.1.9")]
+    [Info("FancyDrop", "FastBurst", "3.2.1")]
     [Description("The Next Level of a fancy airdrop-toolset")]
     class FancyDrop : RustPlugin
     {
@@ -64,7 +64,6 @@ namespace Oxide.Plugins
         {
             Instance = this;
             initialized = false;
-            LoadDefaultMessages();
             msgConsoleDropSpawn = msg("msgConsoleDropSpawn");
             msgConsoleDropLanded = msg("msgConsoleDropLanded");
 
@@ -2946,39 +2945,39 @@ namespace Oxide.Plugins
 
         Dictionary<string, string> Messages = new Dictionary<string, string>
         {
-            ["msgDropSignal"] = "Someone ordered an Airdrop",
-            ["msgDropSignalCoords"] = "Someone ordered an Airdrop to position <color=#ffff00>X:{0} Z:{1}</color>",
-            ["msgDropSignalGrid"] = "Someone ordered an Airdrop to grid area <color=#ffff00>{0}</color>",
-            ["msgDropSignalAdmin"] = "Signal thrown by '{0}' at: {1}",
-            ["msgDropSignalByPlayer"] = "Signal thrown by <color=#ffff00>{0}</color>",
-            ["msgDropSignalByPlayerCoords"] = "Signal thrown by <color=#ffff00>{0}</color> at position <color=#ffff00>X:{1} Z:{2}</color>",
-            ["msgDropSignalByPlayerGrid"] = "Signal thrown by <color=#ffff00>{0}</color> at grid area <color=#ffff00>{1}</color>",
-            ["msgDropRegular"] = "Cargoplane will deliver the daily AirDrop in a few moments",
-            ["msgDropRegularCoords"] = "Cargoplane will deliver the daily AirDrop at <color=#ffff00>X:{0} | Z:{1}</color> in a few moments",
-            ["msgDropRegularGrid"] = "Cargoplane will deliver the daily AirDrop in grid area <color=#ffff00>{0}</color> in a few moments",
-            ["msgDropMass"] = "Massdrop incoming",
-            ["msgDropCustom"] = "Eventdrop <color=#ffa500>{0}</color> is on his way",
-            ["msgDropCustomCoords"] = "Eventdrop <color=#ffa500>{0}</color> is on his way to <color=#ffff00>X:{1} | Z:{2}</color>",
-            ["msgDropCustomGrid"] = "Eventdrop <color=#ffa500>{0}</color> is on his way to grid area <color=#ffff00>{1}</color>",
-            ["msgDropPlayer"] = "<color=#ffff00>Incoming Drop</color> to your current location",
-            ["msgDropDirect"] = "<color=#ffff00>Drop</color> spawned above your <color=#ffff00>current</color> location",
-            ["msgDropDirectSpace"] = "A <color=#ffff00>Space Supply Drop</color> is being deployed to your <color=#ffff00>current</color> location",
-            ["msgDropLanded"] = "Supplydrop has landed <color=#ffff00>{0:F0}m</color> away from you at direction <color=#ffff00>{1}</color>",
-            ["msgDropLootet"] = "<color=#ffff00>{0}</color> was looting the AirDrop",
-            ["msgDropLootetCoords"] = "<color=#ffff00>{0}</color> was looting the AirDrop at (<color=#ffff00>X:{1} | Z:{2}</color>)",
-            ["msgDropLootetGrid"] = "<color=#ffff00>{0}</color> was looting the AirDrop located grid area (<color=#ffff00>{1}</color>)",
-            ["msgNoAccess"] = "You are not allowed to use this command",
-            ["msgConsoleDropSpawn"] = "SupplyDrop spawned at (X:{0} Y:{1} Z:{2})",
-            ["msgConsoleDropLanded"] = "SupplyDrop landed at (X:{0} Y:{1} Z:{2})",
-            ["msgCrateLocked"] = "This crate is locked until being looted by the owner",
-            ["msgNorth"] = "North",
-            ["msgNorthEast"] = "NorthEast",
-            ["msgEast"] = "East",
-            ["msgSouthEast"] = "SouthEast",
-            ["msgSouth"] = "South",
-            ["msgSouthWest"] = "SouthWest",
-            ["msgWest"] = "West",
-            ["msgNorthWest"] = "NorthWest"
+            ["msgDropSignal"] = "<size=12>Someone ordered an Air Drop</size>",
+            ["msgDropSignalCoords"] = "<size=12>Someone ordered an Air Drop to position <color=#ffff00>X:{0} Z:{1}</color></size>",
+            ["msgDropSignalAdmin"] = "<size=12>Supply Signal thrown by '{0}' at: {1}</size>",
+            ["msgDropSignalByPlayer"] = "<size=12>Supply Signal thrown by <color=#ffff00>{0}</color></size>",
+            ["msgDropSignalByPlayerCoords"] = "<size=12>Supply Signal thrown by <color=#ffff00>{0}</color> at position <color=#ffff00>X:{1} Z:{2}</color></size>",
+            ["msgDropRegular"] = "<size=12>A Cargo Plane will deliver the daily Air Drop in a few moments</size>",
+            ["msgDropRegularCoords"] = "<size=12>A Cargo Plane will deliver the daily Air Drop at <color=#ffff00>X:{0} | Z:{1}</color> in a few moments</size>",
+            ["msgDropMass"] = "<size=12>Mass Air Drop incoming</size>",
+            ["msgDropCustom"] = "<size=12>Eventdrop <color=#ffa500>{0}</color> is on the way</size>",
+            ["msgDropCustomCoords"] = "<size=12>Eventdrop <color=#ffa500>{0}</color> is on the way to <color=#ffff00>X:{1} | Z:{2}</color></size>",
+            ["msgDropPlayer"] = "<size=12><color=#ffff00>Incoming Supply Drop</color> to your current location</size>",
+            ["msgDropDirect"] = "<size=12><color=#ffff00>A Supply Drop</color> spawned above your <color=#ffff00>current</color> location</size>",
+            ["msgDropLanded"] = "<size=12>A Supply Drop has landed <color=#ffff00>{0:F0}m</color> away from you at direction <color=#ffff00>{1}</color></size>",
+            ["msgDropLootet"] = "<size=12><color=#0099CC>Someone is looting the Supply Drop</color></size>",
+            ["msgDropLootetCoords"] = "<size=12><color=#ffff00>{0}</color> was looting the Supply Drop at (<color=#ffff00>X:{1} | Z:{2}</color>)</size>",
+            ["msgNoAccess"] = "<size=12>You are not allowed to use this command</size>",
+            ["msgConsoleDropSpawn"] = "<size=12>Supply Drop spawned at (X:{0} Y:{1} Z:{2})</size>",
+            ["msgConsoleDropLanded"] = "<size=12>Supply Drop landed at (X:{0} Y:{1} Z:{2})</size>",
+            ["msgCrateLocked"] = "<size=12>This crate is locked until it is being looted by the owner</size>",
+            ["msgNorth"] = "<size=12>North</size>",
+            ["msgNorthEast"] = "<size=12>NorthEast</size>",
+            ["msgEast"] = "<size=12>East</size>",
+            ["msgSouthEast"] = "<size=12>SouthEast</size>",
+            ["msgSouth"] = "<size=12>South</size>",
+            ["msgSouthWest"] = "<size=12>SouthWest</size>",
+            ["msgWest"] = "<size=12>West</size>",
+            ["msgNorthWest"] = "<size=12>NorthWest</size>",
+            ["msgDropSignalGrid"] = "Someone ordered an Airdrop to grid area <color=#ffff00>{0}</color></size>",
+            ["msgDropSignalByPlayerGrid"] = "Signal thrown by <color=#ffff00>{0}</color> at grid area <color=#ffff00>{1}</color></size>",
+            ["msgDropRegularGrid"] = "Cargoplane will deliver the daily AirDrop in grid area <color=#ffff00>{0}</color> in a few moments</size>",
+            ["msgDropCustomGrid"] = "Eventdrop <color=#ffa500>{0}</color> is on his way to grid area <color=#ffff00>{1}</color></size>",
+            ["msgDropLootetGrid"] = "<color=#ffff00>{0}</color> was looting the AirDrop located grid area (<color=#ffff00>{1}</color>)</size>",
+            ["msgDropDirectSpace"] = "A <color=#ffff00>Space Supply Drop</color> is being deployed to your <color=#ffff00>current</color> location</size>"
         };
         #endregion
     }

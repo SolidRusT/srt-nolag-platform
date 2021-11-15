@@ -1,6 +1,6 @@
 #!/bin/bash
 ## Global default environments
-
+export SRT_TYPE="game"
 # root of where the game server is installed
 export GAME_ROOT="/game"
 # construct server logging endpoint

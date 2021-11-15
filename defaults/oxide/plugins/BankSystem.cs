@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Bank System", "Mevent", "1.0.12")]
+    [Info("Bank System", "Mevent", "1.0.14")]
     public class BankSystem : RustPlugin
     {
         #region Fields
@@ -39,6 +39,19 @@ namespace Oxide.Plugins
             Withdrawal,
             Transfer
         }
+
+        #region Colors
+
+        private string _color1;
+        private string _color2;
+        private string _color3;
+        private string _color4;
+        private string _color5;
+        private string _color6;
+        private string _color7;
+        private string _color8;
+
+        #endregion
 
         #endregion
 
@@ -74,6 +87,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Exit Image")]
             public string ExitImage = "https://i.imgur.com/OGoMu9N.png";
+
+            [JsonProperty(PropertyName = "Disable the close button in the ATM header")]
+            public bool AtmDisbaleCloser;
 
             [JsonProperty(PropertyName = "Currency Settings")]
             public CurrencySettings Currency = new CurrencySettings
@@ -231,6 +247,46 @@ namespace Oxide.Plugins
                     MaxAmount = 5
                 }
             };
+
+            [JsonProperty(PropertyName = "Colors")]
+            public Colors Colors = new Colors
+            {
+                Color1 = "#0E0E10",
+                Color2 = "#161617",
+                Color3 = "#4B68FF",
+                Color4 = "#74884A",
+                Color5 = "#FF6060",
+                Color6 = "#C4C4C4",
+                Color7 = "#CD4632",
+                Color8 = "#595651"
+            };
+        }
+
+        private class Colors
+        {
+            [JsonProperty(PropertyName = "Color 1")]
+            public string Color1;
+
+            [JsonProperty(PropertyName = "Color 2")]
+            public string Color2;
+
+            [JsonProperty(PropertyName = "Color 3")]
+            public string Color3;
+
+            [JsonProperty(PropertyName = "Color 4")]
+            public string Color4;
+
+            [JsonProperty(PropertyName = "Color 5")]
+            public string Color5;
+
+            [JsonProperty(PropertyName = "Color 6")]
+            public string Color6;
+
+            [JsonProperty(PropertyName = "Color 7")]
+            public string Color7;
+
+            [JsonProperty(PropertyName = "Color 8")]
+            public string Color8;
         }
 
         public class DropInfo
@@ -776,7 +832,7 @@ namespace Oxide.Plugins
                 {
                     case Transaction.Deposit:
                     {
-                        color = HexToCuiColor("#4B68FF");
+                        color = _instance._color3;
                         icon = _instance.Msg(player, DepositIconTitle);
                         symbol = _instance.Msg(player, DepositSymbolTitle);
                         title = _instance.Msg(player, DepositOperationTitle);
@@ -785,7 +841,7 @@ namespace Oxide.Plugins
                     }
                     case Transaction.Withdrawal:
                     {
-                        color = HexToCuiColor("#FF6060");
+                        color = _instance._color5;
                         icon = _instance.Msg(player, WithdrawalIconTitle);
                         symbol = _instance.Msg(player, WithdrawalSymbolTitle);
                         title = _instance.Msg(player, WithdrawalOperationTitle);
@@ -797,7 +853,7 @@ namespace Oxide.Plugins
                         var self = TargetId == 0 && SenderId != 0;
                         if (self)
                         {
-                            color = HexToCuiColor("#4B68FF");
+                            color = _instance._color3;
                             icon = _instance.Msg(player, SelfTransferlIconTitle);
                             symbol = _instance.Msg(player, SelfTransferSymbolTitle);
                             description = _instance.Msg(player, SelfTransferOperationDescription,
@@ -805,7 +861,7 @@ namespace Oxide.Plugins
                         }
                         else
                         {
-                            color = HexToCuiColor("#FF6060");
+                            color = _instance._color5;
                             icon = _instance.Msg(player, TransferlIconTitle);
                             symbol = _instance.Msg(player, TransferSymbolTitle);
                             description = _instance.Msg(player, TransferOperationDescription,
@@ -1030,6 +1086,8 @@ namespace Oxide.Plugins
         private void OnServerInitialized(bool initial)
         {
             LoadImages();
+
+            LoadColors();
 
             if (StackSizeController || StackModifier)
                 Unsubscribe(nameof(OnItemSplit));
@@ -1367,40 +1425,47 @@ namespace Oxide.Plugins
                     break;
                 }
 
-                case "close_select":
+                case "page":
                 {
-                    int amount, type;
-                    ulong target;
-                    if (!arg.HasArgs(4) || !int.TryParse(arg.Args[1], out type) ||
-                        !int.TryParse(arg.Args[2], out amount) || !ulong.TryParse(arg.Args[3], out target)) return;
+                    ulong targetId;
+                    int amount, transactionPage, gatherPage;
+                    if (!arg.HasArgs(5) ||
+                        !int.TryParse(arg.Args[1], out amount) ||
+                        !ulong.TryParse(arg.Args[2], out targetId) ||
+                        !int.TryParse(arg.Args[3], out transactionPage) ||
+                        !int.TryParse(arg.Args[4], out gatherPage)) return;
 
-                    if (type == 0)
-                        MainUi(player, amount, target, true);
-                    else
-                        ATMUi(player, 4, amount, target, true);
+                    MainUi(player, amount, targetId, transactionPage, gatherPage);
                     break;
                 }
 
                 case "setamount":
                 {
-                    ulong target;
-                    int amount;
-                    if (!arg.HasArgs(3) || !ulong.TryParse(arg.Args[1], out target) ||
-                        !int.TryParse(arg.Args[2], out amount)) return;
+                    ulong targetId;
+                    int amount, transactionPage, gatherPage;
+                    if (!arg.HasArgs(5) ||
+                        !ulong.TryParse(arg.Args[1], out targetId) ||
+                        !int.TryParse(arg.Args[2], out transactionPage) ||
+                        !int.TryParse(arg.Args[3], out gatherPage) ||
+                        !int.TryParse(arg.Args[4], out amount)) return;
 
-                    MainUi(player, amount, target);
+                    MainUi(player, amount, targetId, transactionPage, gatherPage);
                     break;
                 }
 
                 case "select":
                 {
-                    int amount, type;
+                    int amount, type, transactionPage, gatherPage;
                     ulong target;
-                    if (!arg.HasArgs(4) || !int.TryParse(arg.Args[1], out type) ||
-                        !int.TryParse(arg.Args[2], out amount) || !ulong.TryParse(arg.Args[3], out target)) return;
+                    if (!arg.HasArgs(6)
+                        || !int.TryParse(arg.Args[1], out type)
+                        || !int.TryParse(arg.Args[2], out amount)
+                        || !ulong.TryParse(arg.Args[3], out target)
+                        || !int.TryParse(arg.Args[4], out transactionPage)
+                        || !int.TryParse(arg.Args[5], out gatherPage)) return;
 
                     if (type == 0)
-                        MainUi(player, amount, target, true);
+                        MainUi(player, amount, target, transactionPage, gatherPage, true);
                     else
                         ATMUi(player, 4, amount, target, true);
                     break;
@@ -1442,15 +1507,26 @@ namespace Oxide.Plugins
                 case "selectpage":
                 {
                     ulong target;
-                    int amount, type;
+                    int amount, type, transactionPage = 0, gatherPage = 0;
                     if (!arg.HasArgs(4) || !int.TryParse(arg.Args[1], out type) ||
                         !int.TryParse(arg.Args[2], out amount) || !ulong.TryParse(arg.Args[3], out target)) return;
 
                     var page = 0;
-                    if (arg.HasArgs(5))
-                        int.TryParse(arg.Args[4], out page);
+                    if (type == 0)
+                    {
+                        if (!arg.HasArgs(6) || !int.TryParse(arg.Args[4], out transactionPage) ||
+                            !int.TryParse(arg.Args[5], out gatherPage)) return;
 
-                    SelectPlayerUi(player, type, amount, target, page);
+                        if (arg.HasArgs(7))
+                            int.TryParse(arg.Args[6], out page);
+                    }
+                    else
+                    {
+                        if (arg.HasArgs(5))
+                            int.TryParse(arg.Args[4], out page);
+                    }
+
+                    SelectPlayerUi(player, type, amount, target, transactionPage, gatherPage, page);
                     break;
                 }
 
@@ -1898,7 +1974,8 @@ namespace Oxide.Plugins
 
         #region Interface
 
-        private void MainUi(BasePlayer player, int amount = 0, ulong targetId = 0, bool first = false)
+        private void MainUi(BasePlayer player, int amount = 0, ulong targetId = 0, int transactionPage = 0,
+            int gatherPage = 0, bool first = false)
         {
             var container = new CuiElementContainer();
 
@@ -1941,7 +2018,7 @@ namespace Oxide.Plugins
                     },
                     Image =
                     {
-                        Color = HexToCuiColor("#0E0E10")
+                        Color = _color1
                     }
                 }, Layer, Layer + ".Background");
             }
@@ -1972,7 +2049,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = HexToCuiColor("#161617") }
+                Image = { Color = _color2 }
             }, Layer + ".Main", Layer + ".Header");
 
 
@@ -1990,7 +2067,7 @@ namespace Oxide.Plugins
                     Align = TextAnchor.MiddleLeft,
                     Font = "robotocondensed-bold.ttf",
                     FontSize = 14,
-                    Color = HexToCuiColor("#FFFFFF")
+                    Color = "1 1 1 1"
                 }
             }, Layer + ".Header");
 
@@ -2008,12 +2085,12 @@ namespace Oxide.Plugins
                     Align = TextAnchor.MiddleCenter,
                     Font = "robotocondensed-bold.ttf",
                     FontSize = 10,
-                    Color = HexToCuiColor("#FFFFFF")
+                    Color = "1 1 1 1"
                 },
                 Button =
                 {
                     Close = Layer,
-                    Color = HexToCuiColor("#4B68FF"),
+                    Color = _color3,
                     Command = "UI_BankSystem close"
                 }
             }, Layer + ".Header");
@@ -2032,7 +2109,7 @@ namespace Oxide.Plugins
                 },
                 Image =
                 {
-                    Color = HexToCuiColor("#161617")
+                    Color = _color2
                 }
             }, Layer + ".Main", Layer + ".Second.Header");
 
@@ -2319,7 +2396,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Transfer.Not");
 
@@ -2350,7 +2427,7 @@ namespace Oxide.Plugins
                             },
                             Image =
                             {
-                                Color = HexToCuiColor("#161617")
+                                Color = _color2
                             }
                         }, Layer + ".Main", Layer + $".Transfer.{member}");
 
@@ -2434,7 +2511,7 @@ namespace Oxide.Plugins
                             },
                             Button =
                             {
-                                Color = HexToCuiColor("#4B68FF"),
+                                Color = _color3,
                                 Command = $"UI_BankSystem ui_transfer {amount} {member}"
                             }
                         }, Layer + $".Transfer.{member}");
@@ -2499,8 +2576,8 @@ namespace Oxide.Plugins
                     },
                     Button =
                     {
-                        Color = HexToCuiColor("#161617"),
-                        Command = $"UI_BankSystem selectpage 0 {amount} {targetId}"
+                        Color = _color2,
+                        Command = $"UI_BankSystem selectpage 0 {amount} {targetId} {transactionPage} {gatherPage}"
                     }
                 }, Layer + ".Main");
 
@@ -2518,7 +2595,7 @@ namespace Oxide.Plugins
                     },
                     Image =
                     {
-                        Color = HexToCuiColor("#161617")
+                        Color = _color2
                     }
                 }, Layer + ".Main", Layer + ".Enter.Amount");
 
@@ -2559,7 +2636,7 @@ namespace Oxide.Plugins
                         Button =
                         {
                             Color = "0 0 0 0",
-                            Command = $"UI_BankSystem setamount {targetId} 0"
+                            Command = $"UI_BankSystem setamount {targetId} {transactionPage} {gatherPage} 0"
                         }
                     }, Layer + ".Enter.Amount");
                 }
@@ -2575,7 +2652,7 @@ namespace Oxide.Plugins
                                 FontSize = 10,
                                 Font = "robotocondensed-regular.ttf",
                                 Align = TextAnchor.MiddleLeft,
-                                Command = $"UI_BankSystem setamount {targetId} ",
+                                Command = $"UI_BankSystem setamount {targetId} {transactionPage} {gatherPage} ",
                                 Color = "1 1 1 1",
                                 CharsLimit = 10
                             },
@@ -2607,7 +2684,7 @@ namespace Oxide.Plugins
                     },
                     Button =
                     {
-                        Color = HexToCuiColor("#4B68FF", 50),
+                        Color = HexToCuiColor(_config.Colors.Color3, 50),
                         Command = targetId != 0 ? $"UI_BankSystem ui_transfer {amount} {targetId}" : ""
                     }
                 }, Layer + ".Main");
@@ -2646,7 +2723,9 @@ namespace Oxide.Plugins
 
                     ySwitch = -175f;
 
-                    foreach (var transcation in logs.Transfers.Take(amountOnPage))
+                    var list = logs.Transfers.ToList();
+                    list.Reverse();
+                    foreach (var transaction in list.Skip(transactionPage * amountOnPage).Take(amountOnPage))
                     {
                         container.Add(new CuiPanel
                         {
@@ -2658,14 +2737,71 @@ namespace Oxide.Plugins
                             },
                             Image =
                             {
-                                Color = HexToCuiColor("#161617")
+                                Color = _color2
                             }
                         }, Layer + ".Main", Layer + $".Transaction.{ySwitch}");
 
-                        transcation.Get(player, ref container, Layer + $".Transaction.{ySwitch}");
+                        transaction.Get(player, ref container, Layer + $".Transaction.{ySwitch}");
 
                         ySwitch = ySwitch - Margin - Height;
                     }
+
+                    #region Pages
+
+                    if (list.Count > amountOnPage)
+                    {
+                        container.Add(new CuiButton
+                        {
+                            RectTransform =
+                            {
+                                AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                                OffsetMin = "150 -170",
+                                OffsetMax = "170 -150"
+                            },
+                            Text =
+                            {
+                                Text = Msg(player, BtnBack),
+                                Align = TextAnchor.MiddleCenter,
+                                Font = "robotocondensed-regular.ttf",
+                                FontSize = 9,
+                                Color = "1 1 1 0.95"
+                            },
+                            Button =
+                            {
+                                Color = HexToCuiColor(_config.Colors.Color3, 33),
+                                Command = transactionPage != 0
+                                    ? $"UI_BankSystem page {amount} {targetId} {transactionPage - 1} {gatherPage}"
+                                    : ""
+                            }
+                        }, Layer + ".Main");
+
+                        container.Add(new CuiButton
+                        {
+                            RectTransform =
+                            {
+                                AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                                OffsetMin = "175 -170",
+                                OffsetMax = "195 -150"
+                            },
+                            Text =
+                            {
+                                Text = Msg(player, BtnNext),
+                                Align = TextAnchor.MiddleCenter,
+                                Font = "robotocondensed-regular.ttf",
+                                FontSize = 10,
+                                Color = "1 1 1 0.95"
+                            },
+                            Button =
+                            {
+                                Color = _color3,
+                                Command = list.Count > (transactionPage + 1) * amountOnPage
+                                    ? $"UI_BankSystem page {amount} {targetId} {transactionPage + 1} {gatherPage}"
+                                    : ""
+                            }
+                        }, Layer + ".Main");
+                    }
+
+                    #endregion
                 }
 
                 #endregion
@@ -2700,7 +2836,7 @@ namespace Oxide.Plugins
 
                     var gatherLogs = logs.GatherLogs.ToList();
                     gatherLogs.Reverse();
-                    foreach (var gather in gatherLogs.Take(amountOnPage))
+                    foreach (var gather in gatherLogs.Skip(gatherPage * amountOnPage).Take(amountOnPage))
                     {
                         container.Add(new CuiPanel
                         {
@@ -2712,7 +2848,7 @@ namespace Oxide.Plugins
                             },
                             Image =
                             {
-                                Color = HexToCuiColor("#161617")
+                                Color = _color2
                             }
                         }, Layer + ".Main", Layer + $".Gather.{ySwitch}");
 
@@ -2748,12 +2884,69 @@ namespace Oxide.Plugins
                                 Align = TextAnchor.MiddleRight,
                                 Font = "robotocondensed-regular.ttf",
                                 FontSize = 10,
-                                Color = HexToCuiColor("#4B68FF")
+                                Color = _color3
                             }
                         }, Layer + $".Gather.{ySwitch}");
 
                         ySwitch = ySwitch - Margin - Height;
                     }
+
+                    #region Pages
+
+                    if (gatherLogs.Count > amountOnPage)
+                    {
+                        container.Add(new CuiButton
+                        {
+                            RectTransform =
+                            {
+                                AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                                OffsetMin = "375 -170",
+                                OffsetMax = "395 -150"
+                            },
+                            Text =
+                            {
+                                Text = Msg(player, BtnBack),
+                                Align = TextAnchor.MiddleCenter,
+                                Font = "robotocondensed-regular.ttf",
+                                FontSize = 9,
+                                Color = "1 1 1 0.95"
+                            },
+                            Button =
+                            {
+                                Color = HexToCuiColor(_config.Colors.Color3, 33),
+                                Command = gatherPage != 0
+                                    ? $"UI_BankSystem page {amount} {targetId} {transactionPage} {gatherPage - 1}"
+                                    : ""
+                            }
+                        }, Layer + ".Main");
+
+                        container.Add(new CuiButton
+                        {
+                            RectTransform =
+                            {
+                                AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                                OffsetMin = "400 -170",
+                                OffsetMax = "420 -150"
+                            },
+                            Text =
+                            {
+                                Text = Msg(player, BtnNext),
+                                Align = TextAnchor.MiddleCenter,
+                                Font = "robotocondensed-regular.ttf",
+                                FontSize = 10,
+                                Color = "1 1 1 0.95"
+                            },
+                            Button =
+                            {
+                                Color = _color3,
+                                Command = gatherLogs.Count > (gatherPage + 1) * amountOnPage
+                                    ? $"UI_BankSystem page {amount} {targetId} {transactionPage} {gatherPage + 1}"
+                                    : ""
+                            }
+                        }, Layer + ".Main");
+                    }
+
+                    #endregion
                 }
 
                 #endregion
@@ -2772,7 +2965,7 @@ namespace Oxide.Plugins
                     },
                     Image =
                     {
-                        Color = HexToCuiColor("#161617")
+                        Color = _color2
                     }
                 }, Layer + ".Main", Layer + ".Crate.Card");
 
@@ -2856,7 +3049,8 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
-        private void SelectPlayerUi(BasePlayer player, int type, int amount, ulong target, int page = 0)
+        private void SelectPlayerUi(BasePlayer player, int type, int amount, ulong target, int transactionPage,
+            int gatherPage, int page = 0)
         {
             #region Fields
 
@@ -2902,7 +3096,7 @@ namespace Oxide.Plugins
                 {
                     Color = "0 0 0 0",
                     Close = Layer,
-                    Command = $"UI_BankSystem close_select {type} {amount} {target}"
+                    Command = $"UI_BankSystem select {type} {amount} {target} {transactionPage} {gatherPage}"
                 }
             }, Layer);
 
@@ -3004,7 +3198,7 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = "0 0 0 0",
-                        Command = $"UI_BankSystem select {type} {amount} {member.userID}"
+                        Command = $"UI_BankSystem select {type} {amount} {member.userID} {transactionPage} {gatherPage}"
                     }
                 }, Layer + $".Player.{i}");
 
@@ -3057,8 +3251,9 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
-                            Command = $"UI_BankSystem selectpage {type} {amount} {target} {j}"
+                            Color = _color3,
+                            Command =
+                                $"UI_BankSystem selectpage {type} {amount} {target} {transactionPage} {gatherPage} {j}"
                         }
                     }, Layer);
 
@@ -3119,7 +3314,7 @@ namespace Oxide.Plugins
                     },
                     Image =
                     {
-                        Color = HexToCuiColor("#0E0E10")
+                        Color = _color1
                     }
                 }, Layer, Layer + ".Background");
             }
@@ -3150,9 +3345,8 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = HexToCuiColor("#161617") }
+                Image = { Color = _color2 }
             }, Layer + ".Main", Layer + ".Header");
-
 
             container.Add(new CuiLabel
             {
@@ -3168,33 +3362,34 @@ namespace Oxide.Plugins
                     Align = TextAnchor.MiddleLeft,
                     Font = "robotocondensed-bold.ttf",
                     FontSize = 14,
-                    Color = HexToCuiColor("#FFFFFF")
+                    Color = "1 1 1 1"
                 }
             }, Layer + ".Header");
 
-            container.Add(new CuiButton
-            {
-                RectTransform =
+            if (!_config.AtmDisbaleCloser)
+                container.Add(new CuiButton
                 {
-                    AnchorMin = "1 1", AnchorMax = "1 1",
-                    OffsetMin = "-50 -37.5",
-                    OffsetMax = "-25 -12.5"
-                },
-                Text =
-                {
-                    Text = Msg(player, CloseButton),
-                    Align = TextAnchor.MiddleCenter,
-                    Font = "robotocondensed-bold.ttf",
-                    FontSize = 10,
-                    Color = HexToCuiColor("#FFFFFF")
-                },
-                Button =
-                {
-                    Close = Layer,
-                    Color = HexToCuiColor("#4B68FF"),
-                    Command = "UI_BankSystem close"
-                }
-            }, Layer + ".Header");
+                    RectTransform =
+                    {
+                        AnchorMin = "1 1", AnchorMax = "1 1",
+                        OffsetMin = "-50 -37.5",
+                        OffsetMax = "-25 -12.5"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, CloseButton),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Close = Layer,
+                        Color = _color3,
+                        Command = "UI_BankSystem close"
+                    }
+                }, Layer + ".Header");
 
             #endregion
 
@@ -3210,7 +3405,7 @@ namespace Oxide.Plugins
                 },
                 Image =
                 {
-                    Color = HexToCuiColor("#161617")
+                    Color = _color2
                 }
             }, Layer + ".Main", Layer + ".Second.Header");
 
@@ -3335,7 +3530,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Deposit");
 
@@ -3413,7 +3608,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Withdraw");
 
@@ -3491,7 +3686,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Transfer");
 
@@ -3569,7 +3764,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Exit");
 
@@ -3654,7 +3849,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Profit");
 
@@ -3709,7 +3904,7 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
+                            Color = _color3,
                             Command = "UI_BankSystem atm_admin_withdraw",
                             Close = Layer
                         }
@@ -3729,7 +3924,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Condition");
 
@@ -3784,7 +3979,7 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
+                            Color = _color3,
                             Command = atmData.Condition < 100 ? "UI_BankSystem atm_tryrepair" : ""
                         }
                     }, Layer + ".Condition");
@@ -3803,7 +3998,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".DepositFee");
 
@@ -3887,7 +4082,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#C4C4C4", 20)
+                            Color = HexToCuiColor(_config.Colors.Color6, 20)
                         }
                     }, Layer + ".DepositFee", Layer + ".DepositFee.Progress");
 
@@ -3900,7 +4095,7 @@ namespace Oxide.Plugins
                             RectTransform = { AnchorMin = "0 0", AnchorMax = $"{progress} 0.95" },
                             Image =
                             {
-                                Color = HexToCuiColor("#4B68FF")
+                                Color = _color3
                             }
                         }, Layer + ".DepositFee.Progress", Layer + ".DepositFee.Progress.Finish");
 
@@ -3964,7 +4159,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".WithdrawalFee");
 
@@ -4048,7 +4243,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#C4C4C4", 20)
+                            Color = HexToCuiColor(_config.Colors.Color6, 20)
                         }
                     }, Layer + ".WithdrawalFee", Layer + ".WithdrawalFee.Progress");
 
@@ -4061,7 +4256,7 @@ namespace Oxide.Plugins
                             RectTransform = { AnchorMin = "0 0", AnchorMax = $"{progress} 0.95" },
                             Image =
                             {
-                                Color = HexToCuiColor("#4B68FF")
+                                Color = _color3
                             }
                         }, Layer + ".WithdrawalFee.Progress", Layer + ".WithdrawalFee.Progress.Finish");
 
@@ -4133,7 +4328,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Input");
 
@@ -4190,7 +4385,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Button");
 
@@ -4249,7 +4444,7 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
+                            Color = _color3,
                             Command = amount > 0 ? $"UI_BankSystem atm_deposit {amount}" : "",
                             Close = Layer
                         }
@@ -4269,7 +4464,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Exit");
 
@@ -4354,7 +4549,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Input");
 
@@ -4411,7 +4606,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Button");
 
@@ -4470,7 +4665,7 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
+                            Color = _color3,
                             Command = amount > 0 ? $"UI_BankSystem atm_withdraw {amount}" : "",
                             Close = Layer
                         }
@@ -4490,7 +4685,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Exit");
 
@@ -4575,7 +4770,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Input");
 
@@ -4632,7 +4827,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Button");
 
@@ -4688,9 +4883,11 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
-                            Command = $"UI_BankSystem atm_transfer {amount} {targetId}",
-                            Close = Layer
+                            Color = _color3,
+                            Command = targetId.IsSteamId()
+                                ? $"UI_BankSystem atm_transfer {amount} {targetId}"
+                                : string.Empty,
+                            Close = targetId.IsSteamId() ? Layer : string.Empty
                         }
                     }, Layer + ".Button");
 
@@ -4708,7 +4905,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Select");
 
@@ -4807,7 +5004,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = HexToCuiColor("#161617")
+                            Color = _color2
                         }
                     }, Layer + ".Main", Layer + ".Exit");
 
@@ -4899,7 +5096,7 @@ namespace Oxide.Plugins
                 },
                 Image =
                 {
-                    Color = HexToCuiColor("#161617")
+                    Color = _color2
                 }
             }, Layer + ".Main", Layer + ".Info");
 
@@ -5069,7 +5266,7 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
+                            Color = _color3,
                             Command = "UI_BankSystem atmpage 1"
                         }
                     }, Layer + ".Info");
@@ -5091,7 +5288,7 @@ namespace Oxide.Plugins
                         },
                         Button =
                         {
-                            Color = HexToCuiColor("#4B68FF"),
+                            Color = _color3,
                             Command = "UI_BankSystem atmpage 0"
                         }
                     }, Layer + ".Info");
@@ -5251,7 +5448,7 @@ namespace Oxide.Plugins
                     },
                     Image =
                     {
-                        Color = hasAmount ? HexToCuiColor("#74884A") : HexToCuiColor("#CD4632"),
+                        Color = hasAmount ? _color4 : _color7,
                         Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat"
                     }
                 }, Layer + $".Item.{xSwitch}");
@@ -5281,7 +5478,7 @@ namespace Oxide.Plugins
                 },
                 Button =
                 {
-                    Color = notItem ? HexToCuiColor("#595651") : HexToCuiColor("#74884A"),
+                    Color = notItem ? _color8 : _color4,
                     Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat",
                     Command = notItem ? "" : "UI_BankSystem atm_repair"
                 }
@@ -5305,7 +5502,7 @@ namespace Oxide.Plugins
                 },
                 Button =
                 {
-                    Color = HexToCuiColor("#595651"),
+                    Color = _color8,
                     Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat",
                     Close = Layer,
                     Command = "UI_BankSystem atmpage 0 0 0 true"
@@ -5582,14 +5779,23 @@ namespace Oxide.Plugins
             _config.Economy.AddBalance(member, price);
         }
 
-        private void AddTransactionLog(Transaction type, ulong member, ulong target, int amount)
+        private void AddTransactionLog(Transaction type, ulong sender, ulong target, int amount)
         {
-            if (!member.IsSteamId()) return;
+            if (!sender.IsSteamId()) return;
 
-            GetPlayerLogs(member)?.Transfers.Add(new TransferData
+            if (type == Transaction.Transfer)
+                GetPlayerLogs(target)?.Transfers.Add(new TransferData
+                {
+                    Type = type,
+                    SenderId = sender,
+                    TargetId = 0,
+                    Amount = amount
+                });
+
+            GetPlayerLogs(sender)?.Transfers.Add(new TransferData
             {
                 Type = type,
-                SenderId = member,
+                SenderId = sender,
                 TargetId = target,
                 Amount = amount
             });
@@ -5677,18 +5883,30 @@ namespace Oxide.Plugins
             }
         }
 
-        private readonly Dictionary<string, string> ItemsTitles = new Dictionary<string, string>();
+        private void LoadColors()
+        {
+            _color1 = HexToCuiColor(_config.Colors.Color1);
+            _color2 = HexToCuiColor(_config.Colors.Color2);
+            _color3 = HexToCuiColor(_config.Colors.Color3);
+            _color4 = HexToCuiColor(_config.Colors.Color4);
+            _color5 = HexToCuiColor(_config.Colors.Color5);
+            _color6 = HexToCuiColor(_config.Colors.Color6);
+            _color7 = HexToCuiColor(_config.Colors.Color7);
+            _color8 = HexToCuiColor(_config.Colors.Color8);
+        }
+
+        private readonly Dictionary<string, string> _itemsTitles = new Dictionary<string, string>();
 
         private string GetItemTitle(string shortName)
         {
             string result;
-            if (ItemsTitles.TryGetValue(shortName, out result))
+            if (_itemsTitles.TryGetValue(shortName, out result))
                 return result;
 
             result = ItemManager.FindItemDefinition(shortName)?.displayName.translated;
 
             if (!string.IsNullOrEmpty(result))
-                ItemsTitles.Add(shortName, result);
+                _itemsTitles.Add(shortName, result);
 
             return result;
         }
@@ -5809,6 +6027,8 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            BtnNext = "BtnNext",
+            BtnBack = "BtnBack",
             NoPermissions = "NoPermissions",
             CloseButton = "CloseButton",
             TitleMenu = "TitleMenu",
@@ -5980,6 +6200,8 @@ namespace Oxide.Plugins
                 [DepositedMoney] = "You have successfully replenished your balance for ${0}!",
                 [WithdrawnMoney] = "You have successfully withdrawn ${0}",
                 [AtmOwnWithdrawnMoney] = "You have successfully withdrawn money from your ATM!",
+                [BtnBack] = "▲",
+                [BtnNext] = "▼",
                 ["crate_elite"] = "Crate Elite",
                 ["crate_normal"] = "Crate Normal"
             }, this);

@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.21")]
+    [Info("Shop", "Mevent", "1.0.22")]
     public class Shop : RustPlugin
     {
         #region Fields
@@ -1405,12 +1405,14 @@ namespace Oxide.Plugins
                     var edit = _itemEditing[player];
                     if (edit == null) return;
 
+                    var npcShop = GetShopByPlayer(player);
+
                     var newItem = new ShopItem(edit);
 
                     var generated = (bool)edit["Generated"];
                     if (generated)
                     {
-                        _config.Shop[category].Items.Add(newItem);
+                        GetCategories(player, npcShop)[category].Items.Add(newItem);
                     }
                     else
                     {
@@ -1449,7 +1451,7 @@ namespace Oxide.Plugins
                     if (category == -1)
                         category = 0;
 
-                    MainUi(player, category, page, GetShopByPlayer(player), string.Empty, true);
+                    MainUi(player, category, page, npcShop, string.Empty, true);
                     break;
                 }
 
@@ -2886,7 +2888,7 @@ namespace Oxide.Plugins
                         ["ID"] = GetId(),
                         ["Type"] = ItemType.Item,
                         ["Image"] = string.Empty,
-                        ["Title"] = Title,
+                        ["Title"] = string.Empty,
                         ["Command"] = string.Empty,
                         ["DisplayName"] = string.Empty,
                         ["ShortName"] = string.Empty,

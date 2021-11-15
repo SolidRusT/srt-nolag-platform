@@ -1,3 +1,3 @@
 #!/bin/bash
 ## Global default overrides
-export SRT_TYPE="web"
+export SRT_TYPE="data"

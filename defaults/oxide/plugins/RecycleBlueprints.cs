@@ -1,73 +1,46 @@
 ﻿using Oxide.Core.Configuration;
 using Rust;
 
-
 namespace Oxide.Plugins
 {
-
-	///////////////////////////////////////////////////////////////////////////
-	//
-	//  Recycle Blueprints!
-	//
-	//  Allows players to recycle blueprints for scrap.  
-	//  
-	//	Set scrap yields for each category in RecycleBlueprints.json
-	//  Using a value of zero will disable that category.
-	//
-	///////////////////////////////////////////////////////////////////////////
-
-	
-    [Info("Recycle Blueprints", "Zugzwang", "1.0.5")]
+	[Info("Recycle Blueprints", "Zugzwang", "1.0.6")]
 	[Description("Allows players to recycle blueprints for scrap.")]
-    class RecycleBlueprints : RustPlugin
-    {
-		
-		#region Config
+
+	class RecycleBlueprints : CovalencePlugin
+   {
+		#region Configuration and Scrap Yields
 
 		// Scrap ID
 		int scrapID = -932201673; 
 		
-		// default scrap yields
+		// Default scrap yields.
 		int common = 10;
 		int uncommon = 25;		
 		int rare = 100;
 		int veryrare = 300;	
-	
-	
-		// save scrap yields if file doesnt exist
+
+		// Save scrap yields if file doesnt exist.
 		protected override void LoadDefaultConfig()
-        {
+		{
 			Config["Category_Common"] = common;
 			Config["Category_Uncommon"] = uncommon;
 			Config["Category_Rare"] = rare;
 			Config["Category_VeryRare"] = veryrare;
 			
-			// prevent exploiting these 'rare' category blueprints
-			// that only cost 75 in level 1 workbench experimentation
-			Config["Custom_explosive.satchel"] = 75;
-			Config["Custom_gates.external.high.wood"] = 75;
-			Config["Custom_guntrap"] = 75;
-			Config["Custom_ladder.wooden.wall"] = 75;
-			Config["Custom_shotgun.double"] = 75;
-			Config["Custom_wall.external.high"] = 75;
-			
 			PrintWarning("New configuration file created.");
-        }
+		}
 	
-	
-		// load scrap yields on startup
-        void Init()
-        {
+		// Load scrap yields on startup.
+		void Init()
+		{
 			common = (int)Config["Category_Common"];
 			uncommon = (int)Config["Category_Uncommon"];
 			rare = (int)Config["Category_Rare"];
 			veryrare = (int)Config["Category_VeryRare"];
-        }
+		}
 
-		
-		
 		void OnServerInitialized()
-        {
+		{
 			// Look for scrap ID on load, just in case they change it again...
 			ItemDefinition scrap = ItemManager.FindItemDefinition("scrap");
 			if (scrap?.itemid != null)
@@ -94,58 +67,20 @@ namespace Oxide.Plugins
 				PrintWarning("Updating configuration file with new blueprints.");
 				SaveConfig();				
 			}
-
-		}	
-		
-		
-		#endregion Config
-
-		
-		
-		
-		
-        #region Oxide Hooks 
-
-
-		// allow recycling of enabled blueprint categories
-		object CanRecycle(Recycler recycler, Item item)
-		{
-			if (item.IsBlueprint())
-			{
-				ItemDefinition target = ItemManager.FindItemDefinition(item.blueprintTarget);
-
-				if (target?.rarity == null)
-					return false;
-				
-				if ((int)Config["Custom_" + target.shortname] == 0)
-					return false;
-
-				if	((target.rarity == Rarity.Common && common > 0) ||
-					 (target.rarity == Rarity.Uncommon && uncommon > 0) ||
-					 (target.rarity == Rarity.Rare && rare > 0) ||
-					 ((target.rarity == Rarity.VeryRare || target.rarity == Rarity.None) && veryrare > 0))
-					return true;
-				else
-					return false;
-			}
-			else 
-				return null;
 		}
-		
-		
-		// turn those blueprints into scrap
-		void OnRecycleItem(Recycler recycler, Item item)
+
+		int ScrapValue(Item i)
 		{
-			if (item.IsBlueprint())
-			{
-				int amount = 0;
+			int amount = 0;
 			
-				ItemDefinition target = ItemManager.FindItemDefinition(item.blueprintTarget);
-				if (target == null) return;
+			if (i?.IsBlueprint() == true)
+			{
+				ItemDefinition target = ItemManager.FindItemDefinition(i.blueprintTarget);
+				if (target == null) return 0;
 				
 				int custom = (int)Config["Custom_" + target.shortname];
 				
-				// set scrap amount based on custom setting, or rarity
+				// Set scrap amount based on custom setting, or rarity category.
 				if (custom > 0)
 					amount = custom;
 				else if (target?.rarity == null)
@@ -158,9 +93,40 @@ namespace Oxide.Plugins
 					amount = rare;
 				else if (target.rarity == Rarity.VeryRare || target.rarity == Rarity.None)
 					amount = veryrare;
+			}
 
-				
-				// reward player with scrap
+			return amount;
+		}
+		
+		#endregion Configuration and Scrap Yields
+
+
+		#region Oxide Hooks 
+
+		// Allow recycling of enabled blueprint categories.
+		object CanRecycle(Recycler recycler, Item item)
+		{
+			if (item?.IsBlueprint() == true && ScrapValue(item) > 0)	
+			{
+				return true;
+			}
+			
+			return null;
+		}
+
+		// Allow blueprints to be put into the recycler.
+		object CanBeRecycled(Item i, Recycler r)
+		{
+			return CanRecycle(r, i);
+		}
+		
+		// Turn those blueprints into scrap.
+		object OnRecycleItem(Recycler recycler, Item item)
+		{
+			if (item?.IsBlueprint() == true)
+			{
+				int amount = ScrapValue(item);
+
 				if (amount > 0)
 				{
 					Item reward = ItemManager.CreateByItemID(scrapID, amount);
@@ -168,12 +134,14 @@ namespace Oxide.Plugins
 					{
 						recycler.MoveItemToOutput(reward);
 						item.UseItem(1);
+						return true;
 					}
 				}
 			}
+
+			return null;
 		}
 		
-
-        #endregion
-    }
+		#endregion Oxide Hooks 
+	}
 }

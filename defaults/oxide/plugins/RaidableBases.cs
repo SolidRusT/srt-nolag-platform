@@ -44,7 +44,7 @@ using static NPCPlayerApex;
 
 namespace Oxide.Plugins
 {
-    [Info("Raidable Bases", "nivex", "2.2.3")]
+    [Info("Raidable Bases", "nivex", "2.2.4")]
     [Description("Create fully automated raidable bases with npcs.")]
     class RaidableBases : RustPlugin
     {
@@ -4902,7 +4902,7 @@ enterExit:
                 PopulateLoot(true);
                 TryAddDuplicates();
                 PopulateLoot(false);
-
+                
                 if (Loot.Count == 0)
                 {
                     Pool.FreeList(ref containers);
@@ -5343,10 +5343,10 @@ enterExit:
 
                 SetupIO(ss as IOEntity);
 
-                if (config.Weapons.SamSiteRange > 0f)
-                {
-                    ss.vehicleScanRadius = ss.missileScanRadius = config.Weapons.SamSiteRange;
-                }
+                //if (config.Weapons.SamSiteRange > 0f)
+                //{
+                //    ss.vehicleScanRadius = ss.missileScanRadius = config.Weapons.SamSiteRange;
+                //}
 
                 if (config.Weapons.Ammo.SamSite > 0)
                 {
@@ -6060,9 +6060,20 @@ enterExit:
             private void DivideLoot(List<StorageContainer> containers)
             {
                 while (Loot.Count > 0 && containers.Count > 0 && itemAmountSpawned < treasureAmount)
-                {
+                { 
                     var lootItem = Loot.GetRandom();
-                    var result = SpawnItem(lootItem, containers);
+
+                    if (containers.Count > 1)
+                    {
+                        var lastContainer = containers[0];
+                        
+                        containers.Remove(lastContainer);
+                        
+                        SpawnItem(lootItem, containers);
+
+                        containers.Insert(containers.Count, lastContainer);
+                    }
+                    else SpawnItem(lootItem, containers);
 
                     Loot.Remove(lootItem);
                     
@@ -6555,7 +6566,7 @@ enterExit:
                         return SpawnResult.Success;
                     }                    
                 }
-
+                
                 item.Remove();
                 return SpawnResult.Failure;
             }
@@ -10599,7 +10610,7 @@ done:
 
             return raid.AllowPVP && config.Settings.Management.BackpacksPVP || !raid.AllowPVP && config.Settings.Management.BackpacksPVE;
         }
-
+        
         private object CanEntityBeTargeted(BasePlayer player, BaseEntity entity)
         {
             if (player == null || entity == null || IsInvisible(player))
@@ -16380,7 +16391,7 @@ done:
             [JsonProperty(PropertyName = "Move Food Into BBQ Or Fridge")]
             public bool Food { get; set; } = true;
 
-            [JsonProperty(PropertyName = "Blacklist For BBQ And Fridge")]
+            [JsonProperty(PropertyName = "Blacklist For BBQ And Fridge", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> Foods { get; set; } = new List<string> { "syrup", "pancakes" };
 
             [JsonProperty(PropertyName = "Move Resources Into Tool Cupboard")]
@@ -18078,8 +18089,8 @@ done:
             [JsonProperty(PropertyName = "SamSite Repairs Every X Minutes (0.0 = disabled)")]
             public float SamSiteRepair { get; set; } = 5f;
 
-            [JsonProperty(PropertyName = "SamSite Range (350.0 = Rust default)")]
-            public float SamSiteRange { get; set; } = 75f;
+            //[JsonProperty(PropertyName = "SamSite Range (350.0 = Rust default)")]
+            //public float SamSiteRange { get; set; } = 75f;
 
             [JsonProperty(PropertyName = "Test Generator Power")]
             public float TestGeneratorPower { get; set; } = 100f;

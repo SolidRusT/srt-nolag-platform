@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.3.0")]
+    [Info("Crafts", "Mevent", "2.4.0")]
     public class Crafts : RustPlugin
     {
         #region Fields
@@ -74,6 +74,7 @@ namespace Oxide.Plugins
                     Enabled = true,
                     Permission = string.Empty,
                     Title = "Vehicles",
+                    Color = new IColor("#161617", 100),
                     Crafts = new List<CraftConf>
                     {
                         new CraftConf
@@ -218,6 +219,7 @@ namespace Oxide.Plugins
                     Enabled = true,
                     Permission = string.Empty,
                     Title = "Cars",
+                    Color = new IColor("#161617", 100),
                     Crafts = new List<CraftConf>
                     {
                         new CraftConf
@@ -295,6 +297,7 @@ namespace Oxide.Plugins
                     Enabled = true,
                     Permission = string.Empty,
                     Title = "Misc",
+                    Color = new IColor("#161617", 100),
                     Crafts = new List<CraftConf>
                     {
                         new CraftConf
@@ -426,6 +429,8 @@ namespace Oxide.Plugins
                 Color7 = new IColor("#595651", 100),
                 BackgroundImage = string.Empty
             };
+
+            public VersionNumber Version;
         }
 
         private class UserInterface
@@ -506,6 +511,9 @@ namespace Oxide.Plugins
             public string Permission;
 
             [JsonProperty(PropertyName = "Title")] public string Title;
+
+            [JsonProperty(PropertyName = "Background color")]
+            public IColor Color;
 
             [JsonProperty(PropertyName = "Items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<CraftConf> Crafts;
@@ -850,6 +858,10 @@ namespace Oxide.Plugins
             {
                 _config = Config.ReadObject<Configuration>();
                 if (_config == null) throw new Exception();
+
+                if (_config.Version < Version)
+                    UpdateConfigValues();
+
                 SaveConfig();
             }
             catch
@@ -867,6 +879,17 @@ namespace Oxide.Plugins
         protected override void LoadDefaultConfig()
         {
             _config = new Configuration();
+        }
+
+        private void UpdateConfigValues()
+        {
+            PrintWarning("Config update detected! Updating config values...");
+
+            if (_config.Version < new VersionNumber(2, 4, 0))
+                _config.Categories.ForEach(cat => { cat.Color = new IColor("#161617", 100); });
+
+            _config.Version = Version;
+            PrintWarning("Config update completed!");
         }
 
         #endregion
@@ -1403,7 +1426,7 @@ namespace Oxide.Plugins
                     },
                     Button =
                     {
-                        Color = i == category ? _config.UI.Color4.Get() : _config.UI.Color2.Get(),
+                        Color = i == category ? _config.UI.Color4.Get() : cat.Color.Get(),
                         Command = $"UI_Crafts page {i} 0"
                     }
                 }, Layer + ".Main");

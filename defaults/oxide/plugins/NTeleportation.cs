@@ -20,26 +20,14 @@ using UnityEngine;
 using System.IO;
 
 /*
-    Fixed bandit location being set inside the wall
-    Fixed TPTargetBuildingBlocked language API
-    Fixed 0,0,0 being added to bandit/outpost locations
-    Fixed home pay not working when set to 0 (free)
-    Fixed several TPA language messages
-    Fixed monument check for power plant
-    Fixed gestures persisting after TP
-    Added `Enable Popup Support` (false) (credits: Khan)
-    Added Map Note Teleport (permission: nteleportation.tpmarker) (credits: Khan)
-    Added command `/removehome all <radius>` for admin only
-    Added `show` parameter to show locations - eg: /bandit show
-    Added `TPB Available After X Seconds` (0)
-    Added `Interrupt => Junkpiles` (false)
-    Updated default `Allow Sethome At Specific Monuments`
-    Allowed teleport from monuments which allow sethome
+Fixed an exploit
+Fixed duplicate entries in `Locations` lists
+Added null check for OnEntityTakeDamage => player.UserIDString
 */
 
 namespace Oxide.Plugins
 {
-    [Info("NTeleportation", "nivex", "1.6.6")]
+    [Info("NTeleportation", "nivex", "1.6.7")]
     [Description("Multiple teleportation systems for admin and players")]
     class NTeleportation : RustPlugin
     {
@@ -478,7 +466,7 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Location")]
             public Vector3 Location { get; set; } = Vector3.zero;
 
-            [JsonProperty(PropertyName = "Locations")]
+            [JsonProperty(PropertyName = "Locations", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<Vector3> Locations { get; set; } = new List<Vector3>();
 
             [JsonProperty(PropertyName = "Teleport To Random Location")]
@@ -1917,7 +1905,7 @@ namespace Oxide.Plugins
 
         void OnEntityTakeDamage(BasePlayer player, HitInfo hitInfo)
         {
-            if (player == null || player.IsNpc || hitInfo == null) return;
+            if (player == null || player.IsNpc || !player.userID.IsSteamId() || hitInfo == null) return;
             if (hitInfo.damageTypes.Has(DamageType.Fall) && teleporting.ContainsKey(player.userID))
             {
                 hitInfo.damageTypes = new DamageTypeList();
@@ -1925,7 +1913,7 @@ namespace Oxide.Plugins
                 if (teleporting.Count == 0) Unsubscribe(nameof(OnPlayerViolation));
                 return;
             }
-            if (permission.UserHasPermission(player.UserIDString, PermExempt)) return;
+            if (permission.UserHasPermission(player.userID.ToString(), PermExempt)) return;
             TeleportTimer teleportTimer;
             if (!TeleportTimers.TryGetValue(player.userID, out teleportTimer)) return;
             DamageType major = hitInfo.damageTypes.GetMajorityDamageType();
@@ -2162,19 +2150,19 @@ namespace Oxide.Plugins
                             if (entity.prefabID == 3858860623)
                             {
                                 outpost.Location = entity.transform.position + entity.transform.forward + new Vector3(0f, 1f, 0f);
-                                outpost.Locations.Add(outpost.Location);
+                                if (!outpost.Locations.Contains(outpost.Location)) outpost.Locations.Add(outpost.Location);
                                 changedOutpost = true;
                             }
                             else if (entity is Workbench)
                             {
                                 outpost.Location = entity.transform.position + entity.transform.forward + new Vector3(0f, 1f, 0f);
-                                outpost.Locations.Add(outpost.Location);
+                                if (!outpost.Locations.Contains(outpost.Location)) outpost.Locations.Add(outpost.Location);
                                 changedOutpost = true;
                             }
                             else if (entity is BaseChair)
                             {
                                 outpost.Location = entity.transform.position + entity.transform.right + new Vector3(0f, 1f, 0f);
-                                outpost.Locations.Add(outpost.Location);
+                                if (!outpost.Locations.Contains(outpost.Location)) outpost.Locations.Add(outpost.Location);
                                 changedOutpost = true;
                             }
                         }
@@ -2218,19 +2206,19 @@ namespace Oxide.Plugins
                             if (entity.prefabID == 3858860623)
                             {
                                 bandit.Location = entity.transform.position + entity.transform.forward + new Vector3(0f, 1f, 0f);
-                                bandit.Locations.Add(bandit.Location);
+                                if (!bandit.Locations.Contains(bandit.Location)) bandit.Locations.Add(bandit.Location);
                                 changedBandit = true;
                             }
                             else if (entity is Workbench)
                             {
                                 bandit.Location = entity.transform.position + entity.transform.forward + new Vector3(0f, 1f, 0f);
-                                bandit.Locations.Add(bandit.Location);
+                                if (!bandit.Locations.Contains(bandit.Location)) bandit.Locations.Add(bandit.Location);
                                 changedBandit = true;
                             }
                             else if (entity is BaseChair)
                             {
                                 bandit.Location = entity.transform.position + entity.transform.forward + new Vector3(0f, 1f, 0f);
-                                bandit.Locations.Add(bandit.Location);
+                                if (!bandit.Locations.Contains(bandit.Location)) bandit.Locations.Add(bandit.Location);
                                 changedBandit = true;
                             }
                         }
@@ -5069,11 +5057,9 @@ namespace Oxide.Plugins
         private string CheckInsideEntity(Vector3 targetLocation)
         {
             var entities = Pool.GetList<BaseEntity>();
-            Vis.Entities(targetLocation + new Vector3(0, 0.25f), 0.1f, entities, builtLayer);
-            bool inside = entities.Any(e => e is BuildingBlock || e is SimpleBuildingBlock || e is IceFence || e is ElectricBattery);
-            //bool inside = entities.Count(e => !(e is BasePlayer)) > 0;
+            Vis.Entities(targetLocation + new Vector3(0, 0.25f), 0.1f, entities, -1);
+            bool inside = entities.Any(e => e is BuildingBlock || e is SimpleBuildingBlock || e is IceFence || e is ElectricBattery || e is Door);
             Pool.FreeList(ref entities);
-
             return inside ? "TPTargetInsideBlock" : null;
         }
 

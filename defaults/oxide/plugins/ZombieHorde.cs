@@ -2,20 +2,20 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core.Plugins;
+using Rust;
+using Rust.Ai;
 using Rust.Ai.HTN.Murderer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
-using Rust;
-using System.Reflection;
-using Rust.Ai;
 
 namespace Oxide.Plugins
 {
-    [Info("ZombieHorde", "k1lly0u", "0.3.5")]
+    [Info("ZombieHorde", "k1lly0u", "0.3.6")]
     class ZombieHorde : RustPlugin
     {
         [PluginReference] 
@@ -1957,7 +1957,7 @@ namespace Oxide.Plugins
 
             internal bool TargetVisible(BaseCombatEntity baseCombatEntity)
             {
-                return baseCombatEntity is BasePlayer ? Entity.IsPlayerVisibleToUs(baseCombatEntity as BasePlayer) :
+                return baseCombatEntity is BasePlayer ? Entity.IsPlayerVisibleToUs(baseCombatEntity as BasePlayer, 1218519041) :
                     (Entity.IsVisible(baseCombatEntity.CenterPoint(), Entity.eyes.worldStandingPosition, float.PositiveInfinity) ||
                     !Entity.IsVisible(baseCombatEntity.transform.position, Entity.eyes.worldStandingPosition, float.PositiveInfinity));
             }
@@ -2066,7 +2066,7 @@ namespace Oxide.Plugins
             private bool IsVisibleToUs(BaseCombatEntity baseCombatEntity)
             {
                 if (baseCombatEntity is BasePlayer)
-                    return Entity.IsPlayerVisibleToUs(baseCombatEntity as BasePlayer);
+                    return Entity.IsPlayerVisibleToUs(baseCombatEntity as BasePlayer, 1218519041);
                 else return Entity.IsVisible(baseCombatEntity.CenterPoint(), Entity.eyes.worldStandingPosition, float.PositiveInfinity);                
             }
 
@@ -2197,7 +2197,7 @@ namespace Oxide.Plugins
 
             private float nextThrowTime = Time.time + ConVar.Halloween.scarecrow_throw_beancan_global_delay + UnityEngine.Random.Range(0, 10);
 
-            internal float GetIdealDistanceFromTarget() => Mathf.Max(1f, EngagementRange() * 0.75f);
+            internal float GetIdealDistanceFromTarget() => Mathf.Max(0.5f, EngagementRange() * 0.7f);
             
             internal float EngagementRange()
             {
@@ -2455,7 +2455,7 @@ namespace Oxide.Plugins
                 AddState(new HordeRoamState(hordeMember));
                 AddState(new MemberChaseState(hordeMember));
                 AddState(new MemberCombatState(hordeMember));
-                AddState(new MemberCombatThrowState(hordeMember));
+                //AddState(new MemberCombatThrowState(hordeMember));
             }
 
             public override void InitializeAI()
@@ -2496,7 +2496,6 @@ namespace Oxide.Plugins
                             continue;
 
                         float weight = value.GetWeight();
-
                         if (weight <= highest)
                             continue;
 
@@ -2504,8 +2503,11 @@ namespace Oxide.Plugins
                         state = value;
                     }
 
-                    if (state != CurrentState)
+                    if (state != null && state != CurrentState)
+                    {                        
+                        Debug.Log($"switch to state {state.GetType()}");
                         SwitchToState(state, -1);
+                    }
                 }
             }
 
@@ -2592,7 +2594,7 @@ namespace Oxide.Plugins
                     if (Vector3.Distance(hordeMember.Transform.position, hordeMember.Manager.AverageLocation) > 30f)
                         return 0f;
 
-                    if (hordeMember.Entity.AmmoFractionRemaining() < 0.3f || hordeMember.Entity.IsReloading())                    
+                    if (hordeMember._attackEntity is BaseProjectile && (hordeMember.Entity.AmmoFractionRemaining() < 0.3f || hordeMember.Entity.IsReloading()))                    
                         delta -= 1f;
                              
                     if (!hordeMember.Entity.CanSeeTarget())                    
@@ -2620,7 +2622,7 @@ namespace Oxide.Plugins
 
                     float distanceToTarget = Vector3.Distance(hordeMember.Entity.currentTarget.transform.position, hordeMember.Entity.transform.position);
 
-                    if (distanceToTarget < hordeMember.EngagementRange())
+                    if (distanceToTarget < hordeMember.EngagementRange() && hordeMember._attackEntity is BaseProjectile)
                         hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.SlowWalk);
                     else hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
 
@@ -2639,11 +2641,15 @@ namespace Oxide.Plugins
                             else
                             {
                                 bestMovePointNear.SetUsedBy(hordeMember.Entity, 5f);
-                                position = bestMovePointNear.transform.position;
-                                position = hordeMember.Entity.GetRandomPositionAround(position, 0f, bestMovePointNear.radius - 0.3f);
+                                position = hordeMember.Entity.GetRandomPositionAround(bestMovePointNear.transform.position, 0f, bestMovePointNear.radius - 0.3f);
                             }
                         }
                         else position = hordeMember.Entity.currentTarget.transform.position;
+                        
+                        if (!hordeMember.CanNavigateToTarget())
+                        {
+
+                        }
 
                         hordeMember.SetDestination(position);
 
@@ -2735,6 +2741,7 @@ namespace Oxide.Plugins
                     return StateStatus.Running;
                 }                
             }
+            
             public class MemberCombatThrowState : BasicAIState
             {
                 private readonly HordeMember hordeMember;

@@ -23,7 +23,7 @@ using System.Reflection;
 
 namespace Oxide.Plugins
 {
-    [Info("Raiding Zombies", "Razor", "2.0.9", ResourceId = 23)]
+    [Info("Raiding Zombies", "Razor", "2.0.10", ResourceId = 23)]
     [Description("Make zombies toss C4")]
     public class RaidingZombies : RustPlugin
     {
@@ -126,7 +126,7 @@ namespace Oxide.Plugins
                                  npc?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(npc.GetComponent<ZombieHorde.HordeMember>()));
                             }
                         }
-                        else if (configData.settings.OnlyHordProfiles == null || configData.settings.OnlyHordProfiles.Count <= 0)
+                        else if (member != null && configData.settings.OnlyHordProfiles == null || configData.settings.OnlyHordProfiles.Count <= 0 || !ZombieHorde.configData.Horde.UseProfiles)
                         {
                             npc?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(npc.GetComponent<ZombieHorde.HordeMember>()));
                         }
@@ -164,7 +164,7 @@ namespace Oxide.Plugins
                                     totalZombies++;
                                 }
                             }
-                            else if (configData.settings.OnlyHordProfiles == null || configData.settings.OnlyHordProfiles.Count <= 0)
+                            else if (!ZombieHorde.configData.Horde.UseProfiles || configData.settings.OnlyHordProfiles.Count <= 0)
                             {
                                 g?.gameObject.GetComponent<BaseAIBrain<global::HumanNPC>>().AddState(new mynewclass(g.GetComponent<ZombieHorde.HordeMember>()));
                                 totalZombies++;
@@ -200,6 +200,7 @@ namespace Oxide.Plugins
             public mynewclass(ZombieHorde.HordeMember hordeMember) : base(AIState.Cooldown)
             {
                 this.hordeMember = hordeMember;
+                if (!isSetup) setup();
             }
 
             public void setup()
@@ -224,7 +225,7 @@ namespace Oxide.Plugins
             }
 
             public override float GetWeight()
-            {	
+            { 
 				if (!isSetup) setup();
                 if (notActive) return 0f;
 
