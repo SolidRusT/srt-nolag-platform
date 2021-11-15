@@ -281,19 +281,32 @@ function srt_install() {
   ln -s ${SERVER_GLOBAL}/oxide ${GAME_ROOT}/oxide
 }
 
-function apply_updates() {
-    #use env var to check server type, eg: game, web, radio, ect...
-    SRT_TYPE="game"
+function srt_update() {
+  if [ -z ${SRT_TYPE} ]; then 
+    echo "SRT_TYPE is empty, expected server type of game, web, radio, ect..."
+  else
     cd ${HOME}
     rm -rf solidrust.net
-    update_repo ${SRT_TYPE} && update_mods
-    #pull patch list
-    #for loop with array of path items
-    # - rcon "o.reload ${plugin_name}"
-    show_log
+    update_repo ${SRT_TYPE}
+    case ${SRT_TYPE} in
+      game)
+        update_mods
+          #Loop through patch list
+          # - rcon "o.reload ${plugin_name}"
+          rcon "o.load *"
+        ;;
+      web)
+        ;;
+      radio)
+        ;;
+      *)
+        echo "expected server type of game, web, radio, ect..."
+        ;;
+    esac
+  fi
 }
 
-# SRT 5x
+# SRT 10x
 DEFAULT_PERMS=(
   vehicledeployedlocks.codelock.duosub
   vehicledeployedlocks.codelock.solosub
