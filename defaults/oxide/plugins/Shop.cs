@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.22")]
+    [Info("Shop", "Mevent", "1.0.23")]
     public class Shop : RustPlugin
     {
         #region Fields
@@ -370,6 +370,12 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Buy Limits (0 - no limit)",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public Dictionary<string, int> BuyLimits = new Dictionary<string, int>();
+
+            [JsonProperty(PropertyName = "Max Buy Amount (0 - disable)")]
+            public int BuyMaxAmount;
+
+            [JsonProperty(PropertyName = "Max Sell Amount (0 - disable)")]
+            public int SellMaxAmount;
 
             [JsonIgnore] private string _publicTitle;
 
@@ -1130,6 +1136,9 @@ namespace Oxide.Plugins
                     var playerCart = GetPlayerCart(player);
                     if (playerCart == null) return;
 
+                    if (shopItem.BuyMaxAmount > 0 && amount > shopItem.BuyMaxAmount)
+                        amount = shopItem.BuyMaxAmount;
+
                     playerCart.ChangeAmountItem(shopItem, amount);
 
                     var container = new CuiElementContainer();
@@ -1183,7 +1192,7 @@ namespace Oxide.Plugins
                     if (playerCart.Items.Any(x =>
                     {
                         var limit = GetLimit(player, x.Key, true);
-                        if (limit != 0) return false;
+                        if (limit > 0) return false;
 
                         ErrorUi(player, Msg(player, BuyLimitReached, x.Key.PublicTitle));
                         return true;
@@ -1217,6 +1226,8 @@ namespace Oxide.Plugins
                     var amount = 1;
                     if (arg.HasArgs(3) && !int.TryParse(arg.Args[2], out amount) || amount < 1) return;
 
+                    if (item.SellMaxAmount > 0 && amount > item.SellMaxAmount) amount = item.SellMaxAmount;
+
                     SellUi(player, item, amount);
                     break;
                 }
@@ -1249,7 +1260,7 @@ namespace Oxide.Plugins
                     }
 
                     var limit = GetLimit(player, item, false);
-                    if (limit == 0)
+                    if (limit <= 0)
                     {
                         ErrorUi(player, Msg(player, SellLimitReached, item.PublicTitle));
                         return;
@@ -4726,7 +4737,7 @@ namespace Oxide.Plugins
         {
             var hasLimit = item.GetLimit(player, buy);
             if (hasLimit == 0)
-                return -1;
+                return 1;
 
             var used = PlayerLimits.GetOrAdd(player.userID).GetLimit(item, buy);
 

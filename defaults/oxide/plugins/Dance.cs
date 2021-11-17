@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-    [Info("Dance", "senyaa", "1.1.0")]
+    [Info("Dance", "senyaa", "1.2.0")]
     [Description("This plugin allows players to dance, even if they don't own a VoiceProps DLC")]
     class Dance : RustPlugin
     {
@@ -11,7 +11,6 @@ namespace Oxide.Plugins
         private class PluginConfig
         {
             public uint[] gestureIds;
-			public bool enableFourthDance;
         }
         PluginConfig config;
 
@@ -24,8 +23,7 @@ namespace Oxide.Plugins
         {
             return new PluginConfig
             {
-                gestureIds = new uint[] {478760625, 1855420636, 1702547860, 834887525},
-				enableFourthDance = false
+                gestureIds = new uint[] {478760625, 1855420636, 1702547860}
             };
         }
 
@@ -65,9 +63,9 @@ namespace Oxide.Plugins
         [ChatCommand("dance")]
         private void DanceCommand(BasePlayer player, string command, string[] args)
         {
-            if(args.Length != 1 || args[0].Length != 1 || !("123"+ (config.enableFourthDance ? "4" : "")).Contains(args[0])) {
+            if(args.Length != 1 || args[0].Length != 1 || !("123".Contains(args[0]))) {
 				
-                player.IPlayer.Reply(lang.GetMessage("usage", this, player.IPlayer.Id) + (config.enableFourthDance ? "/4" : ""));
+                player.IPlayer.Reply(lang.GetMessage("usage", this, player.IPlayer.Id));
                 return;
             }
 
