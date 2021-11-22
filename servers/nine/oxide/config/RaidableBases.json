@@ -85,8 +85,8 @@
         "Wednesday": false,
         "Thursday": false,
         "Friday": false,
-        "Saturday": true,
-        "Sunday": true
+        "Saturday": false,
+        "Sunday": false
       },
       "Additional Containers To Include As Boxes": [
         "locker",

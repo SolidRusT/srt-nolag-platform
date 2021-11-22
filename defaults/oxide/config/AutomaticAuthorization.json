@@ -1,5 +1,5 @@
 {
-  "Clear Share Data On Map Wipe": false,
+  "Clear Share Data On Map Wipe": true,
   "Chat Settings": {
     "Send Authorization Success Message": true,
     "Chat Command": "autoauth",

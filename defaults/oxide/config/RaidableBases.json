@@ -19,11 +19,11 @@
       },
       "Max Amount Allowed To Automatically Spawn Per Difficulty (0 = infinite, -1 = disabled)": {
         "Allow Max Amount Increase From Difficulties Disabled On A Specific Day Of The Week": false,
-        "Easy": 1,
-        "Medium": 1,
-        "Hard": 1,
-        "Expert": 1,
-        "Nightmare": 1
+        "Easy": 8,
+        "Medium": 8,
+        "Hard": 6,
+        "Expert": 4,
+        "Nightmare": 2
       },
       "Chance To Automatically Spawn Each Difficulty (-1 = ignore)": {
         "Easy": -1.0,
@@ -48,43 +48,43 @@
         "Tuesday": true,
         "Wednesday": true,
         "Thursday": true,
-        "Friday": true,
-        "Saturday": true,
-        "Sunday": true
+        "Friday": false,
+        "Saturday": false,
+        "Sunday": false
       },
       "Medium Raids Can Spawn On": {
-        "Monday": true,
+        "Monday": false,
         "Tuesday": true,
         "Wednesday": true,
         "Thursday": true,
-        "Friday": true,
-        "Saturday": true,
-        "Sunday": true
+        "Friday": false,
+        "Saturday": false,
+        "Sunday": false
       },
       "Hard Raids Can Spawn On": {
-        "Monday": true,
-        "Tuesday": true,
+        "Monday": false,
+        "Tuesday": false,
         "Wednesday": true,
         "Thursday": true,
         "Friday": true,
-        "Saturday": true,
-        "Sunday": true
+        "Saturday": false,
+        "Sunday": false
       },
       "Expert Raids Can Spawn On": {
-        "Monday": true,
-        "Tuesday": true,
-        "Wednesday": true,
-        "Thursday": true,
+        "Monday": false,
+        "Tuesday": false,
+        "Wednesday": false,
+        "Thursday": false,
         "Friday": true,
         "Saturday": true,
         "Sunday": true
       },
       "Nightmare Raids Can Spawn On": {
-        "Monday": true,
-        "Tuesday": true,
-        "Wednesday": true,
-        "Thursday": true,
-        "Friday": true,
+        "Monday": false,
+        "Tuesday": false,
+        "Wednesday": false,
+        "Thursday": false,
+        "Friday": false,
         "Saturday": true,
         "Sunday": true
       },
@@ -170,7 +170,7 @@
     },
     "Map Markers": {
       "Marker Name": "SRT Base Event",
-      "Radius": 0.15,
+      "Radius": 0.125,
       "Use Vending Map Marker": true,
       "Use Explosion Map Marker": false,
       "Create Markers For Buyable Events": true,
@@ -464,12 +464,12 @@
     "Ammo": {
       "AutoTurret": 256,
       "FlameTurret": 128,
-      "FogMachine": 25,
+      "FogMachine": 250,
       "GunTrap": 64,
       "SamSite": 24
     },
     "Tesla Coil": {
-      "Requires A Power Source": false,
+      "Requires A Power Source": true,
       "Max Discharge Self Damage Seconds (0 = None, 120 = Rust default)": 120.0,
       "Max Damage Output": 35.0
     },

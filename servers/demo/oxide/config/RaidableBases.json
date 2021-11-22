@@ -80,13 +80,13 @@
         "Sunday": true
       },
       "Nightmare Raids Can Spawn On": {
-        "Monday": true,
-        "Tuesday": true,
-        "Wednesday": true,
-        "Thursday": true,
-        "Friday": true,
-        "Saturday": true,
-        "Sunday": true
+        "Monday": false,
+        "Tuesday": false,
+        "Wednesday": false,
+        "Thursday": false,
+        "Friday": false,
+        "Saturday": false,
+        "Sunday": false
       },
       "Additional Containers To Include As Boxes": [
         "locker",
