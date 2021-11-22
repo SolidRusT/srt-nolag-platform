@@ -17,7 +17,7 @@ using Facepunch.Extend;
 
 namespace Oxide.Plugins
 {
-    [Info("BetterLoot", "Default & Tryhard", "3.5.5")]
+    [Info("BetterLoot", "Default & Tryhard", "3.5.6")]
     [Description("A light loot container modification system")]
     public class BetterLoot : RustPlugin
     {
@@ -442,6 +442,7 @@ namespace Oxide.Plugins
                     UnityEngine.Object.Destroy(objects);
                 }
             }
+            bl = null; // static should be null on unload
         }
 
         void UpdateInternals(bool doLog)
@@ -551,13 +552,9 @@ namespace Oxide.Plugins
             }
             else
             {
-                while (container.inventory.itemList.Count > 0)
-                {
-                    var item = container.inventory.itemList[0];
-                    item.RemoveFromContainer();
-                    item.Remove(0f);
-                }
+                container.inventory.Clear();
                 container.inventory.capacity = 36;
+                ItemManager.DoRemoves();
             }
             var items = new List<Item>();
             var itemNames = new List<string>();
@@ -593,15 +590,16 @@ namespace Oxide.Plugins
                 if (storedBlacklist.ItemList.Contains(item.info.shortname)) 
                 {
                     items.Remove(item);
+					item.Remove(); // broken item fix
                 }
             }
             foreach (var item in items.Where(x => x != null && x.IsValid()))
-                item.MoveToContainer(container.inventory, -1, false);
+                if (!item.MoveToContainer(container.inventory, -1, false)) { item.Remove(); } // broken item fix
             if ((int)con["Scrap"] > 0)
             {
                 int scrapCount = (int)con["Scrap"];
                 Item item = ItemManager.Create(ItemManager.FindItemDefinition("scrap"), scrapCount * scrapMultiplier, 0uL); 
-                item.MoveToContainer(container.inventory, -1, false);
+                if (!item.MoveToContainer(container.inventory, -1, false)) { item.Remove(); } // broken item fix
             }
             container.inventory.capacity = container.inventory.itemList.Count;
             container.inventory.MarkDirty();
@@ -712,17 +710,9 @@ namespace Oxide.Plugins
 
         bool ItemExists(string name)
         {
-            foreach (var def in ItemManager.itemList)
-            {
-                if (def.shortname != name)
-                    continue;
-                var testItem = ItemManager.CreateByName(name, 1);
-                if (testItem != null)
-                {
-                    testItem.Remove(0f);
-                    return true;
-                }
-            }
+			// remove useless loop
+            ItemDefinition itemDef = ItemManager.itemList.Find((ItemDefinition x) => x.shortname == name);
+            if (itemDef != null) return true;            
             return false;
         }
 

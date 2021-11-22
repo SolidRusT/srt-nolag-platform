@@ -159,7 +159,7 @@ using WebSocketSharp;
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.3.71")]
+    [Info("Stack Modifier", "Khan", "1.3.72")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
@@ -930,6 +930,12 @@ namespace Oxide.Plugins
             {"horse.saddlebag", 1},
             {"horse.shoes.advanced", 1},
             {"horse.shoes.basic", 1},
+            {"hazmatsuit.nomadsuit", 1 },
+            {"sofa.pattern", 2 },
+            { "factorydoor", 1},
+            { "industrial.wall.light.green", 10},
+            { "industrial.wall.light", 10},
+            {"industrial.wall.light.red", 10 },
         };
 
         private readonly HashSet<string> _exclude = new HashSet<string>

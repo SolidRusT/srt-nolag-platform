@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Zone Manager", "k1lly0u", "3.0.22")]
+    [Info("Zone Manager", "k1lly0u", "3.0.23")]
     [Description("An advanced management system for creating in-game zones")]
     public class ZoneManager : RustPlugin
     {
@@ -372,7 +372,7 @@ namespace Oxide.Plugins
                     return true;
                 else if (attacker != null)
                 {
-                    if (victim.IsNpc)
+                    if (IsNpc(victim))
                         return null;
 
                     if (HasPlayerFlag(victim, ZoneFlags.PvpGod, false))
@@ -383,15 +383,15 @@ namespace Oxide.Plugins
                                 return true;
                             return null;
                         }
-                        if (attacker.IsNpc && configData.NPCHurtPvpGod)
+                        if (IsNpc(attacker) && configData.NPCHurtPvpGod)
                             return null;
 
                         return true;
                     }
-                    else if (HasPlayerFlag(attacker, ZoneFlags.PvpGod, false) && !attacker.IsNpc)                    
+                    else if (HasPlayerFlag(attacker, ZoneFlags.PvpGod, false) && !IsNpc(attacker))                    
                         return true;                    
                 }
-                else if (HasPlayerFlag(victim, ZoneFlags.PveGod, false) && !victim.IsNpc)
+                else if (HasPlayerFlag(victim, ZoneFlags.PveGod, false) && !IsNpc(victim))
                     return true;
                 else if (hitinfo.Initiator is FireBall && HasPlayerFlag(victim, ZoneFlags.PvpGod, false))
                     return true;
@@ -1619,7 +1619,7 @@ namespace Oxide.Plugins
         #region Entity Management
         private void OnPlayerEnterZone(BasePlayer player, Zone zone)
         {
-            if (!player || player.IsNpc)
+            if (!player || IsNpc(player))
                 return;
 
             if (!zone.CanEnterZone(player))
@@ -1701,7 +1701,7 @@ namespace Oxide.Plugins
 
         private void OnPlayerExitZone(BasePlayer player, Zone zone)
         {
-            if (!player || player.IsNpc)
+            if (!player || IsNpc(player))
                 return;
 
             if (HasFlag(zone, ZoneFlags.KeepVehiclesIn) && player.isMounted)
@@ -1785,6 +1785,8 @@ namespace Oxide.Plugins
 
         #region Helpers
         private bool IsAdmin(BasePlayer player) => player?.net?.connection?.authLevel > 0;
+
+        private bool IsNpc(BasePlayer player) => player.IsNpc || player is NPCPlayer;
 
         private bool HasPermission(BasePlayer player, string permname) => IsAdmin(player) || permission.UserHasPermission(player.UserIDString, permname);
 

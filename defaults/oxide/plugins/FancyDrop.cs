@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("FancyDrop", "FastBurst", "3.2.1")]
+    [Info("FancyDrop", "FastBurst", "3.2.2")]
     [Description("The Next Level of a fancy airdrop-toolset")]
     class FancyDrop : RustPlugin
     {
@@ -424,6 +424,9 @@ namespace Oxide.Plugins
                     Instance.lastDropPos = GetComponent<BaseEntity>().transform.position;
 
                     StartCoroutine(DeSpawn());
+
+                    if (configData.DebugSettings.useDebug)
+                        Instance.Puts("Debug Info: Drop has landed on the ground.");
 
                     if (configData.AirdropSettings.EffectsSettings.useSupplyDropEffectLanded)
                         Effect.server.Run(EXPLOSION_PREFAB, GetComponent<BaseEntity>().transform.position);
@@ -895,7 +898,8 @@ namespace Oxide.Plugins
                 Puts("Debug Info: Supply Drop Despawn Setting " + dropsettings["despawnMinutes"].ToString());
                 Puts("Debug Info: Supply Drop Resistance Setting " + dropsettings["crateAirResistance"].ToString());
                 Puts("Debug Info: Notification Info " + notificationInfo);
-                Puts("Debug Info: UserID Set to " + dropsettings["userID"].ToString());
+                if (userID != 0uL)
+                    Puts("Debug Info: UserID Set to " + dropsettings["userID"].ToString());
             }
 
             dropsettings.Clear();
@@ -1210,13 +1214,13 @@ namespace Oxide.Plugins
         //private void SetupContainer(StorageContainer drop, Dictionary<string, object> setup)
         private void SetupContainer(StorageContainer drop, string dropType, bool CustomLoot = false)
         {
+            ItemContainer itemContainer = drop.GetComponent<StorageContainer>()?.inventory;
+
             if (Instance.AlphaLoot != null && Instance.AlphaLoot.Call("WantsToHandleFancyDropLoot") != null)
                 return;
 
             if (Instance.MagicLoot != null && Instance.MagicLoot.CallHook("OnLootSpawn", new object[] { drop.GetComponent<LootContainer>() }) != null)
                 return;
-
-            ItemContainer itemContainer = drop.GetComponent<StorageContainer>()?.inventory;
 
             if (dropType != null && CustomLoot)
             {
