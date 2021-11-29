@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Building Workbench", "MJSU", "1.2.3")]
+    [Info("Building Workbench", "MJSU", "1.3.2")]
     [Description("Extends the range of the workbench to work inside the entire building")]
     public class BuildingWorkbench : RustPlugin
     {
@@ -27,7 +27,7 @@ namespace Oxide.Plugins
         private const string AccentColor = "#de8732";
 
         private readonly List<ulong> _notifiedPlayer = new List<ulong>();
-        private readonly Hash<ulong, Hash<uint, BuildingData>> _playerData = new Hash<ulong, Hash<uint, BuildingData>>();
+        private readonly Hash<ulong, PlayerData> _playerData = new Hash<ulong, PlayerData>();
         private readonly Hash<uint, BuildingData> _buildingData = new Hash<uint, BuildingData>();
         
         //private static BuildingWorkbench _ins;
@@ -83,11 +83,11 @@ namespace Oxide.Plugins
             {
                 OnPlayerConnected(player);
             }
+            
+            _wb.InvokeRepeating(StartUpdatingWorkbench, 1f, _pluginConfig.UpdateRate);
              
             Subscribe(nameof(OnEntitySpawned));
             Subscribe(nameof(OnEntityKill));
-             
-            _wb.InvokeRepeating(StartUpdatingWorkbench, 1f, _pluginConfig.UpdateRate);
         }
 
         private void OnPlayerConnected(BasePlayer player)
@@ -100,7 +100,7 @@ namespace Oxide.Plugins
         {
             player.nextCheckTime = 0;
             player.cachedCraftLevel = 0;
-            Hash<uint, BuildingData> playerData = _playerData[player.userID];
+            Hash<uint, BuildingData> playerData = _playerData[player.userID]?.BuildingData;
             if (playerData != null)
             {
                 foreach (BuildingData data in playerData.Values)
@@ -119,9 +119,12 @@ namespace Oxide.Plugins
             {
                 OnPlayerDisconnected(player, null);
             }
-            
-            _wb.CancelInvoke(StartUpdatingWorkbench);
-            _wb.StopAllCoroutines();
+
+            if (!_wb.IsUnityNull())
+            {
+                _wb.CancelInvoke(StartUpdatingWorkbench);
+                _wb.StopAllCoroutines();
+            }
 
             GameObject.Destroy(_go);
             //_ins = null;
@@ -135,7 +138,7 @@ namespace Oxide.Plugins
             {
                 return;
             }
-
+            
             _wb.StartCoroutine(HandleWorkbenchUpdate());
         }
 
@@ -157,9 +160,22 @@ namespace Oxide.Plugins
                     continue;
                 }
 
-                UpdatePlayerPriv(player);
+                PlayerData data = GetPlayerData(player.userID);
+                if (Vector3.Distance(player.transform.position, data.Position) < _pluginConfig.RequiredDistance)
+                {
+                    continue;
+                }
 
-                float waitForFrames = Performance.report.frameRate * _pluginConfig.UpdateRate / BasePlayer.activePlayerList.Count * 0.90f;
+                if (player.FindTrigger<BuildingWorkbenchTrigger>().IsUnityNull())
+                {
+                    player.EnterTrigger(_tb);
+                }
+
+                data.Position = player.transform.position;
+                
+                UpdatePlayerPriv(player, data);
+
+                float waitForFrames = Performance.report.frameRate * _pluginConfig.UpdateRate / BasePlayer.activePlayerList.Count * 0.9f;
                 if (waitForFrames < 1)
                 {
                     frameWait += waitForFrames;
@@ -176,14 +192,13 @@ namespace Oxide.Plugins
             }
         }
 
-        public void UpdatePlayerPriv(BasePlayer player)
+        public void UpdatePlayerPriv(BasePlayer player, PlayerData data)
         {
             List<uint> currentBuildings = Pool.GetList<uint>();
             GetNearbyAuthorizedBuildings(player, currentBuildings);
-            Hash<uint, BuildingData> playerData = GetPlayerData(player.userID);
-            
+
             List<uint> leftBuildings = Pool.GetList<uint>();
-            foreach (uint buildingId in playerData.Keys)
+            foreach (uint buildingId in data.BuildingData.Keys)
             {
                 if (!currentBuildings.Contains(buildingId))
                 {
@@ -198,15 +213,15 @@ namespace Oxide.Plugins
             
             foreach (uint currentBuilding in currentBuildings)
             {
-                if (!playerData.ContainsKey(currentBuilding))
+                if (!data.BuildingData.ContainsKey(currentBuilding))
                 {
                     OnPlayerEnterBuilding(player, currentBuilding);
                 }
             }
-
+            
             UpdatePlayerWorkbenchLevel(player);
             
-            //_ins.Puts($"{nameof(BuildingData)}.{nameof(UpdatePlayerPriv)} {player.displayName} In: {string.Join(",", currentBuildings.Select(b => b.ToString().ToArray()))} Left: {string.Join(",", leftBuildings.Select(b => b.ToString().ToArray()))}");
+            //Puts($"{nameof(BuildingData)}.{nameof(UpdatePlayerPriv)} {player.displayName} In: {string.Join(",", currentBuildings.Select(b => b.ToString().ToArray()))} Left: {string.Join(",", leftBuildings.Select(b => b.ToString().ToArray()))}");
             
             Pool.FreeList(ref currentBuildings);
             Pool.FreeList(ref leftBuildings);
@@ -216,7 +231,7 @@ namespace Oxide.Plugins
         {
             BuildingData building = GetBuildingData(buildingId);
             building.EnterBuilding(player);
-            Hash<uint, BuildingData> playerBuildings = GetPlayerData(player.userID);
+            Hash<uint, BuildingData> playerBuildings = GetPlayerData(player.userID).BuildingData;
             playerBuildings[buildingId] = building;
         }
 
@@ -224,7 +239,7 @@ namespace Oxide.Plugins
         {
             BuildingData building = GetBuildingData(buildingId);
             building.LeaveBuilding(player);
-            Hash<uint, BuildingData> playerBuildings = GetPlayerData(player.userID);
+            Hash<uint, BuildingData> playerBuildings = GetPlayerData(player.userID).BuildingData;
             if (!playerBuildings.Remove(buildingId))
             {
                 return;
@@ -232,17 +247,17 @@ namespace Oxide.Plugins
 
             if (player.inventory.crafting.queue.Count != 0 && HasPermission(player, CancelCraftPermission))
             {
-                bool cancelled = false;
+                bool canceled = false;
                 foreach (ItemCraftTask task in player.inventory.crafting.queue)
                 {
                     if (player.cachedCraftLevel < task.blueprint.workbenchLevelRequired)
                     {
                         player.inventory.crafting.CancelTask(task.taskUID, true);
-                        cancelled = true;
+                        canceled = true;
                     }
                 }
                 
-                if (cancelled && _pluginConfig.CancelCraftNotification)
+                if (canceled && _pluginConfig.CancelCraftNotification)
                 {
                     Chat(player, Lang(LangKeys.CraftCanceled, player));
                 }
@@ -266,7 +281,7 @@ namespace Oxide.Plugins
                 }
             
                 BasePlayer player = BasePlayer.FindByID(bench.OwnerID);
-                if (player == null)
+                if (player.IsUnityNull())
                 {
                     return;
                 }
@@ -316,8 +331,9 @@ namespace Oxide.Plugins
         private void OnCupboardClearList(BuildingPrivlidge privilege)
         {
             BuildingData data = GetBuildingData(privilege.buildingID);
-            foreach (BasePlayer player in data.Players.ToList())
+            for (int index = data.Players.Count - 1; index >= 0; index--)
             {
+                BasePlayer player = data.Players[index];
                 OnPlayerLeftBuilding(player, privilege.buildingID);
                 UpdatePlayerWorkbenchLevel(player);
             }
@@ -371,7 +387,7 @@ namespace Oxide.Plugins
         public void UpdatePlayerWorkbenchLevel(BasePlayer player)
         {
             float level = 0;
-            Hash<uint, BuildingData> playerBuildings = _playerData[player.userID];
+            Hash<uint, BuildingData> playerBuildings = _playerData[player.userID]?.BuildingData;
             if (playerBuildings != null)
             {
                 foreach (BuildingData building in playerBuildings.Values)
@@ -382,9 +398,13 @@ namespace Oxide.Plugins
             
             if (level != 3 && player.triggers != null)
             {
-                foreach (TriggerWorkbench workbench in player.triggers.OfType<TriggerWorkbench>())
+                for (int index = 0; index < player.triggers.Count; index++)
                 {
-                    level = Mathf.Max(level, workbench.parentBench.Workbenchlevel);
+                    TriggerWorkbench trigger = player.triggers[index] as TriggerWorkbench;
+                    if (trigger != null)
+                    {
+                        level = Mathf.Max(level, trigger.parentBench.Workbenchlevel);
+                    }
                 }
             }
 
@@ -402,16 +422,16 @@ namespace Oxide.Plugins
             player.SendNetworkUpdateImmediate();
         }
         
-        public Hash<uint, BuildingData> GetPlayerData(ulong playerId)
+        public PlayerData GetPlayerData(ulong playerId)
         {
-            Hash<uint, BuildingData> playerBuildings = _playerData[playerId];
-            if (playerBuildings == null)
+            PlayerData data = _playerData[playerId];
+            if (data == null)
             {
-                playerBuildings = new Hash<uint, BuildingData>();
-                _playerData[playerId] = playerBuildings;
+                data = new PlayerData();
+                _playerData[playerId] = data;
             }
 
-            return playerBuildings;
+            return data;
         }
         
         public BuildingData GetBuildingData(uint buildingId)
@@ -443,7 +463,7 @@ namespace Oxide.Plugins
                 
                 processedBuildings.Add(block.buildingID);
                 BuildingPrivlidge priv = block.GetBuilding()?.GetDominatingBuildingPrivilege();
-                if (priv == null || !priv.IsAuthed(player))
+                if (priv.IsUnityNull() || !priv.IsAuthed(player))
                 {
                     continue;
                 }
@@ -468,7 +488,7 @@ namespace Oxide.Plugins
             public uint BuildingId { get; }
             public Workbench BestWorkbench { get; set; }
             public List<BasePlayer> Players { get; } = new List<BasePlayer>();
-            public List<Workbench> Workbenches { get; }
+            public List<Workbench> Workbenches { get; } = new List<Workbench>();
 
             public BuildingData(uint buildingId)
             {
@@ -485,7 +505,6 @@ namespace Oxide.Plugins
 
             public void LeaveBuilding(BasePlayer player)
             {
-               
                 //_ins.Puts($"{nameof(BuildingData)}.{nameof(LeaveBuilding)} {player.displayName}");
                 Players.Remove(player);
             }
@@ -509,12 +528,25 @@ namespace Oxide.Plugins
             
             public float GetBuildingLevel()
             {
-                return BestWorkbench?.Workbenchlevel ?? 0f;
+                if (BestWorkbench.IsUnityNull())
+                {
+                    return 0f;
+                }
+
+                return BestWorkbench.Workbenchlevel;
             }
 
             private void UpdateBestBench()
             {
-                BestWorkbench = Workbenches.OrderByDescending(w => w.Workbenchlevel).FirstOrDefault();
+                BestWorkbench = null;
+                for (int index = 0; index < Workbenches.Count; index++)
+                {
+                    Workbench workbench = Workbenches[index];
+                    if (BestWorkbench.IsUnityNull() || BestWorkbench.Workbenchlevel < workbench.Workbenchlevel)
+                    {
+                        BestWorkbench = workbench;
+                    }
+                }
             }
         }
         #endregion
@@ -537,6 +569,16 @@ namespace Oxide.Plugins
             [DefaultValue(16f)]
             [JsonProperty(PropertyName = "Distance from base to be considered inside building (Meters)")]
             public float BaseDistance { get; set; }
+            
+            [DefaultValue(5)]
+            [JsonProperty(PropertyName = "Required distance from last update (Meters)")]
+            public float RequiredDistance { get; set; }
+        }
+
+        public class PlayerData
+        {
+            public Vector3 Position { get; set; }
+            public Hash<uint, BuildingData> BuildingData { get; } = new Hash<uint, BuildingData>();
         }
 
         private class LangKeys

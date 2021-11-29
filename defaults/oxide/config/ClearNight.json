@@ -14,7 +14,7 @@
     "12/15/2024"
   ],
   "weatherAtNight": {
-    "weather.atmosphere_brightness": "1",
+    "weather.atmosphere_brightness": "1.5",
     "weather.atmosphere_contrast": "1.5",
     "weather.cloud_coverage": "0",
     "weather.cloud_size": "0",

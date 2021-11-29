@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using Facepunch.Extend;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core.Plugins;
@@ -155,19 +155,26 @@ using WebSocketSharp;
  * Fixed Reloading problems
  * Added some missed checks for ImageLibrary to resolve
  * Removed Admin Toggle Config Option. ( it's hardcoded to ignore admins )
+ *
+ * Update 1.4.0
+ * Partial UI Re-write/Optimizations!
+ * More config options!
+ * New command sluts! /stackmodifiercolor
+ * Fixed Search bar commands! ( reset & set ) now work excellently!
+ * Search parameters work 200% better than before!
+ * Added Patch for Nivex
+ * This update was brought to you with baz!
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.3.72")]
+    [Info("Stack Modifier", "Khan", "1.4.0")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
-
         #region Fields
-        
-        [PluginReference]
-        Plugin ImageLibrary;
+
+        [PluginReference] Plugin ImageLibrary;
 
         private bool _check;
         private bool _isEditorReady;
@@ -175,12 +182,7 @@ namespace Oxide.Plugins
         private Hash<ulong, int> _editorPage = new Hash<ulong, int>();
         private Dictionary<string, string> imageListStacks;
         private List<KeyValuePair<string, ulong>> itemIconStacks;
-        private const string EditorOverlayName = "EditorOverlay";
-        private const string EditorContentName = "EditorContent";
-        private const string EditorDescOverlay = "EditorDescOverlay";
-        private const string EditorBackgroundImage = "Background";
-        private readonly double Transparency = 0.95;
-        
+
         private const string ByPass = "stackmodifier.bypass";
         private const string Admin = "stackmodifier.admin";
 
@@ -930,12 +932,12 @@ namespace Oxide.Plugins
             {"horse.saddlebag", 1},
             {"horse.shoes.advanced", 1},
             {"horse.shoes.basic", 1},
-            {"hazmatsuit.nomadsuit", 1 },
-            {"sofa.pattern", 2 },
-            { "factorydoor", 1},
-            { "industrial.wall.light.green", 10},
-            { "industrial.wall.light", 10},
-            {"industrial.wall.light.red", 10 },
+            {"hazmatsuit.nomadsuit", 1},
+            {"sofa.pattern", 2},
+            {"factorydoor", 1},
+            {"industrial.wall.light.green", 10},
+            {"industrial.wall.light", 10},
+            {"industrial.wall.light.red", 10},
         };
 
         private readonly HashSet<string> _exclude = new HashSet<string>
@@ -950,15 +952,15 @@ namespace Oxide.Plugins
         #region Config
 
         private PluginConfig _config;
+
         private void CheckConfig()
         {
             itemIconStacks = new List<KeyValuePair<string, ulong>>();
             foreach (ItemDefinition item in ItemManager.itemList)
             {
-                
                 string categoryName = item.category.ToString();
                 Dictionary<string, _Items> stackCategory;
-                
+
                 if (!_config.StackCategoryMultipliers.ContainsKey(categoryName))
                 {
                     _config.StackCategoryMultipliers[categoryName] = 1;
@@ -988,10 +990,13 @@ namespace Oxide.Plugins
 
                 if (!_defaults.ContainsKey(item.shortname))
                 {
-                    Puts($"Yo Tell Developer about missing defaults! {item.shortname}, {item.stackable}"); continue;
+                    Puts($"Yo Tell Developer about missing defaults! {item.shortname}, {item.stackable}");
+                    continue;
                 }
 
-                if (_config.StackCategoryMultipliers[categoryName] > 1 && _config.StackCategories[categoryName][item.shortname].Modified == _defaults[item.shortname])
+                if (_config.StackCategoryMultipliers[categoryName] > 1 
+                    && _config.StackCategories[categoryName][item.shortname].Modified == _defaults[item.shortname]
+                )
                 {
                     item.stackable = _config.StackCategoryMultipliers[categoryName];
                 }
@@ -999,12 +1004,16 @@ namespace Oxide.Plugins
                 {
                     item.stackable = _config.StackCategories[categoryName][item.shortname].Modified;
                 }
-                
-                if (!_config.StackCategories[categoryName].ContainsKey(item.shortname) || item.shortname.Equals("vehicle.chassis") || item.shortname.Equals("vehicle.module")) continue;
+
+                if (!_config.StackCategories[categoryName].ContainsKey(item.shortname) ||
+                    item.shortname.Equals("vehicle.chassis") ||
+                    item.shortname.Equals("vehicle.module")) continue;
                 itemIconStacks.Add(new KeyValuePair<string, ulong>(item.shortname, 0));
             }
+
             SaveConfig();
         }
+
         internal class PluginConfig : SerializableConfiguration
         {
             [JsonProperty("Revert to Vanilla Stacks on unload (Recommended true if removing plugin)")]
@@ -1012,28 +1021,32 @@ namespace Oxide.Plugins
 
             [JsonProperty("Disable Ammo/Fuel duplication fix (Recommended false)")]
             public bool DisableFix { get; set; }
-            
+
             [JsonProperty("Enable VendingMachine Ammo Fix (Recommended)")]
             public bool VendingMachineAmmoFix { get; set; }
 
             [JsonProperty("Blocked Stackable Items", Order = 4)]
             public List<string> Blocked { get; set; }
 
-            [JsonProperty("Category Stack Multipliers", Order = 5)] 
+            [JsonProperty("Category Stack Multipliers", Order = 5)]
             public Dictionary<string, int> StackCategoryMultipliers = new Dictionary<string, int>();
 
             [JsonProperty("Stack Categories", Order = 6)]
-            public Dictionary<string, Dictionary<string, _Items>> StackCategories = new Dictionary<string, Dictionary<string, _Items>>();
+            public Dictionary<string, Dictionary<string, _Items>> StackCategories =
+                new Dictionary<string, Dictionary<string, _Items>>();
 
             [JsonProperty("Enable UI Editor")] 
             public bool EnableEditor = false;
-            
+
             [JsonProperty("Sets editor command")] 
             public string modifycommand = "stackmodifier";
-            
-            [JsonProperty("Sets Reset Vendors command")] 
+
+            [JsonProperty("Sets editor color command")]
+            public string colorcommand = "stackmodifiercolor";
+
+            [JsonProperty("Sets Reset Vendors command")]
             public string resetvenders = "resetvenders";
-            
+
             [JsonProperty("Sets Default Category to open")]
             public string DefaultCat = "Attire";
 
@@ -1043,8 +1056,11 @@ namespace Oxide.Plugins
             [JsonProperty("UI - Stack Size Label")]
             public string StackLabel = "Stack Size";
 
-            [JsonProperty("UI - Set Stack Label")]
+            [JsonProperty("UI - Set Stack Label")] 
             public string SetLabel = "Set Stack";
+
+            [JsonProperty("UI - Search Bar Label")]
+            public string SearchLable = "Filter ▶";
 
             [JsonProperty("UI - Back Button Text")]
             public string BackButtonText = "◀";
@@ -1054,20 +1070,19 @@ namespace Oxide.Plugins
 
             [JsonProperty("UI - Close Label")] 
             public string CloseButtonlabel = "✖";
-            
-            [JsonProperty("UI - Set Color")]
-            public string SetColor = "#FFFFFF";
-            
-            [JsonProperty("UI - Text Color")]
-            public string TextColor = "#FFFFFF";
 
             [JsonProperty("UI - Background Image Url")]
             public string BackgroundUrlSm = "https://i.imgur.com/Jej3cwR.png";
 
             [JsonProperty("Sets any item to this image if image library does not have one for it.")]
             public string IconUrlSm = "https://imgur.com/BPM9UR4.png";
+
+            public Colors Colors = new Colors();
+
             public string ToJson() => JsonConvert.SerializeObject(this);
-            public Dictionary<string, object> ToDictionary() => JsonConvert.DeserializeObject<Dictionary<string, object>>(ToJson());
+
+            public Dictionary<string, object> ToDictionary() =>
+                JsonConvert.DeserializeObject<Dictionary<string, object>>(ToJson());
 
             public static PluginConfig DefaultConfig()
             {
@@ -1078,17 +1093,25 @@ namespace Oxide.Plugins
                     VendingMachineAmmoFix = true,
                     Blocked = new List<string>
                     {
-                    "shortname"
+                        "shortname"
                     },
-                    
                 };
             }
         }
+
         public class _Items
         {
             public string ShortName;
             public string DisplayName;
             public int Modified;
+        }
+
+        public class Colors
+        {
+            public Color InputPanel = new Color("#0E0E10", 0.98f);
+            public Color InputText = new Color("#FFE24B", 0.15f);
+            public Color TextColor = new Color( "#FFFFFF");
+            public Color Transparency = new Color("#", 0.95f);
         }
 
         #region Updater
@@ -1097,7 +1120,8 @@ namespace Oxide.Plugins
         {
             public string ToJson() => JsonConvert.SerializeObject(this);
 
-            public Dictionary<string, object> ToDictionary() => JsonHelper.Deserialize(ToJson()) as Dictionary<string, object>;
+            public Dictionary<string, object> ToDictionary() =>
+                JsonHelper.Deserialize(ToJson()) as Dictionary<string, object>;
         }
 
         private static class JsonHelper
@@ -1109,7 +1133,8 @@ namespace Oxide.Plugins
                 switch (token.Type)
                 {
                     case JTokenType.Object:
-                        return token.Children<JProperty>().ToDictionary(prop => prop.Name, prop => ToObject(prop.Value));
+                        return token.Children<JProperty>()
+                            .ToDictionary(prop => prop.Name, prop => ToObject(prop.Value));
                     case JTokenType.Array:
                         return token.Select(ToObject).ToList();
 
@@ -1126,7 +1151,8 @@ namespace Oxide.Plugins
             return MaybeUpdateConfigDict(currentWithDefaults, currentRaw);
         }
 
-        private bool MaybeUpdateConfigDict(Dictionary<string, object> currentWithDefaults, Dictionary<string, object> currentRaw)
+        private bool MaybeUpdateConfigDict(Dictionary<string, object> currentWithDefaults,
+            Dictionary<string, object> currentRaw)
         {
             bool changed = false;
 
@@ -1164,7 +1190,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Oxide
-        
+
         protected override void LoadDefaultConfig() => _config = PluginConfig.DefaultConfig();
 
         protected override void LoadConfig()
@@ -1192,6 +1218,7 @@ namespace Oxide.Plugins
                 PrintWarning("Failed to load config file (is the config file corrupt?) (" + ex.Message + ")");
             }
         }
+
         protected override void SaveConfig() => Config.WriteObject(_config, true);
 
         private void Unload()
@@ -1222,7 +1249,7 @@ namespace Oxide.Plugins
         private void OnServerShutdown()
         {
             SaveConfig();
-            
+
             if (_config.EnableEditor)
             {
                 foreach (BasePlayer player in BasePlayer.activePlayerList)
@@ -1247,6 +1274,7 @@ namespace Oxide.Plugins
             permission.RegisterPermission(Admin, this);
             CheckConfig();
             cmd.AddChatCommand(_config.modifycommand, this, CmdModify);
+            cmd.AddChatCommand(_config.colorcommand, this, CmdColor);
             cmd.AddChatCommand(_config.resetvenders, this, cmddvend);
             LibraryCheck();
             Subscribe(nameof(OnItemAddedToContainer));
@@ -1262,7 +1290,7 @@ namespace Oxide.Plugins
                 }
             }
         }
-        
+
         private void OnPluginLoaded(Plugin name)
         {
             if (name.Name != nameof(ImageLibrary) || !_config.EnableEditor) return;
@@ -1271,7 +1299,6 @@ namespace Oxide.Plugins
 
         private object CanStackItem(Item item, Item targetItem)
         {
-
             if (item.GetOwnerPlayer().IsUnityNull() || targetItem.GetOwnerPlayer().IsUnityNull())
             {
                 return null;
@@ -1282,7 +1309,8 @@ namespace Oxide.Plugins
                 return true;
             }*/
 
-            if (_config.Blocked.Contains(item.info.shortname) && item.GetOwnerPlayer() != null && !permission.UserHasPermission(item.GetOwnerPlayer().UserIDString, ByPass))
+            if (_config.Blocked.Contains(item.info.shortname) && item.GetOwnerPlayer() != null &&
+                !permission.UserHasPermission(item.GetOwnerPlayer().UserIDString, ByPass))
             {
                 return false;
             }
@@ -1291,7 +1319,7 @@ namespace Oxide.Plugins
             {
                 return false;
             }
-            
+
             if (
                 item.info.stackable <= 1 ||
                 targetItem.info.stackable <= 1 ||
@@ -1306,19 +1334,21 @@ namespace Oxide.Plugins
                 return false;
             }
 
-            if (item.info.amountType == ItemDefinition.AmountType.Genetics || targetItem.info.amountType == ItemDefinition.AmountType.Genetics)
+            if (item.info.amountType == ItemDefinition.AmountType.Genetics ||
+                targetItem.info.amountType == ItemDefinition.AmountType.Genetics)
             {
                 if ((item.instanceData?.dataInt ?? -1) != (targetItem.instanceData?.dataInt ?? -1))
                 {
                     return false;
                 }
             }
-            
+
             if (targetItem.contents?.itemList.Count > 0)
             {
                 foreach (Item containedItem in targetItem.contents.itemList)
                 {
-                    item.parent.playerOwner.GiveItem(ItemManager.CreateByItemID(containedItem.info.itemid, containedItem.amount));
+                    item.parent.playerOwner.GiveItem(ItemManager.CreateByItemID(containedItem.info.itemid,
+                        containedItem.amount));
                 }
             }
 
@@ -1326,43 +1356,46 @@ namespace Oxide.Plugins
             {
                 return null;
             }
-                
-            BaseProjectile.Magazine itemMag = targetItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
-            
+
+            BaseProjectile.Magazine itemMag =
+                targetItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
+
             if (itemMag != null)
             {
                 if (itemMag.contents > 0)
                 {
-                    item.GetOwnerPlayer().GiveItem(ItemManager.CreateByItemID(itemMag.ammoType.itemid,itemMag.contents));
+                    item.GetOwnerPlayer()
+                        .GiveItem(ItemManager.CreateByItemID(itemMag.ammoType.itemid, itemMag.contents));
 
                     itemMag.contents = 0;
                 }
             }
-            
+
             if (targetItem.GetHeldEntity() is FlameThrower)
             {
                 FlameThrower flameThrower = targetItem.GetHeldEntity().GetComponent<FlameThrower>();
 
                 if (flameThrower.ammo > 0)
                 {
-                    item.GetOwnerPlayer().GiveItem(ItemManager.CreateByItemID(flameThrower.fuelType.itemid,flameThrower.ammo));
+                    item.GetOwnerPlayer()
+                        .GiveItem(ItemManager.CreateByItemID(flameThrower.fuelType.itemid, flameThrower.ammo));
 
                     flameThrower.ammo = 0;
                 }
             }
-            
+
             if (targetItem.GetHeldEntity() is Chainsaw)
             {
                 Chainsaw chainsaw = targetItem.GetHeldEntity().GetComponent<Chainsaw>();
 
                 if (chainsaw.ammo > 0)
                 {
-                    item.GetOwnerPlayer().GiveItem(ItemManager.CreateByItemID(chainsaw.fuelType.itemid,chainsaw.ammo));
+                    item.GetOwnerPlayer().GiveItem(ItemManager.CreateByItemID(chainsaw.fuelType.itemid, chainsaw.ammo));
 
                     chainsaw.ammo = 0;
                 }
             }
-            
+
             if (targetItem.info.shortname == "hat.miner" || targetItem.info.shortname == "hat.candle")
             {
                 if (targetItem.contents != null && !targetItem.contents.IsEmpty())
@@ -1380,9 +1413,9 @@ namespace Oxide.Plugins
 
         private object CanCombineDroppedItem(DroppedItem item, DroppedItem targetItem)
         {
-            if (item.skinID != targetItem.skinID || 
-                item.item.name != targetItem.item.name || 
-                item.item.contents != null || 
+            if (item.skinID != targetItem.skinID ||
+                item.item.name != targetItem.item.name ||
+                item.item.contents != null ||
                 targetItem.item.contents != null ||
                 item.item.contents != null ||
                 targetItem.item.contents != null)
@@ -1405,18 +1438,18 @@ namespace Oxide.Plugins
 
         private Item OnItemSplit(Item item, int amount)
         {
-            
             if (item.GetHeldEntity()?.GetComponentInChildren<BaseLiquidVessel>() != null)
             {
                 Item LiquidContainer = ItemManager.CreateByName(item.info.shortname);
                 LiquidContainer.amount = amount;
-    
+
                 item.amount -= amount;
                 item.MarkDirty();
 
                 Item water = item.contents.FindItemByItemID(-1779180711);
 
-                if (water != null) LiquidContainer.contents.AddItem(ItemManager.FindItemDefinition(-1779180711), water.amount);
+                if (water != null)
+                    LiquidContainer.contents.AddItem(ItemManager.FindItemDefinition(-1779180711), water.amount);
 
                 return LiquidContainer;
             }
@@ -1429,24 +1462,32 @@ namespace Oxide.Plugins
                 {
                     itemMag.contents = 0;
                 }
+
                 item.amount -= amount;
                 x.name = item.name;
                 x.skin = item.skin;
                 x.amount = amount;
                 x.MarkDirty();
-                
+                var heldEntity = x.GetHeldEntity();
+                if (heldEntity != null)
+                {
+                    heldEntity.skinID = item.skin; 
+                }
+
                 return x;
             }
 
             Item newItem = ItemManager.CreateByItemID(item.info.itemid);
 
-            BaseProjectile.Magazine newItemMag = newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
+            BaseProjectile.Magazine newItemMag =
+                newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
 
-            if (newItem.contents?.itemList.Count == 0 && (_config.DisableFix || newItem.contents?.itemList.Count == 0 && newItemMag?.contents == 0))
+            if (newItem.contents?.itemList.Count == 0 &&
+                (_config.DisableFix || newItem.contents?.itemList.Count == 0 && newItemMag?.contents == 0))
             {
                 return null;
             }
-            
+
             item.amount -= amount;
             newItem.name = item.name;
             newItem.amount = amount;
@@ -1457,8 +1498,9 @@ namespace Oxide.Plugins
             {
                 newItem.blueprintTarget = item.blueprintTarget;
             }
-            
-            if (item.info.amountType == ItemDefinition.AmountType.Genetics && item.instanceData != null && item.instanceData.dataInt != 0)
+
+            if (item.info.amountType == ItemDefinition.AmountType.Genetics && item.instanceData != null &&
+                item.instanceData.dataInt != 0)
             {
                 newItem.instanceData = new ProtoBuf.Item.InstanceData()
                 {
@@ -1471,7 +1513,7 @@ namespace Oxide.Plugins
             {
                 item.contents.Clear();
             }
-            
+
             newItem.MarkDirty();
 
             if (_config.VendingMachineAmmoFix && item.GetRootContainer()?.entityOwner is VendingMachine)
@@ -1488,13 +1530,14 @@ namespace Oxide.Plugins
             {
                 newItem.GetHeldEntity().GetComponent<FlameThrower>().ammo = 0;
             }
-            
+
             if (newItem.GetHeldEntity() is Chainsaw)
             {
                 newItem.GetHeldEntity().GetComponent<Chainsaw>().ammo = 0;
             }
-            
-            BaseProjectile.Magazine itemMagDefault = newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
+
+            BaseProjectile.Magazine itemMagDefault =
+                newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
             if (itemMagDefault != null && itemMagDefault.contents > 0)
             {
                 itemMagDefault.contents = 0;
@@ -1502,21 +1545,26 @@ namespace Oxide.Plugins
 
             return newItem;
         }
+
         private void OnItemAddedToContainer(ItemContainer container, Item item)
         {
             BasePlayer player = container.GetOwnerPlayer();
-            if (player == null || player.IsNpc || player.IsAdmin) return;
-            
-            if ((player.inventory.containerMain.uid == container.uid || player.inventory.containerBelt.uid == container.uid) && item.amount > item.MaxStackable())
+            if (player == null || player.IsNpc /*|| player.IsAdmin*/) return;
+
+            if ((player.inventory.containerMain.uid == container.uid ||
+                 player.inventory.containerBelt.uid == container.uid) &&
+                item.amount > item.MaxStackable())
             {
                 int division = item.amount / item.MaxStackable();
 
                 for (int i = 0; i < division; i++)
                 {
                     Item y = item.SplitItem(item.MaxStackable());
-                    if (y != null && !y.MoveToContainer(player.inventory.containerMain, -1, false) && (item.parent == null || !y.MoveToContainer(item.parent)))
+                    if (y != null && !y.MoveToContainer(player.inventory.containerMain, -1, false) &&
+                        (item.parent == null || !y.MoveToContainer(item.parent)))
                     {
-                        y.Drop(player.inventory.containerMain.dropPosition, player.inventory.containerMain.dropVelocity);
+                        y.Drop(player.inventory.containerMain.dropPosition,
+                            player.inventory.containerMain.dropVelocity);
                     }
                 }
             }
@@ -1534,18 +1582,19 @@ namespace Oxide.Plugins
             x.MarkDirty();
             x.MoveToContainer(player.inventory.containerMain);
         }
-        
+
         private object OnCardSwipe(CardReader cardReader, Keycard card, BasePlayer player)
         {
             var item = card.GetItem();
             if (item.amount <= 1) return null;
 
             int division = item.amount / 1;
-            
+
             for (int i = 0; i < division; i++)
             {
                 Item x = item.SplitItem(1);
-                if (x != null && !x.MoveToContainer(player.inventory.containerMain, -1, false) && (item.parent == null || !x.MoveToContainer(item.parent)))
+                if (x != null && !x.MoveToContainer(player.inventory.containerMain, -1, false) &&
+                    (item.parent == null || !x.MoveToContainer(item.parent)))
                 {
                     x.Drop(player.inventory.containerMain.dropPosition, player.inventory.containerMain.dropVelocity);
                 }
@@ -1553,35 +1602,40 @@ namespace Oxide.Plugins
 
             return null;
         }
-        
+
         private object CanSpectateTarget(BasePlayer player, string filter)
         {
             if (permission.UserHasPermission(player.UserIDString, Admin) && _open.Contains(player.UserIDString))
             {
                 return false;
             }
+
             return null;
         }
 
         #endregion
 
         #region Helpers
+
         private bool CanWaterItemsStack(Item item, Item targetItem)
         {
             if (item.GetHeldEntity()?.GetComponentInChildren<BaseLiquidVessel>() == null)
             {
                 return true;
             }
-            
-            if (targetItem.contents.IsEmpty() || item.contents.IsEmpty()) 
-                return (!targetItem.contents.IsEmpty() || !item.contents.IsFull()) && (!item.contents.IsEmpty() || !targetItem.contents.IsFull());
+
+            if (targetItem.contents.IsEmpty() || item.contents.IsEmpty())
+                return (!targetItem.contents.IsEmpty() || !item.contents.IsFull()) &&
+                       (!item.contents.IsEmpty() || !targetItem.contents.IsFull());
 
             var first = item.contents.itemList.First();
             var second = targetItem.contents.itemList.First();
             if (first.info.itemid != second.info.itemid || first.amount != second.amount) return false;
 
-            return (!targetItem.contents.IsEmpty() || !item.contents.IsFull()) && (!item.contents.IsEmpty() || !targetItem.contents.IsFull());
+            return (!targetItem.contents.IsEmpty() || !item.contents.IsFull()) &&
+                   (!item.contents.IsEmpty() || !targetItem.contents.IsFull());
         }
+
         private void ResetStacks()
         {
             foreach (ItemDefinition itemDefinition in ItemManager.GetItemDefinitions())
@@ -1594,6 +1648,7 @@ namespace Oxide.Plugins
                 itemDefinition.stackable = a;
             }
         }
+
         private void LibraryCheck(int attempts = 0)
         {
             bool success = false;
@@ -1606,23 +1661,27 @@ namespace Oxide.Plugins
                 {
                     if (attempts == 0)
                     {
-                        PrintWarning("Unable to find ImageLibrary plugin. This may be caused by StackModifier loading before it. \n Will check again in 1 minute");
+                        PrintWarning(
+                            "Unable to find ImageLibrary plugin. This may be caused by StackModifier loading before it. \n Will check again in 1 minute");
                         timer.In(60, () => LibraryCheck(1));
                         return;
                     }
+
                     PrintWarning("Still unable to find ImageLibrary plugin. UI Editor will not be usable!");
                 }
             }
+
             _check = success;
             if (_check)
                 LoadImages();
         }
+
         private void LoadImages()
         {
             imageListStacks = new Dictionary<string, string>();
             imageListStacks.Add(EditorBackgroundImage, _config.BackgroundUrlSm);
             imageListStacks.Add(_config.IconUrlSm, _config.IconUrlSm);
-            
+
             if (itemIconStacks.Count > 0)
             {
                 ImageLibrary?.Call("LoadImageList", Name, itemIconStacks, null);
@@ -1630,6 +1689,7 @@ namespace Oxide.Plugins
 
             ImageLibrary?.Call("ImportImageList", Name, imageListStacks, 0UL, true, new Action(Ready));
         }
+
         private void Ready()
         {
             _isEditorReady = true;
@@ -1655,6 +1715,7 @@ namespace Oxide.Plugins
                 }
             }
         }
+
         private void cmddvend(BasePlayer player, string command, string[] args)
         {
             if (!permission.UserHasPermission(player.UserIDString, Admin) || !player.IsAdmin) return;
@@ -1665,150 +1726,120 @@ namespace Oxide.Plugins
         #endregion
 
         #region UI
+
+        private const string EditorOverlayName = "EditorOverlay";
+        private const string EditorContentName = "EditorContent";
+        private const string EditorDescOverlay = "EditorDescOverlay";
+        private const string EditorBackgroundImage = "Background";
+
         private CuiElementContainer CreateEditorOverlay()
         {
-            CuiElementContainer container = new CuiElementContainer();
-
-            container.Add(new CuiPanel //background transparency
-                {
-                    Image =
-                    {
-                        Color = $"0 0 0 {Transparency}"
-                    },
-                    RectTransform =
-                    {
-                        AnchorMin = "0 0", 
-                        AnchorMax = "1 1"
-                    },
-                    CursorEnabled = true
-                },
-                "Overlay", EditorOverlayName);
-
-            container.Add(new CuiElement //Background image
+            return new CuiElementContainer
             {
-                Parent = EditorOverlayName,
-                Components =
                 {
-                    new CuiRawImageComponent
+                    new CuiPanel //background transparency
                     {
-                        Png = ImageLibrary?.Call<string>("GetImage", EditorBackgroundImage) //updated 2.0.7
+                        Image = {Color = _config.Colors.Transparency.Rgb }, // $"0 0 0 {Transparency}"},
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        CursorEnabled = true
                     },
-                    new CuiRectTransformComponent
+                    "Overlay", EditorOverlayName
+                },
+                    new CuiElement //Background image
                     {
-                        AnchorMin = "0 0",
-                        AnchorMax = "1 1"
-                    }
+                        Parent = EditorOverlayName,
+                        Components =
+                        {
+                            new CuiRawImageComponent
+                            {
+                                Png = ImageLibrary?.Call<string>("GetImage", EditorBackgroundImage)
+                            },
+                            new CuiRectTransformComponent {AnchorMin = "0 0", AnchorMax = "1 1"}
+                        }
+                    },
+                {
+                    new CuiLabel //Welcome Msg
+                    {
+                        Text =
+                        {
+                            Text = GetText(_config.EditorMsg, "label"),
+                            FontSize = 30,
+                            Color = _config.Colors.TextColor.Rgb,
+                            Align = TextAnchor.MiddleCenter
+                        },
+                        RectTransform = {AnchorMin = "0.3 0.85", AnchorMax = "0.7 0.95"}
+                    },
+                    EditorOverlayName
+                },
+                {
+                    new CuiLabel // Set Label
+                    {
+                        Text =
+                        {
+                            Text = GetText(_config.SetLabel, "label"),
+                            FontSize = 20,
+                            Color = _config.Colors.TextColor.Rgb,
+                            Align = TextAnchor.MiddleLeft
+                        },
+                        RectTransform = {AnchorMin = "0.57 0.6", AnchorMax = "0.7 0.65"}
+                    },
+                    EditorOverlayName
+                },
+                {
+                    new CuiLabel // Stack Label,
+                    {
+                        Text =
+                        {
+                            Text = GetText(_config.StackLabel, "label"),
+                            FontSize = 20,
+                            Color = _config.Colors.TextColor.Rgb,
+                            Align = TextAnchor.MiddleCenter
+                        },
+                        RectTransform = {AnchorMin = "0.44 0.6", AnchorMax = "0.55 0.65"}
+                    },
+                    EditorOverlayName
+                },
+                {
+                    new CuiLabel // Filter Label,
+                    {
+                        Text =
+                        {
+                            Text = GetText(_config.SearchLable, "label"),
+                            FontSize = 20,
+                            Color = _config.Colors.TextColor.Rgb,
+                            Align = TextAnchor.MiddleCenter
+                        },
+                        RectTransform = {AnchorMin = "0.24 0.6", AnchorMax = "0.35 0.65"}
+                    },
+                    EditorOverlayName
+                },
+                {
+                    new CuiPanel
+                    {
+                        Image = {Color = _config.Colors.InputPanel.Rgb},
+                        RectTransform = {AnchorMin = "0.325 0.60", AnchorMax = "0.445 0.645"},
+                        CursorEnabled = true
+                    },
+                    EditorOverlayName, "InputNameSearch"
+                },
+                {
+                    new CuiButton //close button Label
+                    {
+                        Button = {Command = $"editorsm.close", Color = "0 0 0 0.40"},
+                        RectTransform = {AnchorMin = "0.445 0.11", AnchorMax = "0.54 0.16"},
+                        Text =
+                        {
+                            Text = GetText(_config.CloseButtonlabel, "label"),
+                            FontSize = 20,
+                            Color = _config.Colors.TextColor.Rgb,
+                            Align = TextAnchor.MiddleCenter
+                        }
+                    },
+                    EditorOverlayName, "close"
                 }
-            });
-
-            container.Add(new CuiLabel //Welcome Msg
-                {
-                    Text =
-                    {
-                        Text = GetText(_config.EditorMsg, "label"),
-                        FontSize = 30,
-                        Color = GetUITextColor(_config.TextColor),
-                        Align = TextAnchor.MiddleCenter
-                    },
-                    RectTransform =
-                    {
-                        AnchorMin = "0.3 0.85", 
-                        AnchorMax = "0.7 0.95"
-                    }
-                },
-                EditorOverlayName);
-
-            container.Add(new CuiLabel // Set Label
-                {
-                    Text =
-                    {
-                        Text = GetText(_config.SetLabel, "label"),
-                        FontSize = 20,
-                        Color = GetUITextColor(_config.TextColor),
-                        Align = TextAnchor.MiddleLeft
-                    },
-                    RectTransform =
-                    {
-                        AnchorMin = "0.57 0.6", 
-                        AnchorMax = "0.7 0.65"
-                    }
-                },
-                EditorOverlayName);
-
-            container.Add(new CuiLabel // Stack Label,
-                {
-                    Text =
-                    {
-                        Text = GetText(_config.StackLabel, "label"),
-                        FontSize = 20,
-                        Color = GetUITextColor(_config.TextColor),
-                        Align = TextAnchor.MiddleCenter
-                    },
-                    RectTransform =
-                    {
-                        AnchorMin = "0.44 0.6", 
-                        AnchorMax = "0.55 0.65"
-                    }
-                },
-                EditorOverlayName);
-            
-            container.Add(new CuiLabel // Filter Label,
-                {
-                    Text =
-                    {
-                        Text = GetText("Filter >", "label"),
-                        FontSize = 20,
-                        Color = GetUITextColor(_config.TextColor),
-                        Align = TextAnchor.MiddleCenter
-                    },
-                    RectTransform =
-                    {
-                        AnchorMin = "0.24 0.6", 
-                        AnchorMax = "0.35 0.65"
-                    }
-                },
-                EditorOverlayName);
-            
-            container.Add(new CuiPanel
-                {
-                    Image =
-                    {
-                        Color = $"{HexToColor("#0E0E10")} 0.98"
-                    },
-                    RectTransform =
-                    {
-                        AnchorMin = "0.325 0.60",
-                        AnchorMax = "0.445 0.645"
-                    },
-                    CursorEnabled = true
-                }, 
-                EditorOverlayName, "InputNameSearch");
-
-            container.Add(new CuiButton //close button Label
-                {
-                    Button =
-                    {
-                        Command = $"editorsm.close",
-                        Color = "0 0 0 0.40"
-                    },
-                    RectTransform =
-                    {
-                        AnchorMin = "0.435 0.14", 
-                        AnchorMax = "0.535 0.19"
-                    },
-                    Text =
-                    {
-                        Text = GetText(_config.CloseButtonlabel, "label"),
-                        FontSize = 20,
-                        Color = GetUITextColor(_config.TextColor),
-                        Align = TextAnchor.MiddleCenter
-                    }
-                },
-                EditorOverlayName, "close");
-
-            return container;
+            };
         }
-        
+
         private readonly CuiLabel editorDescription = new CuiLabel
         {
             Text =
@@ -1819,11 +1850,12 @@ namespace Oxide.Plugins
             },
             RectTransform =
             {
-                AnchorMin = "0.17 0.7", 
+                AnchorMin = "0.17 0.7",
                 AnchorMax = "0.8 0.75"
             }
         };
-        private CuiElementContainer CreateEditorItemEntry(_Items dataItem, float ymax, float ymin, string catName, string color, string text)
+
+        private CuiElementContainer CreateEditorItemEntry(_Items dataItem, float ymax, float ymin, string catName, string text)
         {
             CuiElementContainer container = new CuiElementContainer();
             string mod = String.Empty;
@@ -1842,7 +1874,7 @@ namespace Oxide.Plugins
                     {
                         Text = $"{mod}",
                         FontSize = 15,
-                        Color = GetUITextColor(_config.TextColor),
+                        Color = _config.Colors.TextColor.Rgb,
                         Align = TextAnchor.MiddleCenter
                     },
                     RectTransform =
@@ -1857,7 +1889,7 @@ namespace Oxide.Plugins
                 {
                     Image =
                     {
-                        Color = $"{HexToColor("#0E0E10")} 0.98"
+                        Color = _config.Colors.InputPanel.Rgb
                     },
                     RectTransform =
                     {
@@ -1872,17 +1904,20 @@ namespace Oxide.Plugins
             {
                 Parent = "InputName",
                 FadeOut = 1f,
-                Components =   {
-                    new CuiInputFieldComponent  {
+                Components =
+                {
+                    new CuiInputFieldComponent
+                    {
                         Text = text,
                         FontSize = 12,
                         Align = TextAnchor.MiddleCenter,
-                        Color = $"{HexToColor("#FFE24B")} 0.15",
+                        Color = _config.Colors.InputText.Rgb,
                         IsPassword = false,
                         Command = $"editorsm.{("edit")} {catName} {dataItem.DisplayName.Replace(" ", "_")} {text}",
                     },
 
-                    new CuiRectTransformComponent {
+                    new CuiRectTransformComponent
+                    {
                         AnchorMin = "0 0",
                         AnchorMax = "1 1"
                     },
@@ -1891,6 +1926,7 @@ namespace Oxide.Plugins
 
             return container;
         }
+
         private void CreateEditorItemIcon(ref CuiElementContainer container, string name, float ymax, float ymin, string data)
         {
             var label = new CuiLabel
@@ -1899,12 +1935,12 @@ namespace Oxide.Plugins
                 {
                     Text = name,
                     FontSize = 15,
-                    Color = GetUITextColor(_config.TextColor),
+                    Color = _config.Colors.TextColor.Rgb,
                     Align = TextAnchor.MiddleLeft
                 },
                 RectTransform =
                 {
-                    AnchorMin = $"0.3 {ymin}", 
+                    AnchorMin = $"0.3 {ymin}",
                     AnchorMax = $"0.4 {ymax}"
                 }
             };
@@ -1921,11 +1957,11 @@ namespace Oxide.Plugins
                     {
                         if ((bool) (ImageLibrary?.Call("HasImage", shortname, 0UL) ?? false))
                         {
-                            rawImage.Png = (string)ImageLibrary?.Call("GetImage", shortname, 0UL, false);
+                            rawImage.Png = (string) ImageLibrary?.Call("GetImage", shortname, 0UL, false);
                         }
                         else
                         {
-                            rawImage.Png = (string)ImageLibrary?.Call("GetImage", _config.IconUrlSm);
+                            rawImage.Png = (string) ImageLibrary?.Call("GetImage", _config.IconUrlSm);
                         }
                     }
                 }
@@ -1940,12 +1976,13 @@ namespace Oxide.Plugins
                     rawImage,
                     new CuiRectTransformComponent
                     {
-                        AnchorMin = $"0.26 {ymin}", 
+                        AnchorMin = $"0.26 {ymin}",
                         AnchorMax = $"0.29 {ymax}"
                     }
                 }
             });
         }
+
         private void CreateEditorChangePage(ref CuiElementContainer container, string currentcat, int editorpageminus, int editorpageplus)
         {
             container.Add(new CuiButton
@@ -1957,13 +1994,13 @@ namespace Oxide.Plugins
                     },
                     RectTransform =
                     {
-                        AnchorMin = "0.33 0.14", 
-                        AnchorMax = "0.43 0.19"
+                        AnchorMin = "0.345 0.11",
+                        AnchorMax = "0.44 0.16"
                     },
                     Text =
                     {
                         Text = GetText(_config.BackButtonText, "label"),
-                        Color = GetUITextColor(_config.TextColor),
+                        Color = _config.Colors.TextColor.Rgb,
                         FontSize = 30,
                         Align = TextAnchor.MiddleCenter,
                         Font = "robotocondensed-regular.ttf"
@@ -1981,13 +2018,13 @@ namespace Oxide.Plugins
                     },
                     RectTransform =
                     {
-                        AnchorMin = "0.54 0.14", 
-                        AnchorMax = "0.64 0.19"
+                        AnchorMin = "0.545 0.11",
+                        AnchorMax = "0.64 0.16"
                     },
                     Text =
                     {
                         Text = GetText(_config.ForwardButtonText, "label"),
-                        Color = GetUITextColor(_config.TextColor),
+                        Color = _config.Colors.TextColor.Rgb,
                         FontSize = 30,
                         Align = TextAnchor.MiddleCenter,
                         Font = "robotocondensed-regular.ttf"
@@ -1996,6 +2033,7 @@ namespace Oxide.Plugins
                 EditorOverlayName,
                 "ButtonForward");
         }
+
         private void CreateTab(ref CuiElementContainer container, string cat, int editorpageminus, int rowPos)
         {
             container.Add(new CuiButton
@@ -2007,19 +2045,20 @@ namespace Oxide.Plugins
                 },
                 RectTransform =
                 {
-                    AnchorMin = $"{(0.09 + (rowPos * 0.056))} 0.78",
-                    AnchorMax = $"{(0.14 + (rowPos * 0.056))} 0.82"
+                    AnchorMin = $"{(0.11 + (rowPos * 0.056))} 0.78",
+                    AnchorMax = $"{(0.16 + (rowPos * 0.056))} 0.82"
                 },
                 Text =
                 {
                     Text = $"{cat}", //StackModifierLang(cat, player.UserIDString),
                     Align = TextAnchor.MiddleCenter,
-                    Color = GetUITextColor(_config.TextColor),
+                    Color = _config.Colors.TextColor.Rgb,
                     Font = "robotocondensed-regular.ttf",
                     FontSize = 12
                 }
             }, EditorOverlayName, cat);
         }
+
         private void DestroyUi(BasePlayer player, bool full = false)
         {
             CuiHelper.DestroyUi(player, EditorContentName);
@@ -2029,35 +2068,25 @@ namespace Oxide.Plugins
             CuiHelper.DestroyUi(player, EditorDescOverlay);
             CuiHelper.DestroyUi(player, EditorOverlayName);
         }
-        private void ShowEditor(BasePlayer player, string catid, int first = 0, int from = 0, bool fullPaint = true, bool refreshMultipler = false, bool filter = false, string input = "")
+
+        private void ShowEditor(BasePlayer player, string catid, int from = 0, bool fullPaint = true, bool filter = false, string input = "")
         {
             _editorPage[player.userID] = from;
+
             var item = _config.StackCategories[catid];
-            if (!_config.StackCategories.ContainsKey(catid)) return;
-            
+
+            if (!_config.StackCategories.ContainsKey(catid))
+                return;
+
             editorDescription.Text.Text = $"{catid} Global Multiplier is {_config.StackCategoryMultipliers[catid]} and will re-apply next ( restart or reload ) unless the Modified value does not equal default.";
-            editorDescription.Text.Color = GetUITextColor(_config.TextColor);
+            editorDescription.Text.Color = _config.Colors.TextColor.Rgb;
 
-            if (filter)
-            {
-                CuiHelper.DestroyUi(player, "Field");
-            }
-            
-            if (refreshMultipler)
-            {
-                CuiHelper.DestroyUi(player, EditorDescOverlay);
-
-                CuiHelper.AddUi(player, new CuiElementContainer {{editorDescription, EditorOverlayName, EditorDescOverlay}});
-            }
-
-            if (first != 0)
-            {
-                DestroyUi(player, fullPaint);
-            }
             CuiElementContainer container;
 
             if (fullPaint)
             {
+                CuiHelper.DestroyUi(player, EditorOverlayName);
+
                 container = CreateEditorOverlay();
 
                 int rowPos = 0;
@@ -2065,6 +2094,7 @@ namespace Oxide.Plugins
                 foreach (var cat in _config.StackCategories)
                 {
                     CreateTab(ref container, cat.Key, from, rowPos);
+
                     rowPos++;
                 }
             }
@@ -2072,109 +2102,170 @@ namespace Oxide.Plugins
             {
                 container = new CuiElementContainer();
             }
-            
+
+            CuiHelper.DestroyUi(player, EditorDescOverlay);
+            CuiHelper.DestroyUi(player, EditorContentName);
+            CuiHelper.DestroyUi(player, "Field");
+            CuiHelper.DestroyUi(player, "ButtonForward");
+            CuiHelper.DestroyUi(player, "ButtonBack");
+
+            container.Add(new CuiPanel
+            {
+                Image = {Color = "0 0 0 0"},
+                RectTransform = {AnchorMin = "0.08 0.2", AnchorMax = "1 0.6"}
+            }, EditorOverlayName, EditorContentName);
+
+            container.Add(editorDescription, EditorOverlayName, EditorDescOverlay);
+
+            int current = 0;
+
+            List<_Items> items = Facepunch.Pool.GetList<_Items>();
+
+            if (filter && !input.IsNullOrEmpty())
+            {
+                foreach (var shortname in item.Keys)
+                {
+                    if (!_config.StackCategories[catid].ContainsKey(shortname)) continue;
+
+                    _Items cItem = _config.StackCategories[catid][shortname];
+                    if (cItem.DisplayName.Contains(input.Replace("_", " "), CompareOptions.OrdinalIgnoreCase))
+                        items.Add(cItem);
+                }
+            }
+            else
+            {
+                foreach (var shortname in item.Keys)
+                {
+                    if (!_config.StackCategories[catid].ContainsKey(shortname)) continue;
+
+                    items.Add(_config.StackCategories[catid][shortname]);
+                }
+            }
+
+            input = string.Empty;
+
             container.Add(new CuiElement
             {
-                Parent = "InputNameSearch", 
+                Parent = "InputNameSearch",
                 Name = "Field",
                 FadeOut = 1f,
-                Components =   {
-                    new CuiInputFieldComponent  {
+                Components =
+                {
+                    new CuiInputFieldComponent
+                    {
                         Text = input,
                         FontSize = 12,
                         Align = TextAnchor.MiddleCenter,
-                        Color = $"{HexToColor("#FFE24B")} 0.15",
+                        Color = _config.Colors.InputText.Rgb,
                         IsPassword = false,
                         Command = $"editorsm.{("search")} {catid} {input.Replace(" ", "_")}",
                     },
-                    new CuiRectTransformComponent {
+                    new CuiRectTransformComponent
+                    {
                         AnchorMin = "0 0",
                         AnchorMax = "1 1"
                     },
                 }
             });
 
-            container.Add(new CuiPanel
+            foreach (_Items data in items)
             {
-                Image =
-                {
-                    Color = "0 0 0 0"
-                },
-                RectTransform = {AnchorMin = "0.08 0.2", AnchorMax = "1 0.6"}
-            }, EditorOverlayName, EditorContentName);
-
-            if (from < 0)
-            {
-                CuiHelper.AddUi(player, container);
-                return;
-            }
-            
-            int current = 0;
-            HashSet<_Items> cItems = new HashSet<_Items>();
-            if (filter)
-            {
-                if (!input.IsNullOrEmpty())
-                    foreach (var shortname in item.Keys)
-                    {
-                        if (_config.StackCategories[catid].ContainsKey(shortname))
-                        {
-                            _Items cItem = _config.StackCategories[catid][shortname];
-                            if (cItem.DisplayName.ToLower().Contains(input.Replace("_", " ").ToLower()))
-                                cItems.Add(cItem);
-                        }
-                    }
-            }
-            else
-            {
-                foreach (var shortname in item.Keys)
-                {
-                    if (_config.StackCategories[catid].ContainsKey(shortname))
-                    {
-                        _Items cItem = _config.StackCategories[catid][shortname];
-                        cItems.Add(cItem);
-                    }
-                }   
-            }
-
-            foreach (_Items data in cItems)
-            {
-                if (current >= from && current < from + 7)
+                if (current >= from && current < from + 8)
                 {
                     float pos = 0.85f - 0.125f * (current - from);
-                    
-                    //string name = $"{StackModifierLang(name, player.UserIDString)}";
 
                     CreateEditorItemIcon(ref container, data.DisplayName, pos + 0.125f, pos, catid);
-                    
-                    container.AddRange(CreateEditorItemEntry(data, pos + 0.125f, pos, catid, _config.SetColor, ""));
+
+                    container.AddRange(CreateEditorItemEntry(data, pos + 0.125f, pos, catid, ""));
                 }
-                
+
                 current++;
             }
 
-            int minfrom = from <= 7 ? 0 : from - 7;
-            int maxfrom = from + 7 >= current ? from : from + 7;
+            Facepunch.Pool.FreeList(ref items);
+
+            int minfrom = from <= 8 ? 0 : from - 8;
+            int maxfrom = from + 8 >= current ? from : from + 8;
+
             CreateEditorChangePage(ref container, catid, minfrom, maxfrom);
+
             CuiHelper.AddUi(player, container);
         }
+
         private void CmdModify(BasePlayer player, string command, string[] args)
         {
-            if (!_config.EnableEditor || !permission.UserHasPermission(player.UserIDString, Admin)) return;
+            if (!_config.EnableEditor || !permission.UserHasPermission(player.UserIDString, Admin))
+                return;
+
             if (!_check)
             {
-                Puts("ImageLibrary is not installed"); return;
+                Puts("ImageLibrary is not installed");
+                return;
             }
+
             if (!_isEditorReady)
             {
-                player.ChatMessage("Waiting On ImageLibrary to finish the load order"); return;
+                player.ChatMessage("Waiting On ImageLibrary to finish the load order");
+                return;
             }
+
             ShowEditor(player, _config.DefaultCat);
             _open.Add(player.UserIDString);
             player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
             player.gameObject.SetLayerRecursive(10);
             player.ChatMessage("Blocking Movement");
         }
-        
+
+        private void CmdColor(BasePlayer player, string command, string[] args)
+        {
+            if (!_config.EnableEditor || !permission.UserHasPermission(player.UserIDString, Admin))
+                return;
+
+            if (args.Length < 2)
+            {
+                player.ChatMessage($"Invalid Syntax, please type /{_config.colorcommand} <inputpanel|inputtext|text|transparent> <color> <alpha|ex, 0.98>");
+                return;
+            }
+
+            UnityEngine.Color color;
+            if (!ColorUtility.TryParseHtmlString(args[1], out color))
+            {
+                SendReply(player, "Not a valid hex color");
+                return;
+            }
+
+            float alpha = 1f;
+            if (args.Length == 3 && !float.TryParse(args[2], out alpha))
+            {
+                alpha = 1f;
+            }
+
+            switch (args[0].ToLower())
+            {
+                case "inputpanel":
+                    _config.Colors.InputPanel = new Color(args[1], alpha);
+                    SendReply(player, "UI color was updated");
+                    break;
+                case "inputtext":
+                    _config.Colors.InputText = new Color(args[1], alpha);
+                    SendReply(player, "UI color was updated");
+                    break;
+                case "text":
+                    _config.Colors.TextColor = new Color(args[1], alpha);
+                    SendReply(player, "UI color was updated");
+                    break;
+                case "transparent":
+                    _config.Colors.Transparency = new Color(args[1], alpha);
+                    SendReply(player, "UI color was updated");
+                    break;
+                default:
+                    player.ChatMessage($"Invalid Syntax, please type /{_config.colorcommand} <inputpanel|inputtext|text|transparent> <color> <alpha|ex, 0.98>");
+                    break;
+            }
+
+            SaveConfig();
+        }
+
         [ConsoleCommand("editorsm.show")]
         private void ConsoleEditorShow(ConsoleSystem.Arg arg)
         {
@@ -2185,13 +2276,16 @@ namespace Oxide.Plugins
             if (catid.Equals("close"))
             {
                 BasePlayer targetPlayer = arg.GetPlayer(1);
-                DestroyUi(targetPlayer, true); return;
+                DestroyUi(targetPlayer, true);
+                return;
             }
 
-            if (player == null || !permission.UserHasPermission(player.UserIDString, Admin)) return;
-            ShowEditor(player, catid, 1, arg.GetInt(1), false, true);
+            if (player == null || !permission.UserHasPermission(player.UserIDString, Admin))
+                return;
+
+            ShowEditor(player, catid, arg.GetInt(1), false, true);
         }
-        
+
         [ConsoleCommand("editorsm.edit")]
         private void ConsoleEditSet(ConsoleSystem.Arg arg)
         {
@@ -2205,52 +2299,47 @@ namespace Oxide.Plugins
             var cat = _config.StackCategories[catName];
             foreach (var shortname in cat.Keys)
             {
-                if (_config.StackCategories[catName].ContainsKey(shortname))
-                {
-                    _Items stackItem = _config.StackCategories[catName][shortname];
-                    if (stackItem.DisplayName == item)
-                    {
-                        stackItem.Modified = amount;
-                        SaveConfig();
-                    }
-                }
+                if (!_config.StackCategories[catName].ContainsKey(shortname)) continue;
+                _Items stackItem = _config.StackCategories[catName][shortname];
+                if (stackItem.DisplayName != item) continue;
+                stackItem.Modified = amount;
+                SaveConfig();
             }
-            
+
             foreach (ItemDefinition id in ItemManager.itemList)
             {
                 string categoryName = id.category.ToString();
-                if (_config.StackCategories[catName].ContainsKey(id.shortname))
+                if (!_config.StackCategories[catName].ContainsKey(id.shortname)) continue;
+                _Items stackItem;
+                stackItem = _config.StackCategories[catName][id.shortname];
+                if (stackItem.DisplayName == item)
                 {
-                    _Items test;
-                    test = _config.StackCategories[catName][id.shortname];
-                    if (test.DisplayName == item)
-                    {
-                        id.stackable = _config.StackCategories[categoryName][id.shortname].Modified;
-                    }
+                    id.stackable = _config.StackCategories[categoryName][id.shortname].Modified;
                 }
             }
-            
-            ShowEditor(player, catName, 1,_editorPage[player.userID], false);
+
+            ShowEditor(player, catName, _editorPage[player.userID], false);
         }
 
         [ConsoleCommand("editorsm.search")]
         private void ConsoleEditSearch(ConsoleSystem.Arg arg)
         {
             BasePlayer player = arg.Player();
-            if (player == null || !permission.UserHasPermission(player.UserIDString, Admin)) return; 
+            if (player == null || !permission.UserHasPermission(player.UserIDString, Admin)) return;
             string catid = arg.GetString(0);
             string input = arg.GetString(1) + arg.GetString(2) + arg.GetString(3) + arg.GetString(4) + arg.GetString(5);
             if (input.IsNullOrEmpty()) return;
             bool resetting = false;
             bool filter = true;
-            
-            if (arg.GetString(1).ToLower().Equals("reset") || arg.GetString(1).ToLower().Equals("set") && arg.GetString(2).ToInt() != 0)
+
+            if (arg.GetString(1).Equals("reset", StringComparison.OrdinalIgnoreCase) ||
+                arg.GetString(1).Equals("set", StringComparison.OrdinalIgnoreCase) && arg.GetInt(2) != 0)
             {
                 resetting = true;
                 filter = false;
                 var cat = _config.StackCategories[catid];
-                int set = arg.GetString(2).ToInt();
-                bool command = arg.GetString(1).ToLower().Equals("set");
+                int set = arg.GetInt(2);
+                bool command = arg.GetString(1).Equals("set", StringComparison.OrdinalIgnoreCase);
                 if (command)
                 {
                     _config.StackCategoryMultipliers[catid] = set;
@@ -2259,45 +2348,44 @@ namespace Oxide.Plugins
                 {
                     _config.StackCategoryMultipliers[catid] = 1;
                 }
+
                 foreach (var shortname in cat.Keys)
                 {
-                    if (_config.StackCategories[catid].ContainsKey(shortname))
+                    if (!_config.StackCategories[catid].ContainsKey(shortname)) continue;
+                    _Items stackItem = _config.StackCategories[catid][shortname];
+                    if (stackItem.ShortName != shortname) continue;
+                    if (!command)
                     {
-                        _Items stackItem = _config.StackCategories[catid][shortname];
-                        if (stackItem.ShortName == shortname)
-                        {
-                            if (!command)
-                            {
-                                stackItem.Modified = _defaults[shortname];
-                            }
-                        }
+                        stackItem.Modified = _defaults[shortname];
                     }
                 }
 
                 foreach (ItemDefinition id in ItemManager.itemList)
                 {
-                    if (_config.StackCategories[catid].ContainsKey(id.shortname))
+                    if (!_config.StackCategories[catid].ContainsKey(id.shortname)) continue;
+                    if (command && _config.StackCategories[catid][id.shortname].Modified == _defaults[id.shortname])
                     {
-                        if (command)
-                        {
-                            id.stackable = set;
-                        }
-                        else
-                        {
-                            id.stackable = _defaults[id.shortname];
-                        }
+                        id.stackable = set;
+                    }
+                    else
+                    {
+                        id.stackable = _defaults[id.shortname];
                     }
                 }
 
                 SaveConfig();
-                string output = command ? $"{player.displayName} has set {catid} category to {set}" : $"{player.displayName} Reset {catid} category to defaults";
+                string output = command
+                    ? $"{player.displayName} has set {catid} category to {set}"
+                    : $"{player.displayName} Reset {catid} category to defaults";
                 Puts($"{output}");
-                string response = command ? $"Setting {catid} category to {set}" : $"Resetting {catid} category to defaults";
+                string response =
+                    command ? $"Setting {catid} category to {set}" : $"Resetting {catid} category to defaults";
                 player.ChatMessage($"{response}");
             }
-            ShowEditor(player, catid,1, arg.GetInt(1), resetting, false, filter, input);
+
+            ShowEditor(player, catid, arg.GetInt(1), resetting, filter, input);
         }
-        
+
         [ConsoleCommand("editorsm.close")]
         private void ConsoleEditClose(ConsoleSystem.Arg arg)
         {
@@ -2313,39 +2401,51 @@ namespace Oxide.Plugins
         #endregion
 
         #region UI Colors
+
         private string GetText(string text, string type)
         {
             switch (type)
-                {
-                    case "label":
-                        return text;
-                    case "image":
-                        return "https://i.imgur.com/fL7N8Zf.png";
-                }
+            {
+                case "label":
+                    return text;
+                case "image":
+                    return "https://i.imgur.com/fL7N8Zf.png";
+            }
 
             return "";
         }
-        private string GetUITextColor(string defaultHex) =>  $"{HexToColor(defaultHex)} 1";
-        private string HexToColor(string hexString)
+
+        public class Color
         {
-            if (hexString.IndexOf('#') != -1) hexString = hexString.Replace("#", "");
+            [JsonIgnore]
+            public int R;
+            [JsonIgnore]
+            public int G;
+            [JsonIgnore]
+            public int B;
+            [JsonIgnore]
+            public float A;
+            public string Hex;
+            public string Rgb;
 
-            int b = 0;
-            int r = 0;
-            int g = 0;
-
-            if (hexString.Length == 6)
+            public Color(string hex, float alpha = 1f)
             {
-                r = int.Parse(hexString.Substring(0, 2), NumberStyles.AllowHexSpecifier);
-                g = int.Parse(hexString.Substring(2, 2), NumberStyles.AllowHexSpecifier);
-                b = int.Parse(hexString.Substring(4, 2), NumberStyles.AllowHexSpecifier);
-            }
+                if (hex.StartsWith("#"))
+                    hex = hex.Substring(1);
 
-            return $"{(double) r / 255} {(double) g / 255} {(double) b / 255}";
+                if (hex.Length == 6)
+                {
+                    R = int.Parse(hex.Substring(0, 2), NumberStyles.AllowHexSpecifier);
+                    G = int.Parse(hex.Substring(2, 2), NumberStyles.AllowHexSpecifier);
+                    B = int.Parse(hex.Substring(4, 2), NumberStyles.AllowHexSpecifier);
+                }
+
+                A = alpha;
+                Hex = "#" + hex;
+                Rgb = $"{(double)R / 255} {(double)G / 255} {(double)B / 255} {A}";
+            }
         }
 
         #endregion
-
     }
-
 }

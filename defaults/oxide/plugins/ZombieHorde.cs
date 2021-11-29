@@ -2,42 +2,58 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core.Plugins;
+using ProtoBuf;
 using Rust;
 using Rust.Ai;
 using Rust.Ai.HTN.Murderer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
 
+using Random = UnityEngine.Random;
+
 namespace Oxide.Plugins
 {
-    [Info("ZombieHorde", "k1lly0u", "0.3.6")]
+    [Info("ZombieHorde", "k1lly0u", "0.4.3")]
     class ZombieHorde : RustPlugin
     {
         [PluginReference] 
         private Plugin Kits, Spawns;
 
-        private static ZombieHorde Instance { get; set; } 
+        private static ZombieHorde Instance { get; set; }
+
+
+        public enum SpawnSystem { None, Random, SpawnsDatabase }
+
+        public enum SpawnState { Spawn, Despawn }
+
+
+        private static BaseNavigator.NavigationSpeed DefaultRoamSpeed;
+
+        private const string ADMIN_PERMISSION = "zombiehorde.admin";
+
+        private const string IGNORE_PERMISSION = "zombiehorde.ignore";
 
         #region Oxide Hooks       
         private void OnServerInitialized()
         {
             Instance = this;
+            
+            permission.RegisterPermission(ADMIN_PERMISSION, this);
+            permission.RegisterPermission(IGNORE_PERMISSION, this);
 
-            HordeThinkManager.Create();
-
-            permission.RegisterPermission("zombiehorde.admin", this);
-            permission.RegisterPermission("zombiehorde.ignore", this);
-
-            _blueprintBase = ItemManager.FindItemDefinition("blueprintbase");
-            _glowEyes = ItemManager.FindItemDefinition("gloweyes");
-
-            if (!configData.Member.TargetedByPeaceKeeperTurrets)
+            if (!Configuration.Member.TargetedByPeaceKeeperTurrets)
                 Unsubscribe(nameof(CanEntityBeHostile));
+
+            if (Configuration.Member.TargetedByAPC)
+                Unsubscribe(nameof(CanBradleyApcTarget));
+
+            DefaultRoamSpeed = ParseType<BaseNavigator.NavigationSpeed>(Configuration.Horde.DefaultRoamSpeed);
 
             ValidateLoadoutProfiles();
 
@@ -50,31 +66,17 @@ namespace Oxide.Plugins
         {
             if (hitInfo != null)
             {
-                HordeMember hordeMember;
-
-                if (hitInfo.InitiatorPlayer != null)
+                if (hitInfo.InitiatorPlayer is ZombieNPC)
                 {
-                    hordeMember = hitInfo.InitiatorPlayer.GetComponent<HordeMember>();
-                    if (hordeMember != null)
+                    if (hitInfo.damageTypes.Get(DamageType.Explosion) > 0)
                     {
-                        if (hitInfo.damageTypes.Get(DamageType.Explosion) > 0)
-                        {
-                            hitInfo.damageTypes.ScaleAll(ConVar.Halloween.scarecrow_beancan_vs_player_dmg_modifier);
-                            return;
-                        }
-
-                        if (hordeMember.DamageScale != 1f)
-                            hitInfo.damageTypes.ScaleAll(hordeMember.DamageScale);
-                        
+                        hitInfo.damageTypes.ScaleAll(ConVar.Halloween.scarecrow_beancan_vs_player_dmg_modifier);
                         return;
                     }
-                }
 
-                hordeMember = baseCombatEntity.GetComponent<HordeMember>();
-                if (hordeMember != null)
-                {
-                    if (configData.Member.HeadshotKills && hitInfo.isHeadshot)
-                        hitInfo.damageTypes.ScaleAll(1000);
+                    float damageMultiplier = (hitInfo.InitiatorPlayer as ZombieNPC).Loadout.DamageMultiplier;
+                    if (damageMultiplier != 1f)
+                        hitInfo.damageTypes.ScaleAll(damageMultiplier);
                 }
             }
         }
@@ -84,141 +86,85 @@ namespace Oxide.Plugins
             if (player == null || hitInfo == null)
                 return;
 
-            HordeMember hordeMember = player.GetComponent<HordeMember>();
-            if (hordeMember != null)
-            {
-                for (int i = 0; i < player.inventory.containerWear.itemList.Count; i++)
-                {
-                    Item item = player.inventory.containerWear.itemList[i];
-                    if (item != null && item.info == _glowEyes)
-                    {
-                        player.inventory.containerWear.Remove(item);
-                        break;
-                    }                   
-                }
-               
-                if (configData.Loot.DropInventory)
-                    hordeMember.PrepareInventory();
-
-                hordeMember.Manager.OnMemberDeath(hordeMember, hitInfo.Initiator as BaseCombatEntity);
+            if (player is ZombieNPC)
+            {                
+                (player as ZombieNPC).Horde.OnMemberKilled((player as ZombieNPC), hitInfo.Initiator);
                 return;
             }
 
-            if (configData.Horde.CreateOnDeath && hitInfo.InitiatorPlayer != null)
-            {
-                HordeMember attacker = hitInfo.InitiatorPlayer.GetComponent<HordeMember>();
-
-                if (attacker != null && attacker.Manager != null)                
-                    attacker.Manager.OnPlayerDeath(player, attacker);
-            }
+            if (Configuration.Horde.CreateOnDeath && hitInfo.InitiatorPlayer is ZombieNPC)            
+                (hitInfo.InitiatorPlayer as ZombieNPC).Horde.OnPlayerKilled(player);            
         }
 
-        private void OnEntityKill(ScientistNPC scientistNPC)
+        private void OnEntityKill(ZombieNPC zombieNPC)
         {
-            HordeMember hordeMember = scientistNPC.GetComponent<HordeMember>();
-            if (hordeMember != null && hordeMember.Manager != null)            
-                hordeMember.Manager.OnMemberDeath(hordeMember, null);            
+            if (zombieNPC != null && zombieNPC.Horde != null)
+                zombieNPC.Horde.OnMemberKilled(zombieNPC, null);
         }
 
-        private object CanBeTargeted(ScientistNPC scientistNPC, MonoBehaviour behaviour)
-        {            
-            if (HordeMember._allHordeScientists.Contains(scientistNPC))
-            {
-                if (((behaviour is AutoTurret) || (behaviour is GunTrap) || (behaviour is FlameTurret)) && configData.Member.TargetedByTurrets)
-                    return null;
-                return false;
-            }
+        private object CanBeTargeted(ZombieNPC zombieNPC, GunTrap gunTrap) => Configuration.Member.TargetedByTurrets ? null : (object)false;
 
-            return null;
+        private object CanBeTargeted(ZombieNPC zombieNPC, FlameTurret flameTurret) => Configuration.Member.TargetedByTurrets ? null : (object)false;
+
+        private object CanBeTargeted(ZombieNPC zombieNPC, AutoTurret autoTurret)
+        {
+            if (Configuration.Member.TargetedByTurrets)
+                return null;
+
+            if ((autoTurret.PeacekeeperMode() || autoTurret is NPCAutoTurret) && Configuration.Member.TargetedByPeaceKeeperTurrets)
+                return null;
+
+            return false;
         }
-
-        private object CanEntityBeHostile(ScientistNPC scientistNPC) => HordeMember._allHordeScientists.Contains(scientistNPC) ? (object)true : null;
         
-        private object CanBradleyApcTarget(BradleyAPC bradleyAPC, ScientistNPC scientistNPC)
-        {
-            if (scientistNPC != null)
-            {
-                if (HordeMember._allHordeScientists.Contains(scientistNPC) && !configData.Member.TargetedByAPC)
-                    return false;
-            }
-            return null;
-        }
+        private object CanEntityBeHostile(ZombieNPC zombieNPC) => true;
 
-        private object OnCorpsePopulate(ScientistNPC scientistNPC, NPCPlayerCorpse npcPlayerCorpse)
-        {
-            if (scientistNPC != null && npcPlayerCorpse != null)
-            {
-                HordeMember hordeMember = scientistNPC.GetComponent<HordeMember>();
-                if (hordeMember == null)
-                    return null;
+        private object CanBradleyApcTarget(BradleyAPC bradleyAPC, ZombieNPC zombieNPC) => false;
 
-                npcPlayerCorpse.playerName = scientistNPC.displayName;
+        private object OnNpcTarget(HTNPlayer htnPlayer, ZombieNPC zombieNPC) => Configuration.Member.TargetedByNPCs ? null : (object)true;
 
-                if (configData.Loot.DropInventory)
-                {
-                    hordeMember.MoveInventoryTo(npcPlayerCorpse);
-                    return npcPlayerCorpse;
-                }
+        private object OnNpcTarget(NPCPlayer npcPlayer, ZombieNPC zombieNPC) => Configuration.Member.TargetedByNPCs ? null : (object)true;
 
-                SpawnIntoContainer(npcPlayerCorpse);
-                return npcPlayerCorpse;
-            }
-            return null;
-        }
-
-        private object CanPopulateLoot(ScientistNPC scientistNPC, NPCPlayerCorpse corpse) => HordeMember._allHordeScientists.Contains(scientistNPC) ? (object)false : null;
+        private object OnNpcTarget(BaseNpc baseNpc, ZombieNPC zombieNPC) => Configuration.Member.TargetedByAnimals ? null : (object)true;
 
         private void Unload()
         {
-            HordeManager.Order.OnUnload();
+            Horde.SpawnOrder.OnUnload();
 
-            _hordeThinkManager.Destroy();
+            for (int i = Horde.AllHordes.Count - 1; i >= 0; i--)
+                Horde.AllHordes[i].Destroy(true, true);
 
-            for (int i = HordeManager._allHordes.Count - 1; i >= 0; i--)
-                HordeManager._allHordes[i].Destroy(true, true);
+            Horde.AllHordes.Clear();
 
-            HordeManager._allHordes.Clear();
+            ZombieNPC[] zombies = UnityEngine.Object.FindObjectsOfType<ZombieNPC>();
+            for (int i = 0; i < zombies?.Length; i++)            
+                zombies[i].Kill(BaseNetworkable.DestroyMode.None);            
 
-            _spawnState = SpawnState.Spawn;
-
-            configData = null;
+            Configuration = null;
             Instance = null;
         }
         #endregion
 
-        #region Sensations
+        #region Sensations  
         private void OnEntityKill(TimedExplosive timedExplosive)
         {
-            if (!configData.Horde.UseSenses)
+            if (!Configuration.Horde.UseSenses)
                 return;
 
-            HordeManager.Stimulate(new Sensation()
+            Sense.Stimulate(new Sensation()
             {
-                Type = SensationType.Explosion,
+                Type = SensationType.Gunshot,
                 Position = timedExplosive.transform.position,
-                Radius = timedExplosive.explosionRadius * 17f,
-            });
-        }
-
-        private void OnEntityKill(Landmine landmine)
-        {
-            if (!configData.Horde.UseSenses)
-                return;
-
-            HordeManager.Stimulate(new Sensation()
-            {
-                Type = SensationType.Explosion,
-                Position = landmine.transform.position,
-                Radius = landmine.explosionRadius * 17f,
+                Radius = 80f,
             });
         }
 
         private void OnEntityKill(TreeEntity treeEntity)
         {
-            if (!configData.Horde.UseSenses)
+            if (!Configuration.Horde.UseSenses)
                 return;
 
-            HordeManager.Stimulate(new Sensation()
+            Sense.Stimulate(new Sensation()
             {
                 Type = SensationType.Gunshot,
                 Position = treeEntity.transform.position,
@@ -228,10 +174,10 @@ namespace Oxide.Plugins
 
         private void OnEntityKill(OreResourceEntity oreResourceEntity)
         {
-            if (!configData.Horde.UseSenses)
+            if (!Configuration.Horde.UseSenses)
                 return;
 
-            HordeManager.Stimulate(new Sensation()
+            Sense.Stimulate(new Sensation()
             {
                 Type = SensationType.Gunshot,
                 Position = oreResourceEntity.transform.position,
@@ -239,43 +185,48 @@ namespace Oxide.Plugins
             });
         }
 
-        private void OnWeaponFired(BaseProjectile baseProjectile, BasePlayer player, ItemModProjectile itemModProjectile, ProtoBuf.ProjectileShoot projectileShoot)
-        {
-            if (!configData.Horde.UseSenses)
-                return;
-
-            HordeManager.Stimulate(new Sensation()
-            {
-                Type = SensationType.Gunshot,
-                Position = player.transform.position,
-                Radius = baseProjectile.NoiseRadius,
-                Initiator = player
-            });
-        }
-
         private void OnDispenserGather(ResourceDispenser dispenser, BaseEntity entity, Item item)
         {
-            if (!configData.Horde.UseSenses)
+            if (!Configuration.Horde.UseSenses)
                 return;
 
-            HordeManager.Stimulate(new Sensation()
+            Sense.Stimulate(new Sensation()
             {
                 Type = SensationType.Gunshot,
                 Position = dispenser.transform.position,
-                Radius = 10f
+                Radius = 20f
             });
         }
         #endregion
 
         #region Functions
+        private T ParseType<T>(string type)
+        {
+            try
+            {
+                return (T)Enum.Parse(typeof(T), type, true);
+            }
+            catch
+            {
+                return default(T);
+            }
+        }
+
+
         #region Horde Spawning
         private List<Vector3> _spawnPoints;
 
-        private SpawnSystem _spawnSystem = SpawnSystem.None; 
+        private SpawnSystem _spawnSystem = SpawnSystem.None;
+
+        private const int SPAWN_RAYCAST_MASK = 1 << 0 | 1 << 8 | 1 << 15 | 1 << 17 | 1 << 21 | 1 << 29;
+
+        private const TerrainTopology.Enum SPAWN_TOPOLOGY_MASK = (TerrainTopology.Enum.Ocean | TerrainTopology.Enum.River | TerrainTopology.Enum.Lake | TerrainTopology.Enum.Cliff | TerrainTopology.Enum.Cliffside | TerrainTopology.Enum.Offshore | TerrainTopology.Enum.Summit | TerrainTopology.Enum.Decor);
+
+        private static bool ContainsTopologyAtPoint(TerrainTopology.Enum mask, Vector3 position) => (TerrainMeta.TopologyMap.GetTopology(position, 1f) & (int)mask) != 0;
 
         private bool ValidateSpawnSystem()
         {
-            _spawnSystem = ParseType<SpawnSystem>(configData.Horde.SpawnType);
+            _spawnSystem = ParseType<SpawnSystem>(Configuration.Horde.SpawnType);
 
             if (_spawnSystem == SpawnSystem.None)
             {
@@ -286,13 +237,13 @@ namespace Oxide.Plugins
             {
                 if (Spawns != null)
                 {
-                    if (string.IsNullOrEmpty(configData.Horde.SpawnFile))
+                    if (string.IsNullOrEmpty(Configuration.Horde.SpawnFile))
                     {
                         PrintError("You have selected SpawnsDatabase as your method of spawning hordes, however you have not specified a spawn file. Unable to spawn hordes!");
                         return false;
                     }
 
-                    object success = Spawns?.Call("LoadSpawnFile", configData.Horde.SpawnFile);
+                    object success = Spawns?.Call("LoadSpawnFile", Configuration.Horde.SpawnFile);
                     if (success is List<Vector3>)
                     {
                         _spawnPoints = success as List<Vector3>;
@@ -308,10 +259,6 @@ namespace Oxide.Plugins
             
             return true;
         }
-
-        private const int SPAWN_RAYCAST_MASK = 1 << 0 | 1 << 8 | 1 << 15 | 1 << 17 | 1 << 21 | 1 << 29;
-
-        private const TerrainTopology.Enum SPAWN_TOPOLOGY_MASK = (TerrainTopology.Enum.Ocean | TerrainTopology.Enum.River | TerrainTopology.Enum.Lake | TerrainTopology.Enum.Cliff | TerrainTopology.Enum.Cliffside | TerrainTopology.Enum.Offshore | TerrainTopology.Enum.Summit | TerrainTopology.Enum.Decor);
 
         private Vector3 GetSpawnPoint()
         {
@@ -337,26 +284,23 @@ namespace Oxide.Plugins
                     Vector3 spawnPoint = _spawnPoints.GetRandom();
                     _spawnPoints.Remove(spawnPoint);
                     if (_spawnPoints.Count == 0)
-                        _spawnPoints = (List<Vector3>)Spawns.Call("LoadSpawnFile", configData.Horde.SpawnFile);
+                        _spawnPoints = (List<Vector3>)Spawns.Call("LoadSpawnFile", Configuration.Horde.SpawnFile);
 
                     return spawnPoint;
                 }
             }
             
             float size = (World.Size / 2f) * 0.75f;
-            NavMeshHit navMeshHit;
 
             for (int i = 0; i < 10; i++)
             {
-                Vector2 randomInCircle = UnityEngine.Random.insideUnitCircle * size;
+                Vector2 randomInCircle = Random.insideUnitCircle * size;
 
                 Vector3 position = new Vector3(randomInCircle.x, 0, randomInCircle.y);
                 position.y = TerrainMeta.HeightMap.GetHeight(position);
 
-                if (NavMesh.SamplePosition(position, out navMeshHit, 25f, 1))
-                {                    
-                    position = navMeshHit.position;
-
+                if (NavmeshSpawnPoint.Find(position, 25f, out position))
+                {       
                     if (Physics.SphereCast(new Ray(position + (Vector3.up * 5f), Vector3.down), 10f, 10f, SPAWN_RAYCAST_MASK))
                         continue;
 
@@ -377,7 +321,7 @@ namespace Oxide.Plugins
             GameObject[] allobjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
             foreach (GameObject gobject in allobjects)
             {
-                if (count >= configData.Horde.MaximumHordes)
+                if (count >= Configuration.Horde.MaximumHordes)
                     break;
 
                 if (gobject.name.Contains("autospawn/monument"))
@@ -388,157 +332,155 @@ namespace Oxide.Plugins
                     if (position == Vector3.zero)
                         continue;
 
-                    if (gobject.name.Contains("powerplant_1") && configData.Monument.Powerplant.Enabled)
+                    if (gobject.name.Contains("powerplant_1") && Configuration.Monument.Powerplant.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-30.8f, 0.2f, -15.8f)), configData.Monument.Powerplant);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-30.8f, 0.2f, -15.8f)), Configuration.Monument.Powerplant);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("military_tunnel_1") && configData.Monument.Tunnels.Enabled)
+                    if (gobject.name.Contains("military_tunnel_1") && Configuration.Monument.Tunnels.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-7.4f, 13.4f, 53.8f)), configData.Monument.Tunnels);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-7.4f, 13.4f, 53.8f)), Configuration.Monument.Tunnels);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("harbor_1") && configData.Monument.LargeHarbor.Enabled)
+                    if (gobject.name.Contains("harbor_1") && Configuration.Monument.LargeHarbor.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(54.7f, 5.1f, -39.6f)), configData.Monument.LargeHarbor);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(54.7f, 5.1f, -39.6f)), Configuration.Monument.LargeHarbor);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("harbor_2") && configData.Monument.SmallHarbor.Enabled)
+                    if (gobject.name.Contains("harbor_2") && Configuration.Monument.SmallHarbor.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-66.6f, 4.9f, 16.2f)), configData.Monument.SmallHarbor);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-66.6f, 4.9f, 16.2f)), Configuration.Monument.SmallHarbor);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("airfield_1") && configData.Monument.Airfield.Enabled)
+                    if (gobject.name.Contains("airfield_1") && Configuration.Monument.Airfield.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-12.4f, 0.2f, -28.9f)), configData.Monument.Airfield);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-12.4f, 0.2f, -28.9f)), Configuration.Monument.Airfield);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("trainyard_1") && configData.Monument.Trainyard.Enabled)
+                    if (gobject.name.Contains("trainyard_1") && Configuration.Monument.Trainyard.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(35.8f, 0.2f, -0.8f)), configData.Monument.Trainyard);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(35.8f, 0.2f, -0.8f)), Configuration.Monument.Trainyard);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("water_treatment_plant_1") && configData.Monument.WaterTreatment.Enabled)
+                    if (gobject.name.Contains("water_treatment_plant_1") && Configuration.Monument.WaterTreatment.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(11.1f, 0.3f, -80.2f)), configData.Monument.WaterTreatment);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(11.1f, 0.3f, -80.2f)), Configuration.Monument.WaterTreatment);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("warehouse") && configData.Monument.Warehouse.Enabled)
+                    if (gobject.name.Contains("warehouse") && Configuration.Monument.Warehouse.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(16.6f, 0.1f, -7.5f)), configData.Monument.Warehouse);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(16.6f, 0.1f, -7.5f)), Configuration.Monument.Warehouse);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("satellite_dish") && configData.Monument.Satellite.Enabled)
+                    if (gobject.name.Contains("satellite_dish") && Configuration.Monument.Satellite.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(18.6f, 6.0f, -7.5f)), configData.Monument.Satellite);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(18.6f, 6.0f, -7.5f)), Configuration.Monument.Satellite);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("sphere_tank") && configData.Monument.Dome.Enabled)
+                    if (gobject.name.Contains("sphere_tank") && Configuration.Monument.Dome.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-44.6f, 5.8f, -3.0f)), configData.Monument.Dome);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-44.6f, 5.8f, -3.0f)), Configuration.Monument.Dome);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("radtown_small_3") && configData.Monument.Radtown.Enabled)
+                    if (gobject.name.Contains("radtown_small_3") && Configuration.Monument.Radtown.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-16.3f, -2.1f, -3.3f)), configData.Monument.Radtown);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-16.3f, -2.1f, -3.3f)), Configuration.Monument.Radtown);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("launch_site_1") && configData.Monument.LaunchSite.Enabled)
+                    if (gobject.name.Contains("launch_site_1") && Configuration.Monument.LaunchSite.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(222.1f, 3.3f, 0.0f)), configData.Monument.LaunchSite);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(222.1f, 3.3f, 0.0f)), Configuration.Monument.LaunchSite);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("gas_station_1") && configData.Monument.GasStation.Enabled)
+                    if (gobject.name.Contains("gas_station_1") && Configuration.Monument.GasStation.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-9.8f, 3.0f, 7.2f)), configData.Monument.GasStation);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-9.8f, 3.0f, 7.2f)), Configuration.Monument.GasStation);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("supermarket_1") && configData.Monument.Supermarket.Enabled)
+                    if (gobject.name.Contains("supermarket_1") && Configuration.Monument.Supermarket.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(5.5f, 0.0f, -20.5f)), configData.Monument.Supermarket);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(5.5f, 0.0f, -20.5f)), Configuration.Monument.Supermarket);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("mining_quarry_c") && configData.Monument.HQMQuarry.Enabled)
+                    if (gobject.name.Contains("mining_quarry_c") && Configuration.Monument.HQMQuarry.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(15.8f, 4.5f, -1.5f)), configData.Monument.HQMQuarry);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(15.8f, 4.5f, -1.5f)), Configuration.Monument.HQMQuarry);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("mining_quarry_a") && configData.Monument.SulfurQuarry.Enabled)
+                    if (gobject.name.Contains("mining_quarry_a") && Configuration.Monument.SulfurQuarry.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-0.8f, 0.6f, 11.4f)), configData.Monument.SulfurQuarry);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-0.8f, 0.6f, 11.4f)), Configuration.Monument.SulfurQuarry);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("mining_quarry_b") && configData.Monument.StoneQuarry.Enabled)
+                    if (gobject.name.Contains("mining_quarry_b") && Configuration.Monument.StoneQuarry.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-7.6f, 0.2f, 12.3f)), configData.Monument.StoneQuarry);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-7.6f, 0.2f, 12.3f)), Configuration.Monument.StoneQuarry);
                         count++;
                         continue;
                     }
 
-                    if (gobject.name.Contains("junkyard_1") && configData.Monument.Junkyard.Enabled)
+                    if (gobject.name.Contains("junkyard_1") && Configuration.Monument.Junkyard.Enabled)
                     {
-                        HordeManager.Order.CreateOrder(tr.TransformPoint(new Vector3(-16.7f, 0.2f, 1.4f)), configData.Monument.Junkyard);
+                        Horde.SpawnOrder.Create(tr.TransformPoint(new Vector3(-16.7f, 0.2f, 1.4f)), Configuration.Monument.Junkyard);
                         count++;
                         continue;
                     }
                 }
             }
 
-            if (count < configData.Horde.MaximumHordes)
+            if (count < Configuration.Horde.MaximumHordes)
                 CreateRandomHordes();
         }
 
         private void CreateRandomHordes()
         {
-            int amountToCreate = configData.Horde.MaximumHordes - HordeManager._allHordes.Count;
+            int amountToCreate = Configuration.Horde.MaximumHordes - Horde.AllHordes.Count;
             for (int i = 0; i < amountToCreate; i++)
             {
-                float roamDistance = configData.Horde.LocalRoam ? configData.Horde.RoamDistance : -1;
-                string profile = configData.Horde.UseProfiles ? configData.HordeProfiles.Keys.ToArray().GetRandom() : string.Empty;
+                float roamDistance = Configuration.Horde.LocalRoam ? Configuration.Horde.RoamDistance : -1;
+                string profile = Configuration.Horde.UseProfiles ? Configuration.HordeProfiles.Keys.ToArray().GetRandom() : string.Empty;
 
-                HordeManager.Order.CreateOrder(GetSpawnPoint(), configData.Horde.InitialMemberCount, configData.Horde.MaximumMemberCount, roamDistance, profile);
+                Horde.SpawnOrder.Create(GetSpawnPoint(), Configuration.Horde.InitialMemberCount, Configuration.Horde.MaximumMemberCount, roamDistance, profile);
             }
         }
         #endregion
 
-        #region Inventory and Loot
-        private ItemDefinition _blueprintBase;
-
-        private ItemDefinition _glowEyes;
+        #region Loadouts      
 
         private static MurdererDefinition _defaultDefinition;
+
         private static MurdererDefinition DefaultDefinition
         {
             get
@@ -555,55 +497,26 @@ namespace Oxide.Plugins
 
             bool hasChanged = false;
 
-            for (int i = configData.HordeProfiles.Count - 1; i >= 0; i--)
+            for (int i = Configuration.HordeProfiles.Count - 1; i >= 0; i--)
             {
-                string key = configData.HordeProfiles.ElementAt(i).Key;
+                string key = Configuration.HordeProfiles.ElementAt(i).Key;
 
-                for (int y = configData.HordeProfiles[key].Count - 1; y >= 0; y--)
+                for (int y = Configuration.HordeProfiles[key].Count - 1; y >= 0; y--)
                 {
-                    string loadoutId = configData.HordeProfiles[key][y];
+                    string loadoutId = Configuration.HordeProfiles[key][y];
 
-                    if (!configData.Member.Loadouts.Any(x => x.LoadoutID == loadoutId))
+                    if (!Configuration.Member.Loadouts.Any(x => x.LoadoutID == loadoutId))
                     {
                         Puts($"Loadout profile {loadoutId} does not exist. Removing from config");
-                        configData.HordeProfiles[key].Remove(loadoutId);
+                        Configuration.HordeProfiles[key].Remove(loadoutId);
                         hasChanged = true;
                     }
                 }
 
-                if (configData.HordeProfiles[key].Count <= 0)
+                if (Configuration.HordeProfiles[key].Count <= 0)
                 {
                     Puts($"Horde profile {key} does not have any valid loadouts. Removing from config");
-                    configData.HordeProfiles.Remove(key);
-                    hasChanged = true;
-                }
-            }
-
-            foreach (ConfigData.MemberOptions.Loadout loadout in configData.Member.Loadouts)
-            {
-                if (loadout.Vitals == null)
-                {
-                    loadout.Vitals = new ConfigData.MemberOptions.Loadout.VitalStats() { Health = DefaultDefinition.Vitals.HP };
-                    hasChanged = true;
-                }
-
-                if (loadout.Movement == null)
-                {
-                    loadout.Movement = new ConfigData.MemberOptions.Loadout.MovementStats()
-                    {
-                        DuckSpeed = DefaultDefinition.Movement.DuckSpeed,
-                        RunSpeed = DefaultDefinition.Movement.RunSpeed,
-                        WalkSpeed = DefaultDefinition.Movement.WalkSpeed
-                    };
-                    hasChanged = true;
-                }
-
-                if (loadout.Sensory == null)
-                {
-                    loadout.Sensory = new ConfigData.MemberOptions.Loadout.SensoryStats()
-                    {
-                        VisionRange = DefaultDefinition.Sensory.VisionRange
-                    };
+                    Configuration.HordeProfiles.Remove(key);
                     hasChanged = true;
                 }
             }
@@ -611,1118 +524,1679 @@ namespace Oxide.Plugins
             if (hasChanged)
                 SaveConfig();
         }
-
-        private void SpawnIntoContainer(LootableCorpse lootableCorpse)
-        {
-            int count = UnityEngine.Random.Range(configData.Loot.Random.Minimum, configData.Loot.Random.Maximum);
-
-            int spawnedCount = 0;
-            int loopCount = 0;
-
-            while (true)
-            {
-                loopCount++;
-
-                if (loopCount > 3)
-                    return;
-
-                float probability = UnityEngine.Random.Range(0f, 1f);
-
-                List<ConfigData.LootTable.RandomLoot.LootDefinition> definitions = new List<ConfigData.LootTable.RandomLoot.LootDefinition>(configData.Loot.Random.List);
-
-                for (int i = 0; i < configData.Loot.Random.List.Count; i++)
-                {
-                    ConfigData.LootTable.RandomLoot.LootDefinition lootDefinition = definitions.GetRandom();
-
-                    definitions.Remove(lootDefinition);
-
-                    if (lootDefinition.Probability >= probability)
-                    {
-                        CreateItem(lootDefinition, lootableCorpse.containers[0]);
-
-                        spawnedCount++;
-
-                        if (spawnedCount >= count)
-                            return;
-                    }
-                }
-            }
-        }
-
-        private void CreateItem(ConfigData.LootTable.RandomLoot.LootDefinition lootDefinition, ItemContainer container)
-        {
-            Item item;
-
-            if (!lootDefinition.IsBlueprint)
-                item = ItemManager.CreateByName(lootDefinition.Shortname, lootDefinition.GetAmount(), lootDefinition.SkinID);
-            else
-            {
-                item = ItemManager.Create(_blueprintBase);
-                item.blueprintTarget = ItemManager.FindItemDefinition(lootDefinition.Shortname).itemid;
-            }
-
-            if (item != null)
-            {
-                item.OnVirginSpawn();
-                if (!item.MoveToContainer(container, -1, true))
-                    item.Remove(0f);
-            }
-
-            if (lootDefinition.Required != null)
-                CreateItem(lootDefinition.Required, container);
-        }
-
-        private static void StripInventory(BasePlayer player, bool skipWear = false)
-        {
-            List<Item> list = Pool.GetList<Item>();
-
-            player.inventory.AllItemsNoAlloc(ref list);
-
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                Item item = list[i];
-
-                if (skipWear && item?.parent == player.inventory.containerWear)
-                    continue;
-
-                item.RemoveFromContainer();
-                item.Remove();
-            }
-
-            Pool.FreeList(ref list);
-        }
-
-        private static void ClearContainer(ItemContainer container, bool skipWear = false)
-        {
-            if (container == null || container.itemList == null)
-                return;
-
-            while (container.itemList.Count > 0)
-            {
-                Item item = container.itemList[0];
-                item.RemoveFromContainer();
-                item.Remove(0f);
-            }
-        }        
         #endregion
 
         #region Spawning
-        private static ScientistNPC InstantiateEntity(Vector3 position)
+        private static ZombieNPC _reference;
+
+        private static ZombieNPC Reference
         {
-            const string SCIENTIST_PREFAB = "assets/rust.ai/agents/npcplayer/humannpc/heavyscientist/heavyscientist.prefab";
-
-            GameObject gameObject = Instantiate.GameObject(GameManager.server.FindPrefab(SCIENTIST_PREFAB), position, Quaternion.identity);
-            gameObject.name = SCIENTIST_PREFAB;
-
-            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(gameObject, Rust.Server.EntityScene);
-
-            UnityEngine.Object.Destroy(gameObject.GetComponent<Spawnable>());
-
-            if (!gameObject.activeSelf)
-                gameObject.SetActive(true);
-
-            ScientistNPC component = gameObject.GetComponent<ScientistNPC>();
-            return component;
-        }
-
-        private static NavMeshHit navmeshHit;
-
-        private static RaycastHit raycastHit;
-
-        private static Collider[] _buffer = new Collider[256];
-
-        private const int WORLD_LAYER = 65536;
-
-        private static object FindPointOnNavmesh(Vector3 targetPosition, float maxDistance = 4f)
-        {
-            for (int i = 0; i < 10; i++)
+            get
             {
-                Vector3 position = i == 0 ? targetPosition : targetPosition + (UnityEngine.Random.onUnitSphere * maxDistance);
-                if (NavMesh.SamplePosition(position, out navmeshHit, maxDistance, 1))
+                if (_reference == null)
                 {
-                    if (IsInRockPrefab(navmeshHit.position))                    
-                        continue;                    
+                    const string SCIENTIST_PREFAB = "assets/rust.ai/agents/npcplayer/humannpc/heavyscientist/heavyscientistad.prefab";
 
-                    if (IsNearWorldCollider(navmeshHit.position))                    
-                        continue;  
+                    GameObject gameObject = Instantiate.GameObject(GameManager.server.FindPrefab(SCIENTIST_PREFAB), Vector3.zero, Quaternion.identity);
+                    gameObject.name = SCIENTIST_PREFAB;
 
-                    return navmeshHit.position;
+                    gameObject.SetActive(false);
+
+                    ScientistNPCNew scientistNPC = gameObject.GetComponent<ScientistNPCNew>();
+                    ScientistBrain scientistBrain = gameObject.GetComponent<ScientistBrain>();
+                    NPCPlayerNavigator scientistNavigator = gameObject.GetComponent<NPCPlayerNavigator>();
+
+                    ZombieNPC zombieNPC = gameObject.AddComponent<ZombieNPC>();
+                    ZombieNPCBrain zombieNPCBrain = gameObject.AddComponent<ZombieNPCBrain>();
+                    ZombieNavigator zombieNavigator = gameObject.AddComponent<ZombieNavigator>();
+
+                    CopySerializeableFields<NPCPlayer>(scientistNPC, zombieNPC);
+                    CopySerializeableFields<NPCPlayerNavigator>(scientistNavigator, zombieNavigator);
+
+                    zombieNPC.enableSaving = false;
+
+                    zombieNPCBrain.UseQueuedMovementUpdates = scientistBrain.UseQueuedMovementUpdates;
+                    zombieNPCBrain.AllowedToSleep = Configuration.Member.EnableDormantSystem;
+
+                    zombieNPCBrain.DefaultDesignSO = scientistBrain.DefaultDesignSO;
+                    zombieNPCBrain.Designs = new List<AIDesignSO>(scientistBrain.Designs);
+
+                    zombieNPCBrain.InstanceSpecificDesign = scientistBrain.InstanceSpecificDesign;
+                    zombieNPCBrain.CheckLOS = scientistBrain.CheckLOS;
+                    zombieNPCBrain.UseAIDesign = true;
+                    zombieNPCBrain.Pet = false;
+
+                    scientistBrain._baseEntity = scientistNPC;
+
+                    UnityEngine.Object.DestroyImmediate(scientistNavigator);
+                    UnityEngine.Object.DestroyImmediate(scientistBrain, true);
+                    UnityEngine.Object.DestroyImmediate(scientistNPC, true);
+
+                    _reference = zombieNPC;
                 }
-            }
-            return null;
-        } 
 
-        private static bool IsInRockPrefab(Vector3 position)
-        {
-            Physics.queriesHitBackfaces = true;
-
-            bool isInRock = Physics.Raycast(position, Vector3.up, out raycastHit, 20f, WORLD_LAYER, QueryTriggerInteraction.Ignore) && 
-                            blockedColliders.Any(s => raycastHit.collider?.gameObject?.name.Contains(s) ?? false);
-
-            Physics.queriesHitBackfaces = false;
-
-            return isInRock;
-        }
-
-        private static bool IsNearWorldCollider(Vector3 position)
-        {
-            Physics.queriesHitBackfaces = true;
-
-            int count = Physics.OverlapSphereNonAlloc(position, 2f, _buffer, WORLD_LAYER, QueryTriggerInteraction.Ignore);
-            Physics.queriesHitBackfaces = false;
-
-            int removed = 0;
-            for (int i = 0; i < count; i++)
-            {                
-                if (acceptedColliders.Any(s => _buffer[i].gameObject.name.Contains(s)))
-                  removed++;
-            }
-
-
-            return count - removed > 0;
-        }
-
-        private static readonly string[] acceptedColliders = new string[] { "road", "carpark", "rocket_factory", "range", "train_track", "runway", "_grounds", "concrete_slabs", "lighthouse", "cave", "office", "walkways", "sphere", "tunnel", "industrial", "junkyard" };
-
-        private static readonly string[] blockedColliders = new string[] { "rock", "junk", "range", "invisible" };
-        #endregion
-
-        private T ParseType<T>(string type)
-        {
-            try
-            {
-                return (T)Enum.Parse(typeof(T), type, true);
-            }
-            catch
-            {
-                return default(T);
+                return _reference;
             }
         }
-
-        private static bool ContainsTopologyAtPoint(TerrainTopology.Enum mask, Vector3 position) => (TerrainMeta.TopologyMap.GetTopology(position, 1f) & (int)mask) != 0;
-        #endregion
-
-        #region Think Manager
-        private HordeThinkManager _hordeThinkManager;
-
-        private static SpawnState _spawnState = SpawnState.Spawn;
-
-        private class HordeThinkManager : MonoBehaviour
+        private static ZombieNPC InstantiateEntity(Vector3 position)
         {
-            internal static void Create() => Instance._hordeThinkManager = new GameObject("ZombieHorde-ThinkManager").AddComponent<HordeThinkManager>();
-
-            private void Awake()
-            {
-                _spawnState = configData.TimedSpawns.Enabled ? (ShouldSpawn() ? SpawnState.Spawn : SpawnState.Despawn) : SpawnState.Spawn;
-
-                if (configData.TimedSpawns.Enabled)
-                    InvokeHandler.InvokeRepeating(this, CheckTimeTick, 0f, 1f);
-            }
-
-            internal void Update()
-            {
-                HordeManager._hordeTickQueue.RunQueue(0.5);
-            }
-
-            internal void Destroy()
-            {
-                if (configData.TimedSpawns.Enabled)
-                    InvokeHandler.CancelInvoke(this, CheckTimeTick);
-
-                Destroy(gameObject);
-            }
-
-            private bool ShouldSpawn()
-            {
-                float currentTime = TOD_Sky.Instance.Cycle.Hour;
-
-                if (configData.TimedSpawns.Start > configData.TimedSpawns.End)
-                    return currentTime > configData.TimedSpawns.Start || currentTime < configData.TimedSpawns.End;
-                else return currentTime > configData.TimedSpawns.Start && currentTime < configData.TimedSpawns.End;
-            }
-                         
-            private void CheckTimeTick()
-            {
-                if (ShouldSpawn())
-                {
-                    if (_spawnState == SpawnState.Despawn)
-                    {
-                        _spawnState = SpawnState.Spawn;
-                        HordeManager.Order.StopDespawning();
-                        HordeManager.Order.BeginSpawning();
-                    }
-                }
-                else
-                {
-                    if (_spawnState == SpawnState.Spawn)
-                    {
-                        _spawnState = SpawnState.Despawn;
-
-                        if (configData.TimedSpawns.Despawn)
-                        {
-                            HordeManager.Order.StopSpawning();
-                            HordeManager.Order.BeginDespawning();
-                        }
-                    }
-                }
-            }
-        }
-                
-        internal class HordeTickQueue : ObjectWorkQueue<HordeManager>
-        {
-            protected override void RunJob(HordeManager hordeManager)
-            {
-                if (!ShouldAdd(hordeManager))
-                    return;
-
-                hordeManager.HordeTick();
-                
-                Instance.timer.In(3f, ()=> HordeManager._hordeTickQueue.Add(hordeManager));
-            }
-
-            protected override bool ShouldAdd(HordeManager hordeManager)
-            {
-                if (!base.ShouldAdd(hordeManager))
-                    return false;
-
-                return hordeManager != null && !hordeManager.isDestroyed && hordeManager.members?.Count > 0;
-            }
-        }
-        #endregion
-
-        #region Horde Manager
-        internal class HordeManager
-        {
-            internal static List<HordeManager> _allHordes = new List<HordeManager>();
-
-            internal static HordeTickQueue _hordeTickQueue = new HordeTickQueue();
-
-            internal List<HordeMember> members;
-
-            private Vector3 destination;
-
-            private Vector3 interestPoint;
+            ZombieNPC zombieNPC = UnityEngine.Object.Instantiate<ZombieNPC>(Reference, position, Quaternion.identity);
             
-            internal Vector3 AverageLocation { get; private set; }
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(zombieNPC.gameObject, Rust.Server.EntityScene);
+            
+            zombieNPC.gameObject.SetActive(true);
 
-            internal BaseCombatEntity PrimaryTarget;
+            return zombieNPC;
+        }
 
+        private static void CopySerializeableFields<T>(T src, T dst)
+        {
+            FieldInfo[] srcFields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance);
 
-            private bool isRegrouping = false;
-
-            internal bool isDestroyed = false;
-
-
-            private Vector3 initialSpawnPosition;
-
-            private int initialMemberCount;
-
-            private bool isLocalHorde = false;
-
-            private float maximumRoamDistance;
-
-            internal string hordeProfile;
-
-
-            private float nextGrowthTime = Time.time + configData.Horde.GrowthRate;
-
-            private int maximumMemberCount;
-
-            private float nextMergeTime = Time.time + MERGE_COOLDOWN;
-
-            private float refreshRoamTime;
-
-
-            private const float MERGE_COOLDOWN = 180f;
-
-            private const float ROAM_REFRESH_RATE = 1f;
-
-            internal bool HasInterestPoint => interestPoint != destination;
-
-            internal Vector3 Destination => HasInterestPoint ? interestPoint : destination;
-
-            private static readonly BasePlayer[] playersInVicinityQuery = new BasePlayer[1];
-
-            private static readonly Func<BasePlayer, bool> filter = new Func<BasePlayer, bool>(IsHumanPlayer);
-
-            internal static bool Create(Order order)
+            foreach (FieldInfo field in srcFields)
             {
-                HordeManager manager = new HordeManager
-                {
-                    members = Pool.GetList<HordeMember>(),
-                    initialSpawnPosition = order.position,
-                    isLocalHorde = order.maximumRoamDistance > 0,
-                    maximumRoamDistance = order.maximumRoamDistance,
-                    initialMemberCount = order.initialMemberCount,
-                    maximumMemberCount = order.maximumMemberCount,
-                    hordeProfile = order.hordeProfile
-                };                  
+                object value = field.GetValue(src);
+                field.SetValue(dst, value);
+            }
+        }
 
-                for (int i = 0; i < order.initialMemberCount; i++)                
-                    manager.SpawnMember(order.position, false);
+        private static class NavmeshSpawnPoint
+        {
+            private static NavMeshHit navmeshHit;
 
-                if (manager.members.Count == 0)
+            private static RaycastHit raycastHit;
+
+            private static readonly Collider[] _buffer = new Collider[256];
+
+            private const int WORLD_LAYER = 65536;
+
+            public static bool Find(Vector3 targetPosition, float maxDistance, out Vector3 position)
+            {
+                for (int i = 0; i < 10; i++)
                 {
-                    manager.Destroy();
+                    position = i == 0 ? targetPosition : targetPosition + (Random.onUnitSphere * maxDistance);
+                    if (NavMesh.SamplePosition(position, out navmeshHit, maxDistance, 1))
+                    {
+                        if (IsInRockPrefab(navmeshHit.position))
+                            continue;
+
+                        if (IsNearWorldCollider(navmeshHit.position))
+                            continue;
+
+                        position = navmeshHit.position;
+                        return true;
+                    }
+                }
+                position = default(Vector3);
+                return false;
+            }
+
+            private static bool IsInRockPrefab(Vector3 position)
+            {
+                Physics.queriesHitBackfaces = true;
+
+                bool isInRock = Physics.Raycast(position, Vector3.up, out raycastHit, 20f, WORLD_LAYER, QueryTriggerInteraction.Ignore) &&
+                                BLOCKED_COLLIDERS.Any(s => raycastHit.collider?.gameObject?.name.Contains(s, CompareOptions.OrdinalIgnoreCase) ?? false);
+
+                Physics.queriesHitBackfaces = false;
+
+                return isInRock;
+            }
+
+            private static bool IsNearWorldCollider(Vector3 position)
+            {
+                Physics.queriesHitBackfaces = true;
+
+                int count = Physics.OverlapSphereNonAlloc(position, 2f, _buffer, WORLD_LAYER, QueryTriggerInteraction.Ignore);
+                Physics.queriesHitBackfaces = false;
+
+                int removed = 0;
+                for (int i = 0; i < count; i++)
+                {
+                    if (ACCEPTED_COLLIDERS.Any(s => _buffer[i].gameObject.name.Contains(s, CompareOptions.OrdinalIgnoreCase)))
+                        removed++;
+                }
+
+                return count - removed > 0;
+            }
+
+            private static readonly string[] ACCEPTED_COLLIDERS = new string[] { "road", "carpark", "rocket_factory", "range", "train_track", "runway", "_grounds", "concrete_slabs", "lighthouse", "cave", "office", "walkways", "sphere", "tunnel", "industrial", "junkyard" };
+
+            private static readonly string[] BLOCKED_COLLIDERS = new string[] { "rock", "cliff", "junk", "range", "invisible" };
+        }
+        #endregion
+        #endregion
+
+        public class Horde
+        {
+            public static List<Horde> AllHordes = new List<Horde>();
+
+            private static readonly Spatial.Grid<Horde> HordeGrid = new Spatial.Grid<Horde>(32, 8096f);
+
+            private static readonly Horde[] HordeGridQueryResults = new Horde[4];
+
+            private static readonly BasePlayer[] PlayerVicinityQueryResults = new BasePlayer[32];
+
+            public List<ZombieNPC> members;
+
+            //public bool DebugMode = false;
+
+            public readonly Vector3 InitialPosition;
+            public readonly bool IsLocalHorde;
+            public readonly float MaximumRoamDistance;
+
+            private readonly int initialMemberCount;
+            private readonly int maximumMemberCount;
+
+            private readonly string hordeProfile;
+
+            private float nextUpdateTime;
+            private float nextSeperationCheckTime;
+            private float nextGrowthTime;
+            private float nextMergeTime;
+            private float nextSleepTime;
+
+            private const float HORDE_UPDATE_RATE = 1f;
+            private const float SEPERATION_CHECK_RATE = 10f;
+            private const float MERGE_CHECK_RATE = 10f;
+            private const float SLEEP_CHECK_RATE = 5f;
+
+            public ZombieNPC Leader { get; private set; }
+
+            public bool IsSleeping { get; private set; }
+
+            public Vector3 CentralLocation { get; private set; }
+
+            public bool HordeOnAlert { get; private set; }
+
+            public int MemberCount => members.Count;
+
+            public static bool Create(SpawnOrder spawnOrder)
+            {
+                Horde horde = new Horde(spawnOrder);
+
+                for (int i = 0; i < spawnOrder.InitialMemberCount; i++)
+                    horde.SpawnMember(spawnOrder.Position);
+
+                if (horde.members.Count == 0)
+                {
+                    horde.Destroy();
                     return false;
                 }
 
-                _allHordes.Add(manager);
+                AllHordes.Add(horde);
 
-                _hordeTickQueue.Add(manager);
+                horde.CentralLocation = horde.CalculateCentralLocation();
+
+                HordeGrid.Add(horde, horde.CentralLocation.x, horde.CentralLocation.z);
 
                 return true;
             }
-            
-            internal void Destroy(bool permanent = false, bool killNpcs = false)
-            {
-                isDestroyed = true;
 
+            public Horde(SpawnOrder spawnOrder)
+            {
+                members = Pool.GetList<ZombieNPC>();
+
+                InitialPosition = CentralLocation = spawnOrder.Position;
+                IsLocalHorde = spawnOrder.MaximumRoamDistance > 0;
+                MaximumRoamDistance = spawnOrder.MaximumRoamDistance;
+                initialMemberCount = spawnOrder.InitialMemberCount;
+                maximumMemberCount = spawnOrder.MaximumMemberCount;
+                hordeProfile = spawnOrder.HordeProfile;
+
+                nextSeperationCheckTime = Time.time + SEPERATION_CHECK_RATE;
+                nextGrowthTime = Time.time + Configuration.Horde.GrowthRate;
+                nextMergeTime = Time.time + MERGE_CHECK_RATE;
+                nextSleepTime = Time.time + SLEEP_CHECK_RATE + Random.Range(1f, 5f);
+            }
+                        
+            public void Update()
+            {
+                if (members == null || members.Count == 0)
+                    return;
+
+                if (Time.time < nextUpdateTime)
+                    return;
+
+                nextUpdateTime = Time.time + HORDE_UPDATE_RATE;
+
+                CentralLocation = CalculateCentralLocation();
+
+                if (Configuration.Member.EnableDormantSystem)
+                    DoSleepChecks();
+
+                //if (DebugMode)
+                //{
+                //    Debug.Log($"Horde Update ({CentralLocation}). Sleeping? {IsSleeping}");
+                //    for (int i = 0; i < members.Count; i++)
+                //    {
+                //        ZombieNPC zombieNPC = members[i];
+                //        Debug.Log($"Member #{i} state {zombieNPC.Brain.CurrentState.StateType} (Is Leader? {zombieNPC.IsGroupLeader}");
+                //    }
+                //}
+
+                if (IsSleeping)
+                    return;
+
+                HordeGrid.Move(this, CentralLocation.x, CentralLocation.z);
+
+                TryMergeHordes();
+
+                TryGrowHorde();
+
+                TryCongregateHorde();
+
+                MoveRoamersTowardsTarget();
+            }
+
+            private void MoveRoamersTowardsTarget()
+            {
+                BaseEntity target;
+
+                HordeOnAlert = AnyHasTarget(out target);
+
+                if (Leader != null && !Leader.IsDestroyed && target != null && !target.IsDestroyed)
+                    SetLeaderRoamTarget(target.transform.position);
+            }
+
+            private void TryCongregateHorde()
+            {
+                if (Time.time > nextSeperationCheckTime)
+                {
+                    nextSeperationCheckTime = Time.time + SEPERATION_CHECK_RATE;
+
+                    if (GetLargestSeperation() > 30f)
+                    {
+                        //if (DebugMode)
+                        //    Debug.Log($"Horde is seperated, attempt re-group. Leader state {Leader.CurrentState}");
+
+                        if (Leader.CurrentState <= AIState.Roam)
+                            SetLeaderRoamTarget(CentralLocation);
+
+                        for (int i = 0; i < members.Count; i++)
+                            members[i].IsAlert = true;
+                    }
+                }
+            }
+
+            public void RegisterInterestInTarget(ZombieNPC interestedMember, BaseEntity baseEntity)
+            {
+                if (baseEntity == null || members == null)
+                    return;
+
+                //if (DebugMode)
+                //    Debug.Log($"Register interest in {baseEntity.ShortPrefabName} ({baseEntity.transform.position}).");
+
+                for (int i = 0; i < members.Count; i++)
+                {
+                    ZombieNPC hordeMember = members[i];
+                    if (hordeMember == null || hordeMember.IsDestroyed || interestedMember == hordeMember)
+                        continue;
+
+                    hordeMember.Brain.Senses.Memory.SetKnown(baseEntity, hordeMember, null);
+                }     
+                
+                if (Leader != null && !Leader.IsDestroyed && !Leader.HasTarget)
+                    SetLeaderRoamTarget(baseEntity.transform.position);
+            }
+
+            public bool HasTarget()
+            {
+                if (members != null)
+                {
+                    for (int i = 0; i < members.Count; i++)
+                    {
+                        ZombieNPC hordeMember = members[i];
+                        if (hordeMember.HasTarget)
+                            return true;
+                    }
+                }
+                return false;
+            }
+
+            public bool AnyHasTarget(out BaseEntity target)
+            {
+                if (members != null)
+                {
+                    for (int i = 0; i < members.Count; i++)
+                    {
+                        ZombieNPC hordeMember = members[i];
+                        if (hordeMember.HasTarget)
+                        {
+                            target = hordeMember.CurrentTarget;
+                            return true;
+                        }
+                    }
+                }
+                target = null;
+                return false;
+            }
+
+            public void ResetRoamTarget()
+            {
+                if (members == null)
+                    return;
+
+                //if (DebugMode)
+                //    Debug.Log("Reset roam target");
+
+                for (int i = 0; i < members.Count; i++)
+                {
+                    ZombieNPC hordeMember = members[i];
+                    if (hordeMember.IsGroupLeader)
+                        continue;
+
+                    hordeMember.ResetRoamState();
+                }
+            }
+
+            public void SetLeaderRoamTarget(Vector3 position)
+            {
+                //if (DebugMode)
+                //    Debug.Log($"Set leader roam target {position}");
+
+                if (Leader != null && !Leader.IsDestroyed)
+                    Leader.SetRoamTargetOverride(position);
+
+                ResetRoamTarget();
+            }
+
+            public Vector3 GetLeaderDestination()
+            {
+                if (Leader == null || Leader.IsDestroyed || Leader.Brain == null || Leader.Brain.Events == null)
+                    return CentralLocation;
+
+                return Leader.Brain.Navigator.Destination;
+            }
+            
+            public void OnMemberKilled(ZombieNPC zombieNPC, BaseEntity initiator)
+            {
+                if (zombieNPC == null)
+                    return;
+
+                if (members == null || !members.Contains(zombieNPC))
+                    return;
+
+                members.Remove(zombieNPC);
+
+                if (members.Count == 0)                
+                    Destroy();                
+                else
+                {
+                    if (zombieNPC.IsGroupLeader)
+                    {
+                        Leader = members.GetRandom();
+                        Leader.IsGroupLeader = true;
+                    }
+
+                    if ((initiator is BasePlayer && Leader.CanTargetBasePlayer(initiator as BasePlayer)) || (initiator is BaseNpc && Leader.CanTargetEntity(initiator)))
+                        RegisterInterestInTarget(null, initiator);
+                }
+            }
+
+            public void OnPlayerKilled(BasePlayer player)
+            {
+                if (Configuration.Horde.CreateOnDeath && MemberCount < maximumMemberCount)
+                {
+                    Vector3 position;
+                    if (NavmeshSpawnPoint.Find(player.transform.position, 10f, out position))
+                        SpawnMember(position);
+                }
+            }
+
+            public void SpawnMember(Vector3 position)
+            { 
+                ZombieNPC zombieNPC = InstantiateEntity(position);
+                zombieNPC.SetHordeProfile(hordeProfile);
+                zombieNPC.Horde = this;
+
+                zombieNPC.Spawn();
+                members.Add(zombieNPC);
+
+                if (members.Count == 1)
+                {
+                    Leader = zombieNPC;
+                    Leader.IsGroupLeader = true;
+                }
+                else zombieNPC.Invoke(zombieNPC.OnInitialSpawn, 1f); 
+            }
+
+            public void Destroy(bool permanent = false, bool killNpcs = true)
+            {
                 if (killNpcs)
                 {
                     for (int i = members.Count - 1; i >= 0; i--)
                     {
-                        HordeMember hordeMember = members[i];
-                        if (hordeMember != null && hordeMember.Entity != null && !hordeMember.Entity.IsDestroyed)                        
-                            hordeMember.Despawn();                        
+                        ZombieNPC zombieNPC = members[i];
+                        if (zombieNPC != null && !zombieNPC.IsDestroyed)
+                            zombieNPC.Kill();
                     }
                 }
 
                 members.Clear();
                 Pool.FreeList(ref members);
 
-                _allHordes.Remove(this);
+                HordeGrid.Remove(this);
 
-                if (!permanent && _allHordes.Count <= configData.Horde.MaximumHordes)                
-                    InvokeHandler.Invoke(Instance._hordeThinkManager, () => 
-                    Order.CreateOrder(isLocalHorde ? initialSpawnPosition : Instance.GetSpawnPoint(), initialMemberCount, maximumMemberCount, isLocalHorde ? maximumRoamDistance : -1f, hordeProfile), configData.Horde.RespawnTime);                
+                AllHordes.Remove(this);
+
+                if (!permanent && AllHordes.Count <= Configuration.Horde.MaximumHordes)                    
+                    Instance.timer.In(Configuration.Horde.RespawnTime, () => SpawnOrder.Create(this));
             }
 
-            internal void HordeTick()
-            {
-                if (members.Count == 0 || isDestroyed)                
-                    return;
-
-                AverageLocation = GetAverageVector();
-
-                UpdateDormancy();
-                if (_isDormant)
-                    return;
-
-                TryMergeHordes();
-
-                TryGrowHorde();
-
-                bool hasValidTarget = HasTarget();                
-                if ((PrimaryTarget is BasePlayer && ShouldIgnorePlayer(PrimaryTarget as BasePlayer)) || ShouldForgetTarget(this, PrimaryTarget))
-                {
-                    PrimaryTarget = null;
-                    hasValidTarget = false;
-                }
-
-                if (hasValidTarget)
-                {
-                    interestPoint = destination = PrimaryTarget.transform.position;
-
-                    for (int i = 0; i < members.Count; i++)                    
-                        members[i].SetTarget();                    
-                }
-                else
-                {
-                    if (Time.time > refreshRoamTime)
-                    {
-                        refreshRoamTime = Time.time + ROAM_REFRESH_RATE;
-
-                        if ((!isRegrouping && GetMaximumSeperation() > 15f) || (isRegrouping && GetMaximumSeperation() > 5))
-                        {
-                            isRegrouping = true;
-                            interestPoint = destination = members.GetRandom().Transform.position;                            
-                        }
-
-                        if (Destination == Vector3.zero || Vector3.Distance(Destination, AverageLocation) < 10f)
-                        {
-                            isRegrouping = false;
-                            interestPoint = destination = GetRandomLocation(isLocalHorde ? initialSpawnPosition : AverageLocation);                            
-                        }                        
-                    }
-                }                
-            }
-
-            internal bool HasTarget() => PrimaryTarget != null && PrimaryTarget.transform != null && !PrimaryTarget.IsDead();
-
-            internal void SetPrimaryTarget(BaseCombatEntity baseCombatEntity)
-            {
-                if (baseCombatEntity == null || baseCombatEntity.transform == null)
-                {
-                    PrimaryTarget = null;
-                    interestPoint = destination = AverageLocation;
-                    return;
-                }
-
-                PrimaryTarget = baseCombatEntity;
-
-                interestPoint = destination = PrimaryTarget.transform.position;
-               
-                for (int i = 0; i < members.Count; i++)
-                {
-                    members[i].SetTarget();
-                }
-            }
-
-            internal Vector3 GetAverageVector()
+            private Vector3 CalculateCentralLocation()
             {
                 Vector3 location = Vector3.zero;
 
-                if (members.Count == 0)
+                if (members == null || members.Count == 0)
                     return location;
 
                 int count = 0;
                 for (int i = 0; i < members.Count; i++)
                 {
-                    HordeMember hordeMember = members[i];
+                    ZombieNPC zombieNPC = members[i];
 
-                    if (hordeMember == null || hordeMember.Entity == null)
+                    if (zombieNPC == null || zombieNPC.IsDestroyed)
                         continue;
 
-                    location += hordeMember.Transform.position;
+                    location += zombieNPC.Transform.position;
                     count++;
                 }
 
                 return location /= count;
             }
 
-            
-            private const TerrainTopology.Enum DESTINATION_TOPOLOGY_MASK = (TerrainTopology.Enum.Ocean | TerrainTopology.Enum.River | TerrainTopology.Enum.Lake | TerrainTopology.Enum.Offshore | TerrainTopology.Enum.Cliff);
-
-            private Vector3 GetRandomLocation(Vector3 from)
-            {
-                for (int i = 0; i < 10; i++)
-                {
-                    Vector2 vector2 = UnityEngine.Random.insideUnitCircle * (isLocalHorde ? maximumRoamDistance : 100f);
-                    
-                    Vector3 destination = from + new Vector3(vector2.x, 0f, vector2.y);
-                    if (TerrainMeta.HeightMap != null)                    
-                        destination.y = TerrainMeta.HeightMap.GetHeight(destination);
-
-                    if (IsInSafeZone(destination))
-                        continue;
-
-                    NavMeshHit navMeshHit;
-                    if (NavMesh.FindClosestEdge(destination, out navMeshHit, 1))
-                    {
-                        destination = navMeshHit.position;
-                        if (WaterLevel.GetWaterDepth(destination, true, null) <= 0.01f && !ContainsTopologyAtPoint(DESTINATION_TOPOLOGY_MASK, destination))                                                    
-                            return destination;                        
-                    }
-                    else if (NavMesh.SamplePosition(destination, out navMeshHit, 5f, 1) && !ContainsTopologyAtPoint(DESTINATION_TOPOLOGY_MASK, destination))
-                    {                        
-                        destination = navMeshHit.position;
-                        if (WaterLevel.GetWaterDepth(destination, true, null) <= 0.01f)
-                            return destination;                        
-                    }
-                }
-                return AverageLocation;
-            }
-
-            private bool IsInSafeZone(Vector3 position)
-            {
-                int hits = Physics.OverlapSphereNonAlloc(position, 0.1f, Vis.colBuffer, 1 << 18);
-
-                for (int i = 0; i < hits; i++)
-                {
-                    Collider col = Vis.colBuffer[i];
-
-                    if (col.GetComponent<TriggerSafeZone>())
-                        return true;
-                }
-
-                return false;
-            }
-
-            private float GetMaximumSeperation()
+            private float GetLargestSeperation()
             {
                 float distance = 0;
 
-                for (int i = 0; i < members.Count; i++)
+                if (members != null)
                 {
-                    HordeMember hordeMember = members[i];
-                    if (hordeMember != null && hordeMember.Entity != null)
+                    for (int i = 0; i < members.Count; i++)
                     {
-                        float d = Vector3.Distance(hordeMember.Transform.position, AverageLocation);
-                        if (d > distance)
-                            distance = d;
+                        ZombieNPC zombieNPC = members[i];
+                        if (zombieNPC != null && !zombieNPC.IsDestroyed)
+                        {
+                            float d = Vector3.Distance(zombieNPC.Transform.position, CentralLocation);
+                            if (d > distance)
+                                distance = d;
+                        }
                     }
                 }
 
                 return distance;
             }
 
-            #region Dormancy  
-            private float _nextDormancyCheck;
-
-            private bool _isDormant = false;
-
-            private void UpdateDormancy()
-            {
-                if (configData.Member.DisableDormantSystem)
-                    return;
-
-                if (Time.time < _nextDormancyCheck)
-                    return;
-
-                _nextDormancyCheck = Time.time + UnityEngine.Random.Range(0.5f, 1.5f);
-
-                if (IsHordeCloseToPlayers())
-                {
-                    members.ForEach((HordeMember hordeMember) => hordeMember.Entity.IsDormant = false);
-                    _isDormant = false;
-                }
-                else
-                {
-                    members.ForEach((HordeMember hordeMember) => hordeMember.Entity.IsDormant = true);
-                    _isDormant = true;
-                }
-            }
-
-            private bool IsHordeCloseToPlayers() => BaseEntity.Query.Server.GetPlayersInSphere(AverageLocation, AiManager.ai_to_player_distance_wakeup_range, HordeManager.playersInVicinityQuery, HordeManager.filter) > 0;
-
-            private static bool IsHumanPlayer(BaseEntity entity)
-            {
-                BasePlayer basePlayer = entity as BasePlayer;
-                if (basePlayer == null)
-                    return false;
-
-                if (basePlayer is IAIAgent)
-                    return false;
-
-                if (basePlayer.IsNpc || basePlayer is NPCPlayer || basePlayer is global::HumanNPC || basePlayer is HTNPlayer)
-                    return false;
-
-                if (!basePlayer.IsSleeping() && basePlayer.IsConnected)
-                    return true;
-
-                return false;
-            }
-            #endregion
-
-            internal bool SpawnMember(Vector3 position, bool alreadyInitialized = true)
-            {
-                ScientistNPC scientistNPC = InstantiateEntity(position);                
-                scientistNPC.enableSaving = false;
-
-                HordeMember._allHordeScientists.Add(scientistNPC);
-
-                BaseAIBrain<global::HumanNPC> defaultBrain = scientistNPC.GetComponent<BaseAIBrain<global::HumanNPC>>();
-                defaultBrain._baseEntity = scientistNPC;
-                UnityEngine.Object.DestroyImmediate(defaultBrain);
-
-                HordeMember member = scientistNPC.gameObject.AddComponent<HordeMember>();
-                member.Manager = this;
-                scientistNPC._brain = scientistNPC.gameObject.AddComponent<ZombieBrain>();
-
-                scientistNPC.Spawn();
-                
-                member.Setup();
-                members.Add(member);
-
-                if (alreadyInitialized)
-                {
-                    if (PrimaryTarget != null)
-                        member.SetTarget();                    
-                }
-
-                return true;
-            }
-
-            internal void OnPlayerDeath(BasePlayer player, HordeMember hordeMember)
-            {
-                if (hordeMember == null || !members.Contains(hordeMember))
-                    return;
-
-                if (members.Count < maximumMemberCount)
-                    SpawnMember(hordeMember.Transform.position);
-            }
-
-            internal void OnMemberDeath(HordeMember hordeMember, BaseCombatEntity initiator)
-            {
-                if (isDestroyed || members == null)
-                    return;
-
-                members.Remove(hordeMember);
-
-                if (members.Count == 0)
-                    Destroy();
-                else
-                {
-                    if (PrimaryTarget == null && initiator is BasePlayer)                    
-                        SetPrimaryTarget(initiator);                    
-                }
-            }
-
             private void TryGrowHorde()
             {
-                if (nextGrowthTime < Time.time)
+                if (Configuration.Horde.GrowthRate <= 0 || nextGrowthTime < Time.time)
                 {
-                    if (members.Count < maximumMemberCount)
-                    {
-                        for (int i = 0; i < 5; i++)
-                        {
-                            if (SpawnMember(members.GetRandom().Transform.position))
-                                break;
-                        }
-                    }
+                    if (MemberCount < maximumMemberCount)                    
+                        SpawnMember(members.GetRandom().Transform.position);                    
 
-                    nextGrowthTime = Time.time + configData.Horde.GrowthRate;
+                    nextGrowthTime = Time.time + Configuration.Horde.GrowthRate;
                 }
             }
+
+            #region Horde Merging
+            private static bool HordeMergeQuery(Horde horde) => horde.MemberCount < horde.maximumMemberCount;
 
             private void TryMergeHordes()
             {
-                if (!configData.Horde.MergeHordes || nextMergeTime > Time.time)
+                if (!Configuration.Horde.MergeHordes || nextMergeTime > Time.time)
                     return;
 
-                for (int y = _allHordes.Count - 1; y >= 0; y--)
+                nextMergeTime = Time.time + MERGE_CHECK_RATE;
+
+                if (members == null || MemberCount >= maximumMemberCount)
+                    return;
+                
+                int results = HordeGrid.Query(CentralLocation.x, CentralLocation.z, 30f, HordeGridQueryResults, HordeMergeQuery);
+
+                if (results > 1)
                 {
-                    HordeManager manager = _allHordes[y];
+                    int amountToMerge = maximumMemberCount - members.Count;
 
-                    if (manager == this)
-                        continue;
-
-                    if (members.Count >= maximumMemberCount)
-                        return;
-
-                    if (Vector3.Distance(AverageLocation, manager.AverageLocation) < 20)
+                    for (int i = 0; i < results; i++)
                     {
-                        int amountToMerge = maximumMemberCount - members.Count;
-                        if (amountToMerge >= manager.members.Count)
+                        Horde otherHorde = HordeGridQueryResults[i];
+
+                        if (otherHorde == this)
+                            continue;
+
+                        if (MemberCount >= maximumMemberCount || otherHorde.members == null)
+                            break;
+
+                        if (amountToMerge >= otherHorde.members.Count)
                         {
-                            for (int i = 0; i < manager.members.Count; i++)
+                            for (int y = 0; y < otherHorde.members.Count; y++)
                             {
-                                HordeMember member = manager.members[i];
-                                members.Add(member);
-                                member.Manager = this;
+                                ZombieNPC zombieNPC = otherHorde.members[y];
+                                members.Add(zombieNPC);
+                                zombieNPC.Horde = this;
+                                zombieNPC.OnInitialSpawn();
                             }
 
-                            manager.members.Clear();
-                            manager.Destroy();
-
-                            nextMergeTime = Time.time + MERGE_COOLDOWN;
+                            otherHorde.members.Clear();
+                            otherHorde.Destroy();
                         }
                         else
                         {
-                            bool hasMerged = false;
-                            for (int i = 0; i < amountToMerge; i++)
+                            for (int y = 0; y < amountToMerge; y++)
                             {
-                                if (manager.members.Count > 0)
+                                if (otherHorde.members.Count > 0)
                                 {
-                                    HordeMember member = manager.members[0];
+                                    ZombieNPC zombieNPC = otherHorde.members[otherHorde.MemberCount - 1];
 
-                                    members.Add(member);
+                                    members.Add(zombieNPC);
 
-                                    member.Manager = this;
+                                    zombieNPC.Horde = this;
+                                    zombieNPC.OnInitialSpawn();
 
-                                    manager.members.Remove(member);
-
-                                    hasMerged = true;
+                                    otherHorde.members.Remove(zombieNPC);
                                 }
                             }
-
-                            if (hasMerged)                            
-                                nextMergeTime = Time.time + MERGE_COOLDOWN;                            
                         }
                     }
                 }
             }
+            #endregion
 
-            internal static bool ShouldForgetTarget(HordeManager hordeManager, BaseEntity baseEntity)
+            #region Sleeping
+            private void DoSleepChecks()
             {
-                if (!configData.Horde.RestrictLocalChaseDistance || !hordeManager.isLocalHorde || hordeManager.maximumRoamDistance <= 0f)
+                if (Time.time >= nextSleepTime)
+                {
+                    nextSleepTime = Time.time + SLEEP_CHECK_RATE + Random.Range(1f, 5f);
+
+                    int count = BaseEntity.Query.Server.GetPlayersInSphere(CentralLocation, AiManager.ai_to_player_distance_wakeup_range, PlayerVicinityQueryResults, HordeSleepPlayerFilter);
+
+                    if (count > 0)
+                    {
+                        if (IsSleeping)
+                            SetSleeping(false);
+                    }
+                    else
+                    {
+                        if (!IsSleeping)
+                            SetSleeping(true);
+                    }
+                }              
+            }
+
+            private void SetSleeping(bool sleep)
+            {
+                if (members == null)
+                    return;
+
+                for (int i = 0; i < members.Count; i++)
+                {
+                    ZombieNPC zombieNPC = members[i];
+                    if (zombieNPC == null || zombieNPC.Brain == null)
+                        continue;
+
+                    if (zombieNPC.Brain.sleeping == sleep)
+                        continue;
+
+                    zombieNPC.Brain.SetSleeping(sleep);
+                }
+
+                IsSleeping = sleep;
+            }
+
+            public void ForceWakeFromSleep()
+            {
+                if (!IsSleeping)
+                    return;
+
+                SetSleeping(false);
+            }
+
+            private static bool HordeSleepPlayerFilter(BaseEntity entity)
+            {
+                BasePlayer basePlayer = entity as BasePlayer;
+                if (basePlayer == null || !basePlayer.IsConnected)
                     return false;
 
-                if (baseEntity == null || baseEntity.transform == null)
+                if (basePlayer is ZombieNPC)
                     return false;
 
-                return Vector3.Distance(hordeManager.initialSpawnPosition, baseEntity.transform.position) > hordeManager.maximumRoamDistance * 1.5f;
+                if (Configuration.Member.IgnoreSleepers && basePlayer.IsSleeping())
+                    return false;
+
+                return true;
             }
+            #endregion
 
-            internal static bool ShouldIgnorePlayer(BasePlayer player)
+            public int GetMemberIndex(ZombieNPC zombieNPC) => members.IndexOf(zombieNPC);
+
+            public class SpawnOrder
             {
-                if (player.IsDead())
-                    return true;
+                public Vector3 Position { get; private set; }
 
-                if (player._limitedNetworking)
-                    return true;
+                public int InitialMemberCount { get; private set; }
 
-                if (player.IsFlying)
-                    return true;
+                public int MaximumMemberCount { get; private set; }
 
-                if (player.HasPlayerFlag(BasePlayer.PlayerFlags.SafeZone))
-                    return true;
+                public float MaximumRoamDistance { get; private set; }
 
-                if (configData.Member.IgnoreSleepers && player.IsSleeping())
-                    return true;
+                public string HordeProfile { get; private set; }
 
-                if (player.userID.IsSteamId() && Instance.permission.UserHasPermission(player.UserIDString, "zombiehorde.ignore"))
-                    return true;
-
-                if (player is ScientistNPC && HordeMember._allHordeScientists.Contains(player as ScientistNPC))
-                    return true;
-
-                return false;
-            }
-
-            internal static void Stimulate(Sensation sensation)
-            {
-                float radius = sensation.Radius * sensation.Radius;
-
-                BasePlayer target = sensation.Initiator as BasePlayer;
-
-                for (int i = 0; i < _allHordes.Count; i++)
+                public SpawnOrder(Vector3 position, int initialMemberCount, int maximumMemberCount, float maximumRoamDistance, string hordeProfile)
                 {
-                    HordeManager hordeManager = _allHordes[i];
-                    if ((hordeManager.AverageLocation - sensation.Position).sqrMagnitude <= radius)
-                    {
-                        if (target != null) 
-                            hordeManager.SetKnown(target);
+                    this.Position = position;
+                    this.InitialMemberCount = initialMemberCount;
+                    this.MaximumMemberCount = maximumMemberCount;
+                    this.MaximumRoamDistance = maximumRoamDistance;
+                    this.HordeProfile = hordeProfile;
+                }
 
-                        hordeManager.SetInterestPoint(sensation.Position, sensation.Type == SensationType.Explosion);
+                #region Static
+                private static Queue<SpawnOrder> _spawnOrders = new Queue<SpawnOrder>();
+
+                private static Coroutine _spawnRoutine;
+
+                private static Coroutine _despawnRoutine;
+
+                private static bool _isSpawning;
+
+                private static bool _isDespawning;
+
+                public static SpawnState State;
+
+                static SpawnOrder()
+                {
+                    State = Configuration.TimedSpawns.Enabled ? (ShouldSpawn() ? SpawnState.Spawn : SpawnState.Despawn) : SpawnState.Spawn;
+
+                    if (Configuration.TimedSpawns.Enabled)
+                        StartTimer();
+                }
+
+                internal static void Create(Vector3 position, int initialMemberCount, int maximumMemberCount, float maximumRoamDistance, string hordeProfile)
+                {
+                    if (NavmeshSpawnPoint.Find(position, 10f, out position))
+                    {
+                        _spawnOrders.Enqueue(new SpawnOrder(position, initialMemberCount, maximumMemberCount, maximumRoamDistance, hordeProfile));
+
+                        if (!_isSpawning && State == SpawnState.Spawn)
+                            DequeueAndSpawn();
                     }
                 }
-            }
 
-            private void SetKnown(BasePlayer target)
-            {
-                foreach (HordeMember hordeMember in members)
-                    hordeMember.Entity.myMemory.SetKnown(target, hordeMember.Entity, null);
-            }
-
-            internal void SetInterestPoint(Vector3 position, bool forced = false)
-            {
-                if (PrimaryTarget == null && (forced || !HasInterestPoint))
+                internal static void Create(Horde horde)
                 {
-                    interestPoint = position;
-
-                    foreach (HordeMember hordeMember in members)
+                    Vector3 position;
+                    if (NavmeshSpawnPoint.Find(horde.IsLocalHorde ? horde.InitialPosition : Instance.GetSpawnPoint(), 10f, out position))
                     {
-                        hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
-                        hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, false);
-                        hordeMember.SetDestination(interestPoint);
+                        _spawnOrders.Enqueue(new SpawnOrder(position, horde.initialMemberCount, horde.maximumMemberCount, horde.IsLocalHorde ? horde.MaximumRoamDistance : -1, horde.hordeProfile));
+
+                        if (!_isSpawning && State == SpawnState.Spawn)
+                            DequeueAndSpawn();
                     }
                 }
-            }
 
-            public class Order
-            {
-                public Vector3 position;
-                public int initialMemberCount;
-                public int maximumMemberCount;
-                public float maximumRoamDistance;
-                public string hordeProfile;
-
-                public Order(Vector3 position, int initialMemberCount, string hordeProfile)
+                internal static void Create(Vector3 position, ConfigData.MonumentSpawn.MonumentSettings settings)
                 {
-                    this.position = position;
-                    this.initialMemberCount = initialMemberCount;
-                    maximumMemberCount = configData.Horde.MaximumMemberCount;
-                    maximumRoamDistance = -1f;
-                    this.hordeProfile = hordeProfile;
+                    if (NavmeshSpawnPoint.Find(position, 10f, out position))
+                    {
+                        _spawnOrders.Enqueue(new SpawnOrder(position, Configuration.Horde.InitialMemberCount, settings.HordeSize, settings.RoamDistance, settings.Profile));
+
+                        if (!_isSpawning && State == SpawnState.Spawn)
+                            DequeueAndSpawn();
+                    }
                 }
 
-                public Order(Vector3 position, int initialMemberCount, int maximumMemberCount, float maximumRoamDistance, string hordeProfile)
+                private static void DequeueAndSpawn()
                 {
-                    this.position = position;
-                    this.initialMemberCount = initialMemberCount;
-                    this.maximumMemberCount = maximumMemberCount;
-                    this.maximumRoamDistance = maximumRoamDistance;
-                    this.hordeProfile = hordeProfile;
+                    _spawnRoutine = ServerMgr.Instance.StartCoroutine(ProcessSpawnOrders());
                 }
 
-                private static Queue<Order> _queue = new Queue<Order>();
-
-                private static bool IsSpawning { get; set; }
-
-                private static bool IsDespawning { get; set; }
-
-                private static Coroutine SpawnRoutine { get; set; }
-
-                private static Coroutine DespawnRoutine { get; set; }
-
-                internal static void CreateOrder(Vector3 position, int initialMemberCount, int maximumMemberCount, float maximumRoamDistance, string hordeProfile)
+                private static void QueueAndDespawn()
                 {
-                    object success = FindPointOnNavmesh(position, 10f);
-                    if (success == null)
-                        return;
-
-                    _queue.Enqueue(new Order((Vector3)success, initialMemberCount, maximumMemberCount, maximumRoamDistance, hordeProfile));
-
-                    if (!IsSpawning && _spawnState == SpawnState.Spawn)                    
-                        BeginSpawning();                    
+                    _despawnRoutine = ServerMgr.Instance.StartCoroutine(ProcessDespawn());
                 }
 
-                internal static void CreateOrder(Vector3 position, ConfigData.MonumentSpawn.MonumentSettings settings)
-                {
-                    object success = FindPointOnNavmesh(position, 10f);
-                    if (success == null)                    
-                        return;
-                    
-                    _queue.Enqueue(new Order((Vector3)success, configData.Horde.InitialMemberCount, settings.HordeSize, settings.RoamDistance, settings.Profile));
-
-                    if (!IsSpawning && _spawnState == SpawnState.Spawn)
-                        BeginSpawning();
-                }
-
-                internal static Coroutine BeginSpawning() => SpawnRoutine = ServerMgr.Instance.StartCoroutine(ProcessSpawnOrders());
-
-                internal static Coroutine BeginDespawning() => DespawnRoutine = ServerMgr.Instance.StartCoroutine(ProcessDespawn());   
-                
                 internal static void StopSpawning()
                 {
-                    if (SpawnRoutine != null)
-                        ServerMgr.Instance.StopCoroutine(SpawnRoutine);
+                    if (_spawnRoutine != null)
+                        ServerMgr.Instance.StopCoroutine(_spawnRoutine);
 
-                    IsSpawning = false;
+                    _isSpawning = false;
                 }
 
                 internal static void StopDespawning()
                 {
-                    if (DespawnRoutine != null)
-                        ServerMgr.Instance.StopCoroutine(DespawnRoutine);
+                    if (_despawnRoutine != null)
+                        ServerMgr.Instance.StopCoroutine(_despawnRoutine);
 
-                    IsDespawning = false;
+                    _isDespawning = false;
                 }
 
                 private static IEnumerator ProcessSpawnOrders()
                 {
-                    if (_queue.Count == 0)
+                    if (_spawnOrders.Count == 0)
                         yield break;
 
-                    IsSpawning = true;
+                    _isSpawning = true;
 
                     RESTART:
-                    if (IsDespawning)
+                    if (_isDespawning)
                         StopDespawning();
 
-                    while (_allHordes?.Count > configData.Horde.MaximumHordes)                    
+                    while (AllHordes.Count > Configuration.Horde.MaximumHordes)
                         yield return CoroutineEx.waitForSeconds(10f);
-                    
-                    Order order = _queue.Dequeue();
 
-                    if (order != null)
-                        Create(order);
+                    SpawnOrder spawnOrder = _spawnOrders.Dequeue();
 
-                    if (_queue.Count > 0)
+                    if (spawnOrder != null)
+                        Horde.Create(spawnOrder);
+
+                    if (_spawnOrders.Count > 0)
                     {
                         yield return CoroutineEx.waitForSeconds(3f);
                         goto RESTART;
                     }
 
-                    IsSpawning = false;
+                    _isSpawning = false;
                 }
 
                 private static IEnumerator ProcessDespawn()
                 {
-                    IsDespawning = true;
+                    _isDespawning = true;
 
-                    if (IsSpawning)
+                    if (_isSpawning)
                         StopSpawning();
 
-                    while (_allHordes?.Count > 0)
+                    while (AllHordes.Count > 0)
                     {
-                        HordeManager manager = HordeManager._allHordes.GetRandom();
-                        if (manager.PrimaryTarget == null)
+                        Horde horde = AllHordes.GetRandom();
+                        if (!horde.HasTarget())
                         {
-                            Order.CreateOrder(manager.isLocalHorde ? manager.initialSpawnPosition : Instance.GetSpawnPoint(), manager.initialMemberCount,
-                                              manager.maximumMemberCount, manager.isLocalHorde ? manager.maximumRoamDistance : -1f, manager.hordeProfile);
-
-                            manager.Destroy(true, true);
+                            Create(horde);
+                            horde.Destroy(true, true);
                         }
 
                         yield return CoroutineEx.waitForSeconds(3f);
                     }
 
-                    IsDespawning = false;
+                    _isDespawning = false;
                 }
 
                 internal static void OnUnload()
                 {
-                    if (SpawnRoutine != null)
-                        ServerMgr.Instance.StopCoroutine(SpawnRoutine);
+                    if (_spawnRoutine != null)
+                        ServerMgr.Instance.StopCoroutine(_spawnRoutine);
 
-                    if (DespawnRoutine != null)
-                        ServerMgr.Instance.StopCoroutine(DespawnRoutine);
+                    if (_despawnRoutine != null)
+                        ServerMgr.Instance.StopCoroutine(_despawnRoutine);
 
-                    IsDespawning = false;
-                    IsSpawning = false;
+                    _isDespawning = false;
+                    _isSpawning = false;
 
-                   _queue.Clear();
+                    State = SpawnState.Spawn;
+
+                    _spawnOrders.Clear();
                 }
+
+                private static void StartTimer() => Instance.timer.In(1f, CheckTime);
+
+                private static bool ShouldSpawn()
+                {
+                    float currentTime = TOD_Sky.Instance.Cycle.Hour;
+
+                    if (Configuration.TimedSpawns.Start > Configuration.TimedSpawns.End)
+                        return currentTime > Configuration.TimedSpawns.Start || currentTime < Configuration.TimedSpawns.End;
+                    else return currentTime > Configuration.TimedSpawns.Start && currentTime < Configuration.TimedSpawns.End;
+                }
+
+                private static void CheckTime()
+                {
+                    if (ShouldSpawn())
+                    {
+                        if (State == SpawnState.Despawn)
+                        {
+                            State = SpawnState.Spawn;
+                            StopDespawning();
+                            DequeueAndSpawn();
+                        }
+                    }
+                    else
+                    {
+                        if (State == SpawnState.Spawn)
+                        {
+                            State = SpawnState.Despawn;
+
+                            if (Configuration.TimedSpawns.Despawn)
+                            {
+                                StopSpawning();
+                                QueueAndDespawn();
+                            }
+                        }
+                    }
+
+                    StartTimer();
+                }
+                #endregion
             }
         }
-        #endregion
 
-        #region Horde Member        
-        public class HordeMember : MonoBehaviour, IThinker
+        public class ZombieNPC : NPCPlayer, IAIAttack, IAISenses, IThinker
         {
-            internal ScientistNPC Entity { get; private set; }
+            private float targetAimedDuration;
 
-            internal Transform Transform { get; private set; }
+            private float lastAimSetTime;
 
-            internal HordeManager Manager { get; set; }
+            private float lastThinkTime;
+
+
+            private bool isEquippingWeapon;
+
+            private float nextThrowTime;
+
+            private float abortDelta;
+
+            private bool isThrowingExplosive;
+
+            private bool abortThrowingExplosive;
 
 
             private bool lightsOn;
 
-            private ConfigData.MemberOptions.Loadout loadout;
+            public Transform Transform { get; private set; }
 
-            private ItemContainer[] containers;
+            public Horde Horde { get; internal set; }
 
-            internal AttackEntity _attackEntity;
+            public ZombieNPCBrain Brain { get; private set; }
 
-            internal ThrownWeapon _throwableWeapon;
+            public AIState CurrentState { get; internal set; } = AIState.Idle;
 
-
-            internal float DamageScale { get; private set; }
-           
-            internal bool _NavMeshEnabled
-            {
-                get
-                {
-                    return (bool)typeof(global::HumanNPC).GetField("navmeshEnabled", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance).GetValue(Entity);
-                }
-                set
-                {
-                    typeof(global::HumanNPC).GetField("navmeshEnabled", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance).SetValue(Entity, value);
-                }
-            }
-
-            internal bool NavMeshEnabled { get; set; }
+            public bool IsGroupLeader { get; internal set; }
 
 
+            public BaseEntity CurrentTarget { get; private set; }
+
+            public bool HasTarget { get { return CurrentTarget != null; } }
+
+            public bool TargetUnreachable { get; internal set; }
+
+
+            public AttackEntity CurrentWeapon { get; private set; }
+
+            public Item ThrowableExplosive { get; private set; }
+
+
+
+            public ConfigData.MemberOptions.Loadout Loadout { get; private set; }
+
+            public Vector3 DestinationOverride { get; internal set; }
+
+            public bool IsAlert { get; internal set; }
+
+
+            private const int LOS_BLOCKING_LAYER = 1218519041;
 
             private const int AREA_MASK = 1;
 
             private const int AGENT_TYPE_ID = -1372625422;
 
-            internal static HashSet<ScientistNPC> _allHordeScientists = new HashSet<ScientistNPC>();
-
-            #region Initialization
-            private void Awake()
+            #region Horde
+            public void SetHordeProfile(string hordeProfile)
             {
-                Entity = GetComponent<ScientistNPC>();
-                Transform = Entity.transform;
+                if (!string.IsNullOrEmpty(hordeProfile) && Configuration.HordeProfiles.ContainsKey(hordeProfile))
+                {
+                    string loadoutId = Configuration.HordeProfiles[hordeProfile].GetRandom();
+                    Loadout = Configuration.Member.Loadouts.FirstOrDefault(x => x.LoadoutID == loadoutId);
+                }
 
-                Entity.DeathEffects = new GameObjectRef[0];
-                Entity.RadioChatterEffects = new GameObjectRef[0];
+                if (Loadout == null)
+                    Loadout = Configuration.Member.Loadouts.GetRandom();
+            }
 
-                AIThinkManager.Remove(Entity);
+            public void SetRoamTargetOverride(Vector3 position)
+            {
+                if (IsGroupLeader)
+                    DestinationOverride = position;
+
+                ResetRoamState();
+            }
+
+            public void ResetRoamState() 
+            {                
+                if (Brain != null && CurrentState == AIState.Roam)
+                    Brain.SwitchToState(AIState.Idle, IDLE_STATE_CONTAINER);
+            }
+
+            public void OnInitialSpawn()
+            {
+                if (IsGroupLeader)
+                    return;
+
+                if (Horde.Leader.HasTarget)                
+                    Brain.Senses.Memory.SetKnown(Horde.Leader.CurrentTarget, this, null);
+            }
+            #endregion
+
+            #region BaseNetworkable
+            public override void DestroyShared()
+            {
+                base.DestroyShared();
+                AIThinkManager.Remove(this);
+            }
+
+            public override void ServerInit()
+            {
+                faction = Faction.Horror;
+
+                loadouts = null;
+
+                if (NavAgent == null)
+                    NavAgent = GetComponent<NavMeshAgent>();
+
+                NavAgent.areaMask = AREA_MASK;
+
+                NavAgent.agentTypeID = AGENT_TYPE_ID;
+
+                GetComponent<BaseNavigator>().DefaultArea = "Walkable";
+
+                base.ServerInit();
+
+                displayName = Loadout.Names.GetRandom();
+
+                Loadout.GiveToPlayer(this);
+
+                FindThrowableExplosive();
+
+                Brain = GetComponent<ZombieNPCBrain>();
+
+                Transform = transform;
+
                 AIThinkManager.Add(this);
-            }
-                        
-            internal void Setup()
-            {
-                Entity.CancelInvoke(Entity.IdleCheck);
-                Entity.CancelInvoke(Entity.EnableNavAgent);
-                Entity.CancelInvoke(Entity.EquipTest);
-                
-                Entity.NavAgent.areaMask = AREA_MASK;
-                Entity.NavAgent.agentTypeID = AGENT_TYPE_ID;
 
-                if (!string.IsNullOrEmpty(Manager.hordeProfile) && configData.HordeProfiles.ContainsKey(Manager.hordeProfile))
+                InvokeRepeating(LightCheck, 1f, 30f);
+            }
+            #endregion
+
+            #region BaseEntity
+            public override float StartHealth() => Loadout.Vitals.Health;
+
+            public override float StartMaxHealth() => Loadout.Vitals.Health;
+
+            public override float MaxHealth() => Loadout.Vitals.Health;
+
+            public override void OnSensation(Sensation sensation)
+            {
+                if (!Configuration.Horde.UseSenses || sensation.Type == SensationType.Explosion) 
+                    return; 
+
+                if (sensation.UsedEntity is TimedExplosive && sensation.Type == SensationType.ThrownWeapon) 
+                    return;
+
+                if (sensation.Initiator != null)
                 {
-                    string loadoutId = configData.HordeProfiles[Manager.hordeProfile].GetRandom();
-                    loadout = configData.Member.Loadouts.Find(x => x.LoadoutID == loadoutId);
+                    if (sensation.Initiator is ZombieNPC) 
+                        return;                    
+
+                    Brain.Senses.Memory.SetKnown(sensation.Initiator, this, null);
                 }
-                else loadout = configData.Member.Loadouts.GetRandom();
-
-                Entity.displayName = loadout.Names.Length > 0 ? loadout.Names.GetRandom() : "Zombie";
-
-                Entity.sightRange = loadout.Sensory.VisionRange;
-
-                Entity.InitializeHealth(loadout.Vitals.Health, loadout.Vitals.Health);
-
-                DamageScale = loadout.DamageMultiplier;
-
-                UpdateGear();
-
-                Entity.Invoke(EnableNavAgent, 0.25f);
-
-                Entity.Invoke(EquipWeapon, 0.25f);
                 
-                Entity.InvokeRandomized(TickSpeed, 1f, Entity.PositionTickRate, Entity.PositionTickRate * 0.1f);
+                if (IsGroupLeader && CurrentState <= AIState.Roam)
+                    Horde.SetLeaderRoamTarget(sensation.Position);
 
-                Entity.InvokeRandomized(UpdateTick, 1f, 4f, 1f);
-
-                RunZombieEffects();
+                IsAlert = true;
             }
 
-            protected void UpdateGear()
+            public override void OnAttacked(HitInfo info)
             {
-                StripInventory(Entity);
+                base.OnAttacked(info);
+                Horde.ForceWakeFromSleep();
+            }
+            #endregion
 
-                for (int i = 0; i < loadout.BeltItems.Count; i++)
+            #region BasePlayer
+            public override bool IsNpc => false;
+
+            public override BaseNpc.AiStatistics.FamilyEnum Family => BaseNpc.AiStatistics.FamilyEnum.Zombie;
+
+            public override string Categorize() => "Zombie";
+
+            public override bool ShouldDropActiveItem() => false;
+            #endregion
+
+            #region NPCPlayer
+            public override bool IsLoadBalanced() => true;
+
+            public override void EquipWeapon()
+            {
+                if (!isEquippingWeapon)
+                    StartCoroutine(EquipItem());
+            }
+            
+            private void FindThrowableExplosive()
+            {
+                for (int i = 0; i < inventory.containerBelt.itemList.Count; i++)
                 {
-                    ConfigData.LootTable.InventoryItem loadoutItem = loadout.BeltItems[i];
+                    Item item = inventory.containerBelt.GetSlot(i);
+                    if (item != null && item.GetHeldEntity() is ThrownWeapon)
+                    {
+                        ThrowableExplosive = item;
+                        break;
+                    }
+                }
+            }
 
-                    Item item = ItemManager.CreateByName(loadoutItem.Shortname, loadoutItem.Amount, loadoutItem.SkinID);
-                    item.MoveToContainer(Entity.inventory.containerBelt);
+            private IEnumerator EquipItem(Item slot = null)
+            {
+                if (inventory != null && inventory.containerBelt != null)
+                {
+                    isEquippingWeapon = true;
 
-                    if (_throwableWeapon == null && item.GetHeldEntity() is ThrownWeapon)                    
-                        _throwableWeapon = item.GetHeldEntity() as ThrownWeapon;
+                    if (slot == null)
+                    {
+                        for (int i = 0; i < inventory.containerBelt.itemList.Count; i++)
+                        {
+                            Item item = inventory.containerBelt.GetSlot(i);
+                            if (item != null && item.GetHeldEntity() is AttackEntity)
+                            {
+                                slot = item;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (slot != null)
+                    {
+                        if (CurrentWeapon != null)
+                        {
+                            CurrentWeapon.SetHeld(false);
+                            CurrentWeapon = null;
+
+                            SendNetworkUpdate(NetworkQueue.Update);
+                            inventory.UpdatedVisibleHolsteredItems();
+                        }
+
+                        yield return CoroutineEx.waitForSeconds(0.5f);
+
+                        UpdateActiveItem(slot.uid);
+
+                        HeldEntity heldEntity = slot.GetHeldEntity() as HeldEntity;
+                        if (heldEntity != null)
+                        {                                                        
+                            if (heldEntity is AttackEntity)
+                                (heldEntity as AttackEntity).TopUpAmmo();
+
+                            if (heldEntity is Chainsaw)
+                                ServerStartChainsaw(heldEntity as Chainsaw);                            
+                        }
+
+                        CurrentWeapon = heldEntity as AttackEntity;
+                    }
+
+                    isEquippingWeapon = false;
+                }
+            }
+
+            public override float GetAimConeScale() => Loadout.AimConeScale;
+
+            public float GetAimSwayScalar() => 1f - Mathf.InverseLerp(1f, 3f, Time.time - lastGunShotTime);
+            
+            public override Vector3 GetAimDirection()
+            {
+                if (Brain != null && Brain.Navigator != null && Brain.Navigator.IsOverridingFacingDirection)                
+                    return Brain.Navigator.FacingDirectionOverride;
+                return base.GetAimDirection();
+            }
+
+            public override void SetAimDirection(Vector3 newAim)
+            {
+                if (newAim == Vector3.zero)                
+                    return;
+                
+                float num = Time.time - lastAimSetTime;
+                lastAimSetTime = Time.time;
+
+                AttackEntity attackEntity = CurrentWeapon;
+                if (attackEntity)                
+                    newAim = attackEntity.ModifyAIAim(newAim, GetAimSwayScalar());
+                
+                if (isMounted)
+                {
+                    BaseMountable baseMountable = GetMounted();
+                    Vector3 eulerAngles = baseMountable.transform.eulerAngles;
+                    Quaternion aimRotation = Quaternion.Euler(Quaternion.LookRotation(newAim, baseMountable.transform.up).eulerAngles);
+
+                    Vector3 lookRotation = Quaternion.LookRotation(transform.InverseTransformDirection(aimRotation * Vector3.forward), transform.up).eulerAngles;
+                    lookRotation = BaseMountable.ConvertVector(lookRotation);
+
+                    Quaternion clampedRotation = Quaternion.Euler(Mathf.Clamp(lookRotation.x, baseMountable.pitchClamp.x, baseMountable.pitchClamp.y), 
+                                                                  Mathf.Clamp(lookRotation.y, baseMountable.yawClamp.x, baseMountable.yawClamp.y), 
+                                                                  eulerAngles.z);
+
+                    newAim = BaseMountable.ConvertVector(Quaternion.LookRotation(transform.TransformDirection(clampedRotation * Vector3.forward), transform.up).eulerAngles);
+                }
+                else
+                {
+                    BaseEntity parentEntity = GetParentEntity();
+                    if (parentEntity)
+                    {
+                        Vector3 aimDirection = parentEntity.transform.InverseTransformDirection(newAim);
+                        Vector3 forward = new Vector3(newAim.x, aimDirection.y, newAim.z);
+
+                        eyes.rotation = Quaternion.Lerp(eyes.rotation, Quaternion.LookRotation(forward, parentEntity.transform.up), num * 25f);
+                        viewAngles = eyes.bodyRotation.eulerAngles;
+                        ServerRotation = eyes.bodyRotation;
+                        return;
+                    }
+                }
+
+                eyes.rotation = (isMounted ? Quaternion.Slerp(eyes.rotation, Quaternion.Euler(newAim), num * 70f) : Quaternion.Lerp(eyes.rotation, Quaternion.LookRotation(newAim, transform.up), num * 25f));
+                viewAngles = eyes.rotation.eulerAngles;
+                ServerRotation = eyes.rotation;
+            }
+
+            public override void Hurt(HitInfo info)
+            {
+                if (info.InitiatorPlayer is ZombieNPC)
+                    return;
+
+                if (isMounted)                
+                    info.damageTypes.ScaleAll(0.1f);
+
+                if (Configuration.Member.HeadshotKills && info.isHeadshot)
+                    info.damageTypes.ScaleAll(1000);
+
+                base.Hurt(info);
+
+                BaseEntity initiator = info.Initiator;
+
+                if (initiator != null && !initiator.EqualNetID(this)) 
+                {
+                    if ((initiator is BasePlayer && CanTargetBasePlayer(initiator as BasePlayer)) || (initiator is BaseNpc && CanTargetEntity(initiator)))                
+                        Horde.RegisterInterestInTarget(this, initiator);
+                }
+            }
+
+            public override BaseCorpse CreateCorpse()
+            {
+                NPCPlayerCorpse npcplayerCorpse = DropCorpse("assets/prefabs/npc/murderer/murderer_corpse.prefab") as NPCPlayerCorpse;
+                if (npcplayerCorpse)
+                {
+                    RemoveItemsOnDeath();
+                    ResetModifiedWeaponRange();
+
+                    npcplayerCorpse.transform.position = npcplayerCorpse.transform.position + Vector3.down * NavAgent.baseOffset;
+                    npcplayerCorpse.SetLootableIn(2f);
+
+                    npcplayerCorpse.SetFlag(Flags.Reserved5, HasPlayerFlag(PlayerFlags.DisplaySash), false, true);
+                    npcplayerCorpse.SetFlag(Flags.Reserved2, true, false, true);
+
+                    npcplayerCorpse.TakeFrom(new ItemContainer[]
+                    {
+                        inventory.containerMain,
+                        inventory.containerWear,
+                        inventory.containerBelt
+                    });
+
+                    npcplayerCorpse.playerName = displayName;
+                    npcplayerCorpse.playerSteamID = userID;
+
+                    npcplayerCorpse.Spawn();
+                    npcplayerCorpse.TakeChildren(this);
+
+                    if (Configuration.Loot.DropInventory)
+                    {                        
+                        npcplayerCorpse.containers[1].Clear();
+                    }
+                    else
+                    {
+                        ItemContainer[] containers = npcplayerCorpse.containers;
+                        for (int i = 0; i < containers.Length; i++)
+                            containers[i].Clear();
+
+                        int count = Random.Range(Configuration.Loot.Random.Minimum, Configuration.Loot.Random.Maximum);
+
+                        int spawnedCount = 0;
+                        int loopCount = 0;
+
+                        while (true)
+                        {
+                            loopCount++;
+
+                            if (loopCount > 3)
+                                goto EndLootSpawn;
+
+                            float probability = Random.Range(0f, 1f);
+
+                            List<ConfigData.LootTable.RandomLoot.LootDefinition> definitions = new List<ConfigData.LootTable.RandomLoot.LootDefinition>(Configuration.Loot.Random.List);
+
+                            for (int i = 0; i < Configuration.Loot.Random.List.Count; i++)
+                            {
+                                ConfigData.LootTable.RandomLoot.LootDefinition lootDefinition = definitions.GetRandom();
+
+                                definitions.Remove(lootDefinition);
+
+                                if (lootDefinition.Probability >= probability)
+                                {
+                                    lootDefinition.Create(containers[0]);
+
+                                    spawnedCount++;
+
+                                    if (spawnedCount >= count)
+                                        goto EndLootSpawn;
+                                }
+                            }
+                        }
+                    }                    
+                }
+                EndLootSpawn:
+                return npcplayerCorpse;
+            }
+
+            private void RemoveItemsOnDeath()
+            {
+                if (Configuration.Member.GiveGlowEyes)
+                {
+                    for (int i = inventory.containerWear.itemList.Count - 1; i >= 0; i--)
+                    {
+                        Item item = inventory.containerWear.itemList[i];
+                        if (item.info == ConfigData.MemberOptions.Loadout.GlowEyes)
+                        {
+                            item.RemoveFromContainer();
+                            item.Remove(0f);
+                        }
+                    }
+                }
+
+                if (Configuration.Loot.DropInventory && Configuration.Loot.DroppedBlacklist.Length > 0f)
+                {
+                    Action<ItemContainer> removeBlacklistedItems = new Action<ItemContainer>((ItemContainer itemContainer) =>
+                    {
+                        for (int i = itemContainer.itemList.Count - 1; i >= 0; i--)
+                        {
+                            Item item = itemContainer.itemList[i];
+                            if (Configuration.Loot.DroppedBlacklist.Contains(item.info.shortname))
+                            {
+                                item.RemoveFromContainer();
+                                item.Remove(0f);
+                            }
+                        }
+                    });
+
+                    removeBlacklistedItems(inventory.containerBelt);
+                    removeBlacklistedItems(inventory.containerMain);
+                }
+            }
+
+            private void ResetModifiedWeaponRange()
+            {
+                float effectiveRange;
+
+                for (int i = 0; i < inventory.containerBelt.itemList.Count; i++)
+                {
+                    Item item = inventory.containerBelt.itemList[i];
+
+                    if (item != null)
+                    {
+                        HeldEntity heldEntity = item.GetHeldEntity() as HeldEntity;
+                        if (heldEntity != null)
+                        {
+                            if (heldEntity is BaseProjectile)
+                            {
+                                if (ConfigData.MemberOptions.Loadout.GetDefaultEffectiveRange(item.info.shortname, out effectiveRange))
+                                    (heldEntity as BaseProjectile).effectiveRange = effectiveRange;
+                            }
+
+                            if (heldEntity is BaseMelee)
+                            {
+                                if (ConfigData.MemberOptions.Loadout.GetDefaultEffectiveRange(item.info.shortname, out effectiveRange))
+                                    (heldEntity as BaseMelee).effectiveRange = effectiveRange;
+                            }
+                        }
+                    }
+                }
+            }
+
+            public override void AttackerInfo(PlayerLifeStory.DeathInfo info)
+            {
+                base.AttackerInfo(info);
+                info.inflictorName = inventory.containerBelt.GetSlot(0)?.info?.shortname;
+                info.attackerName = "zombie";
+            }
+
+            public override bool IsOnGround() => true;
+            #endregion
+
+            #region IAIAttack
+            public void AttackTick(float delta, BaseEntity target, bool targetIsLOS)
+            {
+                if (target == null)                
+                    return;
+
+                Vector3 forward = eyes.BodyForward();
+                Vector3 direction = target.CenterPoint() - eyes.position;
+                float dot = Vector3.Dot(forward, direction.normalized);
+
+                if (!targetIsLOS)
+                {
+                    if (dot < 0.5f)
+                        targetAimedDuration = 0f;
+
+                    CancelBurst();
+                }
+                else
+                {
+                    if (dot > 0.2f)
+                        targetAimedDuration += delta;
+                }
+                
+                if (targetAimedDuration >= 0.2f && targetIsLOS)
+                {
+                    if (IsTargetInAttackRange(target))
+                    {
+                        if (CurrentWeapon is ThrownWeapon)
+                        {
+                            if (!abortThrowingExplosive)
+                            {
+                                abortDelta += delta;
+                                if (abortDelta > 3f)
+                                {
+                                    if (isThrowingExplosive)
+                                        abortThrowingExplosive = true;
+                                    else
+                                    {
+                                        EquipWeapon();
+                                        nextThrowTime = Time.time + 2f;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            ServerUseCurrentWeapon();
+                        }
+                    }
+                    else
+                    {
+                        if (CurrentState == AIState.Chase && TargetUnreachable)
+                        {
+                            if (CurrentWeapon == null)
+                                return;
+
+                            if (CanThrowWeapon())
+                            {                                
+                                if (!(CurrentWeapon is ThrownWeapon))                                
+                                    EquipThrowableExplosive();                                
+                                else
+                                {
+                                    if (!isThrowingExplosive)                                    
+                                        StartCoroutine(ServerUseThrowableExplosive());                                    
+                                }
+                            }
+                        }
+                    }
+                }
+                else CancelBurst();
+            }
+
+            private void ServerUseCurrentWeapon()
+            {
+                AttackEntity attackEntity = CurrentWeapon;
+                if (attackEntity == null)                
+                    return;
+                
+                BaseProjectile baseProjectile = attackEntity as BaseProjectile;
+                if (baseProjectile)
+                {
+                    if (baseProjectile.primaryMagazine.contents <= 0)
+                    {
+                        baseProjectile.ServerReload();                        
+                        return;
+                    }
+
+                    if (baseProjectile.NextAttackTime > Time.time)                    
+                        return;                    
+                }
+
+                if (Mathf.Approximately(attackEntity.attackLengthMin, -1f))
+                {
+                    attackEntity.ServerUse(damageScale, null);
+                    lastGunShotTime = Time.time;
+                    return;
+                }
+
+                if (IsInvoking(TriggerDown))                
+                    return;
+                
+                if (Time.time < nextTriggerTime)                
+                    return;
+                
+                InvokeRepeating(TriggerDown, 0f, 0.01f);
+
+                triggerEndTime = Time.time + Random.Range(attackEntity.attackLengthMin, attackEntity.attackLengthMax);
+                TriggerDown();
+            }
+
+            #region Throw Explosives
+            private bool EquipThrowableExplosive()
+            {
+                if (isEquippingWeapon)
+                    return false;
+
+                if (ThrowableExplosive != null && ThrowableExplosive.amount > 0)
+                {
+                    StartCoroutine(EquipItem(ThrowableExplosive));
+                    nextThrowTime = Time.time + 1f;
+                    return true;
+                }
+
+                return false;
+            }
+
+            private IEnumerator ServerUseThrowableExplosive()
+            {
+                isThrowingExplosive = true;
+
+                nextThrowTime = Time.time + ConVar.Halloween.scarecrow_throw_beancan_global_delay + Random.Range(1f, 6f);
+
+                modelState.aiming = true;
+                SendNetworkUpdate(NetworkQueue.Update);
+
+                yield return CoroutineEx.waitForSeconds(1f);
+
+                if (!abortThrowingExplosive && HasTarget && Vector3.Distance(CurrentTarget.transform.position, transform.position) < 25f)
+                {
+                    Brain.Navigator.ApplyFacingDirectionOverride();
+
+                    ThrowableExplosive.amount += 1;
+                    (CurrentWeapon as ThrownWeapon).ServerThrow(CurrentTarget.transform.position);
+                }
+                else
+                {
+                    nextThrowTime = Time.time + 2f;
+                }
+
+                modelState.aiming = false;
+                SendNetworkUpdate(NetworkQueue.Update);
+
+                yield return CoroutineEx.waitForSeconds(0.5f);
+
+                EquipWeapon();
+
+                yield return CoroutineEx.waitForSeconds(0.5f);
+
+                isThrowingExplosive = false;
+                abortThrowingExplosive = false;
+                abortDelta = 0f;
+            }
+
+            private bool CanThrowWeapon()
+            {
+                if (!ConVar.AI.npc_use_thrown_weapons || !ConVar.Halloween.scarecrows_throw_beancans)
+                    return false;
+
+                if (Time.time < nextThrowTime)
+                    return false;
+
+                if (isEquippingWeapon)
+                    return false;
+
+                if (CurrentWeapon is BaseProjectile)
+                    return false;
+
+                if (ThrowableExplosive == null || ThrowableExplosive.amount <= 0)
+                    return false;
+
+                if (!HasTarget)
+                    return false;
+                
+                return true;
+            }
+            #endregion
+
+            public bool CanAttack(BaseEntity entity) => true;
+
+            public bool CanSeeTarget(BaseEntity entity)
+            {
+                if (!(entity is BaseCombatEntity))
+                    return false;
+
+                if (entity is BasePlayer)
+                    return IsPlayerVisibleToUs((entity as BasePlayer), LOS_BLOCKING_LAYER);
+
+                return (IsVisible(entity.CenterPoint(), eyes.worldStandingPosition, float.PositiveInfinity) ||
+                        IsVisible(entity.transform.position, eyes.worldStandingPosition, float.PositiveInfinity));
+            }
+
+            public float CooldownDuration() => 5f;
+
+            public float EngagementRange()
+            {
+                AttackEntity attackEntity = CurrentWeapon;
+                if (!attackEntity)                
+                    return Brain.SenseRange;
+                
+                return attackEntity is ThrownWeapon ? -1f : attackEntity.effectiveRange;
+            }
+
+            public float GetAmmoFraction()
+            {
+                if (CurrentWeapon is BaseProjectile)
+                    return AmmoFractionRemaining();
+                return 1f;
+            }
+
+            public BaseEntity GetBestTarget()
+            {
+                BaseEntity target = null;
+                float delta = -1f;
+                foreach (BaseEntity baseEntity in Brain.Senses.Memory.Targets)
+                {
+                    if (baseEntity == null || baseEntity.Health() <= 0f)
+                        continue;
+
+                    if (baseEntity is BasePlayer && !CanTargetBasePlayer(baseEntity as BasePlayer))                  
+                        continue;                    
+
+                    if (!CanTargetEntity(baseEntity))                   
+                        continue;
                     
-                    if (loadoutItem.SubSpawn != null && item.contents != null)
-                    {
-                        for (int y = 0; y < loadoutItem.SubSpawn.Length; y++)
-                        {
-                            ConfigData.LootTable.InventoryItem subspawnItem = loadoutItem.SubSpawn[y];
+                    float distanceToTarget = Vector3.Distance(baseEntity.transform.position, transform.position);
+                    if (distanceToTarget > Brain.TargetLostRange)
+                        continue;
 
-                            Item subItem = ItemManager.CreateByName(subspawnItem.Shortname, subspawnItem.Amount, subspawnItem.SkinID);
-                            subItem.MoveToContainer(item.contents);
-                        }
-                    }
+                    float rangeDelta = 1f - Mathf.InverseLerp(1f, Brain.SenseRange, distanceToTarget);                    
+
+                    float dot = Vector3.Dot((baseEntity.transform.position - eyes.position).normalized, eyes.BodyForward());
+
+                    if (Loadout.Sensory.IgnoreNonVisionSneakers && dot < Brain.VisionCone)
+                        continue;
+
+                    rangeDelta += Mathf.InverseLerp(Brain.VisionCone, 1f, dot) / 2f;
+                    rangeDelta += (Brain.Senses.Memory.IsLOS(baseEntity) ? 2f : 0f);
+
+                    if (rangeDelta <= delta)
+                        continue;
+
+                    target = baseEntity;
+                    delta = rangeDelta;
                 }
 
-                for (int i = 0; i < loadout.MainItems.Count; i++)
+                if (target != null)
+                    Horde.RegisterInterestInTarget(this, target);
+
+                CurrentTarget = target;
+
+                return target;
+            }
+
+            public bool CanTargetBasePlayer(BasePlayer player)
+            {
+                if (player.IsFlying)
+                    return false;
+
+                if (Configuration.Member.IgnoreSleepers && player.IsSleeping())
+                    return false;
+
+                if (!Configuration.Member.TargetHumanNPCs && !player.IsNpc && !player.userID.IsSteamId())
+                    return false;
+
+                if (player.userID.IsSteamId() && Instance.permission.UserHasPermission(player.UserIDString, IGNORE_PERMISSION))
+                    return false;
+
+                if (Loadout.Sensory.IgnoreSafeZonePlayers && player.InSafeZone())
+                    return false;
+
+                return true;
+            }
+
+            public bool CanTargetEntity(BaseEntity baseEntity)
+            {
+                if (Configuration.Horde.RestrictLocalChaseDistance && Horde.IsLocalHorde)
                 {
-                    ConfigData.LootTable.InventoryItem loadoutItem = loadout.MainItems[i];
-
-                    Item item = ItemManager.CreateByName(loadoutItem.Shortname, loadoutItem.Amount, loadoutItem.SkinID);
-                    item.MoveToContainer(Entity.inventory.containerMain);
-
-                    if (loadoutItem.SubSpawn != null && item.contents != null)
-                    {
-                        for (int y = 0; y < loadoutItem.SubSpawn.Length; y++)
-                        {
-                            ConfigData.LootTable.InventoryItem subspawnItem = loadoutItem.SubSpawn[y];
-
-                            Item subItem = ItemManager.CreateByName(subspawnItem.Shortname, subspawnItem.Amount, subspawnItem.SkinID);
-                            subItem.MoveToContainer(item.contents);
-                        }
-                    }
+                    if (Vector3.Distance(baseEntity.transform.position, Horde.InitialPosition) > Horde.MaximumRoamDistance * 1.5f)
+                        return false;
                 }
 
-                for (int i = 0; i < loadout.WearItems.Count; i++)
-                {
-                    ConfigData.LootTable.InventoryItem loadoutItem = loadout.WearItems[i];
+                if (!Configuration.Member.TargetAnimals && baseEntity is BaseNpc)
+                    return false;
 
-                    Item item = ItemManager.CreateByName(loadoutItem.Shortname, loadoutItem.Amount, loadoutItem.SkinID);
-                    item.MoveToContainer(Entity.inventory.containerWear);
+                if (Vector3.Distance(baseEntity.transform.position, Transform.position) > Brain.TargetLostRange)
+                    return false;
 
-                    if (loadoutItem.SubSpawn != null && item.contents != null)
-                    {
-                        for (int y = 0; y < loadoutItem.SubSpawn.Length; y++)
-                        {
-                            ConfigData.LootTable.InventoryItem subspawnItem = loadoutItem.SubSpawn[y];
+                return true;
+            }
 
-                            Item subItem = ItemManager.CreateByName(subspawnItem.Shortname, subspawnItem.Amount, subspawnItem.SkinID);
-                            subItem.MoveToContainer(item.contents);
-                        }
-                    }
-                }
-                                
-                Entity.InvokeRandomized(LightCheck, 5f, 30f, 5f);
+            public bool IsOnCooldown() => false;
 
-                if (configData.Member.GiveGlowEyes)
-                    ItemManager.Create(Instance._glowEyes).MoveToContainer(Entity.inventory.containerWear);
+            public bool IsTargetInRange(BaseEntity entity) => CurrentWeapon == null || CurrentWeapon is BaseMelee ? false : IsTargetInAttackRange(entity);
+            
+            public bool IsTargetInAttackRange(BaseEntity entity) => Vector3.Distance(entity.transform.position, Transform.position) <= EngagementRange();
+
+            public bool NeedsToReload() => false;
+
+            public bool Reload() => true;
+
+            public bool StartAttacking(BaseEntity entity) => true;
+
+            public void StopAttacking() { }
+            #endregion
+
+            #region IAISenses
+            public bool IsFriendly(BaseEntity entity) => entity is ZombieNPC;
+
+            public bool IsTarget(BaseEntity entity) => !IsFriendly(entity);
+
+            public bool IsThreat(BaseEntity entity) => IsTarget(entity);
+            #endregion
+
+            #region IThinker
+            public void TryThink()
+            {
+                base.ServerThink(Time.time - lastThinkTime);
+
+                if (Brain.ShouldServerThink())                
+                    Brain.DoThink();
+                
+                lastThinkTime = Time.time;
             }
             #endregion
 
@@ -1730,1071 +2204,679 @@ namespace Oxide.Plugins
             private void LightCheck()
             {
                 if ((TOD_Sky.Instance.Cycle.Hour > 18 || TOD_Sky.Instance.Cycle.Hour < 6) && !lightsOn)
-                    LightToggle(true);
-                else if ((TOD_Sky.Instance.Cycle.Hour < 18 && TOD_Sky.Instance.Cycle.Hour > 6) && lightsOn)
-                    LightToggle(false);
+                    ToggleLights(true);
+
+                if ((TOD_Sky.Instance.Cycle.Hour < 18 && TOD_Sky.Instance.Cycle.Hour > 6) && lightsOn)
+                    ToggleLights(false);
             }
 
-            private void LightToggle(bool on)
+            private void ToggleLights(bool lightsOn)
             {
-                Item activeItem = Entity.GetActiveItem();
-                if (activeItem != null)
-                {
-                    BaseEntity heldEntity = activeItem.GetHeldEntity();
-                    if (heldEntity != null)
-                    {
-                        HeldEntity component = heldEntity.GetComponent<HeldEntity>();
-                        if (component)
-                        {
-                            component.SendMessage("SetLightsOn", on, SendMessageOptions.DontRequireReceiver);
-                        }
-                    }
-                }
-                foreach (Item item in Entity.inventory.containerWear.itemList)
-                {
-                    ItemModWearable itemModWearable = item.info.GetComponent<ItemModWearable>();
-                    if (!itemModWearable || !itemModWearable.emissive)
-                        continue;
-
-                    item.SetFlag(global::Item.Flag.IsOn, on);
-                    item.MarkDirty();
-                }
-
-                lightsOn = on;
-            }
-            #endregion
-
-            #region Loot
-            internal void PrepareInventory()
-            {
-                ItemContainer[] source = new ItemContainer[] { Entity.inventory.containerMain, Entity.inventory.containerWear, Entity.inventory.containerBelt };
-
-                containers = new ItemContainer[3];
-
-                for (int i = 0; i < containers.Length; i++)
-                {
-                    containers[i] = new ItemContainer();
-                    containers[i].ServerInitialize(null, source[i].capacity);
-                    containers[i].GiveUID();
-                    Item[] array = source[i].itemList.ToArray();
-                    for (int j = 0; j < array.Length; j++)
-                    {
-                        Item item = array[j];
-                        if (configData.Loot.DroppedBlacklist.Contains(item.info.shortname))
-                        {
-                            item.Remove(0f);
-                            continue;
-                        }
-
-                        if (i == 1)
-                        {
-                            Item newItem = ItemManager.CreateByItemID(item.info.itemid, item.amount, item.skin);
-                            if (!newItem.MoveToContainer(containers[i], -1, true))
-                                newItem.Remove(0f);
-                        }
-                        else
-                        {                            
-                            if (!item.MoveToContainer(containers[i], -1, true))
-                                item.Remove(0f);
-                        }
-                    }
-                }
-            }
-
-            internal void MoveInventoryTo(LootableCorpse corpse)
-            {
-                for (int i = 0; i < containers.Length; i++)
-                {
-                    Item[] array = containers[i].itemList.ToArray();
-                    corpse.containers[i].capacity = array.Length;
-
-                    for (int j = 0; j < array.Length; j++)
-                    {
-                        Item item = array[j];
-                        if (item != null && !item.MoveToContainer(corpse.containers[i], -1, true))                        
-                            item.Remove(0f);                        
-                    }
-                }
-
-                corpse.ResetRemovalTime();
-            }
-            #endregion
-
-            #region Navigation
-            private float lastThinkTime = Time.time;
-
-            private float lastMovementTickTime = Time.time;
-
-            internal void EnableNavAgent()
-            {
-                NavMeshHit navMeshHit;
-
-                if (!NavMesh.SamplePosition(Transform.position + (Vector3.up * 1f), out navMeshHit, 20f, -1))
-                {
-                    Debug.Log("Failed to sample navmesh");
-                    return;
-                }
-
-                Entity.NavAgent.Warp(navMeshHit.position);
-                Transform.position = navMeshHit.position;
-
-                _NavMeshEnabled = NavMeshEnabled = true;
-
-                Entity.NavAgent.enabled = true;
-                Entity.NavAgent.isStopped = false;
-
-                SetDestination(Transform.position);
-            }
-
-            internal void SetDestination(Vector3 destination)
-            {
-                if (Entity.NavAgent.enabled)
-                {
-                    Entity.NavAgent.ResetPath();
-                    Entity.NavAgent.SetDestination(destination);
-                }
-            }
-
-            private void TickSpeed()
-            {
-                float d = Time.time - lastMovementTickTime;
-                lastMovementTickTime = Time.time;
-                UpdateSpeed(d);
-            }
-
-            private void UpdateSpeed(float delta)
-            {
-                float speed = SpeedFromEnum(Entity.desiredSpeed);
-                Entity.NavAgent.speed = Mathf.Lerp(Entity.NavAgent.speed, speed, delta * 8f);
-            }
-
-            public float SpeedFromEnum(global::HumanNPC.SpeedType newSpeed)
-            {
-                switch (newSpeed)
-                {
-                    case global::HumanNPC.SpeedType.Crouch:
-                        return loadout.Movement.DuckSpeed;
-                    case global::HumanNPC.SpeedType.SlowWalk:
-                        return loadout.Movement.WalkSpeed * 0.5f;
-                    case global::HumanNPC.SpeedType.Walk:
-                        return loadout.Movement.WalkSpeed;
-                    case global::HumanNPC.SpeedType.Sprint:
-                        return loadout.Movement.RunSpeed;
-                }
-                return 0f;
-            }
-            #endregion
-
-            #region Think
-            private void UpdateTick()
-            {
-                if (Entity == null || Entity.IsDestroyed)
-                {
-                    Destroy(this);
-                    return;
-                }
-
-                if (_attackEntity == null)
-                    _attackEntity = Entity.GetAttackEntity();
-            }
-
-            public void TryThink()
-            {
-                ServerThink(Time.time - lastThinkTime);
-                lastThinkTime = Time.time;
-            }
-
-            private void ServerThink(float delta)
-            {
-                if (Entity == null || Entity.IsDestroyed)
-                    return;
-
-                if (!configData.Member.DisableDormantSystem)
-                {
-                    if (Entity.IsDormant)
-                        return;
-                }
-                else Entity.IsDormant = false;
-
-                if (configData.Member.KillUnderWater && Entity.WaterFactor() > 0.8f)
-                {
-                    Die();
-                    return;
-                }
-
-                Entity.TickAi(delta);
-                if (Entity._brain.ShouldServerThink())
-                {
-                    Entity._brain.DoThink();
-                }
-
-                Entity.timeSinceItemTick += delta;
-                Entity.timeSinceTargetUpdate += delta;
-                
-                if (Entity.timeSinceItemTick > 0.1f)
-                {
-                    Entity.TickItems(Entity.timeSinceItemTick);
-                    Entity.timeSinceItemTick = 0f;
-                }
-
-                if (Entity.timeSinceTargetUpdate > 0.5f)
-                {
-                    UpdateTargets();
-                    Entity.timeSinceTargetUpdate = 0f;
-                }
-            }
-
-            internal void SetTarget()
-            {
-                Entity.myMemory.SetKnown(Manager.PrimaryTarget, Entity, null);
-
-                Entity.currentTarget = Manager.PrimaryTarget;
-
-                Entity.currentTargetLOS = TargetVisible(Manager.PrimaryTarget);
-
-                SetDestination(Manager.PrimaryTarget.transform.position);
-            }
-
-            internal bool TargetVisible(BaseCombatEntity baseCombatEntity)
-            {
-                return baseCombatEntity is BasePlayer ? Entity.IsPlayerVisibleToUs(baseCombatEntity as BasePlayer, 1218519041) :
-                    (Entity.IsVisible(baseCombatEntity.CenterPoint(), Entity.eyes.worldStandingPosition, float.PositiveInfinity) ||
-                    !Entity.IsVisible(baseCombatEntity.transform.position, Entity.eyes.worldStandingPosition, float.PositiveInfinity));
-            }
-            #endregion
-
-            #region Targeting            
-            private void UpdateTargets()
-            {
-                UpdateMemory();
-
-                int targetIndex = -1;
-                float targetDelta = -1f;
-                Vector3 currentPosition = Transform.position;
-
-                for (int i = 0; i < Entity.myMemory.All.Count; i++)
-                {
-                    Rust.AI.SimpleAIMemory.SeenInfo seenInfo = Entity.myMemory.All[i];
-                    if (seenInfo.Entity != null)
-                    {
-                        float distToTarget = Vector3.Distance(seenInfo.Entity.transform.position, currentPosition);
-
-                        if (seenInfo.Entity is BasePlayer && HordeManager.ShouldIgnorePlayer(seenInfo.Entity as BasePlayer))
-                            continue;
-
-                        if (HordeManager.ShouldForgetTarget(Manager, seenInfo.Entity))
-                            continue;
-
-                        if (seenInfo.Entity.Health() > 0f)
-                        {
-                            float sightRangeDelta = (1f - Mathf.InverseLerp(10f, Entity.sightRange, distToTarget));
-                            Vector3 dirToTarget = seenInfo.Entity.transform.position - Entity.eyes.position;
-
-                            float d = Vector3.Dot(dirToTarget.normalized, Entity.eyes.BodyForward());
-                            sightRangeDelta += Mathf.InverseLerp(Entity.visionCone, 1f, d);
-                            
-                            float timestamp = seenInfo.Timestamp - Time.realtimeSinceStartup;
-                            sightRangeDelta += (1f - Mathf.InverseLerp(0f, 3f, timestamp));
-                            
-                            if (sightRangeDelta > targetDelta)
-                            {
-                                targetIndex = i;
-                                targetDelta = sightRangeDelta;
-                            }
-                        }
-                    }
-                }
-
-                if (targetIndex == -1)
-                {
-                    Entity.currentTarget = null;
-                    Entity.currentTargetLOS = false;
-                }
-                else
-                {
-                    Rust.AI.SimpleAIMemory.SeenInfo seenInfo = Entity.myMemory.All[targetIndex];
-                    if (seenInfo.Entity != null && seenInfo.Entity is BaseCombatEntity)
-                    {                        
-                        Entity.currentTarget = (seenInfo.Entity as BaseCombatEntity);
-                        Entity.currentTargetLOS = IsVisibleToUs(Entity.currentTarget);
-
-                        if (Manager.PrimaryTarget == null)
-                            Manager.SetPrimaryTarget(Entity.currentTarget);
-                    }
-                }
-            }
-
-            private void UpdateMemory()
-            {
-                int inSphere = BaseEntity.Query.Server.GetInSphere(Transform.position, Entity.sightRange, Entity.QueryResults, new Func<BaseEntity, bool>(AiCaresAbout));
-                for (int i = 0; i < inSphere; i++)
-                {
-                    BaseCombatEntity baseCombatEntity = Entity.QueryResults[i] as BaseCombatEntity;
-                    if (baseCombatEntity != null && !baseCombatEntity.EqualNetID(Entity) && Entity.WithinVisionCone(baseCombatEntity) && IsVisibleToUs(baseCombatEntity))
-                    {
-                        Entity.myMemory.SetKnown(baseCombatEntity, Entity, null);
-                    }
-                }
-
-                Forget(Entity.memoryDuration);
-            }
-
-            private void Forget(float secondsOld)
-            {
-                for (int i = 0; i < Entity.myMemory.All.Count; i++)
-                {
-                    if (Time.realtimeSinceStartup - Entity.myMemory.All[i].Timestamp > secondsOld)
-                    {
-                        BaseEntity entity = Entity.myMemory.All[i].Entity;
-                        if (entity != null)
-                        {
-                            if (entity is BasePlayer)
-                            {
-                                Entity.myMemory.Players.Remove(entity);
-                            }
-                            Entity.myMemory.Targets.Remove(entity);
-                            Entity.myMemory.Threats.Remove(entity);
-                            Entity.myMemory.Friendlies.Remove(entity);
-                            Entity.myMemory.LOS.Remove(entity);
-                        }
-                        Entity.myMemory.All.RemoveAt(i);
-                        i--;
-                    }
-                }
-            }
-
-            private bool IsVisibleToUs(BaseCombatEntity baseCombatEntity)
-            {
-                if (baseCombatEntity is BasePlayer)
-                    return Entity.IsPlayerVisibleToUs(baseCombatEntity as BasePlayer, 1218519041);
-                else return Entity.IsVisible(baseCombatEntity.CenterPoint(), Entity.eyes.worldStandingPosition, float.PositiveInfinity);                
-            }
-
-            private static bool AiCaresAbout(BaseEntity entity)
-            {
-                BaseCombatEntity baseCombatEntity = entity as BaseCombatEntity;
-
-                if (baseCombatEntity == null || baseCombatEntity.IsDestroyed || baseCombatEntity.transform == null)
-                    return false;
-
-                if (baseCombatEntity.Health() <= 0f)
-                    return false;
-
-                if (baseCombatEntity is BasePlayer)
-                {
-                    BasePlayer player = baseCombatEntity as BasePlayer;
-
-                    if (HordeManager.ShouldIgnorePlayer(player))
-                        return false;
-
-                    if (player is NPCShopKeeper || (player is NPCPlayerApex && (player as NPCPlayerApex).GetFact(NPCPlayerApex.Facts.IsPeacekeeper) != 0))
-                        return false;
-                    
-                    if (!configData.Member.TargetNPCs)
-                    {
-                        if (player.IsNpc)
-                            return false;
-
-                        if (player is NPCPlayer || player is HTNPlayer || player is global::HumanNPC)
-                            return false;
-                    }
-                    
-                    if (!configData.Member.TargetHumanNPCs && !player.userID.IsSteamId() && !player.IsNpc)
-                        return false;
-
-                    return true;
-                }
-                                
-                if (baseCombatEntity is BaseNpc)                
-                    return configData.Member.TargetAnimals;
-                
-                return false;
-            }
-            #endregion
-
-            #region Equip/Holster
-            internal void EquipWeapon()
-            {
-                if (Entity == null || Entity.IsDestroyed || Entity.IsDead())
-                    return;
-
-                for (int i = 0; i < Entity.inventory.containerBelt.itemList.Count; i++)
-                {
-                    Item slot = Entity.inventory.containerBelt.GetSlot(i);
-                    if (slot != null)
-                    {
-                        Entity.UpdateActiveItem(Entity.inventory.containerBelt.GetSlot(i).uid);
-
-                        BaseEntity heldEntity = slot.GetHeldEntity();
-                        if (heldEntity != null)
-                        {
-                            _attackEntity = heldEntity.GetComponent<AttackEntity>();
-
-                            if (_attackEntity is ThrownWeapon)
-                                continue;
-
-                            if (_attackEntity != null)
-                                _attackEntity.TopUpAmmo();
-
-                            if (_attackEntity is BaseProjectile)
-                                _attackEntity.effectiveRange *= 2f;
-
-                            if (_attackEntity is Chainsaw)
-                                (_attackEntity as Chainsaw).ServerNPCStart();
-
-                            return;
-                        }                        
-                    }
-                }
-            }
-
-            internal void EquipThrowable()
-            {
-                if (Entity == null || Entity.IsDestroyed || Entity.IsDead())
-                    return;
-
-                if (_throwableWeapon == null)
-                    return;
-
-                for (int i = 0; i < Entity.inventory.containerBelt.itemList.Count; i++)
-                {
-                    Item slot = Entity.inventory.containerBelt.GetSlot(i);
-                    if (slot != null)
-                    {
-                        if (slot.GetHeldEntity() == _throwableWeapon)
-                        {
-                            Entity.UpdateActiveItem(Entity.inventory.containerBelt.GetSlot(i).uid);
-                            _attackEntity = _throwableWeapon;
-                            return;
-                        }  
-                    }
-                }
-            }
-
-            internal void HolsterWeapon()
-            {
-                Entity.svActiveItemID = 0;
-
-                Item activeItem = Entity.GetActiveItem();
+                Item activeItem = GetActiveItem();
                 if (activeItem != null)
                 {
                     HeldEntity heldEntity = activeItem.GetHeldEntity() as HeldEntity;
                     if (heldEntity != null)
+                        heldEntity.SendMessage("SetLightsOn", lightsOn, SendMessageOptions.DontRequireReceiver);
+                }
+
+                foreach (Item item in inventory.containerWear.itemList)
+                {
+                    ItemModWearable itemModWearble = item.info.GetComponent<ItemModWearable>();
+                    if (itemModWearble && itemModWearble.emissive)
                     {
-                        heldEntity.SetHeld(false);
+                        item.SetFlag(global::Item.Flag.IsOn, lightsOn);
+                        item.MarkDirty();
                     }
                 }
 
-                Entity.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
-                Entity.inventory.UpdatedVisibleHolsteredItems();
+                if (isMounted)                
+                    GetMounted().LightToggle(this);
+
+                this.lightsOn = lightsOn;
             }
             #endregion
 
-            #region Weapon Usage
-            private readonly NavMeshPath navMeshPath = new NavMeshPath();
-
-            private bool isThrowingWeapon = false;
-
-            private float nextThrowTime = Time.time + ConVar.Halloween.scarecrow_throw_beancan_global_delay + UnityEngine.Random.Range(0, 10);
-
-            internal float GetIdealDistanceFromTarget() => Mathf.Max(0.5f, EngagementRange() * 0.7f);
-            
-            internal float EngagementRange()
+            #region Chainsaw Hackery
+            private void ServerStartChainsaw(Chainsaw chainsaw)
             {
-                if (_attackEntity != null)
-                {
-                    if (_attackEntity is ThrownWeapon)
-                        return (_attackEntity as ThrownWeapon).maxThrowVelocity;
-
-                    return _attackEntity.effectiveRange;
-                }
-                
-                return 1f;
-            }
-
-            internal float ThrownEngagementRange()
-            {
-                if (_throwableWeapon != null)
-                    return _throwableWeapon.maxThrowVelocity;
-
-                return 0f;
-            }
-
-            internal bool TargetInRange()
-            {
-                if (!Entity.HasTarget())                
-                    return false;
-                
-                return Entity.DistanceToTarget() <= EngagementRange();
-            }
-
-            internal bool TargetInThrowableRange()
-            {
-                if (!Entity.HasTarget())
-                    return false;
-
-                return Entity.DistanceToTarget() <= ThrownEngagementRange();
-            }
-
-            internal bool CanThrowWeapon()
-            {
-                if (!ConVar.AI.npc_use_thrown_weapons)
-                    return false;
-
-                if (isThrowingWeapon)
-                    return true;
-
-                if (Time.time < nextThrowTime)
-                    return false;
-
-                if (Entity.currentTarget == null)
-                    return false;
-
-                if (CanNavigateToTarget())
-                    return false;
-                                
-                if (!IsVisibleToUs(Entity.currentTarget))               
-                    return false;                
-
-                return true;
-            }
-
-            internal void TryThrowWeapon()
-            {
-                if (isThrowingWeapon)
+                if (chainsaw.HasFlag(Flags.On))
                     return;
 
-                isThrowingWeapon = true;
-                Entity.StartCoroutine(ThrowWeapon());
+                chainsaw.DoReload(default(BaseEntity.RPCMessage));
+                chainsaw.SetEngineStatus(true);
+                chainsaw.SendNetworkUpdateImmediate(false);
+
+                Invoke(ChainsawRefuel, 1f);
             }
 
-            private IEnumerator ThrowWeapon()
+            private void ChainsawRefuel()
             {
-                EquipThrowable();
-                yield return CoroutineEx.waitForSeconds(1f + UnityEngine.Random.value);
-
-                if (Entity.currentTarget != null)
-                {
-                    Entity.SetAimDirection((Entity.currentTarget.transform.position - Transform.position).normalized);
-
-                    _throwableWeapon.GetItem().amount += 1;
-
-                    _throwableWeapon.ServerThrow(Entity.currentTarget.transform.position);
-
-                    nextThrowTime = Time.time + ConVar.Halloween.scarecrow_throw_beancan_global_delay + UnityEngine.Random.Range(0, 8);
-                }
-
-                yield return CoroutineEx.waitForSeconds(1f);
-
-                EquipWeapon();
-                yield return CoroutineEx.waitForSeconds(1f);
-                isThrowingWeapon = false;
-            }
-
-            internal bool CanNavigateToTarget()
-            {
-                if (Entity.NavAgent.CalculatePath(Entity.currentTarget.transform.position, navMeshPath) && navMeshPath.status == NavMeshPathStatus.PathComplete)
-                    return true;
-                
-                return false;
-            }
-
-            internal bool OutOfThrowingRange()
-            {
-                if ((Transform.position - Entity.currentTarget.transform.position).magnitude > ThrownEngagementRange())
-                    return true;
-
-                return false;
-            }
-
-            internal void DoMeleeAttack() // Hackery to make ScientistNPC's do melee damage
-            {
-                if (_attackEntity == null || !(_attackEntity is BaseMelee))
+                if (!(CurrentWeapon is Chainsaw))
                     return;
 
-                BaseMelee baseMelee = _attackEntity as BaseMelee;
-                if (baseMelee.HasAttackCooldown())
-                    return;
+                (CurrentWeapon as Chainsaw).ammo = (CurrentWeapon as Chainsaw).maxAmmo;
 
-                baseMelee.StartAttackCooldown(baseMelee.repeatDelay * 2f);
-                Entity.SignalBroadcast(BaseEntity.Signal.Attack, string.Empty, null);
-
-                if (baseMelee.swingEffect.isValid)
-                    Effect.server.Run(baseMelee.swingEffect.resourcePath, baseMelee.transform.position, Vector3.forward, Entity.net.connection, false);
-
-                DoMeleeDamage(_attackEntity as BaseMelee);
-            }
-
-            private void DoMeleeDamage(BaseMelee baseMelee)
-            {
-                Vector3 position = Entity.eyes.position;
-                Vector3 forward = Entity.eyes.BodyForward();
-
-                for (int i = 0; i < 2; i++)
-                {
-                    List<RaycastHit> list = Pool.GetList<RaycastHit>();
-
-                    GamePhysics.TraceAll(new Ray(position - (forward * (i == 0 ? 0f : 0.2f)), forward), (i == 0 ? 0f : baseMelee.attackRadius), list, baseMelee.effectiveRange + 0.2f, 1219701521, QueryTriggerInteraction.UseGlobal);
-
-                    bool hasHit = false;
-                    for (int j = 0; j < list.Count; j++)
-                    {
-                        RaycastHit raycastHit = list[j];
-                        BaseEntity hitEntity = raycastHit.GetEntity();
-
-                        if (hitEntity != null && hitEntity != Entity && !hitEntity.EqualNetID(Entity) && !(hitEntity is ScientistNPC))
-                        {
-                            float damageAmount = 0f;
-                            foreach (DamageTypeEntry damageType in baseMelee.damageTypes)
-                                damageAmount += damageType.amount;
-
-                            hitEntity.OnAttacked(new HitInfo(Entity, hitEntity, DamageType.Slash, damageAmount * baseMelee.npcDamageScale));
-
-                            HitInfo hitInfo = Pool.Get<HitInfo>();
-                            hitInfo.HitEntity = hitEntity;
-                            hitInfo.HitPositionWorld = raycastHit.point;
-                            hitInfo.HitNormalWorld = -forward;
-
-                            if (hitEntity is BaseNpc || hitEntity is BasePlayer)
-                                hitInfo.HitMaterial = StringPool.Get("Flesh");
-                            else hitInfo.HitMaterial = StringPool.Get((raycastHit.GetCollider().sharedMaterial != null ? raycastHit.GetCollider().sharedMaterial.GetName() : "generic"));
-
-                            Effect.server.ImpactEffect(hitInfo);
-                            Pool.Free(ref hitInfo);
-
-                            hasHit = true;
-
-                            if (hitEntity.ShouldBlockProjectiles())
-                                break;
-                        }
-                    }
-
-                    Pool.FreeList(ref list);
-                    if (hasHit)
-                        break;
-                }
-            }
-            #endregion
-
-            #region Death
-            internal void Die()
-            {
-                if (Entity == null || Entity.IsDestroyed || Entity.IsDead())
-                    return;
-
-                _allHordeScientists.Remove(Entity);
-
-                Entity.Die(new HitInfo(Entity, Entity, DamageType.Explosion, 1000f));
-            }
-                       
-            internal void Despawn()
-            {                
-                if (Entity == null || Entity.IsDestroyed || Entity.IsDead())
-                    return;
-
-                _allHordeScientists.Remove(Entity);
-
-                StripInventory(Entity);
-                Entity.Kill();
-            }
-
-            private void OnDestroy()
-            {
-                RunDeathEffect();
-
-                AIThinkManager._processQueue.Remove(this);
-
-                if (Entity != null)
-                {
-                    _allHordeScientists.Remove(Entity);
-
-                    Entity.CancelInvoke(EnableNavAgent);
-                    Entity.CancelInvoke(EquipWeapon);
-                    Entity.CancelInvoke(UpdateTick);
-                    Entity.CancelInvoke(TickSpeed);
-                    Entity.CancelInvoke(LightCheck);
-                }
-            }
-            #endregion
-
-            #region Effects
-            private void RunZombieEffects()
-            {
-                if (!Entity.IsAlive() || Entity.IsDestroyed)
-                    return;
-
-                const string EFFECT = "assets/prefabs/npc/murderer/sound/breathing.prefab";
-
-                Effect.server.Run(EFFECT, Entity, StringPool.Get("head"), Vector3.zero, Vector3.zero, null, false);
-
-                Entity.Invoke(RunZombieEffects, UnityEngine.Random.Range(10f, 15f));
-            }
-
-            private void RunDeathEffect()
-            {
-                const string EFFECT = "assets/prefabs/npc/murderer/sound/death.prefab";
-                Effect.server.Run(EFFECT, Entity.ServerPosition, Vector3.up, null, false);
+                Invoke(ChainsawRefuel, 1f);
             }
             #endregion
         }
-        #endregion
 
-        #region States
-        public class ZombieBrain : BaseAIBrain<global::HumanNPC> 
+        public class ZombieNavigator : NPCPlayerNavigator
         {
-            private HordeMember hordeMember;
-
-            private void Awake()
+            public override void Init(BaseCombatEntity entity, NavMeshAgent agent)
             {
-                hordeMember = GetComponent<HordeMember>();
-            }
-            public override void AddStates()
-            {
-                base.AddStates();
+                TriggerStuckEvent = true;
 
-                AddState(new HordeRoamState(hordeMember));
-                AddState(new MemberChaseState(hordeMember));
-                AddState(new MemberCombatState(hordeMember));
-                //AddState(new MemberCombatThrowState(hordeMember));
+                base.Init(entity, agent);
             }
 
+            public override void OnStuck()
+            {
+                ZombieNPC zombieNPC = BaseEntity as ZombieNPC;
+
+                if (zombieNPC.Brain != null && zombieNPC.Brain.Navigator != null && zombieNPC.Brain.Events != null)
+                {
+                    //if (zombieNPC.Horde.DebugMode)
+                    //    Debug.Log($"Member #{zombieNPC.Horde.GetMemberIndex(zombieNPC)} stuck ({zombieNPC.Transform.position})");
+                    zombieNPC.Brain.SwitchToState(AIState.Idle, IDLE_STATE_CONTAINER);
+                }
+            }
+
+            public override void ApplyFacingDirectionOverride()
+            {
+                base.ApplyFacingDirectionOverride();
+
+                if (overrideFacingDirectionMode == OverrideFacingDirectionMode.None)                
+                    return;
+                
+                if (overrideFacingDirectionMode == OverrideFacingDirectionMode.Direction)
+                {
+                    NPCPlayerEntity.SetAimDirection(facingDirectionOverride);
+                    return;
+                }
+
+                if (facingDirectionEntity != null)
+                {
+                    Vector3 aimDirection = GetAimDirection(NPCPlayerEntity, facingDirectionEntity);
+                    facingDirectionOverride = aimDirection;
+                    NPCPlayerEntity.SetAimDirection(facingDirectionOverride);
+                }
+            }
+                       
+            private static Vector3 GetAimDirection(BasePlayer aimingPlayer, BaseEntity target)
+            {
+                if (target == null)                
+                    return Vector3Ex.Direction2D(aimingPlayer.transform.position + aimingPlayer.eyes.BodyForward() * 1000f, aimingPlayer.transform.position);
+                
+                if (Vector3Ex.Distance2D(aimingPlayer.transform.position, target.transform.position) <= 0.75f)                
+                    return Vector3Ex.Direction2D(target.transform.position, EyesPosition(aimingPlayer));
+                
+                return (TargetAimPositionOffset(target) - EyesPosition(aimingPlayer)).normalized;
+            }
+
+            private static Vector3 EyesPosition(BasePlayer aimingPlayer) => aimingPlayer.eyes.position - Vector3.up * 0.15f;
+
+            private static Vector3 TargetAimPositionOffset(BaseEntity target)
+            {
+                BasePlayer basePlayer = target as BasePlayer;
+                if (basePlayer == null)                
+                    return target.CenterPoint();
+                
+                if (basePlayer.IsSleeping() || basePlayer.IsWounded())                
+                    return basePlayer.transform.position + Vector3.up * 0.1f;
+                
+                return basePlayer.eyes.position - Vector3.up * 0.15f;
+            }
+        }
+
+        private const int SELF_STATE_CONTAINER = -1;
+        private const int ROAM_STATE_CONTAINER = 0;
+        private const int CHASE_STATE_CONTAINER = 1;
+        private const int IDLE_STATE_CONTAINER = 2;
+
+        public class ZombieNPCBrain : BaseAIBrain<ZombieNPC>
+        {
             public override void InitializeAI()
             {
-                global::HumanNPC humanNpc = GetEntity();
+                SenseTypes = Configuration.Member.GetSenseTypes();
 
-                UseAIDesign = false;
+                ZombieNPC zombieNPC = GetEntity();
+
+                zombieNPC.Loadout.Sensory.ApplySettingsToBrain(this);                
 
                 base.InitializeAI();
 
                 ThinkMode = AIThinkMode.Interval;
                 thinkRate = 0.25f;
                 PathFinder = new HumanPathFinder();
-                ((HumanPathFinder)PathFinder).Init(humanNpc);
+                ((HumanPathFinder)PathFinder).Init(zombieNPC);
+
+                zombieNPC.Loadout.Movement.ApplySettingsToNavigator(Navigator);
+
+                Navigator.MaxRoamDistanceFromHome = zombieNPC.Horde.IsLocalHorde ? zombieNPC.Horde.MaximumRoamDistance : -1f;
+
+                LoadAIDesign(ZombieAIDesign, null, 0);                             
+            }
+
+            public override void AddStates()
+            {
+                states = new Dictionary<AIState, BasicAIState>();
+
+                AddState(new RoamState());
+                AddState(new ChaseState());
+                AddState(new BaseIdleState());
             }
 
             public override void Think(float delta)
             {
-                if (!ConVar.AI.think || states == null)
+                base.Think(delta);
+
+                ZombieNPC zombieNPC = GetEntity();
+
+                if (zombieNPC.IsGroupLeader)
+                    zombieNPC.Horde.Update();
+
+                if (sleeping)                
                     return;
 
-                lastThinkTime = Time.time;
-                
-                if (!configData.Member.DisableDormantSystem && hordeMember.Entity.IsDormant)
-                    return;
-
-                if (CurrentState != null)
-                    CurrentState.StateThink(delta);
-
-                if (CurrentState == null || CurrentState.CanLeave())
-                {
-                    float highest = 0f;
-                    BasicAIState state = null;
-
-                    foreach (BasicAIState value in states.Values)
+                if (Configuration.Member.KillUnderWater)
+                {                    
+                    if (zombieNPC != null && zombieNPC.WaterFactor() > 0.85f && !zombieNPC.IsDestroyed)
                     {
-                        if (value == null || !value.CanEnter())
-                            continue;
-
-                        float weight = value.GetWeight();
-                        if (weight <= highest)
-                            continue;
-
-                        highest = weight;
-                        state = value;
+                        const float DROWN_TIMER = 5f;
+                        zombieNPC.Hurt(delta * (zombieNPC.MaxHealth() / DROWN_TIMER), DamageType.Drowned, null, true);
                     }
+                }                
+            }
+          
+            protected override void OnStateChanged()
+            {
+                base.OnStateChanged();
+                GetEntity().CurrentState = CurrentState.StateType;
 
-                    if (state != null && state != CurrentState)
-                    {                        
-                        Debug.Log($"switch to state {state.GetType()}");
-                        SwitchToState(state, -1);
-                    }
+                //if (GetEntity().Horde.DebugMode)
+                //{
+                //    Debug.Log($"{(GetEntity().IsGroupLeader ? "[Leader] " : "")}#{GetEntity().Horde.GetMemberIndex(GetEntity())} OnStateChanged {CurrentState.StateType}");
+                //    if (GetEntity().HasTarget)
+                //    {
+                //        Debug.Log($"Target {GetEntity().CurrentTarget.ShortPrefabName} ({GetEntity().CurrentTarget.transform.position})");
+                //    }
+                //}
+            }
+
+            public override void OnDestroy()
+            {
+                if (Rust.Application.isQuitting)                
+                    return;
+
+                ZombieNPC zombieNPC = GetEntity();
+
+                BaseEntity.Query.Server.RemoveBrain(zombieNPC);
+                
+                LeaveGroup();
+            }
+
+            internal void SetSleeping(bool sleep)
+            {
+                if (sleep)
+                {
+                    sleeping = true;
+
+                    if (Navigator != null)
+                        Navigator.Pause();
+
+                    CancelInvoke(TickMovement);
+                }
+                else
+                {
+                    sleeping = false;
+
+                    if (Navigator != null)
+                        Navigator.Resume();
+
+                    CancelInvoke(TickMovement);
+                    InvokeRandomized(TickMovement, 1f, 0.1f, 0.010000001f);
                 }
             }
 
-            public class HordeRoamState : BasicAIState
+            public class RoamState : BasicAIState
             {
-                private readonly HordeMember hordeMember;
+                private StateStatus status = StateStatus.Error;
 
-                private float nextSetDestinationTime;
+                private static readonly Vector3[] preferedTopologySamples = new Vector3[4];
 
-                public HordeRoamState(HordeMember hordeMember) : base(AIState.Roam)
-                {
-                    this.hordeMember = hordeMember;
-                }
+                private static readonly Vector3[] topologySamples = new Vector3[4];
 
-                public override float GetWeight()
-                {                    
-                    if (hordeMember.Entity.HasTarget())
-                        return 0f;
+                private bool isAlert;
 
-                    return 1f;
-                }
+                public RoamState() : base(AIState.Roam) { }
 
                 public override void StateEnter()
                 {
-                    hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.SlowWalk);
-                    hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, true);
-
                     base.StateEnter();
-                }
+                    status = StateStatus.Error;
 
-                public override StateStatus StateThink(float delta)
-                {
-                    base.StateThink(delta);
+                    if (brain.PathFinder == null)                    
+                        return;
 
-                    if (hordeMember.Entity.IsDormant)
-                        return StateStatus.Running;
+                    ZombieNPC zombieNPC = GetEntity();
 
-                    float distanceFromAverage = Vector3.Distance(hordeMember.Manager.AverageLocation, hordeMember.Entity.transform.position);
-                    if (hordeMember.Manager.HasInterestPoint || distanceFromAverage > 15f)
+                    isAlert = zombieNPC.IsAlert || zombieNPC.Horde.HordeOnAlert;
+
+                    Vector3 bestRoamPosition;
+                    if (!zombieNPC.IsGroupLeader)
                     {
-                        hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
-                        hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, false);
+                        isAlert = zombieNPC.Horde.Leader.IsAlert;
+
+                        bestRoamPosition = zombieNPC.Horde.GetLeaderDestination();
+                        bestRoamPosition = BasePathFinder.GetPointOnCircle(bestRoamPosition, Random.Range(2f, 7f), Random.Range(0f, 359f));
                     }
                     else
                     {
-                        hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.SlowWalk);
-                        hordeMember.Entity.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, true);
+                        if (zombieNPC.DestinationOverride != Vector3.zero)
+                        {
+                            bestRoamPosition = GetBestRoamPosition(brain.Navigator, zombieNPC.DestinationOverride, brain.Events.Memory.Position.Get(4), 0f, 20f);
+                            zombieNPC.DestinationOverride = Vector3.zero;
+                        }
+                        else bestRoamPosition = zombieNPC.Horde.IsLocalHorde ? 
+                                GetBestRoamPosition(brain.Navigator, zombieNPC.Horde.InitialPosition, brain.Events.Memory.Position.Get(4), 10f, zombieNPC.Horde.MaximumRoamDistance) :
+                                GetBestRoamPosition(brain.Navigator, zombieNPC.Transform.position, brain.Events.Memory.Position.Get(4), 20f, 100f);
                     }
 
-                    if (Vector3.Distance(hordeMember.Manager.Destination, hordeMember.Transform.position) < 3f)                    
-                        return StateStatus.Running;
-                    
-                    if (Time.time < nextSetDestinationTime)                  
-                        return StateStatus.Running;
-                    
-                    if (distanceFromAverage > 15f)                                          
-                        hordeMember.SetDestination(hordeMember.Manager.AverageLocation);                    
-                    else hordeMember.SetDestination(hordeMember.Manager.Destination);
-
-                    nextSetDestinationTime = Time.time + 3f;
-
-                    return StateStatus.Running;
-                }
-            }
-
-            public class MemberChaseState : BasicAIState
-            {
-                private readonly HordeMember hordeMember;
-
-                private float nextPositionUpdateTime;
-
-                public MemberChaseState(HordeMember hordeMember) : base(AIState.Chase)
-                {
-                    this.hordeMember = hordeMember;
-                }
-
-                public override float GetWeight()
-                {
-                    float delta = 0.5f;
-
-                    if (!hordeMember.Entity.HasTarget())                    
-                        return 0f;
-
-                    if (Vector3.Distance(hordeMember.Transform.position, hordeMember.Manager.AverageLocation) > 30f)
-                        return 0f;
-
-                    if (hordeMember._attackEntity is BaseProjectile && (hordeMember.Entity.AmmoFractionRemaining() < 0.3f || hordeMember.Entity.IsReloading()))                    
-                        delta -= 1f;
-                             
-                    if (!hordeMember.Entity.CanSeeTarget())                    
-                        delta -= 0.5f;                    
-                    else delta += 1f;
-                    
-                    if (hordeMember.Entity.DistanceToTarget() > hordeMember.GetIdealDistanceFromTarget())                    
-                        delta += 1f;
-                    
-                    return delta;
-                }
-
-                public override void StateEnter()
-                {
-                    base.StateEnter();
-                    hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
-                }
-
-                public override StateStatus StateThink(float delta)
-                {
-                    base.StateThink(delta);
-
-                    if (!hordeMember.Entity.HasTarget())
-                        return StateStatus.Error;
-
-                    float distanceToTarget = Vector3.Distance(hordeMember.Entity.currentTarget.transform.position, hordeMember.Entity.transform.position);
-
-                    if (distanceToTarget < hordeMember.EngagementRange() && hordeMember._attackEntity is BaseProjectile)
-                        hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.SlowWalk);
-                    else hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
-
-                    if (Time.time > nextPositionUpdateTime)
+                    if (brain.Navigator.SetDestination(bestRoamPosition, isAlert ? BaseNavigator.NavigationSpeed.Fast : DefaultRoamSpeed, 0f, 0f))
                     {
-                        Vector3 position;
+                        if (zombieNPC.IsGroupLeader)                        
+                            zombieNPC.Horde.ResetRoamTarget();
 
-                        if (hordeMember._attackEntity is BaseProjectile)
-                        {
-                            AIInformationZone informationZone = hordeMember.Entity.GetInformationZone(hordeMember.Entity.currentTarget.transform.position);
-                            AIMovePoint bestMovePointNear = informationZone.GetBestMovePointNear(hordeMember.Entity.currentTarget.transform.position, hordeMember.Entity.transform.position, 0f, hordeMember.EngagementRange() * 0.75f, true, hordeMember.Entity, true);
-                            if (!bestMovePointNear)
-                            {
-                                position = hordeMember.Entity.GetRandomPositionAround(hordeMember.Entity.currentTarget.transform.position, 0.5f, hordeMember.EngagementRange() * 0.75f);
-                            }
-                            else
-                            {
-                                bestMovePointNear.SetUsedBy(hordeMember.Entity, 5f);
-                                position = hordeMember.Entity.GetRandomPositionAround(bestMovePointNear.transform.position, 0f, bestMovePointNear.radius - 0.3f);
-                            }
-                        }
-                        else position = hordeMember.Entity.currentTarget.transform.position;
-                        
-                        if (!hordeMember.CanNavigateToTarget())
-                        {
+                        //if (zombieNPC.Horde.DebugMode)
+                        //    Debug.Log($"Set member #{zombieNPC.Horde.GetMemberIndex(zombieNPC)} (leader ? {zombieNPC.IsGroupLeader}) destination to {bestRoamPosition}");
 
-                        }
-
-                        hordeMember.SetDestination(position);
-
-                        nextPositionUpdateTime = Time.time + 1f;
+                        status = StateStatus.Running;
+                        return;
                     }
-                    return StateStatus.Running;
-                }
-            }
 
-            public class MemberCombatState : BasicAIState
-            {
-                private readonly HordeMember hordeMember;
+                    //if (zombieNPC.Horde.DebugMode)
+                    //    Debug.Log($"Failed to set member #{zombieNPC.Horde.GetMemberIndex(zombieNPC)} (leader ? {zombieNPC.IsGroupLeader}) destination to {bestRoamPosition}");
 
-                private float nextStrafeTime;
-
-                public MemberCombatState(HordeMember hordeMember) : base(AIState.Combat)
-                {
-                    this.hordeMember = hordeMember;
-                }
-
-                public override float GetWeight()
-                {
-                    if (!hordeMember.Entity.HasTarget())                    
-                        return 0f;
-
-                    if (!hordeMember.TargetInRange())                    
-                        return 0f;
-                                        
-                    float delta = (1f - Mathf.InverseLerp(hordeMember.GetIdealDistanceFromTarget(), hordeMember.EngagementRange(), hordeMember.Entity.DistanceToTarget())) * 0.5f;
-                    
-                    if (hordeMember.Entity.CanSeeTarget())
-                        delta += 1f;
-                              
-                    return delta;
-                }
-
-                public override void StateEnter()
-                {
-                    base.StateEnter();
-                    brain.mainInterestPoint = hordeMember.Entity.transform.position;
-                    hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
+                    status = StateStatus.Error;
                 }
 
                 public override void StateLeave()
                 {
-                    hordeMember.Entity.SetDucked(false);
                     base.StateLeave();
+                    Stop();
+
+                    if (isAlert)
+                        GetEntity().IsAlert = false; 
+
+                    isAlert = false;
                 }
 
                 public override StateStatus StateThink(float delta)
                 {
                     base.StateThink(delta);
+                    
+                    if (status == StateStatus.Error) 
+                        return status;
 
-                    if (!hordeMember.Entity.HasTarget())
-                        return StateStatus.Error;
-
-                    if (hordeMember._attackEntity is BaseProjectile)
+                    if (!isAlert && (GetEntity().Horde.HordeOnAlert || GetEntity().IsAlert))
                     {
-                        if (Time.time > nextStrafeTime)
-                        {
-                            if (UnityEngine.Random.Range(0, 3) != 1)
-                            {
-                                nextStrafeTime = Time.time + UnityEngine.Random.Range(3f, 4f);
-                                hordeMember.Entity.SetDucked(false);
-                                hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Walk);
-                                hordeMember.SetDestination(hordeMember.Entity.GetRandomPositionAround(brain.mainInterestPoint, 1f, 2f));
-                            }
-                            else
-                            {
-                                nextStrafeTime = Time.time + UnityEngine.Random.Range(2f, 3f);
-                                hordeMember.Entity.SetDucked(true);
-                                hordeMember.Entity.Stop();
-                            }
-                        }
-                    }
-                    else if (hordeMember._attackEntity is BaseMelee)
-                    {
-                        hordeMember.Entity.nextTriggerTime = Time.time + 30f;
-
-                        if (Vector3.Distance(hordeMember.Transform.position, hordeMember.Entity.currentTarget.transform.position) < hordeMember._attackEntity.effectiveRange)
-                            hordeMember.DoMeleeAttack();
-                        else
-                        {
-                            hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.Sprint);
-                            hordeMember.SetDestination(hordeMember.Entity.currentTarget.transform.position);
-                        }
+                        StateEnter();
+                        return StateStatus.Running;
                     }
 
-                    return StateStatus.Running;
-                }                
-            }
-            
-            public class MemberCombatThrowState : BasicAIState
-            {
-                private readonly HordeMember hordeMember;
-
-                public MemberCombatThrowState(HordeMember hordeMember) : base(AIState.CombatStationary)
-                {
-                    this.hordeMember = hordeMember;
+                    if (brain.Navigator.Moving)                    
+                        return StateStatus.Running;
+                    
+                    return StateStatus.Finished;
                 }
 
-                public override float GetWeight()
+                private void Stop() => brain.Navigator.Stop();
+                                
+                private Vector3 GetBestRoamPosition(BaseNavigator navigator, Vector3 localTo, Vector3 fallbackPos, float minRange, float maxRange)
                 {
-                    if (!hordeMember.Entity.HasTarget())
-                        return 0f;
+                    int topologyIndex = 0;
+                    int preferredTopologyIndex = 0;
 
-                    if (!hordeMember.TargetInThrowableRange() || hordeMember.TargetInRange())                    
-                        return 0f;
+                    for (float degree = 0f; degree < 360f; degree += 90f)
+                    {
+                        Vector3 position;
+                        Vector3 pointOnCircle = BasePathFinder.GetPointOnCircle(localTo, Random.Range(minRange, maxRange), degree + Random.Range(0f, 90f));
+
+                        if (navigator.GetNearestNavmeshPosition(pointOnCircle, out position, 20f) && navigator.IsAcceptableWaterDepth(position))
+                        {
+                            topologySamples[topologyIndex] = position;
+                            topologyIndex++;
+                            if (navigator.IsPositionATopologyPreference(position))
+                            {
+                                preferedTopologySamples[preferredTopologyIndex] = position;
+                                preferredTopologyIndex++;
+                            }
+                        }
+                    }
+
+                    Vector3 chosenPosition;
+
+                    if (Random.Range(0f, 1f) <= 0.9f && preferredTopologyIndex > 0)                  
+                        chosenPosition = preferedTopologySamples[Random.Range(0, preferredTopologyIndex)];
                     
-                    if (hordeMember.CanThrowWeapon() && UnityEngine.Random.value > 0.33f)
-                        return 2f;
+                    else if (topologyIndex > 0)                   
+                        chosenPosition = topologySamples[Random.Range(0, topologyIndex)];
+                    
+                    else chosenPosition = fallbackPos;                    
+                    
+                    return chosenPosition;
+                }
+            }
 
-                    return 0f;
+            public class ChaseState : BasicAIState
+            {
+                private StateStatus status = StateStatus.Error;
+
+                private float nextPositionUpdateTime;
+
+                private float originalStopDistance;
+
+                private bool unreachableLastUpdate;
+
+                public ChaseState() : base(AIState.Chase)
+                {
+                    AgrresiveState = true;
+                }
+
+                public override void StateLeave()
+                {
+                    base.StateLeave();
+
+                    Stop();
+
+                    brain.Navigator.StoppingDistance = originalStopDistance;
+
+                    GetEntity().TargetUnreachable = false;
                 }
 
                 public override void StateEnter()
                 {
                     base.StateEnter();
-                    hordeMember.Entity.SetDesiredSpeed(global::HumanNPC.SpeedType.SlowWalk);
+
+                    status = StateStatus.Error;
+                    
+                    if (brain.PathFinder == null)                    
+                        return;
+                    
+                    status = StateStatus.Running;
+                    nextPositionUpdateTime = 0f;
+                    originalStopDistance = brain.Navigator.StoppingDistance;
+
+                    AttackEntity attackEntity = GetEntity().CurrentWeapon;
+                    if (attackEntity is BaseMelee)
+                        brain.Navigator.StoppingDistance = 0.1f;
+
+                    brain.Navigator.SetCurrentSpeed(BaseNavigator.NavigationSpeed.Fast);
+                }
+
+                private void Stop()
+                {
+                    brain.Navigator.Stop();
+                    brain.Navigator.ClearFacingDirectionOverride();                    
                 }
 
                 public override StateStatus StateThink(float delta)
                 {
                     base.StateThink(delta);
+                    if (status == StateStatus.Error)                 
+                        return status;
+                                        
+                    ZombieNPC zombieNPC = GetEntity();
 
-                    if (!hordeMember.Entity.HasTarget())
-                        return StateStatus.Error;
-
-                    if (hordeMember.TargetInThrowableRange() && hordeMember.CanThrowWeapon())
+                    BaseEntity baseEntity = brain.Events.Memory.Entity.Get(brain.Events.CurrentInputMemorySlot);
+                    if (baseEntity == null || (baseEntity is BasePlayer && !zombieNPC.CanTargetBasePlayer(baseEntity as BasePlayer)) || !zombieNPC.CanTargetEntity(baseEntity))
                     {
-                        hordeMember.TryThrowWeapon();
-                        return StateStatus.Running;
+                        brain.Events.Memory.Entity.Remove(brain.Events.CurrentInputMemorySlot);
+                        Stop();
+                        return StateStatus.Error;
+                    }
+
+                    FaceTarget(zombieNPC, baseEntity);
+
+                    if (Time.time > nextPositionUpdateTime)
+                    {    
+                        if (!(zombieNPC.CurrentWeapon is BaseProjectile))
+                        {                      
+                            if (unreachableLastUpdate)
+                            {
+                                Vector3 position = brain.PathFinder.GetRandomPositionAround(baseEntity.transform.position, 3f, 10f);
+                                brain.Navigator.SetDestination(position, BaseNavigator.NavigationSpeed.Fast, 0.1f, 0f);
+                                nextPositionUpdateTime = Time.time + 3f;
+                                unreachableLastUpdate = false;
+
+                                return StateStatus.Running;
+                            }
+
+                            if (!brain.Navigator.SetDestination(baseEntity.transform.position, BaseNavigator.NavigationSpeed.Fast, 0.1f, 0f))
+                                return StateStatus.Error;
+
+                            if (brain.Navigator.Agent.path.status > NavMeshPathStatus.PathComplete)
+                            {
+                                zombieNPC.TargetUnreachable = true;  
+                                unreachableLastUpdate = true;
+                            }
+                            else zombieNPC.TargetUnreachable = false;
+                            
+                            nextPositionUpdateTime = Time.time + 0.1f;
+
+                            if (!brain.Navigator.Moving)                          
+                                return StateStatus.Finished;                            
+                        }
+                        else
+                        {
+                            Vector3 position = brain.PathFinder.GetRandomPositionAround(baseEntity.transform.position, 10f, zombieNPC.EngagementRange() * 0.75f);
+
+                            if (brain.Navigator.SetDestination(position, BaseNavigator.NavigationSpeed.Fast, 0f, 0f))
+                                nextPositionUpdateTime = Random.Range(3f, 6f);
+                            else return StateStatus.Error;
+                        }
                     }
 
                     return StateStatus.Running;
                 }
-            }
-        }
-        #endregion
 
-        #region Commands        
+                private void FaceTarget(ZombieNPC zombieNPC, BaseEntity baseEntity)
+                {
+                    float distanceToTarget = Vector3.Distance(baseEntity.transform.position, zombieNPC.Transform.position);
+
+                    if (!(zombieNPC.CurrentWeapon is BaseProjectile) && (brain.Senses.Memory.IsLOS(baseEntity) || distanceToTarget <= 10f))
+                        brain.Navigator.SetFacingDirectionEntity(baseEntity);
+
+                    else if (zombieNPC.CurrentWeapon is BaseProjectile && brain.Senses.Memory.IsLOS(baseEntity))
+                        brain.Navigator.SetFacingDirectionEntity(baseEntity);
+
+                    else brain.Navigator.ClearFacingDirectionOverride();
+                }
+            }
+
+            public static ProtoBuf.AIDesign ZombieAIDesign = new ProtoBuf.AIDesign
+            {
+                availableStates = new List<int> { (int)AIState.Roam, (int)AIState.Chase, (int)AIState.Idle },
+                defaultStateContainer = 0,
+                description = "Zombie Design",
+                intialViewStateID = 0,
+                scope = 0,
+                stateContainers = new List<ProtoBuf.AIStateContainer>
+                {
+                    new ProtoBuf.AIStateContainer // Roam State Container
+                    {
+                        id = ROAM_STATE_CONTAINER,
+                        inputMemorySlot = 0,
+                        state = (int)AIState.Roam,
+                        events = new List<AIEventData>
+                        {
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.StateFinished,
+                                triggerStateContainer = IDLE_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.StateError,
+                                triggerStateContainer = IDLE_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.Attacked,
+                                triggerStateContainer = CHASE_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 4,
+                                outputMemorySlot = 0,
+                                id = 0
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.BestTargetDetected,
+                                triggerStateContainer = CHASE_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            }
+                        }
+                    },
+                    new ProtoBuf.AIStateContainer // Chase State Container
+                    {
+                        id = CHASE_STATE_CONTAINER,
+                        inputMemorySlot = 0,
+                        state = (int)AIState.Chase,
+                        events = new List<AIEventData>
+                        {
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.StateFinished,
+                                triggerStateContainer = IDLE_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.StateError,
+                                triggerStateContainer = IDLE_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.IsVisible,
+                                triggerStateContainer = SELF_STATE_CONTAINER,
+                                inverted = true,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.InAttackRange,
+                                triggerStateContainer = SELF_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.TargetLost,
+                                triggerStateContainer = ROAM_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.AttackTick,
+                                triggerStateContainer = SELF_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0
+                            }                            
+                        }
+                    },
+                    new ProtoBuf.AIStateContainer // Idle State Container
+                    {
+                        id = IDLE_STATE_CONTAINER,
+                        inputMemorySlot = 0,
+                        state = (int)AIState.Idle,
+                        events = new List<AIEventData>
+                        {
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.Timer,
+                                triggerStateContainer = ROAM_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0,
+                                timerData = new TimerAIEventData { duration = 0f, durationMax = 0.1f }
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.Attacked,
+                                triggerStateContainer = CHASE_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 4,
+                                outputMemorySlot = 0,
+                                id = 0,
+                            },
+                            new AIEventData
+                            {
+                                eventType = (int)AIEventType.BestTargetDetected,
+                                triggerStateContainer = CHASE_STATE_CONTAINER,
+                                inverted = false,
+                                inputMemorySlot = 0,
+                                outputMemorySlot = 0,
+                                id = 0,
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        #region Commands 
+        //[ChatCommand("hordedebug")]
+        //private void cmdHordeDebug(BasePlayer player, string command, string[] args)
+        //{
+        //    if (!player.IsAdmin)
+        //        return;
+
+        //    int number;
+        //    if (args.Length != 1 || !int.TryParse(args[0], out number))
+        //    {
+        //        SendReply(player, "You must specify a horde number");
+        //        return;
+        //    }
+
+        //    Horde horde = Horde.AllHordes[number];
+        //    horde.DebugMode = !horde.DebugMode;
+        //    SendReply(player, $"Debug mode for horde #{number} set to {horde.DebugMode}");
+        //}
+
         [ChatCommand("horde")]
         private void cmdHorde(BasePlayer player, string command, string[] args)
         {
-            if (!permission.UserHasPermission(player.UserIDString, "zombiehorde.admin"))
+            if (!permission.UserHasPermission(player.UserIDString, ADMIN_PERMISSION))
             {
                 SendReply(player, "You do not have permission to use this command");
                 return;
@@ -2817,14 +2899,14 @@ namespace Oxide.Plugins
                 case "info":
                     int memberCount = 0;
                     int hordeNumber = 0;
-                    foreach (HordeManager hordeManager in HordeManager._allHordes)
+                    foreach (Horde horde in Horde.AllHordes)
                     {
-                        player.SendConsoleCommand("ddraw.text", 30, Color.green, hordeManager.AverageLocation + new Vector3(0, 1.5f, 0), $"<size=20>Zombie Horde {hordeNumber}</size>");
-                        memberCount += hordeManager.members.Count;
+                        player.SendConsoleCommand("ddraw.text", 30, Color.green, horde.CentralLocation + new Vector3(0, 1.5f, 0), $"<size=20>Zombie Horde {hordeNumber}</size>");
+                        memberCount += horde.MemberCount;
                         hordeNumber++;
                     }
 
-                    SendReply(player, $"There are {HordeManager._allHordes.Count} active zombie hordes with a total of {memberCount} zombies");
+                    SendReply(player, $"There are {Horde.AllHordes.Count} active zombie hordes with a total of {memberCount} zombies");
                     return;
                 case "destroy":
                     {
@@ -2835,13 +2917,13 @@ namespace Oxide.Plugins
                             return;
                         }
 
-                        if (number < 0 || number >= HordeManager._allHordes.Count)
+                        if (number < 0 || number >= Horde.AllHordes.Count)
                         {
                             SendReply(player, "An invalid horde number has been specified");
                             return;
                         }
 
-                        HordeManager._allHordes[number].Destroy(true, true);
+                        Horde.AllHordes[number].Destroy(true, true);
                         SendReply(player, $"You have destroyed zombie horde {number}");
                         return;
                     }
@@ -2854,13 +2936,13 @@ namespace Oxide.Plugins
                             return;
                         }
 
-                        if (number < 0 || number >= HordeManager._allHordes.Count)
+                        if (number < 0 || number >= Horde.AllHordes.Count)
                         {
                             SendReply(player, "An invalid horde number has been specified");
                             return;
                         }
 
-                        player.Teleport(HordeManager._allHordes[number].AverageLocation);
+                        player.Teleport(Horde.AllHordes[number].CentralLocation);
                         SendReply(player, $"You have teleported to zombie horde {number}");
                         return;
                     }                
@@ -2876,13 +2958,13 @@ namespace Oxide.Plugins
                     }
 
                     string profile = string.Empty;
-                    if (args.Length >= 3 && configData.HordeProfiles.ContainsKey(args[2]))
+                    if (args.Length >= 3 && Configuration.HordeProfiles.ContainsKey(args[2]))
                         profile = args[2];
 
-                    object success = FindPointOnNavmesh(player.transform.position, 5f);
-                    if (success != null)
+                    Vector3 position;
+                    if (NavmeshSpawnPoint.Find(player.transform.position, 5f, out position))
                     {
-                        if (HordeManager.Create(new HordeManager.Order((Vector3)success, configData.Horde.InitialMemberCount, configData.Horde.MaximumMemberCount, distance, profile)))
+                        if (Horde.Create(new Horde.SpawnOrder(position, Configuration.Horde.InitialMemberCount, Configuration.Horde.MaximumMemberCount, distance, profile)))
                         {
                             if (distance > 0)
                                 SendReply(player, $"You have created a zombie horde with a roam distance of {distance}");
@@ -2896,7 +2978,7 @@ namespace Oxide.Plugins
                     return;
 
                 case "createloadout":
-                    ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout($"loadout-{configData.Member.Loadouts.Count}", DefaultDefinition);
+                    ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout($"loadout-{Configuration.Member.Loadouts.Count}");
                     
                     for (int i = 0; i < player.inventory.containerBelt.itemList.Count; i++)
                     {
@@ -2940,7 +3022,7 @@ namespace Oxide.Plugins
                         });
                     }
 
-                    configData.Member.Loadouts.Add(loadout);
+                    Configuration.Member.Loadouts.Add(loadout);
                     SaveConfig();
 
                     SendReply(player, "Saved your current inventory as a zombie loadout");
@@ -2954,9 +3036,9 @@ namespace Oxide.Plugins
                         return;
                     }
 
-                    configData.Horde.MaximumHordes = hordes;
+                    Configuration.Horde.MaximumHordes = hordes;
 
-                    if (HordeManager._allHordes.Count < hordes)
+                    if (Horde.AllHordes.Count < hordes)
                         CreateRandomHordes();
                     SaveConfig();
                     SendReply(player, $"Set maximum hordes to {hordes}");
@@ -2970,7 +3052,7 @@ namespace Oxide.Plugins
                         return;
                     }
 
-                    configData.Horde.MaximumMemberCount = members;
+                    Configuration.Horde.MaximumMemberCount = members;
                     SaveConfig();
                     SendReply(player, $"Set maximum horde members to {members}");
                     return;
@@ -2985,7 +3067,7 @@ namespace Oxide.Plugins
         {
             if (arg.Connection != null)
             {
-                if (!permission.UserHasPermission(arg.Connection.userid.ToString(), "zombiehorde.admin"))
+                if (!permission.UserHasPermission(arg.Connection.userid.ToString(), ADMIN_PERMISSION))
                 {
                     SendReply(arg, "You do not have permission to use this command");
                     return;
@@ -2996,7 +3078,7 @@ namespace Oxide.Plugins
             {
                 SendReply(arg, "horde info - Show position and information about active zombie hordes");
                 SendReply(arg, "horde destroy <number> - Destroy the specified zombie horde");
-                SendReply(arg, "horde create <opt:distance> - Create a new zombie horde at a random position, optionally specifying distance they can roam from the initial spawn point");
+                SendReply(arg, "horde create <opt:distance> <opt:profile> - Create a new zombie horde at a random position, optionally specifying distance they can roam from the initial spawn point");
                 SendReply(arg, "horde addloadout <kitname> <opt:otherkitname> <opt:otherkitname> - Convert the specified kit(s) into loadout(s) (add as many as you want)");
                 SendReply(arg, "horde hordecount <number> - Set the maximum number of hordes allowed");
                 SendReply(arg, "horde membercount <number> - Set the maximum number of members allowed per horde");
@@ -3008,13 +3090,13 @@ namespace Oxide.Plugins
                 case "info":
                     int memberCount = 0;
                     int hordeNumber = 0;
-                    foreach (HordeManager hordeManager in HordeManager._allHordes)
+                    foreach (Horde horde in Horde.AllHordes)
                     {
-                        memberCount += hordeManager.members.Count;
+                        memberCount += horde.MemberCount;
                         hordeNumber++;
                     }
 
-                    SendReply(arg, $"There are {HordeManager._allHordes.Count} active zombie hordes with a total of {memberCount} zombies");
+                    SendReply(arg, $"There are {Horde.AllHordes.Count} active zombie hordes with a total of {memberCount} zombies");
                     return;
                 case "destroy":
                     int number;
@@ -3024,13 +3106,13 @@ namespace Oxide.Plugins
                         return;
                     }
 
-                    if (number < 1 || number > HordeManager._allHordes.Count)
+                    if (number < 1 || number > Horde.AllHordes.Count)
                     {
                         SendReply(arg, "An invalid horde number has been specified");
                         return;
                     }
 
-                    HordeManager._allHordes[number - 1].Destroy(true, true);
+                    Horde.AllHordes[number - 1].Destroy(true, true);
                     SendReply(arg, $"You have destroyed zombie horde {number}");
                     return;                
                 case "create":
@@ -3045,11 +3127,13 @@ namespace Oxide.Plugins
                     }
 
                     string profile = string.Empty;
-                    if (arg.Args.Length >= 3 && configData.HordeProfiles.ContainsKey(arg.Args[2]))
+                    if (arg.Args.Length >= 3 && Configuration.HordeProfiles.ContainsKey(arg.Args[2]))
                         profile = arg.Args[2];
 
-                    if (HordeManager.Create(new HordeManager.Order(GetSpawnPoint(), configData.Horde.InitialMemberCount, configData.Horde.MaximumMemberCount, distance, profile)))
-                    {
+                    Vector3 position;
+                    if (NavmeshSpawnPoint.Find(GetSpawnPoint(), 20f, out position) &&
+                        Horde.Create(new Horde.SpawnOrder(position, Configuration.Horde.InitialMemberCount, Configuration.Horde.MaximumMemberCount, distance, profile)))                    
+                    {                        
                         if (distance > 0)
                             SendReply(arg, $"You have created a zombie horde with a roam distance of {distance}");
                         else SendReply(arg, "You have created a zombie horde");
@@ -3083,7 +3167,7 @@ namespace Oxide.Plugins
                         JObject obj = success as JObject;
                         JArray items = obj["items"] as JArray;
 
-                        ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout(kitname, DefaultDefinition);
+                        ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout(kitname);
 
                         for (int y = 0; y < items.Count; y++)
                         {
@@ -3099,7 +3183,7 @@ namespace Oxide.Plugins
                             });
                         }
 
-                        configData.Member.Loadouts.Add(loadout);
+                        Configuration.Member.Loadouts.Add(loadout);
 
                         SendReply(arg, $"Successfully converted the kit {kitname} to a zombie loadout");
                     }
@@ -3115,9 +3199,9 @@ namespace Oxide.Plugins
                         return;
                     }
 
-                    configData.Horde.MaximumHordes = hordes;
+                    Configuration.Horde.MaximumHordes = hordes;
 
-                    if (HordeManager._allHordes.Count < hordes)
+                    if (Horde.AllHordes.Count < hordes)
                         CreateRandomHordes();
                     SaveConfig();
                     SendReply(arg, $"Set maximum hordes to {hordes}");
@@ -3131,7 +3215,7 @@ namespace Oxide.Plugins
                         return;
                     }
 
-                    configData.Horde.MaximumMemberCount = members;
+                    Configuration.Horde.MaximumMemberCount = members;
                     SaveConfig();
                     SendReply(arg, $"Set maximum horde members to {members}");
                     return;
@@ -3149,8 +3233,8 @@ namespace Oxide.Plugins
             if (nextCountTime < Time.time || string.IsNullOrEmpty(cachedString))
             {
                 int memberCount = 0;
-                HordeManager._allHordes.ForEach(x => memberCount += x.members.Count);
-                cachedString = $"There are currently <color=#ce422b>{HordeManager._allHordes.Count}</color> hordes with a total of <color=#ce422b>{memberCount}</color> zombies";
+                Horde.AllHordes.ForEach(x => memberCount += x.MemberCount);
+                cachedString = $"There are currently <color=#ce422b>{Horde.AllHordes.Count}</color> hordes with a total of <color=#ce422b>{memberCount}</color> zombies";
                 nextCountTime = Time.time + 30f;
             }
 
@@ -3169,13 +3253,9 @@ namespace Oxide.Plugins
 
         #endregion
 
-        #region Config       
-        public enum SpawnSystem { None, Random, SpawnsDatabase }
-
-        public enum SpawnState { Spawn, Despawn }
-
-
-        internal static ConfigData configData;
+        #region Config      
+       
+        public static ConfigData Configuration;
 
         internal class ConfigData
         {
@@ -3244,6 +3324,9 @@ namespace Oxide.Plugins
                 [JsonProperty(PropertyName = "Amount of time a player needs to be outside of a zombies vision before it forgets about them")]
                 public float ForgetTime { get; set; }
 
+                [JsonProperty(PropertyName = "Default roam speed (Slowest, Slow, Normal, Fast)")]
+                public string DefaultRoamSpeed { get; set; }
+
                 [JsonProperty(PropertyName = "Force all hordes to roam locally")]
                 public bool LocalRoam { get; set; }
 
@@ -3268,11 +3351,17 @@ namespace Oxide.Plugins
                 [JsonProperty(PropertyName = "Can be targeted by turrets")]
                 public bool TargetedByTurrets { get; set; }
 
-                [JsonProperty(PropertyName = "Can be targeted by turrets set to peacekeeper mode")]
+                [JsonProperty(PropertyName = "Can be targeted by peacekeeper turrets and NPC turrets")]
                 public bool TargetedByPeaceKeeperTurrets { get; set; }
 
                 [JsonProperty(PropertyName = "Can be targeted by Bradley APC")]
                 public bool TargetedByAPC { get; set; }
+
+                [JsonProperty(PropertyName = "Can be targeted by other NPCs")]
+                public bool TargetedByNPCs { get; set; }
+
+                [JsonProperty(PropertyName = "Can be targeted by animals")]
+                public bool TargetedByAnimals { get; set; }
 
                 [JsonProperty(PropertyName = "Can target other NPCs")]
                 public bool TargetNPCs { get; set; }
@@ -3292,10 +3381,28 @@ namespace Oxide.Plugins
                 [JsonProperty(PropertyName = "Kill NPCs that are under water")]
                 public bool KillUnderWater { get; set; }
 
-                [JsonProperty(PropertyName = "Disable NPC dormant system. This will allow NPCs to move all the time, but at a cost to performance")]
-                public bool DisableDormantSystem { get; set; }
+                [JsonProperty(PropertyName = "Enable NPC dormant system. This will put NPCs to sleep when no players are nearby to improve performance")]
+                public bool EnableDormantSystem { get; set; }
 
                 public List<Loadout> Loadouts { get; set; }
+
+                [JsonIgnore]
+                private EntityType _senseTypes = 0;
+
+                public EntityType GetSenseTypes()
+                {
+                    if (_senseTypes == 0) 
+                    {
+                        _senseTypes |= EntityType.Player;
+
+                        if (TargetNPCs)
+                            _senseTypes |= EntityType.BasePlayerNPC;
+
+                        if (TargetAnimals)
+                            _senseTypes |= EntityType.NPC;
+                    }
+                    return _senseTypes;
+                }
 
                 public class Loadout
                 {
@@ -3306,6 +3413,9 @@ namespace Oxide.Plugins
 
                     [JsonProperty(PropertyName = "Damage multiplier")]
                     public float DamageMultiplier { get; set; }
+
+                    [JsonProperty(PropertyName = "Aim cone scale (for projectile weapons)")]
+                    public float AimConeScale { get; set; }
 
                     public VitalStats Vitals { get; set; }
 
@@ -3326,50 +3436,193 @@ namespace Oxide.Plugins
 
                     public class MovementStats
                     {
-                        [JsonProperty(PropertyName = "Movement speed (running)")]
-                        public float RunSpeed { get; set; }
+                        public float Speed { get; set; }
 
-                        [JsonProperty(PropertyName = "Movement speed (walking)")]
-                        public float WalkSpeed { get; set; }
-                        
-                        [JsonProperty(PropertyName = "Duck speed")]
-                        public float DuckSpeed { get; set; }
+                        public float Acceleration { get; set; }
+
+                        [JsonProperty(PropertyName = "Turn speed")]
+                        public float TurnSpeed { get; set; }
+
+                        [JsonProperty(PropertyName = "Speed multiplier - Slowest")]
+                        public float SlowestSpeedFraction { get; set; }
+
+                        [JsonProperty(PropertyName = "Speed multiplier - Slow")]
+                        public float SlowSpeedFraction { get; set; }
+
+                        [JsonProperty(PropertyName = "Speed multiplier - Normal")]
+                        public float NormalSpeedFraction { get; set; }
+
+                        [JsonProperty(PropertyName = "Speed multiplier - Fast")]
+                        public float FastSpeedFraction { get; set; }
+
+                        [JsonProperty(PropertyName = "Speed multiplier - Low health")]
+                        public float LowHealthMaxSpeedFraction { get; set; }
+
+                        public void ApplySettingsToNavigator(BaseNavigator baseNavigator)
+                        {
+                            baseNavigator.Acceleration = Acceleration;
+                            baseNavigator.FastSpeedFraction = FastSpeedFraction;
+                            baseNavigator.LowHealthMaxSpeedFraction = LowHealthMaxSpeedFraction;
+                            baseNavigator.NormalSpeedFraction = NormalSpeedFraction;
+                            baseNavigator.SlowestSpeedFraction = SlowestSpeedFraction;
+                            baseNavigator.SlowSpeedFraction = SlowSpeedFraction;
+                            baseNavigator.Speed = Speed;
+                            baseNavigator.TurnSpeed = TurnSpeed;
+
+                            baseNavigator.topologyPreference = (TerrainTopology.Enum)1673010749;
+                        }
                     }
 
                     public class SensoryStats
                     {
-                        [JsonProperty(PropertyName = "Vision range")]
-                        public float VisionRange { get; set; }        
+                        [JsonProperty(PropertyName = "Attack range multiplier")]
+                        public float AttackRangeMultiplier { get; set; }
+
+                        [JsonProperty(PropertyName = "Sense range")]
+                        public float SenseRange { get; set; } 
+
+                        [JsonProperty(PropertyName = "Listen range")]
+                        public float ListenRange { get; set; }
+                       
+                        [JsonProperty(PropertyName = "Target lost range")]
+                        public float TargetLostRange { get; set; }
+
+                        [JsonProperty(PropertyName = "Ignore sneaking outside of vision range")]
+                        public bool IgnoreNonVisionSneakers { get; set; }
+
+                        [JsonProperty(PropertyName = "Vision cone (0 - 180 degrees)")]
+                        public float VisionCone { get; set; }
+
+                        [JsonProperty(PropertyName = "Ignore players in safe zone")]
+                        public bool IgnoreSafeZonePlayers { get; set; }
+
+                        public void ApplySettingsToBrain(ZombieNPCBrain zombieNPCBrain)
+                        {
+                            zombieNPCBrain.AttackRangeMultiplier = 1f;
+                            zombieNPCBrain.SenseRange = SenseRange;
+                            zombieNPCBrain.ListenRange = ListenRange;
+                            zombieNPCBrain.TargetLostRange = TargetLostRange;
+                            zombieNPCBrain.CheckVisionCone = IgnoreNonVisionSneakers;
+                            zombieNPCBrain.IgnoreNonVisionSneakers = IgnoreNonVisionSneakers;
+                            zombieNPCBrain.IgnoreSafeZonePlayers = IgnoreSafeZonePlayers;                            
+                           
+                            zombieNPCBrain.VisionCone = Vector3.Dot(Vector3.forward, Quaternion.Euler(0f, VisionCone, 0f) * Vector3.forward);
+                        }
                     }
-                    
-                    public Loadout() { }
 
-                    public Loadout(string loadoutID, MurdererDefinition definition)
+                    [JsonIgnore]
+                    private static Hash<string, float> _effectiveRangeDefaults = new Hash<string, float>();
+
+                    [JsonIgnore]
+                    private static ItemDefinition _glowEyes;
+
+                    [JsonIgnore]
+                    public static ItemDefinition GlowEyes
                     {
-                        LoadoutID = loadoutID;
+                        get
+                        {
+                            if (_glowEyes == null)
+                                _glowEyes = ItemManager.FindItemDefinition("gloweyes");
+                            return _glowEyes;
+                        }
+                    }
 
+                    public Loadout() 
+                    {
                         Names = new string[] { "Zombie" };
 
                         DamageMultiplier = 1f;
 
-                        Vitals = new VitalStats() { Health = definition.Vitals.HP };
+                        AimConeScale = 2f;
+
+                        Vitals = new VitalStats() 
+                        { 
+                            Health = 200f 
+                        };
 
                         Movement = new MovementStats()
                         {
-                            DuckSpeed = definition.Movement.DuckSpeed,
-                            RunSpeed = definition.Movement.RunSpeed,
-                            WalkSpeed = definition.Movement.WalkSpeed
+                            Speed = 6.2f,
+                            Acceleration = 12f,
+                            TurnSpeed = 120f,
+                            FastSpeedFraction = 1f,
+                            NormalSpeedFraction = 0.5f,
+                            SlowSpeedFraction = 0.3f,
+                            SlowestSpeedFraction = 0.16f,
+                            LowHealthMaxSpeedFraction = 0.5f,
                         };
 
                         Sensory = new SensoryStats()
                         {
-                            VisionRange = definition.Sensory.VisionRange
+                            AttackRangeMultiplier = 1.5f,
+                            IgnoreNonVisionSneakers = true,
+                            IgnoreSafeZonePlayers = true,
+                            ListenRange = 20f,
+                            SenseRange = 30f,
+                            TargetLostRange = 40f,
+                            VisionCone = 135f
                         };
 
                         BeltItems = new List<LootTable.InventoryItem>();
                         MainItems = new List<LootTable.InventoryItem>();
                         WearItems = new List<LootTable.InventoryItem>();
                     }
+
+                    public Loadout(string loadoutID) : this()
+                    {
+                        LoadoutID = loadoutID;
+                    }
+
+                    internal void GiveToPlayer(ZombieNPC zombieNPC)
+                    {
+                        if (zombieNPC == null)                        
+                            return;
+
+                        zombieNPC.inventory.Strip();
+
+                        foreach (LootTable.InventoryItem inventoryItem in BeltItems)
+                        {
+                            Item item = inventoryItem.Give(zombieNPC.inventory.containerBelt);
+
+                            if (item != null)
+                            {
+                                HeldEntity heldEntity = item.GetHeldEntity() as HeldEntity;
+                                if (heldEntity != null)
+                                {
+                                    if (heldEntity is BaseProjectile)
+                                    {
+                                        if (!_effectiveRangeDefaults.ContainsKey(item.info.shortname))
+                                            _effectiveRangeDefaults[item.info.shortname] = (heldEntity as BaseProjectile).effectiveRange;
+
+                                        (heldEntity as BaseProjectile).effectiveRange *= 1.25f;
+                                    }
+
+                                    if (heldEntity is BaseMelee)
+                                    {
+                                        if (!_effectiveRangeDefaults.ContainsKey(item.info.shortname))
+                                            _effectiveRangeDefaults[item.info.shortname] = (heldEntity as BaseMelee).effectiveRange;
+
+                                        (heldEntity as BaseMelee).effectiveRange *= 1.5f;
+                                    }
+                                }
+                            }
+                        }
+
+                        foreach (LootTable.InventoryItem inventoryItem in MainItems)
+                            inventoryItem.Give(zombieNPC.inventory.containerMain);
+
+                        foreach (LootTable.InventoryItem inventoryItem in WearItems)
+                            inventoryItem.Give(zombieNPC.inventory.containerWear);
+
+                        if (Configuration.Member.GiveGlowEyes)
+                        { 
+                            Item item = ItemManager.Create(GlowEyes);
+                            if (!item.MoveToContainer(zombieNPC.inventory.containerWear))
+                                item.Remove(0f);
+                        }
+                    }
+
+                    public static bool GetDefaultEffectiveRange(string shortname, out float value) => _effectiveRangeDefaults.TryGetValue(shortname, out value);
                 }
             }
 
@@ -3392,6 +3645,27 @@ namespace Oxide.Plugins
 
                     [JsonProperty(PropertyName = "Attachments", NullValueHandling = NullValueHandling.Ignore)]
                     public InventoryItem[] SubSpawn { get; set; }
+
+                    public Item Give(ItemContainer itemContainer)
+                    {
+                        Item item = ItemManager.CreateByName(Shortname, Amount, SkinID);
+                        if (item == null)
+                            return null;
+
+                        if (!item.MoveToContainer(itemContainer))
+                        {
+                            item.Remove(0f);
+                            return null;
+                        }
+
+                        if (item.contents != null && SubSpawn?.Length > 0)
+                        {
+                            for (int i = 0; i < SubSpawn.Length; i++)                            
+                                SubSpawn[i].Give(item.contents);                            
+                        }
+
+                        return item;
+                    }
                 }
 
                 public class RandomLoot
@@ -3423,12 +3697,49 @@ namespace Oxide.Plugins
                         [JsonProperty(PropertyName = "Spawn with")]
                         public LootDefinition Required { get; set; }
 
-                        public int GetAmount()
+                        [JsonIgnore]
+                        private ItemDefinition _blueprintDefinition;
+
+                        [JsonIgnore]
+                        private ItemDefinition BlueprintDefinition
+                        {
+                            get
+                            {
+                                if (_blueprintDefinition == null)
+                                    _blueprintDefinition = ItemManager.FindItemDefinition("blueprintbase");
+                                return _blueprintDefinition;
+                            }
+                        }
+
+                        private int GetAmount()
                         {
                             if (Maximum <= 0f || Maximum <= Minimum)
                                 return Minimum;
 
                             return UnityEngine.Random.Range(Minimum, Maximum);
+                        }
+
+                        public void Create(ItemContainer container)
+                        {
+                            Item item;
+
+                            if (!IsBlueprint)
+                                item = ItemManager.CreateByName(Shortname, GetAmount(), SkinID);
+                            else
+                            {
+                                item = ItemManager.Create(BlueprintDefinition);
+                                item.blueprintTarget = ItemManager.FindItemDefinition(Shortname).itemid;
+                            }
+
+                            if (item != null)
+                            {
+                                item.OnVirginSpawn();
+                                if (!item.MoveToContainer(container, -1, true))
+                                    item.Remove(0f);
+                            }
+
+                            if (Required != null)
+                                Required.Create(container);
                         }
                     }
                 }
@@ -3511,15 +3822,15 @@ namespace Oxide.Plugins
         protected override void LoadConfig()
         {
             base.LoadConfig();
-            configData = Config.ReadObject<ConfigData>();
+            Configuration = Config.ReadObject<ConfigData>();
 
-            if (configData.Version < Version)
+            if (Configuration.Version < Version)
                 UpdateConfigValues();
 
-            Config.WriteObject(configData, true);
+            Config.WriteObject(Configuration, true);
         }
 
-        protected override void LoadDefaultConfig() => configData = GetBaseConfig();
+        protected override void LoadDefaultConfig() => Configuration = GetBaseConfig();
 
         private ConfigData GetBaseConfig()
         {
@@ -3537,6 +3848,7 @@ namespace Oxide.Plugins
                     RespawnTime = 900,
                     SpawnType = "Random",
                     SpawnFile = "",
+                    DefaultRoamSpeed = BaseNavigator.NavigationSpeed.Slow.ToString(),
                     LocalRoam = false,
                     RoamDistance = 150,
                     UseProfiles = false,
@@ -3545,7 +3857,9 @@ namespace Oxide.Plugins
                 Member = new ConfigData.MemberOptions
                 {
                     IgnoreSleepers = false,
-                    TargetAnimals = false,
+                    TargetAnimals = true,
+                    TargetedByAnimals = true,
+                    TargetedByNPCs = true,
                     TargetedByTurrets = false,
                     TargetedByAPC = false,
                     TargetNPCs = true,
@@ -3555,7 +3869,7 @@ namespace Oxide.Plugins
                     Loadouts = BuildDefaultLoadouts(),
                     KillUnderWater = true,
                     TargetedByPeaceKeeperTurrets = true,
-                    DisableDormantSystem = false
+                    EnableDormantSystem = true
                 },
                 Loot = new ConfigData.LootTable
                 {
@@ -3718,7 +4032,7 @@ namespace Oxide.Plugins
                 {
                     PlayerInventoryProperties inventoryProperties = definition.loadouts[i];
 
-                    ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout($"loadout-{list.Count}", definition);
+                    ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout($"loadout-{list.Count}");
 
                     for (int belt = 0; belt < inventoryProperties.belt.Count; belt++)
                     {
@@ -3787,7 +4101,7 @@ namespace Oxide.Plugins
             return randomLoot;
         }
 
-        protected override void SaveConfig() => Config.WriteObject(configData, true);
+        protected override void SaveConfig() => Config.WriteObject(Configuration, true);
 
         private void UpdateConfigValues()
         {
@@ -3795,75 +4109,115 @@ namespace Oxide.Plugins
 
             ConfigData baseConfig = GetBaseConfig();
 
-            if (configData.Version < new Core.VersionNumber(0, 2, 0))
-                configData = baseConfig;
+            if (Configuration.Version < new Core.VersionNumber(0, 2, 0))
+                Configuration = baseConfig;
 
-            if (configData.Version < new Core.VersionNumber(0, 2, 1))
-                configData.Loot.Random = baseConfig.Loot.Random;
+            if (Configuration.Version < new Core.VersionNumber(0, 2, 1))
+                Configuration.Loot.Random = baseConfig.Loot.Random;
 
-            if (configData.Version < new Core.VersionNumber(0, 2, 2))
+            if (Configuration.Version < new Core.VersionNumber(0, 2, 2))
             {
-                for (int i = 0; i < configData.Member.Loadouts.Count; i++)                
-                    configData.Member.Loadouts[i].LoadoutID = $"loadout-{i}";
+                for (int i = 0; i < Configuration.Member.Loadouts.Count; i++)                
+                    Configuration.Member.Loadouts[i].LoadoutID = $"loadout-{i}";
 
-                configData.Horde.LocalRoam = false;
-                configData.Horde.RoamDistance = 150;
-                configData.Horde.UseProfiles = false;
+                Configuration.Horde.LocalRoam = false;
+                Configuration.Horde.RoamDistance = 150;
+                Configuration.Horde.UseProfiles = false;
 
-                configData.HordeProfiles = baseConfig.HordeProfiles;
+                Configuration.HordeProfiles = baseConfig.HordeProfiles;
 
-                configData.Monument.Airfield.Profile = string.Empty;
-                configData.Monument.Dome.Profile = string.Empty;
-                configData.Monument.GasStation.Profile = string.Empty;
-                configData.Monument.HQMQuarry.Profile = string.Empty;
-                configData.Monument.Junkyard.Profile = string.Empty;
-                configData.Monument.LargeHarbor.Profile = string.Empty;
-                configData.Monument.LaunchSite.Profile = string.Empty;
-                configData.Monument.Powerplant.Profile = string.Empty;
-                configData.Monument.Radtown.Profile = string.Empty;
-                configData.Monument.Satellite.Profile = string.Empty;
-                configData.Monument.SmallHarbor.Profile = string.Empty;
-                configData.Monument.StoneQuarry.Profile = string.Empty;
-                configData.Monument.SulfurQuarry.Profile = string.Empty;
-                configData.Monument.Supermarket.Profile = string.Empty;
-                configData.Monument.Trainyard.Profile = string.Empty;
-                configData.Monument.Tunnels.Profile = string.Empty;
-                configData.Monument.Warehouse.Profile = string.Empty;
-                configData.Monument.WaterTreatment.Profile = string.Empty;
+                Configuration.Monument.Airfield.Profile = string.Empty;
+                Configuration.Monument.Dome.Profile = string.Empty;
+                Configuration.Monument.GasStation.Profile = string.Empty;
+                Configuration.Monument.HQMQuarry.Profile = string.Empty;
+                Configuration.Monument.Junkyard.Profile = string.Empty;
+                Configuration.Monument.LargeHarbor.Profile = string.Empty;
+                Configuration.Monument.LaunchSite.Profile = string.Empty;
+                Configuration.Monument.Powerplant.Profile = string.Empty;
+                Configuration.Monument.Radtown.Profile = string.Empty;
+                Configuration.Monument.Satellite.Profile = string.Empty;
+                Configuration.Monument.SmallHarbor.Profile = string.Empty;
+                Configuration.Monument.StoneQuarry.Profile = string.Empty;
+                Configuration.Monument.SulfurQuarry.Profile = string.Empty;
+                Configuration.Monument.Supermarket.Profile = string.Empty;
+                Configuration.Monument.Trainyard.Profile = string.Empty;
+                Configuration.Monument.Tunnels.Profile = string.Empty;
+                Configuration.Monument.Warehouse.Profile = string.Empty;
+                Configuration.Monument.WaterTreatment.Profile = string.Empty;
             }
 
-            if (configData.Version < new Core.VersionNumber(0, 2, 13))
-                configData.TimedSpawns = baseConfig.TimedSpawns;
+            if (Configuration.Version < new Core.VersionNumber(0, 2, 13))
+                Configuration.TimedSpawns = baseConfig.TimedSpawns;
 
-            if (configData.Version < new Core.VersionNumber(0, 2, 18))            
-                configData.Member.TargetedByPeaceKeeperTurrets = configData.Member.TargetedByTurrets; 
+            if (Configuration.Version < new Core.VersionNumber(0, 2, 18))            
+                Configuration.Member.TargetedByPeaceKeeperTurrets = Configuration.Member.TargetedByTurrets; 
 
-            if (configData.Version < new Core.VersionNumber(0, 2, 30))
+            if (Configuration.Version < new Core.VersionNumber(0, 2, 30))
             {
-                if (configData.Horde.SpawnType == "RandomSpawns" || configData.Horde.SpawnType == "Default")
-                    configData.Horde.SpawnType = "Random";
+                if (Configuration.Horde.SpawnType == "RandomSpawns" || Configuration.Horde.SpawnType == "Default")
+                    Configuration.Horde.SpawnType = "Random";
             }
 
-            if (configData.Version < new Core.VersionNumber(0, 2, 31))
+            if (Configuration.Version < new Core.VersionNumber(0, 2, 31))
             {
-                if (string.IsNullOrEmpty(configData.Horde.SpawnType))
-                    configData.Horde.SpawnType = "Random";
-
-                configData.Member.DisableDormantSystem = false;
+                if (string.IsNullOrEmpty(Configuration.Horde.SpawnType))
+                    Configuration.Horde.SpawnType = "Random";
             }
 
-            if (configData.Version < new Core.VersionNumber(0, 3, 0))
+            if (Configuration.Version < new Core.VersionNumber(0, 3, 0))
             {
-                configData.Horde.UseSenses = true;
+                Configuration.Horde.UseSenses = true;
             }
 
-            if (configData.Version < new Core.VersionNumber(0, 3, 5))
+            if (Configuration.Version < new Core.VersionNumber(0, 3, 5))
             {
-                configData.Loot.DroppedBlacklist = baseConfig.Loot.DroppedBlacklist;
-                configData.Member.DisableDormantSystem = false;
+                Configuration.Loot.DroppedBlacklist = baseConfig.Loot.DroppedBlacklist;
             }
+
+            if (Configuration.Version < new Core.VersionNumber(0, 4, 0))
+            {
+                foreach(ConfigData.MemberOptions.Loadout loadout in Configuration.Member.Loadouts)
+                {
+                    loadout.AimConeScale = 2f;
+
+                    loadout.Movement = new ConfigData.MemberOptions.Loadout.MovementStats
+                    {
+                        Speed = 6.2f,
+                        Acceleration = 12f,
+                        TurnSpeed = 120f,
+                        FastSpeedFraction = 1f,
+                        NormalSpeedFraction = 0.5f,
+                        SlowSpeedFraction = 0.3f,
+                        SlowestSpeedFraction = 0.16f,
+                        LowHealthMaxSpeedFraction = 0.5f
+                    };
+
+                    loadout.Sensory = new ConfigData.MemberOptions.Loadout.SensoryStats
+                    {
+                        AttackRangeMultiplier = 1.5f,
+                        IgnoreNonVisionSneakers = true,
+                        IgnoreSafeZonePlayers = true,
+                        ListenRange = 20f,
+                        SenseRange = 30f,
+                        TargetLostRange = 40f,
+                        VisionCone = 135f
+                    };
+                }
+
+                if (Configuration.Loot.DroppedBlacklist == null)
+                    Configuration.Loot.DroppedBlacklist = baseConfig.Loot.DroppedBlacklist;
+
+                Configuration.Horde.DefaultRoamSpeed = BaseNavigator.NavigationSpeed.Slow.ToString();
+                Configuration.Member.EnableDormantSystem = true;
+                Configuration.Member.TargetAnimals = true;
+                Configuration.Member.TargetedByNPCs = true;
+                Configuration.Member.TargetedByPeaceKeeperTurrets = true;
+            }
+
+            if (Configuration.Version < new Core.VersionNumber(0, 4, 2))
+                Configuration.Member.TargetedByAnimals = true;
             
-            configData.Version = Version;
+            Configuration.Version = Version;
             PrintWarning("Config update completed!");
         }
 
