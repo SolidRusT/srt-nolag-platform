@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Oxide.Core;
+using Oxide.Core.Libraries;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
 using UnityEngine;
 using WebSocketSharp;
+
+
+using System.Collections;
 
 /*
  * Has WearContainer Anti Stacking Duplication features/bug fixes
@@ -164,17 +168,26 @@ using WebSocketSharp;
  * Search parameters work 200% better than before!
  * Added Patch for Nivex
  * This update was brought to you with baz!
+ *
+ * Update 1.4.1
+ * Fixed UI Constantly Re-Updating the Multiplier Descriptions ( when not needed ).
+ * Another UI Performance update/Tweak
+ * Fixed Sunglasses Display Names
+ * Added Lang API Support from codefling https://codefling.com/plugins/lang-api?tab=details
+ *
+ * update 1.4.2
+ * Re-fixed ignore admin check
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.4.0")]
+    [Info("Stack Modifier", "Khan", "1.4.2")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
         #region Fields
 
-        [PluginReference] Plugin ImageLibrary;
+        [PluginReference] Plugin ImageLibrary, LangAPI;
 
         private bool _check;
         private bool _isEditorReady;
@@ -945,6 +958,18 @@ namespace Oxide.Plugins
             "water",
             "water.salt",
             "cardtable",
+            "ammo.snowballgun"
+        };
+        
+        private readonly Dictionary<string, string> _corrections = new Dictionary<string, string>
+        {
+            {"sunglasses02black", "Sunglasses Style 2"},
+            {"sunglasses02camo", "Sunglasses Camo"},
+            {"sunglasses02red", "Sunglasses Red"},
+            {"sunglasses03black", "Sunglasses Style 3"},
+            {"sunglasses03chrome", "Sunglasses Chrome"},
+            {"sunglasses03gold", "Sunglasses Gold"},
+            {"twitchsunglasses", "Sunglasses Purple"},
         };
 
         #endregion
@@ -981,6 +1006,11 @@ namespace Oxide.Plugins
                         DisplayName = item.displayName.english,
                         Modified = item.stackable,
                     });
+                }
+
+                if (_corrections.ContainsKey(item.shortname))
+                {
+                    _config.StackCategories[categoryName][item.shortname].DisplayName = _corrections[item.shortname];
                 }
 
                 if (stackCategory.ContainsKey(item.shortname))
@@ -1035,8 +1065,8 @@ namespace Oxide.Plugins
             public Dictionary<string, Dictionary<string, _Items>> StackCategories =
                 new Dictionary<string, Dictionary<string, _Items>>();
 
-            [JsonProperty("Enable UI Editor")] 
-            public bool EnableEditor = false;
+            [JsonProperty("Enable UI Editor")]
+            public bool EnableEditor = true;
 
             [JsonProperty("Sets editor command")] 
             public string modifycommand = "stackmodifier";
@@ -1239,7 +1269,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, true);
                 }
             }
-
+            
             imageListStacks = null;
             itemIconStacks = null;
             _open = null;
@@ -1267,7 +1297,7 @@ namespace Oxide.Plugins
         {
             Unsubscribe(nameof(OnItemAddedToContainer));
         }
-
+        
         private void OnServerInitialized()
         {
             permission.RegisterPermission(ByPass, this);
@@ -1549,7 +1579,7 @@ namespace Oxide.Plugins
         private void OnItemAddedToContainer(ItemContainer container, Item item)
         {
             BasePlayer player = container.GetOwnerPlayer();
-            if (player == null || player.IsNpc /*|| player.IsAdmin*/) return;
+            if (player == null || player.IsNpc || player.IsAdmin) return;
 
             if ((player.inventory.containerMain.uid == container.uid ||
                  player.inventory.containerBelt.uid == container.uid) &&
@@ -1739,8 +1769,15 @@ namespace Oxide.Plugins
                 {
                     new CuiPanel //background transparency
                     {
-                        Image = {Color = _config.Colors.Transparency.Rgb }, // $"0 0 0 {Transparency}"},
-                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Image =
+                        {
+                            Color = _config.Colors.Transparency.Rgb
+                        }, // $"0 0 0 {Transparency}"},
+                        RectTransform =
+                        {
+                            AnchorMin = "0 0", 
+                            AnchorMax = "1 1"
+                        },
                         CursorEnabled = true
                     },
                     "Overlay", EditorOverlayName
@@ -1825,7 +1862,10 @@ namespace Oxide.Plugins
                 {
                     new CuiButton //close button Label
                     {
-                        Button = {Command = $"editorsm.close", Color = "0 0 0 0.40"},
+                        Button =
+                        {
+                            Command = $"editorsm.close", Color = "0 0 0 0.40"
+                        },
                         RectTransform = {AnchorMin = "0.445 0.11", AnchorMax = "0.54 0.16"},
                         Text =
                         {
@@ -1927,13 +1967,13 @@ namespace Oxide.Plugins
             return container;
         }
 
-        private void CreateEditorItemIcon(ref CuiElementContainer container, string name, float ymax, float ymin, string data)
+        private void CreateEditorItemIcon(ref CuiElementContainer container, string shortname, string displayName, string userId, float ymax, float ymin)
         {
             var label = new CuiLabel
             {
                 Text =
                 {
-                    Text = name,
+                    Text = LangAPI?.Call<string>("GetItemDisplayName", shortname, displayName, userId) ?? displayName,
                     FontSize = 15,
                     Color = _config.Colors.TextColor.Rgb,
                     Align = TextAnchor.MiddleLeft
@@ -1946,25 +1986,14 @@ namespace Oxide.Plugins
             };
 
             var rawImage = new CuiRawImageComponent();
-            var cat = _config.StackCategories[data];
-
-            foreach (var shortname in cat.Keys)
+            
+            if ((bool) (ImageLibrary?.Call("HasImage", shortname, 0UL) ?? false))
             {
-                if (_config.StackCategories[data].ContainsKey(shortname))
-                {
-                    _Items cItem = _config.StackCategories[data][shortname];
-                    if (cItem.DisplayName == name)
-                    {
-                        if ((bool) (ImageLibrary?.Call("HasImage", shortname, 0UL) ?? false))
-                        {
-                            rawImage.Png = (string) ImageLibrary?.Call("GetImage", shortname, 0UL, false);
-                        }
-                        else
-                        {
-                            rawImage.Png = (string) ImageLibrary?.Call("GetImage", _config.IconUrlSm);
-                        }
-                    }
-                }
+                rawImage.Png = (string) ImageLibrary?.Call("GetImage", shortname, 0UL, false);
+            }
+            else
+            {
+                rawImage.Png = (string) ImageLibrary?.Call("GetImage", _config.IconUrlSm);
             }
 
             container.Add(label, EditorContentName);
@@ -2069,7 +2098,7 @@ namespace Oxide.Plugins
             CuiHelper.DestroyUi(player, EditorOverlayName);
         }
 
-        private void ShowEditor(BasePlayer player, string catid, int from = 0, bool fullPaint = true, bool filter = false, string input = "")
+        private void ShowEditor(BasePlayer player, string catid, int from = 0, bool fullPaint = true, bool refreshMultipler = false, bool filter = false, string input = "")
         {
             _editorPage[player.userID] = from;
 
@@ -2097,6 +2126,9 @@ namespace Oxide.Plugins
 
                     rowPos++;
                 }
+                
+                if (_config.StackCategoryMultipliers[catid] != 1)
+                    container.Add(editorDescription, EditorOverlayName, EditorDescOverlay);
             }
             else
             {
@@ -2115,7 +2147,11 @@ namespace Oxide.Plugins
                 RectTransform = {AnchorMin = "0.08 0.2", AnchorMax = "1 0.6"}
             }, EditorOverlayName, EditorContentName);
 
-            container.Add(editorDescription, EditorOverlayName, EditorDescOverlay);
+            if (refreshMultipler)
+            {
+                CuiHelper.DestroyUi(player, EditorDescOverlay);
+                container.Add(editorDescription, EditorOverlayName, EditorDescOverlay);
+            }
 
             int current = 0;
 
@@ -2173,8 +2209,8 @@ namespace Oxide.Plugins
                 if (current >= from && current < from + 8)
                 {
                     float pos = 0.85f - 0.125f * (current - from);
-
-                    CreateEditorItemIcon(ref container, data.DisplayName, pos + 0.125f, pos, catid);
+                    
+                    CreateEditorItemIcon(ref container, data.ShortName, data.DisplayName, player.UserIDString, pos + 0.125f, pos);
 
                     container.AddRange(CreateEditorItemEntry(data, pos + 0.125f, pos, catid, ""));
                 }
@@ -2208,7 +2244,7 @@ namespace Oxide.Plugins
                 player.ChatMessage("Waiting On ImageLibrary to finish the load order");
                 return;
             }
-
+            
             ShowEditor(player, _config.DefaultCat);
             _open.Add(player.UserIDString);
             player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
@@ -2331,12 +2367,13 @@ namespace Oxide.Plugins
             if (input.IsNullOrEmpty()) return;
             bool resetting = false;
             bool filter = true;
+            bool refresh = false;
 
-            if (arg.GetString(1).Equals("reset", StringComparison.OrdinalIgnoreCase) ||
-                arg.GetString(1).Equals("set", StringComparison.OrdinalIgnoreCase) && arg.GetInt(2) != 0)
+            if (arg.GetString(1).Equals("reset", StringComparison.OrdinalIgnoreCase) || arg.GetString(1).Equals("set", StringComparison.OrdinalIgnoreCase) && arg.GetInt(2) != 0)
             {
                 resetting = true;
                 filter = false;
+                refresh = true;
                 var cat = _config.StackCategories[catid];
                 int set = arg.GetInt(2);
                 bool command = arg.GetString(1).Equals("set", StringComparison.OrdinalIgnoreCase);
@@ -2379,11 +2416,11 @@ namespace Oxide.Plugins
                     : $"{player.displayName} Reset {catid} category to defaults";
                 Puts($"{output}");
                 string response =
-                    command ? $"Setting {catid} category to {set}" : $"Resetting {catid} category to defaults";
+                    command ? $"Setting {catid} category to {set}" : $"Resetting {catid} category & multiplier to defaults";
                 player.ChatMessage($"{response}");
             }
 
-            ShowEditor(player, catid, arg.GetInt(1), resetting, filter, input);
+            ShowEditor(player, catid, arg.GetInt(1), resetting, refresh, filter, input);
         }
 
         [ConsoleCommand("editorsm.close")]

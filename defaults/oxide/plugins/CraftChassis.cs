@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Craft Car Chassis", "WhiteThunder", "1.2.1")]
+    [Info("Craft Car Chassis", "WhiteThunder", "1.2.2")]
     [Description("Allows players to craft a modular car chassis at a car lift using a UI.")]
     internal class CraftChassis : CovalencePlugin
     {
@@ -156,7 +156,7 @@ namespace Oxide.Plugins
             if (desiredFuelAmount == 0 || !permission.UserHasPermission(player.UserIDString, PermissionFuel))
                 return;
 
-            var fuelContainer = car.fuelSystem.GetFuelContainer();
+            var fuelContainer = car.GetFuelSystem().GetFuelContainer();
             if (desiredFuelAmount < 0)
                 desiredFuelAmount = fuelContainer.allowedItem.stackable;
 
