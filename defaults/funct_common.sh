@@ -206,6 +206,19 @@ function chat_to_discord() {
   done
 }
 
-echo "SRT Common Functions initialized" | tee -a ${LOGS}
+function solidplayer() {
+  PLAYER=$1
+  if [ -z ${PLAYER} ]; then
+    echo "No player specified"
+  else
+    if [ -f "${GAME_ROOT}/rcon" ]; then
+      echo "Adding a new SolidPlayer..." | tee -a ${LOGS}
+      ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "usermod.survivor add ${PLAYER}"
+      ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "usermod.solidplayer add ${PLAYER}"
+    else
+      echo "No rcon binary found here, unable to save world data" | tee -a ${LOGS}
+    fi
+  fi
+}
 
-#fuckyou
+echo "SRT Common Functions initialized" | tee -a ${LOGS}
