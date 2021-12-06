@@ -1,6 +1,4 @@
-﻿// #define DEBUG
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
@@ -17,7 +15,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Backpacks", "LaserHydra", "3.6.3")]
+    [Info("Backpacks", "LaserHydra", "3.7.2")]
     [Description("Allows players to have a Backpack which provides them extra inventory space.")]
     internal class Backpacks : RustPlugin
     {
@@ -36,18 +34,20 @@ namespace Oxide.Plugins
         private const string KeepOnWipePermission = "backpacks.keeponwipe";
         private const string NoBlacklistPermission = "backpacks.noblacklist";
 
+        private const string CoffinPrefab = "assets/prefabs/misc/halloween/coffin/coffinstorage.prefab";
         private const string BackpackPrefab = "assets/prefabs/misc/item drop/item_drop_backpack.prefab";
         private const string ResizableLootPanelName = "generic_resizable";
 
-        private readonly Dictionary<ulong, Backpack> _backpacks = new Dictionary<ulong, Backpack>();
-        private readonly Dictionary<BasePlayer, Backpack> _openBackpacks = new Dictionary<BasePlayer, Backpack>();
-        private readonly Dictionary<ulong, DroppedItemContainer> _lastDroppedBackpacks = new Dictionary<ulong, DroppedItemContainer>();
+        private readonly BackpackManager _backpackManager = new BackpackManager();
         private Dictionary<string, ushort> _backpackSizePermissions = new Dictionary<string, ushort>();
 
-        private static Backpacks _instance;
+        private ProtectionProperties _immortalProtection;
+        private string _cachedUI;
 
+        private static Backpacks _instance;
         private Configuration _config;
         private StoredData _storedData;
+        private int _wipeNumber;
 
         [PluginReference]
         private Plugin Arena, EventManager;
@@ -57,18 +57,6 @@ namespace Oxide.Plugins
         #region Hooks
 
         private void Init()
-        {
-            Unsubscribe(nameof(OnPlayerSleep));
-            Unsubscribe(nameof(OnPlayerSleepEnded));
-        }
-
-        private void OnServerInitialized()
-        {
-            Subscribe(nameof(OnPlayerSleep));
-            Subscribe(nameof(OnPlayerSleepEnded));
-        }
-
-        private void Loaded()
         {
             _instance = this;
 
@@ -91,30 +79,39 @@ namespace Oxide.Plugins
                 .OrderByDescending(kvp => kvp.Value)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            if (!_config.DropOnDeath || !ConVar.Server.corpses)
-            {
-                Unsubscribe(nameof(OnPlayerCorpseSpawned));
-            }
-
             _storedData = StoredData.Load();
+
+            Unsubscribe(nameof(OnPlayerSleep));
+            Unsubscribe(nameof(OnPlayerSleepEnded));
+        }
+
+        private void OnServerInitialized()
+        {
+            _wipeNumber = DetermineWipeNumber();
+
+            _immortalProtection = ScriptableObject.CreateInstance<ProtectionProperties>();
+            _immortalProtection.name = "BackpacksProtection";
+            _immortalProtection.Add(1);
 
             foreach (var player in BasePlayer.activePlayerList)
                 CreateGUI(player);
+
+            Subscribe(nameof(OnPlayerSleep));
+            Subscribe(nameof(OnPlayerSleepEnded));
         }
 
         private void Unload()
         {
-            _storedData.Save();
+            UnityEngine.Object.Destroy(_immortalProtection);
 
-            foreach (var backpack in _backpacks.Values)
-            {
-                backpack.ForceCloseAllLooters();
-                backpack.SaveData();
-                backpack.KillContainer();
-            }
+            _storedData.Save();
+            _backpackManager.SaveAndKillCachedBackpacks();
+            _backpackManager.CleanupAllNetworkControllers();
 
             foreach (var player in BasePlayer.activePlayerList)
                 DestroyGUI(player);
+
+            _instance = null;
         }
 
         private void OnNewSave(string filename)
@@ -125,7 +122,7 @@ namespace Oxide.Plugins
             if (!_config.ClearBackpacksOnWipe)
                 return;
 
-            _backpacks.Clear();
+            _backpackManager.ClearCache();
 
             IEnumerable<string> fileNames = Interface.Oxide.DataFileSystem.GetFiles(Name)
                 .Select(fn => {
@@ -149,7 +146,7 @@ namespace Oxide.Plugins
                 }
 
                 var backpack = new Backpack(userId);
-                backpack.SaveData();
+                backpack.SaveData(ignoreDirty: true);
             }
 
             string skippedBackpacksMessage = skippedBackpacks > 0 ? $", except {skippedBackpacks} due to being exempt" : string.Empty;
@@ -162,77 +159,24 @@ namespace Oxide.Plugins
 
             if (_config.SaveBackpacksOnServerSave)
             {
-                foreach (var backpack in _backpacks.Values)
-                {
-                    backpack.ForceCloseAllLooters();
-                    backpack.SaveData();
-                    backpack.KillContainer();
-                }
-
-                _backpacks.Clear();
+                _backpackManager.SaveAndKillCachedBackpacks();
+                _backpackManager.CleanupAllNetworkControllers();
+                _backpackManager.ClearCache();
             }
         }
 
         private void OnPlayerDisconnected(BasePlayer player)
         {
-            if (_openBackpacks.ContainsKey(player))
-                _openBackpacks[player].OnClose(player);
-
-            if (!_config.SaveBackpacksOnServerSave && _backpacks.ContainsKey(player.userID))
-            {
-                var backpack = _backpacks[player.userID];
-
-                backpack.ForceCloseAllLooters();
-                backpack.SaveData();
-                backpack.KillContainer();
-
-                _backpacks.Remove(player.userID);
-            }
-        }
-
-        private object CanLootPlayer(BasePlayer looted, BasePlayer looter)
-        {
-            if (_openBackpacks.ContainsKey(looter)
-                && (looter == looted || permission.UserHasPermission(looter.UserIDString, AdminPermission)))
-            {
-                return true;
-            }
-
-            return null;
-        }
-
-        private object CanAcceptItem(ItemContainer container, Item item)
-        {
-            Backpack backpack = Backpack.GetForContainer(container);
+            var backpack = _backpackManager.GetCachedBackpack(player.userID);
             if (backpack == null)
-                return null;
+                return;
 
-            // Prevent erasing items that have since become restricted.
-            // Restricted items will be dropped when the owner opens the backpack.
-            if (!backpack.Initialized)
-                return null;
+            backpack.NetworkController?.Unsubscribe(player);
 
-            if (_config.ItemRestrictionEnabled
-                && !permission.UserHasPermission(backpack.OwnerIdString, NoBlacklistPermission)
-                && _config.IsRestrictedItem(item))
+            if (!_config.SaveBackpacksOnServerSave)
             {
-                return ItemContainer.CanAcceptResult.CannotAccept;
-            }
-
-            object hookResult = Interface.CallHook("CanBackpackAcceptItem", backpack.OwnerId, container, item);
-            if (hookResult is bool && (bool)hookResult == false)
-                return ItemContainer.CanAcceptResult.CannotAccept;
-
-            return null;
-        }
-
-        private void OnPlayerLootEnd(PlayerLoot playerLoot)
-        {
-            var player = (BasePlayer) playerLoot.gameObject.ToBaseEntity();
-
-            if (_openBackpacks.ContainsKey(player))
-            {
-                _openBackpacks[player].OnClose(player);
+                backpack.SaveAndKill();
+                _backpackManager.RemoveFromCache(backpack);
             }
         }
 
@@ -248,35 +192,14 @@ namespace Oxide.Plugins
 
             DestroyGUI(player);
 
-            if (!Backpack.HasBackpackFile(player.userID)
+            if (!_backpackManager.HasBackpackFile(player.userID)
                 || permission.UserHasPermission(player.UserIDString, KeepOnDeathPermission))
                 return;
 
-            var backpack = Backpack.Get(player.userID);
-            backpack.ForceCloseAllLooters();
-
             if (_config.EraseOnDeath)
-                backpack.EraseContents();
+                _backpackManager.EraseContents(player.userID);
             else if (_config.DropOnDeath)
-                DropBackpackWithReducedCorpseCollision(backpack, player.transform.position);
-        }
-
-        private void OnPlayerCorpseSpawned(BasePlayer player, BaseCorpse corpse)
-        {
-            if (!_lastDroppedBackpacks.ContainsKey(player.userID))
-                return;
-
-            var container = _lastDroppedBackpacks[player.userID];
-            if (container == null)
-                return;
-
-            var corpseCollider = corpse.GetComponent<Collider>();
-            var containerCollider = _lastDroppedBackpacks[player.userID].GetComponent<Collider>();
-
-            if (corpseCollider != null && containerCollider != null)
-                Physics.IgnoreCollision(corpseCollider, containerCollider);
-
-            _lastDroppedBackpacks.Remove(player.userID);
+                _backpackManager.Drop(player.userID, player.transform.position);
         }
 
         private void OnGroupPermissionGranted(string group, string perm)
@@ -324,50 +247,64 @@ namespace Oxide.Plugins
 
         private void OnPlayerSleep(BasePlayer player) => DestroyGUI(player);
 
-        #endregion
-
-        #region Commands
-
-#if DEBUG
-        [ChatCommand("c")]
-        private void RunContainerDebugCommand(BasePlayer player)
+        private void OnNetworkSubscriptionsUpdate(Network.Networkable networkable, List<Network.Visibility.Group> groupsToAdd, List<Network.Visibility.Group> groupsToRemove)
         {
-            RaycastHit hit;
-            if (Physics.Raycast(player.eyes.HeadRay(), out hit))
+            if (groupsToRemove == null)
+                return;
+
+            for (var i = groupsToRemove.Count - 1; i >= 0; i--)
             {
-                var entity = hit.GetEntity();
-
-                if (entity != null)
+                var group = groupsToRemove[i];
+                if (_backpackManager.IsBackpackNetworkGroup(group))
                 {
-                    var storageContainer = entity.GetComponent<StorageContainer>();
-
-                    if (storageContainer != null)
-                    {
-                        var data = new Dictionary<string, object>
-                        {
-                            ["panelName"] = storageContainer.panelName,
-                            ["uid"] = storageContainer.inventory.uid,
-                            ["isServer"] = storageContainer.inventory.isServer,
-                            ["capacity"] = storageContainer.inventory.capacity,
-                            ["maxStackSize"] = storageContainer.inventory.maxStackSize,
-                            ["entityOwner"] = storageContainer.inventory.entityOwner,
-                            ["playerOwner"] = storageContainer.inventory.playerOwner,
-                            ["flags"] = storageContainer.inventory.flags,
-                            ["allowedContents"] = storageContainer.inventory.allowedContents,
-                            ["availableSlots"] = storageContainer.inventory.availableSlots.Count
-                        };
-
-                        PrintToChat(string.Join(Environment.NewLine, data.Select(kvp => $"[{kvp.Key}] : {kvp.Value}").ToArray()));
-
-                        timer.In(0.5f, () => PlayerLootContainer(player, storageContainer.inventory));
-                    }
-
-                    else
-                        PrintToChat("not a storage container");
+                    // Prevent automatically unsubscribing from backpack network groups.
+                    // This allows the subscriptions to persist while players move around.
+                    groupsToRemove.Remove(group);
                 }
             }
         }
-#endif
+
+        #endregion
+
+        #region API
+
+        private Dictionary<ulong, ItemContainer> API_GetExistingBackpacks()
+        {
+            return _backpackManager.GetAllCachedContainers();
+        }
+
+        private void API_EraseBackpack(ulong userId)
+        {
+            _backpackManager.TryEraseForPlayer(userId);
+        }
+
+        private DroppedItemContainer API_DropBackpack(BasePlayer player)
+        {
+            var backpack = _backpackManager.GetBackpackIfExists(player.userID);
+            if (backpack == null)
+                return null;
+
+            return _backpackManager.Drop(player.userID, player.transform.position);
+        }
+
+        private ulong API_GetBackpackOwnerId(ItemContainer container)
+        {
+            return _backpackManager.GetCachedBackpackForContainer(container)?.OwnerId ?? 0;
+        }
+
+        private ItemContainer API_GetBackpackContainer(ulong ownerId)
+        {
+            return _backpackManager.GetBackpackIfExists(ownerId)?.GetContainer(ensureContainer: true);
+        }
+
+        private int API_GetBackpackItemAmount(ulong ownerId, int itemId)
+        {
+            return _backpackManager.GetBackpackIfExists(ownerId)?.GetItemQuantity(itemId) ?? 0;
+        }
+
+        #endregion
+
+        #region Commands
 
         [ChatCommand("backpack")]
         private void OpenBackpackChatCommand(BasePlayer player, string cmd, string[] args)
@@ -382,8 +319,9 @@ namespace Oxide.Plugins
             }
 
             player.EndLooting();
+
             // Must delay opening in case the chat is still closing or the loot panel may close instantly.
-            timer.Once(0.5f, () => Backpack.Get(player.userID).Open(player));
+            timer.Once(0.5f, () => _backpackManager.OpenBackpack(player.userID, player));
         }
 
         [ConsoleCommand("backpack.open")]
@@ -400,7 +338,8 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (_openBackpacks.ContainsKey(player))
+            var lootingContainer = player.inventory.loot.containers.FirstOrDefault();
+            if (lootingContainer != null && _backpackManager.GetCachedBackpackForContainer(lootingContainer) != null)
             {
                 player.EndLooting();
                 // HACK: Send empty respawn information to fully close the player inventory (toggle backpack closed)
@@ -408,24 +347,25 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (player.inventory.loot.IsLooting())
+            var wasLooting = player.inventory.loot.IsLooting();
+            if (wasLooting)
             {
                 player.EndLooting();
                 player.inventory.loot.SendImmediate();
             }
 
-            // Key binds automatically pass the "True" argument at the end.
-            if (arg.HasArgs(1) && arg.Args[0] == "True")
-            {
-                // Open instantly when using a key bind.
-                timer.Once(0.05f, () => Backpack.Get(player.userID).Open(player));
-            }
-            else
-            {
+            // Need a short delay when looting so the client doesn't reuse the previously drawn generic_resizable loot panel.
+            var delaySeconds = wasLooting
+                ? 0.1f
+                // Key binds automatically pass the "True" argument at the end.
+                // Can open instantly since not looting and chat is assumed to be closed.
+                : arg.Args?.LastOrDefault() == "True"
+                ? 0f
                 // Not opening via key bind, so the chat window may be open.
-                // Must delay opening in case the chat is still closing or the loot panel may close instantly.
-                timer.Once(0.1f, () => Backpack.Get(player.userID).Open(player));
-            }
+                // Must delay in case the chat is still closing or else the loot panel may close instantly.
+                : 0.1f;
+
+            timer.Once(delaySeconds, () => _backpackManager.OpenBackpack(player.userID, player));
         }
 
         [ConsoleCommand("backpack.fetch")]
@@ -492,7 +432,8 @@ namespace Oxide.Plugins
             }
 
             string itemLocalizedName = itemDefinition.displayName.translated;
-            Backpack backpack = Backpack.Get(player.userID);
+            Backpack backpack = _backpackManager.GetBackpack(player.userID);
+
             int quantityInBackpack = backpack.GetItemQuantity(itemID);
 
             if (quantityInBackpack == 0)
@@ -535,7 +476,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (Backpack.TryEraseForPlayer(userId))
+            if (_backpackManager.TryEraseForPlayer(userId))
                 PrintWarning($"Erased backpack for player {userId}.");
             else
                 PrintWarning($"Player {userId} has no backpack to erase.");
@@ -566,10 +507,9 @@ namespace Oxide.Plugins
             }
 
             BasePlayer targetBasePlayer = targetPlayer.Object as BasePlayer;
-            ulong id = targetBasePlayer?.userID ?? ulong.Parse(targetPlayer.Id);
+            ulong backpackOwnerId = targetBasePlayer?.userID ?? ulong.Parse(targetPlayer.Id);
 
-            Backpack backpack = Backpack.Get(id);
-            timer.Once(0.5f, () => backpack.Open(player));
+            timer.Once(0.5f, () => _backpackManager.OpenBackpack(backpackOwnerId, player));
         }
 
         [ChatCommand("backpackgui")]
@@ -599,49 +539,18 @@ namespace Oxide.Plugins
 
         #region Helper Methods
 
-        // Data migration from v2.x.x to v3.x.x
-        private static bool TryMigrateData(string fileName)
+        private int DetermineWipeNumber()
         {
-            if (!Interface.Oxide.DataFileSystem.ExistsDatafile(fileName))
-            {
-                return false;
-            }
+            var saveName = World.SaveFileName;
 
-            Dictionary<string, object> data;
-            LoadData(out data, fileName);
-            if (data == null)
-                return false;
+            var lastDotIndex = saveName.LastIndexOf('.');
+            var secondToLastDotIndex = saveName.LastIndexOf('.', lastDotIndex - 1);
+            var wipeNumberString = saveName.Substring(secondToLastDotIndex + 1, lastDotIndex - secondToLastDotIndex - 1);
 
-            if (data.ContainsKey("ownerID") && data.ContainsKey("Inventory"))
-            {
-                var inventory = (JObject) data["Inventory"];
-
-                data["OwnerID"] = data["ownerID"];
-                data["Items"] = inventory.Value<object>("Items");
-
-                data.Remove("ownerID");
-                data.Remove("Inventory");
-                data.Remove("Size");
-
-                SaveData(data, fileName);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        private static void PlayerLootContainer(BasePlayer player, ItemContainer container)
-        {
-            player.inventory.loot.Clear();
-            player.inventory.loot.PositionChecks = false;
-            player.inventory.loot.entitySource = container.entityOwner ?? player;
-            player.inventory.loot.itemSource = null;
-            player.inventory.loot.MarkDirty();
-            player.inventory.loot.AddContainer(container);
-            player.inventory.loot.SendImmediate();
-
-            player.ClientRPCPlayer(null, player, "RPC_OpenLootPanel", ResizableLootPanelName);
+            int wipeNumber;
+            return int.TryParse(wipeNumberString, out wipeNumber)
+                ? wipeNumber
+                : 0;
         }
 
         private IPlayer FindPlayer(string nameOrID, out string failureMessage)
@@ -729,21 +638,6 @@ namespace Oxide.Plugins
             return false;
         }
 
-        private DroppedItemContainer DropBackpackWithReducedCorpseCollision(Backpack backpack, Vector3 position)
-        {
-            var droppedContainer = backpack.Drop(position);
-
-            if (droppedContainer != null && ConVar.Server.corpses)
-            {
-                if (_lastDroppedBackpacks.ContainsKey(backpack.OwnerId))
-                    _lastDroppedBackpacks[backpack.OwnerId] = droppedContainer;
-                else
-                    _lastDroppedBackpacks.Add(backpack.OwnerId, droppedContainer);
-            }
-
-            return droppedContainer;
-        }
-
         private void CreateGUI(BasePlayer player)
         {
             if (player == null || player.IsNpc || !player.IsAlive() || player.IsSleeping())
@@ -756,36 +650,42 @@ namespace Oxide.Plugins
                 return;
 
             CuiHelper.DestroyUi(player, GUIPanelName);
-            var elements = new CuiElementContainer();
-            var BackpacksUIPanel = elements.Add(new CuiPanel
-            {
-                Image = { Color = _instance._config.GUI.Color },
-                RectTransform = {
-                    AnchorMin = _config.GUI.GUIButtonPosition.AnchorsMin,
-                    AnchorMax = _config.GUI.GUIButtonPosition.AnchorsMax,
-                    OffsetMin = _config.GUI.GUIButtonPosition.OffsetsMin,
-                    OffsetMax = _config.GUI.GUIButtonPosition.OffsetsMax
-                },
-                CursorEnabled = false
-            }, "Overlay", GUIPanelName);
 
-            elements.Add(new CuiElement
+            if (_cachedUI == null)
             {
-                Parent = GUIPanelName,
-                Components = {
-                    new CuiRawImageComponent { Url = _instance._config.GUI.Image },
-                    new CuiRectTransformComponent { AnchorMin = "0 0", AnchorMax = "1 1" }
-                }
-            });
+                var elements = new CuiElementContainer();
+                var BackpacksUIPanel = elements.Add(new CuiPanel
+                {
+                    Image = { Color = _instance._config.GUI.Color },
+                    RectTransform = {
+                        AnchorMin = _config.GUI.GUIButtonPosition.AnchorsMin,
+                        AnchorMax = _config.GUI.GUIButtonPosition.AnchorsMax,
+                        OffsetMin = _config.GUI.GUIButtonPosition.OffsetsMin,
+                        OffsetMax = _config.GUI.GUIButtonPosition.OffsetsMax
+                    },
+                    CursorEnabled = false
+                }, "Overlay", GUIPanelName);
 
-            elements.Add(new CuiButton
-            {
-                Button = { Command = "backpack.open", Color = "0 0 0 0" },
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                Text = { Text = "" }
-            }, BackpacksUIPanel);
+                elements.Add(new CuiElement
+                {
+                    Parent = GUIPanelName,
+                    Components = {
+                        new CuiRawImageComponent { Url = _instance._config.GUI.Image },
+                        new CuiRectTransformComponent { AnchorMin = "0 0", AnchorMax = "1 1" }
+                    }
+                });
 
-            CuiHelper.AddUi(player, elements);
+                elements.Add(new CuiButton
+                {
+                    Button = { Command = "backpack.open", Color = "0 0 0 0" },
+                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    Text = { Text = "" }
+                }, BackpacksUIPanel);
+
+                _cachedUI = CuiHelper.ToJson(elements);
+            }
+
+            CuiHelper.AddUi(player, _cachedUI);
         }
 
         private void DestroyGUI(BasePlayer player)
@@ -970,66 +870,369 @@ namespace Oxide.Plugins
 
         #endregion
 
-        #region Backpack
+        #region Backpack Manager
 
-        #region API
-
-        private Dictionary<ulong, ItemContainer> API_GetExistingBackpacks()
+        private class BackpackManager
         {
-            return _backpacks.ToDictionary(x => x.Key, x => x.Value.GetContainer());
-        }
+            private const uint StartNetworkGroupId = 10000000;
 
-        private void API_EraseBackpack(ulong userId)
-        {
-            Backpack.TryEraseForPlayer(userId);
-        }
+            private uint _nextNetworkGroupId = StartNetworkGroupId;
 
-        private DroppedItemContainer API_DropBackpack(BasePlayer player)
-        {
-            if (!Backpack.HasBackpackFile(player.userID))
-                return null;
+            private readonly Dictionary<ulong, Backpack> _cachedBackpacks = new Dictionary<ulong, Backpack>();
+            private readonly Dictionary<ItemContainer, Backpack> _backpackContainers = new Dictionary<ItemContainer, Backpack>();
 
-            var backpack = Backpack.Get(player.userID);
-            backpack.ForceCloseAllLooters();
+            public bool IsBackpackNetworkGroup(Network.Visibility.Group group)
+            {
+                return group.ID >= StartNetworkGroupId && group.ID < _nextNetworkGroupId;
+            }
 
-            return DropBackpackWithReducedCorpseCollision(backpack, player.transform.position);
+            public BackpackNetworkController CreateNetworkController()
+            {
+                return new BackpackNetworkController(_nextNetworkGroupId++);
+            }
+
+            private static string GetBackpackPath(ulong userId) => $"{_instance.Name}/{userId}";
+
+            // Data migration from v2.x.x to v3.x.x
+            private static bool TryMigrateData(string fileName)
+            {
+                if (!Interface.Oxide.DataFileSystem.ExistsDatafile(fileName))
+                {
+                    return false;
+                }
+
+                Dictionary<string, object> data;
+                LoadData(out data, fileName);
+                if (data == null)
+                    return false;
+
+                if (data.ContainsKey("ownerID") && data.ContainsKey("Inventory"))
+                {
+                    var inventory = (JObject) data["Inventory"];
+
+                    data["OwnerID"] = data["ownerID"];
+                    data["Items"] = inventory.Value<object>("Items");
+
+                    data.Remove("ownerID");
+                    data.Remove("Inventory");
+                    data.Remove("Size");
+
+                    SaveData(data, fileName);
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            public bool HasBackpackFile(ulong userId)
+            {
+                return Interface.Oxide.DataFileSystem.ExistsDatafile(GetBackpackPath(userId));
+            }
+
+            public Backpack GetCachedBackpack(ulong userId)
+            {
+                Backpack backpack;
+                return _cachedBackpacks.TryGetValue(userId, out backpack)
+                    ? backpack
+                    : null;
+            }
+
+            public Backpack GetBackpack(ulong userId)
+            {
+                var backpack = GetCachedBackpack(userId);
+                if (backpack != null)
+                    return backpack;
+
+                return Load(userId);
+            }
+
+            public Backpack GetBackpackIfExists(ulong userId)
+            {
+                return HasBackpackFile(userId)
+                    ? GetBackpack(userId)
+                    : null;
+            }
+
+            public void RegisterContainer(ItemContainer container, Backpack backpack)
+            {
+                _backpackContainers[container] = backpack;
+            }
+
+            public void UnregisterContainer(ItemContainer container)
+            {
+                _backpackContainers.Remove(container);
+            }
+
+            public Backpack GetCachedBackpackForContainer(ItemContainer container)
+            {
+                Backpack backpack;
+                return _backpackContainers.TryGetValue(container, out backpack)
+                    ? backpack
+                    : null;
+            }
+
+            public Dictionary<ulong, ItemContainer> GetAllCachedContainers()
+            {
+                var cachedContainersByUserId = new Dictionary<ulong, ItemContainer>();
+
+                foreach (var entry in _cachedBackpacks)
+                {
+                    var container = entry.Value.GetContainer();
+                    if (container != null)
+                        cachedContainersByUserId[entry.Key] = container;
+                }
+
+                return cachedContainersByUserId;
+            }
+
+            public void EraseContents(ulong userId)
+            {
+                GetBackpackIfExists(userId)?.EraseContents();
+            }
+
+            public DroppedItemContainer Drop(ulong userId, Vector3 position)
+            {
+                return GetBackpackIfExists(userId)?.Drop(position);
+            }
+
+            public void OpenBackpack(ulong backpackOwnerId, BasePlayer looter)
+            {
+                GetBackpack(backpackOwnerId).Open(looter);
+            }
+
+            private Backpack Load(ulong userId)
+            {
+                var fileName = GetBackpackPath(userId);
+
+                TryMigrateData(fileName);
+
+                Backpack backpack = null;
+                if (HasBackpackFile(userId))
+                {
+                    LoadData(out backpack, fileName);
+                }
+
+                // Note: Even if the user has a backpack file, the file contents may be null in some edge cases.
+                if (backpack == null)
+                {
+                    backpack = new Backpack(userId);
+                }
+
+                // Ensure the backpack always has an owner id.
+                // This improves compatibility with plugins such as Wipe Data Cleaner which reset the file to `{}`.
+                backpack.OwnerId = userId;
+
+                // Forget about associated entities from previous wipes.
+                if (backpack.WipeNumber != _instance._wipeNumber)
+                {
+                    foreach (var itemData in backpack.ItemDataCollection)
+                    {
+                        itemData.AssociatedEntityId = 0;
+                    }
+                }
+
+                backpack.WipeNumber = _instance._wipeNumber;
+
+                _cachedBackpacks[userId] = backpack;
+
+                return backpack;
+            }
+
+            public bool TryEraseForPlayer(ulong userId)
+            {
+                var backpack = GetBackpackIfExists(userId);
+                if (backpack == null)
+                    return false;
+
+                backpack.EraseContents(force: true);
+                return true;
+            }
+
+            public void SaveAndKillCachedBackpacks()
+            {
+                foreach (var backpack in _cachedBackpacks.Values)
+                {
+                    backpack.SaveAndKill();
+                }
+            }
+
+            public void RemoveFromCache(Backpack backpack)
+            {
+                _cachedBackpacks.Remove(backpack.OwnerId);
+            }
+
+            public void ClearCache()
+            {
+                _cachedBackpacks.Clear();
+            }
+
+            public void CleanupAllNetworkControllers()
+            {
+                foreach (var backpack in _cachedBackpacks.Values)
+                {
+                    backpack.NetworkController?.UnsubscribeAll();
+                }
+                _nextNetworkGroupId = StartNetworkGroupId;
+            }
         }
 
         #endregion
 
+        #region Backpack Networking
+
+        private class BackpackNetworkController
+        {
+            public Network.Visibility.Group NetworkGroup { get; private set; }
+
+            private List<BasePlayer> _subscribers = new List<BasePlayer>(1);
+
+            public BackpackNetworkController(uint networkGroupId)
+            {
+                NetworkGroup = new Network.Visibility.Group(null, networkGroupId);
+            }
+
+            public void Subscribe(BasePlayer player)
+            {
+                if (player.Connection == null || _subscribers.Contains(player))
+                    return;
+
+                _subscribers.Add(player);
+
+                // Send the client a message letting them know they are subscribed to the group.
+                ServerMgr.OnEnterVisibility(player.Connection, NetworkGroup);
+
+                // Send the client a snapshot of every entity currently in the group.
+                // Don't use the entity queue for this because it could be cleared which could cause updates to be missed.
+                foreach (var networkable in NetworkGroup.networkables)
+                {
+                    (networkable.handler as BaseNetworkable).SendAsSnapshot(player.Connection);
+                }
+
+                if (!NetworkGroup.subscribers.Contains(player.Connection))
+                {
+                    // Register the client with the group so that entities added to it will be automatically sent to the client.
+                    NetworkGroup.subscribers.Add(player.Connection);
+                }
+
+                var subscriber = player.net.subscriber;
+                if (!subscriber.subscribed.Contains(NetworkGroup))
+                {
+                    // Register the group with the client so that ShouldNetworkTo() returns true in SendNetworkUpdate().
+                    // This covers cases such as toggling a pager's silent mode.
+                    subscriber.subscribed.Add(NetworkGroup);
+                }
+            }
+
+            public void Unsubscribe(BasePlayer player)
+            {
+                if (!_subscribers.Remove(player))
+                    return;
+
+                if (player.Connection == null)
+                    return;
+
+                // Unregister the client from the group so they don't get future entity updates.
+                NetworkGroup.subscribers.Remove(player.Connection);
+                player.net.subscriber.subscribed.Remove(NetworkGroup);
+
+                // Send the client a message so they kill all client-side entities in the group.
+                ServerMgr.OnLeaveVisibility(player.Connection, NetworkGroup);
+            }
+
+            public void UnsubscribeAll()
+            {
+                for (var i = _subscribers.Count - 1; i >= 0; i--)
+                {
+                    Unsubscribe(_subscribers[i]);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Backpack
+
+        private class NoRagdollCollision : FacepunchBehaviour
+        {
+            private Collider _collider;
+
+            private void Awake()
+            {
+                _collider = GetComponent<Collider>();
+            }
+
+            private void OnCollisionEnter(Collision collision)
+            {
+                if (collision.collider.IsOnLayer(Rust.Layer.Ragdoll))
+                {
+                    Physics.IgnoreCollision(_collider, collision.collider);
+                }
+            }
+        }
+
+        private class BackpackCloseListener : EntityComponent<StorageContainer>
+        {
+            private Backpack _backpack;
+
+            public void SetBackpack(Backpack backpack)
+            {
+                _backpack = backpack;
+            }
+
+            // Called via `entity.SendMessage("PlayerStoppedLooting", player)` in PlayerLoot.Clear().
+            private void PlayerStoppedLooting(BasePlayer looter)
+            {
+                _instance?.TrackStart();
+
+                _backpack.OnClosed(looter);
+				Interface.CallHook("OnBackpackClosed", looter, _backpack.OwnerId, _backpack.GetContainer());
+
+                if (_instance != null && !_instance._config.SaveBackpacksOnServerSave)
+                {
+                    _backpack.SaveData();
+                }
+
+                _instance?.TrackEnd();
+            }
+        }
+
         private class Backpack
         {
-            private ItemContainer _itemContainer = new ItemContainer();
+            private StorageContainer _storageContainer;
+            private ItemContainer _itemContainer;
             private List<BasePlayer> _looters = new List<BasePlayer>();
-
-            private bool _processedRestrictedItems = false;
+            private bool _processedRestrictedItems;
+            private bool _dirty = false;
 
             [JsonIgnore]
-            public bool Initialized { get; private set; } = false;
+            public BackpackNetworkController NetworkController { get; private set; }
 
             [JsonIgnore]
             public string OwnerIdString { get; private set; }
 
             [JsonProperty("OwnerID")]
-            public ulong OwnerId { get; private set; }
+            public ulong OwnerId { get; set; }
+
+            [JsonProperty("WipeNumber", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public int WipeNumber;
 
             [JsonProperty("Items")]
-            private List<ItemData> _itemDataCollection = new List<ItemData>();
+            public List<ItemData> ItemDataCollection = new List<ItemData>();
 
             public Backpack(ulong ownerId) : base()
             {
                 OwnerId = ownerId;
+                OwnerIdString = OwnerId.ToString();
             }
 
             ~Backpack()
             {
-                ForceCloseAllLooters();
                 KillContainer();
+                NetworkController?.UnsubscribeAll();
             }
 
             public IPlayer FindOwnerPlayer() => _instance.covalence.Players.FindPlayerById(OwnerIdString);
-
-            public bool IsUnderlyingContainer(ItemContainer itemContainer) => _itemContainer == itemContainer;
 
             public ushort GetAllowedSize()
             {
@@ -1042,97 +1245,21 @@ namespace Oxide.Plugins
                 return _instance._config.BackpackSize;
             }
 
-            public ItemContainer GetContainer() => _itemContainer;
-
-            private int GetAllowedCapacity() => GetAllowedSize() * SlotsPerRow;
-
-            public void Initialize()
+            public ItemContainer GetContainer(bool ensureContainer = false)
             {
-                if (!Initialized)
-                {
-                    OwnerIdString = OwnerId.ToString();
-                }
-                else
-                {
-                    // Force-close since we are re-initializing
-                    ForceCloseAllLooters();
-                }
+                if (ensureContainer)
+                    EnsureContainer();
 
-                var ownerPlayer = FindOwnerPlayer()?.Object as BasePlayer;
-                _itemContainer.entityOwner = ownerPlayer;
-
-                if (Initialized)
-                    return;
-
-                _itemContainer.isServer = true;
-                _itemContainer.allowedContents = ItemContainer.ContentsType.Generic;
-                _itemContainer.GiveUID();
-                _itemContainer.capacity = GetAllowedCapacity();
-
-                if (_itemDataCollection.Count != 0 && _itemDataCollection.Max(item => item.Position) >= _itemContainer.capacity)
-                {
-                    // Temporarily increase the capacity to allow all items to fit
-                    // Extra items will be addressed when the backpack is opened by the owner
-                    // If an admin views the backpack in the meantime, it will appear as max capacity
-                    _itemContainer.capacity = MaxSize * SlotsPerRow;
-                }
-
-                foreach (var backpackItem in _itemDataCollection)
-                {
-                    var item = backpackItem.ToItem();
-                    if (item != null)
-                    {
-                        item.MoveToContainer(_itemContainer, item.position);
-                    }
-                }
-
-                Initialized = true;
-            }
-
-            public void KillContainer()
-            {
-                Initialized = false;
-
-                _itemContainer.Kill();
-                _itemContainer = null;
-
-                ItemManager.DoRemoves();
+                return _itemContainer;
             }
 
             public void Open(BasePlayer looter)
             {
-                if (_instance._openBackpacks.ContainsKey(looter))
-                    return;
-
-                _instance._openBackpacks.Add(looter, this);
-
-                if (!Initialized)
-                {
-                    Initialize();
-                }
-
-                // The entityOwner may no longer be valid if it was instantiated while the player was offline (due to player death)
-                if (_itemContainer.entityOwner == null)
-                {
-                    var ownerPlayer = FindOwnerPlayer()?.Object as BasePlayer;
-                    if (ownerPlayer != null)
-                        _itemContainer.entityOwner = ownerPlayer;
-                }
-
-                // Container can't be looted for some reason.
-                // We should cancel here and remove the looter from the open backpacks again.
-                if (looter.inventory.loot.IsLooting()
-                    || !(_itemContainer.entityOwner?.CanBeLooted(looter) ?? looter.CanBeLooted(looter)))
-                {
-                    _instance._openBackpacks.Remove(looter);
-                    return;
-                }
-
                 if (!_instance.VerifyCanOpenBackpack(looter, OwnerId))
-                {
-                    _instance._openBackpacks.Remove(looter);
                     return;
-                }
+
+                EnsureContainer();
+                NetworkController.Subscribe(looter);
 
                 // Only drop items when the owner is opening the backpack.
                 if (looter.userID == OwnerId)
@@ -1144,9 +1271,420 @@ namespace Oxide.Plugins
                 if (!_looters.Contains(looter))
                     _looters.Add(looter);
 
-                PlayerLootContainer(looter, _itemContainer);
+                _storageContainer.PlayerOpenLoot(looter, _storageContainer.panelName, doPositionChecks: false);
 
-                Interface.CallHook("OnBackpackOpened", looter, OwnerId, _itemContainer);
+                Interface.CallHook("OnBackpackOpened", looter, OwnerId, _storageContainer.inventory);
+            }
+
+            public void OnClosed(BasePlayer looter)
+            {
+                _looters.Remove(looter);
+
+                // Clean up the subscription immediately if admin stopped looting.
+                // This avoids having to clean up the admin subscriptions some other way which would add complexity.
+                if (looter.userID != OwnerId)
+                {
+                    NetworkController?.Unsubscribe(looter);
+                }
+            }
+
+            public DroppedItemContainer Drop(Vector3 position)
+            {
+                // Optimization: If no container and no stored data, don't bother with the rest of the logic.
+                if (_storageContainer == null && ItemDataCollection.Count == 0)
+                    return null;
+
+                object hookResult = Interface.CallHook("CanDropBackpack", OwnerId, position);
+
+                if (hookResult is bool && (bool)hookResult == false)
+                    return null;
+
+                EnsureContainer();
+                ForceCloseAllLooters();
+                ReclaimItemsForSoftcore();
+
+                // Check again since the items may have all been reclaimed for Softcore.
+                if (_itemContainer.itemList.Count == 0)
+                    return null;
+
+                DroppedItemContainer container = GameManager.server.CreateEntity(BackpackPrefab, position, Quaternion.identity) as DroppedItemContainer;
+
+                container.gameObject.AddComponent<NoRagdollCollision>();
+
+                container.lootPanelName = ResizableLootPanelName;
+                container.playerName = $"{FindOwnerPlayer()?.Name ?? "Somebody"}'s Backpack";
+                container.playerSteamID = OwnerId;
+
+                container.inventory = new ItemContainer();
+                container.inventory.ServerInitialize(null, _itemContainer.itemList.Count);
+                container.inventory.GiveUID();
+                container.inventory.entityOwner = container;
+                container.inventory.SetFlag(ItemContainer.Flag.NoItemInput, true);
+
+                foreach (Item item in _itemContainer.itemList.ToArray())
+                {
+                    if (!item.MoveToContainer(container.inventory))
+                    {
+                        item.RemoveFromContainer();
+                        item.Remove();
+                    }
+                }
+
+                container.Spawn();
+                container.ResetRemovalTime(Math.Max(_instance._config.MinimumDespawnTime, container.CalculateRemovalTime()));
+
+                if (!_instance._config.SaveBackpacksOnServerSave)
+                {
+                    SaveData();
+                }
+
+                return container;
+            }
+
+            public void EraseContents(bool force = false)
+            {
+                // Optimization: If no container and no stored data, don't bother with the rest of the logic.
+                if (_storageContainer == null && ItemDataCollection.Count == 0)
+                    return;
+
+                if (!force)
+                {
+                    object hookResult = Interface.CallHook("CanEraseBackpack", OwnerId);
+
+                    if (hookResult is bool && (bool)hookResult == false)
+                        return;
+                }
+
+                if (_itemContainer != null)
+                {
+                    ForceCloseAllLooters();
+
+                    foreach (var item in _itemContainer.itemList.ToList())
+                    {
+                        item.RemoveFromContainer();
+                        item.Remove();
+                    }
+                }
+                else
+                {
+                    // Optimization: Simply clear the data when there is no container.
+                    ItemDataCollection.Clear();
+                }
+
+                if (!_instance._config.SaveBackpacksOnServerSave)
+                {
+                    SaveData();
+                }
+            }
+
+            public void SaveData(bool ignoreDirty = false)
+            {
+                if (!ignoreDirty && !_dirty)
+                    return;
+
+                // There is possibly no container if wiping a backpack on server wipe.
+                if (_itemContainer != null)
+                {
+                    ItemDataCollection = _itemContainer.itemList
+                        .Select(ItemData.FromItem)
+                        .ToList();
+                }
+
+                Backpacks.SaveData(this, $"{_instance.Name}/{OwnerId}");
+                _dirty = false;
+            }
+
+            public void SaveAndKill()
+            {
+                SaveData();
+                KillContainer();
+            }
+
+            public int GetItemQuantity(int itemID)
+            {
+                if (_itemContainer != null)
+                    return _itemContainer.GetAmount(itemID, onlyUsableAmounts: false);
+
+                var count = 0;
+                foreach (var itemData in ItemDataCollection)
+                {
+                    if (itemData.ID == itemID)
+                        count += itemData.Amount;
+                }
+                return count;
+            }
+
+            public int MoveItemsToPlayerInventory(BasePlayer player, int itemID, int desiredAmount)
+            {
+                EnsureContainer();
+
+                List<Item> matchingItemStacks = _itemContainer.FindItemsByItemID(itemID);
+                int amountTransferred = 0;
+
+                foreach (Item itemStack in matchingItemStacks)
+                {
+                    int remainingDesiredAmount = desiredAmount - amountTransferred;
+                    Item itemToTransfer = (itemStack.amount > remainingDesiredAmount) ? itemStack.SplitItem(remainingDesiredAmount) : itemStack;
+                    int initialStackAmount = itemToTransfer.amount;
+
+                    bool transferFullySucceeded = player.inventory.GiveItem(itemToTransfer);
+                    amountTransferred += initialStackAmount;
+
+                    if (!transferFullySucceeded)
+                    {
+                        int amountRemainingInStack = itemToTransfer.amount;
+
+                        // Decrement the amountTransferred by the amount remaining in the stack
+                        // Since earlier we incremented it by the full stack amount
+                        amountTransferred -= amountRemainingInStack;
+
+                        if (itemToTransfer != itemStack)
+                        {
+                            // Add the remaining items from the split stack back to the original stack
+                            itemStack.amount += amountRemainingInStack;
+                            itemStack.MarkDirty();
+                        }
+                        break;
+                    }
+
+                    if (amountTransferred >= desiredAmount)
+                        break;
+                }
+
+                if (amountTransferred > 0 && !_instance._config.SaveBackpacksOnServerSave)
+                    SaveData();
+
+                return amountTransferred;
+            }
+
+            private void DisassociateEntity(Item item)
+            {
+                if (item.instanceData != null)
+                {
+                    if (item.instanceData.subEntity != 0)
+                    {
+                        var associatedEntity = BaseNetworkable.serverEntities.Find(item.instanceData.subEntity) as BaseEntity;
+                        if (associatedEntity != null && associatedEntity.HasParent())
+                        {
+                            // Disable networking of the entity while it has no parent to reduce unnecessary server load.
+                            associatedEntity.limitNetworking = true;
+
+                            // Unparent the associated entity so it's not killed when its parent is.
+                            // For example, a CassetteRecorder would normally kill its child Cassette.
+                            associatedEntity.SetParent(null);
+                        }
+                    }
+
+                    // If the item has an associated entity (e.g., photo, sign, cassette), the id will already have been saved.
+                    // Forget about the entity when killing the item so that the entity will persist.
+                    // When the backpack item is recreated later, this property will set from the data file so that the item can be reassociated.
+                    item.instanceData.subEntity = 0;
+                }
+
+                if (item.contents != null)
+                {
+                    foreach (var childItem in item.contents.itemList)
+                    {
+                        DisassociateEntity(childItem);
+                    }
+                }
+            }
+
+            private void KillContainer()
+            {
+                ForceCloseAllLooters();
+
+                if (_itemContainer != null)
+                {
+                    foreach (var item in _itemContainer.itemList)
+                    {
+                        DisassociateEntity(item);
+                    }
+                }
+
+                if (_storageContainer != null && !_storageContainer.IsDestroyed)
+                {
+                    _instance._backpackManager.UnregisterContainer(_itemContainer);
+                    _storageContainer.Kill();
+                }
+            }
+
+            private void ForceCloseLooter(BasePlayer looter)
+            {
+                looter.inventory.loot.Clear();
+                looter.inventory.loot.MarkDirty();
+                looter.inventory.loot.SendImmediate();
+
+                OnClosed(looter);
+            }
+
+            private void ForceCloseAllLooters()
+            {
+                if (_looters.Count == 0)
+                    return;
+
+                foreach (BasePlayer looter in _looters.ToArray())
+                {
+                    ForceCloseLooter(looter);
+                }
+            }
+
+            private int GetAllowedCapacity() => GetAllowedSize() * SlotsPerRow;
+
+            private int GetHighestUsedSlot()
+            {
+                var highestUsedSlot = -1;
+                foreach (var itemData in ItemDataCollection)
+                {
+                    if (itemData.Position > highestUsedSlot)
+                        highestUsedSlot = itemData.Position;
+                }
+                return highestUsedSlot;
+            }
+
+            private StorageContainer SpawnStorageContainer(int capacity)
+            {
+                var storageEntity = GameManager.server.CreateEntity(CoffinPrefab, new Vector3(0, -50, 0));
+                if (storageEntity == null)
+                    return null;
+
+                var containerEntity = storageEntity as StorageContainer;
+                if (containerEntity == null)
+                {
+                    UnityEngine.Object.Destroy(storageEntity);
+                    return null;
+                }
+
+                UnityEngine.Object.DestroyImmediate(containerEntity.GetComponent<DestroyOnGroundMissing>());
+                UnityEngine.Object.DestroyImmediate(containerEntity.GetComponent<GroundWatch>());
+
+                foreach (var collider in containerEntity.GetComponentsInChildren<Collider>())
+                    UnityEngine.Object.DestroyImmediate(collider);
+
+                containerEntity.gameObject.AddComponent<BackpackCloseListener>().SetBackpack(this);
+
+                containerEntity.baseProtection = _instance._immortalProtection;
+                containerEntity.panelName = ResizableLootPanelName;
+
+                // Temporarily disable networking to prevent initially sending the entity to clients based on the positional network group.
+                containerEntity._limitedNetworking = true;
+
+                containerEntity.EnableSaving(false);
+                containerEntity.Spawn();
+
+                // Must change the network group after spawning,
+                // or else vanilla UpdateNetworkGroup will switch it to a positional network group.
+                containerEntity.net.SwitchGroup(NetworkController.NetworkGroup);
+
+                // Re-enable networking now that the entity is in the correct network group.
+                containerEntity._limitedNetworking = false;
+
+                containerEntity.inventory.allowedContents = ItemContainer.ContentsType.Generic;
+                containerEntity.inventory.capacity = capacity;
+
+                return containerEntity;
+            }
+
+            private bool ShouldAcceptItem(Item item)
+            {
+                // Skip checking restricted items if they haven't been processed, to avoid erasing them.
+                // Restricted items will be dropped when the owner opens the backpack.
+                if (_instance._config.ItemRestrictionEnabled
+                    && _processedRestrictedItems
+                    && !_instance.permission.UserHasPermission(OwnerIdString, NoBlacklistPermission)
+                    && _instance._config.IsRestrictedItem(item))
+                {
+                    return false;
+                }
+
+                object hookResult = Interface.CallHook("CanBackpackAcceptItem", OwnerId, _itemContainer, item);
+                if (hookResult is bool && (bool)hookResult == false)
+                    return false;
+
+                return true;
+            }
+
+            private bool CanAcceptItem(Item item, int amount)
+            {
+                // Explicitly track hook time so server owners can be informed of the cost.
+                _instance.TrackStart();
+                var result = ShouldAcceptItem(item);
+                _instance.TrackEnd();
+                return result;
+            }
+
+            private void EnsureContainer()
+            {
+                if (_storageContainer != null)
+                    return;
+
+                if (NetworkController == null)
+                    NetworkController = _instance._backpackManager.CreateNetworkController();
+
+                _storageContainer = SpawnStorageContainer(GetAllowedCapacity());
+                _itemContainer = _storageContainer.inventory;
+
+                _instance._backpackManager.RegisterContainer(_itemContainer, this);
+
+                if (GetHighestUsedSlot() >= _itemContainer.capacity)
+                {
+                    // Temporarily increase the capacity to allow all items to fit
+                    // Extra items will be addressed when the backpack is opened by the owner
+                    // If an admin views the backpack in the meantime, it will appear as max capacity
+                    _itemContainer.capacity = MaxSize * SlotsPerRow;
+                }
+
+                foreach (var backpackItem in ItemDataCollection)
+                {
+                    var item = backpackItem.ToItem();
+                    if (item != null)
+                    {
+                        if (!item.MoveToContainer(_itemContainer, item.position))
+                            item.Remove();
+                    }
+                }
+
+                // Apply the item filter only after filling the container initially.
+                // This avoids unnecessary CanBackpackAcceptItem hooks calls on initial creation.
+                _itemContainer.canAcceptItem += this.CanAcceptItem;
+                _itemContainer.onDirty += () => _dirty = true;
+            }
+
+            private void MaybeRemoveRestrictedItems(BasePlayer receiver)
+            {
+                if (!_instance._config.ItemRestrictionEnabled)
+                    return;
+
+                // Optimization: Avoid processing item restrictions every time the backpack is opened.
+                if (_processedRestrictedItems)
+                    return;
+
+                if (_instance.permission.UserHasPermission(OwnerIdString, NoBlacklistPermission))
+                {
+                    // Don't process item restrictions while the player has the noblacklist permission.
+                    // Setting this flag allows the item restrictions to be processed again in case the noblacklist permission is revoked.
+                    _processedRestrictedItems = false;
+                    return;
+                }
+
+                var itemsDroppedOrGivenToPlayer = 0;
+                for (var i = _itemContainer.itemList.Count - 1; i >= 0; i--)
+                {
+                    var item = _itemContainer.itemList[i];
+                    if (_instance._config.IsRestrictedItem(item))
+                    {
+                        itemsDroppedOrGivenToPlayer++;
+                        item.RemoveFromContainer();
+                        receiver.GiveItem(item);
+                    }
+                }
+
+                if (itemsDroppedOrGivenToPlayer > 0)
+                {
+                    _instance.PrintToChat(receiver, _instance.lang.GetMessage("Blacklisted Items Removed", _instance, receiver.UserIDString));
+                }
+
+                _processedRestrictedItems = true;
             }
 
             private void MaybeAdjustCapacityAndHandleOverflow(BasePlayer receiver)
@@ -1198,124 +1736,6 @@ namespace Oxide.Plugins
                 }
             }
 
-            private void MaybeRemoveRestrictedItems(BasePlayer receiver)
-            {
-                if (!_instance._config.ItemRestrictionEnabled)
-                    return;
-
-                // Optimization: Avoid processing item restrictions every time the backpack is opened.
-                if (_processedRestrictedItems)
-                    return;
-
-                if (_instance.permission.UserHasPermission(OwnerIdString, NoBlacklistPermission))
-                {
-                    // Don't process item restrictions while the player has the noblacklist permission.
-                    // Setting this flag allows the item restrictions to be processed again in case the noblacklist permission is revoked.
-                    _processedRestrictedItems = false;
-                    return;
-                }
-
-                _processedRestrictedItems = true;
-
-                var itemsDroppedOrGivenToPlayer = 0;
-                for (var i = _itemContainer.itemList.Count - 1; i >= 0; i--)
-                {
-                    var item = _itemContainer.itemList[i];
-                    if (_instance._config.IsRestrictedItem(item))
-                    {
-                        itemsDroppedOrGivenToPlayer++;
-                        item.RemoveFromContainer();
-                        receiver.GiveItem(item);
-                    }
-                }
-
-                if (itemsDroppedOrGivenToPlayer > 0)
-                {
-                    _instance.PrintToChat(receiver, _instance.lang.GetMessage("Blacklisted Items Removed", _instance, receiver.UserIDString));
-                }
-            }
-
-            public void ForceCloseAllLooters()
-            {
-                foreach (BasePlayer looter in _looters.ToArray())
-                {
-                    ForceCloseLooter(looter);
-                }
-            }
-
-            private void ForceCloseLooter(BasePlayer looter)
-            {
-                looter.inventory.loot.Clear();
-                looter.inventory.loot.MarkDirty();
-                looter.inventory.loot.SendImmediate();
-
-                OnClose(looter);
-            }
-
-            public void OnClose(BasePlayer looter)
-            {
-                _looters.Remove(looter);
-                _instance._openBackpacks.Remove(looter);
-
-				Interface.CallHook("OnBackpackClosed", looter, OwnerId, _itemContainer);
-
-                if (!_instance._config.SaveBackpacksOnServerSave)
-                {
-                    SaveData();
-                }
-            }
-
-            public DroppedItemContainer Drop(Vector3 position)
-            {
-                object hookResult = Interface.CallHook("CanDropBackpack", OwnerId, position);
-
-                if (hookResult is bool && (bool)hookResult == false)
-                    return null;
-
-                if (_itemContainer.itemList.Count == 0)
-                    return null;
-
-                ReclaimItemsForSoftcore();
-
-                // Check again since the items may have all been reclaimed for Softcore.
-                if (_itemContainer.itemList.Count == 0)
-                    return null;
-
-                BaseEntity entity = GameManager.server.CreateEntity(BackpackPrefab, position, Quaternion.identity);
-                DroppedItemContainer container = entity as DroppedItemContainer;
-
-                container.lootPanelName = ResizableLootPanelName;
-                container.playerName = $"{FindOwnerPlayer()?.Name ?? "Somebody"}'s Backpack";
-                container.playerSteamID = OwnerId;
-
-                container.inventory = new ItemContainer();
-                container.inventory.ServerInitialize(null, _itemContainer.itemList.Count);
-                container.inventory.GiveUID();
-                container.inventory.entityOwner = container;
-                container.inventory.SetFlag(ItemContainer.Flag.NoItemInput, true);
-
-                foreach (Item item in _itemContainer.itemList.ToArray())
-                {
-                    if (!item.MoveToContainer(container.inventory))
-                    {
-                        item.Remove();
-                        item.DoRemove();
-                    }
-                }
-
-                container.Spawn();
-                container.ResetRemovalTime(Math.Max(_instance._config.MinimumDespawnTime, container.CalculateRemovalTime()));
-
-                ItemManager.DoRemoves();
-
-                if (!_instance._config.SaveBackpacksOnServerSave)
-                {
-                    SaveData();
-                }
-
-                return container;
-            }
-
             private void ReclaimItemsForSoftcore()
             {
                 var softcoreGameMode = BaseGameMode.svActiveGameMode as GameModeSoftcore;
@@ -1332,198 +1752,56 @@ namespace Oxide.Plugins
                 }
                 Facepunch.Pool.FreeList(ref reclaimItemList);
             }
-
-            public void EraseContents(bool force = false)
-            {
-                if (!force)
-                {
-                    object hookResult = Interface.CallHook("CanEraseBackpack", OwnerId);
-
-                    if (hookResult is bool && (bool)hookResult == false)
-                        return;
-                }
-
-                foreach (var item in _itemContainer.itemList.ToList())
-                {
-                    item.Remove();
-                    item.DoRemove();
-                }
-
-                ItemManager.DoRemoves();
-
-                if (!_instance._config.SaveBackpacksOnServerSave)
-                {
-                    SaveData();
-                }
-            }
-
-            public void SaveData()
-            {
-                _itemDataCollection = _itemContainer.itemList
-                    .Select(ItemData.FromItem)
-                    .ToList();
-
-                Backpacks.SaveData(this, $"{_instance.Name}/{OwnerId}");
-            }
-
-            public void Cache() =>
-                _instance._backpacks[OwnerId] = this;
-
-            public int GetItemQuantity(int itemID) => _itemContainer.FindItemsByItemID(itemID).Sum(item => item.amount);
-
-            public int MoveItemsToPlayerInventory(BasePlayer player, int itemID, int desiredAmount)
-            {
-                List<Item> matchingItemStacks = _itemContainer.FindItemsByItemID(itemID);
-                int amountTransferred = 0;
-
-                foreach (Item itemStack in matchingItemStacks)
-                {
-                    int remainingDesiredAmount = desiredAmount - amountTransferred;
-                    Item itemToTransfer = (itemStack.amount > remainingDesiredAmount) ? itemStack.SplitItem(remainingDesiredAmount) : itemStack;
-                    int initialStackAmount = itemToTransfer.amount;
-
-                    bool transferFullySucceeded = player.inventory.GiveItem(itemToTransfer);
-                    amountTransferred += initialStackAmount;
-
-                    if (!transferFullySucceeded)
-                    {
-                        int amountRemainingInStack = itemToTransfer.amount;
-
-                        // Decrement the amountTransferred by the amount remaining in the stack
-                        // Since earlier we incremented it by the full stack amount
-                        amountTransferred -= amountRemainingInStack;
-
-                        if (itemToTransfer != itemStack)
-                        {
-                            // Add the remaining items from the split stack back to the original stack
-                            itemStack.amount += amountRemainingInStack;
-                            itemStack.MarkDirty();
-                        }
-                        break;
-                    }
-
-                    if (amountTransferred >= desiredAmount)
-                        break;
-                }
-
-                if (amountTransferred > 0 && !_instance._config.SaveBackpacksOnServerSave)
-                    SaveData();
-
-                return amountTransferred;
-            }
-
-            public static bool HasBackpackFile(ulong id)
-            {
-                var fileName = $"{_instance.Name}/{id}";
-
-                return Interface.Oxide.DataFileSystem.ExistsDatafile(fileName);
-            }
-
-            public static Backpack GetForContainer(ItemContainer container)
-            {
-                foreach (var backpack in _instance._backpacks.Values)
-                {
-                    if (backpack.IsUnderlyingContainer(container))
-                        return backpack;
-                }
-                return null;
-            }
-
-            private static Backpack GetCachedBackpack(ulong id)
-            {
-                Backpack backpack;
-                return _instance._backpacks.TryGetValue(id, out backpack)
-                    ? backpack
-                    : null;
-            }
-
-            public static Backpack Get(ulong id)
-            {
-                if (id == 0)
-                    _instance.PrintWarning("Accessing backpack for ID 0! Please report this to the author with as many details as possible.");
-
-                var cachedBackpack = GetCachedBackpack(id);
-                if (cachedBackpack != null)
-                    return cachedBackpack;
-
-                var fileName = $"{_instance.Name}/{id}";
-
-                TryMigrateData(fileName);
-
-                Backpack backpack;
-                if (Interface.Oxide.DataFileSystem.ExistsDatafile(fileName))
-                {
-                    LoadData(out backpack, fileName);
-                    if (backpack == null)
-                    {
-                        _instance.PrintWarning($"Data file {fileName}.json is invalid. Creating new data file.");
-                        backpack = new Backpack(id);
-                        Backpacks.SaveData(backpack, fileName);
-                    }
-
-                    // Ensure the backpack has the correct owner id, even if it was removed from the data file.
-                    backpack.OwnerId = id;
-                }
-                else
-                {
-                    backpack = new Backpack(id);
-                    Backpacks.SaveData(backpack, fileName);
-                }
-
-                Interface.Oxide.DataFileSystem.GetDatafile(fileName).Settings = new JsonSerializerSettings
-                {
-                    DefaultValueHandling = DefaultValueHandling.Ignore
-                };
-
-                backpack.Cache();
-                backpack.Initialize();
-
-                return backpack;
-            }
-
-            public static bool TryEraseForPlayer(ulong id)
-            {
-                Backpack backpack = GetCachedBackpack(id);
-                if (backpack != null)
-                {
-                    backpack.ForceCloseAllLooters();
-                    backpack.EraseContents(force: true);
-                    return true;
-                }
-
-                if (!HasBackpackFile(id))
-                    return false;
-
-                // If the backpack is not in the cache, create an empty one and add it.
-                // In case it isn't saved immediately, this ensures it will be saved as empty on server save.
-                backpack = new Backpack(id);
-                backpack.Cache();
-
-                if (!_instance._config.SaveBackpacksOnServerSave)
-                    backpack.SaveData();
-
-                return true;
-            }
         }
 
         public class ItemData
         {
             public int ID;
             public int Position = -1;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int Amount;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public bool IsBlueprint;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int BlueprintTarget;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public ulong Skin;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public float Fuel;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int FlameFuel;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public float Condition;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public float MaxCondition = -1;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int Ammo;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int AmmoType;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public int DataInt;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public string Name;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public string Text;
 
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public uint AssociatedEntityId;
+
+            [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public List<ItemData> Contents = new List<ItemData>();
 
             public Item ToItem()
@@ -1579,13 +1857,25 @@ namespace Oxide.Plugins
                 if (flameThrower != null)
                     flameThrower.ammo = FlameFuel;
 
-                if (DataInt > 0)
+                if (DataInt > 0 || AssociatedEntityId != 0)
                 {
                     item.instanceData = new ProtoBuf.Item.InstanceData
                     {
                         ShouldPool = false,
-                        dataInt = DataInt
+                        dataInt = DataInt,
                     };
+
+                    if (AssociatedEntityId != 0)
+                    {
+                        var associatedEntity = BaseNetworkable.serverEntities.Find(AssociatedEntityId);
+                        if (associatedEntity != null)
+                        {
+                            // Re-enable networking since it's disabled when the entity is disassociated.
+                            associatedEntity._limitedNetworking = false;
+
+                            item.instanceData.subEntity = AssociatedEntityId;
+                        }
+                    }
                 }
 
                 item.text = Text;
@@ -1612,6 +1902,7 @@ namespace Oxide.Plugins
                 IsBlueprint = item.IsBlueprint(),
                 BlueprintTarget = item.blueprintTarget,
                 DataInt = item.instanceData?.dataInt ?? 0,
+                AssociatedEntityId = item.instanceData?.subEntity ?? 0,
                 Name = item.name,
                 Text = item.text
             };

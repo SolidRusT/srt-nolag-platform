@@ -16,6 +16,7 @@ function update_repo() {
       ${S3_REPO} ${HOME}/solidrust.net | tee -a ${LOGS}
     echo "Setting execution bits" | tee -a ${LOGS}
     chmod +x ${HOME}/solidrust.net/defaults/*.sh
+    cp ${HOME}/solidrust.net/build.txt ${GAME_ROOT}/
     ;;
   web | webserver)
     echo "Sync repo for website server"
@@ -32,8 +33,21 @@ function update_repo() {
     chmod +x ${HOME}/solidrust.net/defaults/*.sh
     chmod +x ${HOME}/solidrust.net/defaults/web/*.sh
     ;;
+  data | database)
+    echo "Sync repo for database server"
+    mkdir -p ${HOME}/solidrust.net
+    aws s3 sync --delete ${S3_REPO} ${HOME}/solidrust.net \
+    --exclude 'defaults/oxide/*' \
+    --exclude 'defaults/web/*' \
+    --exclude 'web/*' \
+    --exclude 'servers/*' \
+    --include 'servers/data/*' | grep -v ".git" | tee -a ${LOGS}
+    echo "Setting execution bits" | tee -a ${LOGS}
+    chmod +x ${HOME}/solidrust.net/defaults/database/*.sh
+    ;;
   *)
     echo "Performing full repository sync"
+    mkdir -p ${HOME}/solidrust.net
     aws s3 sync --delete ${S3_REPO} ${HOME}/solidrust.net | grep -v ".git" | tee -a ${LOGS}
     echo "Setting execution bits" | tee -a ${LOGS}
     chmod +x ${HOME}/solidrust.net/defaults/database/*.sh
@@ -41,8 +55,7 @@ function update_repo() {
     chmod +x ${HOME}/solidrust.net/defaults/*.sh
     ;;
   esac
-  cp ${HOME}/solidrust.net/build.txt ${GAME_ROOT}/
-  echo "Current build: $(cat ${GAME_ROOT}/build.txt | head -n 2)"
+  echo "Current build: $(cat ${HOME}/solidrust.net/build.txt | head -n 2)"
 }
 
 function update_mods() {
@@ -216,97 +229,7 @@ function update_map_api() {
   ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload LustyMap" | tee -a ${LOGS}
 }
 
-function staging_push() {
-  echo "plugin is broken, and therfore currently disabled" | tee -a ${LOGS}
-  #SOURCE=$1
-  ## Pull global env vars
-  #source ${HOME}/solidrust.net/defaults/env_vars.sh
-  #me=$(basename -- "$0")
-  #echo "====> Starting ${me}: ${LOG_DATE}" | tee -a ${LOGS}
-  #export BASE_BACKUPS_PATH="${S3_BACKUPS}/servers/${SOURCE}"
-  #
-  ## save Rust Server configs
-  #echo "===> Uploading Rust Server Configs configs to: ${HOME}/solidrust.net/defaults/cfg/users.cfg" | tee -a ${LOGS}
-  #aws s3 cp --quiet ${BASE_BACKUPS_PATH}/staged/server/users.cfg ${HOME}/solidrust.net/defaults/cfg/users.cfg | tee -a ${LOGS}
-  ## bans.cfg
-  #
-  ## save Rust Oxide plugin configs
-  #echo "===> Uploading Rust Oxide plugin configs to: ${HOME}/solidrust.net/defaults/oxide/config" | tee -a ${LOGS}
-  #aws s3 sync --quiet --delete ${BASE_BACKUPS_PATH}/staged/config ${HOME}/solidrust.net/defaults/oxide/config | tee -a ${LOGS}
-  #
-  ## save Rust Oxide plugin data
-  #echo "===> Uploading Rust Oxide plugin configs to: ${HOME}/solidrust.net/defaults/oxide/data" | tee -a ${LOGS}
-  #
-  #PLUGS=(
-  #    EventManager \
-  #    Kits \
-  #    ZoneManager \
-  #    BetterChat \
-  #    CompoundOptions \
-  #    GuardedCrate \
-  #    KillStreak-Zones.json \
-  #    Kits_Data \
-  #    NTeleportationDisabledCommands \
-  #    StackSizeController \
-  #    killstreak_data \
-  #    death \
-  #    hit
-  #)
-  #
-  #for plug in ${PLUGS[@]}; do
-  #    aws s3 sync --quiet --delete ${BASE_BACKUPS_PATH}/staged/data/$plug ${HOME}/solidrust.net/defaults/oxide/data/$plug | tee -a ${LOGS}
-  #done
-  #
-  ## save Rust Oxide installed plugins
-  #echo "===> Uploading Rust Oxide installed plugins to: ${HOME}/solidrust.net/defaults/oxide/plugins" | tee -a ${LOGS}
-  #aws s3 sync --quiet --delete ${BASE_BACKUPS_PATH}/staged/plugins ${HOME}/solidrust.net/defaults/oxide/plugins | tee -a ${LOGS}
-  #
-  ## nuke staging area
-  #echo "===> Nuking the stagin area: ${BASE_BACKUPS_PATH}/staged" | tee -a ${LOGS}
-  #aws s3 rm --quiet --recursive ${BASE_BACKUPS_PATH}/staged | tee -a ${LOGS}
-}
-
-function staging_link() {
-  echo "Mapping running mods to the SRT github repo" | tee -a ${LOGS}
-  chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
-  rm -rf ${GAME_ROOT}/oxide
-  ln -s ${SERVER_GLOBAL}/oxide ${GAME_ROOT}/oxide
-  #  scp -i ${SSH_KEY} -r ${SSH_USER}@${SRT_HOST}:${SRT_HOST_GAME_ROOT}/oxide/data/copypaste/*.json ${GAME_ROOT}/oxide/data/copypaste/
-}
-
-function srt_install() {
-  echo "Mapping running mods to the SRT github repo" | tee -a ${LOGS}
-  chmod +x ${HOME}/solidrust.net/defaults/solidrust.sh
-  rm -rf ${GAME_ROOT}/oxide
-  ln -s ${SERVER_GLOBAL}/oxide ${GAME_ROOT}/oxide
-}
-
-function srt_update() {
-  if [ -z ${SRT_TYPE} ]; then 
-    echo "SRT_TYPE is empty, expected server type of game, web, radio, ect..."
-  else
-    cd ${HOME}
-    rm -rf solidrust.net
-    update_repo ${SRT_TYPE}
-    case ${SRT_TYPE} in
-      game)
-        update_mods
-          #Loop through patch list
-          # - rcon "o.reload ${plugin_name}"
-          rcon "o.load *"
-        ;;
-      web)
-        ;;
-      radio)
-        ;;
-      *)
-        echo "expected server type of game, web, radio, ect..."
-        ;;
-    esac
-  fi
-}
-
-# SRT 10x
+# Default Game permissions
 DEFAULT_PERMS=(
   vehicledeployedlocks.codelock.duosub
   vehicledeployedlocks.codelock.solosub

@@ -1,38 +1,50 @@
 ﻿//#define DEBUG
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Oxide.Core;
 using Oxide.Core.Configuration;
 using Oxide.Core.Libraries.Covalence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 // TODO: Add SQLite and MySQL database support
 
 namespace Oxide.Plugins
 {
-    [Info("Economics", "Wulf", "3.8.6")]
+    [Info("Economics", "Wulf", "3.9.1")]
     [Description("Basic economics system and economy API")]
-    class Economics : CovalencePlugin
+    public class Economics : CovalencePlugin
     {
         #region Configuration
 
         private Configuration config;
 
-        class Configuration
+        private class Configuration
         {
             [JsonProperty("Allow negative balance for accounts")]
-            public bool NegativeBalance = false;
+            public bool AllowNegativeBalance = false;
 
-            [JsonProperty("Maximum balance for accounts (0 to disable)")]
-            public int MaximumBalance = 0;
+            [JsonProperty("Balance limit for accounts (0 to disable)")]
+            public int BalanceLimit = 0;
+
+            [JsonProperty("Maximum balance for accounts (0 to disable)")] // TODO: From version 3.8.6; remove eventually
+            private int BalanceLimitOld { set { BalanceLimit = value; } }
+
+            [JsonProperty("Negative balance limit for accounts (0 to disable)")]
+            public int NegativeBalanceLimit = 0;
 
             [JsonProperty("Remove unused accounts")]
             public bool RemoveUnused = true;
 
-            [JsonProperty("Starting money amount (0 or higher)")]
-            public int StartAmount = 1000;
+            [JsonProperty("Log transactions to file")]
+            public bool LogTransactions = false;
+
+            [JsonProperty("Starting account balance (0 or higher)")]
+            public int StartingBalance = 1000;
+
+            [JsonProperty("Starting money amount (0 or higher)")] // TODO: From version 3.8.6; remove eventually
+            private int StartingBalanceOld { set { StartingBalance = value; } }
 
             [JsonProperty("Wipe balances on new save file")]
             public bool WipeOnNewSave = false;
@@ -117,6 +129,10 @@ namespace Oxide.Plugins
                 ["DataSaved"] = "Economics data saved!",
                 ["DataWiped"] = "Economics data wiped!",
                 ["DepositedToAll"] = "Deposited {0:C} total ({1:C} each) to {2} player(s)",
+                ["LogDeposit"] = "{0:C} deposited to {1}",
+                ["LogSetBalance"] = "{0:C} set as balance for {1}",
+                ["LogTransfer"] = "{0:C} transferred to {1} from {2}",
+                ["LogWithdrawl"] = "{0:C} withdrawn from {1}",
                 ["NegativeBalance"] = "Balance can not be negative!",
                 ["NotAllowed"] = "You are not allowed to use the '{0}' command",
                 ["NoPlayersFound"] = "No players found with name or ID '{0}'",
@@ -149,20 +165,20 @@ namespace Oxide.Plugins
 
         #region Initialization
 
-        private const string permBalance = "economics.balance";
-        private const string permDeposit = "economics.deposit";
-        private const string permDepositAll = "economics.depositall";
-        private const string permSetBalance = "economics.setbalance";
-        private const string permSetBalanceAll = "economics.setbalanceall";
-        private const string permTransfer = "economics.transfer";
-        private const string permTransferAll = "economics.transferall";
-        private const string permWithdraw = "economics.withdraw";
-        private const string permWithdrawAll = "economics.withdrawall";
-        private const string permWipe = "economics.wipe";
+        private const string permissionBalance = "economics.balance";
+        private const string permissionDeposit = "economics.deposit";
+        private const string permissionDepositAll = "economics.depositall";
+        private const string permissionSetBalance = "economics.setbalance";
+        private const string permissionSetBalanceAll = "economics.setbalanceall";
+        private const string permissionTransfer = "economics.transfer";
+        private const string permissionTransferAll = "economics.transferall";
+        private const string permissionWithdraw = "economics.withdraw";
+        private const string permissionWithdrawAll = "economics.withdrawall";
+        private const string permissionWipe = "economics.wipe";
 
         private void Init()
         {
-            // Register univeral chat/console commands
+            // Register universal chat/console commands
             AddLocalizedCommand(nameof(CommandBalance));
             AddLocalizedCommand(nameof(CommandDeposit));
             AddLocalizedCommand(nameof(CommandSetBalance));
@@ -171,12 +187,16 @@ namespace Oxide.Plugins
             AddLocalizedCommand(nameof(CommandWipe));
 
             // Register permissions for commands
-            permission.RegisterPermission(permBalance, this);
-            permission.RegisterPermission(permDeposit, this);
-            permission.RegisterPermission(permSetBalance, this);
-            permission.RegisterPermission(permTransfer, this);
-            permission.RegisterPermission(permWithdraw, this);
-            permission.RegisterPermission(permWipe, this);
+            permission.RegisterPermission(permissionBalance, this);
+            permission.RegisterPermission(permissionDeposit, this);
+            permission.RegisterPermission(permissionDepositAll, this);
+            permission.RegisterPermission(permissionSetBalance, this);
+            permission.RegisterPermission(permissionSetBalanceAll, this);
+            permission.RegisterPermission(permissionTransfer, this);
+            permission.RegisterPermission(permissionTransferAll, this);
+            permission.RegisterPermission(permissionWithdraw, this);
+            permission.RegisterPermission(permissionWithdrawAll, this);
+            permission.RegisterPermission(permissionWipe, this);
 
             // Load existing data and migrate old data format
             data = Interface.Oxide.DataFileSystem.GetFile(Name);
@@ -209,13 +229,13 @@ namespace Oxide.Plugins
             List<string> playerData = new List<string>(storedData.Balances.Keys);
 
             // Check for and set any balances over maximum allowed
-            if (config.MaximumBalance > 0)
+            if (config.BalanceLimit > 0)
             {
                 foreach (string p in playerData)
                 {
-                    if (storedData.Balances[p] > config.MaximumBalance)
+                    if (storedData.Balances[p] > config.BalanceLimit)
                     {
-                        storedData.Balances[p] = config.MaximumBalance;
+                        storedData.Balances[p] = config.BalanceLimit;
                         changed = true;
                     }
                 }
@@ -226,7 +246,7 @@ namespace Oxide.Plugins
             {
                 foreach (string p in playerData)
                 {
-                    if (storedData.Balances[p].Equals(config.StartAmount))
+                    if (storedData.Balances[p].Equals(config.StartingBalance))
                     {
                         storedData.Balances.Remove(p);
                         changed = true;
@@ -241,6 +261,7 @@ namespace Oxide.Plugins
             {
                 storedData.Balances.Clear();
                 changed = true;
+                Interface.Call("OnEconomicsDataWiped");
             }
         }
 
@@ -250,33 +271,73 @@ namespace Oxide.Plugins
 
         private double Balance(string playerId)
         {
+            if (string.IsNullOrEmpty(playerId))
+            {
+                LogWarning("Balance method called without a valid player ID");
+                return 0.0;
+            }
+
             double playerData;
-            return storedData.Balances.TryGetValue(playerId, out playerData) ? playerData : config.StartAmount;
+            return storedData.Balances.TryGetValue(playerId, out playerData) ? playerData : config.StartingBalance;
         }
 
         private double Balance(ulong playerId) => Balance(playerId.ToString());
 
         private bool Deposit(string playerId, double amount)
         {
-            return amount > 0 && SetBalance(playerId, amount + Balance(playerId));
+            if (string.IsNullOrEmpty(playerId))
+            {
+                LogWarning("Deposit method called without a valid player ID");
+                return false;
+            }
+
+            if (amount > 0 && SetBalance(playerId, amount + Balance(playerId)))
+            {
+                Interface.Call("OnEconomicsDeposit", playerId, amount);
+
+                if (config.LogTransactions)
+                {
+                    LogToFile("transactions", $"[{DateTime.Now}] {GetLang("LogDeposit", null, amount, playerId)}", this);
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         private bool Deposit(ulong playerId, double amount) => Deposit(playerId.ToString(), amount);
 
         private bool SetBalance(string playerId, double amount)
         {
-            if (amount >= 0 || config.NegativeBalance)
+            if (string.IsNullOrEmpty(playerId))
+            {
+                LogWarning("SetBalance method called without a valid player ID");
+                return false;
+            }
+
+            if (amount >= 0 || config.AllowNegativeBalance)
             {
                 amount = Math.Round(amount, 2);
-                if (config.MaximumBalance > 0 && amount > config.MaximumBalance)
+                if (config.BalanceLimit > 0 && amount > config.BalanceLimit)
                 {
-                    amount = config.MaximumBalance;
+                    amount = config.BalanceLimit;
+                }
+                else if (config.AllowNegativeBalance && config.NegativeBalanceLimit < 0 && amount < config.NegativeBalanceLimit)
+                {
+                    amount = config.NegativeBalanceLimit;
                 }
 
                 storedData.Balances[playerId] = amount;
                 changed = true;
 
-                Interface.Call("OnBalanceChanged", playerId, amount);
+                Interface.Call("OnEconomicsBalanceUpdated", playerId, amount);
+                Interface.CallDeprecatedHook("OnBalanceChanged", "OnEconomicsBalanceUpdated", new System.DateTime(2022, 7, 1), playerId, amount);
+
+                if (config.LogTransactions)
+                {
+                    LogToFile("transactions", $"[{DateTime.Now}] {GetLang("LogSetBalance", null, amount, playerId)}", this);
+                }
 
                 return true;
             }
@@ -288,7 +349,25 @@ namespace Oxide.Plugins
 
         private bool Transfer(string playerId, string targetId, double amount)
         {
-            return Withdraw(playerId, amount) && Deposit(targetId, amount);
+            if (string.IsNullOrEmpty(playerId))
+            {
+                LogWarning("Transfer method called without a valid player ID");
+                return false;
+            }
+
+            if (Withdraw(playerId, amount) && Deposit(targetId, amount))
+            {
+                Interface.Call("OnEconomicsTransfer", playerId, targetId, amount);
+
+                if (config.LogTransactions)
+                {
+                    LogToFile("transactions", $"[{DateTime.Now}] {GetLang("LogTransfer", null, amount, targetId, playerId)}", this);
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         private bool Transfer(ulong playerId, ulong targetId, double amount)
@@ -298,10 +377,26 @@ namespace Oxide.Plugins
 
         private bool Withdraw(string playerId, double amount)
         {
-            if (amount >= 0 || config.NegativeBalance)
+            if (string.IsNullOrEmpty(playerId))
+            {
+                LogWarning("Withdraw method called without a valid player ID");
+                return false;
+            }
+
+            if (amount >= 0 || config.AllowNegativeBalance)
             {
                 double balance = Balance(playerId);
-                return (balance >= amount || config.NegativeBalance) && SetBalance(playerId, balance - amount);
+                if ((balance >= amount || (config.AllowNegativeBalance && balance + amount > config.NegativeBalanceLimit)) && SetBalance(playerId, balance - amount))
+                {
+                    Interface.Call("OnEconomicsWithdrawl", playerId, amount);
+
+                    if (config.LogTransactions)
+                    {
+                        LogToFile("transactions", $"[{DateTime.Now}] {GetLang("LogWithdrawl", null, amount, playerId)}", this);
+                    }
+
+                    return true;
+                }
             }
 
             return false;
@@ -319,7 +414,7 @@ namespace Oxide.Plugins
         {
             if (args != null && args.Length > 0)
             {
-                if (!player.HasPermission(permBalance))
+                if (!player.HasPermission(permissionBalance))
                 {
                     Message(player, "NotAllowed", command);
                     return;
@@ -352,7 +447,7 @@ namespace Oxide.Plugins
 
         private void CommandDeposit(IPlayer player, string command, string[] args)
         {
-            if (!player.HasPermission(permDeposit))
+            if (!player.HasPermission(permissionDeposit))
             {
                 Message(player, "NotAllowed", command);
                 return;
@@ -374,7 +469,7 @@ namespace Oxide.Plugins
 
             if (args[0] == "*")
             {
-                if (!player.HasPermission(permDepositAll))
+                if (!player.HasPermission(permissionDepositAll))
                 {
                     Message(player, "NotAllowed", command);
                     return;
@@ -415,7 +510,7 @@ namespace Oxide.Plugins
 
         private void CommandSetBalance(IPlayer player, string command, string[] args)
         {
-            if (!player.HasPermission(permSetBalance))
+            if (!player.HasPermission(permissionSetBalance))
             {
                 Message(player, "NotAllowed", command);
                 return;
@@ -438,7 +533,7 @@ namespace Oxide.Plugins
 
             if (args[0] == "*")
             {
-                if (!player.HasPermission(permSetBalanceAll))
+                if (!player.HasPermission(permissionSetBalanceAll))
                 {
                     Message(player, "NotAllowed", command);
                     return;
@@ -479,7 +574,7 @@ namespace Oxide.Plugins
 
         private void CommandTransfer(IPlayer player, string command, string[] args)
         {
-            if (!player.HasPermission(permTransfer))
+            if (!player.HasPermission(permissionTransfer))
             {
                 Message(player, "NotAllowed", command);
                 return;
@@ -502,7 +597,7 @@ namespace Oxide.Plugins
 
             if (args[0] == "*")
             {
-                if (!player.HasPermission(permTransferAll))
+                if (!player.HasPermission(permissionTransferAll))
                 {
                     Message(player, "NotAllowed", command);
                     return;
@@ -567,7 +662,7 @@ namespace Oxide.Plugins
 
         private void CommandWithdraw(IPlayer player, string command, string[] args)
         {
-            if (!player.HasPermission(permWithdraw))
+            if (!player.HasPermission(permissionWithdraw))
             {
                 Message(player, "NotAllowed", command);
                 return;
@@ -590,7 +685,7 @@ namespace Oxide.Plugins
 
             if (args[0] == "*")
             {
-                if (!player.HasPermission(permWithdrawAll))
+                if (!player.HasPermission(permissionWithdrawAll))
                 {
                     Message(player, "NotAllowed", command);
                     return;
@@ -631,7 +726,7 @@ namespace Oxide.Plugins
 
         private void CommandWipe(IPlayer player, string command, string[] args)
         {
-            if (!player.HasPermission(permWipe))
+            if (!player.HasPermission(permissionWipe))
             {
                 Message(player, "NotAllowed", command);
                 return;
@@ -642,6 +737,7 @@ namespace Oxide.Plugins
             SaveData();
 
             Message(player, "DataWiped");
+            Interface.Call("OnEconomicsDataWiped", player);
         }
 
         #endregion Wipe Command
@@ -650,9 +746,9 @@ namespace Oxide.Plugins
 
         #region Helpers
 
-        private IPlayer FindPlayer(string nameOrId, IPlayer player)
+        private IPlayer FindPlayer(string playerNameOrId, IPlayer player)
         {
-            IPlayer[] foundPlayers = players.FindPlayers(nameOrId).ToArray();
+            IPlayer[] foundPlayers = players.FindPlayers(playerNameOrId).ToArray();
             if (foundPlayers.Length > 1)
             {
                 Message(player, "PlayersFound", string.Join(", ", foundPlayers.Select(p => p.Name).Take(10).ToArray()).Truncate(60));
@@ -662,7 +758,7 @@ namespace Oxide.Plugins
             IPlayer target = foundPlayers.Length == 1 ? foundPlayers[0] : null;
             if (target == null)
             {
-                Message(player, "NoPlayersFound", nameOrId);
+                Message(player, "NoPlayersFound", playerNameOrId);
                 return null;
             }
 

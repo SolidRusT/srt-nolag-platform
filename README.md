@@ -117,5 +117,12 @@ pull_oxide_config <server_name> <plugin_name>
 pull_oxide_data <server_name> <plugin_name>
 ```
 
+#### CloudFlare DNS
+```
+1.1.1.1
+1.0.0.1
+2606:4700:4700::1111
+2606:4700:4700::1001
+```
 
 [StackEdit](https://stackedit.io) - _StackEdit’s Markdown syntax highlighting is unique. The refined text formatting of the editor helps you visualize the final rendering of your files._

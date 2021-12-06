@@ -23,7 +23,7 @@
         "Medium": 1,
         "Hard": 1,
         "Expert": 1,
-        "Nightmare": 1
+        "Nightmare": 0
       },
       "Chance To Automatically Spawn Each Difficulty (-1 = ignore)": {
         "Easy": -1.0,

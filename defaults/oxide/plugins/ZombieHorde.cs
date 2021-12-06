@@ -5,7 +5,6 @@ using Oxide.Core.Plugins;
 using ProtoBuf;
 using Rust;
 using Rust.Ai;
-using Rust.Ai.HTN.Murderer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("ZombieHorde", "k1lly0u", "0.4.3")]
+    [Info("ZombieHorde", "k1lly0u", "0.4.4")]
     class ZombieHorde : RustPlugin
     {
         [PluginReference] 
@@ -61,7 +60,7 @@ namespace Oxide.Plugins
 
             CreateMonumentHordeOrders();
         }
-                
+
         private void OnEntityTakeDamage(BaseCombatEntity baseCombatEntity, HitInfo hitInfo)
         {
             if (hitInfo != null)
@@ -120,8 +119,6 @@ namespace Oxide.Plugins
         private object CanEntityBeHostile(ZombieNPC zombieNPC) => true;
 
         private object CanBradleyApcTarget(BradleyAPC bradleyAPC, ZombieNPC zombieNPC) => false;
-
-        private object OnNpcTarget(HTNPlayer htnPlayer, ZombieNPC zombieNPC) => Configuration.Member.TargetedByNPCs ? null : (object)true;
 
         private object OnNpcTarget(NPCPlayer npcPlayer, ZombieNPC zombieNPC) => Configuration.Member.TargetedByNPCs ? null : (object)true;
 
@@ -478,16 +475,35 @@ namespace Oxide.Plugins
         #endregion
 
         #region Loadouts      
+        private static LootContainer.LootSpawnSlot[] _defaultLootSpawns;
 
-        private static MurdererDefinition _defaultDefinition;
+        private static PlayerInventoryProperties[] _defaultLoadouts;
 
-        private static MurdererDefinition DefaultDefinition
+        private static LootContainer.LootSpawnSlot[] DefaultLootSpawns
         {
             get
             {
-                if (_defaultDefinition == null)
-                    _defaultDefinition = GameManager.server.FindPrefab("assets/prefabs/npc/scarecrow/scarecrow.prefab").GetComponent<HTNPlayer>().AiDefinition as MurdererDefinition;
-                return _defaultDefinition;
+                if (_defaultLootSpawns == null)
+                {
+                    ScarecrowNPC scarecrowNPC = GameManager.server.FindPrefab("assets/prefabs/npc/scarecrow/scarecrow.prefab").GetComponent<ScarecrowNPC>();
+                    _defaultLootSpawns = scarecrowNPC.LootSpawnSlots;
+                    _defaultLoadouts = scarecrowNPC.loadouts;
+                }
+                return _defaultLootSpawns;
+            }
+        }
+
+        private static PlayerInventoryProperties[] DefaultLoadouts
+        {
+            get
+            {
+                if (_defaultLoadouts == null)
+                {
+                    ScarecrowNPC scarecrowNPC = GameManager.server.FindPrefab("assets/prefabs/npc/scarecrow/scarecrow.prefab").GetComponent<ScarecrowNPC>();
+                    _defaultLootSpawns = scarecrowNPC.LootSpawnSlots;
+                    _defaultLoadouts = scarecrowNPC.loadouts;                    
+                }
+                return _defaultLoadouts;
             }
         }
 
@@ -535,14 +551,14 @@ namespace Oxide.Plugins
             {
                 if (_reference == null)
                 {
-                    const string SCIENTIST_PREFAB = "assets/rust.ai/agents/npcplayer/humannpc/heavyscientist/heavyscientistad.prefab";
+                    const string SCIENTIST_PREFAB = "assets/rust.ai/agents/npcplayer/humannpc/scientist/scientistnpc_heavy.prefab";
 
                     GameObject gameObject = Instantiate.GameObject(GameManager.server.FindPrefab(SCIENTIST_PREFAB), Vector3.zero, Quaternion.identity);
                     gameObject.name = SCIENTIST_PREFAB;
 
                     gameObject.SetActive(false);
 
-                    ScientistNPCNew scientistNPC = gameObject.GetComponent<ScientistNPCNew>();
+                    ScientistNPC scientistNPC = gameObject.GetComponent<ScientistNPC>();
                     ScientistBrain scientistBrain = gameObject.GetComponent<ScientistBrain>();
                     NPCPlayerNavigator scientistNavigator = gameObject.GetComponent<NPCPlayerNavigator>();
 
@@ -1500,7 +1516,7 @@ namespace Oxide.Plugins
 
                 base.ServerInit();
 
-                displayName = Loadout.Names.GetRandom();
+                Invoke(DelayedSetDisplayname, 1f);
 
                 Loadout.GiveToPlayer(this);
 
@@ -1514,6 +1530,8 @@ namespace Oxide.Plugins
 
                 InvokeRepeating(LightCheck, 1f, 30f);
             }
+
+            private void DelayedSetDisplayname() => displayName = Loadout.Names.GetRandom();
             #endregion
 
             #region BaseEntity
@@ -1890,7 +1908,8 @@ namespace Oxide.Plugins
                 
                 if (targetAimedDuration >= 0.2f && targetIsLOS)
                 {
-                    if (IsTargetInAttackRange(target))
+                    float distanceToTarget;
+                    if (IsTargetInAttackRange(target, out distanceToTarget))
                     {
                         if (CurrentWeapon is ThrownWeapon)
                         {
@@ -2167,9 +2186,21 @@ namespace Oxide.Plugins
 
             public bool IsOnCooldown() => false;
 
-            public bool IsTargetInRange(BaseEntity entity) => CurrentWeapon == null || CurrentWeapon is BaseMelee ? false : IsTargetInAttackRange(entity);
-            
-            public bool IsTargetInAttackRange(BaseEntity entity) => Vector3.Distance(entity.transform.position, Transform.position) <= EngagementRange();
+            public bool IsTargetInRange(BaseEntity entity, out float distance)
+            {
+                if (CurrentWeapon == null || CurrentWeapon is BaseMelee)
+                {
+                    distance = float.MaxValue;
+                    return false;
+                }
+                else return IsTargetInAttackRange(entity, out distance);
+            }
+
+            public bool IsTargetInAttackRange(BaseEntity entity, out float distance)
+            {
+                distance = Vector3.Distance(entity.transform.position, Transform.position);
+                return distance <= EngagementRange();
+            }
 
             public bool NeedsToReload() => false;
 
@@ -2188,15 +2219,15 @@ namespace Oxide.Plugins
             public bool IsThreat(BaseEntity entity) => IsTarget(entity);
             #endregion
 
-            #region IThinker
+            #region IThinker            
             public void TryThink()
-            {
+            {               
                 base.ServerThink(Time.time - lastThinkTime);
 
                 if (Brain.ShouldServerThink())                
                     Brain.DoThink();
                 
-                lastThinkTime = Time.time;
+                lastThinkTime = Time.time;               
             }
             #endregion
 
@@ -2329,10 +2360,7 @@ namespace Oxide.Plugins
                 return basePlayer.eyes.position - Vector3.up * 0.15f;
             }
         }
-
-        private const int SELF_STATE_CONTAINER = -1;
-        private const int ROAM_STATE_CONTAINER = 0;
-        private const int CHASE_STATE_CONTAINER = 1;
+                
         private const int IDLE_STATE_CONTAINER = 2;
 
         public class ZombieNPCBrain : BaseAIBrain<ZombieNPC>
@@ -2356,7 +2384,7 @@ namespace Oxide.Plugins
 
                 Navigator.MaxRoamDistanceFromHome = zombieNPC.Horde.IsLocalHorde ? zombieNPC.Horde.MaximumRoamDistance : -1f;
 
-                LoadAIDesign(ZombieAIDesign, null, 0);                             
+                LoadAIDesign(ProtoBuf.AIDesign.Deserialize(Design), null, 0);                             
             }
 
             public override void AddStates()
@@ -2696,162 +2724,7 @@ namespace Oxide.Plugins
                 }
             }
 
-            public static ProtoBuf.AIDesign ZombieAIDesign = new ProtoBuf.AIDesign
-            {
-                availableStates = new List<int> { (int)AIState.Roam, (int)AIState.Chase, (int)AIState.Idle },
-                defaultStateContainer = 0,
-                description = "Zombie Design",
-                intialViewStateID = 0,
-                scope = 0,
-                stateContainers = new List<ProtoBuf.AIStateContainer>
-                {
-                    new ProtoBuf.AIStateContainer // Roam State Container
-                    {
-                        id = ROAM_STATE_CONTAINER,
-                        inputMemorySlot = 0,
-                        state = (int)AIState.Roam,
-                        events = new List<AIEventData>
-                        {
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.StateFinished,
-                                triggerStateContainer = IDLE_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.StateError,
-                                triggerStateContainer = IDLE_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.Attacked,
-                                triggerStateContainer = CHASE_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 4,
-                                outputMemorySlot = 0,
-                                id = 0
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.BestTargetDetected,
-                                triggerStateContainer = CHASE_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            }
-                        }
-                    },
-                    new ProtoBuf.AIStateContainer // Chase State Container
-                    {
-                        id = CHASE_STATE_CONTAINER,
-                        inputMemorySlot = 0,
-                        state = (int)AIState.Chase,
-                        events = new List<AIEventData>
-                        {
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.StateFinished,
-                                triggerStateContainer = IDLE_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.StateError,
-                                triggerStateContainer = IDLE_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.IsVisible,
-                                triggerStateContainer = SELF_STATE_CONTAINER,
-                                inverted = true,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.InAttackRange,
-                                triggerStateContainer = SELF_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.TargetLost,
-                                triggerStateContainer = ROAM_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.AttackTick,
-                                triggerStateContainer = SELF_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0
-                            }                            
-                        }
-                    },
-                    new ProtoBuf.AIStateContainer // Idle State Container
-                    {
-                        id = IDLE_STATE_CONTAINER,
-                        inputMemorySlot = 0,
-                        state = (int)AIState.Idle,
-                        events = new List<AIEventData>
-                        {
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.Timer,
-                                triggerStateContainer = ROAM_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0,
-                                timerData = new TimerAIEventData { duration = 0f, durationMax = 0.1f }
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.Attacked,
-                                triggerStateContainer = CHASE_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 4,
-                                outputMemorySlot = 0,
-                                id = 0,
-                            },
-                            new AIEventData
-                            {
-                                eventType = (int)AIEventType.BestTargetDetected,
-                                triggerStateContainer = CHASE_STATE_CONTAINER,
-                                inverted = false,
-                                inputMemorySlot = 0,
-                                outputMemorySlot = 0,
-                                id = 0,
-                            }
-                        }
-                    }
-                }
-            };
+            private static readonly byte[] Design = new byte[] { 8, 2, 8, 3, 8, 1, 18, 62, 8, 0, 16, 2, 26, 12, 8, 4, 16, 2, 24, 0, 32, 0, 40, 0, 48, 0, 26, 12, 8, 2, 16, 2, 24, 0, 32, 0, 40, 0, 48, 0, 26, 12, 8, 3, 16, 1, 24, 0, 32, 4, 40, 0, 48, 0, 26, 12, 8, 14, 16, 1, 24, 0, 32, 0, 40, 0, 48, 0, 32, 0, 18, 117, 8, 1, 16, 3, 26, 12, 8, 4, 16, 2, 24, 0, 32, 0, 40, 0, 48, 0, 26, 12, 8, 2, 16, 2, 24, 0, 32, 0, 40, 0, 48, 0, 26, 21, 8, 15, 16, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 24, 1, 32, 0, 40, 0, 48, 0, 26, 21, 8, 5, 16, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 24, 0, 32, 0, 40, 0, 48, 0, 26, 12, 8, 20, 16, 0, 24, 0, 32, 0, 40, 0, 48, 0, 26, 21, 8, 16, 16, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 24, 0, 32, 0, 40, 0, 48, 0, 32, 0, 18, 61, 8, 2, 16, 1, 26, 25, 8, 0, 16, 0, 24, 0, 32, 0, 40, 0, 48, 0, 162, 6, 10, 13, 0, 0, 0, 0, 21, 205, 204, 204, 61, 26, 12, 8, 3, 16, 1, 24, 0, 32, 4, 40, 0, 48, 0, 26, 12, 8, 14, 16, 1, 24, 0, 32, 0, 40, 0, 48, 0, 32, 0, 24, 0, 34, 13, 90, 111, 109, 98, 105, 101, 32, 68, 101, 115, 105, 103, 110, 40, 0, 48, 0 };            
         }
 
         #region Commands 
@@ -4025,12 +3898,12 @@ namespace Oxide.Plugins
         {
             List<ConfigData.MemberOptions.Loadout> list = new List<ConfigData.MemberOptions.Loadout>();
 
-            MurdererDefinition definition = DefaultDefinition;
-            if (definition != null)
+            PlayerInventoryProperties[] loadouts = DefaultLoadouts;
+            if (loadouts != null)
             {
-                for (int i = 0; i < definition.loadouts.Length; i++)
+                for (int i = 0; i < loadouts.Length; i++)
                 {
-                    PlayerInventoryProperties inventoryProperties = definition.loadouts[i];
+                    PlayerInventoryProperties inventoryProperties = loadouts[i];
 
                     ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout($"loadout-{list.Count}");
 
@@ -4069,12 +3942,12 @@ namespace Oxide.Plugins
             randomLoot.Maximum = 9;
             randomLoot.List = new List<ConfigData.LootTable.RandomLoot.LootDefinition>();
 
-            MurdererDefinition definition = DefaultDefinition;
-            if (definition != null)
+            LootContainer.LootSpawnSlot[] loot = DefaultLootSpawns;
+            if (loot != null)
             {
-                for (int i = 0; i < definition.Loot.Length; i++)
+                for (int i = 0; i < loot.Length; i++)
                 {
-                    LootContainer.LootSpawnSlot lootSpawn = definition.Loot[i];
+                    LootContainer.LootSpawnSlot lootSpawn = loot[i];
 
                     for (int y = 0; y < lootSpawn.definition.subSpawn.Length; y++)
                     {

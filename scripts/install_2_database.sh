@@ -1,11 +1,12 @@
+# Amazon s3 destination for source code repository
+export S3_REPO="s3://solidrust.net-repository"
 # Configure Debian package manager
 sudo sed -i 's/main/main contrib non-free/g' /etc/apt/sources.list
-sudo dpkg --add-architecture i386
 sudo apt update
 sudo apt -y dist-upgrade
 
 # Configure server hostname
-NEW_NAME="rust-data"
+NEW_NAME="data"
 echo ${NEW_NAME} | sudo tee /etc/hostname
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/hosts
 echo "127.0.0.1    ${NEW_NAME}" | sudo tee -a /etc/cloud/templates/hosts.debian.tmpl
@@ -45,7 +46,13 @@ sudo mysql
 sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
 sudo systemctl restart mariadb
 
-
+mkdir -p ${HOME}/solidrust.net
+aws s3 sync --delete ${S3_REPO} ${HOME}/solidrust.net \
+    --exclude 'defaults/oxide/*' \
+    --exclude 'defaults/web/*' \
+    --exclude 'web/*' \
+    --exclude 'servers/*' \
+    --include 'servers/data/*' | grep -v ".git"
 
 echo "50 *    * * *   ${USER}  /usr/sbin/logrotate ${HOME}/solidrust.net/defaults/database/logrotate.conf --state ${HOME}/logrotate-state" | sudo tee -a /etc/crontab
 
@@ -60,9 +67,10 @@ echo "3 *    * * *   ${USER} \
 
 #sudo su -
 #mysql
-#create database srt_web_auth;
-#GRANT ALL PRIVILEGES ON *.* TO 'srt_sl_lcy'@'%' 
-#    IDENTIFIED BY 'lcy_402' 
-#    WITH GRANT OPTION;
-#FLUSH PRIVILEGES;
+create database srt_web_auth;
+create database solidrust_lcy;
+GRANT ALL PRIVILEGES ON *.* TO 'srt_sl_lcy'@'%' 
+    IDENTIFIED BY 'lcy_402' 
+    WITH GRANT OPTION;
+FLUSH PRIVILEGES;
 ### Import verification.sql now
