@@ -161,7 +161,7 @@ function update_server() {
   /usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT}/ +app_update 258550 validate +quit | tee -a ${LOGS}
   # Update RCON CLI tool
   echo " - No rcon found here, downloading it..." | tee -a ${LOGS}
-  LATEST_RCON=$(curl https://github.com/gorcon/rcon-cli/releases | grep "/releases/tag" | head -n 1 | awk -F "v" '{ print $2 }' | rev | cut -c3- | rev)
+  LATEST_RCON=$(curl -q https://github.com/gorcon/rcon-cli/releases | grep "/releases/tag" | head -n 1 | awk -F "v" '{ print $3 }' | awk -F "\"" {' print $1 '})
   wget https://github.com/gorcon/rcon-cli/releases/download/v${LATEST_RCON}/rcon-${LATEST_RCON}-amd64_linux.tar.gz
   tar xzvf rcon-${LATEST_RCON}-amd64_linux.tar.gz
   mv rcon-${LATEST_RCON}-amd64_linux/rcon ${GAME_ROOT}/rcon
@@ -231,122 +231,119 @@ function update_map_api() {
 
 # Default Game permissions
 DEFAULT_PERMS=(
-  vehicledeployedlocks.codelock.duosub
-  vehicledeployedlocks.codelock.solosub
-  vehicledeployedlocks.keylock.duosub
-  vehicledeployedlocks.keylock.solosub
-  skins.use
-  craftchassis.2
-  removertool.normal
-  baserepair.use
+  Kits.default
+  autobaseupgrade.use
+  autocode.try
+  autocode.use
+  autodoors.use
   autolock.use
+  automaticauthorization.use
   backpacks.gui
   backpacks.use
-  kits.defaultspawn
   bank.use
+  barrelpoints.default
+  baserepair.use
+  betterrootcombiners.use
   bgrade.all
-  vehicledeployedlocks.codelock.allvehicles
-  vehicledeployedlocks.keylock.allvehicles
+  bloodtrail.allow
+  blueprintshare.share
+  blueprintshare.toggle
+  blueprintshare.use
+  bounty.use
+  buildinggrades.down.all
+  buildinggrades.up.all
+  buildinggrades.use
+  buildingworkbench.use
+  carcommander.canbuild
+  carcommander.canspawn
+  carcommander.use
   carlockui.use.codelock
-  carturrets.limit.2
   carturrets.allmodules
-  trade.use
-  trade.accept
   carturrets.deploy.command
   carturrets.deploy.inventory
-  nteleportation.home
-  nteleportation.deletehome
-  nteleportation.homehomes
-  nteleportation.importhomes
-  nteleportation.radiushome
-  nteleportation.tpr
-  nteleportation.tpb
-  nteleportation.tphome
-  nteleportation.tptown
-  nteleportation.tpoutpost
-  nteleportation.tpbandit
-  nteleportation.wipehomes
-  securitylights.use
-  vehiclevendoroptions.ownership.allvehicles
-  autodoors.use
-  automaticauthorization.use
-  barrelpoints.default
-  itemskinrandomizer.use
-  itemskinrandomizer.reskin
-  instantcraft.use
-  furnacesplitter.use
-  realistictorch.use
-  raidalarm.use
+  carturrets.limit.2
+  chute.allowed
   clearrepair.use
-  treeplanter.use
+  craftchassis.2
+  crafts.use
+  craftsman.leveling.clothing
+  craftsman.leveling.melee
+  craftsman.leveling.ranged
+  customgenetics.use
+  dance.use
+  dronelights.searchlight.autodeploy
+  dronelights.searchlight.move
+  dronepilot.create
+  extendedrecycler.use
   farmtools.clone
   farmtools.clone.all
   farmtools.harvest.all
+  fishing.allowed
+  fishing.makepole
+  fuelgauge.allow
+  furnacesplitter.use
+  heal.player
+  heal.self
+  instantcraft.use
+  instantmixingtable.use
+  iteminspector.use
+  itemskinrandomizer.reskin
+  itemskinrandomizer.use
+  localize.use
+  nteleportation.deletehome
+  nteleportation.home
+  nteleportation.homehomes
+  nteleportation.importhomes
+  nteleportation.radiushome
+  nteleportation.tpb
+  nteleportation.tpbandit
+  nteleportation.tphome
+  nteleportation.tpoutpost
+  nteleportation.tpr
+  nteleportation.tptown
+  nteleportation.wipehomes
+  optimalburn.use
+  patrolboat.builder
+  payforelectricity.use
+  phonesplus.use
+  privatemessages.allow
+  quicksmelt.use
+  quicksort.autolootall
+  quicksort.lootall
+  quicksort.use
+  raidalarm.use
+  realistictorch.use
+  recyclerspeed.use
+  removertool.normal
+  securitycameras.use
+  securitylights.use
+  signartist.raw
+  signartist.restore
+  signartist.restoreall
+  signartist.text
+  signartist.url
+  simpletime.use
+  skins.use
+  sleep.allow
+  spawnmini.fmini
+  spawnmini.mini
+  spawnmini.nomini
+  statistics.use
+  trade.accept
+  trade.use
+  treeplanter.use
   turretloadouts.autoauth
   turretloadouts.autotoggle
   turretloadouts.manage
   turretloadouts.manage.custom
-  heal.self
-  heal.player
-  blueprintshare.toggle
-  blueprintshare.share
-  blueprintshare.use
-  recyclerspeed.use
-  dance.use
-  securitycameras.use
-  simpletime.use
-  chute.allowed
-  buildinggrades.use
-  buildinggrades.up.all
-  buildinggrades.down.all
-  spawnmini.mini
-  customgenetics.use
-  spawnmini.nomini
-  spawnmini.fmini
-  signartist.url
-  signartist.text
-  signartist.restore
-  signartist.raw
-  signartist.restoreall
-  fishing.allowed
-  fishing.makepole
-  optimalburn.use
-  dronepilot.create
-  dronelights.searchlight.autodeploy
-  dronelights.searchlight.move
-  fuelgauge.allow
-  phonesplus.use
-  privatemessages.allow
-  quicksmelt.use
-  quicksort.use
-  quicksort.lootall
-  quicksort.autolootall
   unwound.canuse
-  quicksmelt.use
-  craftsman.leveling.melee
-  craftsman.leveling.ranged
-  craftsman.leveling.clothing
-  sleep.allow
-  autocode.use
-  autocode.try
-  autobaseupgrade.use
-  carcommander.use
-  carcommander.canspawn
-  carcommander.canbuild
-  extendedrecycler.use
-  statistics.use
-  bounty.use
-  Kits.default
-  buildingworkbench.use
-  iteminspector.use
-  betterrootcombiners.use
-  payforelectricity.use
-  bloodtrail.allow
-  patrolboat.builder
-  localize.use
+  vehicledeployedlocks.codelock.allvehicles
+  vehicledeployedlocks.codelock.duosub
+  vehicledeployedlocks.codelock.solosub
+  vehicledeployedlocks.keylock.allvehicles
+  vehicledeployedlocks.keylock.duosub
+  vehicledeployedlocks.keylock.solosub
   vehiclevendoroptions.ownership.allvehicles
-  crafts.use
-  instantmixingtable.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

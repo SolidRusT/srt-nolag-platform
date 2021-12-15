@@ -20,7 +20,7 @@ using Steamworks;
 
 namespace Oxide.Plugins
 {
-    [Info("Sign Artist", "Whispers88", "1.3.0")]
+    [Info("Sign Artist", "Whispers88", "1.4.0")]
     [Description("Allows players with the appropriate permission to import images from the internet on paintable objects")]
 
     /*********************************************************************************
@@ -147,6 +147,7 @@ namespace Oxide.Plugins
             public string Url { get; set; }
             public bool Raw { get; }
             public bool Hor { get; }
+            public uint TextureIndex { get; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="DownloadRequest" ></see> class.
@@ -155,13 +156,14 @@ namespace Oxide.Plugins
             /// <param name="player">The player that requested the download. </param>
             /// <param name="sign">The sign to add the image to. </param>
             /// <param name="raw">Should the image be stored with or without conversion to jpeg. </param>
-            public DownloadRequest(string url, BasePlayer player, IPaintableEntity sign, bool raw, bool hor)
+            public DownloadRequest(string url, BasePlayer player, IPaintableEntity sign, bool raw, bool hor, uint textureIndex)
             {
                 Url = url;
                 Sender = player;
                 Sign = sign;
                 Raw = raw;
                 Hor = hor;
+                TextureIndex = textureIndex;
             }
         }
 
@@ -173,6 +175,7 @@ namespace Oxide.Plugins
             public BasePlayer Sender { get; }
             public IPaintableEntity Sign { get; }
             public bool Raw { get; }
+            public uint TextureIndex { get; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="RestoreRequest" ></see> class.
@@ -180,11 +183,12 @@ namespace Oxide.Plugins
             /// <param name="player">The player that requested the restore. </param>
             /// <param name="sign">The sign to restore the image from. </param>
             /// <param name="raw">Should the image be stored with or without conversion to jpeg. </param>
-            public RestoreRequest(BasePlayer player, IPaintableEntity sign, bool raw)
+            public RestoreRequest(BasePlayer player, IPaintableEntity sign, bool raw, uint textureIndex)
             {
                 Sender = player;
                 Sign = sign;
                 Raw = raw;
+                TextureIndex = textureIndex;
             }
         }
 
@@ -243,7 +247,7 @@ namespace Oxide.Plugins
             /// <param name="player">The player that requested the download. </param>
             /// <param name="sign">The sign to add the image to. </param>
             /// <param name="raw">Should the image be stored with or without conversion to jpeg. </param>
-            public void QueueDownload(string url, BasePlayer player, IPaintableEntity sign, bool raw, bool hor = false)
+            public void QueueDownload(string url, BasePlayer player, IPaintableEntity sign, uint textureIndex, bool raw, bool hor = false)
             {
                 // Check if there is already a request for this sign and show an error if there is.
                 bool existingRequest = downloadQueue.Any(request => request.Sign == sign) || restoreQueue.Any(request => request.Sign == sign);
@@ -255,7 +259,7 @@ namespace Oxide.Plugins
                 }
 
                 // Instantiate a new DownloadRequest and add it to the queue.
-                downloadQueue.Enqueue(new DownloadRequest(url, player, sign, raw, hor));
+                downloadQueue.Enqueue(new DownloadRequest(url, player, sign, raw, hor, textureIndex));
 
                 // Attempt to start the next download.
                 StartNextDownload();
@@ -267,7 +271,7 @@ namespace Oxide.Plugins
             /// <param name="player">The player that requested the restore. </param>
             /// <param name="sign">The sign to restore the image from. </param>
             /// <param name="raw">Should the image be stored with or without conversion to jpeg. </param>
-            public void QueueRestore(BasePlayer player, IPaintableEntity sign, bool raw)
+            public void QueueRestore(BasePlayer player, IPaintableEntity sign, bool raw, uint textureIndex)
             {
                 // Check if there is already a request for this sign and show an error if there is.
                 bool existingRequest = downloadQueue.Any(request => request.Sign == sign) || restoreQueue.Any(request => request.Sign == sign);
@@ -279,7 +283,7 @@ namespace Oxide.Plugins
                 }
 
                 // Instantiate a new RestoreRequest and add it to the queue.
-                restoreQueue.Enqueue(new RestoreRequest(player, sign, raw));
+                restoreQueue.Enqueue(new RestoreRequest(player, sign, raw, textureIndex));
 
                 // Attempt to start the next restore.
                 StartNextRestore();
@@ -434,15 +438,21 @@ namespace Oxide.Plugins
                     yield break;
                 }
 
-                // Check if the sign already has a texture assigned to it.
-                if (request.Sign.TextureId() > 0)
+                // Ensure the texture id array is initialized to avoid errors.
+                request.Sign.EnsureInitialized();
+
+                // Check if the sign already has a texture assigned at the specified index.
+                uint existingTextureId = request.Sign.TextureIds[request.TextureIndex];
+                if (existingTextureId != 0)
                 {
                     // A texture was already assigned, remove this file to make room for the new one.
-                    FileStorage.server.Remove(request.Sign.TextureId(), FileStorage.Type.png, request.Sign.NetId);
+                    FileStorage.server.Remove(existingTextureId, FileStorage.Type.png, request.Sign.NetId);
                 }
 
+                uint textureId = FileStorage.server.Store(resizedImageBytes, FileStorage.Type.png, request.Sign.NetId, request.TextureIndex);
+
                 // Create the image on the filestorage and send out a network update for the sign.
-                request.Sign.SetImage(FileStorage.server.Store(resizedImageBytes, FileStorage.Type.png, request.Sign.NetId));
+                request.Sign.SetImage(request.TextureIndex, textureId);
                 request.Sign.SendNetworkUpdate();
 
                 // Notify the player that the image was loaded.
@@ -458,7 +468,7 @@ namespace Oxide.Plugins
                     {
                         // Console logging is enabled, show a message in the server console.
                         signArtist.Puts(signArtist.GetTranslation("LogEntry"), request.Sender.displayName,
-                            request.Sender.userID, request.Sign.TextureId(), request.Sign.ShortPrefabName, request.Url);
+                            request.Sender.userID, textureId, request.Sign.ShortPrefabName, request.Url);
                     }
 
                     // Check if logging to file is enabled.
@@ -467,7 +477,7 @@ namespace Oxide.Plugins
                         // File logging is enabled, add an entry to the logfile.
                         signArtist.LogToFile("log",
                             string.Format(signArtist.GetTranslation("LogEntry"), request.Sender.displayName,
-                                request.Sender.userID, request.Sign.TextureId(), request.Sign.ShortPrefabName,
+                                request.Sender.userID, textureId, request.Sign.ShortPrefabName,
                                 request.Url), signArtist);
                     }
 
@@ -540,8 +550,10 @@ namespace Oxide.Plugins
 
                 byte[] imageBytes;
 
+                uint textureId = request.Sign.TextureIds[request.TextureIndex];
+
                 // Check if the sign already has a texture assigned to it.
-                if (request.Sign.TextureId() == 0)
+                if (textureId == 0)
                 {
                     // No texture was previously assigned, show a message to the player.
                     signArtist.SendMessage(request.Sender, "RestoreErrorOccurred");
@@ -551,7 +563,7 @@ namespace Oxide.Plugins
                 }
 
                 // Cache the byte array of the currently stored file.
-                imageBytes = FileStorage.server.Get(request.Sign.TextureId(), FileStorage.Type.png, request.Sign.NetId);
+                imageBytes = FileStorage.server.Get(textureId, FileStorage.Type.png, request.Sign.NetId);
                 ImageSize size = GetImageSizeFor(request.Sign);
 
                 // Verify that we have image size data for the targeted sign.
@@ -566,13 +578,13 @@ namespace Oxide.Plugins
                 }
 
                 // Remove the texture from the FileStorage.
-                FileStorage.server.Remove(request.Sign.TextureId(), FileStorage.Type.png, request.Sign.NetId);
+                FileStorage.server.Remove(textureId, FileStorage.Type.png, request.Sign.NetId);
 
                 // Get the bytes array for the resized image for the targeted sign.
                 byte[] resizedImageBytes = imageBytes.ResizeImage(size.Width, size.Height, size.ImageWidth, size.ImageHeight, signArtist.Settings.EnforceJpeg && !request.Raw);
 
                 // Create the image on the filestorage and send out a network update for the sign.
-                request.Sign.SetImage(FileStorage.server.Store(resizedImageBytes, FileStorage.Type.png, request.Sign.NetId));
+                request.Sign.SetImage(request.TextureIndex, FileStorage.server.Store(resizedImageBytes, FileStorage.Type.png, request.Sign.NetId));
                 request.Sign.SendNetworkUpdate();
 
                 // Notify the player that the image was loaded.
@@ -626,28 +638,29 @@ namespace Oxide.Plugins
         }
 
         #endregion Image Download Behaviour
-        private interface IBasePaintableEntity
+        private interface IPaintableEntity
         {
             BaseEntity Entity { get; }
             string PrefabName { get; }
             string ShortPrefabName { get; }
             uint NetId { get; }
+            int TextureCount { get; }
+            uint[] TextureIds { get; }
+
             void SendNetworkUpdate();
-        }
-
-        private interface IPaintableEntity : IBasePaintableEntity
-        {
-            void SetImage(uint id);
+            void SetImage(uint textureIndex, uint id);
             bool CanUpdate(BasePlayer player);
-            uint TextureId();
+            void EnsureInitialized();
         }
 
-        private class BasePaintableEntity : IBasePaintableEntity
+        private abstract class BasePaintableEntity : IPaintableEntity
         {
             public BaseEntity Entity { get; }
             public string PrefabName { get; }
             public string ShortPrefabName { get; }
             public uint NetId { get; }
+            public virtual int TextureCount => 1;
+            public abstract uint[] TextureIds { get; }
 
             protected BasePaintableEntity(BaseEntity entity)
             {
@@ -656,6 +669,10 @@ namespace Oxide.Plugins
                 ShortPrefabName = Entity.ShortPrefabName;
                 NetId = Entity.net.ID;
             }
+
+            public abstract bool CanUpdate(BasePlayer player);
+            public abstract void SetImage(uint textureIndex, uint id);
+            public virtual void EnsureInitialized() {}
 
             public void SendNetworkUpdate()
             {
@@ -666,50 +683,80 @@ namespace Oxide.Plugins
         private class PaintableSignage : BasePaintableEntity, IPaintableEntity
         {
             public Signage Sign { get; set; }
+            public override int TextureCount => Sign.TextureCount;
+            public override uint[] TextureIds => Sign.GetTextureCRCs();
 
             public PaintableSignage(Signage sign) : base(sign)
             {
                 Sign = sign;
             }
 
-            public void SetImage(uint id)
+            public override void SetImage(uint textureIndex, uint id)
             {
-                Sign.textureIDs = new uint[] { id };
+                Sign.EnsureInitialized();
+                Sign.textureIDs[textureIndex] = id;
             }
 
-            public bool CanUpdate(BasePlayer player)
+            public override bool CanUpdate(BasePlayer player)
             {
                 return Sign.CanUpdateSign(player);
             }
 
-            public uint TextureId()
+            public override void EnsureInitialized()
             {
-                return Sign.textureIDs.First();
+                Sign.EnsureInitialized();
             }
         }
 
         private class PaintableFrame : BasePaintableEntity, IPaintableEntity
         {
             public PhotoFrame Sign { get; set; }
+            public override uint[] TextureIds => Sign.GetTextureCRCs();
 
             public PaintableFrame(PhotoFrame sign) : base(sign)
             {
                 Sign = sign;
             }
 
-            public void SetImage(uint id)
+            public override void SetImage(uint textureIndex, uint id)
             {
                 Sign._overlayTextureCrc = id;
             }
 
-            public bool CanUpdate(BasePlayer player)
+            public override bool CanUpdate(BasePlayer player)
             {
                 return Sign.CanUpdateSign(player);
             }
+        }
 
-            public uint TextureId()
+        private class PaintablePumpkin : BasePaintableEntity, IPaintableEntity
+        {
+            public CarvablePumpkin Pumpkin { get; set; }
+            public override uint[] TextureIds => Pumpkin.textureIDs;
+
+            public PaintablePumpkin(CarvablePumpkin pumpkin) : base(pumpkin)
             {
-                return Sign._overlayTextureCrc;
+                Pumpkin = pumpkin;
+            }
+
+            public override void SetImage(uint textureIndex, uint id)
+            {
+                EnsureInitialized();
+                Pumpkin.textureIDs[textureIndex] = id;
+            }
+
+            public override bool CanUpdate(BasePlayer player)
+            {
+                return Pumpkin.CanUpdateSign(player);
+            }
+
+            public override void EnsureInitialized()
+            {
+                int size = Mathf.Max(Pumpkin.paintableSources.Length, 1);
+                if (Pumpkin.textureIDs == null || Pumpkin.textureIDs.Length != size)
+                {
+                    Array.Resize(ref Pumpkin.textureIDs, size);
+                }
             }
         }
 
@@ -718,7 +765,7 @@ namespace Oxide.Plugins
         /// <summary>
         /// Oxide hook that is triggered when the plugin is loaded.
         /// </summary>
-        /// 
+        ///
         private void Init()
         {
             // Register all the permissions used by the plugin
@@ -766,13 +813,21 @@ namespace Oxide.Plugins
                 ["sign.post.town"] = new ImageSize(256, 128),              // One Sided Town Sign Post
                 ["sign.post.town.roof"] = new ImageSize(256, 128),         // Two Sided Town Sign Post
 
+                // Photo Frames
                 ["photoframe.large"] = new ImageSize(320, 240),
                 ["photoframe.portrait"] = new ImageSize(320, 384),
                 ["photoframe.landscape"] = new ImageSize(320, 240),
 
+                // Neon Signs
+                ["sign.neon.xl.animated"] = new ImageSize(256, 256),
+                ["sign.neon.xl"] = new ImageSize(256, 256),
+                ["sign.neon.125x215.animated"] = new ImageSize(128, 256),
+                ["sign.neon.125x215"] = new ImageSize(128, 256),
+                ["sign.neon.125x125"] = new ImageSize(128, 128),
 
                 // Other paintable assets
                 ["spinner.wheel.deployed"] = new ImageSize(512, 512, 285, 285), // Spinning Wheel
+                ["carvable.pumpkin"] = new ImageSize(64, 128),
             };
         }
 
@@ -857,10 +912,10 @@ namespace Oxide.Plugins
         /// <param name="iplayer">The player that has executed the command. </param>
         /// <param name="command">The name of the command that was executed. </param>
         /// <param name="args">All arguments that were passed with the command. </param>
-        /// 
+        ///
         #endregion Init
 
-        #region Localization 
+        #region Localization
         /// <summary>
         /// Oxide hook that is triggered automatically after it has been loaded to initialize the messages for the Lang API.
         /// </summary>
@@ -886,7 +941,10 @@ namespace Oxide.Plugins
                 ["NoItemHeld"] = "You're not holding an item.",
                 ["ActionQueuedAlready"] = "An action has already been queued for this sign, please wait for this action to complete.",
                 ["SyntaxSilCommand"] = "Syntax error!\nSyntax: /sil <url> [raw]",
+                ["SyntaxSilCommandMulti"] = "Syntax error!\nSyntax: /sil <1-{0}> <url> [raw]",
                 ["SyntaxSiltCommand"] = "Syntax error!\nSyntax: /silt <message> [<fontsize:number>] [<color:hex value>] [<bgcolor:hex value>] [raw]",
+                ["SyntaxSiltCommandMulti"] = "Syntax error!\nSyntax: /silt <1-{0}> <message> [<fontsize:number>] [<color:hex value>] [<bgcolor:hex value>] [raw]",
+                ["SyntaxSiliCommandMulti"] = "Syntax error!\nSyntax: /sili <1-{0}>",
                 ["NoPermission"] = "You don't have permission to use this command.",
                 ["NoPermissionFile"] = "You don't have permission to use images from the server's filesystem.",
                 ["NoPermissionRaw"] = "You don't have permission to use raw images, loading normally instead.",
@@ -911,14 +969,6 @@ namespace Oxide.Plugins
         private void SilCommand(IPlayer iplayer, string command, string[] args)
         {
             var player = iplayer.Object as BasePlayer;
-            // Verify if the correct syntax is used.
-            if (args.Length < 1)
-            {
-                // Invalid syntax was used, show an error message to the player.
-                SendMessage(player, "SyntaxSilCommand");
-
-                return;
-            }
 
             // Verify if the player has permission to use this command.
             if (!HasPermission(player, "signartist.url"))
@@ -944,6 +994,38 @@ namespace Oxide.Plugins
             {
                 // The player isn't looking at a sign or is too far away from it, show an error message.
                 SendMessage(player, "NoSignFound");
+
+                return;
+            }
+
+            uint textureIndex = 0;
+            if (sign.TextureCount > 1)
+            {
+                // Verify if the correct syntax is used for animated Neon Signs.
+                if (!HasValidIndexArg(args, sign, out textureIndex))
+                {
+                    // Invalid syntax was used, show an error message to the player.
+                    SendMessage(player, "SyntaxSilCommandMulti", sign.TextureCount);
+
+                    return;
+                }
+
+                // Remove the index argument so the rest of the command handling can ignore it.
+                args = args.Skip(1).ToArray();
+            }
+
+            // Verify if the correct syntax is used.
+            if (args.Length < 1)
+            {
+                // Invalid syntax was used, show an error message to the player.
+                if (sign.TextureCount > 1)
+                {
+                    SendMessage(player, "SyntaxSilCommandMulti", sign.TextureCount);
+                }
+                else
+                {
+                    SendMessage(player, "SyntaxSilCommand");
+                }
 
                 return;
             }
@@ -982,10 +1064,10 @@ namespace Oxide.Plugins
             SendMessage(player, "DownloadQueued");
 
             // Queue the download of the specified image.
-            imageDownloader.QueueDownload(args[0], player, sign, raw, hor);
+            imageDownloader.QueueDownload(args[0], player, sign, textureIndex, raw, hor);
 
             // Call external hook
-            Interface.Oxide.CallHook("OnImagePost", player, args[0], raw, sign.Entity);
+            Interface.Oxide.CallHook("OnImagePost", player, args[0], raw, sign.Entity, textureIndex);
 
             // Set the cooldown on the command for the player if the cooldown setting is enabled.
             SetCooldown(player);
@@ -1027,6 +1109,22 @@ namespace Oxide.Plugins
                 return;
             }
 
+            uint textureIndex = 0;
+            if (sign.TextureCount > 1)
+            {
+                // Verify if the correct syntax is used for animated Neon Signs.
+                if (!HasValidIndexArg(args, sign, out textureIndex))
+                {
+                    // Invalid syntax was used, show an error message to the player.
+                    SendMessage(player, "SyntaxSiliCommandMulti", sign.TextureCount);
+
+                    return;
+                }
+
+                // Remove the index argument so the rest of the command handling can ignore it.
+                args = args.Skip(1).ToArray();
+            }
+
             string shortname = held.info.shortname;
 
             bool hor = sign.ShortPrefabName == "sign.hanging";
@@ -1043,21 +1141,21 @@ namespace Oxide.Plugins
                 }
                 else
                 {
-                    ServerMgr.Instance.StartCoroutine(DownloadWorkshopskin(held, sign, hor));
+                    ServerMgr.Instance.StartCoroutine(DownloadWorkshopskin(held, sign, hor, textureIndex));
                     return;
                 }
             }
 
-            imageDownloader.QueueDownload(shortname, player, sign, false, hor);
+            imageDownloader.QueueDownload(shortname, player, sign, textureIndex, false, hor);
 
-            Interface.Oxide.CallHook("OnImagePost", player, shortname, false, sign.Entity);
+            Interface.Oxide.CallHook("OnImagePost", player, shortname, false, sign.Entity, textureIndex);
 
             SetCooldown(player);
         }
 
         private const string FindWorkshopSkinUrl = "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/";
 
-        private IEnumerator DownloadWorkshopskin(Item held, IPaintableEntity sign, bool hor)
+        private IEnumerator DownloadWorkshopskin(Item held, IPaintableEntity sign, bool hor, uint textureIndex)
         {
             BasePlayer player = held.GetOwnerPlayer();
             WWWForm form = new WWWForm();
@@ -1075,9 +1173,9 @@ namespace Oxide.Plugins
             }
             var json = JsonConvert.DeserializeObject<GetPublishedFileDetailsClass>(www.downloadHandler.text);
             url = json.response.publishedfiledetails[0].preview_url;
-            imageDownloader.QueueDownload(url, player, sign, false, hor);
+            imageDownloader.QueueDownload(url, player, sign, textureIndex, false, hor);
 
-            Interface.Oxide.CallHook("OnImagePost", player, url, false, sign.Entity);
+            Interface.Oxide.CallHook("OnImagePost", player, url, false, sign.Entity, textureIndex);
 
             SetCooldown(player);
         }
@@ -1092,14 +1190,6 @@ namespace Oxide.Plugins
         private void SiltCommand(IPlayer iplayer, string command, string[] args)
         {
             var player = iplayer.Object as BasePlayer;
-            // Verify if the correct syntax is used.
-            if (args.Length < 1)
-            {
-                // Invalid syntax was used, show an error message to the player.
-                SendMessage(player, "SyntaxSiltCommand");
-
-                return;
-            }
 
             // Verify if the player has permission to use this command.
             if (!HasPermission(player, "signartist.text"))
@@ -1125,6 +1215,38 @@ namespace Oxide.Plugins
             {
                 // The player isn't looking at a sign or is too far away from it, show an error message.
                 SendMessage(player, "NoSignFound");
+
+                return;
+            }
+
+            uint textureIndex = 0;
+            if (sign.TextureCount > 1)
+            {
+                // Verify if the correct syntax is used for animated Neon Signs.
+                if (!HasValidIndexArg(args, sign, out textureIndex))
+                {
+                    // Invalid syntax was used, show an error message to the player.
+                    SendMessage(player, "SyntaxSiltCommandMulti", sign.TextureCount);
+
+                    return;
+                }
+
+                // Remove the index argument so the rest of the command handling can ignore it.
+                args = args.Skip(1).ToArray();
+            }
+
+            // Verify if the correct syntax is used.
+            if (args.Length < 1)
+            {
+                // Invalid syntax was used, show an error message to the player.
+                if (sign.TextureCount > 1)
+                {
+                    SendMessage(player, "SyntaxSiltCommandMulti", sign.TextureCount);
+                }
+                else
+                {
+                    SendMessage(player, "SyntaxSiltCommand");
+                }
 
                 return;
             }
@@ -1205,10 +1327,10 @@ namespace Oxide.Plugins
             bool hor = sign.ShortPrefabName == "sign.hanging";
 
             // Queue the download of the specified image.
-            imageDownloader.QueueDownload(url, player, sign, raw, hor);
+            imageDownloader.QueueDownload(url, player, sign, textureIndex, raw, hor);
 
             // Call external hook
-            Interface.Oxide.CallHook("OnImagePost", player, url, raw, sign.Entity);
+            Interface.Oxide.CallHook("OnImagePost", player, url, raw, sign.Entity, textureIndex);
 
             // Set the cooldown on the command for the player if the cooldown setting is enabled.
             SetCooldown(player);
@@ -1267,8 +1389,17 @@ namespace Oxide.Plugins
                 // Notify the player that it is added to the queue.
                 SendMessage(player, "RestoreQueued");
 
-                // Queue the restore of the image on the specified sign.
-                imageDownloader.QueueRestore(player, sign, raw);
+                if (sign.TextureIds == null)
+                    return;
+
+                // Queue the restore of all images on the specified sign.
+                for (uint textureIndex = 0; textureIndex < sign.TextureCount; textureIndex++)
+                {
+                    if (sign.TextureIds[textureIndex] == 0)
+                        continue;
+
+                    imageDownloader.QueueRestore(player, sign, raw, textureIndex);
+                }
 
                 return;
             }
@@ -1280,9 +1411,19 @@ namespace Oxide.Plugins
             SendMessage(player, "RestoreBatchQueued", allSigns.Length);
 
             // Queue every sign to be restored.
-            foreach (Signage sign in allSigns)
+            foreach (Signage signEntity in allSigns)
             {
-                imageDownloader.QueueRestore(player, new PaintableSignage(sign), raw);
+                IPaintableEntity sign = new PaintableSignage(signEntity);
+                if (sign.TextureIds == null)
+                    continue;
+
+                for (uint textureIndex = 0; textureIndex < sign.TextureCount; textureIndex++)
+                {
+                    if (sign.TextureIds[textureIndex] == 0)
+                        continue;
+
+                    imageDownloader.QueueRestore(player, sign, raw, textureIndex);
+                }
             }
         }
 
@@ -1404,7 +1545,7 @@ namespace Oxide.Plugins
 
             // Get the object that is in front of the player within the maximum distance set in the config.
             //if (Physics.Raycast(player.eyes.HeadRay(), out hit))//, Settings.MaxDistance))
-            if (Physics.Raycast(player.eyes.HeadRay(), out hit, Settings.MaxDistance))
+            if (Physics.Raycast(player.eyes.HeadRay(), out hit, Settings.MaxDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
                 // Attempt to grab the Signage entity, if there is none this will set the sign to null,
                 // otherwise this will set it to the sign the player is looking at.
@@ -1417,10 +1558,38 @@ namespace Oxide.Plugins
                 {
                     sign = new PaintableFrame(entity as PhotoFrame);
                 }
+                else if (entity is CarvablePumpkin)
+                {
+                    sign = new PaintablePumpkin(entity as CarvablePumpkin);
+                }
             }
 
             // Return true or false depending on if we found a sign.
             return sign != null;
+        }
+
+        /// <summary>
+        /// Checks if the commands arguments include a valid texture index for the specified sign.
+        /// </summary>
+        /// <param name="args">The arguments to check. </param>
+        /// <param name="sign">The sign to check. </param>
+        /// <param name="textureIndex">The 0-based texture index derived from the arguments. </param>
+        /// <returns>true if the arguments contained a valid texture index, else false. </returns>
+        private bool HasValidIndexArg(string[] args, IPaintableEntity sign, out uint textureIndex)
+        {
+            textureIndex = 1;
+            if (args.Length < 1
+                || !uint.TryParse(args[0], out textureIndex)
+                || textureIndex < 1
+                || textureIndex > sign.TextureCount)
+            {
+                return false;
+            }
+
+            // Convert human-friendly index to computer-friendly index.
+            textureIndex--;
+
+            return true;
         }
 
         /// <summary>
@@ -1583,7 +1752,7 @@ namespace Oxide.Plugins
         #region Public Helpers
         // This can be Call(ed) by other plugins to put text on a sign
         [HookMethod("API_SignText")]
-        public void API_SignText(BasePlayer player, Signage sign, string message, int fontsize = 30, string color = "FFFFFF", string bgcolor = "000000")
+        public void API_SignText(BasePlayer player, Signage sign, string message, int fontsize = 30, string color = "FFFFFF", string bgcolor = "000000", uint textureIndex = 0)
         {
             //Puts($"signText called with {message}");
             string format = "png32";
@@ -1596,11 +1765,11 @@ namespace Oxide.Plugins
 
             // Combine all the values into the url;
             string url = $"http://assets.imgix.net/~text?fm={format}&txtalign=middle,center&txtsize={fontsize}&txt={message}&w={size.ImageWidth}&h={size.ImageHeight}&txtclr={color}&bg={bgcolor}";
-            imageDownloader.QueueDownload(url, player, new PaintableSignage(sign), false);
+            imageDownloader.QueueDownload(url, player, new PaintableSignage(sign), textureIndex, false);
         }
 
         [HookMethod("API_SkinSign")]
-        public void API_SkinSign(BasePlayer player, Signage sign, string url, bool raw = false)
+        public void API_SkinSign(BasePlayer player, Signage sign, string url, bool raw = false, uint textureIndex = 0)
         {
             if (sign == null)
             {
@@ -1618,7 +1787,7 @@ namespace Oxide.Plugins
             bool hor = sign.ShortPrefabName == "sign.hanging" ? true : false;
 
             // Queue the download of the specified image.
-            imageDownloader.QueueDownload(url, player, new PaintableSignage(sign), raw, hor);
+            imageDownloader.QueueDownload(url, player, new PaintableSignage(sign), textureIndex, raw, hor);
         }
 
         [HookMethod("API_SkinPhotoFrame")]
@@ -1637,11 +1806,30 @@ namespace Oxide.Plugins
             }
 
             // Queue the download of the specified image.
-            imageDownloader.QueueDownload(url, player, new PaintableFrame(sign), raw, false);
+            imageDownloader.QueueDownload(url, player, new PaintableFrame(sign), 0, raw, false);
+        }
+
+        [HookMethod("API_SkinPumpkin")]
+        public void API_SkinPumpkin(BasePlayer player, CarvablePumpkin sign, string url, bool raw = false)
+        {
+            if (sign == null)
+            {
+                PrintWarning("CarvablePumpkin is null in API call");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(url))
+            {
+                PrintWarning("Url is empty in API call");
+                return;
+            }
+
+            // Queue the download of the specified image.
+            imageDownloader.QueueDownload(url, player, new PaintablePumpkin(sign), 0, raw, false);
         }
 
 
-        //TODO add image byte[] api 
+        //TODO add image byte[] api
         #endregion
 
     }

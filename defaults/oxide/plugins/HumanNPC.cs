@@ -19,7 +19,7 @@ using Convert = System.Convert;
 
 namespace Oxide.Plugins
 {
-    [Info("Human NPC", "Ts3Hosting", "0.3.52")]
+    [Info("Human NPC", "Ts3Hosting", "0.3.54")]
     [Description("Adds interactive human NPCs which can be modded by other plugins")]
     public class HumanNPC : RustPlugin
     {
@@ -2068,30 +2068,31 @@ namespace Oxide.Plugins
         //////////////////////////////////////////////////////
         private void OnEntityTakeDamage(BaseCombatEntity entity, HitInfo hitinfo)
         {
-            var humanPlayer = entity?.GetComponent<HumanPlayer>();
+            if (entity == null || hitinfo == null || entity.IsNpc) return;
+            var humanPlayer = entity.GetComponent<HumanPlayer>();
             if(humanPlayer != null)
             {
 
 				if (hitinfo?.Initiator != null && hitinfo.Initiator.ToString().Contains("fireball") && humanPlayer.info.invulnerability)
 				{
                     hitinfo.DoHitEffects = false; 
-					hitinfo.damageTypes.ScaleAll(0);
+					hitinfo.damageTypes?.ScaleAll(0);
 					return;
 				}
 
-				if ((BaseCombatEntity)hitinfo?.Initiator == entity)
+				if (hitinfo?.Initiator != null && (BaseCombatEntity)hitinfo?.Initiator == entity)
 				{
                     hitinfo.damageTypes = new DamageTypeList();
                     hitinfo.DoHitEffects = false;
                     hitinfo.HitMaterial = 0;
-					hitinfo.damageTypes.ScaleAll(0);				
+					hitinfo.damageTypes?.ScaleAll(0);				
 					return;
 				}
 #if DEBUG
                 Interface.Oxide.LogInfo($"OnEntityTakeDamage(by {entity.name})");
 #endif
 				
-                if(hitinfo.Initiator is BaseCombatEntity && !(hitinfo.Initiator is Barricade) && humanPlayer.info.defend)
+                if(hitinfo?.Initiator != null && hitinfo.Initiator is BaseCombatEntity && !(hitinfo.Initiator is Barricade) && humanPlayer.info.defend)
                 {	
 						humanPlayer.StartAttackingEntity((BaseCombatEntity)hitinfo.Initiator);
 				}
@@ -2114,7 +2115,7 @@ namespace Oxide.Plugins
                 }
                 else
                 {
-                    humanPlayer.protection.Scale(hitinfo.damageTypes);
+                    humanPlayer.protection.Scale(hitinfo?.damageTypes);
                 }
 
                 if(humanPlayer.locomotion.sitting)
@@ -2383,7 +2384,7 @@ namespace Oxide.Plugins
             KillNpc(player);
             if (!info.enable && !isediting)
             {
-                Puts($"NPC was killed because he is disabled: {player.userID}");
+               // Puts($"NPC was killed because he is disabled: {player.userID}");
                 return;
             }
             SpawnOrRefresh(player.userID);
@@ -2396,7 +2397,7 @@ namespace Oxide.Plugins
             if (!info.enable && !isediting)
             {
                 KillNpc(player);
-                Puts($"NPC was killed because he is disabled: {player.userID}");
+               // Puts($"NPC was killed because he is disabled: {player.userID}");
                 return;
             }
             if (player.GetComponent<HumanPlayer>() != null)
@@ -2404,7 +2405,7 @@ namespace Oxide.Plugins
             var humanplayer = player.gameObject.AddComponent<HumanPlayer>();
             humanplayer.SetInfo(info, true);
             cache[player.userID] = humanplayer;
-            Puts("Refreshed NPC: " + player.userID);
+           // Puts("Refreshed NPC: " + player.userID);
         }
 
 		private object CreateNPCHook(Vector3 position, Quaternion currentRot, string name = "NPC", ulong clone = 0, bool saved = true)

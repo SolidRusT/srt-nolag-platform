@@ -17,12 +17,12 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Kits", "Mevent", "1.0.24")]
+    [Info("Kits", "Mevent", "1.0.28")]
     public class Kits : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, CopyPaste, Notify;
+        [PluginReference] private Plugin ImageLibrary, CopyPaste, Notify, UINotify, NoEscape;
 
         private static Kits _instance;
 
@@ -73,11 +73,31 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Work with Notify?")]
             public bool UseNotify = true;
 
-            [JsonProperty(PropertyName = "Use Spectating mode when editing kits?")]
-            public bool UseSpectating = true;
+            [JsonProperty(PropertyName = "Use NoEscape? (Raid/Combat block)")]
+            public bool UseNoEscape;
+
+            [JsonProperty(PropertyName = "Whitelist for NoEscape")]
+            public List<string> NoEscapeWhiteList = new List<string>
+            {
+                "kit name 1",
+                "kit name 2"
+            };
 
             [JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public string[] Commands = { "kit", "kits" };
+
+            [JsonProperty(PropertyName = "Economy")]
+            public EconomyConf Economy = new EconomyConf
+            {
+                Type = EconomyType.Plugin,
+                AddHook = "Deposit",
+                BalanceHook = "Balance",
+                RemoveHook = "Withdraw",
+                Plug = "Economics",
+                ShortName = "scrap",
+                DisplayName = string.Empty,
+                Skin = 0
+            };
 
             [JsonProperty(PropertyName = "Rarity Settings", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<RarityColor> RarityColors = new List<RarityColor>
@@ -228,6 +248,11 @@ namespace Oxide.Plugins
                     AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                     OffsetMin = "-32.5 -125", OffsetMax = "32.5 -105"
                 },
+                KitSale = new InterfacePosition
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = "-32.5 -115", OffsetMax = "32.5 -95"
+                },
                 KitAmountCooldown = new InterfacePosition
                 {
                     AnchorMin = "0 1", AnchorMax = "1 1",
@@ -244,6 +269,193 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Steampowered API key")]
             public string SteamWebApiKey =
                 "!!! You can get it HERE > https://steamcommunity.com/dev/apikey < and you need to insert HERE !!!";
+
+            public VersionNumber Version;
+        }
+
+        private enum EconomyType
+        {
+            Plugin,
+            Item
+        }
+
+        private class EconomyConf
+        {
+            [JsonProperty(PropertyName = "Type (Plugin/Item)")] [JsonConverter(typeof(StringEnumConverter))]
+            public EconomyType Type;
+
+            [JsonProperty(PropertyName = "Plugin name")]
+            public string Plug;
+
+            [JsonProperty(PropertyName = "Balance add hook")]
+            public string AddHook;
+
+            [JsonProperty(PropertyName = "Balance remove hook")]
+            public string RemoveHook;
+
+            [JsonProperty(PropertyName = "Balance show hook")]
+            public string BalanceHook;
+
+            [JsonProperty(PropertyName = "ShortName")]
+            public string ShortName;
+
+            [JsonProperty(PropertyName = "Display Name (empty - default)")]
+            public string DisplayName;
+
+            [JsonProperty(PropertyName = "Skin")] public ulong Skin;
+
+            public double ShowBalance(BasePlayer player)
+            {
+                switch (Type)
+                {
+                    case EconomyType.Plugin:
+                    {
+                        var plugin = _instance?.plugins?.Find(Plug);
+                        if (plugin == null) return 0;
+
+                        return Math.Round(Convert.ToDouble(plugin.Call(BalanceHook, player.userID)));
+                    }
+                    case EconomyType.Item:
+                    {
+                        return ItemCount(player.inventory.AllItems(), ShortName, Skin);
+                    }
+                    default:
+                        return 0;
+                }
+            }
+
+            public void AddBalance(BasePlayer player, double amount)
+            {
+                switch (Type)
+                {
+                    case EconomyType.Plugin:
+                    {
+                        var plugin = _instance?.plugins?.Find(Plug);
+                        if (plugin == null) return;
+
+                        switch (Plug)
+                        {
+                            case "BankSystem":
+                            case "ServerRewards":
+                                plugin.Call(AddHook, player.userID, (int)amount);
+                                break;
+                            default:
+                                plugin.Call(AddHook, player.userID, amount);
+                                break;
+                        }
+
+                        break;
+                    }
+                    case EconomyType.Item:
+                    {
+                        var am = (int)amount;
+
+                        var item = ToItem(am);
+                        if (item == null) return;
+
+                        player.GiveItem(item);
+                        break;
+                    }
+                }
+            }
+
+            public bool RemoveBalance(BasePlayer player, double amount)
+            {
+                switch (Type)
+                {
+                    case EconomyType.Plugin:
+                    {
+                        if (ShowBalance(player) < amount) return false;
+
+                        var plugin = _instance?.plugins.Find(Plug);
+                        if (plugin == null) return false;
+
+                        switch (Plug)
+                        {
+                            case "BankSystem":
+                            case "ServerRewards":
+                                plugin.Call(RemoveHook, player.userID, (int)amount);
+                                break;
+                            default:
+                                plugin.Call(RemoveHook, player.userID, amount);
+                                break;
+                        }
+
+                        return true;
+                    }
+                    case EconomyType.Item:
+                    {
+                        var playerItems = player.inventory.AllItems();
+                        var am = (int)amount;
+
+                        if (ItemCount(playerItems, ShortName, Skin) < am) return false;
+
+                        Take(playerItems, ShortName, Skin, am);
+                        return true;
+                    }
+                    default:
+                        return false;
+                }
+            }
+
+            private static int ItemCount(Item[] items, string shortname, ulong skin)
+            {
+                return items.Where(item =>
+                        item.info.shortname == shortname && !item.isBroken && (skin == 0 || item.skin == skin))
+                    .Sum(item => item.amount);
+            }
+
+            private static void Take(IEnumerable<Item> itemList, string shortname, ulong skinId, int iAmount)
+            {
+                var num1 = 0;
+                if (iAmount == 0) return;
+
+                var list = Pool.GetList<Item>();
+
+                foreach (var item in itemList)
+                {
+                    if (item.info.shortname != shortname ||
+                        skinId != 0 && item.skin != skinId || item.isBroken) continue;
+
+                    var num2 = iAmount - num1;
+                    if (num2 <= 0) continue;
+                    if (item.amount > num2)
+                    {
+                        item.MarkDirty();
+                        item.amount -= num2;
+                        num1 += num2;
+                        break;
+                    }
+
+                    if (item.amount <= num2)
+                    {
+                        num1 += item.amount;
+                        list.Add(item);
+                    }
+
+                    if (num1 == iAmount)
+                        break;
+                }
+
+                foreach (var obj in list)
+                    obj.RemoveFromContainer();
+
+                Pool.FreeList(ref list);
+            }
+
+            private Item ToItem(int amount)
+            {
+                var item = ItemManager.CreateByName(ShortName, amount, Skin);
+                if (item == null)
+                {
+                    Debug.LogError($"Error creating item with ShortName: '{ShortName}'");
+                    return null;
+                }
+
+                if (!string.IsNullOrEmpty(DisplayName)) item.name = DisplayName;
+
+                return item;
+            }
         }
 
         private class UserInterface
@@ -285,6 +497,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Kit Cooldown Settings")]
             public InterfacePosition KitCooldown;
+
+            [JsonProperty(PropertyName = "Kit Sale Settings")]
+            public InterfacePosition KitSale;
 
             [JsonProperty(PropertyName = "Kit Cooldown Settings (with amount)")]
             public InterfacePosition KitAmountCooldown;
@@ -442,6 +657,10 @@ namespace Oxide.Plugins
             {
                 _config = Config.ReadObject<Configuration>();
                 if (_config == null) throw new Exception();
+
+                if (_config.Version < Version)
+                    UpdateConfigValues();
+
                 SaveConfig();
             }
             catch
@@ -459,6 +678,19 @@ namespace Oxide.Plugins
         protected override void LoadDefaultConfig()
         {
             _config = new Configuration();
+        }
+
+        private void UpdateConfigValues()
+        {
+            PrintWarning("Config update detected! Updating config values...");
+
+            var baseConfig = new Configuration();
+
+            if (_config.Version < new VersionNumber(1, 0, 25))
+                _config.UI.KitSale = baseConfig.UI.KitSale;
+
+            _config.Version = Version;
+            PrintWarning("Config update completed!");
         }
 
         #endregion
@@ -554,6 +786,12 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Building")]
             public string Building;
+
+            [JsonProperty(PropertyName = "Enable sale")]
+            public bool Sale;
+
+            [JsonProperty(PropertyName = "Selling price")]
+            public int Price;
 
             [JsonProperty(PropertyName = "Items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<KitItem> Items;
@@ -812,9 +1050,6 @@ namespace Oxide.Plugins
                 CuiHelper.DestroyUi(player, InfoLayer);
                 CuiHelper.DestroyUi(player, EditingLayer);
                 CuiHelper.DestroyUi(player, ModalLayer);
-
-                if (_config.UseSpectating && (_kitEditing.ContainsKey(player) || _itemEditing.ContainsKey(player)))
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
             }
 
             SaveUsers();
@@ -854,13 +1089,6 @@ namespace Oxide.Plugins
             _openGUI.Remove(player);
             _kitEditing.Remove(player);
             _itemEditing.Remove(player);
-        }
-
-        private object CanSpectateTarget(BasePlayer player, string filter)
-        {
-            return player != null && (_itemEditing.ContainsKey(player) || _kitEditing.ContainsKey(player))
-                ? (object)true
-                : null;
         }
 
         private void OnUseNPC(BasePlayer npc, BasePlayer player)
@@ -2255,11 +2483,6 @@ namespace Oxide.Plugins
                         ["AutoKit"] = false
                     });
                 }
-
-                if (_config.UseSpectating)
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
-
-                Subscribe(nameof(CanSpectateTarget));
             }
 
             #endregion
@@ -2380,7 +2603,6 @@ namespace Oxide.Plugins
             var Width = 225f;
             var xMargin = 35f;
             var yMargin = 10f;
-
 
             var i = 1;
             foreach (var obj in _kitEditing[player].Where(x => x.Key != "Hide" && x.Key != "AutoKit"))
@@ -2564,11 +2786,6 @@ namespace Oxide.Plugins
                         ["Chance"] = 100,
                         ["Position"] = slot
                     });
-
-                if (_config.UseSpectating)
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
-
-                Subscribe(nameof(CanSpectateTarget));
             }
 
             #endregion
@@ -3579,22 +3796,52 @@ namespace Oxide.Plugins
 
             if (kit.Cooldown > 0 && playerData.Cooldown - 1 < GetCurrentTime() || kit.Cooldown == 0)
             {
-                container.Add(new CuiLabel
+                if (kit.Sale)
                 {
-                    RectTransform =
+                    container.Add(new CuiPanel
                     {
-                        AnchorMin = _config.UI.KitAvailable.AnchorMin, AnchorMax = _config.UI.KitAvailable.AnchorMax,
-                        OffsetMin = _config.UI.KitAvailable.OffsetMin, OffsetMax = _config.UI.KitAvailable.OffsetMax
-                    },
-                    Text =
+                        RectTransform =
+                        {
+                            AnchorMin = _config.UI.KitSale.AnchorMin, AnchorMax = _config.UI.KitSale.AnchorMax,
+                            OffsetMin = _config.UI.KitSale.OffsetMin, OffsetMax = _config.UI.KitSale.OffsetMax
+                        },
+                        Image = { Color = HexToCuiColor(kit.Color) }
+                    }, Layer + $".Kit.{kit.ID}", Layer + $".Kit.{kit.ID}.Sale");
+
+                    container.Add(new CuiLabel
                     {
-                        Text = Msg(player, KitAvailableTitle),
-                        Align = TextAnchor.MiddleCenter,
-                        Font = "robotocondensed-regular.ttf",
-                        FontSize = 10,
-                        Color = _colorFour
-                    }
-                }, Layer + $".Kit.{kit.ID}");
+                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                        Text =
+                        {
+                            Text = Msg(player, PriceFormat, kit.Price),
+                            Align = TextAnchor.MiddleCenter,
+                            Font = "robotocondensed-bold.ttf",
+                            FontSize = 12,
+                            Color = "1 1 1 1"
+                        }
+                    }, Layer + $".Kit.{kit.ID}.Sale");
+                }
+                else
+                {
+                    container.Add(new CuiLabel
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = _config.UI.KitAvailable.AnchorMin,
+                            AnchorMax = _config.UI.KitAvailable.AnchorMax,
+                            OffsetMin = _config.UI.KitAvailable.OffsetMin,
+                            OffsetMax = _config.UI.KitAvailable.OffsetMax
+                        },
+                        Text =
+                        {
+                            Text = Msg(player, KitAvailableTitle),
+                            Align = TextAnchor.MiddleCenter,
+                            Font = "robotocondensed-regular.ttf",
+                            FontSize = 10,
+                            Color = _colorFour
+                        }
+                    }, Layer + $".Kit.{kit.ID}");
+                }
             }
             else
             {
@@ -3650,27 +3897,32 @@ namespace Oxide.Plugins
 
             if (kit.Amount > 0)
             {
-                var width = kit.Amount == 1
-                    ? _config.UI.KitAmount.Width
-                    : _config.UI.KitAmount.Width / kit.Amount * 0.9f;
+                var amount = Mathf.Min(kit.Amount, 9);
 
-                var margin = (_config.UI.KitAmount.Width - width * kit.Amount) / (kit.Amount - 1);
+                var hasAmount = kit.Amount > 9 ? 9 * playerData.Amount / kit.Amount : playerData.Amount;
+
+                var width = amount == 1
+                    ? _config.UI.KitAmount.Width
+                    : _config.UI.KitAmount.Width / amount * 0.9f;
+
+                var margin = (_config.UI.KitAmount.Width - width * amount) / (amount - 1);
 
                 var xSwitch = -(_config.UI.KitAmount.Width / 2f);
 
-                for (var i = 0; i < kit.Amount; i++)
+                for (var i = 0; i < amount; i++)
                 {
                     container.Add(new CuiPanel
                     {
                         RectTransform =
                         {
-                            AnchorMin = _config.UI.KitAmount.AnchorMin, AnchorMax = _config.UI.KitAmount.AnchorMax,
+                            AnchorMin = _config.UI.KitAmount.AnchorMin,
+                            AnchorMax = _config.UI.KitAmount.AnchorMax,
                             OffsetMin = $"{xSwitch} {_config.UI.KitAmount.OffsetMin}",
                             OffsetMax = $"{xSwitch + width} {_config.UI.KitAmount.OffsetMax}"
                         },
                         Image =
                         {
-                            Color = i < playerData.Amount ? HexToCuiColor(kit.Color) : _colorTwo
+                            Color = i < hasAmount ? HexToCuiColor(kit.Color) : _colorTwo
                         }
                     }, Layer + $".Kit.{kit.ID}");
 
@@ -3718,6 +3970,21 @@ namespace Oxide.Plugins
                 }
             }
 
+            if (!force && _config.UseNoEscape && !_config.NoEscapeWhiteList.Contains(kit.Name))
+            {
+                if (RaidBlocked(player))
+                {
+                    ErrorUi(player, Msg(player, NoEscapeRaidBlocked));
+                    return;
+                }
+
+                if (CombatBlocked(player))
+                {
+                    ErrorUi(player, Msg(player, NoEscapeCombatBlocked));
+                    return;
+                }
+            }
+
             var playerData = GetPlayerData(player.userID, kit.Name);
 
             if (!force && kit.Amount > 0 && playerData.Amount >= kit.Amount)
@@ -3734,6 +4001,12 @@ namespace Oxide.Plugins
                             FormatShortTime(TimeSpan.FromSeconds(playerData.Cooldown - currentTime))));
                     return;
                 }
+
+            if (!force && kit.Sale && !_config.Economy.RemoveBalance(player, kit.Price))
+            {
+                SendNotify(player, NotMoney, 1);
+                return;
+            }
 
             if (CopyPaste && !string.IsNullOrEmpty(kit.Building))
             {
@@ -3792,19 +4065,19 @@ namespace Oxide.Plugins
 
             player.inventory.containerWear.itemList.ForEach(item =>
             {
-                if (item == null) return;
+                if (item == null || item.IsLocked()) return;
                 kititems.Add(ItemToKit(item, "wear"));
             });
 
             player.inventory.containerMain.itemList.ForEach(item =>
             {
-                if (item == null) return;
+                if (item == null || item.IsLocked()) return;
                 kititems.Add(ItemToKit(item, "main"));
             });
 
             player.inventory.containerBelt.itemList.ForEach(item =>
             {
-                if (item == null) return;
+                if (item == null || item.IsLocked()) return;
                 kititems.Add(ItemToKit(item, "belt"));
             });
 
@@ -3854,16 +4127,20 @@ namespace Oxide.Plugins
 
         #region Utils
 
+        private bool RaidBlocked(BasePlayer player)
+        {
+            return Convert.ToBoolean(NoEscape?.Call("IsRaidBlocked", player) ?? false);
+        }
+
+        private bool CombatBlocked(BasePlayer player)
+        {
+            return Convert.ToBoolean(NoEscape?.Call("IsCombatBlocked", player) ?? false);
+        }
+
         private void StopEditing(BasePlayer player)
         {
             _itemEditing.Remove(player);
             _kitEditing.Remove(player);
-
-            if (_config.UseSpectating)
-                player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-
-            if (_itemEditing.Count == 0 && _kitEditing.Count == 0)
-                Unsubscribe(nameof(CanSpectateTarget));
         }
 
         private void FillCategories()
@@ -4216,6 +4493,10 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            NoEscapeCombatBlocked = "NoEscapeCombatBlocked",
+            NoEscapeRaidBlocked = "NoEscapeRaidBlocked",
+            NotMoney = "NotMoney",
+            PriceFormat = "PriceFormat",
             KitExist = "KitExist",
             KitNotExist = "KitNotExist",
             KitRemoved = "KitRemoved",
@@ -4319,7 +4600,11 @@ namespace Oxide.Plugins
                 [NoPermission] = "You don't have permission to get this kit",
                 [BuildError] = "Can't place the building here",
                 [BBlocked] = "Cannot do that while building blocked.",
-                [NoPermissionDescription] = "PURCHASE THIS KIT AT\nSERVERNAME.GG"
+                [NoPermissionDescription] = "PURCHASE THIS KIT AT\nSERVERNAME.GG",
+                [PriceFormat] = "{0}$",
+                [NotMoney] = "You don't have enough money!",
+                [NoEscapeRaidBlocked] = "You cannot take this kit when you are raid blocked",
+                [NoEscapeCombatBlocked] = "You cannot take this kit when you are combat blocked"
             }, this);
         }
 
@@ -4340,8 +4625,8 @@ namespace Oxide.Plugins
 
         private void SendNotify(BasePlayer player, string key, int type, params object[] obj)
         {
-            if (Notify && _config.UseNotify)
-                Notify?.Call("SendNotify", player, type, Msg(player, key, obj));
+            if (_config.UseNotify && (Notify != null || UINotify != null))
+                Interface.Oxide.CallHook("SendNotify", player, type, Msg(player, key, obj));
             else
                 Reply(player, key, obj);
         }
@@ -4350,14 +4635,132 @@ namespace Oxide.Plugins
 
         #region API
 
+        private void GetKitNames(List<string> list)
+        {
+            list.AddRange(GetAllKits());
+        }
+
         private string[] GetAllKits()
         {
             return _data.Kits.Select(kit => kit.Name).ToArray();
         }
 
-        private object GetKitInfo(string kitName)
+        private object GetKitInfo(string name)
         {
-            var kit = _data.Kits.Find(x => x.Name == kitName);
+            return GetKitObject(name);
+        }
+
+        private string[] GetKitContents(string name)
+        {
+            var kit = _data.Kits.Find(x => x.Name == name);
+            if (kit == null) return null;
+
+            var items = new List<string>();
+            foreach (var item in kit.Items)
+            {
+                var itemstring = $"{item.ShortName}_{item.Amount}";
+                if (item.Content.Count > 0)
+                    itemstring = item.Content.Aggregate(itemstring, (current, mod) => current + $"_{mod.ShortName}");
+
+                items.Add(itemstring);
+            }
+
+            return items.ToArray();
+        }
+
+        private double GetKitCooldown(string name)
+        {
+            return _data.Kits.Find(x => x.Name == name)?.Cooldown ?? 0;
+        }
+
+        private double PlayerKitCooldown(ulong ID, string name)
+        {
+            return GetPlayerData(ID, name).Cooldown;
+        }
+
+        private int KitMax(string name)
+        {
+            return _data.Kits.Find(x => x.Name == name)?.Amount ?? 0;
+        }
+
+        private double PlayerKitMax(ulong ID, string name)
+        {
+            return GetPlayerData(ID, name)?.Amount ?? 0;
+        }
+
+        private string KitImage(string name)
+        {
+            return _data.Kits.Find(x => x.Name == name)?.Image ?? string.Empty;
+        }
+
+        private string GetKitImage(string name)
+        {
+            return KitImage(name);
+        }
+
+        private string GetKitDescription(string name)
+        {
+            return _data.Kits.Find(x => x.Name == name)?.Description ?? string.Empty;
+        }
+
+        private int GetKitMaxUses(string name)
+        {
+            return _data.Kits.Find(x => x.Name == name)?.Amount ?? 0;
+        }
+
+        private int GetPlayerKitUses(ulong userId, string name)
+        {
+            Dictionary<string, KitData> kits;
+            if (!_playerData.TryGetValue(userId, out kits)) return 0;
+
+            KitData data;
+            return kits.TryGetValue(name, out data) ? data.Amount : 0;
+        }
+
+        private void SetPlayerKitUses(ulong userId, string name, int amount)
+        {
+            Dictionary<string, KitData> kits;
+            if (!_playerData.TryGetValue(userId, out kits)) return;
+
+            KitData data;
+            if (kits.TryGetValue(name, out data))
+                data.Amount = amount;
+        }
+
+        private double GetPlayerKitCooldown(ulong userId, string name)
+        {
+            var data = GetPlayerData(userId, name);
+            if (data == null) return 0;
+
+            return Mathf.Max((float)(data.Cooldown - GetCurrentTime()), 0f);
+        }
+
+        private void SetPlayerCooldown(ulong userId, string name, int amount)
+        {
+            var data = GetPlayerData(userId, name);
+            if (data == null) return;
+
+            data.Cooldown = GetCurrentTime() + GetCooldown(amount, BasePlayer.FindByID(userId));
+        }
+
+        private void GiveKit(BasePlayer player, string name)
+        {
+            GiveKit(player, _data.Kits.Find(x => x.Name == name), true);
+        }
+
+        private bool isKit(string name)
+        {
+            return IsKit(name);
+        }
+
+        private bool IsKit(string name)
+        {
+            return _data.Kits.Exists(x => x.Name == name);
+        }
+
+        private JObject GetKitObject(string name)
+        {
+            var kit = _data.Kits.Find(x => x.Name == name);
             if (kit == null) return null;
 
             return new JObject
@@ -4386,65 +4789,6 @@ namespace Oxide.Plugins
                         ItemManager.FindItemDefinition(x.ShortName).itemid) ?? new List<int>())
                 }))
             };
-        }
-
-
-        private string[] GetKitContents(string kitname)
-        {
-            var kit = _data.Kits.Find(x => x.Name == kitname);
-            if (kit == null) return null;
-
-            var items = new List<string>();
-            foreach (var item in kit.Items)
-            {
-                var itemstring = $"{item.ShortName}_{item.Amount}";
-                if (item.Content.Count > 0)
-                    itemstring = item.Content.Aggregate(itemstring, (current, mod) => current + $"_{mod.ShortName}");
-
-                items.Add(itemstring);
-            }
-
-            return items.ToArray();
-        }
-
-        private double GetKitCooldown(string kitname)
-        {
-            return _data.Kits.Find(x => x.Name == kitname)?.Cooldown ?? 0;
-        }
-
-        private double PlayerKitCooldown(ulong ID, string kitname)
-        {
-            return GetPlayerData(ID, kitname).Cooldown;
-        }
-
-        private int KitMax(string kitname)
-        {
-            return _data.Kits.Find(x => x.Name == kitname)?.Amount ?? 0;
-        }
-
-        private double PlayerKitMax(ulong ID, string kitname)
-        {
-            return GetPlayerData(ID, kitname)?.Amount ?? 0;
-        }
-
-        private string KitImage(string kitname)
-        {
-            return _data.Kits.Find(x => x.Name == kitname)?.Image ?? string.Empty;
-        }
-
-        private void GiveKit(BasePlayer player, string kitname)
-        {
-            GiveKit(player, _data.Kits.Find(x => x.Name == kitname), true);
-        }
-
-        private bool isKit(string kitname)
-        {
-            return IsKit(kitname);
-        }
-
-        private bool IsKit(string kitname)
-        {
-            return _data.Kits.Exists(x => x.Name == kitname);
         }
 
         #endregion

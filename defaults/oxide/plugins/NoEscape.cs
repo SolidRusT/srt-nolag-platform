@@ -15,7 +15,7 @@ using Rust;
 
 namespace Oxide.Plugins
 {
-    [Info ("No Escape", "Calytic", "2.1.34")]
+    [Info ("No Escape", "Calytic", "2.1.35")]
     [Description ("Prevent commands/actions while raid and/or combat is occuring")]
     class NoEscape : RustPlugin
     {
@@ -1712,7 +1712,7 @@ namespace Oxide.Plugins
             return null;
         }
 
-        object canRedeemKit (BasePlayer player)
+        object CanRedeemKit (BasePlayer player)
         {
             return CanDo ("kit", player);
         }

@@ -14,8 +14,6 @@
 *  Copyright © 2021 nivex
 */
 
-#define USE_HTN_HOOK
-
 using Facepunch;
 using Facepunch.Math;
 using Network;
@@ -42,13 +40,13 @@ using UnityEngine.SceneManagement;
 
 namespace Oxide.Plugins
 {
-    [Info("Raidable Bases", "nivex", "2.2.6")]
+    [Info("Raidable Bases", "nivex", "2.3.0")]
     [Description("Create fully automated raidable bases with npcs.")]
     class RaidableBases : RustPlugin
     {
         [PluginReference]
-        private Plugin 
-            DangerousTreasures, Vanish, LustyMap, ZoneManager, IQEconomic, Economics, ServerRewards, Map, GUIAnnouncements, 
+        private Plugin
+            DangerousTreasures, Vanish, LustyMap, ZoneManager, IQEconomic, Economics, ServerRewards, Map, GUIAnnouncements,
             CopyPaste, Friends, Clans, Kits, TruePVE, NightLantern, Wizardry, NextGenPVE, Imperium, Backpacks, BaseRepair, Notify;
 
         private const int targetLayer = Layers.Mask.Default | Layers.Mask.Water | Layers.Solid;
@@ -120,12 +118,12 @@ namespace Oxide.Plugins
             public const uint HIGHEXTERNALSTONEWALL = 1585379529;
             public const uint HIGHEXTERNALICEWALL = 921229511;
             public const uint LADDER = 2150203378;
-            //public const uint MURDERER = 3879041546;
-            //public const uint MURDERER_CORPSE = 2400390439;
+            public const uint SCARECROW = 3473349223;
+            public const uint SCARECROW_CORPSE = 2400390439;
             public const uint RADIUSMARKER = 2849728229;
             public const uint SPHERE = 3211242734;
-            public const uint SCIENTIST = 4272904018; //4223875851;
-            public const uint SCIENTIST_CORPSE = 1236143239; 
+            public const uint SCIENTIST_HEAVY = 1536035819;
+            public const uint SCIENTIST_CORPSE = 1236143239;
             public const uint VENDINGMARKER = 3459945130;
             public const uint VENDINGMACHINE = 186002280;
             public const uint WALL_FULL = 2194854973;
@@ -406,7 +404,7 @@ namespace Oxide.Plugins
                 translated = Translated();
                 size = Size();
                 bounds = new Bounds(monument.Bounds.center, new Vector3(size, size, size));
-                
+
                 if (config.Settings.Management.MonumentDistance > 0f)
                 {
                     bounds.Expand(config.Settings.Management.MonumentDistance);
@@ -722,7 +720,7 @@ namespace Oxide.Plugins
                 invokeTime = Mathf.Clamp(config.Settings.Management.Despawn.InvokeTime, 0.001f, 0.25f);
             }
 
-            public void FreePool()
+            public void Clear()
             {
                 killTime = 0f;
                 Mounts.Clear();
@@ -748,28 +746,46 @@ namespace Oxide.Plugins
                 return false;
             }
 
-            private static void Kill(BaseEntity e)
-            {
-                RaidEntities.Remove(e);
-
-                if (teleportEntities)
-                {
-                    e.transform.position.Set(0f, -3500f, 0f);
-                    e.TransformChanged();
-                }
-
-                e.Invoke(() =>
-                {
-                    killTime -= invokeTime;
-                    if (!e.IsDestroyed) e.Kill();
-                }, killTime += invokeTime);
-            }
-
             public static void TryKill(BaseEntity e)
             {
                 if (!KeepEntity(e))
                 {
                     Kill(e);
+                }
+            }
+
+            private static void Kill(BaseEntity entity)
+            {
+                string error = "0";
+
+                try
+                {
+                    RaidEntities.Remove(entity);
+
+                    error = "1";
+                    if (teleportEntities)
+                    {
+                        error = "2";
+                        entity.transform.position.Set(0f, -3500f, 0f);
+                        error = "3";
+                        entity.TransformChanged();
+                    }
+
+                    error = "4";
+                    entity.Invoke(() =>
+                    {
+                        error = "5";
+                        killTime -= invokeTime;
+                        error = "6";
+                        if (!entity.IsDestroyed) entity.Kill();
+                        error = "7";
+                    }, killTime += invokeTime);
+
+                    error = "81";
+                }
+                catch
+                {
+                    Puts(error);
                 }
             }
 
@@ -800,7 +816,7 @@ namespace Oxide.Plugins
                 RaidEntities.Remove(e);
 
                 return true;
-            }   
+            }
 
             private static bool KeepMountable(BaseEntity entity)
             {
@@ -941,7 +957,7 @@ namespace Oxide.Plugins
                 collider.isTrigger = true;
                 collider.radius = radius;
                 collider.center = Vector3.zero;
-                
+
                 gameObject.layer = (int)Layer.Trigger;
             }
 
@@ -954,7 +970,7 @@ namespace Oxide.Plugins
 
                 DestroyImmediate(_ejectController.go);
             }
-            
+
             private void OnTriggerEnter(Collider collider)
             {
                 if (collider == null)
@@ -963,6 +979,11 @@ namespace Oxide.Plugins
                 }
 
                 var entity = collider.ToBaseEntity();
+
+                while (entity.HasParent() && !(entity is BaseMountable) && !(entity is BasePlayer))
+                {
+                    entity = entity.GetParentEntity();
+                }
 
                 if (entity is BasePlayer)
                 {
@@ -1090,7 +1111,7 @@ namespace Oxide.Plugins
                 {
                     var spawns = GetSpawnsLocations(config.Settings.Manual.SpawnsFile);
 
-                    if (spawns?.Count > 0)
+                    if (spawns.Count > 0)
                     {
                         Puts(BackboneController.Instance.GetMessageEx("LoadedManual", null, spawns.Count));
                         Spawns[RaidableType.Manual] = new RaidableSpawns(spawns);
@@ -1157,27 +1178,46 @@ namespace Oxide.Plugins
 
             private HashSet<RaidableSpawnLocation> GetSpawnsLocations(string spawnsFile)
             {
-                var data = Interface.Oxide.DataFileSystem.ReadObject<Spawnfile>($"SpawnsDatabase{Path.DirectorySeparatorChar}{spawnsFile}");
+                Spawnfile data;
 
-                if (data == null)
+                try
+                {
+                    data = Interface.Oxide.DataFileSystem.ReadObject<Spawnfile>($"SpawnsDatabase{Path.DirectorySeparatorChar}{spawnsFile}");
+                }
+                catch (JsonReaderException)
                 {
                     return null;
                 }
 
                 var locations = new HashSet<RaidableSpawnLocation>();
 
+                if (data == null)
+                {
+                    return locations;
+                }
+
                 foreach (var element in data.spawnPoints)
                 {
-                    locations.Add(new RaidableSpawnLocation(element.Value));
+                    if (element.Value == null) continue;
+
+                    var value = element.Value.ToString();
+
+                    if (string.IsNullOrEmpty(value)) continue;
+
+                    var vector = value.ToVector3();
+
+                    if (vector == Vector3.zero) continue;
+
+                    locations.Add(new RaidableSpawnLocation(vector));
                 }
-                
+
                 return locations;
             }
         }
 
         private class Spawnfile
         {
-            public Dictionary<string, Vector3> spawnPoints = new Dictionary<string, Vector3>();
+            public Dictionary<string, object> spawnPoints = new Dictionary<string, object>();
         }
 
         public class MaintainedController
@@ -2050,19 +2090,25 @@ namespace Oxide.Plugins
 
         public class FinalDestination : FacepunchBehaviour
         {
-            public global::HumanNPC npc;
-            public BaseAIBrain<global::HumanNPC> brain;
-            private List<Vector3> positions;
-            private List<BaseEntity> players;
-            private NpcSettings settings;
-            private bool isRanged;
-            private BasePlayer target;
-            private ulong userID;
-            public bool stationary;
-            private Vector3 home;
-            private float maxRoamRange;
-            private bool isMeleeType;
-            private NPCPlayerNavigator navigator;
+            internal NPCPlayer npc;
+            internal ScarecrowNPC scarecrow;
+            internal ScientistNPC scientist;
+            internal BaseNavigator navigator;
+            internal List<Vector3> positions;
+            internal NpcSettings settings;
+            internal BaseEntity target;
+            internal Vector3 home;
+            internal Vector3 destination;
+            internal ulong userID;
+            internal bool isRanged;
+            internal bool isMounted;
+            internal bool isStationary;
+            internal bool isScarecrow;
+            internal bool isWallhack;
+            internal float attackRange = 30f;
+            internal float targetLostRange;
+            internal float attackRangeMultiplier;
+            internal float baseAttackDamage;
 
             private void OnDestroy()
             {
@@ -2071,52 +2117,115 @@ namespace Oxide.Plugins
                 Destroy(this);
             }
 
-            public void Set(global::HumanNPC npc, List<Vector3> positions, RaidableBase raid)
+            public static void SetupNavigator(BaseCombatEntity owner, BaseNavigator navigator, float distance)
             {
-                this.npc = npc;
-                this.positions = positions;
-                navigator = npc.GetComponent<NPCPlayerNavigator>();
-                brain = npc.Brain;
-                players = brain.Senses.Players;
-                settings = raid.Options.NPC;
-                home = raid.Location;
-                maxRoamRange = raid.ProtectionRadius - 5f;
-                Instance.Destinations[userID = npc.userID] = this;
-                if (!(stationary = positions == null))
-                {
-                    InvokeRepeating(Go, 0f, 7.5f);
-                }
-                else InvokeRepeating(Attack, 0f, 1f);
-                isMeleeType = npc.IsHoldingEntity<BaseMelee>();
+                navigator.MaxRoamDistanceFromHome = navigator.BestMovementPointMaxDistance = navigator.BestRoamPointMaxDistance = distance * 0.85f;
+                navigator.DefaultArea = "Walkable";
+                navigator.Agent.agentTypeID = -1372625422;
+                navigator.MaxWaterDepth = 0.5f;
+                navigator.CanUseNavMesh = true;
+                navigator.CanUseAStar = true;
+                navigator.Init(owner, navigator.Agent);
+                navigator.PlaceOnNavMesh();
             }
 
-            public void Attack(BasePlayer player, bool converge = true)
+            public static void SetupBrain<T>(BaseAIBrain<T> brain, BaseEntity owner, Vector3 position, float senseRange, bool useWallhack) where T : BaseEntity
+            {
+                brain.Invoke(() =>
+                {
+                    brain.ForceSetAge(0);
+                    brain.Pet = false;
+                    brain.UseAIDesign = true;
+                    brain.AllowedToSleep = false;
+                    brain._baseEntity = (T)owner;
+                    brain.HostileTargetsOnly = false;
+                    brain.MaxGroupSize = 0;
+                    if (owner is ScarecrowNPC) brain.AttackRangeMultiplier = 1f;
+                    brain.Senses.Init(owner: owner, memoryDuration: 5f, range: senseRange, targetLostRange: senseRange * 2f, visionCone: -1f, checkVision: false,
+                        checkLOS: !useWallhack, ignoreNonVisionSneakers: true, listenRange: 15f, hostileTargetsOnly: false, senseFriendlies: false,
+                        ignoreSafeZonePlayers: false, senseTypes: EntityType.Player, refreshKnownLOS: !useWallhack);
+                    brain.Events.Memory.Position.Set(position, 4);
+                }, 0.1f);
+            }
+
+            public static void Forget<T>(BaseAIBrain<T> brain, FinalDestination fd) where T : BaseEntity
+            {
+                brain.Senses.Players.Clear();
+                brain.Senses.Memory.All.Clear();
+                brain.Senses.Memory.Threats.Clear();
+                brain.Senses.Memory.Targets.Clear();
+                brain.Senses.Memory.Players.Clear();
+                brain.Senses.Memory.LOS.Clear();
+                brain.SenseRange = brain.ListenRange = fd.settings.AggressionRange;
+                brain.TargetLostRange = fd.targetLostRange = brain.SenseRange * 2f;
+            }
+
+            public void Set(NPCPlayer npc, List<Vector3> positions, RaidableBase raid)
+            {
+                navigator = npc.GetComponent<BaseNavigator>();
+
+                this.npc = npc;
+                this.positions = positions;
+
+                home = raid.Location;
+                settings = raid.Options.NPC;
+                Instance.Destinations[userID = npc.userID] = this;
+                isMounted = npc.GetMounted() != null;
+                isScarecrow = npc is ScarecrowNPC;
+                isWallhack = raid.Options.NPC.Wallhack;
+
+                if (isScarecrow)
+                {
+                    scarecrow = npc as ScarecrowNPC;
+                    baseAttackDamage = scarecrow.BaseAttackDamge;
+                    targetLostRange = scarecrow.Brain.TargetLostRange;
+                    attackRangeMultiplier = scarecrow.Brain.AttackRangeMultiplier;
+                }
+                else
+                {
+                    scientist = npc as ScientistNPC;
+                    targetLostRange = scientist.Brain.TargetLostRange;
+                    attackRangeMultiplier = scientist.Brain.AttackRangeMultiplier;
+                }
+
+                AttackEntity attackEntity = npc.GetAttackEntity();
+
+                if (attackEntity.IsValid())
+                {
+                    if (attackEntity is BaseProjectile)
+                    {
+                        attackEntity.effectiveRange = 350f;
+                    }
+
+                    attackRange = attackEntity.effectiveRange * (attackEntity.aiOnlyInRange ? 1f : 2f) * attackRangeMultiplier;
+                }
+
+                if (!(isStationary = positions == null))
+                {
+                    InvokeRepeating(TryToRoam, 0f, 7.5f);
+                }
+
+                if (isStationary)
+                {
+                    InvokeRepeating(StationaryAttack, 1f, 1f);
+                }
+                else InvokeRepeating(TryToAttack, 1f, 1f);
+            }
+
+            public void SetTarget(BasePlayer player, bool converge = true)
             {
                 if (target == player)
                 {
                     return;
                 }
 
-                if (!IsInvoking(Attack))
+                npc.lastAttacker = target = player;
+
+                if (isScarecrow)
                 {
-                    InvokeRepeating(Attack, 0f, 1f);
+                    SetIncreasedRange(scarecrow.Brain);
                 }
-
-                if (brain.SenseRange < 150f)
-                {
-                    brain.SenseRange += 150f;
-                    brain.ListenRange += 150f;
-                    brain.TargetLostRange += 100f;
-
-                }
-
-                if (!players.Contains(player))
-                {
-                    players.Add(player);
-                }
-
-                npc.lastAttacker = player;
-                target = player;
+                else SetIncreasedRange(scientist.Brain);
 
                 if (converge)
                 {
@@ -2124,129 +2233,161 @@ namespace Oxide.Plugins
                 }
             }
 
-            private void Attack()
+            private void TryToAttack() => TryToAttack(null);
+
+            private void TryToAttack(BasePlayer attacker)
             {
-                if (stationary)
+                if (attacker == null)
                 {
-                    StationaryAttack();
+                    attacker = GetBestTarget();
+                }
+
+                if (attacker == null)
+                {
                     return;
                 }
 
-                if (players.Count == 0)
+                SetTarget(attacker);
+
+                if (ShouldForgetTarget(attacker))
                 {
+                    if (isScarecrow)
+                    {
+                        Forget(scarecrow.Brain, this);
+                        target = null;
+                    }
+                    else
+                    {
+                        Forget(scientist.Brain, this);
+                        target = null;
+                    }
+
                     return;
                 }
+                
+                npc.Resume();
 
-                var attacker = npc.GetBestTarget() as BasePlayer;
-
-                if (attacker.IsDead() || !InRange(attacker.transform.position, npc.transform.position, maxRoamRange * 2f))
+                if (isScarecrow && scarecrow.CanAttack(attacker) && InRange(scarecrow.transform.position, attacker.transform.position, attackRange))
                 {
-                    Forget();
-                    CancelInvoke(Attack);
-                    InvokeRepeating(Go, 0f, 7.5f);
-                    return;
+                    Vector3 vector = attacker.ServerPosition - scarecrow.ServerPosition;
+
+                    if (vector.magnitude > 0.001f)
+                    {
+                        scarecrow.SetAimDirection(vector.normalized);
+                    }
+
+                    scarecrow.BaseAttackDamge = UnityEngine.Random.Range(baseAttackDamage, baseAttackDamage * 2.5f);
+                    scarecrow.StartAttacking(attacker);
+                    SetDestination(attacker.transform.position, false);
                 }
-
-                if (!npc.GetMounted())
+                else if (!isScarecrow)
                 {
-                    //navigator.Resume();
-                    //npc.IsStopped = false;
-                    npc.RandomMove();
-                }
-
-                if (attacker.IsVisible(npc.eyes.position, attacker.eyes.position))
-                {
-                    if (isMeleeType) npc.MeleeAttack();
-                    else npc.StartAttacking(attacker);
-
+                    SetDestination(positions.GetRandom(), false);
                 }
             }
 
             private void StationaryAttack()
             {
-                npc.SetAimDirection(new Vector3(npc.transform.forward.x, 0, npc.transform.forward.z));
+                scientist.SetAimDirection(new Vector3(scientist.transform.forward.x, 0f, scientist.transform.forward.z));
 
-                if (players.Count == 0)
+                var attacker = GetBestTarget();
+
+                if (attacker == null)
                 {
                     return;
                 }
 
-                var attacker = npc.GetBestTarget() as BasePlayer;
-
-                if (attacker.IsDead())
+                if (ShouldForgetTarget(attacker))
                 {
-                    Forget();
+                    Forget(scientist.Brain, this);
+
+                    target = null;
+
                     return;
                 }
 
-                if (attacker.IsVisible(npc.eyes.position, attacker.eyes.position))
+                if (isWallhack || attacker.IsVisible(scientist.eyes.position, attacker.eyes.position))
                 {
-                    npc.SetAimDirection((attacker.transform.position - npc.transform.position).normalized);
-                    //npc.SetStationaryAimPoint((attacker.transform.position - npc.transform.position).normalized);
-                    npc.TickAttack(0f, attacker, true);
-                }
-            }
+                    var normalized = (scientist.transform.position - attacker.transform.position).normalized;
 
-            private void Forget()
-            {
-                brain.SenseRange = brain.ListenRange = settings.AggressionRange;
-                brain.TargetLostRange = settings.AggressionRange * 1.125f;
-                npc.lastDealtDamageTime = Time.time;
-                brain.Senses.Memory.Threats.Clear();
-                brain.Senses.Memory.Targets.Clear();
-                brain.Senses.Memory.Players.Clear();
-                brain.Senses.Memory.LOS.Clear();
-                npc.lastAttacker = null;
-                npc.lastAttackedTime = Time.time;
-                npc.LastAttackedDir = Vector3.zero;
-                npc.SetPlayerFlag(BasePlayer.PlayerFlags.Relaxed, true);
+                    scientist.SetAimDirection(normalized);
+                    scientist.SetStationaryAimPoint(normalized);
+                }
             }
 
             public void Warp()
             {
                 var position = positions.GetRandom();
 
-                //navigator.Pause();
+                navigator.Pause();
+                destination = position;
                 npc.ServerPosition = position;
-                npc.NavAgent.Warp(position);
+                navigator.Warp(position);
                 navigator.stuckTimer = 0f;
-                //navigator.Resume();
+                navigator.Resume();
             }
 
-            private void Go()
+            private void TryToRoam()
             {
-                if (npc.GetMounted())
+                if (isMounted)
                 {
                     return;
                 }
 
-                /*if (npc.IsSwimming())
+                if (npc.IsSwimming())
                 {
                     npc.Kill();
                     Destroy(this);
                     return;
-                }*/
+                }
 
-                if (brain.Senses.Players.Count == 0)
+                if (navigator.stuckTimer > 0f) // || navigator.Agent.enabled && navigator.CurrentNavigationType == BaseNavigator.NavigationType.None)
                 {
-                    //navigator.Stop();
-                    //navigator.Pause();
+                    Warp();
+                }
 
-                    if (navigator.stuckTimer > 0f)
+                if (GetBestTarget().IsValid())
+                {
+                    return;
+                }
+
+                SetDestination(positions.GetRandom(), true);
+            }
+
+            private void SetIncreasedRange<T>(BaseAIBrain<T> brain) where T : BaseEntity
+            {
+                if (brain.SenseRange < 400f)
+                {
+                    brain.SenseRange += 400f;
+                    brain.ListenRange += 400f;
+                    brain.TargetLostRange += 400f;
+                    targetLostRange = brain.TargetLostRange;
+                }
+            }
+
+            private void SetDestination(Vector3 destination, bool isNormal)
+            {
+                if (navigator.CurrentNavigationType == BaseNavigator.NavigationType.None && !Rust.Ai.AiManager.ai_dormant && !Rust.Ai.AiManager.nav_disable)
+                {
+                    navigator.SetNavMeshEnabled(true);
+                }
+
+                this.destination = destination;
+
+                if (navigator.Agent == null || !navigator.Agent.enabled || !navigator.Agent.isOnNavMesh)
+                {
+                    navigator.Destination = destination;
+                    npc.finalDestination = destination;
+                }
+                else
+                {
+                    var speed = isNormal ? BaseNavigator.NavigationSpeed.Normal : BaseNavigator.NavigationSpeed.Fast;
+
+                    if (!navigator.SetDestination(destination, speed, 0f, 0f))
                     {
-                        Warp();
+                        navigator.Destination = destination;
+                        npc.finalDestination = destination;
                     }
-
-                    var position = positions.GetRandom();
-
-                    if (npc.NavAgent == null || !npc.NavAgent.isOnNavMesh)
-                    {
-                        npc.finalDestination = position;
-                    }
-                    else npc.NavAgent.SetDestination(position);
-
-                    //navigator.Resume();
-                    navigator.Destination = position;
                 }
             }
 
@@ -2254,29 +2395,68 @@ namespace Oxide.Plugins
             {
                 foreach (var fd in Instance.Destinations.Values)
                 {
-                    if (fd != this && fd.npc.IsValid() && fd.npc.IsAlive() && fd.npc.Distance(npc) < 25f)
+                    if (fd != this && fd.isScarecrow == isScarecrow && fd.CanConverge(npc))
                     {
-                        if (fd.npc.Brain.Senses.Players.Count > 0) continue;
-
-                        fd.Attack(player, false);
-                        fd.Attack();
+                        fd.SetTarget(player, false);
+                        fd.TryToAttack(player);
                     }
                 }
             }
 
-            private bool IsMelee(BasePlayer player)
+            private bool ShouldForgetTarget(BasePlayer attacker)
             {
-                var attackEntity = player.GetHeldEntity() as AttackEntity;
-
-                if (attackEntity == null)
-                {
-                    return false;
-                }
-
-                return attackEntity is BaseMelee;
+                return attacker.IsDead() || attacker.limitNetworking || !InRange(attacker.transform.position, npc.transform.position, targetLostRange);
             }
 
-            public bool NpcCanRoam(Vector3 destination) => InRange(home, destination, maxRoamRange);
+            private bool CanConverge(NPCPlayer other)
+            {
+                if (other == null || other.IsDestroyed || other.IsDead()) return false;
+                if (GetBestTarget().IsValid()) return false;
+                return true;
+            }
+
+            private BasePlayer GetBestTarget()
+            {
+                if (isScarecrow && scarecrow.Brain.Senses.Players.Count > 0)
+                {
+                    return GetBestScarecrowTarget() as BasePlayer;
+                }
+
+                if (!isScarecrow && scientist.Brain.Senses.Players.Count > 0)
+                {
+                    return scientist.GetBestTarget() as BasePlayer;
+                }
+
+                return null;
+            }
+
+            public BaseEntity GetBestScarecrowTarget()
+            {
+                float delta = -1f;
+                BaseEntity target = null;
+                Vector3 bodyForward = scarecrow.eyes.BodyForward();
+                foreach (var player in scarecrow.Brain.Senses.Players)
+                {
+                    if (player == null || player.Health() <= 0f)
+                    {
+                        continue;
+                    }
+                    float dist = Vector3.Distance(player.transform.position, scarecrow.transform.position);
+                    float dot = Vector3.Dot((player.transform.position - scarecrow.eyes.position).normalized, bodyForward);
+                    float rangeDelta = 1f - Mathf.InverseLerp(1f, scarecrow.Brain.SenseRange, dist);
+                    rangeDelta += Mathf.InverseLerp(scarecrow.Brain.VisionCone, 1f, dot) / 2f;
+                    rangeDelta += scarecrow.Brain.Senses.Memory.IsLOS(player) ? 2f : 0f;
+                    if (delta > rangeDelta)
+                    {
+                        continue;
+                    }
+                    target = player;
+                    delta = rangeDelta;
+                }
+                return target;
+            }
+
+            public bool NpcCanRoam(Vector3 destination) => destination == this.destination && InRange(home, destination, settings.AggressionRange);
         }
 
         public class BradleyController : FacepunchBehaviour
@@ -2433,10 +2613,11 @@ namespace Oxide.Plugins
             public List<StorageContainer> _containers { get; set; } = Pool.GetList<StorageContainer>();
             public List<StorageContainer> _allcontainers { get; set; } = Pool.GetList<StorageContainer>();
             public Dictionary<BasePlayer, PlayerInputEx> Inputs { get; set; } = Pool.Get<Dictionary<BasePlayer, PlayerInputEx>>();
-            public List<global::HumanNPC> npcs { get; set; } = Pool.GetList<global::HumanNPC>();
+            public List<NPCPlayer> npcs { get; set; } = Pool.GetList<NPCPlayer>();
             public Dictionary<uint, BasePlayer> records { get; set; } = Pool.Get<Dictionary<uint, BasePlayer>>();
             public List<RaiderInfo> raiders { get; set; } = Pool.GetList<RaiderInfo>();
             public List<BasePlayer> friends { get; set; } = Pool.GetList<BasePlayer>();
+            public List<BasePlayer> allowed { get; set; } = Pool.GetList<BasePlayer>();
             public List<BasePlayer> intruders { get; set; } = Pool.GetList<BasePlayer>();
             public List<RaiderInfo> lockedToRaid { get; set; } = Pool.GetList<RaiderInfo>();
             public Dictionary<uint, BackpackData> corpses { get; set; } = Pool.Get<Dictionary<uint, BackpackData>>();
@@ -2498,7 +2679,6 @@ namespace Oxide.Plugins
             public bool IsLoading => setupRoutine != null;
             private bool markerCreated { get; set; }
             private bool lightsOn { get; set; }
-            public bool killed { get; set; }
             private int itemAmountSpawned { get; set; }
             private int treasureAmount { get; set; }
             private float maxObjectHeight { get; set; } = -500f;
@@ -2579,7 +2759,7 @@ namespace Oxide.Plugins
                 Pool.Free(ref collection);
             }
 
-            public void FreePool()
+            public void ResetToPool()
             {
                 ResetToPool(conditions);
                 ResetToPool(Inputs);
@@ -2595,6 +2775,7 @@ namespace Oxide.Plugins
                 ResetToPool(_allcontainers);
                 ResetToPool(npcs);
                 ResetToPool(friends);
+                ResetToPool(allowed);
                 ResetToPool(intruders);
                 ResetToPool(lockedToRaid);
                 ResetToPool(foundations);
@@ -2625,7 +2806,7 @@ namespace Oxide.Plugins
             }
 
             private void OnDestroy()
-            {                
+            {
                 Despawn();
                 Destroy(this);
             }
@@ -2639,32 +2820,45 @@ namespace Oxide.Plugins
 
                 var entity = collider.ToBaseEntity();
 
+                while (entity.HasParent() && !(entity is BaseMountable) && !(entity is BasePlayer))
+                {
+                    entity = entity.GetParentEntity();
+                }
+
                 if (entity is BasePlayer)
                 {
                     var player = entity as BasePlayer;
 
                     OnPreEnterRaid(player);
                 }
-                else if (entity is BaseMountable)
+                else
                 {
-                    var m = entity as BaseMountable;
-                    var players = GetMountedPlayers(m);
-
-                    players.RemoveAll(player => intruders.Contains(player));
-
-                    if (TryRemoveMountable(m, players))
+                    if (!(entity is BaseMountable) && entity.HasParent())
                     {
-                        return;
+                        entity = entity.GetParentEntity();
                     }
 
-                    players.ForEach(player =>
-                    OnPreEnterRaid(player));
+                    if (entity is BaseMountable)
+                    {
+                        var m = entity as BaseMountable;
+                        var players = GetMountedPlayers(m);
+
+                        players.RemoveAll(player => intruders.Contains(player));
+
+                        if (TryRemoveMountable(m, players))
+                        {
+                            return;
+                        }
+
+                        players.ForEach(player =>
+                        OnPreEnterRaid(player));
+                    }
                 }
             }
 
             private void OnPreEnterRaid(BasePlayer player)
             {
-                if (player.IsNpc || intruders.Contains(player))
+                if (!player.IsHuman() || intruders.Contains(player) && allowed.Contains(player))
                 {
                     return;
                 }
@@ -2680,7 +2874,7 @@ namespace Oxide.Plugins
                     return;
                 }
 
-                if (IsFauxAdmin(player))
+                if (RemoveFauxAdmin(player))
                 {
                     return;
                 }
@@ -2744,6 +2938,11 @@ namespace Oxide.Plugins
 
                 var entity = collider.ToBaseEntity();
 
+                while (entity.HasParent() && !(entity is BaseMountable) && !(entity is BasePlayer))
+                {
+                    entity = entity.GetParentEntity();
+                }
+
                 if (entity is BasePlayer)
                 {
                     var player = entity as BasePlayer;
@@ -2761,7 +2960,7 @@ namespace Oxide.Plugins
 
             public void OnPlayerExit(BasePlayer target, bool skipDelay = true)
             {
-                if (target.IsNpc)
+                if (!target.IsHuman())
                 {
                     return;
                 }
@@ -2837,7 +3036,7 @@ enterExit:
                 }
             }
 
-            private bool IsFauxAdmin(BasePlayer p)
+            private bool RemoveFauxAdmin(BasePlayer p)
             {
                 if (HasPermission(p.UserIDString, "fauxadmin.allowed") && HasPermission(p.UserIDString, PERMISSIONS.NOFAUXADMINPOWERS) && p.IsDeveloper)
                 {
@@ -2984,13 +3183,14 @@ enterExit:
 
                 foreach (var target in intruders.ToList())
                 {
-                    if (target == null || target == owner || friends.Contains(target) || CanBypass(target) || IsFauxAdmin(target))
+                    if (target == null || target == owner || friends.Contains(target) || CanBypass(target) || RemoveFauxAdmin(target))
                     {
                         continue;
                     }
 
                     if (CanEject(target))
                     {
+                        allowed.Remove(target);
                         intruders.Remove(target);
                         RemovePlayer(target, 2, Location, ProtectionRadius, Type);
                         continue;
@@ -3013,84 +3213,19 @@ enterExit:
                     {
                         friends.Add(target);
                     }
+
+                    if (!allowed.Contains(target))
+                    {
+                        allowed.Add(target);
+                    }
                 }
             }
 
-            public void DestroyUI()
+            public void UpdateUI()
             {
                 foreach (var player in intruders)
                 {
                     UI.DestroyStatusUI(player);
-                }
-            }
-
-            public static void Unload(bool isKilled)
-            {
-                foreach (var raid in Instance.Raids.Values)
-                {
-                    if (raid.setupRoutine != null)
-                    {
-                        raid.StopCoroutine(raid.setupRoutine);
-                    }
-
-                    if (isKilled)
-                    {
-                        raid.killed = true;
-                    }
-
-                    raid.IsUnloading = true;
-                    raid.CancelInvoke(raid.ToggleLights);
-                }
-
-                IsSpawning = false;
-            }
-
-            public void Despawn()
-            {
-                IsOpened = false;
-                IsDespawning = true;
-
-                Interface.CallHook("OnRaidableBaseDespawn", new object[] { Location, (int)Options.Mode, AllowPVP, ID, spawnTime, despawnTime, loadTime, ownerId, GetOwner(), GetRaiders(), Entities });
-
-                if (killed)
-                {
-                    return;
-                }
-
-                if (!IsUnloading && Instance != null && Instance.Bases.Remove(BaseIndex) && Instance.Bases.Count == 0)
-                {
-                    Instance.UnsubscribeHooks();
-                }
-
-                if (setupRoutine != null)
-                {
-                    StopCoroutine(setupRoutine);
-                }
-
-                IsBusy = true;
-                killed = true;
-                Locations.Remove(PastedLocation);
-
-                SetNoDrops();
-                CancelInvoke();
-                DestroyFire();
-                DestroyInputs();
-                RemoveSpheres();
-                KillNpc();
-                StopAllCoroutines();
-                RemoveMapMarkers();
-                DestroyUI();
-                FinishDespawn();
-                Destroy(this);
-            }
-
-            private void FinishDespawn()
-            {
-                if (!IsUnloading)
-                {
-                    //var entities = Entities.ToList();
-
-                    //Instance.UndoPaste(BaseIndex, entities, Location, ProtectionRadius);
                 }
 
                 foreach (var raider in raiders)
@@ -3105,10 +3240,88 @@ enterExit:
                         TrySetLockout(raider.id, raider.player);
                     }
                 }
+            }
 
+            public static void Unload(bool isShutdown)
+            {
+                foreach (var raid in Instance.Raids.Values)
+                {
+                    if (raid.setupRoutine != null)
+                    {
+                        raid.StopCoroutine(raid.setupRoutine);
+                    }
+
+                    if (isShutdown)
+                    {
+                        raid.IsDespawning = true;
+                    }
+
+                    raid.IsUnloading = true;
+                    raid.CancelInvoke(raid.ToggleLights);
+                }
+
+                IsSpawning = false;
+            }
+
+            public void Despawn()
+            {
+                if (!CanDespawn())
+                {
+                    return;
+                }
+
+                StopAllCoroutines();
+                CancelInvoke();
+                CheckSubscribe();
+                SetNoDrops();
+                UpdateUI();
+                DestroyNpcs();
+                DestroyFire();
+                DestroyInputs();
+                DestroySpheres();
+                DestroyMapMarkers();
+                DestroyEntities();
+                ResetToPool();
+                FinishDespawn();
+                Destroy(this);
+            }
+
+            private bool CanDespawn()
+            {
+                if (IsDespawning)
+                {
+                    return false;
+                }
+
+                Interface.CallHook("OnRaidableBaseDespawn", new object[] { Location, (int)Options.Mode, AllowPVP, ID, spawnTime, despawnTime, loadTime, ownerId, GetOwner(), GetRaiders(), Entities });
+
+                IsDespawning = true;
+                IsOpened = false;
+                IsBusy = true;
+                
+                Locations.Remove(PastedLocation);
+
+                return true;
+            }
+
+            private void FinishDespawn()
+            {
+                BradleyController.Despawn(controller);
+                rs?.AddNear(Location, RemoveNearDistance, CacheType.Generic);
+                Interface.CallHook("OnRaidableBaseEnded", new object[] { Location, (int)Options.Mode, AllowPVP, ID, spawnTime, despawnTime, loadTime, ownerId, GetOwner(), GetRaiders(), Entities });
+            }
+
+            private void CheckSubscribe()
+            {
+                if (Instance == null)
+                {
+                    return;
+                }
+
+                Instance.Bases.Remove(BaseIndex);
                 Instance.Raids.Remove(uid);
 
-                if (Instance.Raids.Count == 0)
+                if (Instance.Raids.Count == 0 || Instance.Bases.Count == 0)
                 {
                     if (IsUnloading)
                     {
@@ -3116,16 +3329,24 @@ enterExit:
                     }
                     else Instance.UnsubscribeHooks();
                 }
+            }
 
-                Interface.CallHook("OnRaidableBaseEnded", new object[] { Location, (int)Options.Mode, AllowPVP, ID, spawnTime, despawnTime, loadTime, ownerId, GetOwner(), GetRaiders(), Entities });
-                rs?.AddNear(Location, RemoveNearDistance, CacheType.Generic);
-                FreePool();
-                BradleyController.Despawn(controller);
+            private void DestroyEntities()
+            {
+                foreach (var e in Entities)
+                {
+                    if (e == null || e.IsDestroyed)
+                    {
+                        continue;
+                    }
+
+                    GarbageController.TryKill(e);
+                }
             }
 
             public void BuildingPrivilegeDestroyed()
             {
-                Interface.CallHook("OnRaidableBasePrivilegeDestroyed", new object[] { Location, (int) Options.Mode, AllowPVP, ID, spawnTime, despawnTime, loadTime, ownerId, GetOwner(), GetRaiders(), Entities });
+                Interface.CallHook("OnRaidableBasePrivilegeDestroyed", new object[] { Location, (int)Options.Mode, AllowPVP, ID, spawnTime, despawnTime, loadTime, ownerId, GetOwner(), GetRaiders(), Entities });
             }
 
             public BasePlayer GetOwner()
@@ -3526,7 +3747,7 @@ enterExit:
 
                 if (Options.Levels.Level2 && npcMaxAmount > 0)
                 {
-                    //SpawnNpcs();
+                    SpawnNpcs();
                 }
 
                 if (IsCompleted)
@@ -3752,7 +3973,7 @@ enterExit:
 
             public static bool CanBypass(BasePlayer player)
             {
-                return HasPermission(player.UserIDString, PERMISSIONS.CANBYPASS) || player.IsFlying;
+                return !player.IsHuman() || HasPermission(player.UserIDString, PERMISSIONS.CANBYPASS) || player.IsFlying;
             }
 
             private bool Exceeds(BasePlayer player)
@@ -4005,6 +4226,7 @@ enterExit:
                     owner = null;
                     ownerId = 0;
                     friends.Clear();
+                    allowed.Clear();
                     raiders.Clear();
                     UpdateMarker();
                     return;
@@ -4135,7 +4357,7 @@ enterExit:
                     return;
                 }
 
-                if (entity is global::HumanNPC)
+                if (entity is NPCPlayer)
                 {
                     SetOwner(attacker);
                     return;
@@ -4720,13 +4942,13 @@ enterExit:
 
             private void KillTrees()
             {
-                int hits = Physics.OverlapSphereNonAlloc(Location, ProtectionRadius * 1.3f, Vis.colBuffer, Layers.Mask.Tree | Layers.Mask.Trigger, QueryTriggerInteraction.Ignore);
+                int hits = Physics.OverlapSphereNonAlloc(Location, ProtectionRadius * 1.3f, Vis.colBuffer, Layers.Mask.Tree, QueryTriggerInteraction.Ignore);
 
                 for (int i = 0; i < hits; i++)
                 {
                     var e = Vis.colBuffer[i].ToBaseEntity();
 
-                    if (e is ResourceEntity)
+                    if (e is TreeEntity)
                     {
                         e.Kill();
                     }
@@ -4752,7 +4974,7 @@ enterExit:
                     }
 
                     var position = e.transform.position;
-                                        
+
                     maxObjectHeight = Mathf.Max(maxObjectHeight, position.y);
                     NetworkID = Math.Min(NetworkID, e.net.ID);
                     e.OwnerID = 0;
@@ -5006,7 +5228,7 @@ enterExit:
                 PopulateLoot(true);
                 TryAddDuplicates();
                 PopulateLoot(false);
-                
+
                 if (Loot.Count == 0)
                 {
                     Pool.FreeList(ref containers);
@@ -5015,10 +5237,10 @@ enterExit:
                 }
 
                 var m_shortNames = new List<string>();
-                
+
                 TryRemoveDuplicates(m_shortNames);
                 VerifyLootAmount(m_shortNames);
-                
+
                 //Loot.Sort((x, y) => x.shortname.CompareTo(y.shortname));
                 //Loot.ForEach(ti => Puts(ti.shortname));
 
@@ -5060,32 +5282,9 @@ enterExit:
                 {
                     Entities.Add(e);
                 }
-                
-                GarbageController.RaidEntities[e] = this;
-                Action action = null;
 
-                action = new Action(() =>
-                {
-                    if (e.IsDestroyed)
-                    {
-                        return;
-                    }
-
-                    if (IsDespawning)
-                    {
-                        GarbageController.TryKill(e);
-                    }
-                    else
-                    {
-                        e.Invoke(action, 1f);
-                        Actions[e] = action;
-                    }
-                });
-
-                e.Invoke(action, 1f);
+                GarbageController.RaidEntities[e] = this;                
             }
-
-            public Dictionary<BaseEntity, Action> Actions = new Dictionary<BaseEntity, Action>();
 
             private void SetupPickup(BaseCombatEntity e)
             {
@@ -5162,7 +5361,7 @@ enterExit:
 
                 if (IsBox(container, false) || container is BuildingPrivlidge)
                 {
-                    container.inventory.SetFlag(ItemContainer.Flag.NoItemInput, true);
+                    container.inventory.SetFlag(ItemContainer.Flag.NoItemInput, Options.NoItemInput);
                 }
             }
 
@@ -5362,6 +5561,8 @@ enterExit:
                     }
                 }
 
+                Options.AutoTurret.Shortnames.Remove("fun.trumpet");
+
                 turret.Invoke(() =>
                 {
                     if (!turret.IsDestroyed && Options.AutoTurret.Shortnames.Count > 0)
@@ -5487,7 +5688,7 @@ enterExit:
                 {
                     SetupIO(ss as IOEntity);
                 }
-                
+
                 if (config.Weapons.SamSiteRange > 0f)
                 {
                     ss.vehicleScanRadius = ss.missileScanRadius = config.Weapons.SamSiteRange;
@@ -5619,7 +5820,7 @@ enterExit:
                 if (Options.CloseOpenDoors)
                 {
                     door.SetOpen(false, true);
-                }                
+                }
             }
 
             private void SetupDoors()
@@ -5832,7 +6033,7 @@ enterExit:
                         {
                             random.Add(si.workshopSkins.GetRandom());
                         }
-                        
+
                         if (config.Skins.Boxes.RandomSkins)
                         {
                             random.Add(si.skins.GetRandom());
@@ -5929,7 +6130,7 @@ enterExit:
                 Subscribe(nameof(CanPickupEntity));
                 Subscribe(nameof(OnEntityEnter));
 
-                /*if (Options.NPC.SpawnAmount > 0 && Options.NPC.Enabled)
+                if (Options.NPC.SpawnAmount > 0 && Options.NPC.Enabled)
                 {
                     Options.NPC.SpawnAmount = Mathf.Clamp(Options.NPC.SpawnAmount, 0, 25);
                     Options.NPC.SpawnMinAmount = Mathf.Clamp(Options.NPC.SpawnMinAmount, 0, Options.NPC.SpawnAmount);
@@ -5939,13 +6140,17 @@ enterExit:
 
                     if (npcMaxAmount > 0)
                     {
+                        if (config.Settings.Management.BlockNpcKits)
+                        {
+                            Subscribe(nameof(OnNpcKits));
+                        }
+
                         Subscribe(nameof(OnNpcTarget));
                         Subscribe(nameof(OnNpcDestinationSet));
-                        Subscribe(nameof(OnNpcKits));
                         SetupNpcKits();
                         Invoke(SpawnNpcs, 1f);
                     }
-                }*/
+                }
 
                 Subscribe(nameof(OnPlayerDropActiveItem));
                 Subscribe(nameof(OnPlayerDeath));
@@ -6099,6 +6304,7 @@ enterExit:
                 owner = null;
                 ownerId = 0;
                 friends.Clear();
+                allowed.Clear();
                 UpdateMarker();
             }
 
@@ -6123,6 +6329,7 @@ enterExit:
                 owner = null;
                 ownerId = 0;
                 friends.Clear();
+                allowed.Clear();
                 UpdateMarker();
             }
 
@@ -6225,10 +6432,8 @@ enterExit:
                 int transfer = 0, moved = 0, failure = 0, skipped = 0;
 
                 while (Loot.Count > 0 && containers.Count > 0 && itemAmountSpawned < treasureAmount)
-                { 
+                {
                     var lootItem = Loot.GetRandom();
-
-                    //Puts("{0}", Loot.Count);
 
                     if (containers.Count > 1)
                     {
@@ -6258,11 +6463,9 @@ enterExit:
                     Loot.Remove(lootItem);
 
                     containers.RemoveAll(container => container.inventory.IsFull());
-
-                    //if (containers.Count == 0) Puts("FULL");
                 }
 
-                Puts("Transfer: {0}, Success: {1}, Failure: {2}, Skipped: {3}, Total: {4}", transfer, moved, failure, skipped, transfer + moved + failure + skipped);
+                PrintDebugMessage(string.Format("Transfer: {0}, Success: {1}, Failure: {2}, Skipped: {3}, Total: {4}", transfer, moved, failure, skipped, transfer + moved + failure + skipped));
             }
 
             private void AddToLoot(List<LootItem> source)
@@ -6606,13 +6809,11 @@ enterExit:
                             m_shortNames.Add(ti.shortname);
                         }
 
-                        Puts("Adding {0}", ti.shortname);
-
                         Loot.Add(ti);
                     }
                 }
 
-                
+
             }
 
             private void SetupSellOrders()
@@ -6765,9 +6966,9 @@ enterExit:
                     {
                         itemAmountSpawned++;
                         return SpawnResult.Success;
-                    }                    
+                    }
                 }
-                
+
                 item.Remove();
                 return SpawnResult.Failure;
             }
@@ -7110,7 +7311,7 @@ enterExit:
                 Pool.FreeList(ref boxes);
             }
 
-            private bool ToggleNpcMinerHat(global::HumanNPC npc, bool state)
+            private bool ToggleNpcMinerHat(NPCPlayer npc, bool state)
             {
                 if (npc == null || npc.inventory == null || npc.IsDead())
                 {
@@ -7216,7 +7417,7 @@ enterExit:
                 if (IsOpened)
                 {
                     float time = config.Settings.Management.DespawnMinutes > 0 ? config.Settings.Management.DespawnMinutes * 60f : 0f;
-                    
+
                     IsOpened = false;
                     CancelInvoke(ResetOwner);
 
@@ -7350,7 +7551,7 @@ enterExit:
 
                 foreach (var raid in Instance.Raids.Values)
                 {
-                    if (raid.Options.Mode == mode && !raid.killed)
+                    if (raid.Options.Mode == mode && !raid.IsDespawning)
                     {
                         amount++;
                     }
@@ -7385,7 +7586,7 @@ enterExit:
 
             public static RaidableBase Get(BasePlayer victim, HitInfo hitInfo = null)
             {
-                if (victim.IsNpc)
+                if (Has(victim.userID))
                 {
                     return Get(victim.userID);
                 }
@@ -7396,12 +7597,12 @@ enterExit:
                     return ds.RaidableBase;
                 }
 
-                if (hitInfo == null || hitInfo.Initiator == null)
+                if (hitInfo == null)
                 {
-                    return Get(victim.transform.position);
+                    return null;
                 }
 
-                return Get(hitInfo.Initiator.transform.position);
+                return Get(hitInfo.PointStart) ?? Get(hitInfo.PointEnd);
             }
 
             public static RaidableBase Get(PlayerCorpse corpse)
@@ -7494,12 +7695,12 @@ enterExit:
                         {
                             random.Add(si.workshopSkins.GetRandom());
                         }
-                        
+
                         if (config.Skins.Loot.Imported && si.importedSkins.Count > 0)
                         {
                             random.Add(si.importedSkins.GetRandom());
                         }
-                        
+
                         if (config.Skins.Loot.RandomSkins && si.skins.Count > 0)
                         {
                             random.Add(si.skins.GetRandom());
@@ -7576,9 +7777,9 @@ enterExit:
                 return si;
             }
 
-            private void AuthorizePlayer(global::HumanNPC npc)
+            private void AuthorizePlayer(NPCPlayer npc)
             {
-                turrets.RemoveAll(x => !x.IsValid() || x.IsDestroyed);
+                turrets.RemoveAll(x => x == null || x.IsDestroyed);
 
                 foreach (var turret in turrets)
                 {
@@ -7590,19 +7791,6 @@ enterExit:
 
                     turret.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
                 }
-
-                if (priv == null || priv.IsDestroyed)
-                {
-                    return;
-                }
-
-                priv.authorizedPlayers.Add(new ProtoBuf.PlayerNameID
-                {
-                    userid = npc.userID,
-                    username = npc.displayName
-                });
-
-                priv.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
             }
 
             public bool IsAlly(ulong playerId, ulong targetId, AlliedType type = AlliedType.All)
@@ -7786,7 +7974,7 @@ enterExit:
 
             public static bool RemovePlayer(BasePlayer player, int index, Vector3 target, float radius, RaidableType type)
             {
-                if (player.IsNpc || type == RaidableType.None && !player.IsSleeping())
+                if (!player.IsHuman() || type == RaidableType.None && !player.IsSleeping())
                 {
                     return false;
                 }
@@ -7797,7 +7985,7 @@ enterExit:
                 {
                     var players = GetMountedPlayers(m);
 
-                    players.RemoveAll(x => x == null || x.IsNpc);
+                    players.RemoveAll(x => x == null || !x.IsHuman());
 
                     if (RemoveMountable(m, players, target, radius))
                     {
@@ -7841,9 +8029,17 @@ enterExit:
 
                 List<BasePlayer> players = new List<BasePlayer>();
 
+                foreach (var target in BasePlayer.activePlayerList)
+                {
+                    if (InRange(target.transform.position, m.transform.position, 20f))
+                    {
+                        players.Add(target);
+                    }
+                }
+
                 var player = m.GetMounted();
 
-                if (player.IsValid() && !player.IsNpc)
+                if (player.IsValid() && player.IsHuman() && !players.Contains(player))
                 {
                     players.Add(player);
                 }
@@ -7855,11 +8051,19 @@ enterExit:
             {
                 List<BasePlayer> players = new List<BasePlayer>();
 
+                foreach (var target in BasePlayer.activePlayerList)
+                {
+                    if (InRange(target.transform.position, vehicle.transform.position, 20f))
+                    {
+                        players.Add(target);
+                    }
+                }
+
                 if (!vehicle.HasMountPoints())
                 {
                     var player = vehicle.GetMounted();
 
-                    if (player.IsValid() && !player.IsNpc)
+                    if (player.IsValid() && player.IsHuman() && !players.Contains(player))
                     {
                         players.Add(player);
                     }
@@ -7878,7 +8082,7 @@ enterExit:
 
                     var player = mountPoint.mountable.GetMounted();
 
-                    if (player.IsValid() && !player.IsNpc)
+                    if (player.IsValid() && player.IsHuman() && !players.Contains(player))
                     {
                         players.Add(player);
                     }
@@ -8085,11 +8289,11 @@ enterExit:
 
                 if (m is MiniCopter || m is CH47Helicopter || players.Exists(player => IsFlying(player)))
                 {
-                    target.y = Mathf.Max(m.transform.position.y + 5f, SpawnsController.Instance.GetSpawnHeight(target) + 1f);
+                    target.y = Mathf.Max(m.transform.position.y + 5f, SpawnsController.Instance.GetSpawnHeight(target) + 5f);
                 }
                 else
                 {
-                    target.y = SpawnsController.Instance.GetSpawnHeight(target) + 1f;
+                    target.y = SpawnsController.Instance.GetSpawnHeight(target) + 5f;
                 }
 
                 m.transform.rotation = Quaternion.Euler(e.x, e.y - 180f, e.z);
@@ -8127,6 +8331,13 @@ enterExit:
                     e.net = Net.sv.CreateNetworkable();
                 }
 
+                if (e is StaticInstrument)
+                {
+                    Entities.Remove(e);
+                    e.Invoke(e.KillMessage, 0.01f);
+                    return false;
+                }
+
                 e.enableSaving = false;
                 return true;
             }
@@ -8152,7 +8363,9 @@ enterExit:
                     return;
                 }
 
-                var npc = SpawnNPC(!Options.NPC.SpawnScientistsOnly && (Options.NPC.SpawnBoth ? UnityEngine.Random.value > 0.5f : Options.NPC.SpawnMurderers));
+                bool isScarecrow = !Options.NPC.SpawnScientistsOnly && (Options.NPC.SpawnBoth ? UnityEngine.Random.value > 0.5f : Options.NPC.SpawnMurderers);
+
+                var npc = SpawnNpc(isScarecrow);
 
                 if (npc == null || npcs.Count >= npcMaxAmount)
                 {
@@ -8176,7 +8389,9 @@ enterExit:
                         break;
                     }
 
-                    SpawnNPC(!Options.NPC.SpawnScientistsOnly && (Options.NPC.SpawnBoth ? UnityEngine.Random.value >= 0.5f : Options.NPC.SpawnMurderers));
+                    bool isScarecrow = !Options.NPC.SpawnScientistsOnly && (Options.NPC.SpawnBoth ? UnityEngine.Random.value >= 0.5f : Options.NPC.SpawnMurderers);
+
+                    SpawnNpc(isScarecrow);
                 }
 
                 if (!IsInvoking(TryStartPlayingWithFire) && npcs.Exists(npc => npc.IsValid() && !npc.IsDestroyed && !NearFoundation(npc.transform.position)))
@@ -8206,7 +8421,7 @@ enterExit:
 
                 while (++tries < 100)
                 {
-                    if (NavMesh.SamplePosition(target, out _navHit, radius, -1))
+                    if (NavMesh.SamplePosition(target, out _navHit, radius, NavMesh.AllAreas))
                     {
                         if (NearFoundation(_navHit.position))
                         {
@@ -8215,7 +8430,7 @@ enterExit:
 
                         float y = TerrainMeta.HeightMap.GetHeight(_navHit.position);
 
-                        if (_navHit.position.y < y || TerrainMeta.WaterMap.GetHeight(_navHit.position) - y > 1f)
+                        if (_navHit.position.y < y || !IsAcceptableWaterDepth(_navHit.position))
                         {
                             continue;
                         }
@@ -8225,12 +8440,7 @@ enterExit:
                             continue;
                         }
 
-                        if (TestInsideRock(_navHit.position) || GamePhysics.CheckSphere(_navHit.position, 0.5f, Layers.Server.Deployed, QueryTriggerInteraction.Ignore))
-                        {
-                            continue;
-                        }
-
-                        if (WaterLevel.GetWaterDepth(_navHit.position, true) > 0.75f)
+                        if (TestInsideRock(_navHit.position) || TestInsideObject(_navHit.position))
                         {
                             continue;
                         }
@@ -8243,6 +8453,16 @@ enterExit:
             }
 
             private RaycastHit _hit;
+
+            private bool IsAcceptableWaterDepth(Vector3 position)
+            {
+                return WaterLevel.GetOverallWaterDepth(position, true, null, false) <= 0.75f;
+            }
+
+            private bool TestInsideObject(Vector3 position)
+            {
+                return GamePhysics.CheckSphere(position, 0.5f, Layers.Mask.Player_Server | Layers.Server.Deployed, QueryTriggerInteraction.Ignore);
+            }
 
             private bool TestInsideRock(Vector3 position)
             {
@@ -8261,10 +8481,9 @@ enterExit:
 
             private List<string> _prefabs = new List<string> { "rock_", "formation_", "cliff" };
 
-            private static global::HumanNPC InstantiateEntity(Vector3 position, bool murd)
+            private static BaseEntity InstantiateEntity(Vector3 position, bool isScarecrow)
             {
-                //heavyscientist
-                var prefabName = "assets/rust.ai/agents/npcplayer/humannpc/underwaterdweller/npc_underwaterdweller.prefab"; //"assets /rust.ai/agents/npcplayer/humannpc/scientist/scientistnpc_full_any.prefab"; //StringPool.Get(Constants.SCIENTIST);
+                var prefabName = isScarecrow ? StringPool.Get(Constants.SCARECROW) : StringPool.Get(Constants.SCIENTIST_HEAVY);
                 var prefab = GameManager.server.FindPrefab(prefabName);
                 var go = Facepunch.Instantiate.GameObject(prefab, position, default(Quaternion));
 
@@ -8282,7 +8501,7 @@ enterExit:
                     go.SetActive(true);
                 }
 
-                return go.GetComponent<global::HumanNPC>();
+                return go.GetComponent<BaseEntity>();
             }
 
             private Vector3 RandomPosition(float radius)
@@ -8317,7 +8536,7 @@ enterExit:
                 return vector;
             }
 
-            private global::HumanNPC SpawnNPC(bool murd)
+            private NPCPlayer SpawnNpc(bool isScarecrow)
             {
                 if (Options.NPC.Inside.SpawnOnRugs || Options.NPC.Inside.SpawnOnBeds || Options.NPC.Inside.SpawnOnFloors)
                 {
@@ -8329,12 +8548,12 @@ enterExit:
                     }
                 }
 
-                if (!Options.NPC.Inside.SpawnMurderersOutside && murd)
+                if (!Options.NPC.Inside.SpawnScientistsOutside && !isScarecrow)
                 {
                     return null;
                 }
 
-                if (!Options.NPC.Inside.SpawnScientistsOutside && !murd)
+                if (!Options.NPC.Inside.SpawnMurderersOutside && isScarecrow)
                 {
                     return null;
                 }
@@ -8347,98 +8566,117 @@ enterExit:
                 }
 
                 var position = RandomPosition(Options.ArenaWalls.Radius * 0.9f);
-                var npc = InstantiateEntity(position, murd);
+
+                if (position == Vector3.zero)
+                {
+                    return null;
+                }
+
+                var npc = InstantiateEntity(position, isScarecrow) as NPCPlayer;
 
                 if (npc == null)
                 {
                     return null;
                 }
 
+                npc.enableSaving = false;
                 npc.Spawn();
 
-                if (murd)
-                {
-                    npc._name += "murderer";
-                }
-
-                if (npc.metabolism == null)
-                {
-                    npc.Invoke(npc.KillMessage, 0.1f);
-
-                    return null;
-                }
-
-                SetupNpc(npc, murd, positions);
+                SetupNpc(npc, positions);
 
                 return npc;
             }
 
-            private void SetupNpc(global::HumanNPC npc, bool murd, List<Vector3> positions)
+            private void SetupNpc(NPCPlayer npc, List<Vector3> positions)
             {
-                var brain = npc.Brain;
-                var navigator = npc.GetComponent<NPCPlayerNavigator>();
-                                
-                npc.Invoke(() => UpdateDestination(npc, positions), 0.25f);
-                npc.startHealth = murd ? Options.NPC.MurdererHealth : Options.NPC.ScientistHealth;
-                npc.InitializeHealth(npc.startHealth, npc.startHealth);
-
-                navigator.MaxRoamDistanceFromHome = ProtectionRadius * 0.9f;
-                brain.SenseRange = brain.ListenRange = Options.NPC.AggressionRange;
-                brain.TargetLostRange = Options.NPC.AggressionRange * 1.125f;
-
-                navigator.MaxWaterDepth = 0.5f;
-                navigator.Stop();
-                navigator.Pause();
-                
-                npc.displayName = Options.NPC.RandomNames.Count > 0 ? Options.NPC.RandomNames.GetRandom() : RandomUsernames.Get(npc.userID);
-
                 npcs.Add(npc);
 
-                npc.Invoke(() =>
-                {
-                    if (npc.IsDestroyed)
-                    {
-                        npcs.Remove(npc);
-                        return;
-                    }
+                var isScarecrow = npc is ScarecrowNPC;
+                var navigator = npc.GetComponent<BaseNavigator>();
 
-                    EquipNpc(npc, murd);
-                }, 1f);
-
-                npc.Invoke(() =>
-                {
-                    if (npc.IsDestroyed)
-                    {
-                        npcs.Remove(npc);
-                        return;
-                    }
-
-                    Item projectileItem = null;
-
-                    foreach (var item in npc.inventory.containerBelt.itemList)
-                    {
-                        if (item.GetHeldEntity() is BaseProjectile)
-                        {
-                            projectileItem = item;
-                            break;
-                        }
-                    }
-
-                    if (projectileItem != null)
-                    {
-                        npc.UpdateActiveItem(projectileItem.uid);
-                    }
-                    else npc.EquipWeapon();
-                }, 2f);
-
-                if (Options.NPC.DespawnInventory)
-                {
-                    npc.LootSpawnSlots = new LootContainer.LootSpawnSlot[0];
-                }
-
+                FinalDestination.SetupNavigator(npc, navigator, Options.ArenaWalls.Enabled ? Options.ArenaWalls.Radius : ProtectionRadius);
                 AuthorizePlayer(npc);
 
+                if (isScarecrow)
+                {
+                    var scarecrow = npc as ScarecrowNPC;
+
+                    if (Options.NPC.DespawnInventory)
+                    {
+                        scarecrow.LootSpawnSlots = new LootContainer.LootSpawnSlot[0];
+                    }
+
+                    FinalDestination.SetupBrain(scarecrow.Brain, npc, Location, Options.NPC.AggressionRange, Options.NPC.Wallhack);
+                }
+                else
+                {
+                    var scientist = npc as ScientistNPC;
+
+                    if (Options.NPC.DespawnInventory)
+                    {
+                        scientist.LootSpawnSlots = new LootContainer.LootSpawnSlot[0];
+                    }
+
+                    if (Options.NPC.AlternateScientistLoot.Enabled && Options.NPC.AlternateScientistLoot.IDs.Count > 0)
+                    {
+                        var id = Options.NPC.AlternateScientistLoot.GetRandom();
+
+                        scientist.LootSpawnSlots = GameManager.server.FindPrefab(StringPool.Get(id)).GetComponent<ScientistNPC>().LootSpawnSlots;
+                    }
+
+                    scientist.DeathEffects = new GameObjectRef[0];
+                    scientist.radioChatterType = ScientistNPC.RadioChatterType.NONE;
+                    scientist.RadioChatterEffects = new GameObjectRef[0];
+
+                    FinalDestination.SetupBrain(scientist.Brain, npc, Location, Options.NPC.AggressionRange, Options.NPC.Wallhack);
+                }
+
+                npc.displayName = Options.NPC.RandomNames.Count > 0 ? Options.NPC.RandomNames.GetRandom() : RandomUsernames.Get(npc.userID);
+                npc.startHealth = Options.NPC.MurdererHealth;
+                npc.InitializeHealth(npc.startHealth, npc.startHealth);
+                npc.Invoke(() => GiveEquipment(npc), 1f);
+                npc.Invoke(() => EquipWeapon(npc), 2f);
+                npc.Invoke(() => SetupAI(npc, positions), 3f);
+
                 Instance.Npcs[npc.userID] = this;
+            }
+
+            private void SetupAI(NPCPlayer npc, List<Vector3> list)
+            {
+                if (npc.IsDestroyed)
+                {
+                    npcs.Remove(npc);
+                    return;
+                }
+
+                npc.gameObject.AddComponent<FinalDestination>().Set(npc, list, this);
+            }
+                        
+            private void EquipWeapon(NPCPlayer npc)
+            {
+                if (npc.IsDestroyed)
+                {
+                    npcs.Remove(npc);
+                    return;
+                }
+
+                npc.EquipWeapon();
+
+                var heldEntity = npc.GetHeldEntity();
+
+                if (heldEntity == null)
+                {
+                    return;
+                }
+
+                if (heldEntity is Chainsaw)
+                {
+                    (heldEntity as Chainsaw).ServerNPCStart();
+                }
+
+                heldEntity.SetHeld(true);
+                npc.SendNetworkUpdate();
+                npc.inventory.UpdatedVisibleHolsteredItems();
             }
 
             private bool SortRandomSpots()
@@ -8469,7 +8707,7 @@ enterExit:
                         {
                             walls++;
                         }
-                        else if (!(e is BuildingBlock) || IsOutside(e))
+                        else if (!(e is BuildingBlock) || !(e is SleepingBag) && IsOutside(e))
                         {
                             walls = int.MaxValue;
                             break;
@@ -8592,7 +8830,7 @@ enterExit:
                 return false;
             }
 
-            public global::HumanNPC SpawnInsideBase()
+            public ScientistNPC SpawnInsideBase()
             {
                 var position = FindRandomRug();
 
@@ -8611,16 +8849,22 @@ enterExit:
                     return null;
                 }
 
-                var npc = InstantiateEntity(position, false);
+                var npc = InstantiateEntity(position, false) as ScientistNPC;
 
                 if (npc == null)
                 {
                     return null;
                 }
 
+                npc.enableSaving = false;
                 npc.Spawn();
-                SetupNpc(npc, false, null);
+
+                SetupNpc(npc, null);
+
                 npc.Brain.VisionCone = -1f;
+                npc.Brain.CheckVisionCone = true;
+                npc.GetComponent<BaseNavigator>().CanUseNavMesh = false;
+
                 Subscribe(nameof(OnNpcResume));
                 Subscribe(nameof(OnNpcDestinationSet));
 
@@ -8660,10 +8904,18 @@ enterExit:
                 return Convert.ToBoolean(Instance.Kits?.Call("isKit", kit));
             }
 
-            private void EquipNpc(global::HumanNPC npc, bool murd)
+            private void GiveEquipment(NPCPlayer npc)
             {
+                if (npc.IsDestroyed)
+                {
+                    npcs.Remove(npc);
+                    return;
+                }
+
+                bool isScarecrow = npc is ScarecrowNPC;
+
                 List<string> kits;
-                if (npcKits.TryGetValue(murd ? "murderer" : "scientist", out kits) && kits.Count > 0)
+                if (npcKits.TryGetValue(isScarecrow ? "murderer" : "scientist", out kits) && kits.Count > 0)
                 {
                     npc.inventory.Strip();
 
@@ -8675,7 +8927,7 @@ enterExit:
 
                 var items = new List<string>();
 
-                if (murd)
+                if (isScarecrow)
                 {
                     if (Options.NPC.MurdererItems.Boots.Count > 0) items.Add(Options.NPC.MurdererItems.Boots.GetRandom());
                     if (Options.NPC.MurdererItems.Gloves.Count > 0) items.Add(Options.NPC.MurdererItems.Gloves.GetRandom());
@@ -8758,11 +9010,6 @@ done:
                 {
                     npc.inventory.ServerUpdate(0f);
                 }
-            }
-
-            private void UpdateDestination(global::HumanNPC npc, List<Vector3> list)
-            {
-                npc.gameObject.AddComponent<FinalDestination>().Set(npc, list, this);
             }
 
             public static void UpdateAllMarkers()
@@ -9034,17 +9281,29 @@ done:
                 return true;
             }
 
-            private void KillNpc()
+            private void DestroyNpcs()
             {
-                npcs.KillAll();
+                foreach (var npc in npcs)
+                {
+                    if (npc?.IsDestroyed == false)
+                    {
+                        npc.Kill();
+                    }
+                }
             }
 
-            private void RemoveSpheres()
+            private void DestroySpheres()
             {
-                spheres.KillAll();
+                foreach (var sphere in spheres)
+                {
+                    if (sphere?.IsDestroyed == false)
+                    {
+                        sphere.Kill();
+                    }
+                }
             }
 
-            public void RemoveMapMarkers()
+            public void DestroyMapMarkers()
             {
                 Interface.CallHook("RemoveTemporaryLustyMarker", uid);
                 Interface.CallHook("RemoveMapPrivatePluginMarker", uid);
@@ -9316,7 +9575,7 @@ done:
                         {
                             var player = e as BasePlayer;
 
-                            if (player.IsNpc || player.IsFlying || config.Settings.Management.EjectSleepers && player.IsSleeping())
+                            if (!player.IsHuman() || player.IsFlying || config.Settings.Management.EjectSleepers && player.IsSleeping())
                             {
                                 continue;
                             }
@@ -9476,7 +9735,7 @@ done:
             {
                 return Monuments.Exists(monument => monument.IsInBounds(target));
             }
-            
+
             private void SetupMonuments()
             {
                 List<MonumentInfo> monuments;
@@ -9686,8 +9945,8 @@ done:
         {
             IsUnloading = true;
             RaidableBase.Unload(true);
-            BackboneController.Instance.StopCoroutines();
             Raids.ToList().ForEach(x => x.Value.Despawn());
+            BackboneController.Instance.StopCoroutines();
         }
 
         private void Unload()
@@ -9715,7 +9974,7 @@ done:
 
         private static void UnsetStatics()
         {
-            GarbageController.Instance.FreePool();
+            GarbageController.Instance.Clear();
             UnityEngine.Object.DestroyImmediate(BackboneController.Instance);
             UnityEngine.Object.DestroyImmediate(GarbageController.Instance);
             UnityEngine.Object.DestroyImmediate(GridController.Instance);
@@ -9827,7 +10086,7 @@ done:
         {
             var raid = RaidableBase.Get(targetId);
 
-            if (raid == null || !raid.Options.NPC.DespawnInventory)
+            if (raid == null)
             {
                 return null;
             }
@@ -9857,7 +10116,7 @@ done:
 
         private void OnEntityMounted(BaseMountable m, BasePlayer player)
         {
-            if (player.IsNpc || m.OwnerID == 1337420 || m.GetParentEntity() is BaseTrain)
+            if (!player.IsHuman() || m.OwnerID == 1337420 || m.GetParentEntity() is BaseTrain)
             {
                 return;
             }
@@ -10079,7 +10338,7 @@ done:
 
         private object CanSamSiteShoot(SamSite ss)
         {
-            if (!ss.HasValidTarget() || !EventTerritory(ss.transform.position))
+            if (!ss.HasValidTarget() || !EventTerritory(ss.transform.position) && !RaidableBase.Has(ss))
             {
                 return null;
             }
@@ -10095,6 +10354,11 @@ done:
         private object OnEntityEnter(TriggerBase trigger, BaseEntity entity)
         {
             if (entity == null || entity.IsDestroyed)
+            {
+                return false;
+            }
+
+            if (entity is Drone && RaidableBase.Has(trigger))
             {
                 return false;
             }
@@ -10124,42 +10388,57 @@ done:
             return null;
         }
 
-#if USE_HTN_HOOK
-        private object OnNpcTarget(global::HumanNPC npc, BaseEntity entity)
+        private object OnNpcTarget(BasePlayer npc, BaseEntity entity)
         {
-            return entity != null && npc != null && entity.IsNpc && !npc.IsWounded() && RaidableBase.Has(npc.userID) ? true : (object)null;
+            if (entity == null || npc == null || npc.IsWounded() || !RaidableBase.Has(npc.userID))
+            {
+                return null;
+            }
+
+            if (entity.IsNpc || entity.limitNetworking)
+            {
+                return true;
+            }
+
+            if (!(entity is BasePlayer))
+            {
+                return null;
+            }
+
+            var player = entity as BasePlayer;
+
+            if (!player.IsHuman())
+            {
+                return true;
+            }
+
+            return null;
         }
 
-        private object OnNpcTarget(BaseEntity entity, global::HumanNPC npc)
+        private object OnNpcTarget(BaseEntity entity, BasePlayer npc)
         {
-            return entity != null && npc != null && entity.IsNpc && RaidableBase.Has(npc.userID) ? true : (object)null;
-        }
-#else
-        private object OnNpcTarget(NPCPlayerApex npc, NPCPlayerApex npc2)
-        {
-            return npc != null && !npc.IsWounded() && RaidableBase.Has(npc.userID) ? true : (object)null;
+            if (entity == null || npc == null || !RaidableBase.Has(npc.userID))
+            {
+                return null;
+            }
+
+            if (entity.IsNpc || entity is BasePlayer && !entity.ToPlayer().IsHuman())
+            {
+                return true;
+            }
+
+            return null;
         }
 
-        private object OnNpcTarget(BaseNpc entity, NPCPlayerApex npc)
+        private object OnNpcDestinationSet(NPCPlayer npc, Vector3 newDestination)
         {
-            return npc != null && RaidableBase.Has(npc.userID) ? true : (object)null;
-        }
-
-        private object OnNpcTarget(NPCPlayerApex npc, BaseNpc entity)
-        {
-            return npc != null && !npc.IsWounded() && RaidableBase.Has(npc.userID) ? true : (object)null;
-        }
-#endif
-
-        private object OnNpcDestinationSet(global::HumanNPC npc, Vector3 newDestination)
-        {
-            if (npc == null || !npc.NavAgent.isOnNavMesh)
+            if (npc == null || npc.NavAgent == null || !npc.NavAgent.enabled || !npc.NavAgent.isOnNavMesh)
             {
                 return true;
             }
 
             FinalDestination fd;
-            if (!Instance.Destinations.TryGetValue(npc.userID, out fd) || fd.NpcCanRoam(newDestination))
+            if (!Destinations.TryGetValue(npc.userID, out fd) || fd.NpcCanRoam(newDestination))
             {
                 return null;
             }
@@ -10167,7 +10446,7 @@ done:
             return true;
         }
 
-        private object OnNpcResume(global::HumanNPC npc)
+        private object OnNpcResume(NPCPlayer npc)
         {
             if (npc == null)
             {
@@ -10175,7 +10454,7 @@ done:
             }
 
             FinalDestination fd;
-            if (!Instance.Destinations.TryGetValue(npc.userID, out fd) || !fd.stationary)
+            if (!Instance.Destinations.TryGetValue(npc.userID, out fd) || !fd.isStationary)
             {
                 return null;
             }
@@ -10185,7 +10464,7 @@ done:
 
         private void OnActiveItemChanged(BasePlayer player, Item oldItem, Item newItem)
         {
-            if (player.IsNpc || !EventTerritory(player.transform.position))
+            if (!player.IsHuman() || !EventTerritory(player.transform.position))
             {
                 return;
             }
@@ -10195,9 +10474,9 @@ done:
 
         private void OnPlayerSleepEnded(BasePlayer player)
         {
-            NextTick(() =>
+            player.Invoke(() =>
             {
-                if (player == null || player.IsDestroyed || player.IsNpc)
+                if (player == null || player.IsDestroyed || !player.IsHuman())
                 {
                     return;
                 }
@@ -10226,7 +10505,7 @@ done:
 
                 var raid = RaidableBase.Get(player.transform.position, 5f); // 1.5.1 sleeping bag exploit fix
 
-                if (raid == null || raid.intruders.Contains(player))
+                if (raid == null)
                 {
                     return;
                 }
@@ -10236,7 +10515,7 @@ done:
                     raid.OnEnterRaid(player);
                 }
                 else RaidableBase.RemovePlayer(player, 5, raid.Location, raid.ProtectionRadius, raid.Type);
-            });
+            }, 0.015f);
         }
 
         private void OnPlayerDeath(BasePlayer player, HitInfo hitInfo)
@@ -10248,7 +10527,7 @@ done:
                 return;
             }
 
-            if (player.IsNpc)
+            if (!player.IsHuman())
             {
                 if (!RaidableBase.Has(player.userID))
                 {
@@ -10259,7 +10538,7 @@ done:
                 {
                     var attacker = hitInfo?.Initiator as BasePlayer;
 
-                    if (attacker.IsValid() && !attacker.IsNpc && raid.AddLooter(attacker))
+                    if (attacker.IsValid() && attacker.IsHuman() && raid.AddLooter(attacker))
                     {
                         raid.TrySetOwner(attacker, player, hitInfo);
                     }
@@ -10270,7 +10549,7 @@ done:
                     player.inventory.Strip();
                 }
 
-                raid.CheckDespawn();                
+                raid.CheckDespawn();
             }
             else
             {
@@ -10378,7 +10657,7 @@ done:
         {
             var raid = RaidableBase.Get(entity.transform.position);
 
-            if (raid == null || raid.killed)
+            if (raid == null || raid.IsDespawning)
             {
                 return;
             }
@@ -10439,7 +10718,7 @@ done:
 
             var raid = RaidableBase.Get(turret);
 
-            if (raid == null || !raid.IsOpened || raid.killed)
+            if (raid == null || !raid.IsOpened || raid.IsDespawning)
             {
                 return;
             }
@@ -10458,7 +10737,7 @@ done:
         {
             var raid = RaidableBase.Get(container);
 
-            if (raid == null || !raid.IsOpened || raid.killed)
+            if (raid == null || !raid.IsOpened || raid.IsDespawning)
             {
                 return;
             }
@@ -10652,7 +10931,7 @@ done:
                     }
 
                     var container = GameManager.server.CreateEntity(StringPool.Get(1519640547), corpse.transform.position, Quaternion.identity) as DroppedItemContainer;
-                    
+
                     container.maxItemCount = 42; // make the bag have enough space!!! (would only need 37, in theory)
                     container.lootPanelName = "generic_resizable";
                     container.playerName = corpse.playerName;
@@ -10693,7 +10972,7 @@ done:
                 }
 
                 Npcs.Remove(corpse.playerSteamID);
-                raid.DropItems(corpse.containers, corpse._name.EndsWith("murderer"));
+                raid.DropItems(corpse.containers, corpse.prefabID == Constants.SCARECROW_CORPSE);
 
                 if (raid.Options.RespawnRateMax > 0f)
                 {
@@ -10857,7 +11136,7 @@ done:
 
             return raid.AllowPVP && config.Settings.Management.BackpacksPVP || !raid.AllowPVP && config.Settings.Management.BackpacksPVE;
         }
-        
+
         private object CanEntityBeTargeted(BasePlayer player, BaseEntity entity)
         {
             if (player == null || entity == null || IsInvisible(player))
@@ -10933,7 +11212,7 @@ done:
         {
             var raid = RaidableBase.Get(victim, hitInfo);
 
-            if (raid == null || raid.killed) // || raid.IsUnderground(hitInfo.PointStart, hitInfo.PointEnd))
+            if (raid == null || raid.IsDespawning) // || raid.IsUnderground(hitInfo.PointStart, hitInfo.PointEnd))
             {
                 return null;
             }
@@ -10949,7 +11228,7 @@ done:
             {
                 if (weapon is AutoTurret)
                 {
-                    if (weapon.OwnerID.IsSteamId() && !SpawnsController.IsInBounds(weapon.WorldSpaceBounds(), raid.Location))
+                    if (weapon.OwnerID.IsSteamId() && !InRange(weapon.transform.position, raid.Location, raid.ProtectionRadius))
                     {
                         return false;
                     }
@@ -11009,21 +11288,21 @@ done:
                 return true;
             }
 
-            if (victim.IsNpc && !InRange(raid.Location, victim.transform.position, raid.ProtectionRadius))
+            if (!victim.IsHuman() && !InRange(raid.Location, victim.transform.position, raid.ProtectionRadius))
             {
                 return true;
             }
 
-            if (!attacker.IsNpc && CanBlockOutsideDamage(raid, attacker, raid.Options.BlockOutsideDamageToPlayersInside))
+            if (attacker.IsHuman() && CanBlockOutsideDamage(raid, attacker, raid.Options.BlockOutsideDamageToPlayersInside))
             {
                 return false;
             }
 
-            if (victim.IsNpc && !attacker.IsNpc)
+            if (!victim.IsHuman() && attacker.IsHuman())
             {
                 return HandleNpcVictim(raid, victim, attacker);
             }
-            else if (!victim.IsNpc && !attacker.IsNpc)
+            else if (victim.IsHuman() && attacker.IsHuman())
             {
                 return HandlePVPDamage(raid, victim, attacker);
             }
@@ -11055,7 +11334,7 @@ done:
                 return false;
             }
 
-            fd.Attack(attacker);
+            fd.SetTarget(attacker);
 
             return true;
         }
@@ -11104,7 +11383,7 @@ done:
 
             var raid = RaidableBase.Get(entity.transform.position);
 
-            if (raid == null || raid.killed) // || raid.IsUnderground(hitInfo.PointStart, hitInfo.PointEnd))
+            if (raid == null || raid.IsDespawning) // || raid.IsUnderground(hitInfo.PointStart, hitInfo.PointEnd))
             {
                 return null;
             }
@@ -11162,7 +11441,7 @@ done:
                 return null;
             }
 
-            if (attacker.IsNpc)
+            if (!attacker.IsHuman())
             {
                 return true;
             }
@@ -11720,7 +11999,7 @@ done:
                     break;
                 }
             }
-            
+
             var list = GetListedOptions(options);
 
             Locations[position] = type;
@@ -13353,13 +13632,13 @@ done:
                 return false;
             }
 
-            if (!user.IsAdmin && !IsPasteAvailable)
+            if (!IsPasteAvailable)
             {
                 user.Reply(BackboneController.Instance.GetMessage("PasteOnCooldown", user.Id));
                 return false;
             }
 
-            if (!user.IsAdmin && IsSpawnOnCooldown())
+            if (IsSpawnOnCooldown())
             {
                 user.Reply(BackboneController.Instance.GetMessage("SpawnOnCooldown", user.Id));
                 return false;
@@ -14502,12 +14781,12 @@ done:
 
         private bool CanBlockOutsideDamage(BasePlayer victim, HitInfo hitInfo)
         {
-            if (victim.IsNpc || !hitInfo.Initiator.IsValid() || !hitInfo.Initiator.IsNpc || !(hitInfo.Initiator is global::HumanNPC))
+            if (!victim.IsHuman() || !hitInfo.Initiator.IsValid() || !(hitInfo.Initiator is NPCPlayer))
             {
                 return false;
             }
 
-            var npc = hitInfo.Initiator as global::HumanNPC;
+            var npc = hitInfo.Initiator as NPCPlayer;
             var raid = RaidableBase.Get(npc.userID);
 
             if (raid == null || !CanBlockOutsideDamage(raid, npc, raid.Options.BlockOutsideDamageToPlayersInside))
@@ -14538,16 +14817,6 @@ done:
             }
 
             return (new Vector3(a.x, 0f, a.z) - new Vector3(b.x, 0f, b.z)).sqrMagnitude <= distance * distance;
-        }
-
-        private static bool InRange2(Vector3 a, Vector3 b, float distance, bool _2d = true)
-        {
-            if (_2d)
-            {
-                return Vector3Ex.SqrMagnitude2D(a - b) <= distance * distance;
-            }
-
-            return Vector3.SqrMagnitude(a - b) <= distance * distance;
         }
 
         private bool AssignTreasureHunters()
@@ -16617,6 +16886,9 @@ done:
             [JsonProperty(PropertyName = "Backpacks Drop At PVP Bases")]
             public bool BackpacksPVP { get; set; }
 
+            [JsonProperty(PropertyName = "Block Npc Kits Plugin")]
+            public bool BlockNpcKits { get; set; }
+
             [JsonProperty(PropertyName = "Block Helicopter Damage To Bases")]
             public bool BlockHelicopterDamage { get; set; }
 
@@ -16987,6 +17259,39 @@ done:
             public List<string> Weapon { get; set; } = new List<string> { "rifle.ak" };
         }
 
+        public class ScientistLootSettings
+        {
+            [JsonProperty(PropertyName = "Prefab ID List", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> IDs { get; set; } = new List<string> { "cargo", "turret_any", "ch47_gunner", "excavator", "full_any", "heavy", "junkpile_pistol", "oilrig", "patrol", "peacekeeper", "roam", "roamtethered" };
+
+            [JsonProperty(PropertyName = "Enabled")]
+            public bool Enabled { get; set; }
+
+            public uint GetRandom()
+            {
+                if (IDs.Count > 0)
+                {
+                    switch (IDs.GetRandom())
+                    {
+                        case "cargo": return 3623670799;
+                        case "turret_any": return 1639447304;
+                        case "ch47_gunner": return 1017671955;
+                        case "excavator": return 4293908444;
+                        case "full_any": return 1539172658;
+                        case "heavy": return 1536035819;
+                        case "junkpile_pistol": return 2066159302;
+                        case "oilrig": return 548379897;
+                        case "patrol": return 4272904018;
+                        case "peacekeeper": return 2390854225;
+                        case "roam": return 4199494415;
+                        case "roamtethered": return 529928930;
+                    }
+                }
+
+                return 1536035819;
+            }
+        }
+
         public class NpcSettings
         {
             [JsonProperty(PropertyName = "Spawn Inside Bases")]
@@ -17010,11 +17315,17 @@ done:
             [JsonProperty(PropertyName = "Scientist Items Dropped On Death", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<LootItem> ScientistDrops { get; set; } = new List<LootItem> { new LootItem { shortname = "ammo.rifle", amountMin = 1, amount = 30 } };
 
+            [JsonProperty(PropertyName = "Spawn Alternate Default Scientist Loot")]
+            public ScientistLootSettings AlternateScientistLoot { get; set; } = new ScientistLootSettings();
+
             [JsonProperty(PropertyName = "Random Names", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> RandomNames { get; set; } = new List<string>();
 
             [JsonProperty(PropertyName = "Enabled")]
             public bool Enabled { get; set; } = true;
+
+            [JsonProperty(PropertyName = "Give Npcs Wallhack Cheat")]
+            public bool Wallhack { get; set; } = true;
 
             [JsonProperty(PropertyName = "Aggression Range")]
             public float AggressionRange { get; set; } = 70f;
@@ -17434,6 +17745,9 @@ done:
 
             [JsonProperty(PropertyName = "Minimum Respawn Npc X Seconds After Death")]
             public float RespawnRateMin { get; set; }
+
+            [JsonProperty(PropertyName = "No Item Input For Boxes And TC")]
+            public bool NoItemInput { get; set; } = true;
 
             [JsonProperty(PropertyName = "Penalize Players On Death In PVE (ZLevels)")]
             public bool PenalizePVE { get; set; } = true;
@@ -19067,7 +19381,7 @@ done:
             {
                 var raid = RaidableBase.Get(player.transform.position);
 
-                if (raid == null || raid.killed)
+                if (raid == null || raid.IsDespawning)
                 {
                     return;
                 }
@@ -19600,17 +19914,14 @@ namespace Oxide.Plugins.RaidableBasesEx
             return result;
         }
 
-        public static void KillAll<T>(this ICollection<T> entities) where T : BaseEntity
+        public static bool IsHuman(this BasePlayer player)
         {
-            foreach (var entity in entities)
+            if (player.IsNpc || !player.userID.IsSteamId())
             {
-                if (entity?.IsDestroyed == false)
-                {
-                    entity.Kill();
-                }
+                return false;
             }
 
-            entities.Clear();
+            return true;
         }
     }
 }
