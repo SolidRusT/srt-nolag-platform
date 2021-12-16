@@ -259,7 +259,7 @@
       "Bypass": 10
     },
     "Outpost": {
-      "Command Enabled": true,
+      "Command Enabled": false,
       "Allow TPB": true,
       "Allow Cave": false,
       "Cooldown": 600,
@@ -301,7 +301,7 @@
       "Bypass": 10
     },
     "Bandit": {
-      "Command Enabled": true,
+      "Command Enabled": false,
       "Allow TPB": true,
       "Allow Cave": false,
       "Cooldown": 600,
