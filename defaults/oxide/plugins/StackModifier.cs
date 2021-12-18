@@ -177,11 +177,17 @@ using System.Collections;
  *
  * update 1.4.2
  * Re-fixed ignore admin check
+
+ * Updated for rust update
+ * Added firework.boomer.pattern
+ * Added xmas.advent
+ * Added xmas.double.door.garland
+ * Added attire.snowman.helmet
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.4.2")]
+    [Info("Stack Modifier", "Khan", "1.4.21")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
@@ -951,6 +957,10 @@ namespace Oxide.Plugins
             {"industrial.wall.light.green", 10},
             {"industrial.wall.light", 10},
             {"industrial.wall.light.red", 10},
+            {"firework.boomer.pattern", 20},
+            {"xmas.advent", 1},
+            {"xmas.double.door.garland", 10},
+            {"attire.snowman.helmet", 1},
         };
 
         private readonly HashSet<string> _exclude = new HashSet<string>

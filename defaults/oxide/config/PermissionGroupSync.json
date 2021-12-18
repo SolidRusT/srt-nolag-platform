@@ -1,6 +1,6 @@
 {
     "ServerId": "nine",
-    "PollIntervalSeconds": 300,
+    "PollIntervalSeconds": 120,
     "DatabaseConfiguration": {
         "Host": "data",
         "Port": 3306,
@@ -404,7 +404,9 @@
                 "respawnbradley.nolock",
                 "respawnbradley.nocosts",
                 "respawnbradley.nocooldown",
-                "zombiehorde.admin"
+                "zombiehorde.admin",
+                "itemcleaner.use",
+                "vehicledeployedlocks.masterkey"
             ],
             "AdditionalCommands": []
         }
