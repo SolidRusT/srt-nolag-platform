@@ -52,7 +52,7 @@ force | forcewipe | facepunch)
     #wipe_permissions
     start_rust
     update_map_api
-    #update_permissions
+    update_permissions
     ;;
 
 *)
@@ -68,6 +68,6 @@ force | forcewipe | facepunch)
     wipe_kits
     start_rust
     update_map_api
-    #update_permissions
+    update_permissions
     ;;
 esac

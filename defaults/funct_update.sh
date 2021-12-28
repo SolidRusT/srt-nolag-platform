@@ -240,8 +240,6 @@ DEFAULT_PERMS=(
   automaticauthorization.use
   backpacks.gui
   backpacks.use
-  bank.use
-  barrelpoints.default
   baserepair.use
   betterrootcombiners.use
   bgrade.all
@@ -249,7 +247,6 @@ DEFAULT_PERMS=(
   blueprintshare.share
   blueprintshare.toggle
   blueprintshare.use
-  bounty.use
   buildinggrades.down.all
   buildinggrades.up.all
   buildinggrades.use
@@ -271,10 +268,6 @@ DEFAULT_PERMS=(
   craftsman.leveling.ranged
   customgenetics.use
   dance.use
-  dronelights.searchlight.autodeploy
-  dronelights.searchlight.move
-  dronepilot.create
-  extendedrecycler.use
   farmtools.clone
   farmtools.clone.all
   farmtools.harvest.all
@@ -302,9 +295,7 @@ DEFAULT_PERMS=(
   nteleportation.tpr
   nteleportation.tptown
   nteleportation.wipehomes
-  optimalburn.use
   patrolboat.builder
-  payforelectricity.use
   pets.bear
   pets.boar
   pets.chicken
@@ -331,13 +322,9 @@ DEFAULT_PERMS=(
   simpletime.use
   skins.use
   sleep.allow
-  spawnmini.fmini
-  spawnmini.mini
-  spawnmini.nomini
   statistics.use
   trade.accept
   trade.use
-  treeplanter.use
   turretloadouts.autoauth
   turretloadouts.autotoggle
   turretloadouts.manage
