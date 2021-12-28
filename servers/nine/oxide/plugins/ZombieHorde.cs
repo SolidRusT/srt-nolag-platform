@@ -18,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("ZombieHorde", "k1lly0u", "0.4.4")]
+    [Info("ZombieHorde", "k1lly0u", "0.4.8")]
     class ZombieHorde : RustPlugin
     {
         [PluginReference] 
@@ -97,7 +97,7 @@ namespace Oxide.Plugins
 
         private void OnEntityKill(ZombieNPC zombieNPC)
         {
-            if (zombieNPC != null && zombieNPC.Horde != null)
+            if (zombieNPC != null && zombieNPC.Horde != null && !zombieNPC.Horde.isDespawning)
                 zombieNPC.Horde.OnMemberKilled(zombieNPC, null);
         }
 
@@ -457,6 +457,15 @@ namespace Oxide.Plugins
                 }
             }
 
+            foreach(ConfigData.MonumentSpawn.CustomSpawnPoints customSpawnPoint in Configuration.Monument.Custom)
+            {
+                if (customSpawnPoint.Enabled)
+                {
+                    Horde.SpawnOrder.Create(customSpawnPoint.Location, Configuration.Horde.InitialMemberCount, customSpawnPoint.HordeSize, customSpawnPoint.RoamDistance, customSpawnPoint.Profile);
+                    count++;
+                }
+            }
+
             if (count < Configuration.Horde.MaximumHordes)
                 CreateRandomHordes();
         }
@@ -597,7 +606,8 @@ namespace Oxide.Plugins
         private static ZombieNPC InstantiateEntity(Vector3 position)
         {
             ZombieNPC zombieNPC = UnityEngine.Object.Instantiate<ZombieNPC>(Reference, position, Quaternion.identity);
-            
+            zombieNPC.name = Reference.name;
+
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(zombieNPC.gameObject, Rust.Server.EntityScene);
             
             zombieNPC.gameObject.SetActive(true);
@@ -637,6 +647,9 @@ namespace Oxide.Plugins
                             continue;
 
                         if (IsNearWorldCollider(navmeshHit.position))
+                            continue;
+
+                        if (navmeshHit.position.y < TerrainMeta.WaterMap.GetHeight(navmeshHit.position))
                             continue;
 
                         position = navmeshHit.position;
@@ -711,6 +724,8 @@ namespace Oxide.Plugins
             private float nextGrowthTime;
             private float nextMergeTime;
             private float nextSleepTime;
+
+            internal bool isDespawning;
 
             private const float HORDE_UPDATE_RATE = 1f;
             private const float SEPERATION_CHECK_RATE = 10f;
@@ -850,9 +865,9 @@ namespace Oxide.Plugins
                         continue;
 
                     hordeMember.Brain.Senses.Memory.SetKnown(baseEntity, hordeMember, null);
-                }     
-                
-                if (Leader != null && !Leader.IsDestroyed && !Leader.HasTarget)
+                }
+
+                if (Leader != null && !Leader.IsDestroyed && !Leader.HasTarget)                                  
                     SetLeaderRoamTarget(baseEntity.transform.position);
             }
 
@@ -979,6 +994,8 @@ namespace Oxide.Plugins
 
             public void Destroy(bool permanent = false, bool killNpcs = true)
             {
+                isDespawning = true;
+
                 if (killNpcs)
                 {
                     for (int i = members.Count - 1; i >= 0; i--)
@@ -996,7 +1013,7 @@ namespace Oxide.Plugins
 
                 AllHordes.Remove(this);
 
-                if (!permanent && AllHordes.Count <= Configuration.Horde.MaximumHordes)                    
+                if (!permanent && AllHordes.Count <= Configuration.Horde.MaximumHordes)
                     Instance.timer.In(Configuration.Horde.RespawnTime, () => SpawnOrder.Create(this));
             }
 
@@ -1471,15 +1488,19 @@ namespace Oxide.Plugins
             public void SetRoamTargetOverride(Vector3 position)
             {
                 if (IsGroupLeader)
+                {                    
                     DestinationOverride = position;
-
-                ResetRoamState();
+                    ResetRoamState();                    
+                }
             }
 
             public void ResetRoamState() 
-            {                
+            {
                 if (Brain != null && CurrentState == AIState.Roam)
-                    Brain.SwitchToState(AIState.Idle, IDLE_STATE_CONTAINER);
+                {
+                    Brain.states[AIState.Roam].StateEnter();
+                    //Brain.SwitchToState(AIState.Idle, IDLE_STATE_CONTAINER);
+                }
             }
 
             public void OnInitialSpawn()
@@ -1535,6 +1556,8 @@ namespace Oxide.Plugins
             #endregion
 
             #region BaseEntity
+            public override float BoundsPadding() => (0.1f * Brain.Navigator.Agent.speed) + 0.1f;
+
             public override float StartHealth() => Loadout.Vitals.Health;
 
             public override float StartMaxHealth() => Loadout.Vitals.Health;
@@ -1557,7 +1580,7 @@ namespace Oxide.Plugins
                     Brain.Senses.Memory.SetKnown(sensation.Initiator, this, null);
                 }
                 
-                if (IsGroupLeader && CurrentState <= AIState.Roam)
+                if (IsGroupLeader && CurrentState <= AIState.Roam && !HasTarget)
                     Horde.SetLeaderRoamTarget(sensation.Position);
 
                 IsAlert = true;
@@ -1578,6 +1601,10 @@ namespace Oxide.Plugins
             public override string Categorize() => "Zombie";
 
             public override bool ShouldDropActiveItem() => false;
+            #endregion
+
+            #region BaseCombatEntity
+            public override bool IsHostile() => true;
             #endregion
 
             #region NPCPlayer
@@ -1716,20 +1743,23 @@ namespace Oxide.Plugins
                 if (info.InitiatorPlayer is ZombieNPC)
                     return;
 
-                if (isMounted)                
-                    info.damageTypes.ScaleAll(0.1f);
+                if (info.Initiator is ResourceEntity)
+                {
+                    info.damageTypes.ScaleAll(0);
+                    return;
+                }
 
-                if (Configuration.Member.HeadshotKills && info.isHeadshot)
+                if (Configuration.Member.HeadshotKills && info.isHeadshot)                
                     info.damageTypes.ScaleAll(1000);
-
+                
                 base.Hurt(info);
 
                 BaseEntity initiator = info.Initiator;
 
                 if (initiator != null && !initiator.EqualNetID(this)) 
                 {
-                    if ((initiator is BasePlayer && CanTargetBasePlayer(initiator as BasePlayer)) || (initiator is BaseNpc && CanTargetEntity(initiator)))                
-                        Horde.RegisterInterestInTarget(this, initiator);
+                    if ((initiator is BasePlayer && CanTargetBasePlayer(initiator as BasePlayer)) || (initiator is BaseNpc && CanTargetEntity(initiator)))                    
+                        Horde.RegisterInterestInTarget(this, initiator);                    
                 }
             }
 
@@ -1889,6 +1919,9 @@ namespace Oxide.Plugins
                 if (target == null)                
                     return;
 
+                if (Brain.Navigator.IsSwimming() && (!(CurrentWeapon is BaseMelee) || CurrentWeapon is Chainsaw))
+                    return;
+                                               
                 Vector3 forward = eyes.BodyForward();
                 Vector3 direction = target.CenterPoint() - eyes.position;
                 float dot = Vector3.Dot(forward, direction.normalized);
@@ -2066,6 +2099,9 @@ namespace Oxide.Plugins
 
                 if (!HasTarget)
                     return false;
+
+                if (Brain.Navigator.IsSwimming())
+                    return false;
                 
                 return true;
             }
@@ -2169,6 +2205,9 @@ namespace Oxide.Plugins
 
             public bool CanTargetEntity(BaseEntity baseEntity)
             {
+                if (!(baseEntity is BasePlayer) && !(baseEntity is BaseNpc))
+                    return false;
+
                 if (Configuration.Horde.RestrictLocalChaseDistance && Horde.IsLocalHorde)
                 {
                     if (Vector3.Distance(baseEntity.transform.position, Horde.InitialPosition) > Horde.MaximumRoamDistance * 1.5f)
@@ -2219,15 +2258,27 @@ namespace Oxide.Plugins
             public bool IsThreat(BaseEntity entity) => IsTarget(entity);
             #endregion
 
-            #region IThinker            
+            #region IThinker 
             public void TryThink()
-            {               
+            {
+                if (Configuration.Member.CanSwim)
+                {
+                    modelState.waterLevel = Mathf.InverseLerp(0f, 1.8f, TerrainMeta.WaterMap.GetDepth(Transform.position));
+                    SendNetworkUpdate(NetworkQueue.Update);
+
+                    if (CurrentWeapon is Chainsaw)
+                    {
+                        if (Brain.Navigator.IsSwimming())
+                            ServerStopChainsaw((CurrentWeapon as Chainsaw));
+                        else ServerStartChainsaw((CurrentWeapon as Chainsaw));
+                    }                   
+                }
+
                 base.ServerThink(Time.time - lastThinkTime);
+                lastThinkTime = Time.time;
 
                 if (Brain.ShouldServerThink())                
                     Brain.DoThink();
-                
-                lastThinkTime = Time.time;               
             }
             #endregion
 
@@ -2281,6 +2332,17 @@ namespace Oxide.Plugins
                 Invoke(ChainsawRefuel, 1f);
             }
 
+            private void ServerStopChainsaw(Chainsaw chainsaw)
+            {
+                if (!chainsaw.HasFlag(Flags.On))
+                    return;
+
+                chainsaw.SetEngineStatus(false);
+                chainsaw.SendNetworkUpdateImmediate(false);
+
+                CancelInvoke(ChainsawRefuel);
+            }
+
             private void ChainsawRefuel()
             {
                 if (!(CurrentWeapon is Chainsaw))
@@ -2312,6 +2374,36 @@ namespace Oxide.Plugins
                     //    Debug.Log($"Member #{zombieNPC.Horde.GetMemberIndex(zombieNPC)} stuck ({zombieNPC.Transform.position})");
                     zombieNPC.Brain.SwitchToState(AIState.Idle, IDLE_STATE_CONTAINER);
                 }
+            }
+
+            public override bool IsSwimming()
+            {
+                if (!Configuration.Member.CanSwim)
+                    return false;
+
+                return (BaseEntity as ZombieNPC).modelState.waterLevel > 0.75f;
+            }
+
+            protected override float GetTargetSpeed()
+            {
+                if (IsSwimming())
+                    return Speed;
+                return base.GetTargetSpeed();
+            }
+
+            protected override void UpdatePositionAndRotation(Vector3 moveToPosition, float delta)
+            {
+                if (IsSwimming())                
+                    moveToPosition.y = WaterSystem.GetHeight(moveToPosition)/* TerrainMeta.WaterMap.GetHeight(moveToPosition)*/ - 1.1f;                
+                base.UpdatePositionAndRotation(moveToPosition, delta);
+            }
+
+            protected override bool CanEnableNavMeshNavigation()
+            {
+                if (IsSwimming())
+                    return false;
+
+                return base.CanEnableNavMeshNavigation();
             }
 
             public override void ApplyFacingDirectionOverride()
@@ -2408,7 +2500,7 @@ namespace Oxide.Plugins
                 if (sleeping)                
                     return;
 
-                if (Configuration.Member.KillUnderWater)
+                if (!Configuration.Member.CanSwim && Configuration.Member.KillUnderWater)
                 {                    
                     if (zombieNPC != null && zombieNPC.WaterFactor() > 0.85f && !zombieNPC.IsDestroyed)
                     {
@@ -2682,16 +2774,17 @@ namespace Oxide.Plugins
                                 return StateStatus.Running;
                             }
 
-                            if (!brain.Navigator.SetDestination(baseEntity.transform.position, BaseNavigator.NavigationSpeed.Fast, 0.1f, 0f))
+                            if (!brain.Navigator.SetDestination(baseEntity.transform.position, BaseNavigator.NavigationSpeed.Fast, 0.1f, 0f))                            
                                 return StateStatus.Error;
-
-                            if (brain.Navigator.Agent.path.status > NavMeshPathStatus.PathComplete)
+                            
+                            if (brain.Navigator.Agent.path.status > NavMeshPathStatus.PathComplete ||
+                                (zombieNPC.CurrentWeapon is BaseMelee && Vector3.Distance(baseEntity.transform.position, brain.Navigator.Agent.destination) > zombieNPC.EngagementRange()))
                             {
-                                zombieNPC.TargetUnreachable = true;  
+                                zombieNPC.TargetUnreachable = true;
                                 unreachableLastUpdate = true;
                             }
                             else zombieNPC.TargetUnreachable = false;
-                            
+
                             nextPositionUpdateTime = Time.time + 0.1f;
 
                             if (!brain.Navigator.Moving)                          
@@ -2761,6 +2854,7 @@ namespace Oxide.Plugins
                 SendReply(player, "/horde tpto <number> - Teleport to the specified zombie horde");
                 SendReply(player, "/horde destroy <number> - Destroy the specified zombie horde");
                 SendReply(player, "/horde create <opt:distance> <opt:profile> - Create a new zombie horde on your position, optionally specifying distance they can roam and the horde profile you want to use");
+                SendReply(player, "/horde createspawn <opt:membercount> <opt:distance> <opt:profile> - Save your current position as a custom horde spawn point");
                 SendReply(player, "/horde createloadout - Copy your current inventory to a new zombie loadout");
                 SendReply(player, "/horde hordecount <number> - Set the maximum number of hordes allowed");
                 SendReply(player, "/horde membercount <number> - Set the maximum number of members allowed per horde");
@@ -2820,115 +2914,177 @@ namespace Oxide.Plugins
                         return;
                     }                
                 case "create":
-                    float distance = -1;
-                    if (args.Length >= 2)
                     {
-                        if (!float.TryParse(args[1], out distance))
+                        float distance = -1;
+                        if (args.Length >= 2)
                         {
-                            SendReply(player, "Invalid Syntax!");
-                            return;
+                            if (!float.TryParse(args[1], out distance))
+                            {
+                                SendReply(player, "Invalid Syntax!");
+                                return;
+                            }
                         }
+
+                        string profile = string.Empty;
+                        if (args.Length >= 3 && Configuration.HordeProfiles.ContainsKey(args[2]))
+                            profile = args[2];
+
+                        Vector3 position;
+                        if (NavmeshSpawnPoint.Find(player.transform.position, 5f, out position))
+                        {
+                            if (Horde.Create(new Horde.SpawnOrder(position, Configuration.Horde.InitialMemberCount, Configuration.Horde.MaximumMemberCount, distance, profile)))
+                            {
+                                if (distance > 0)
+                                    SendReply(player, $"You have created a zombie horde with a roam distance of {distance}");
+                                else SendReply(player, "You have created a zombie horde");
+
+                                return;
+                            }
+                        }
+
+                        SendReply(player, "Invalid spawn position, move to another more open position. Unable to spawn horde");
+                        return;
                     }
 
-                    string profile = string.Empty;
-                    if (args.Length >= 3 && Configuration.HordeProfiles.ContainsKey(args[2]))
-                        profile = args[2];
-
-                    Vector3 position;
-                    if (NavmeshSpawnPoint.Find(player.transform.position, 5f, out position))
+                case "createspawn":
                     {
-                        if (Horde.Create(new Horde.SpawnOrder(position, Configuration.Horde.InitialMemberCount, Configuration.Horde.MaximumMemberCount, distance, profile)))
+                        int members = Configuration.Horde.InitialMemberCount;
+                        if (args.Length >= 2)
                         {
-                            if (distance > 0)
-                                SendReply(player, $"You have created a zombie horde with a roam distance of {distance}");
-                            else SendReply(player, "You have created a zombie horde");
-
-                            return;
+                            if (!int.TryParse(args[1], out members))
+                            {
+                                SendReply(player, "Invalid Syntax!");
+                                return;
+                            }
                         }
-                    }
 
-                    SendReply(player, "Invalid spawn position, move to another more open position. Unable to spawn horde");
-                    return;
+                        float distance = -1;
+                        if (args.Length >= 3)
+                        {
+                            if (!float.TryParse(args[2], out distance))
+                            {
+                                SendReply(player, "Invalid Syntax!");
+                                return;
+                            }
+                        }
+
+                        string profile = string.Empty;
+                        if (args.Length >= 4 && Configuration.HordeProfiles.ContainsKey(args[3]))
+                            profile = args[3];
+
+                        Configuration.Monument.Custom.Add(new ConfigData.MonumentSpawn.CustomSpawnPoints
+                        {
+                            Enabled = true,
+                            HordeSize = members,
+                            Location = player.transform.position,
+                            Profile = profile,
+                            RoamDistance = distance
+                        });
+
+                        SaveConfig();
+
+                        Vector3 position;
+                        if (NavmeshSpawnPoint.Find(player.transform.position, 5f, out position))
+                        {
+                            if (Horde.Create(new Horde.SpawnOrder(position, Configuration.Horde.InitialMemberCount, Configuration.Horde.MaximumMemberCount, distance, profile)))
+                            {
+                                if (distance > 0)
+                                    SendReply(player, $"You have created a custom horde spawn point with a roam distance of {distance}");
+                                else SendReply(player, "You have created a custom horde spawn point");
+
+                                return;
+                            }
+                        }
+
+                        SendReply(player, "Invalid spawn position, move to another more open position");
+                        return;
+                    }
 
                 case "createloadout":
-                    ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout($"loadout-{Configuration.Member.Loadouts.Count}");
-                    
-                    for (int i = 0; i < player.inventory.containerBelt.itemList.Count; i++)
                     {
-                        Item item = player.inventory.containerBelt.itemList[i];
-                        if (item == null || item.amount == 0)
-                            continue;
+                        ConfigData.MemberOptions.Loadout loadout = new ConfigData.MemberOptions.Loadout($"loadout-{Configuration.Member.Loadouts.Count}");
 
-                        loadout.BeltItems.Add(new ConfigData.LootTable.InventoryItem()
+                        for (int i = 0; i < player.inventory.containerBelt.itemList.Count; i++)
                         {
-                            Amount = item.amount,
-                            Shortname = item.info.shortname,
-                            SkinID = item.skin
-                        });
-                    }
+                            Item item = player.inventory.containerBelt.itemList[i];
+                            if (item == null || item.amount == 0)
+                                continue;
 
-                    for (int i = 0; i < player.inventory.containerMain.itemList.Count; i++)
-                    {
-                        Item item = player.inventory.containerMain.itemList[i];
-                        if (item == null || item.amount == 0)
-                            continue;
+                            loadout.BeltItems.Add(new ConfigData.LootTable.InventoryItem()
+                            {
+                                Amount = item.amount,
+                                Shortname = item.info.shortname,
+                                SkinID = item.skin
+                            });
+                        }
 
-                        loadout.MainItems.Add(new ConfigData.LootTable.InventoryItem()
+                        for (int i = 0; i < player.inventory.containerMain.itemList.Count; i++)
                         {
-                            Amount = item.amount,
-                            Shortname = item.info.shortname,
-                            SkinID = item.skin
-                        });
-                    }
+                            Item item = player.inventory.containerMain.itemList[i];
+                            if (item == null || item.amount == 0)
+                                continue;
 
-                    for (int i = 0; i < player.inventory.containerWear.itemList.Count; i++)
-                    {
-                        Item item = player.inventory.containerWear.itemList[i];
-                        if (item == null || item.amount == 0)
-                            continue;
+                            loadout.MainItems.Add(new ConfigData.LootTable.InventoryItem()
+                            {
+                                Amount = item.amount,
+                                Shortname = item.info.shortname,
+                                SkinID = item.skin
+                            });
+                        }
 
-                        loadout.WearItems.Add(new ConfigData.LootTable.InventoryItem()
+                        for (int i = 0; i < player.inventory.containerWear.itemList.Count; i++)
                         {
-                            Amount = item.amount,
-                            Shortname = item.info.shortname,
-                            SkinID = item.skin
-                        });
+                            Item item = player.inventory.containerWear.itemList[i];
+                            if (item == null || item.amount == 0)
+                                continue;
+
+                            loadout.WearItems.Add(new ConfigData.LootTable.InventoryItem()
+                            {
+                                Amount = item.amount,
+                                Shortname = item.info.shortname,
+                                SkinID = item.skin
+                            });
+                        }
+
+                        Configuration.Member.Loadouts.Add(loadout);
+                        SaveConfig();
+
+                        SendReply(player, "Saved your current inventory as a zombie loadout");
+                        return;
                     }
-
-                    Configuration.Member.Loadouts.Add(loadout);
-                    SaveConfig();
-
-                    SendReply(player, "Saved your current inventory as a zombie loadout");
-                    return;
 
                 case "hordecount":
-                    int hordes;
-                    if (args.Length < 2 || !int.TryParse(args[1], out hordes))
                     {
-                        SendReply(player, "You must enter a number");
+                        int hordes;
+                        if (args.Length < 2 || !int.TryParse(args[1], out hordes))
+                        {
+                            SendReply(player, "You must enter a number");
+                            return;
+                        }
+
+                        Configuration.Horde.MaximumHordes = hordes;
+
+                        if (Horde.AllHordes.Count < hordes)
+                            CreateRandomHordes();
+                        SaveConfig();
+                        SendReply(player, $"Set maximum hordes to {hordes}");
                         return;
                     }
-
-                    Configuration.Horde.MaximumHordes = hordes;
-
-                    if (Horde.AllHordes.Count < hordes)
-                        CreateRandomHordes();
-                    SaveConfig();
-                    SendReply(player, $"Set maximum hordes to {hordes}");
-                    return;
 
                 case "membercount":
-                    int members;
-                    if (args.Length < 2 || !int.TryParse(args[1], out members))
                     {
-                        SendReply(player, "You must enter a number");
+                        int members;
+                        if (args.Length < 2 || !int.TryParse(args[1], out members))
+                        {
+                            SendReply(player, "You must enter a number");
+                            return;
+                        }
+
+                        Configuration.Horde.MaximumMemberCount = members;
+                        SaveConfig();
+                        SendReply(player, $"Set maximum horde members to {members}");
                         return;
                     }
-
-                    Configuration.Horde.MaximumMemberCount = members;
-                    SaveConfig();
-                    SendReply(player, $"Set maximum horde members to {members}");
-                    return;
                 default:
                     SendReply(player, "Invalid Syntax!");
                     break;
@@ -3254,6 +3410,9 @@ namespace Oxide.Plugins
                 [JsonProperty(PropertyName = "Kill NPCs that are under water")]
                 public bool KillUnderWater { get; set; }
 
+                [JsonProperty(PropertyName = "Can zombies swim across water")]
+                public bool CanSwim { get; set; }
+
                 [JsonProperty(PropertyName = "Enable NPC dormant system. This will put NPCs to sleep when no players are nearby to improve performance")]
                 public bool EnableDormantSystem { get; set; }
 
@@ -3343,6 +3502,14 @@ namespace Oxide.Plugins
                             baseNavigator.TurnSpeed = TurnSpeed;
 
                             baseNavigator.topologyPreference = (TerrainTopology.Enum)1673010749;
+
+                            if (Configuration.Member.CanSwim)
+                            {
+                                baseNavigator.MaxWaterDepth = 30f;
+                                baseNavigator.SwimmingSpeedMultiplier = 0.4f;
+
+                                baseNavigator.topologyPreference |= TerrainTopology.Enum.Ocean | TerrainTopology.Enum.Lake | TerrainTopology.Enum.River;
+                            }                            
                         }
                     }
 
@@ -3467,7 +3634,10 @@ namespace Oxide.Plugins
                                         if (!_effectiveRangeDefaults.ContainsKey(item.info.shortname))
                                             _effectiveRangeDefaults[item.info.shortname] = (heldEntity as BaseProjectile).effectiveRange;
 
-                                        (heldEntity as BaseProjectile).effectiveRange *= 1.25f;
+                                        float effectiveRange;
+                                        if (ProjectileEffectiveRange.TryGetValue(item.info.shortname, out effectiveRange))
+                                            (heldEntity as BaseProjectile).effectiveRange = effectiveRange;
+                                        else (heldEntity as BaseProjectile).effectiveRange *= 1.25f;
                                     }
 
                                     if (heldEntity is BaseMelee)
@@ -3494,6 +3664,40 @@ namespace Oxide.Plugins
                                 item.Remove(0f);
                         }
                     }
+
+                    private static readonly Hash<string, float> ProjectileEffectiveRange = new Hash<string, float>
+                    {
+                        ["bow.compound"] = 20,
+                        ["bow.hunting"] = 20,
+                        ["crossbow"] = 20,
+                        ["flamethrower"] = 8,                        
+                        ["gun.water"] = 10,
+                        ["lmg.m249"] = 150,
+                        ["multiplegrenadelauncher"] = 20,
+                        ["pistol.eoka"] = 5,
+                        ["pistol.m92"] = 15,
+                        ["pistol.nailgun"] = 10,
+                        ["pistol.python"] = 15,
+                        ["pistol.revolver"] = 15,
+                        ["pistol.semiauto"] = 15,
+                        ["pistol.water"] = 10,
+                        ["rifle.ak"] = 30,
+                        ["rifle.bolt"] = 80,
+                        ["rifle.l96"] = 100,
+                        ["rifle.lr300"] = 40,
+                        ["rifle.m39"] = 30,
+                        ["rifle.semiauto"] = 20,
+                        ["rocket.launcher"] = 20,
+                        ["shotgun.double"] = 15,
+                        ["shotgun.pump"] = 15,
+                        ["shotgun.spas12"] = 15,
+                        ["shotgun.waterpipe"] = 10,
+                        ["smg.2"] = 20,
+                        ["smg.mp5"] = 20,
+                        ["smg.thompson"] = 20,
+                        ["snowballgun"] = 10,
+                        ["speargun"] = 10,
+                    };
 
                     public static bool GetDefaultEffectiveRange(string shortname, out float value) => _effectiveRangeDefaults.TryGetValue(shortname, out value);
                 }
@@ -3567,6 +3771,12 @@ namespace Oxide.Plugins
                         [JsonProperty(PropertyName = "Probability (0.0 - 1.0)")]
                         public float Probability { get; set; }
 
+                        [JsonProperty(PropertyName = "Minimum condition (0.0 - 1.0)")]
+                        public float MinCondition { get; set; } = 1f;
+
+                        [JsonProperty(PropertyName = "Maximum condition (0.0 - 1.0)")]
+                        public float MaxCondition { get; set; } = 1f;
+
                         [JsonProperty(PropertyName = "Spawn with")]
                         public LootDefinition Required { get; set; }
 
@@ -3596,7 +3806,7 @@ namespace Oxide.Plugins
                         {
                             Item item;
 
-                            if (!IsBlueprint)
+                            if (!IsBlueprint)                            
                                 item = ItemManager.CreateByName(Shortname, GetAmount(), SkinID);
                             else
                             {
@@ -3606,6 +3816,9 @@ namespace Oxide.Plugins
 
                             if (item != null)
                             {
+                                if (!IsBlueprint)                                
+                                    item.conditionNormalized = UnityEngine.Random.Range(Mathf.Clamp01(MinCondition), Mathf.Clamp01(MaxCondition));
+                                
                                 item.OnVirginSpawn();
                                 if (!item.MoveToContainer(container, -1, true))
                                     item.Remove(0f);
@@ -3639,40 +3852,42 @@ namespace Oxide.Plugins
                 public MonumentSettings Warehouse { get; set; }
                 public MonumentSettings WaterTreatment { get; set; }
 
+                public List<CustomSpawnPoints> Custom { get; set; }
+
                 public class MonumentSettings : SpawnSettings
                 {
                     [JsonProperty(PropertyName = "Enable spawns at this monument")]
                     public bool Enabled { get; set; }
                 }
-            }
 
-            public class CustomSpawnPoints : SpawnSettings
-            {
-                public SerializedVector Location { get; set; }
-
-                public class SerializedVector
+                public class CustomSpawnPoints : MonumentSettings
                 {
-                    public float X { get; set; }
-                    public float Y { get; set; }
-                    public float Z { get; set; }
+                    public SerializedVector Location { get; set; }
 
-                    public SerializedVector() { }
-
-                    public SerializedVector(float x, float y, float z)
+                    public class SerializedVector
                     {
-                        this.X = x;
-                        this.Y = y;
-                        this.Z = z;
-                    }
+                        public float X { get; set; }
+                        public float Y { get; set; }
+                        public float Z { get; set; }
 
-                    public static implicit operator Vector3(SerializedVector v)
-                    {
-                        return new Vector3(v.X, v.Y, v.Z);
-                    }
+                        public SerializedVector() { }
 
-                    public static implicit operator SerializedVector(Vector3 v)
-                    {
-                        return new SerializedVector(v.x, v.y, v.z);
+                        public SerializedVector(float x, float y, float z)
+                        {
+                            this.X = x;
+                            this.Y = y;
+                            this.Z = z;
+                        }
+
+                        public static implicit operator Vector3(SerializedVector v)
+                        {
+                            return new Vector3(v.X, v.Y, v.Z);
+                        }
+
+                        public static implicit operator SerializedVector(Vector3 v)
+                        {
+                            return new SerializedVector(v.x, v.y, v.z);
+                        }
                     }
                 }
             }
@@ -3889,6 +4104,35 @@ namespace Oxide.Plugins
                         HordeSize = 10,
                         Profile = ""
                     },
+                    Custom = new List<ConfigData.MonumentSpawn.CustomSpawnPoints>()
+                    {
+                        new ConfigData.MonumentSpawn.CustomSpawnPoints
+                        {
+                            Enabled = false,
+                            HordeSize = 3,
+                            Location = new ConfigData.MonumentSpawn.CustomSpawnPoints.SerializedVector
+                            {
+                                X = 0f,
+                                Y = 0f,
+                                Z = 0f
+                            },
+                            Profile = string.Empty,
+                            RoamDistance = -1
+                        },
+                        new ConfigData.MonumentSpawn.CustomSpawnPoints
+                        {
+                            Enabled = false,
+                            HordeSize = 3,
+                            Location = new ConfigData.MonumentSpawn.CustomSpawnPoints.SerializedVector
+                            {
+                                X = 0f,
+                                Y = 0f,
+                                Z = 0f
+                            },
+                            Profile = string.Empty,
+                            RoamDistance = -1
+                        }
+                    }
                 },
                 Version = Version
             };
@@ -4089,6 +4333,15 @@ namespace Oxide.Plugins
 
             if (Configuration.Version < new Core.VersionNumber(0, 4, 2))
                 Configuration.Member.TargetedByAnimals = true;
+
+            if (Configuration.Version < new Core.VersionNumber(0, 4, 8))
+            {
+                if (Configuration.Monument.Custom == null)
+                    Configuration.Monument.Custom = baseConfig.Monument.Custom;
+
+                Configuration.Member.CanSwim = true;
+                Configuration.Member.KillUnderWater = false;
+            }
             
             Configuration.Version = Version;
             PrintWarning("Config update completed!");

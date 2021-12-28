@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Fuel Gauge", "Oryx", "0.5.5")]
+    [Info("Fuel Gauge", "Oryx", "0.5.6")]
     [Description("HUD for amount of fuel when riding a vehicle")]
     public class FuelGauge : RustPlugin
     {
@@ -37,17 +37,17 @@ namespace Oxide.Plugins
             {
                 if (entity.GetParentEntity() is MiniCopter) // Includes ScrapTransportHelicopter
                 {
-                    return (entity.GetParentEntity() as MiniCopter).fuelSystem?.GetFuelAmount() ?? 0;
+                    return (entity.GetParentEntity() as MiniCopter).GetFuelSystem()?.GetFuelAmount() ?? 0;
                 }
 
                 if (entity.GetParentEntity() is ModularCar)
                 {
-                    return (entity.GetParentEntity() as ModularCar).fuelSystem?.GetFuelAmount() ?? 0;
+                    return (entity.GetParentEntity() as ModularCar).GetFuelSystem()?.GetFuelAmount() ?? 0;
                 }
 
                 if (entity.GetParentEntity() is MotorRowboat) // Includes RHIB
                 {
-                    return (entity.GetParentEntity() as MotorRowboat).fuelSystem?.GetFuelAmount() ?? 0;
+                    return (entity.GetParentEntity() as MotorRowboat).GetFuelSystem()?.GetFuelAmount() ?? 0;
                 }
 
                 return 0;

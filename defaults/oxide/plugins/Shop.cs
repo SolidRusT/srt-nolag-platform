@@ -17,12 +17,13 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.23")]
+    [Info("Shop", "Mevent", "1.0.26")]
     public class Shop : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, ItemCostCalculator, HumanNPC, Notify, NoEscape;
+        [PluginReference]
+        private Plugin ImageLibrary, ItemCostCalculator, HumanNPC, Notify, UINotify, NoEscape, Duel, Duelist;
 
         private static Shop _instance;
 
@@ -150,14 +151,14 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Work with Notify?")]
             public bool UseNotify = true;
 
-            [JsonProperty(PropertyName = "Use Spectating mode when editing kits?")]
-            public bool UseSpectating = true;
-
             [JsonProperty(PropertyName = "Can admins edit? (by flag)")]
             public bool FlagAdmin = true;
 
             [JsonProperty(PropertyName = "Block (NoEscape)")]
             public bool BlockNoEscape;
+
+            [JsonProperty(PropertyName = "Blocking the opening in duels?")]
+            public bool UseDuels;
 
             [JsonProperty(PropertyName = "Delay between loading images")]
             public float ImagesDelay = 1f;
@@ -231,6 +232,7 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Interface")]
             public UserInterface UI = new UserInterface
             {
+                DisplayType = "Overlay",
                 Width = 770,
                 Height = 500,
                 CategoriesOnString = 9,
@@ -246,11 +248,31 @@ namespace Oxide.Plugins
                 RoundDigits = 5
             };
 
+            [JsonProperty(PropertyName = "Blocked skins for sell",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<string, List<ulong>> BlockedSkins = new Dictionary<string, List<ulong>>
+            {
+                ["short name"] = new List<ulong>
+                {
+                    52,
+                    25
+                },
+
+                ["short name 2"] = new List<ulong>
+                {
+                    52,
+                    25
+                }
+            };
+
             public VersionNumber Version;
         }
 
         private class UserInterface
         {
+            [JsonProperty(PropertyName = "Display type (Overlay/Hud)")]
+            public string DisplayType;
+
             [JsonProperty(PropertyName = "Height")]
             public float Height;
 
@@ -315,7 +337,8 @@ namespace Oxide.Plugins
         {
             Item,
             Command,
-            Plugin
+            Plugin,
+            Kit
         }
 
         private class ShopItem
@@ -334,6 +357,8 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Command (%steamid%)")]
             public string Command;
+
+            [JsonProperty(PropertyName = "Kit")] public string Kit;
 
             [JsonProperty(PropertyName = "Plugin")]
             public PluginItem Plugin;
@@ -498,7 +523,18 @@ namespace Oxide.Plugins
                     case ItemType.Plugin:
                         Plugin.Get(player, count);
                         break;
+                    case ItemType.Kit:
+                        ToKit(player, count);
+                        break;
                 }
+            }
+
+            private void ToKit(BasePlayer player, int count)
+            {
+                if (string.IsNullOrEmpty(Kit)) return;
+
+                for (var i = 0; i < count; i++)
+                    Interface.Oxide.CallHook("GiveKit", player, Kit);
             }
 
             private void ToItem(BasePlayer player, int count)
@@ -766,6 +802,8 @@ namespace Oxide.Plugins
         {
             PrintWarning("Config update detected! Updating config values...");
 
+            var baseConfig = new Configuration();
+
             if (_config.Version == default(VersionNumber) && _config.Version < new VersionNumber(1, 0, 21))
             {
                 _data = Interface.Oxide.DataFileSystem.ReadObject<PluginData>(Name);
@@ -790,6 +828,8 @@ namespace Oxide.Plugins
                         };
                     });
                 });
+
+            if (_config.Version < new VersionNumber(1, 0, 24)) _config.UI.DisplayType = baseConfig.UI.DisplayType;
 
             _config.Version = Version;
             PrintWarning("Config update completed!");
@@ -873,8 +913,6 @@ namespace Oxide.Plugins
             if (!_config.LoginImages)
                 Unsubscribe(nameof(OnPlayerConnected));
 
-            Unsubscribe(nameof(CanSpectateTarget));
-
             _firstColor = HexToCuiColor(_config.FirstColor);
             _secondColor = HexToCuiColor(_config.SecondColor);
             _thirdColor = HexToCuiColor(_config.ThirdColor);
@@ -955,16 +993,7 @@ namespace Oxide.Plugins
 
             _itemsToUpdate.Remove(player);
 
-            if (_itemEditing.ContainsKey(player))
-            {
-                if (_config.UseSpectating)
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-
-                _itemEditing.Remove(player);
-
-                if (_itemEditing.Count == 0)
-                    Unsubscribe(nameof(CanSpectateTarget));
-            }
+            if (_itemEditing.ContainsKey(player)) _itemEditing.Remove(player);
 
             if (_coroutines.ContainsKey(player))
             {
@@ -972,11 +1001,6 @@ namespace Oxide.Plugins
                 if (coroutine != null)
                     ServerMgr.Instance.StopCoroutine(coroutine);
             }
-        }
-
-        private object CanSpectateTarget(BasePlayer player, string filter)
-        {
-            return player != null && _itemEditing.ContainsKey(player) ? (object)true : null;
         }
 
         private void OnUseNPC(BasePlayer npc, BasePlayer player)
@@ -999,6 +1023,12 @@ namespace Oxide.Plugins
         {
             var player = cov?.Object as BasePlayer;
             if (player == null) return;
+
+            if (_config.UseDuels && InDuel(player))
+            {
+                SendNotify(player, NoUseDuel, 1);
+                return;
+            }
 
             MainUi(player, first: true);
         }
@@ -1266,6 +1296,14 @@ namespace Oxide.Plugins
                         return;
                     }
 
+                    List<ulong> blockedSkins;
+                    if (_config.BlockedSkins.TryGetValue(item.ShortName, out blockedSkins))
+                        if (blockedSkins.Contains(item.Skin))
+                        {
+                            ErrorUi(player, Msg(player, SkinBlocked));
+                            return;
+                        }
+
                     var totalAmount = item.Amount * amount;
                     var playerItems = player.inventory.AllItems();
 
@@ -1311,9 +1349,6 @@ namespace Oxide.Plugins
                         !int.TryParse(arg.Args[3], out id)) return;
 
                     _itemEditing.Remove(player);
-
-                    if (_itemEditing.Count == 0)
-                        Unsubscribe(nameof(CanSpectateTarget));
 
                     EditUi(player, category, page, id, true);
                     break;
@@ -1397,13 +1432,7 @@ namespace Oxide.Plugins
 
                 case "closeediting":
                 {
-                    if (_config.UseSpectating)
-                        player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-
                     _itemEditing.Remove(player);
-
-                    if (_itemEditing.Count == 0)
-                        Unsubscribe(nameof(CanSpectateTarget));
                     break;
                 }
 
@@ -1447,13 +1476,7 @@ namespace Oxide.Plugins
                             ImageLibrary.Call("AddImage", newItem.Image, newItem.Image);
                     }
 
-                    if (_config.UseSpectating)
-                        player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-
                     _itemEditing.Remove(player);
-
-                    if (_itemEditing.Count == 0)
-                        Unsubscribe(nameof(CanSpectateTarget));
 
                     SaveConfig();
 
@@ -1480,13 +1503,7 @@ namespace Oxide.Plugins
 
                     _config.Shop.ForEach(x => x.Items.Remove(shopItem));
 
-                    if (_config.UseSpectating)
-                        player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-
                     _itemEditing.Remove(player);
-
-                    if (_itemEditing.Count == 0)
-                        Unsubscribe(nameof(CanSpectateTarget));
 
                     SaveConfig();
 
@@ -1595,7 +1612,7 @@ namespace Oxide.Plugins
                         Material = "assets/content/ui/uibackgroundblur.mat"
                     },
                     CursorEnabled = true
-                }, "Overlay", Layer);
+                }, _config.UI.DisplayType, Layer);
 
                 container.Add(new CuiButton
                 {
@@ -2497,7 +2514,7 @@ namespace Oxide.Plugins
                         RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                         Image = { Color = HexToCuiColor(_config.ThirdColor, 99) }
                     },
-                    "Overlay", ModalLayer
+                    _config.UI.DisplayType, ModalLayer
                 },
                 {
                     new CuiLabel
@@ -2587,7 +2604,7 @@ namespace Oxide.Plugins
                         Image = { Color = HexToCuiColor(_config.ThirdColor, 98) },
                         CursorEnabled = true
                     },
-                    "Overlay", ModalLayer
+                    _config.UI.DisplayType, ModalLayer
                 },
                 {
                     new CuiPanel
@@ -2673,7 +2690,7 @@ namespace Oxide.Plugins
                 RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                 Image = { Color = HexToCuiColor(_config.ThirdColor, 98) },
                 CursorEnabled = true
-            }, "Overlay", ModalLayer);
+            }, _config.UI.DisplayType, ModalLayer);
 
             container.Add(new CuiButton
             {
@@ -2911,11 +2928,6 @@ namespace Oxide.Plugins
                         ["Plugin_Name"] = string.Empty,
                         ["Plugin_Amount"] = 1
                     };
-
-                if (_config.UseSpectating)
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
-
-                Subscribe(nameof(CanSpectateTarget));
             }
 
             #endregion
@@ -2933,7 +2945,7 @@ namespace Oxide.Plugins
                     RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
                     Image = { Color = HexToCuiColor(_config.FirstColor, 95) },
                     CursorEnabled = true
-                }, "Overlay", EditingLayer);
+                }, _config.UI.DisplayType, EditingLayer);
             }
 
             #endregion
@@ -3440,7 +3452,7 @@ namespace Oxide.Plugins
                     Close = ModalLayer,
                     Color = HexToCuiColor(_config.FirstColor, 80)
                 }
-            }, "Overlay", ModalLayer);
+            }, _config.UI.DisplayType, ModalLayer);
 
             #endregion
 
@@ -4168,6 +4180,12 @@ namespace Oxide.Plugins
 
         #region Utils
 
+        private bool InDuel(BasePlayer player)
+        {
+            return Convert.ToBoolean(Duel?.Call("IsPlayerOnActiveDuel", player)) ||
+                   Convert.ToBoolean(Duelist?.Call("inEvent", player));
+        }
+
         private bool IsAdmin(BasePlayer player)
         {
             return player != null && (player.IsAdmin && _config.FlagAdmin ||
@@ -4749,6 +4767,8 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            SkinBlocked = "SkinBlocked",
+            NoUseDuel = "NoUseDuel",
             SellLimitReached = "SellLimitReached",
             BuyLimitReached = "BuyLimitReached",
             InfoTitle = "InfoTitle",
@@ -4867,7 +4887,9 @@ namespace Oxide.Plugins
                 [SellRaidBlocked] = "You can't sell while blocked!",
                 [InfoTitle] = "i",
                 [BuyLimitReached] = "You cannot buy the '{0}'. You have reached the limit",
-                [SellLimitReached] = "You cannot sell the '{0}'. You have reached the limit"
+                [SellLimitReached] = "You cannot sell the '{0}'. You have reached the limit",
+                [NoUseDuel] = "You are in a duel. The use of the shop is blocked.",
+                [SkinBlocked] = "Skin is blocked for sale"
             }, this);
         }
 

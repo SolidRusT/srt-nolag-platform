@@ -1,13 +1,11 @@
-﻿using Newtonsoft.Json;
-//using Oxide.Core;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Scientist Names", "Ultra", "1.2.1")]
+    [Info("Scientist Names", "Ultra", "1.2.2")]
     [Description("Gives real names to scientists, bandits, murderers, tunnel dwellers and scarecrows (instead of numbers)")]
 
     class ScientistNames : RustPlugin
@@ -30,7 +28,7 @@ namespace Oxide.Plugins
             rnd = new System.Random();
             renameCount = 0;
 
-            foreach (BaseNetworkable baseNetworkable in BaseNetworkable.serverEntities.Where(w => w is BasePlayer && (w is NPCPlayer || w is HTNPlayer || w is NPCMurderer)).Cast<BasePlayer>())
+            foreach (BaseNetworkable baseNetworkable in BaseNetworkable.serverEntities.Where(w => w is BasePlayer && (w is NPCPlayer)).Cast<BasePlayer>())
             {
                 if (!baseNetworkable.ShortPrefabName.Contains("scientist") && !baseNetworkable.ShortPrefabName.Contains("tunneldweller") && !baseNetworkable.ShortPrefabName.Contains("bandit") && !baseNetworkable.ShortPrefabName.Contains("murderer") && !baseNetworkable.ShortPrefabName.Contains("scarecrow")) continue;
 
@@ -52,7 +50,7 @@ namespace Oxide.Plugins
 
         void OnEntitySpawned(BaseEntity entity)
         {
-            if (initialized && entity is BasePlayer && (entity is NPCPlayer || entity is HTNPlayer || entity is NPCMurderer))
+            if (initialized && entity is BasePlayer && entity is NPCPlayer)
             {
                 BasePlayer basePlayer = (BasePlayer)entity;
                 string oldName = basePlayer.displayName;

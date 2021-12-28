@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Rust.Ai;
 using Oxide.Core;
 
 namespace Oxide.Plugins
 {
-    [Info("Compound Options", "FastBurst", "1.1.9")]
+    [Info("Compound Options", "FastBurst", "1.2.1")]
     [Description("Compound monument options")]
     class CompoundOptions : RustPlugin
     {
@@ -84,33 +84,22 @@ namespace Oxide.Plugins
         #endregion
 
         #region Implementation
-        private void KillNPCPlayer(BaseNetworkable entity)
+        private void KillNPCPlayer(NPCPlayer npcPlayer)
         {
-            if (entity == null || entity.IsDestroyed || !(entity is NPCPlayer)) return;
+            var npcSpawner = npcPlayer.gameObject.GetComponent<ScientistSpawner>();
+            if (npcSpawner == null) return;
 
-            var npcApex = entity.gameObject.GetComponent<NPCPlayerApex>();
-            if (npcApex == null) return;
-
-            var npcLocationType = npcApex?.AiContext?.AiLocationManager?.LocationType;
-            if (npcLocationType == null) return;
-
-            if (npcLocationType == AiLocationSpawner.SquadSpawnerLocation.Compound && disallowCompoundNPC)
+            if (npcSpawner.IsMilitaryTunnelLab && disallowCompoundNPC || npcSpawner.IsBandit && disallowBanditNPC)
             {
-                entity.Kill(BaseNetworkable.DestroyMode.Gib);
-            }
-            if (npcLocationType == AiLocationSpawner.SquadSpawnerLocation.BanditTown && disallowBanditNPC)
-            {
-                entity.Kill(BaseNetworkable.DestroyMode.Gib);
+                if (!npcPlayer.IsDestroyed) npcPlayer.Kill(BaseNetworkable.DestroyMode.Gib);
             }
         }
 
-        private void ProcessNPCTurret(BaseNetworkable entity)
+        private void ProcessNPCTurret(NPCAutoTurret npcAutoTurret)
         {
-            if (entity == null || entity.IsDestroyed || !(entity is NPCAutoTurret)) return;
-            var npcTurret = entity as NPCAutoTurret;
-            npcTurret.SetFlag(NPCAutoTurret.Flags.On, !disableCompoundTurrets, !disableCompoundTurrets);
-            npcTurret.UpdateNetworkGroup();
-            npcTurret.SendNetworkUpdateImmediate();
+            npcAutoTurret.SetFlag(NPCAutoTurret.Flags.On, !disableCompoundTurrets, !disableCompoundTurrets);
+            npcAutoTurret.UpdateNetworkGroup();
+            npcAutoTurret.SendNetworkUpdateImmediate();
         }
 
         private void AddVendingOrders(NPCVendingMachine vending, bool def = false)
@@ -297,11 +286,11 @@ namespace Oxide.Plugins
                 }
                 else if (entity is NPCPlayer)
                 {
-                    KillNPCPlayer(entity);
+                    KillNPCPlayer(entity as NPCPlayer);
                 }
                 else if (entity is NPCAutoTurret)
                 {
-                    ProcessNPCTurret(entity);
+                    ProcessNPCTurret(entity as NPCAutoTurret);
                 }
             }
 
@@ -311,6 +300,7 @@ namespace Oxide.Plugins
         private void OnEntityEnter(TriggerBase trigger, BaseEntity entity)
         {
             if (!(trigger is TriggerSafeZone) && !(entity is BasePlayer)) return;
+
             var safeZone = trigger as TriggerSafeZone;
             if (safeZone == null) return;
 
@@ -324,13 +314,13 @@ namespace Oxide.Plugins
                 UpdateVending(entity as NPCVendingMachine);
                 SaveData();
             }
-            else if (entity is NPCPlayerApex)
+            else if (entity is NPCPlayer)
             {
-                KillNPCPlayer(entity);
+                KillNPCPlayer(entity as NPCPlayer);
             }
             else if (entity is NPCAutoTurret)
             {
-                ProcessNPCTurret(entity);
+                ProcessNPCTurret(entity as NPCAutoTurret);
             }
         }
         #endregion

@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.4.0")]
+    [Info("Crafts", "Mevent", "2.5.0")]
     public class Crafts : RustPlugin
     {
         #region Fields
@@ -194,7 +194,7 @@ namespace Oxide.Plugins
                             CmdToGive = "givescrapheli",
                             Permission = "crafts.all",
                             DisplayName = "Transport Helicopter",
-                            ShortName = "lantern",
+                            ShortName = "electric.flasherlight",
                             Amount = 1,
                             SkinID = 2080154394,
                             Type = CraftType.Vehicle,
@@ -2054,9 +2054,14 @@ namespace Oxide.Plugins
 
                 _instance?._recyclers.Add(this);
 
-                if (_recycler.OwnerID == 0) return;
-                _recycler.baseProtection = ScriptableObject.CreateInstance<ProtectionProperties>();
-                _recycler.baseProtection.amounts = _config.Recycler.Amounts;
+                if (_recycler.OwnerID != 0)
+                {
+                    _recycler.baseProtection = ScriptableObject.CreateInstance<ProtectionProperties>();
+                    _recycler.baseProtection.amounts = _config.Recycler.Amounts;
+                }
+
+                _recycler.gameObject.AddComponent<GroundWatch>();
+                _recycler.gameObject.AddComponent<DestroyOnGroundMissing>();
             }
 
             public void DDraw()

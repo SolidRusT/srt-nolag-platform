@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins
 {
-    [Info("Chute", "ColonBlow", "2.0.8")]
+    [Info("Chute", "ColonBlow", "2.1.0")]
     [Description("Allows authorized players to parachute from there current location or predefined height")]
     class Chute : RustPlugin
     {
@@ -195,7 +195,7 @@ namespace Oxide.Plugins
             var hasstab = chutemount.GetComponent<StabilityEntity>();
             if (hasstab) hasstab.grounded = true;
             var hasmount = chutemount.GetComponent<BaseMountable>();
-            if (hasmount) hasmount.needsVehicleTick = true;
+            if (hasmount) hasmount.isMobile = true;
             chutemount.skinID = 1311472987;
             chutemount?.Spawn();
             if (chutemount != null)
@@ -484,8 +484,12 @@ namespace Oxide.Plugins
                 if (rotright) mount.transform.eulerAngles += new Vector3(0, 2, 0);
                 else if (rotleft) mount.transform.eulerAngles += new Vector3(0, -2, 0);
 
-                if (moveforward) mount.transform.localPosition += ((transform.forward * parachuteFwdSpeed) * Time.deltaTime);
-
+                var player = mount.GetComponent<BaseMountable>().GetMounted();
+                if (player != null && !player.IsBuildingBlocked())
+                {
+                    if (moveforward) mount.transform.localPosition += ((transform.forward * parachuteFwdSpeed) * Time.deltaTime);
+                }
+                
                 mount.transform.position = Vector3.MoveTowards(mount.transform.position, mount.transform.position + Vector3.down, (parachuteDownSpeed) * Time.deltaTime);
                 mount.transform.hasChanged = true;
                 mount.SendNetworkUpdateImmediate();

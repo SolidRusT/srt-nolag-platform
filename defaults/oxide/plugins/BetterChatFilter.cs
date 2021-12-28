@@ -13,7 +13,7 @@ using Oxide.Game.Rust.Libraries;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat Filter", "NooBlet", "1.6.3", ResourceId = 2403)]
+    [Info("Better Chat Filter", "NooBlet", "1.6.4", ResourceId = 2403)]
     [Description("Filter for Better Chat")]
     public class BetterChatFilter : CovalencePlugin
     {
@@ -38,7 +38,11 @@ namespace Oxide.Plugins
             if (WordFilter_Enabled)
             {
                 var message = (string)messageData["Message"];
-                if (!GetIsMuted(ref player)) { messageData["Message"] = FilterText(player, message); }              
+                if (!GetIsMuted(ref player)) { messageData["Message"] = FilterText(player, message); }  
+                if((string)messageData["Message"] == "")
+                {
+                    messageData["CancelOption"] = 2;                    
+                }
                 return messageData;
             }
             
@@ -70,7 +74,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Cached Variables
-       
+        private bool FilterAll = false;
         private bool WordFilter_Enabled = true;
         private string WordFilter_Replacement = "*";
         private bool WordFilter_UseCustomReplacement = false;
@@ -293,6 +297,7 @@ namespace Oxide.Plugins
             CheckCfg<int>("Offenses - Count To Ban", ref BanCount);
             CheckCfg<int>("Time to Ban in Minutes", ref BanTimeMin);
             CheckCfg<bool>("Word Filter - Enabled", ref WordFilter_Enabled);
+            CheckCfg<bool>("Whole Message Filter - Enabled", ref FilterAll);
             CheckCfg<string>("Word Filter - Replacement", ref WordFilter_Replacement);
             CheckCfg<bool>("Word Filter - Use Custom Replacement", ref WordFilter_UseCustomReplacement);
             CheckCfg<string>("Word Filter - Custom Replacement", ref WordFilter_CustomReplacement);
@@ -417,6 +422,7 @@ namespace Oxide.Plugins
         {
             var filtered = original;
             int count = 0;
+            bool WordMatch = false;
             Regex r = new Regex(regextouse, RegexOptions.IgnoreCase);
             foreach (var word in original.Split(' '))
             {
@@ -429,26 +435,33 @@ namespace Oxide.Plugins
                         Puts($"REGEX MATCH : {player.Name} said: \"{original}\" which contained a bad word: \"{word}\"");
                         filtered = filtered.Replace(word, Replace(word));
                         count++;
-
                     }
                 }
               
                 foreach (string bannedword in WordFilter_Phrases)
-                if (TranslateLeet(word).ToLower().Contains(bannedword.ToLower()))
-                {
+                if (TranslateLeet(word).ToLower().Contains(bannedword.ToLower()))                {
+                      
                         Puts($"BANNED WORDS MATCH :| {player.Name} said: \"{original}\" which contained a bad word: \"{word}\"");
                         filtered = filtered.Replace(word, Replace(word));
-                        count++;
-                        WarnPlayer(player);
+                        if (FilterAll)
+                        {
+                            filtered = "";
+                        }
+                       
+                        WordMatch = true;
 
                 }
             }
-
+            if (WordMatch)
+            {
+                count++;
+                WarnPlayer(player);
+            }
             if (count > 0)
             {
                 Offsense(player);
             }
-
+          
             return filtered;
         }
 

@@ -28,7 +28,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("SecurityLights", "S0N_0F_BISCUIT", "1.1.8")]
+    [Info("Security Lights", "S0N_0F_BISCUIT", "1.1.9")]
     [Description("Search light targeting system")]
     class SecurityLights : RustPlugin
     {
@@ -47,29 +47,43 @@ namespace Oxide.Plugins
         /// </summary>
         class ConfigData
         {
-            [JsonProperty(PropertyName = "Detection Radius - All")]
+            [JsonProperty("Detection Radius - All")]
             public int allDetectionRadius = 30;
-            [JsonProperty(PropertyName = "Tracking Radius - All")]
+
+            [JsonProperty("Tracking Radius - All")]
             public int allTrackingRadius = 30;
-            [JsonProperty(PropertyName = "Detection Radius - Player")]
+
+            [JsonProperty("Detection Radius - Player")]
             public int playerDetectionRadius = 30;
-            [JsonProperty(PropertyName = "Tracking Radius - Player")]
+
+            [JsonProperty("Tracking Radius - Player")]
             public int playerTrackingRadius = 30;
-            [JsonProperty(PropertyName = "Detection Radius - Helicopter")]
+            
+            [JsonProperty("Detection Radius - Helicopter")]
             public int heliDetectionRadius = 100;
-            [JsonProperty(PropertyName = "Tracking Radius - Helicopter")]
+            
+            [JsonProperty("Tracking Radius - Helicopter")]
             public int heliTrackingRadius = 100;
-            [JsonProperty(PropertyName = "Auto Convert Lights When Placed")]
+            
+            [JsonProperty("Heli Mode - Target Minicopter and Scrap Heli")]
+            public bool heliTargetVehicles = false;
+            
+            [JsonProperty("Auto Convert Lights When Placed")]
             public bool autoConvert = false;
-            [JsonProperty(PropertyName = "Require Power")]
+            
+            [JsonProperty("Require Power")]
             public bool requirePower = true;
-            [JsonProperty(PropertyName = "Night Only Operation")]
+            
+            [JsonProperty("Night Only Operation")]
             public bool nightOnly = false;
-            [JsonProperty(PropertyName = "Target Acquired Sound")]
+            
+            [JsonProperty("Target Acquired Sound")]
             public bool acquisitionSound = true;
-            [JsonProperty(PropertyName = "Target Friends")]
+            
+            [JsonProperty("Target Friends")]
             public bool targetFriends = true;
-            [JsonProperty(PropertyName = "Target Team Members")]
+            
+            [JsonProperty("Target Team Members")]
             public bool targetTeamMembers = true;
         }
         /// <summary>
@@ -236,20 +250,20 @@ namespace Oxide.Plugins
             {
                 try
                 {
-                    // Check if target is valid
-                    if (!IsValid(entity))
+                    // Check if light is mounted
+                    if (light.IsMounted())
                         return false;
                     // If power is required, check if light is powered
                     if (instance.config.requirePower && !powered)
+                        return false;
+                    // Check if target is valid
+                    if (!IsValid(entity))
                         return false;
                     // Check if in lightshow mode
                     if (mode == TargetMode.lightshow)
                         return true;
                     // Check if auto-lights are enabled
                     if (!instance.lightsEnabled)
-                        return false;
-                    // Check if light is mounted
-                    if (light.IsMounted())
                         return false;
                     if (mode != TargetMode.heli)
                     {
@@ -271,6 +285,13 @@ namespace Oxide.Plugins
                         // Check driver of vehicle
                         if (entity is BaseVehicle)
                             return ShouldTargetPlayer((entity as BaseVehicle).GetDriver());
+                    }
+                    else if (entity is BaseHelicopterVehicle)
+                    {
+                        if (instance.config.heliTargetVehicles)
+                            return ShouldTargetPlayer((entity as BaseHelicopterVehicle).GetDriver());
+
+                        return false;
                     }
                     return true;
                 }
