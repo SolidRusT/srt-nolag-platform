@@ -1,6 +1,6 @@
 {
     "ServerId": "nine",
-    "PollIntervalSeconds": 120,
+    "PollIntervalSeconds": 300,
     "DatabaseConfiguration": {
         "Host": "data",
         "Port": 3306,
@@ -92,7 +92,8 @@
                 "vehicledeployedlocks.keylock.free",
                 "vehicledeployedlocks.codelock.free",
                 "carturrets.limit.4",
-                "spawnmini.supporter"
+                "spawnmini.supporter",
+                "xperience.vip"
             ],
             "AdditionalCommands": []
         },
@@ -114,7 +115,8 @@
                 "Kits.Solid",
                 "Kits.Supporter",
                 "Kits.Legend",
-                "spawnmini.legend"
+                "spawnmini.legend",
+                "xperience.vip"
             ],
             "AdditionalCommands": []
         },
@@ -177,7 +179,8 @@
                 "holograms.use",
                 "patrolboat.admin",
                 "build.perm",
-                "zombiehorde.admin"
+                "zombiehorde.admin",
+                "xperience.vip"
             ],
             "AdditionalCommands": []
         },
@@ -256,7 +259,8 @@
                 "respawnbradley.nolock",
                 "respawnbradley.nocosts",
                 "respawnbradley.nocooldown",
-                "zombiehorde.admin"
+                "zombiehorde.admin",
+                "xperience.vip"
             ],
             "AdditionalCommands": []
         },
@@ -406,7 +410,8 @@
                 "respawnbradley.nocooldown",
                 "zombiehorde.admin",
                 "itemcleaner.use",
-                "vehicledeployedlocks.masterkey"
+                "vehicledeployedlocks.masterkey",
+                "xperience.admin"
             ],
             "AdditionalCommands": []
         }

@@ -305,6 +305,12 @@ DEFAULT_PERMS=(
   optimalburn.use
   patrolboat.builder
   payforelectricity.use
+  pets.bear
+  pets.boar
+  pets.chicken
+  pets.horse
+  pets.stag
+  pets.wolf
   phonesplus.use
   privatemessages.allow
   quicksmelt.use

@@ -1,0 +1,289 @@
+{
+  "Default Options": {
+    "liveuistatslocation": 1,
+    "liveuistatslocationmoveable": true,
+    "showchatprofileonconnect": true,
+    "restristresets": true,
+    "resetminsstats": 60,
+    "resetminsskills": 60,
+    "bypassadminreset": true,
+    "vipresetminstats": 30,
+    "vipresetminsskills": 30,
+    "playerfixdatatimer": 60,
+    "disablearmorchat": false
+  },
+  "UI Text Colors": {
+    "defaultcolor": "white",
+    "level": "green",
+    "experience": "green",
+    "nextlevel": "yellow",
+    "remainingxp": "cyan",
+    "statskilllevels": "yellow",
+    "perks": "green",
+    "unspentpoints": "green",
+    "spentpoints": "red",
+    "pets": "cyan"
+  },
+  "UI Notify (requires UINotify plugin)": {
+    "useuinotify": false,
+    "disablechats": false,
+    "xpgainloss": true,
+    "xpgainlosstype": 0,
+    "levelupdown": true,
+    "levelupdowntype": 0,
+    "dodgeblock": true,
+    "dodgeblocktype": 0,
+    "criticalhit": true,
+    "criticalhittype": 0
+  },
+  "XP - Level Config": {
+    "levelstart": 25.0,
+    "levelmultiplier": 50.0,
+    "maxlevel": 500,
+    "levelxpboost": 0.05,
+    "statpointsperlvl": 1,
+    "skillpointsperlvl": 2
+  },
+  "XP - Night Bonus": {
+    "Enable": true,
+    "StartTime": 19,
+    "EndTime": 5,
+    "Bonus": 0.1,
+    "enableskillboosts": true
+  },
+  "XP - Gain Amounts": {
+    "chickenxp": 5.0,
+    "fishxp": 5.0,
+    "boarxp": 10.0,
+    "stagxp": 15.0,
+    "wolfxp": 20.0,
+    "bearxp": 25.0,
+    "sharkxp": 30.0,
+    "horsexp": 20.0,
+    "scientistxp": 25.0,
+    "dwellerxp": 25.0,
+    "playerxp": 25.0,
+    "lootcontainerxp": 5.0,
+    "animalharvestxp": 5.0,
+    "corpseharvestxp": 5.0,
+    "underwaterlootcontainerxp": 10.0,
+    "lockedcratexp": 25.0,
+    "hackablecratexp": 50.0,
+    "craftingxp": 5.0,
+    "bradley": 25.0,
+    "patrolhelicopter": 30.0,
+    "playerrevive": 5.0
+  },
+  "XP - Gather Amounts": {
+    "treexp": 5.0,
+    "orexp": 5.0,
+    "harvestxp": 5.0,
+    "plantxp": 5.0,
+    "noxptools": true
+  },
+  "XP - Building Amounts": {
+    "woodstructure": 5.0,
+    "stonestructure": 10.0,
+    "metalstructure": 15.0,
+    "armoredstructure": 20.0
+  },
+  "XP - Mission Amounts": {
+    "missionsucceededxp": 50.0,
+    "missionfailed": false,
+    "missionfailedxp": 10.0
+  },
+  "XP - Reducer Amounts": {
+    "suicidereduce": true,
+    "suicidereduceamount": 0.05,
+    "deathreduce": true,
+    "deathreduceamount": 0.05
+  },
+  "BonusXP - Bonus Amounts (requires KillRecords plugin)": {
+    "showkrbutton": false,
+    "enablebonus": false,
+    "requiredkills": 10,
+    "bonusxp": 5.0,
+    "endbonus": 500,
+    "multibonus": true,
+    "multibonustype": "fixed"
+  },
+  "Economics Rewards (requires Economics plugin)": {
+    "econlevelup": false,
+    "econleveldown": false,
+    "econresetstats": false,
+    "econresetskills": false,
+    "econlevelreward": 50.0,
+    "econlevelreduction": 25.0,
+    "econresetstatscost": 100.0,
+    "econresetskillscost": 100.0
+  },
+  "Server Rewards (requires ServerRewards plugin)": {
+    "srewardlevelup": false,
+    "srewardleveldown": false,
+    "srewardlevelupamt": 5,
+    "srewardleveldownamt": 5
+  },
+  "Mentality Stat": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "researchcost": 0.1,
+    "researchspeed": 0.1,
+    "criticalchance": 0.05,
+    "useotherresearchmod": false
+  },
+  "Dexterity Stat": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "blockchance": 0.05,
+    "blockamount": 0.1,
+    "dodgechance": 0.05,
+    "reducearmordmg": 0.05
+  },
+  "Might Stat": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "armor": 0.1,
+    "meleedmg": 0.05,
+    "metabolism": 0.02,
+    "bleedreduction": 0.05,
+    "radreduction": 0.05,
+    "heattolerance": 0.05,
+    "coldtolerance": 0.05
+  },
+  "Chemist Stat": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "crafttime": 0.1
+  },
+  "WoodCutter Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "gatherrate": 0.5,
+    "bonusincrease": 0.1,
+    "applechance": 0.1
+  },
+  "Smithy Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "productionrate": 0.1,
+    "fuelconsumption": 0.1
+  },
+  "Miner Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "gatherrate": 0.5,
+    "bonusincrease": 0.1,
+    "fuelconsumption": 0.1
+  },
+  "Forager Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "gatherrate": 0.3,
+    "chanceincrease": 0.1,
+    "randomchance": 0.05,
+    "randomChanceList": {
+      "0": {
+        "shortname": "apple",
+        "amount": 1
+      },
+      "1": {
+        "shortname": "bandage",
+        "amount": 1
+      },
+      "2": {
+        "shortname": "scrap",
+        "amount": 1
+      },
+      "3": {
+        "shortname": "bucket.water",
+        "amount": 1
+      },
+      "4": {
+        "shortname": "metal.fragments",
+        "amount": 1
+      }
+    }
+  },
+  "Hunter Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "gatherrate": 0.3,
+    "bonusincrease": 0.1,
+    "damageincrease": 0.05,
+    "nightdmgincrease": 0.01
+  },
+  "Fisher Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "fishamountincrease": 0.75,
+    "itemamountincrease": 0.25
+  },
+  "Crafter Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "craftspeed": 0.1,
+    "craftcost": 0.05,
+    "repairincrease": 0.07,
+    "repaircost": 0.05,
+    "conditionchance": 0.07,
+    "conditionamount": 0.1
+  },
+  "Framer Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "upgradecost": 0.05,
+    "repaircost": 0.05,
+    "repairtime": 0.1
+  },
+  "Medic Skill": {
+    "maxlvl": 10,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "revivehp": 5.0,
+    "recoverhp": 5.0,
+    "crafttime": 0.1,
+    "tools": 2.0
+  },
+  "Tamer Skill": {
+    "enabletame": false,
+    "maxlvl": 5,
+    "pointcoststart": 2,
+    "costmultiplier": 2,
+    "tamechicken": true,
+    "tameboar": true,
+    "tamestag": true,
+    "tamewolf": true,
+    "tamebear": true,
+    "chickenlevel": 1,
+    "boarlevel": 2,
+    "staglevel": 3,
+    "wolflevel": 4,
+    "bearlevel": 5
+  },
+  "Clans (requires Clans plugin)": {
+    "enableclanbonus": false,
+    "enableclanreduction": false,
+    "clanbonusamount": 0.1,
+    "clanreductionamount": 0.02
+  },
+  "SQL Info": {
+    "enablesql": false,
+    "SQLhost": "localhost",
+    "SQLport": 3306,
+    "SQLdatabase": "databasename",
+    "SQLusername": "username",
+    "SQLpassword": "password"
+  }
+}
