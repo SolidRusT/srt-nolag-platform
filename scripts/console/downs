@@ -1,5 +1,5 @@
 #!/bin/bash
-SRT_REPO="/c/Users/shaun/repos/solidrust.net"
+SRT_REPO="${HOME}/Documents/repos/solidrust.net"
 DOWNLOADS="${HOME}/Downloads"
 mv ${DOWNLOADS}/*.cs ${SRT_REPO}/defaults/oxide/plugins/
 

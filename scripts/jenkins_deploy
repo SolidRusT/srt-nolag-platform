@@ -1,0 +1,102 @@
+def label = "worker-rms-deploy-tag-${UUID.randomUUID().toString()}"
+
+def argoCdDeployment(git_k8s_repo_name, git_k8s_repo, git_repo_credentials, kustomize_home, docker_registry, docker_image_tag, environment, deployment_regions, deployment_clusters, project, service)
+{
+    dir(git_k8s_repo_name)
+    {
+        deleteDir()
+    }
+
+    dir(git_k8s_repo_name)
+    {
+        sh """
+        git config --global user.name 'bitbucket-sa'
+        git config --global user.email 'bitbucket-sa@reeftechnology.com'
+        """
+
+        git branch: 'master', url: git_k8s_repo, credentialsId: git_repo_credentials
+
+        deployment_regions.each { region ->
+            deployment_clusters.each { cluster ->
+                println "Updating image for cluster: ${cluster}"
+                sh """
+                cd ${environment}/${region}/${cluster}/${project}/${service}
+                ${kustomize_home}/kustomize edit set image ${docker_registry}:${docker_image_tag}
+                """
+            }
+        }
+
+        sshagent(credentials: [git_repo_credentials]) {
+        sh """
+            git status
+            git commit -am "Jenkins push of code repo with tag ${docker_image_tag}"
+            git push origin master
+        """
+        }
+    }
+}
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'gradle', image: 'gradle:6.5.1-jdk11', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'node', image: 'node:12.18.2', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true)
+],
+volumes: [
+hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+]) {
+  node(label) {
+    
+    //-- Environment --//
+    def ENVIRONMENT = ENV_TO_DEPLOY
+
+    //-- Build Name --//
+    currentBuild.displayName = "${currentBuild.number}-${ENVIRONMENT}-${SERVICE}"
+
+    //-- Git --//
+    def GIT_REPO_CREDENTIALS = 'Bitbucket-credentials'
+
+    //-- Docker registry and images --//
+    def DOCKER_REGISTRY = "079592947989.dkr.ecr.us-east-2.amazonaws.com/reef/co/rms/${SERVICE}"
+    def ECR_DOMAIN_URL = "https://079592947989.dkr.ecr.us-east-2.amazonaws.com"
+    def DOCKER_REGISTRY_CREDENTIALS = 'ecr:us-east-2:aws-jenkins-7989-credentials'
+    DOCKER_IMAGE_TAG = GIT_REPO_TAG
+
+    //-- Deployment to k8s --//
+    def KUSTOMIZE_HOME = tool name: 'jenkins-kustomize', type: 'com.cloudbees.jenkins.plugins.customtools.CustomTool'
+    def GIT_K8S_REPO = 'git@bitbucket.org:parkjockey/co-rms-k8s.git'
+    def GIT_K8S_REPO_NAME = 'co-rms-k8s'
+    def GIT_DEPLOYMENT_REGIONS = ( ENVIRONMENT == 'prod' ) ? [ "us-west-2" ] : [ "us-east-2" ]
+    def GIT_K8S_DEPLOYMENT_CLUSTERS = ["${ENVIRONMENT}-app-eks-cluster-2"]
+    def KUSTOMIZE_PROJECT_NAME="rms"
+    def KUSTOMIZE_SERVICE_NAME="${SERVICE}"
+    def APPROVERS = "anup"
+
+    //-- Integration testing --//
+    // TBD
+
+    //-- Allure reports --//
+    // TBD
+
+    stage('Trigger Argo CD Deployment')
+    {
+        argoCdDeployment(GIT_K8S_REPO_NAME,GIT_K8S_REPO,GIT_REPO_CREDENTIALS,KUSTOMIZE_HOME,DOCKER_REGISTRY,DOCKER_IMAGE_TAG,ENVIRONMENT,GIT_DEPLOYMENT_REGIONS,GIT_K8S_DEPLOYMENT_CLUSTERS,KUSTOMIZE_PROJECT_NAME,KUSTOMIZE_SERVICE_NAME)
+    }
+
+    stage('Integration Test')
+    {
+        echo "Skipping for now"
+    }
+
+    stage('Generate Report')
+    {
+        echo "Skipping for now"
+    }
+    
+    // Int testing
+    // TBD
+
+    // Generate report
+    // TBD
+  }
+}
