@@ -10,14 +10,14 @@ using VLB;
 
 namespace Oxide.Plugins
 {
-    [Info("Bradley Guards", "Bazz3l", "1.3.9")]
+    [Info("Bradley Guards", "Bazz3l", "1.4.0")]
     [Description("Call in armed reinforcements when bradley is destroyed at launch site.")]
     public class BradleyGuards : RustPlugin
     {
         [PluginReference] Plugin Kits;
-        
+
         #region Fields
-        
+
         private const string CH47_PREFAB = "assets/prefabs/npc/ch47/ch47scientists.entity.prefab";
         private const string AI_PREFAB = "assets/rust.ai/agents/npcplayer/humannpc/scientist/scientistnpc_full_any.prefab";
         private const string LANDING_NAME = "BradleyLandingZone";
@@ -31,12 +31,12 @@ namespace Oxide.Plugins
         private Vector3 _chinookPosition;
         private Vector3 _bradleyPosition;
         private bool _hasLaunch;
-        private PluginConfig _config;
-        
+        private static PluginConfig _config;
+
         #endregion
 
         #region Config
-        
+
         protected override void LoadDefaultConfig() => _config = PluginConfig.DefaultConfig();
 
         protected override void LoadConfig()
@@ -51,14 +51,14 @@ namespace Oxide.Plugins
                 {
                     throw new JsonException();
                 }
-                
+
                 if (_config.ToDictionary().Keys
                     .SequenceEqual(Config.ToDictionary(x => x.Key, x => x.Value).Keys)) return;
             }
             catch
             {
                 PrintWarning("Loaded default config, please check your configuration file for errors.");
-                
+
                 LoadDefaultConfig();
             }
         }
@@ -81,13 +81,45 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "InstantCrates (unlock crates when guards are eliminated)")]
             public bool InstantCrates;
-            
+
             [JsonProperty(PropertyName = "DisableChinookDamage (should chinook be able to take damage)")]
             public bool DisableChinookDamage;
 
             [JsonProperty(PropertyName = "GuardSettings (create different types of guards must contain atleast 1)")]
             public List<GuardSetting> GuardSettings;
-            
+
+            [JsonProperty("EffectiveWeaponRange (range weapons will be effective)")]
+            public Dictionary<string, float> EffectiveWeaponRange = new Dictionary<string, float>
+            {
+                { "snowballgun", 60f },
+                { "rifle.ak", 150f },
+                { "rifle.bolt", 150f },
+                { "bow.hunting", 30f },
+                { "bow.compound", 30f },
+                { "crossbow", 30f },
+                { "shotgun.double", 10f },
+                { "pistol.eoka", 10f },
+                { "multiplegrenadelauncher", 50f },
+                { "rifle.l96", 150f },
+                { "rifle.lr300", 150f },
+                { "lmg.m249", 150f },
+                { "rifle.m39", 150f },
+                { "pistol.m92", 15f },
+                { "smg.mp5", 80f },
+                { "pistol.nailgun", 10f },
+                { "shotgun.waterpipe", 10f },
+                { "pistol.python", 60f },
+                { "pistol.revolver", 50f },
+                { "rocket.launcher", 60f },
+                { "shotgun.pump", 10f },
+                { "pistol.semiauto", 30f },
+                { "rifle.semiauto", 100f },
+                { "smg.2", 80f },
+                { "shotgun.spas12", 30f },
+                { "speargun", 10f },
+                { "smg.thompson", 30f }
+            };
+
             public static PluginConfig DefaultConfig()
             {
                 return new PluginConfig
@@ -115,8 +147,8 @@ namespace Oxide.Plugins
                     }
                 };
             }
-            
-            public string ToJson() => 
+
+            public string ToJson() =>
                 JsonConvert.SerializeObject(this);
 
             public Dictionary<string, object> ToDictionary() =>
@@ -146,11 +178,11 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "KitEnabled (enable custom kit)")]
             public bool KitEnabled = false;
         }
-        
+
         #endregion
 
         #region Oxide
-        
+
         protected override void LoadDefaultMessages()
         {
             lang.RegisterMessages(new Dictionary<string, string> {
@@ -159,40 +191,46 @@ namespace Oxide.Plugins
             }, this);
         }
 
-        void OnServerInitialized() => 
+        void OnServerInitialized() =>
             GetLandingPoint();
 
-        void Unload() => 
+        void Unload()
+        {
             CleanUp();
 
-        void OnEntitySpawned(BradleyAPC bradley) => 
+            _config = null;
+        }
+
+        void OnEntitySpawned(BradleyAPC bradley) =>
             OnAPCSpawned(bradley);
 
-        void OnEntityDeath(BradleyAPC bradley, HitInfo info) => 
+        void OnEntityDeath(BradleyAPC bradley, HitInfo info) =>
             OnAPCDeath(bradley);
 
-        void OnEntityDeath(ScientistNPC npc, HitInfo info) => 
+        void OnEntityDeath(ScientistNPC npc, HitInfo info) =>
             OnNPCDeath(npc);
 
-        void OnEntityKill(ScientistNPC npc) => 
+        void OnEntityKill(ScientistNPC npc) =>
             OnNPCDeath(npc);
-        
-        object OnHelicopterAttacked(CH47HelicopterAIController heli, HitInfo info) => 
+
+        object OnHelicopterAttacked(CH47HelicopterAIController heli, HitInfo info) =>
             OnCH47Attacked(heli, info);
 
         void OnFireBallDamage(FireBall fireball, ScientistNPC npc, HitInfo info)
         {
             if (!(_npcs.Contains(npc) && info.Initiator is FireBall)) return;
-            
+
             info.DoHitEffects = false;
             info.damageTypes.ScaleAll(0f);
         }
 
         void OnEntityDismounted(BaseMountable mountable, ScientistNPC npc)
         {
-            if (!_npcs.Contains(npc) || !npc.HasBrain) return;
+            if (!_npcs.Contains(npc) || !npc.HasBrain)
+                return;
 
             npc.Brain.Navigator.PlaceOnNavMesh();
+            npc.Brain.Navigator.SetDestination(_bradleyPosition);
         }
 
         #endregion
@@ -225,9 +263,11 @@ namespace Oxide.Plugins
         {
             ScientistNPC npc = GameManager.server.CreateEntity(AI_PREFAB, position, Quaternion.identity) as ScientistNPC;
             if (npc == null) return;
-            
             npc.Spawn();
+
             _chinook.AttemptMount(npc);
+
+            npc.startHealth = settings.Health;
             npc.displayName = settings.Name;
             npc.damageScale = settings.DamageScale;
             npc.startHealth = settings.Health;
@@ -235,10 +275,28 @@ namespace Oxide.Plugins
 
             _npcs.Add(npc);
 
-            NPCNavigationComponent component = npc.GetOrAddComponent<NPCNavigationComponent>();
-            component.Destination = GetRandomPoint(eventPos, 6f);
-            component.Settings = settings;
-            npc.Invoke(() => component.Init(), 0.25f);
+            GiveKit(npc, settings);
+
+            NextFrame(() =>
+            {
+                if (npc == null || npc.IsDestroyed) return;
+                npc.Brain.Navigator.Agent.agentTypeID = -1372625422;
+                npc.Brain.Navigator.DefaultArea = "Walkable";
+                npc.Brain.AllowedToSleep = false;
+                npc.Brain.Navigator.Init(npc, npc.Brain.Navigator.Agent);
+                npc.Brain.ForceSetAge(0);
+                npc.Brain.states.Remove(AIState.TakeCover);
+                npc.Brain.states.Remove(AIState.Flee);
+                npc.Brain.states.Remove(AIState.Roam);
+                npc.Brain.states.Remove(AIState.Chase);
+                npc.Brain.Navigator.BestCoverPointMaxDistance = settings.MaxRoamRadius / 2;
+                npc.Brain.Navigator.BestRoamPointMaxDistance = settings.MaxRoamRadius;
+                npc.Brain.Navigator.MaxRoamDistanceFromHome = settings.MaxRoamRadius;
+                npc.Brain.AddState(new TakeCoverState { brain = npc.Brain, Position = eventPos });
+                npc.Brain.AddState(new ChaseState { brain = npc.Brain });
+                npc.Brain.AddState(new RoamState { brain = npc.Brain, Position = eventPos });
+                npc.Brain.Senses.Init(npc, 5f, settings.MaxAggressionRange, settings.MaxAggressionRange + 5f, -1f, true, true, true, settings.MaxAggressionRange, false, false, true, EntityType.Player, false);
+            });
         }
 
         void OnNPCDeath(ScientistNPC npc)
@@ -257,7 +315,7 @@ namespace Oxide.Plugins
         void OnAPCSpawned(BradleyAPC bradley)
         {
             Vector3 position = bradley.transform.position;
-            
+
             if (!IsInBounds(position)) return;
 
             bradley.maxCratesToSpawn = _config.APCCrates;
@@ -272,7 +330,7 @@ namespace Oxide.Plugins
             if (bradley == null || bradley.IsDestroyed) return;
 
             Vector3 position = bradley.transform.position;
-            
+
             if (!IsInBounds(position)) return;
 
             _bradleyPosition = position;
@@ -301,7 +359,7 @@ namespace Oxide.Plugins
 
             Pool.FreeList(ref entities);
         }
-        
+
         void UnlockCrates()
         {
             List<LockedByEntCrate> entities = Pool.GetList<LockedByEntCrate>();
@@ -311,7 +369,7 @@ namespace Oxide.Plugins
             foreach (LockedByEntCrate crate in entities)
             {
                 if (!(crate.IsValid() && !crate.IsDestroyed)) continue;
-                
+
                 crate.SetLocked(false);
 
                 if (crate.lockingEnt == null) continue;
@@ -339,13 +397,13 @@ namespace Oxide.Plugins
             ClearGuards();
             ClearZones();
         }
-        
+
         void ClearZones()
         {
             if (_landingZone == null) return;
-            
+
             UnityEngine.Object.Destroy(_landingZone.gameObject);
-                
+
             _landingZone = null;
         }
 
@@ -354,7 +412,7 @@ namespace Oxide.Plugins
             for (int i = 0; i < _npcs.Count; i++)
             {
                 ScientistNPC npc = _npcs.ElementAt(i);
-                
+
                 if (npc.IsValid() && !npc.IsDestroyed)
                     npc.Kill();
             }
@@ -371,15 +429,15 @@ namespace Oxide.Plugins
                 SetLandingPoint(monument);
             }
         }
-        
+
         void SetLandingPoint(MonumentInfo monument)
         {
             _monumentPosition = monument.transform.position;
-            
+
             _landingRotation = monument.transform.rotation;
             _landingPosition = _monumentPosition + monument.transform.right * 125f;
             _landingPosition.y = TerrainMeta.HeightMap.GetHeight(_landingPosition);
-            
+
             _chinookPosition = _monumentPosition + -monument.transform.right * 250f;
             _chinookPosition.y += 150f;
 
@@ -387,79 +445,196 @@ namespace Oxide.Plugins
 
             CreateLandingZone();
         }
-        
+
         bool IsInBounds(Vector3 position) => _hasLaunch && Vector3.Distance(_monumentPosition, position) <= 300f;
 
         #endregion
 
-        #region Component
+        #region AI States
 
-        class NPCNavigationComponent : MonoBehaviour
+        class RoamState : ScientistBrain.BasicAIState
         {
-            private ScientistNPC _npc;
-            public Vector3 Destination;
-            public GuardSetting Settings;
+            private float _nextRoamPositionTime;
+            public Vector3 Position;
 
-            private void Awake()
+            public RoamState() : base(AIState.Roam)
             {
-                _npc = gameObject.GetComponent<ScientistNPC>();
-
-                InvokeRepeating(nameof(Move), 10f, 10f);
+                //
             }
 
-            private void OnDestroy()
+            public override void StateEnter()
             {
-                CancelInvoke();
+                Reset();
 
-                if (_npc != null && !_npc.IsDestroyed)
-                    _npc.Kill();
+                base.StateEnter();
+
+                _nextRoamPositionTime = 0.0f;
             }
 
-            public void Init()
+            public override float GetWeight() => 0.0f;
+
+            private Vector3 GetDestination() => Position;
+
+            private void SetDestination(Vector3 destination) => brain.Navigator.SetDestination(destination, BaseNavigator.NavigationSpeed.Fast);
+
+            public override StateStatus StateThink(float delta)
             {
-                _npc.Brain.Navigator.Agent.agentTypeID = -1372625422;
-                _npc.Brain.Navigator.DefaultArea = "Walkable";
-                _npc.Brain.Navigator.Init(_npc, _npc.Brain.Navigator.Agent);
-                _npc.Brain.ForceSetAge(0);
-                _npc.Brain.TargetLostRange = 30f;
-                _npc.Brain.HostileTargetsOnly = false;
-                _npc.Brain.Navigator.BestCoverPointMaxDistance = 0;
-                _npc.Brain.Navigator.BestRoamPointMaxDistance = 0;
-                _npc.Brain.Navigator.MaxRoamDistanceFromHome = Settings.MaxRoamRadius;
-                _npc.SetDestination(Destination);
-                _npc.Brain.Senses.Init(_npc, 5f, 60f, 140f, -1f, true, false, true, 60f, false, false, false, EntityType.Player, false);
-
-                GiveKit(_npc, Settings.KitEnabled, Settings.KitName);
-            }
-
-            private void Move()
-            {
-                if (_npc == null || _npc.IsDestroyed || _npc.isMounted)
-                    return;
-
-                if (!_npc.HasBrain)
-                    return;
-
-                if (IsOutOfRange())
+                if (Vector3.Distance(GetDestination(), GetEntity().transform.position) > 10.0 && _nextRoamPositionTime < Time.time)
                 {
-                    _npc.Brain.Senses.Memory.Targets.Clear();
-                    _npc.Brain.Senses.Memory.Threats.Clear();
+                    Vector3 insideUnitSphere = UnityEngine.Random.insideUnitSphere;
+                    insideUnitSphere.y = 0.0f;
+                    insideUnitSphere.Normalize();
+
+                    SetDestination(GetDestination() + insideUnitSphere * 2f);
+
+                    _nextRoamPositionTime = Time.time + UnityEngine.Random.Range(0.5f, 1f);
                 }
 
-                if (_npc.Brain.Senses.Memory.Targets.Count != 0)
-                    return;
-
-                if (_npc.Brain.Navigator.Agent == null || !_npc.Brain.Navigator.Agent.isOnNavMesh)
-                {
-                    _npc.Brain.Navigator.Destination = Destination;
-                    _npc.SetDestination(Destination);
-                }
-                else
-                    _npc.Brain.Navigator.SetDestination(Destination);
+                return StateStatus.Running;
             }
-
-            private bool IsOutOfRange() => _npc.Distance(Destination) >= _npc.Brain.Navigator.MaxRoamDistanceFromHome;
         }
+
+        class ChaseState : ScientistBrain.BasicAIState
+        {
+            private StateStatus _status = StateStatus.Error;
+            private float _nextPositionUpdateTime;
+
+            public ChaseState() : base(AIState.Chase)
+            {
+                AgrresiveState = true;
+            }
+
+            public override void StateEnter()
+            {
+                Reset();
+
+                base.StateEnter();
+
+                _status = StateStatus.Error;
+
+                if (brain.PathFinder == null)
+                    return;
+
+                _status = StateStatus.Running;
+
+                _nextPositionUpdateTime = 0.0f;
+            }
+
+            public override void StateLeave()
+            {
+                base.StateLeave();
+
+                Stop();
+            }
+
+            public override StateStatus StateThink(float delta)
+            {
+                if (_status == StateStatus.Error)
+                    return _status;
+
+                BaseEntity baseEntity = brain.Events.Memory.Entity.Get(brain.Events.CurrentInputMemorySlot);
+                if (baseEntity == null)
+                    return StateStatus.Error;
+
+                ScientistNPC entity = (ScientistNPC)GetEntity();
+
+                float num2 = Vector3.Distance(baseEntity.transform.position, entity.transform.position);
+
+                if (brain.Senses.Memory.IsLOS(baseEntity) || (double)num2 <= 30.0)
+                    brain.Navigator.SetFacingDirectionEntity(baseEntity);
+                else
+                    brain.Navigator.ClearFacingDirectionOverride();
+
+                brain.Navigator.SetCurrentSpeed(num2 <= 30.0
+                    ? BaseNavigator.NavigationSpeed.Normal
+                    : BaseNavigator.NavigationSpeed.Fast);
+
+                if (_nextPositionUpdateTime < Time.time)
+                {
+                    _nextPositionUpdateTime = Time.time + UnityEngine.Random.Range(0.5f, 1f);
+
+                    brain.Navigator.SetDestination(baseEntity.transform.position, BaseNavigator.NavigationSpeed.Normal);
+                }
+
+                return brain.Navigator.Moving
+                    ? StateStatus.Running
+                    : StateStatus.Finished;
+            }
+
+            private void Stop()
+            {
+                brain.Navigator.Stop();
+                brain.Navigator.ClearFacingDirectionOverride();
+            }
+        }
+
+        class TakeCoverState : ScientistBrain.BasicAIState
+        {
+            private StateStatus _status = StateStatus.Error;
+            private BaseEntity coverFromEntity;
+            public Vector3 Position;
+
+            public TakeCoverState() : base(AIState.TakeCover)
+            {
+                //
+            }
+
+            public override void StateEnter()
+            {
+                Reset();
+
+                base.StateEnter();
+
+                _status = StateStatus.Running;
+
+                if (StartMovingToCover())
+                    return;
+
+                _status = StateStatus.Error;
+            }
+
+            public override void StateLeave()
+            {
+                base.StateLeave();
+
+                brain.Navigator.ClearFacingDirectionOverride();
+
+                ClearCoverPointUsage();
+            }
+
+            private void ClearCoverPointUsage()
+            {
+                AIPoint aiPoint = brain.Events.Memory.AIPoint.Get(4);
+                if (aiPoint == null) return;
+
+                aiPoint.ClearIfUsedBy(GetEntity());
+            }
+
+            private bool StartMovingToCover() => brain.Navigator.SetDestination(Position, BaseNavigator.NavigationSpeed.Normal);
+
+            public override StateStatus StateThink(float delta)
+            {
+                FaceCoverFromEntity();
+
+                if (_status == StateStatus.Error)
+                    return _status;
+
+                return brain.Navigator.Moving ? StateStatus.Running : StateStatus.Finished;
+            }
+
+            private void FaceCoverFromEntity()
+            {
+                coverFromEntity = brain.Events.Memory.Entity.Get(brain.Events.CurrentInputMemorySlot);
+                if (coverFromEntity == null)
+                    return;
+
+                brain.Navigator.SetFacingDirectionEntity(coverFromEntity);
+            }
+        }
+
+        #endregion
+
+        #region Component
 
         class CH47NavigationComponent : MonoBehaviour
         {
@@ -487,15 +662,15 @@ namespace Oxide.Plugins
                 Destroy(this);
             }
         }
-        
+
         #endregion
 
         #region Helpers
-        
-        string Lang(string key, string id = null, params object[] args) => 
+
+        string Lang(string key, string id = null, params object[] args) =>
             string.Format(lang.GetMessage(key, this, id), args);
 
-        void MessageAll(string key) => 
+        void MessageAll(string key) =>
             Server.Broadcast(Lang(key, null), _config.ChatIcon);
 
         Vector3 GetRandomPoint(Vector3 position, float radius)
@@ -505,13 +680,33 @@ namespace Oxide.Plugins
             return pos;
         }
 
-        static void GiveKit(ScientistNPC npc, bool kitEnabled, string kitName)
+        private static void GiveKit(ScientistNPC npc, GuardSetting settings)
         {
-            if (!kitEnabled || string.IsNullOrEmpty(kitName)) return;
+            if (settings.KitEnabled)
+            {
+                npc.inventory.Strip();
 
-            npc.inventory.Strip();
-            Interface.Oxide.CallHook("GiveKit", npc, kitName);
-            UpdateItem(npc);
+                Interface.Oxide.CallHook("GiveKit", npc, settings.KitName);
+            }
+
+            for (int i = 0; i < npc.inventory.containerBelt.itemList.Count; i++)
+            {
+                Item item = npc.inventory.containerBelt.itemList[i];
+                if (item == null) continue;
+
+                BaseProjectile projectile = (item?.GetHeldEntity() as HeldEntity) as BaseProjectile;
+                if (projectile == null) return;
+
+                if (_config.EffectiveWeaponRange.ContainsKey(item.info.shortname))
+                    projectile.effectiveRange = _config.EffectiveWeaponRange[item.info.shortname];
+                else
+                    projectile.effectiveRange = settings.MaxAggressionRange;
+
+                projectile.CanUseAtMediumRange = true;
+                projectile.CanUseAtLongRange = true;
+            }
+
+            npc.Invoke(npc.EquipWeapon, 0.25f);
         }
 
         static void UpdateItem(ScientistNPC player)
@@ -519,7 +714,7 @@ namespace Oxide.Plugins
             player.EquipWeapon();
             player.SendNetworkUpdateImmediate();
         }
-        
+
         #endregion
     }
 }

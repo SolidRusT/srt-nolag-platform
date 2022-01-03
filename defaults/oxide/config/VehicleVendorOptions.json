@@ -3,6 +3,7 @@
     "ScrapTransport": {
       "RequiresPermission": false,
       "FuelAmount": 100,
+      "DespawnProtectionSeconds": 300.0,
       "PricesRequiringPermission": [
         {
           "ItemShortName": "scrap",
@@ -17,6 +18,7 @@
     "Minicopter": {
       "RequiresPermission": false,
       "FuelAmount": 100,
+      "DespawnProtectionSeconds": 300.0,
       "PricesRequiringPermission": [
         {
           "ItemShortName": "scrap",
@@ -31,6 +33,7 @@
     "RHIB": {
       "RequiresPermission": false,
       "FuelAmount": 50,
+      "DespawnProtectionSeconds": 300.0,
       "PricesRequiringPermission": [
         {
           "ItemShortName": "scrap",
@@ -45,6 +48,7 @@
     "Rowboat": {
       "RequiresPermission": false,
       "FuelAmount": 50,
+      "DespawnProtectionSeconds": 300.0,
       "PricesRequiringPermission": [
         {
           "ItemShortName": "scrap",
@@ -59,6 +63,7 @@
     "DuoSub": {
       "RequiresPermission": false,
       "FuelAmount": 50,
+      "DespawnProtectionSeconds": 300.0,
       "PricesRequiringPermission": [
         {
           "ItemShortName": "scrap",
@@ -73,6 +78,7 @@
     "SoloSub": {
       "RequiresPermission": false,
       "FuelAmount": 50,
+      "DespawnProtectionSeconds": 300.0,
       "PricesRequiringPermission": [
         {
           "ItemShortName": "scrap",

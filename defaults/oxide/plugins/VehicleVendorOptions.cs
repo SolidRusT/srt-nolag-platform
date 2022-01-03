@@ -12,7 +12,7 @@ using static ConversationData;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Vendor Options", "WhiteThunder", "1.5.1")]
+    [Info("Vehicle Vendor Options", "WhiteThunder", "1.6.0")]
     [Description("Allows customizing vehicle fuel and prices at NPC vendors.")]
     internal class VehicleVendorOptions : CovalencePlugin
     {
@@ -61,6 +61,7 @@ namespace Oxide.Plugins
 
         private const int MinHidddenSlot = 24;
         private const int ScrapItemId = -932201673;
+        private const float VanillaDespawnProtectionTime = 300;
 
         private Item _scrapItem;
 
@@ -219,6 +220,8 @@ namespace Oxide.Plugins
 
                 AdjustFuel(vehicle, vehicleConfig.FuelAmount);
                 MaybeSetOwner(vehicle);
+
+                vehicle.spawnTime += vehicleConfig.DespawnProtectionSeconds - VanillaDespawnProtectionTime;
             });
         }
 
@@ -785,6 +788,9 @@ namespace Oxide.Plugins
 
             [JsonProperty("FuelAmount")]
             public int FuelAmount = 100;
+
+            [JsonProperty("DespawnProtectionSeconds")]
+            public float DespawnProtectionSeconds = 300;
 
             [JsonProperty("PricesRequiringPermission")]
             public PriceConfig[] PricesRequiringPermission = new PriceConfig[0];

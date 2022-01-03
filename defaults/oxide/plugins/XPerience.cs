@@ -21,7 +21,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("XPerience", "MACHIN3", "1.2.0")]
+    [Info("XPerience", "MACHIN3", "1.2.4")]
     [Description("Player level system with xp, stats, and skills")]
     public class XPerience : RustPlugin
     {
@@ -29,10 +29,62 @@ namespace Oxide.Plugins
 
         /*****************************************************
 		【 𝓜𝓐𝓒𝓗𝓘𝓝𝓔 】
-		12 / 20 / 2021
+		01 / 01 / 2022
         Discord: discord.skilledsoldiers.net
         *****************************************************/
+        #region version 1.2.4
+        /*****************************************************
+		----------------------
+		✯ version 1.2.4
+		----------------------
+        ✯ Fixed repair skill in crafter
+        ✯ Fixed Admin panel FixPlayerData button issues
 
+        *****************************************************/
+        #endregion
+        #region version 1.2.3
+        /*****************************************************
+		----------------------
+		✯ version 1.2.3
+		----------------------
+        ✯ Added individual player reset command for admins
+        ✯ Fixed fixplayerdata not resetting all players
+        ✯ Fixed Admin Give/Take XP command not working on sleepers/offline players
+        ✯ Fixed Admin Give/Take XP not properly setting players levels
+        ✯ Adjusted Captaincy Stat and XP gain now stacks on other gains (if enabled)
+
+        *****************************************************/
+        #endregion
+        #region version 1.2.2
+        /*****************************************************
+		----------------------
+		✯ version 1.2.2
+		----------------------
+        ✯ Added Teams support
+        ✯ Added option to share XP gain and loss
+        ✯ Added option to set team distance for gains/loss
+
+        ✯ ADDED NEW STAT = Captaincy
+        ✯ Requires Team of 2 or more players
+        ✯ Give boosts to all other team member skills
+        ✯ Optional boost to all other team member XP gains
+        ✯ Increase effective distance of Captaincy per level
+        ✯ Stacks with other members with Captancy stat
+
+        *****************************************************/
+        #endregion
+        #region version 1.2.1
+        /*****************************************************
+		----------------------
+		✯ version 1.2.1
+		----------------------
+        ✯ More fixes repair item issues in Crafting skill
+        ✯ Added option to disabled players fix data option
+        ✯ Added Hardcore No Reset Option - players cannot reset stats/skills
+        ✯ Changed XP loss to % of current level XP instead of total XP
+
+        *****************************************************/
+        #endregion
         #region version 1.2.0
         /*****************************************************
 		----------------------
@@ -47,6 +99,7 @@ namespace Oxide.Plugins
         ✯ Fixed SQL error on server save
         ✯ Resetting XPerience now deletes all SQL data as well
         ✯ Moved all other mod support to a seperate admin page "Other Mod Settings"
+        ✯ Added API (Hooks) for developers to add/take xp 
 
         ✯ Added Server Rewards support: (requires Server Rewards plugin)
         ✯ Option to enable level up reward and amount
@@ -355,6 +408,9 @@ namespace Oxide.Plugins
             [JsonProperty("XP - Building Amounts")]
             public XpBuilding xpBuilding = new XpBuilding();
 
+            [JsonProperty("XP - Teams")]
+            public XpTeams xpTeams = new XpTeams();
+
             [JsonProperty("XP - Mission Amounts")]
             public XpMissions xpMissions = new XpMissions();
 
@@ -378,6 +434,9 @@ namespace Oxide.Plugins
 
             [JsonProperty("Might Stat")]
             public Might might = new Might();
+
+            [JsonProperty("Captaincy Stat")]
+            public Captaincy captaincy = new Captaincy();
 
             [JsonProperty("Chemist Stat")]
             public Chemist chemist = new Chemist();
@@ -432,8 +491,9 @@ namespace Oxide.Plugins
             public int vipresetminstats = 30;
             public int vipresetminsskills = 30;
             public int playerfixdatatimer = 60;
+            public bool disableplayerfixdata = false;
             public bool disablearmorchat = false;
-            //public bool hardcorenoreset = false;
+            public bool hardcorenoreset = false;
         }
 
         public class UITextColor
@@ -526,6 +586,15 @@ namespace Oxide.Plugins
             public double armoredstructure = 20;
         }
 
+        public class XpTeams
+        {
+            public bool enableteamxpgain = true;
+            public bool enableteamxploss = true;
+            public double teamxpgainamount = 0.10;
+            public double teamxplossamount = 0.05;
+            public float teamdistance = 50f;
+        }
+
         public class XpMissions
         {
             public double missionsucceededxp = 50;
@@ -608,6 +677,17 @@ namespace Oxide.Plugins
             public double coldtolerance = 0.05;
             //public bool enablestacking = false;
             //public int stackmultiplier = 2;
+        }
+
+        public class Captaincy
+        {
+            public int maxlvl = 0;
+            public int pointcoststart = 4;
+            public int costmultiplier = 4;
+            public double skillboost = 0.05;
+            public bool enablexpboost = false;
+            public double xpboost = 0.05;
+            public float captaincydistance = 10f;
         }
 
         public class Chemist
@@ -966,6 +1046,8 @@ namespace Oxide.Plugins
             public int DexterityP;
             public int Might;
             public int MightP;
+            public int Captaincy;
+            public int CaptaincyP;
             public int Chemist;
             public int ChemistP;
             public int WoodCutter;
@@ -1031,6 +1113,8 @@ namespace Oxide.Plugins
                 $" `DexterityP` BIGINT(255) NOT NULL," +
                 $" `Might` BIGINT(255) NOT NULL," +
                 $" `MightP` BIGINT(255) NOT NULL," +
+                $" `Captaincy` BIGINT(255) NOT NULL," +
+                $" `CaptaincyP` BIGINT(255) NOT NULL," +
                 $" `Chemist` BIGINT(255) NOT NULL," +
                 $" `ChemistP` BIGINT(255) NOT NULL," +
                 $" `WoodCutter` BIGINT(255) NOT NULL," +
@@ -1065,6 +1149,14 @@ namespace Oxide.Plugins
                 {
                     foreach (var entry in list)
                     {
+                        if (!entry.ContainsKey("Captaincy"))
+                        {
+                            sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Captaincy` BIGINT(255) NOT NULL DEFAULT '0' AFTER MightP"), sqlConnection);
+                        }
+                        if (!entry.ContainsKey("CaptaincyP"))
+                        {
+                            sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `CaptaincyP` BIGINT(255) NOT NULL DEFAULT '0' AFTER Captaincy"), sqlConnection);
+                        }
                         if (!entry.ContainsKey("Medic"))
                         {
                             sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Medic` BIGINT(255) NOT NULL DEFAULT '0' AFTER FramerP"), sqlConnection);
@@ -1090,7 +1182,7 @@ namespace Oxide.Plugins
             string replacename = "\\$1";
             Regex rgx = new Regex(removespecials);
             var playername = rgx.Replace(xprecord.displayname, replacename);
-            sqlLibrary.Insert(Sql.Builder.Append($"INSERT XPerience (steamid, displayname, level, experience, requiredxp, statpoint, skillpoint, Mentality, MentalityP, Dexterity, DexterityP, Might, MightP, Chemist, ChemistP, WoodCutter, WoodCutterP, Smithy, SmithyP, Miner, MinerP, Forager, ForagerP, Hunter, HunterP, Fisher, FisherP, Crafter, CrafterP, Framer, FramerP, Medic, MedicP, Tamer, TamerP) " +
+            sqlLibrary.Insert(Sql.Builder.Append($"INSERT XPerience (steamid, displayname, level, experience, requiredxp, statpoint, skillpoint, Mentality, MentalityP, Dexterity, DexterityP, Might, MightP, Captaincy, CaptaincyP, Chemist, ChemistP, WoodCutter, WoodCutterP, Smithy, SmithyP, Miner, MinerP, Forager, ForagerP, Hunter, HunterP, Fisher, FisherP, Crafter, CrafterP, Framer, FramerP, Medic, MedicP, Tamer, TamerP) " +
             $"VALUES ('" +
             $"{xprecord.id}', " +
             $"'{playername}', " +
@@ -1105,6 +1197,8 @@ namespace Oxide.Plugins
             $"'{xprecord.DexterityP}', " +
             $"'{xprecord.Might}', " +
             $"'{xprecord.MightP}', " +
+            $"'{xprecord.Captaincy}', " +
+            $"'{xprecord.CaptaincyP}', " +
             $"'{xprecord.Chemist}', " +
             $"'{xprecord.ChemistP}', " +
             $"'{xprecord.WoodCutter}', " +
@@ -1153,6 +1247,8 @@ namespace Oxide.Plugins
                 $"DexterityP='{r.Value.DexterityP}', " +
                 $"Might='{r.Value.Might}', " +
                 $"MightP='{r.Value.MightP}', " +
+                $"Captaincy='{r.Value.Captaincy}', " +
+                $"CaptaincyP='{r.Value.CaptaincyP}', " +
                 $"Chemist='{r.Value.Chemist}', " +
                 $"ChemistP='{r.Value.ChemistP}', " +
                 $"WoodCutter='{r.Value.WoodCutter}', " +
@@ -1202,6 +1298,8 @@ namespace Oxide.Plugins
             $"DexterityP='{xprecord.DexterityP}', " +
             $"Might='{xprecord.Might}', " +
             $"MightP='{xprecord.MightP}', " +
+            $"Captaincy='{xprecord.Captaincy}', " +
+            $"CaptaincyP='{xprecord.CaptaincyP}', " +
             $"Chemist='{xprecord.Chemist}', " +
             $"ChemistP='{xprecord.ChemistP}', " +
             $"WoodCutter='{xprecord.WoodCutter}', " +
@@ -1302,7 +1400,6 @@ namespace Oxide.Plugins
                 Subscribe(nameof(OnTechTreeNodeUnlock));
                 Subscribe(nameof(OnItemResearch));
             }
-            Puts("ATTENTION - IF YOU HAVEN'T ALREADY DONE SO WITH 1.1.4 UPDATE YOU MUST RUN CHAT COMMAND /xpupdate THEN USE REPAIR ALL PLAYER DATA IN ADMIN PANEL!");
         }
 
         private void Unload()
@@ -1408,6 +1505,8 @@ namespace Oxide.Plugins
                     DexterityP = 0,
                     Might = 0,
                     MightP = 0,
+                    Captaincy = 0,
+                    CaptaincyP = 0,
                     Chemist = 0,
                     ChemistP = 0,
                     WoodCutter = 0,
@@ -1471,6 +1570,14 @@ namespace Oxide.Plugins
 
         private static BasePlayer FindPlayer(string playerid)
         {
+            /*
+            foreach (var player in BaseNetworkable.serverEntities.OfType<BasePlayer>())
+            {
+                if (player.userID.IsSteamId() && player.UserIDString == playerid)
+                    return player;
+            }
+            return null;
+            */
             foreach (var activePlayer in BasePlayer.activePlayerList)
             {
                 if (activePlayer.UserIDString == playerid)
@@ -1481,7 +1588,7 @@ namespace Oxide.Plugins
                 if (sleepingPlayer.UserIDString == playerid)
                     return sleepingPlayer;
             }
-            return null;
+            return null;     
         }
 
         #endregion
@@ -1497,21 +1604,32 @@ namespace Oxide.Plugins
             {
                 xprecord.experience = 0;
             }
+            if (IsNight() && config.nightBonus.Enable)
+            {
+                double timebonus = e * config.nightBonus.Bonus;
+                e = Math.Ceiling(e + timebonus);
+            }
+            if (xprecord.level > 0)
+            {
+                e = Math.Ceiling(e + ((config.xpLevel.levelxpboost * xprecord.level) * e));
+            }
+            // Teams
+            if (config.xpTeams.enableteamxpgain && e != 0)
+            {
+                XPTeams(player, e, "addxp");
+            }
+            // Captaincy
+            if (config.captaincy.enablexpboost && e != 0)
+            {
+                double captaincyboost = Math.Ceiling(e * (double)CaptaincyTeamXPBoost(player));
+                e = Math.Ceiling(e + captaincyboost);
+            }
             // Clans
             if (Clans != null && config.xpclans.enableclanbonus && e != 0)
             {
                 XPClans(player, e, "addxp");
             }
-            if (IsNight() && config.nightBonus.Enable)
-            {
-                double timebonus = e * config.nightBonus.Bonus;
-                e = e + timebonus;
-            }
-            if (xprecord.level > 0)
-            {
-                e = e + ((config.xpLevel.levelxpboost * xprecord.level) * e);
-            }
-            xprecord.experience = (int)xprecord.experience + e;
+            xprecord.experience = (int)xprecord.experience + Math.Ceiling(e);
             if (xprecord.experience >= xprecord.requiredxp)
             {
                 LvlUp(player, 0, 0);
@@ -1533,7 +1651,8 @@ namespace Oxide.Plugins
             {
                 LvlUp(player, 0, 0);
             }
-            LiveStats(player, true);
+            PlayerFixData(player);
+            //LiveStats(player, true);
         }
 
         private void LvlUp(BasePlayer player, int chatstatpoint, int chatskillpoint)
@@ -1576,12 +1695,32 @@ namespace Oxide.Plugins
             }
         }
 
+        private void LvlUpFix(string player)
+        {
+            XPRecord xprecord = GetPlayerRecord(player);
+            if (xprecord.level >= config.xpLevel.maxlevel) return;
+            xprecord.level = xprecord.level + 1;
+            xprecord.statpoint = xprecord.statpoint + config.xpLevel.statpointsperlvl;
+            xprecord.skillpoint = xprecord.skillpoint + config.xpLevel.skillpointsperlvl;
+            xprecord.requiredxp = Math.Round(xprecord.requiredxp + (xprecord.level * config.xpLevel.levelmultiplier));
+            if (xprecord.experience > xprecord.requiredxp)
+            {
+                LvlUpFix(player);
+                return;
+            }
+        }
+
         private void LoseExp(BasePlayer player, double e)
         {
             XPRecord xprecord = GetXPRecord(player);
             if (e < 1)
             {
                 e = 1;
+            }
+            // Teams
+            if (config.xpTeams.enableteamxploss && e != 0)
+            {
+                XPTeams(player, e, "takexp");
             }
             // Clans
             if (Clans != null && config.xpclans.enableclanreduction && e != 0)
@@ -1610,12 +1749,38 @@ namespace Oxide.Plugins
             }
         }
 
+        private void LoseExpAdmin(BasePlayer player, double e)
+        {
+            XPRecord xprecord = GetXPRecord(player);
+            if (e < 1)
+            {
+                e = 1;
+            }
+            double newxp = xprecord.experience - e;
+            double nextlevel = xprecord.requiredxp;
+            // Make sure XP does not go negative
+            if (newxp <= 0)
+            {
+                newxp = 0;
+            }
+            xprecord.experience = (int)newxp;
+            if (nextlevel == config.xpLevel.levelstart) return;
+            double prevlevel = xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier);
+            if (xprecord.experience < prevlevel)
+            {
+                LvlDown(player, 0, 0);
+            }
+            PlayerFixData(player);
+            //LiveStats(player, true);
+        }
+
         private void LvlDown(BasePlayer player, int chatstatpoint, int chatskillpoint)
         {
             XPRecord xprecord = GetXPRecord(player);
-            if (xprecord.level < 1) return;
-            xprecord.level = xprecord.level - 1;
-            xprecord.requiredxp = Math.Round(xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier));
+            double newlevel = xprecord.level - 1;
+            if (newlevel == 0) return;
+            xprecord.level = newlevel;
+            xprecord.requiredxp = Math.Round(xprecord.requiredxp - (newlevel * config.xpLevel.levelmultiplier));
             chatstatpoint -= config.xpLevel.statpointsperlvl;
             chatskillpoint -= config.xpLevel.skillpointsperlvl;
             bool removestatlvl = false;
@@ -1655,7 +1820,7 @@ namespace Oxide.Plugins
             // If player does not have enough unspent stat points then get first available stat to level down and remove points
             if (removestatlvl == true)
             {
-                int allstats = xprecord.Mentality + xprecord.Dexterity + xprecord.Might + xprecord.Chemist;
+                int allstats = xprecord.Mentality + xprecord.Dexterity + xprecord.Might + xprecord.Chemist + xprecord.Captaincy;
                 if (allstats == 0)
                 {
                     xprecord.statpoint = 0;
@@ -1670,12 +1835,14 @@ namespace Oxide.Plugins
                 bool dropdexterity = false;
                 bool dropmight = false;
                 bool dropchemist = false;
+                bool dropcaptaincy = false;
 
                 // Check each stat for levels
                 if (xprecord.Mentality > 0) { dropmentality = true; }
                 else if (xprecord.Dexterity > 0) { dropdexterity = true; }
                 else if (xprecord.Might > 0) { dropmight = true; }
                 else if (xprecord.Chemist > 0) { dropchemist = true; }
+                else if (xprecord.Captaincy > 0) { dropcaptaincy = true; }
 
                 // Random stat chosen
                 if (dropmentality == true)
@@ -1741,6 +1908,22 @@ namespace Oxide.Plugins
                     pointadj = statpoints - config.xpLevel.statpointsperlvl;
                     xprecord.Chemist = xprecord.Chemist - 1;
                     xprecord.ChemistP = xprecord.ChemistP - statpoints;
+                    xprecord.statpoint = pointadj;
+                }                
+                else if (dropcaptaincy == true)
+                {
+                    stat = "Captaincy";
+                    if (xprecord.Captaincy == 1)
+                    {
+                        statpoints = config.captaincy.pointcoststart;
+                    }
+                    else
+                    {
+                        statpoints = (xprecord.Captaincy - 1) * config.captaincy.costmultiplier;
+                    }
+                    pointadj = statpoints - config.xpLevel.statpointsperlvl;
+                    xprecord.Captaincy = xprecord.Captaincy - 1;
+                    xprecord.CaptaincyP = xprecord.CaptaincyP - statpoints;
                     xprecord.statpoint = pointadj;
                 }
                 // Make sure points do not go negative
@@ -1971,7 +2154,8 @@ namespace Oxide.Plugins
                 ServerRewards?.Call("TakePoints", player.userID, config.sRewards.srewardleveldownamt);
                 player.ChatMessage(XPLang("srewardsdown", player.UserIDString, config.sRewards.srewardleveldownamt));
             }
-            double prevlevel = Math.Round(xprecord.requiredxp / config.xpLevel.levelmultiplier);
+            //double prevlevel = Math.Round(xprecord.requiredxp / config.xpLevel.levelmultiplier);
+            double prevlevel = xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier);
             if (prevlevel > xprecord.experience)
             {
                 LvlDown(player, 0, 0);
@@ -2066,31 +2250,31 @@ namespace Oxide.Plugins
                 PlayerArmor(player);
                 MightAttributes(player);
             }
-            // Chemist
-            if (stat == "chemist" && config.chemist.maxlvl != 0)
+            // Captaincy
+            if (stat == "captaincy" && config.captaincy.maxlvl != 0)
             {
-                if (xprecord.Chemist == 0)
+                if (xprecord.Captaincy == 0)
                 {
                     nextlevel = 1;
-                    statcost = config.chemist.pointcoststart;
+                    statcost = config.captaincy.pointcoststart;
                     pointsremaining = xprecord.statpoint - statcost;
-                    pointsinstat = xprecord.ChemistP + statcost;
+                    pointsinstat = xprecord.CaptaincyP + statcost;
                 }
                 else
                 {
-                    nextlevel = xprecord.Chemist + 1;
-                    statcost = nextlevel * config.chemist.costmultiplier;
+                    nextlevel = xprecord.Captaincy + 1;
+                    statcost = nextlevel * config.captaincy.costmultiplier;
                     pointsremaining = xprecord.statpoint - statcost;
-                    pointsinstat = xprecord.ChemistP + statcost;
+                    pointsinstat = xprecord.CaptaincyP + statcost;
                 }
                 if (xprecord.statpoint < statcost)
                 {
                     player.ChatMessage(XPLang("notenoughstatpoints", player.UserIDString, nextlevel, stat, statcost));
                     return;
                 }
-                xprecord.Chemist = nextlevel;
+                xprecord.Captaincy = nextlevel;
                 xprecord.statpoint = pointsremaining;
-                xprecord.ChemistP = pointsinstat;
+                xprecord.CaptaincyP = pointsinstat;
             }
 
             player.ChatMessage(XPLang("statup", player.UserIDString, statcost, nextlevel, stat));
@@ -2426,7 +2610,7 @@ namespace Oxide.Plugins
                 //player._health = 100;
             }
             // Add all spent points
-            int statpoints = xprecord.statpoint + xprecord.MentalityP + xprecord.DexterityP + xprecord.MightP + xprecord.ChemistP;
+            int statpoints = xprecord.statpoint + xprecord.MentalityP + xprecord.DexterityP + xprecord.MightP + xprecord.ChemistP + xprecord.CaptaincyP;
             // Refund Points
             xprecord.statpoint = statpoints;
             // Reset Stat Levels
@@ -2434,11 +2618,13 @@ namespace Oxide.Plugins
             xprecord.Dexterity = 0;
             xprecord.Might = 0;
             xprecord.Chemist = 0;
+            xprecord.Captaincy = 0;
             // Reset Stat Spent Points
             xprecord.MentalityP = 0;
             xprecord.DexterityP = 0;
             xprecord.MightP = 0;
             xprecord.ChemistP = 0;
+            xprecord.CaptaincyP = 0;
             if (player.metabolism.calories.max > 500)
             {
                 player.metabolism.calories.max = 500;
@@ -2521,15 +2707,95 @@ namespace Oxide.Plugins
             LiveStats(player, true);
         }
 
+        private void PlayerFixDataAll(BasePlayer player)
+        {
+            if (!player.IsAdmin && !permission.UserHasPermission(player.UserIDString, Admin)) return;
+            foreach (var p in _xperienceCache)
+            {
+                if (!p.Key.IsSteamId()) continue;
+                var selectplayer = BasePlayer.FindByID(Convert.ToUInt64(p.Key));
+                if (selectplayer != null)
+                {
+                    PlayerFixData(selectplayer);
+                    continue;
+                }
+                XPRecord xprecord = GetPlayerRecord(p.Key);
+                xprecord.level = 0;
+                if (xprecord.experience <= 0)
+                {
+                    xprecord.experience = 0;
+                }
+                xprecord.requiredxp = config.xpLevel.levelstart;
+                xprecord.statpoint = 0;
+                xprecord.skillpoint = 0;
+                // Reset Stat Levels
+                xprecord.Mentality = 0;
+                xprecord.Dexterity = 0;
+                xprecord.Might = 0;
+                xprecord.Chemist = 0;
+                xprecord.Captaincy = 0;
+                // Reset Stat Spent Points
+                xprecord.MentalityP = 0;
+                xprecord.DexterityP = 0;
+                xprecord.MightP = 0;
+                xprecord.ChemistP = 0;
+                xprecord.CaptaincyP = 0;
+                // Reset Skill Levels
+                xprecord.WoodCutter = 0;
+                xprecord.Smithy = 0;
+                xprecord.Miner = 0;
+                xprecord.Forager = 0;
+                xprecord.Hunter = 0;
+                xprecord.Fisher = 0;
+                xprecord.Crafter = 0;
+                xprecord.Framer = 0;
+                xprecord.Medic = 0;
+                xprecord.Tamer = 0;
+                // Reset Skill Spents Points
+                xprecord.WoodCutterP = 0;
+                xprecord.SmithyP = 0;
+                xprecord.MinerP = 0;
+                xprecord.ForagerP = 0;
+                xprecord.HunterP = 0;
+                xprecord.FisherP = 0;
+                xprecord.CrafterP = 0;
+                xprecord.FramerP = 0;
+                xprecord.MedicP = 0;
+                xprecord.TamerP = 0;
+                // Set LiveUI Location to Default
+                xprecord.UILocation = config.defaultOptions.liveuistatslocation;                
+                // Take Pet Permission
+                permission.RevokeUserPermission(p.Key, TameChicken);
+                permission.RevokeUserPermission(p.Key, TameBoar);
+                permission.RevokeUserPermission(p.Key, TameStag);
+                permission.RevokeUserPermission(p.Key, TameWolf);
+                permission.RevokeUserPermission(p.Key, TameBear);
+                // Run player through level up to recalculate
+                if (xprecord.experience > config.xpLevel.levelstart)
+                {
+                    LvlUpFix(p.Key);
+                }                
+            }
+        }
+
         private void PlayerFixData(BasePlayer player)
         {
             if (player == null) return;
             XPRecord xprecord = GetXPRecord(player);
             if (xprecord == null) return;
+            if (config.defaultOptions.disableplayerfixdata)
+            {
+                player.ChatMessage(XPLang("fixdatadisabled", player.UserIDString));
+                return;
+            }
             int timer = 0;
             DateTime resettimedata = xprecord.playerfixdata.AddMinutes(config.defaultOptions.playerfixdatatimer);
             TimeSpan interval = resettimedata - DateTime.Now;
             timer = (int)interval.TotalMinutes;
+            if (config.defaultOptions.bypassadminreset && player.IsAdmin && permission.UserHasPermission(player.UserIDString, XPerience.Admin))
+            {
+                timer = 0;
+            }
             if (timer > 0)
             {
                 player.ChatMessage(XPLang("resettimerdata", player.UserIDString, timer));
@@ -2537,7 +2803,7 @@ namespace Oxide.Plugins
             }
             // Reset Level, Required XP & Stat/Skill Points
             xprecord.level = 0;
-            xprecord.requiredxp = 25;
+            xprecord.requiredxp = config.xpLevel.levelstart;
             xprecord.statpoint = 0;
             xprecord.skillpoint = 0;
             // Reset max health if needed before removing points
@@ -2561,18 +2827,19 @@ namespace Oxide.Plugins
                     player._maxHealth = (float)newmaxhealth;
                     player._health = (float)newhealth;
                 }
-                //player._health = 100;
             }
             // Reset Stat Levels
             xprecord.Mentality = 0;
             xprecord.Dexterity = 0;
             xprecord.Might = 0;
             xprecord.Chemist = 0;
+            xprecord.Captaincy = 0;
             // Reset Stat Spent Points
             xprecord.MentalityP = 0;
             xprecord.DexterityP = 0;
             xprecord.MightP = 0;
             xprecord.ChemistP = 0;
+            xprecord.CaptaincyP = 0;
             // Reset Skill Levels
             xprecord.WoodCutter = 0;
             xprecord.Smithy = 0;
@@ -2611,11 +2878,101 @@ namespace Oxide.Plugins
             // Timer
             xprecord.playerfixdata = DateTime.Now;
             // Run Level Up to Recalculate Players Data
-            LvlUp(player, 0, 0);
+            if (xprecord.experience > config.xpLevel.levelstart)
+            { 
+                LvlUp(player, 0, 0);
+            }        
             // Update Live UI
             LiveStats(player, true);
             // Notify Players
             player.ChatMessage(XPLang("playerfixdata", player.UserIDString));
+        }
+
+        private void PlayerReset(BasePlayer player, BasePlayer selectplayer)
+        {
+            if (player == null || selectplayer == null) return;
+            XPRecord xprecord = GetXPRecord(selectplayer);
+            if (xprecord == null) return;
+            // Reset Level, Required XP & Stat/Skill Points
+            xprecord.level = 0;
+            xprecord.experience = 0;
+            xprecord.requiredxp = config.xpLevel.levelstart;
+            xprecord.statpoint = 0;
+            xprecord.skillpoint = 0;
+            // Reset max health if needed before removing points
+            if (selectplayer._maxHealth > 100 || selectplayer._health > 100)
+            {
+                // Get Stats
+                double armor = (xprecord.Might * config.might.armor) * 100;
+                double currentmaxhealth = selectplayer._maxHealth;
+                double currenthealth = Mathf.Ceil(selectplayer._health);
+                // Remove Armor
+                double newmaxhealth = currentmaxhealth - armor;
+                double newhealth = currenthealth - armor;
+                // Change Health
+                if (newmaxhealth < 100)
+                {
+                    selectplayer._maxHealth = 100;
+                    selectplayer._health = (float)newhealth;
+                }
+                else
+                {
+                    selectplayer._maxHealth = (float)newmaxhealth;
+                    selectplayer._health = (float)newhealth;
+                }
+            }
+            // Reset Stat Levels
+            xprecord.Mentality = 0;
+            xprecord.Dexterity = 0;
+            xprecord.Might = 0;
+            xprecord.Chemist = 0;
+            xprecord.Captaincy = 0;
+            // Reset Stat Spent Points
+            xprecord.MentalityP = 0;
+            xprecord.DexterityP = 0;
+            xprecord.MightP = 0;
+            xprecord.ChemistP = 0;
+            xprecord.CaptaincyP = 0;
+            // Reset Skill Levels
+            xprecord.WoodCutter = 0;
+            xprecord.Smithy = 0;
+            xprecord.Miner = 0;
+            xprecord.Forager = 0;
+            xprecord.Hunter = 0;
+            xprecord.Fisher = 0;
+            xprecord.Crafter = 0;
+            xprecord.Framer = 0;
+            xprecord.Medic = 0;
+            xprecord.Tamer = 0;
+            // Reset Skill Spents Points
+            xprecord.WoodCutterP = 0;
+            xprecord.SmithyP = 0;
+            xprecord.MinerP = 0;
+            xprecord.ForagerP = 0;
+            xprecord.HunterP = 0;
+            xprecord.FisherP = 0;
+            xprecord.CrafterP = 0;
+            xprecord.FramerP = 0;
+            xprecord.MedicP = 0;
+            xprecord.TamerP = 0;
+            // Reset calories/hydration if needed
+            if (selectplayer.metabolism.calories.max > 500)
+            {
+                selectplayer.metabolism.calories.max = 500;
+            }
+            if (selectplayer.metabolism.hydration.max > 250)
+            {
+                selectplayer.metabolism.hydration.max = 250;
+            }
+            // Check/Reset Tamer permissions
+            PetChecks(selectplayer, true);
+            // Set LiveUI Location to Default
+            xprecord.UILocation = config.defaultOptions.liveuistatslocation;
+            // Update Live UI
+            LiveStats(selectplayer, true);
+            // Notify Players
+            selectplayer.ChatMessage(XPLang("playerreset", selectplayer.UserIDString));
+            player.ChatMessage(XPLang("xpresetplayer", player.UserIDString, xprecord.displayname));
         }
 
         private bool IsNight()
@@ -2666,6 +3023,68 @@ namespace Oxide.Plugins
             }
         }
 
+        private void XPTeams(BasePlayer player, double e, string type)
+        {
+            if (player == null || !player.userID.IsSteamId() || player.Team == null || player.Team.members.Count <= 1) return;
+            foreach (var team in player.Team.members)
+            {
+                if (team == player.userID) continue;
+                BasePlayer teammember = RelationshipManager.FindByID(team);
+                if (teammember == null || !teammember.IsConnected || Vector3.Distance(player.transform.position, teammember.transform.position) >= config.xpTeams.teamdistance) continue;          
+                XPRecord xprecord = GetXPRecord(teammember);
+                if (type == "addxp")
+                {
+                    double addxp = config.xpTeams.teamxpgainamount * e;
+                    if (addxp < 1)
+                    {
+                        addxp = 1;
+                    }
+                    xprecord.experience = (int)xprecord.experience + addxp;
+                    if (xprecord.experience >= xprecord.requiredxp)
+                    {
+                        LvlUp(teammember, 0, 0);
+                    }
+                    LiveStats(teammember, true);
+                    if (UINotify != null && config.UiNotifier.useuinotify && config.UiNotifier.xpgainloss && addxp != 0)
+                    {
+                        UINotify.Call("SendNotify", teammember, config.UiNotifier.xpgainlosstype, XPLang("uinotify_xpgain", teammember.UserIDString, Math.Round(addxp)));
+                    }
+                }
+                if (type == "takexp")
+                {
+                    if (e < 1)
+                    {
+                        e = 1;
+                    }
+                    double takexp = config.xpTeams.teamxplossamount * e;
+                    if (takexp < 1)
+                    {
+                        takexp = 1;
+                    }
+                    double newxp = xprecord.experience - takexp;
+                    double nextlevel = xprecord.requiredxp;
+                    // Make sure XP does not go negative
+                    if (newxp <= 0)
+                    {
+                        newxp = 0;
+                    }
+                    xprecord.experience = (int)newxp;
+                    if (nextlevel == config.xpLevel.levelstart) return;
+                    double prevlevel = xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier);
+                    if (xprecord.experience < prevlevel)
+                    {
+                        LvlDown(teammember, 0, 0);
+                    }
+                    LiveStats(teammember, true);
+                    // UINotify
+                    if (UINotify != null && config.UiNotifier.useuinotify && config.UiNotifier.xpgainloss)
+                    {
+                        UINotify.Call("SendNotify", teammember, config.UiNotifier.xpgainlosstype, XPLang("uinotify_xploss", teammember.UserIDString, Math.Round(takexp)));
+                    }
+                }             
+            }      
+        }
+                
         private void XPClans(BasePlayer player, double e, string type)
         {
             foreach (var allplayer in BasePlayer.activePlayerList)
@@ -2673,7 +3092,6 @@ namespace Oxide.Plugins
                 bool isinclan = Clans.Call<bool>("IsClanMember", player.UserIDString, allplayer.UserIDString);
                 if (isinclan && (allplayer != player))
                 {
-                    Puts($"{allplayer.UserIDString} | {isinclan}");
                     XPRecord xprecord = GetXPRecord(allplayer);
                     if (type == "addxp")
                     {
@@ -2688,7 +3106,6 @@ namespace Oxide.Plugins
                             LvlUp(allplayer, 0, 0);
                         }
                         LiveStats(allplayer, true);
-                        Puts($"Player:{allplayer.UserIDString} | +XP:{addxp}");
                         if (UINotify != null && config.UiNotifier.useuinotify && config.UiNotifier.xpgainloss && addxp != 0)
                         {
                             UINotify.Call("SendNotify", allplayer, config.UiNotifier.xpgainlosstype, XPLang("uinotify_xpgain", allplayer.UserIDString, Math.Round(addxp)));
@@ -2720,7 +3137,6 @@ namespace Oxide.Plugins
                             LvlDown(allplayer, 0, 0);
                         }
                         LiveStats(allplayer, true);
-                        Puts($"Player:{allplayer.UserIDString} | -XP:{takexp}");
                         // UINotify
                         if (UINotify != null && config.UiNotifier.useuinotify && config.UiNotifier.xpgainloss)
                         {
@@ -2817,7 +3233,8 @@ namespace Oxide.Plugins
                 var suicider = entity as BasePlayer;
                 if (suicider == null || !suicider.userID.IsSteamId()) return;
                 var r = GetXPRecord(suicider);
-                var reducexp = Math.Round(r.experience * config.xpReducer.suicidereduceamount);
+                double currentlevelamount = r.experience - (r.requiredxp - (r.level * config.xpLevel.levelmultiplier));
+                var reducexp = Math.Round(currentlevelamount * config.xpReducer.suicidereduceamount);
                 LoseExp(suicider, reducexp);
                 suicider.ChatMessage(XPLang("suicide", suicider.UserIDString, reducexp));
                 return;
@@ -2903,12 +3320,12 @@ namespace Oxide.Plugins
             // If Attack Type Not Detected Remove Error
             if (victim.lastDamage == null) return;
 
-
             // Update Player Data On deaths if enabled
             if(config.xpReducer.deathreduce)
             {            
                 XPRecord xprecord = GetXPRecord(victim);
-                var reducexp = Math.Round(xprecord.experience * config.xpReducer.deathreduceamount);
+                double currentlevelamount = xprecord.experience - (xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier));
+                var reducexp = Math.Round(currentlevelamount * config.xpReducer.deathreduceamount);
                 LoseExp(victim, reducexp);
                 victim.ChatMessage(XPLang("death", victim.UserIDString, reducexp));
             }
@@ -3150,6 +3567,12 @@ namespace Oxide.Plugins
             int skilllevel = xprecord.Crafter;
             double craftcost = (config.crafter.craftcost * skilllevel) * amount;
             double newamount = Math.Round(amount - craftcost);
+            // Captaincy
+            if (player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboost = CaptaincyTeamSkillBoost(player) * newamount;
+                newamount = Math.Round(newamount - captaincyboost);
+            }
             if (((config.crafter.craftcost * skilllevel) * 100) > 45 && (item == -1938052175 || item == -1581843485))
             {
                 craftcost = 0.45 * amount;
@@ -3231,6 +3654,12 @@ namespace Oxide.Plugins
                 double craftspeed = (config.crafter.craftspeed * skilllevel) * (task.blueprint.time * 0.5);
                 craftTime = task.blueprint.time - (float)craftspeed;
             }
+            // Captaincy
+            if (player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboost = CaptaincyTeamSkillBoost(player) * craftTime;
+                craftTime = (float)craftTime - (float)captaincyboost;
+            }
             task.blueprint = UnityEngine.Object.Instantiate(task.blueprint);
             task.blueprint.time = craftTime;
             return;
@@ -3249,7 +3678,13 @@ namespace Oxide.Plugins
             if (skilllevel <= 0) return;
 
             double conditionchance = (config.crafter.conditionchance * skilllevel) * 100;
-            float tenpercent = (float)(item._maxCondition / (config.crafter.conditionamount * 100));  // Adding max condition on top of whatever the total condition level is for the item.
+            float tenpercent = (float)(item._maxCondition / (config.crafter.conditionamount * 100));
+            // Captaincy
+            if (player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboost = CaptaincyTeamSkillBoost(player) * conditionchance;
+                conditionchance = conditionchance + captaincyboost;
+            }
 
             if (Random.Range(0, 100) <= conditionchance)
             {
@@ -3281,6 +3716,12 @@ namespace Oxide.Plugins
             XPRecord xprecord = GetXPRecord(player);
             var skilllevel = xprecord.Miner;
             double lessfueltotal = (config.miner.fuelconsumption * skilllevel) * 100;
+            // Captaincy
+            if (player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboost = CaptaincyTeamSkillBoost(player) * lessfueltotal;
+                lessfueltotal = lessfueltotal + captaincyboost;
+            }
             if (Random.Range(0, 110) <= lessfueltotal)
             {
                 return 0;
@@ -3301,6 +3742,8 @@ namespace Oxide.Plugins
         {
             List<ItemAmount> reducedlist = new List<ItemAmount>();
             var repairCostreduction = RepairBench.RepairCostFraction(item);
+            double defaultamount = 0;
+            double newamount = 0;
             XPRecord xprecord = GetXPRecord(player);
             int skilllevel = xprecord.Crafter;
             if (skilllevel <= 0) return null;
@@ -3308,13 +3751,18 @@ namespace Oxide.Plugins
             {
                 if (itemAmount.itemDef.category != ItemCategory.Component)
                 {
-                    itemAmount.amount = Mathf.CeilToInt(itemAmount.amount * repairCostreduction);
-                    itemAmount.amount = Mathf.Round((float) (itemAmount.amount - (config.crafter.repaircost * xprecord.Crafter) * itemAmount.amount));
-                    
-                    if (itemAmount.amount < 1)
+                    defaultamount = Math.Ceiling(itemAmount.amount * repairCostreduction);
+                    Puts($"Default: {defaultamount}");
+                    newamount = Math.Ceiling(defaultamount - (config.crafter.repaircost * xprecord.Crafter) * defaultamount);
+                    Puts($"New: {newamount}");
+
+                    if (newamount < 1)
                     {
-                        itemAmount.amount = 1;
+                        newamount = 1;
                     }
+
+                    itemAmount.amount = (float)newamount;
+                    Puts($"End: {itemAmount.amount}");
                     reducedlist.Add(itemAmount);
                 }
             }
@@ -3334,44 +3782,56 @@ namespace Oxide.Plugins
             return true;
         }
 
-        private object OnItemRepair(BasePlayer player, Item item)
+        private void OnItemRepair(BasePlayer player, Item item)
         {
-            if (player == null || item == null) return null;
+            if (player == null || item == null) return;
             XPRecord xprecord = GetXPRecord(player);
             int skilllevel = xprecord.Crafter;
-            if (skilllevel <= 0) return null;
+            if (skilllevel <= 0) return;
             double repairincrease = (config.crafter.repairincrease * skilllevel) * 100;
             var list = RepairItems(player, item);
             if (!PlayerCanRepair(player, list))
             {
-                return false;
+                player.ChatMessage(XPLang("crafternotenough", player.UserIDString));
+                return;
             }
+            bool takematerials = true;
             if (Random.Range(0, 100) <= repairincrease)
             {
                 if (item.GetHeldEntity() is BaseProjectile)
                 {
                     BaseProjectile projectile = item?.GetHeldEntity() as BaseProjectile;
-                    if (projectile == null) return null;
-
+                    if (projectile == null) return;
                     item._maxCondition = item._maxCondition;
                     item.condition = item._maxCondition;
                     projectile.SendNetworkUpdateImmediate();
+                    foreach (ItemAmount itemAmount in list)
+                    {
+                        player.inventory.Take((List<Item>)null, itemAmount.itemid, (int)itemAmount.amount);
+                    }
+                    return;
                 }
                 else
                 {
                     item._maxCondition = item._maxCondition;
                     item.condition = item._maxCondition;
                     item.GetHeldEntity()?.SendNetworkUpdateImmediate();
+                    foreach (ItemAmount itemAmount in list)
+                    {
+                        player.inventory.Take((List<Item>)null, itemAmount.itemid, (int)itemAmount.amount);
+                    }
+                    return;
                 }
-                
             }
-            foreach (ItemAmount itemAmount in list)
+            if (takematerials && PlayerCanRepair(player, list)) 
             {
-                player.inventory.Take((List<Item>)null, itemAmount.itemid, (int)itemAmount.amount);
+                foreach (ItemAmount itemAmount in list)
+                {
+                    player.inventory.Take((List<Item>)null, itemAmount.itemid, (int)itemAmount.amount);
+                }
             }
-            return true;
         }
-
+        
         private void OnEntityBuilt(Planner plan, GameObject gameObject)
         {
             var player = plan.GetOwnerPlayer();
@@ -3446,7 +3906,14 @@ namespace Oxide.Plugins
             var items = buildingBlock.blockDefinition.grades[(int)grade].costToBuild;
             foreach (var item in items)
             {
+
                 double reducedcost = item.amount * (config.framer.upgradecost * xprecord.Framer);
+                // Captaincy
+                if (player.Team != null && player.Team.members.Count > 1)
+                {
+                    double captaincyboost = CaptaincyTeamSkillBoost(player) * reducedcost;
+                    reducedcost = reducedcost + captaincyboost;
+                }
                 if (reducedcost < 1)
                 {
                     reducedcost = 1;
@@ -3495,6 +3962,12 @@ namespace Oxide.Plugins
                     amount.amount = 40f;
                 }
                 amount.amount = (float)(amount.amount * (repaircost * skilllevel));
+                // Captaincy
+                if (player.Team != null && player.Team.members.Count > 1)
+                {
+                    double captaincyboost = CaptaincyTeamSkillBoost(player) * amount.amount;
+                    amount.amount = (float)amount.amount + (float)captaincyboost;
+                }
             }
 
             if (itemAmounts.Any(ia => player.inventory.GetAmount(ia.itemid) < (int)ia.amount))
@@ -3522,6 +3995,13 @@ namespace Oxide.Plugins
                 XPRecord xprecord = GetXPRecord(player);
                 var skilllevel = xprecord.Smithy;
                 double lessfueltotal = (config.smithy.fuelconsumption * skilllevel) * 100;
+                // Captaincy
+                if (player.Team != null && player.Team.members.Count > 1)
+                {
+                    double captaincyboost = CaptaincyTeamSkillBoost(player) * lessfueltotal;
+                    lessfueltotal = lessfueltotal + captaincyboost;
+                }
+
                 if (Random.Range(0, 100) < lessfueltotal)
                 {
                     fuel.amount += 1;
@@ -3531,6 +4011,12 @@ namespace Oxide.Plugins
 
             XPRecord rec = GetXPRecord(player);
             double increasechance = (config.smithy.productionrate * rec.Smithy) * 100;
+            // Captaincy
+            if (player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboostincreasechance = CaptaincyTeamSkillBoost(player) * increasechance;
+                increasechance = increasechance + captaincyboostincreasechance;
+            }
             var items = oven.inventory.itemList.ToArray();
             foreach (var item in items)
             {
@@ -3609,13 +4095,17 @@ namespace Oxide.Plugins
                 gatherincrease = config.hunter.gatherrate;
                 skilllevel = xprecord.Hunter;
             }
-            //double results = item.amount * (gatherincrease * skilllevel);
             double results = item.amount + (item.amount * (gatherincrease * skilllevel));
+            // Captaincy
+            if(player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
+                results = results + captaincyboost;
+            }
             if (skilllevel >= 1)
             {
                 item.amount = (int)results;
             }
-
             GainExp(player, addxp);
         }
 
@@ -3647,8 +4137,13 @@ namespace Oxide.Plugins
                 bonus = config.hunter.bonusincrease;
                 skilllevel = xprecord.Hunter;
             }
-            //increaseamount = item.amount * (bonus * skilllevel);
             increaseamount = item.amount + (item.amount * (bonus * skilllevel));
+            // Captaincy
+            if (player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboost = CaptaincyTeamSkillBoost(player) * increaseamount;
+                increaseamount = increaseamount + captaincyboost;
+            }
             if (skilllevel >= 1)
             {
                 item.amount = (int)increaseamount;
@@ -3706,8 +4201,13 @@ namespace Oxide.Plugins
             {
                 addxp = config.xpGather.plantxp;
             }
-            //double results = item.amount * (gatherincrease * skilllevel);
             double results = item.amount + (item.amount * (gatherincrease * skilllevel));
+            // Captaincy
+            if (player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
+                results = results + captaincyboost;
+            }
             if (skilllevel >= 1)
             {
                 if (results <= 1.5 && gatherincrease != 0)
@@ -3729,7 +4229,6 @@ namespace Oxide.Plugins
             double addxp = 0;
             double gatherincrease = config.forager.gatherrate;
             int skilllevel = xprecord.Forager;
-
             var name = item.info.shortname;
             if (name.StartsWith("seed"))
             {
@@ -3745,7 +4244,6 @@ namespace Oxide.Plugins
                 }
                 return;
             }
-
             if (name.Contains("wood"))
             {
                 addxp = config.xpGather.treexp;
@@ -3754,9 +4252,14 @@ namespace Oxide.Plugins
             {
                 addxp = config.xpGather.plantxp;
             }
-
             //double results = item.amount * (gatherincrease * skilllevel);
             double results = item.amount + (item.amount * (gatherincrease * skilllevel));
+            // Captaincy
+            if (player.Team != null && player.Team.members.Count > 1)
+            {
+                double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
+                results = results + captaincyboost;
+            }
             if (skilllevel >= 1)
             {
                 if (results <= 1.5 && gatherincrease != 0)
@@ -3768,7 +4271,6 @@ namespace Oxide.Plugins
                     item.amount = (int)results;
                 }
             }
-
             GainExp(player, addxp);
         }
 
@@ -3784,14 +4286,25 @@ namespace Oxide.Plugins
                 if (fishname.Contains("anchovy") || fishname.Contains("catfish") || fishname.Contains("herring") || fishname.Contains("minnow") || fishname.Contains("roughy") || fishname.Contains("salmon") || fishname.Contains("sardine") || fishname.Contains("shark") || fishname.Contains("trout") || fishname.Contains("Perch"))
                 {
                     double results = Math.Round(fish.amount + (xprecord.Fisher * config.fisher.fishamountincrease));
+                    // Captaincy
+                    if (player.Team != null && player.Team.members.Count > 1)
+                    {
+                        double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
+                        results = results + captaincyboost;
+                    }
                     fish.amount = (int)results;
                 }
                 else
                 {
                     double results = Math.Round(fish.amount + (xprecord.Fisher * config.fisher.itemamountincrease));
+                    // Captaincy
+                    if (player.Team != null && player.Team.members.Count > 1)
+                    {
+                        double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
+                        results = results + captaincyboost;
+                    }
                     fish.amount = (int)results;
                 }
-
             }
         }
         
@@ -3812,8 +4325,9 @@ namespace Oxide.Plugins
 
         private object OnResearchCostDetermine(Item item, ResearchTable researchTable)
         {
+            if (item == null || researchTable == null) return null;
             XPRecord xprecord = GetXPRecord(researchTable.user);
-            if (xprecord.Mentality == 0) return null;
+            if (xprecord.Mentality == 0 || xprecord == null) return null;
             int rarityvalue = rarityValues[item.info.rarity];
             double reducecost = (config.mentality.researchcost * xprecord.Mentality) * rarityvalue;
             double researchcost = rarityvalue - reducecost;
@@ -4025,11 +4539,71 @@ namespace Oxide.Plugins
             }
         }
         
+        // Captaincy
+
+        private double CaptaincyTeamSkillBoost(BasePlayer player)
+        {
+            if (!CaptaincyTeamDistance(player) || player == null || !player.userID.IsSteamId() || player.Team == null || player.Team.members.Count <= 1) return 0;
+            foreach (var team in player.Team.members)
+            {
+                if (team == player.userID) continue;
+                BasePlayer teammember = RelationshipManager.FindByID(team);
+                XPRecord teamxprecord = GetXPRecord(teammember);
+                if (teamxprecord.Captaincy <= 0) continue;
+                double skillboost = teamxprecord.Captaincy * config.captaincy.skillboost;
+                return skillboost;
+            }
+            return 0;
+        }
+
+        private double CaptaincyTeamXPBoost(BasePlayer player)
+        {
+            if (!CaptaincyTeamDistance(player) || player == null || !player.userID.IsSteamId() || player.Team == null || player.Team.members.Count <= 1) return 0;
+            foreach (var team in player.Team.members)
+            {
+                if (team == player.userID) continue;
+                BasePlayer teammember = RelationshipManager.FindByID(team);
+                XPRecord teamxprecord = GetXPRecord(teammember);
+                if (teamxprecord.Captaincy <= 0) continue;
+                double addxp = (teamxprecord.Captaincy * config.captaincy.xpboost);
+                return addxp;
+            }
+            return 0;
+        }
+
+        private bool CaptaincyTeamDistance(BasePlayer player)
+        {
+            if (player == null || !player.userID.IsSteamId() || player.Team == null || player.Team.members.Count <= 1) return false;
+            foreach (var team in player.Team.members)
+            {
+                if (team == player.userID) continue;
+                BasePlayer teammember = RelationshipManager.FindByID(team);
+                if (teammember == null || !teammember.IsConnected) continue;
+                XPRecord teamxprecord = GetXPRecord(teammember);
+                if (teamxprecord.Captaincy <= 0) continue;
+                float teamdistance = teamxprecord.Captaincy * config.captaincy.captaincydistance;           
+                if (Vector3.Distance(player.transform.position, teammember.transform.position) >= teamdistance) continue;
+                return true;
+            }
+            return false;
+        }
+
+
         #endregion
 
         #region Chat Commands
 
         // Chat Commands
+
+        [ChatCommand("dmg")]
+        private void cmddmg(BasePlayer player, string command, string[] args)
+        {
+            var item = player.GetActiveItem();
+            //item._maxCondition = ;  < optional
+            item.condition = 10f;
+            Puts($"{item.info.displayName.english} | Condition is set at {item.condition}, Default max is {item.maxCondition}");
+        }
+
         [ChatCommand("xphelp")]
         private void cmdxphelp(BasePlayer player, string command, string[] args)
         {
@@ -4096,12 +4670,22 @@ namespace Oxide.Plugins
         [ChatCommand("xpresetstats")]
         private void cmdresetstats(BasePlayer player, string command, string[] args)
         {
+            if (config.defaultOptions.hardcorenoreset)
+            {
+                player.ChatMessage(XPLang("hardcorenoreset", player.UserIDString));
+                return;
+            }
             StatsReset(player);
         }
 
         [ChatCommand("xpresetskills")]
         private void cmdresetskills(BasePlayer player, string command, string[] args)
         {
+            if (config.defaultOptions.hardcorenoreset)
+            {
+                player.ChatMessage(XPLang("hardcorenoreset", player.UserIDString));
+                return;
+            }
             SkillsReset(player);
         }
 
@@ -4226,7 +4810,7 @@ namespace Oxide.Plugins
                 return;
             }
             double amount = Convert.ToDouble(args[1]);
-            var selectplayer = BasePlayer.FindByID(Convert.ToUInt64(user.Value.id));
+            var selectplayer = FindPlayer(user.Value.id.ToString());
             XPRecord xprecord = GetXPRecord(selectplayer);
             GainExpAdmin(selectplayer, amount);
             player.ChatMessage(XPLang("xpgiveplayer", player.UserIDString, user.Value.displayname, amount, xprecord.experience));     
@@ -4253,9 +4837,9 @@ namespace Oxide.Plugins
                 return;
             }
             double amount = Convert.ToDouble(args[1]);
-            var selectplayer = BasePlayer.FindByID(Convert.ToUInt64(user.Value.id));
+            var selectplayer = FindPlayer(user.Value.id.ToString());
             XPRecord xprecord = GetXPRecord(selectplayer);
-            LoseExp(selectplayer, amount);
+            LoseExpAdmin(selectplayer, amount);
             player.ChatMessage(XPLang("xptakeplayer", player.UserIDString, amount, user.Value.displayname, xprecord.experience));
         }
 
@@ -4263,85 +4847,26 @@ namespace Oxide.Plugins
         private void UpdateAllPlayers(BasePlayer player, string command, string[] args)
         {
             if (!player.IsAdmin && !permission.UserHasPermission(player.UserIDString, Admin)) return;
-            foreach (var allPlayer in BasePlayer.allPlayerList)
+            PlayerFixDataAll(player);
+        }
+
+        [ChatCommand("xpreset")]
+        private void cmdxpresetplayer(BasePlayer player, string command, string[] args)
+        {
+            if (!player.IsAdmin && !permission.UserHasPermission(player.UserIDString, Admin)) return;
+            if (args.Length == 0)
             {
-                if (!allPlayer.UserIDString.IsSteamId()) continue;
-                XPRecord xprecord = GetXPRecord(allPlayer);
-                // Reset Level, Required XP & Stat/Skill Points
-                xprecord.level = 0;
-                if(xprecord.experience <= 0)
-                {
-                    xprecord.experience = 0;
-                }
-                xprecord.requiredxp = 25;
-                xprecord.statpoint = 0;
-                xprecord.skillpoint = 0;
-                // Reset max health if needed before removing points
-                if (allPlayer._maxHealth > 100 || allPlayer._health > 100)
-                {
-                    // Get Stats
-                    double armor = (xprecord.Might * config.might.armor) * 100;
-                    double currentmaxhealth = allPlayer._maxHealth;
-                    double currenthealth = Mathf.Ceil(allPlayer._health);
-                    // Remove Armor
-                    double newmaxhealth = currentmaxhealth - armor;
-                    double newhealth = currenthealth - armor;
-                    // Change Health
-                    if (newmaxhealth < 100)
-                    {
-                        allPlayer._maxHealth = 100;
-                        allPlayer._health = (float)newhealth;
-                    }
-                    else
-                    {
-                        allPlayer._maxHealth = (float)newmaxhealth;
-                        allPlayer._health = (float)newhealth;
-                    }
-                    //allPlayer._health = 100;
-                }
-                // Reset Stat Levels
-                xprecord.Mentality = 0;
-                xprecord.Dexterity = 0;
-                xprecord.Might = 0;
-                xprecord.Chemist = 0;
-                // Reset Stat Spent Points
-                xprecord.MentalityP = 0;
-                xprecord.DexterityP = 0;
-                xprecord.MightP = 0;
-                xprecord.ChemistP = 0;
-                // Reset Skill Levels
-                xprecord.WoodCutter = 0;
-                xprecord.Smithy = 0;
-                xprecord.Miner = 0;
-                xprecord.Forager = 0;
-                xprecord.Hunter = 0;
-                xprecord.Fisher = 0;
-                xprecord.Crafter = 0;
-                xprecord.Framer = 0;
-                xprecord.Medic = 0;
-                xprecord.Tamer = 0;
-                // Reset Skill Spents Points
-                xprecord.WoodCutterP = 0;
-                xprecord.SmithyP = 0;
-                xprecord.MinerP = 0;
-                xprecord.ForagerP = 0;
-                xprecord.HunterP = 0;
-                xprecord.FisherP = 0;
-                xprecord.CrafterP = 0;
-                xprecord.FramerP = 0;
-                xprecord.MedicP = 0;
-                xprecord.TamerP = 0;
-                // Check/Reset Tamer permissions
-                PetChecks(allPlayer, true);
-                // Set LiveUI Location to Default
-                xprecord.UILocation = config.defaultOptions.liveuistatslocation;
-                // Run Level Up to Recalculate Players Data
-                LvlUp(allPlayer, 0, 0);
-                // Update Live UI
-                LiveStats(allPlayer, true);
-                // Notify Players
-                player.ChatMessage(XPLang("adminfixplayers", player.UserIDString));
+                player.ChatMessage(XPLang("xpresetneedname", player.UserIDString));
+                return;
             }
+            var user = _xperienceCache.ToList().FirstOrDefault(x => x.Value.displayname.ToString().ToLower().Contains(args[0].ToLower()));
+            if (user.Value == null)
+            {
+                player.ChatMessage(XPLang("xpresetnotfound", player.UserIDString));
+                return;
+            }
+            var selectplayer = FindPlayer(user.Value.id.ToString());
+            PlayerReset(player, selectplayer);
         }
 
         #endregion
@@ -4382,6 +4907,11 @@ namespace Oxide.Plugins
         {
             var player = arg.Player();
             if (player == null) return;
+            if(config.defaultOptions.hardcorenoreset)
+            {
+                player.ChatMessage(XPLang("hardcorenoreset", player.UserIDString));
+                return;
+            }
             StatsReset(player);
             DestroyUi(player, XPeriencePlayerControlPrimary);
             PlayerControlPanel(player);
@@ -4392,6 +4922,11 @@ namespace Oxide.Plugins
         {
             var player = arg.Player();
             if (player == null) return;
+            if (config.defaultOptions.hardcorenoreset)
+            {
+                player.ChatMessage(XPLang("hardcorenoreset", player.UserIDString));
+                return;
+            }
             SkillsReset(player);
             DestroyUi(player, XPeriencePlayerControlPrimary);
             PlayerControlPanel(player);
@@ -4507,6 +5042,11 @@ namespace Oxide.Plugins
         {
             var player = arg.Player();
             if (player == null) return;
+            if (config.defaultOptions.disableplayerfixdata)
+            {
+                player.ChatMessage(XPLang("fixdatadisabled", player.UserIDString));
+                return;
+            }
             PlayerFixData(player);
             DestroyUi(player, XPeriencePlayerControlPrimary);
         }
@@ -4550,6 +5090,10 @@ namespace Oxide.Plugins
             else if (info == "might")
             {
                 data = _xperienceCache.Values.OrderByDescending(i => i.Might);
+            }
+            else if (info == "captaincy")
+            {
+                data = _xperienceCache.Values.OrderByDescending(i => i.Captaincy);
             }
             else if (info == "chemist")
             {
@@ -4927,23 +5471,36 @@ namespace Oxide.Plugins
                 double might = config.might.coldtolerance * 100;
                 value = might.ToString();
             }
-            // Chemist
-            if (option == "chemlevel")
+            // Captaincy
+            if (option == "captlevel")
             {
-                value = config.chemist.maxlvl.ToString();
+                value = config.captaincy.maxlvl.ToString();
             }
-            if (option == "chemcost")
+            if (option == "captcost")
             {
-                value = config.chemist.pointcoststart.ToString();
+                value = config.captaincy.pointcoststart.ToString();
             }
-            if (option == "chemmultiplier")
+            if (option == "captmultiplier")
             {
-                value = config.chemist.costmultiplier.ToString();
+                value = config.captaincy.costmultiplier.ToString();
             }
-            if (option == "chemcraft")
+            if (option == "captdistance")
             {
-                double chemcraft = config.chemist.crafttime * 100;
-                value = chemcraft.ToString();
+                value = config.captaincy.captaincydistance.ToString();
+            }
+            if (option == "captskillboost")
+            {
+                double captskillboost = config.captaincy.skillboost * 100;
+                value = captskillboost.ToString();
+            }
+            if (option == "captxpboost")
+            {
+                double captxpboost = config.captaincy.xpboost * 100;
+                value = captxpboost.ToString();
+            }
+            if (option == "captxpboostenabled")
+            {
+                value = config.captaincy.enablexpboost.ToString();
             }
             // WoodCutter
             if (option == "woodcutterlev")
@@ -5808,26 +6365,29 @@ namespace Oxide.Plugins
                 }, XPeriencePlayerControlPrimary);
             }
             // Fix Data Button
-            ControlPanelelements.Add(new CuiButton
+            if (!config.defaultOptions.disableplayerfixdata)
             {
-                Button =
+                ControlPanelelements.Add(new CuiButton
+                {
+                    Button =
                 {
                     Command = "xp.help 7",
                     Color = "1.0 0.0 0.0 1.0"
                 },
-                RectTransform =
+                    RectTransform =
                 {
                     AnchorMin = "0.50 0.95",
                     AnchorMax = "0.60 0.99"
                 },
-                Text =
+                    Text =
                 {
                     Text = $"{XPLang("playerfixdatabutton", player.UserIDString)}",
                     FontSize = 12,
                     Color = "1.0 1.0 1.0 1.0",
                     Align = TextAnchor.MiddleCenter
                 }
-            }, XPeriencePlayerControlPrimary);
+                }, XPeriencePlayerControlPrimary);
+            }
             // Reset Skills Button
             DateTime resettimeskills = xprecord.resettimerskills.AddMinutes(config.defaultOptions.resetminsskills);
             TimeSpan skillinterval = resettimeskills - DateTime.Now;
@@ -5923,12 +6483,10 @@ namespace Oxide.Plugins
             {
                 ControlPanelelements.Add(XPUILabel($"{XPLang("might", player.UserIDString)}: <color={TextColor("spent", xprecord.MightP)}>{xprecord.MightP}</color>", 13, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             }
-            /*
-            if (config.chemist.maxlvl != 0)
+            if (config.captaincy.maxlvl != 0)
             {
-                ControlPanelelements.Add(XPUILabel($"{XPLang("chemist", player.UserIDString)}: <color={TextColor("spent", xprecord.ChemistP)}>{xprecord.ChemistP}</color>", 14, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
+                ControlPanelelements.Add(XPUILabel($"{XPLang("captaincy", player.UserIDString)}: <color={TextColor("spent", xprecord.CaptaincyP)}>{xprecord.CaptaincyP}</color>", 14, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             }
-            */
             if (config.woodcutter.maxlvl != 0)
             {
                 ControlPanelelements.Add(XPUILabel($"{XPLang("woodcutter", player.UserIDString)}: <color={TextColor("spent", xprecord.WoodCutterP)}>{xprecord.WoodCutterP}</color>", 15, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
@@ -6100,6 +6658,30 @@ namespace Oxide.Plugins
                         }
                 }, XPeriencePlayerControlMain);
             }
+            // Kill Records Button
+            if (KillRecords != null && config.xpBonus.showkrbutton)
+            {
+                ControlPanelelements.Add(new CuiButton
+                {
+                    Button =
+                        {
+                            Command = $"xp.killrecords {player.UserIDString}",
+                            Color = "0.2 0.2 0.2 1.0"
+                        },
+                    RectTransform =
+                        {
+                    AnchorMin = $"0.20 {1 - height*29 + 29 * .002f}",
+                    AnchorMax = $"0.80 {1 - height*(29-1) + 29 * .002f}"
+                        },
+                    Text =
+                        {
+                            Text = "View Kill Records",
+                            FontSize = 15,
+                            Color = "1.0 0.0 0.0 1.0",
+                            Align = TextAnchor.MiddleCenter
+                        }
+                }, XPeriencePlayerControlMain);
+            }       
             // Primary - Stats
             ControlPanelelements.Add(XPUIPanel("0.26 0.0", "0.50 0.93", "0.0 0.0 0.0 0.95"), XPeriencePlayerControlPrimary, XPeriencePlayerControlStats);
             ControlPanelelements.Add(XPUILabel($"{XPLang("stats", player.UserIDString)}", 1, height, TextAnchor.MiddleCenter, 15, "0.0", "1.0", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
@@ -6210,17 +6792,16 @@ namespace Oxide.Plugins
             }
             // Spacer
             ControlPanelelements.Add(XPUILabel($"----------------------------------------------------------------", 22, height, TextAnchor.MiddleLeft, 5, "0.0", "1.0", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
-            // Chemist
-            /*
-            if (config.chemist.maxlvl != 0)
+            // Captaincy
+            if (config.captaincy.maxlvl != 0)
             {
-                if (xprecord.Chemist < config.chemist.maxlvl && config.chemist.maxlvl != 0)
+                if (xprecord.Captaincy < config.captaincy.maxlvl && config.captaincy.maxlvl != 0 && player.Team != null)
                 {
                     ControlPanelelements.Add(new CuiButton
                     {
                         Button =
                         {
-                            Command = $"xp.addstat chemist {player.UserIDString}",
+                            Command = $"xp.addstat captaincy {player.UserIDString}",
                             Color = "0.3 0.3 0.3 0.0"
                         },
                         RectTransform =
@@ -6237,33 +6818,17 @@ namespace Oxide.Plugins
                         }
                     }, XPeriencePlayerControlStats);
                 }
-                ControlPanelelements.Add(XPUILabel($"{XPLang("chemist", player.UserIDString)}: <color={TextColor("level", xprecord.Chemist)}>{xprecord.Chemist}</color>", 23, height, TextAnchor.MiddleLeft, 12, "0.1", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
-                ControlPanelelements.Add(XPUILabel($"<color=red>▫</color> {XPLang("craftspeed", player.UserIDString)}: <color={TextColor("perk", xprecord.Chemist)}>-{(xprecord.Chemist * config.chemist.crafttime) * 100}%</color>", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
-            }
-            */
-            // Kill Records Button
-            if(KillRecords != null && config.xpBonus.showkrbutton)
-            {
-                ControlPanelelements.Add(new CuiButton
+                ControlPanelelements.Add(XPUILabel($"{XPLang("captaincy", player.UserIDString)}: <color={TextColor("level", xprecord.Captaincy)}>{xprecord.Captaincy}</color>", 23, height, TextAnchor.MiddleLeft, 12, "0.1", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
+                if (player.Team != null)
                 {
-                    Button =
-                        {
-                            Command = $"xp.killrecords {player.UserIDString}",
-                            Color = "0.2 0.2 0.2 1.0"
-                        },
-                    RectTransform =
-                        {
-                    AnchorMin = $"0.20 {1 - height*25 + 25 * .002f}",
-                    AnchorMax = $"0.80 {1 - height*(25-1) + 25 * .002f}"
-                        },
-                    Text =
-                        {
-                            Text = "View Kill Records",
-                            FontSize = 15,
-                            Color = "1.0 0.0 0.0 1.0",
-                            Align = TextAnchor.MiddleCenter
-                        }
-                }, XPeriencePlayerControlStats);
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫</color> {XPLang("captaincydistance", player.UserIDString)}: <color={TextColor("perk", xprecord.Captaincy)}>{xprecord.Captaincy * config.captaincy.captaincydistance} FT</color>", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫</color> {XPLang("captaincyskillboost", player.UserIDString)}: <color={TextColor("perk", xprecord.Captaincy)}>+{(xprecord.Captaincy * config.captaincy.skillboost) * 100}%</color>", 25, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫</color> {XPLang("captaincyxpboost", player.UserIDString)}: <color={TextColor("perk", xprecord.Captaincy)}>+{(xprecord.Captaincy * config.captaincy.xpboost) * 100}%</color>", 26, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
+                }
+                else
+                {
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫</color> {XPLang("captaincyteamrequired", player.UserIDString)}", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
+                }
             }
             // Secondary - Skills
             ControlPanelelements.Add(XPUIPanel("0.51 0.0", "1.0 0.93", "0.0 0.0 0.0 0.95"), XPeriencePlayerControlPrimary, XPeriencePlayerControlSkills);
@@ -6720,13 +7285,13 @@ namespace Oxide.Plugins
             {
                 ControlPanelelements.Add(XPUIButton("xp.topxp might", 4, selectionheight, 11, dcolor, $" {XPLang("might", player.UserIDString)}"), XPerienceTopSelection);
             }
-            if (info == "chemist")
+            if (info == "captaincy")
             {
-                ControlPanelelements.Add(XPUIButton("xp.topxp chemist", 5, selectionheight, 11, scolor, $"{selected} {XPLang("chemist", player.UserIDString)}"), XPerienceTopSelection);
+                ControlPanelelements.Add(XPUIButton("xp.topxp captaincy", 5, selectionheight, 11, scolor, $"{selected} {XPLang("captaincy", player.UserIDString)}"), XPerienceTopSelection);
             }
             else
             {
-                ControlPanelelements.Add(XPUIButton("xp.topxp chemist", 5, selectionheight, 11, dcolor, $" {XPLang("chemist", player.UserIDString)}"), XPerienceTopSelection);
+                ControlPanelelements.Add(XPUIButton("xp.topxp captaincy", 5, selectionheight, 11, dcolor, $" {XPLang("captaincy", player.UserIDString)}"), XPerienceTopSelection);
             }
             if (info == "woodcutter")
             {
@@ -6860,13 +7425,13 @@ namespace Oxide.Plugins
                     }
                     ControlPanelelements.Add(XPUIButton($"xp.player {playerdata.id}", i, height, 15, "0.0 0.0 0.0 0.0", $"{n}. {playerdata.displayname}: {playerdata.Might}", "0.03", "1"), XPerienceTopInner);
                 }
-                else if (info == "chemist" && playerdata.Chemist != 0)
+                else if (info == "captaincy" && playerdata.Captaincy != 0)
                 {
                     if (playerdata.displayname == _xperienceCache[player.UserIDString].displayname)
                     {
                         ControlPanelelements.Add(XPUILabel(("➤"), i, height, TextAnchor.MiddleLeft, 15, "-0.050", "1", "1 0.92 0.016 1"), XPerienceTopInner);
                     }
-                    ControlPanelelements.Add(XPUIButton($"xp.player {playerdata.id}", i, height, 15, "0.0 0.0 0.0 0.0", $"{n}. {playerdata.displayname}: {playerdata.Chemist}", "0.03", "1"), XPerienceTopInner);
+                    ControlPanelelements.Add(XPUIButton($"xp.player {playerdata.id}", i, height, 15, "0.0 0.0 0.0 0.0", $"{n}. {playerdata.displayname}: {playerdata.Captaincy}", "0.03", "1"), XPerienceTopInner);
                 }
                 else if (info == "woodcutter" && playerdata.WoodCutter != 0)
                 {
@@ -7011,7 +7576,6 @@ namespace Oxide.Plugins
             {
                 levelpercent = ((xprecord.experience - (xprecord.requiredxp / config.xpLevel.levelmultiplier)) / (xprecord.requiredxp - (xprecord.requiredxp / config.xpLevel.levelmultiplier))) * 100;
             }
-
             ControlPanelelements.Add(XPUIPanel("0.0 0.0", "0.25 0.93", "0.0 0.0 0.0 0.95"), XPeriencePlayerControlPrimary, XPeriencePlayerControlMain);
             ControlPanelelements.Add(XPUILabel($"{xprecord.displayname}", 1, height, TextAnchor.MiddleCenter, 15, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             ControlPanelelements.Add(XPUILabel($"----------------------------------------------------------------", 2, height, TextAnchor.MiddleCenter, 9, "0.0", "1.0", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
@@ -7037,12 +7601,10 @@ namespace Oxide.Plugins
             {
                 ControlPanelelements.Add(XPUILabel($"{XPLang("might", player.UserIDString)}: <color={TextColor("spent", xprecord.MightP)}>{xprecord.MightP}</color>", 13, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             }
-            /*
-            if (config.chemist.maxlvl != 0)
+            if (config.captaincy.maxlvl != 0)
             {
-                ControlPanelelements.Add(XPUILabel($"{XPLang("chemist", player.UserIDString)}: <color={TextColor("spent", xprecord.ChemistP)}>{xprecord.ChemistP}</color>", 14, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
+                ControlPanelelements.Add(XPUILabel($"{XPLang("captaincy", player.UserIDString)}: <color={TextColor("spent", xprecord.CaptaincyP)}>{xprecord.CaptaincyP}</color>", 14, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             }
-            */
             if (config.woodcutter.maxlvl != 0)
             {
                 ControlPanelelements.Add(XPUILabel($"{XPLang("woodcutter", player.UserIDString)}: <color={TextColor("spent", xprecord.WoodCutterP)}>{xprecord.WoodCutterP}</color>", 15, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
@@ -7083,6 +7645,30 @@ namespace Oxide.Plugins
             {
                 ControlPanelelements.Add(XPUILabel($"{XPLang("tamer", player.UserIDString)}: <color={TextColor("spent", xprecord.TamerP)}>{xprecord.TamerP}</color>", 24, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             }            
+            // Kill Records Button
+            if (KillRecords != null && config.xpBonus.showkrbutton)
+            {
+                ControlPanelelements.Add(new CuiButton
+                {
+                    Button =
+                        {
+                            Command = $"xp.killrecords {xprecord.displayname}",
+                            Color = "0.2 0.2 0.2 1.0"
+                        },
+                    RectTransform =
+                        {
+                    AnchorMin = $"0.20 {1 - height*26 + 26 * .002f}",
+                    AnchorMax = $"0.80 {1 - height*(26-1) + 26 * .002f}"
+                        },
+                    Text =
+                        {
+                            Text = "View Kill Records",
+                            FontSize = 15,
+                            Color = "1.0 0.0 0.0 1.0",
+                            Align = TextAnchor.MiddleCenter
+                        }
+                }, XPeriencePlayerControlMain);
+            }
             // Primary - Stats
             ControlPanelelements.Add(XPUIPanel("0.26 0.0", "0.50 0.93", "0.0 0.0 0.0 0.95"), XPeriencePlayerControlPrimary, XPeriencePlayerControlStats);
             ControlPanelelements.Add(XPUILabel($"{XPLang("stats", player.UserIDString)}", 1, height, TextAnchor.MiddleCenter, 15, "0.0", "1.0", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
@@ -7119,42 +7705,16 @@ namespace Oxide.Plugins
                 ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("radiation", player.UserIDString)}: <color={TextColor("perk", xprecord.Might)}>-{(config.might.radreduction * xprecord.Might) * 100}%</color>", 19, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
                 ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("heat", player.UserIDString)}: <color={TextColor("perk", xprecord.Might)}>+{(config.might.heattolerance * xprecord.Might) * 100}%</color>", 20, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
                 ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("cold", player.UserIDString)}: <color={TextColor("perk", xprecord.Might)}>+{(config.might.coldtolerance * xprecord.Might) * 100}%</color>", 21, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
-                //ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("heat", player.UserIDString)}: <color={TextColor("perk", xprecord.Might)}>+(disabled)</color>", 20, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
-                //ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("cold", player.UserIDString)}: <color={TextColor("perk", xprecord.Might)}>+(disabled)</color>", 21, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
             }
             // Spacer
             ControlPanelelements.Add(XPUILabel($"----------------------------------------------------------------", 22, height, TextAnchor.MiddleLeft, 5, "0.0", "1.0", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
-            // Chemist
-            /*
-            if (config.chemist.maxlvl != 0)
+            // Captaincy
+            if (config.captaincy.maxlvl != 0)
             {
-                ControlPanelelements.Add(XPUILabel($"{XPLang("chemist", player.UserIDString)}: <color={TextColor("level", xprecord.Chemist)}>{xprecord.Chemist}</color>", 23, height, TextAnchor.MiddleLeft, 12, "0.1", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
-                ControlPanelelements.Add(XPUILabel($"<color=red>▫</color>{XPLang("craftspeed", player.UserIDString)}: <color={TextColor("perk", xprecord.Chemist)}>-{(xprecord.Chemist * config.chemist.crafttime) * 100}%</color>", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
-            }
-            */
-            // Kill Records Button
-            if (KillRecords != null && config.xpBonus.showkrbutton)
-            {
-                ControlPanelelements.Add(new CuiButton
-                {
-                    Button =
-                        {
-                            Command = $"xp.killrecords {xprecord.displayname}",
-                            Color = "0.2 0.2 0.2 1.0"
-                        },
-                    RectTransform =
-                        {
-                    AnchorMin = $"0.20 {1 - height*25 + 25 * .002f}",
-                    AnchorMax = $"0.80 {1 - height*(25-1) + 25 * .002f}"
-                        },
-                    Text =
-                        {
-                            Text = "View Kill Records",
-                            FontSize = 15,
-                            Color = "1.0 0.0 0.0 1.0",
-                            Align = TextAnchor.MiddleCenter
-                        }
-                }, XPeriencePlayerControlStats);
+                ControlPanelelements.Add(XPUILabel($"{XPLang("captaincy", player.UserIDString)}: <color={TextColor("level", xprecord.Captaincy)}>{xprecord.Captaincy}</color>", 23, height, TextAnchor.MiddleLeft, 12, "0.1", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
+                ControlPanelelements.Add(XPUILabel($"<color=red>▫</color> {XPLang("captaincydistance", player.UserIDString)}: <color={TextColor("perk", xprecord.Captaincy)}>{xprecord.Captaincy * config.captaincy.captaincydistance} FT</color>", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
+                ControlPanelelements.Add(XPUILabel($"<color=red>▫</color> {XPLang("captaincyskillboost", player.UserIDString)}: <color={TextColor("perk", xprecord.Captaincy)}>+{(xprecord.Captaincy * config.captaincy.skillboost) * 100}%</color>", 25, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
+                ControlPanelelements.Add(XPUILabel($"<color=red>▫</color> {XPLang("captaincyxpboost", player.UserIDString)}: <color={TextColor("perk", xprecord.Captaincy)}>+{(xprecord.Captaincy * config.captaincy.xpboost) * 100}%</color>", 26, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlStats);
             }
             // Secondary - Skills
             ControlPanelelements.Add(XPUIPanel("0.51 0.0", "1.0 0.93", "0.0 0.0 0.0 0.95"), XPeriencePlayerControlPrimary, XPeriencePlayerControlSkills);
@@ -7727,13 +8287,12 @@ namespace Oxide.Plugins
                     AnchorMax = "0.99 0.46"
                 }
                 }, XPerienceHelp);
-                // Chemist
-                /*
+                // Captaincy
                 ControlPanelelements.Add(new CuiLabel
                 {
                     Text =
                 {
-                    Text = $"[{XPLang("chemist", player.UserIDString)}]",
+                    Text = $"[{XPLang("captaincy", player.UserIDString)}]",
                     FontSize = 15,
                     Align = TextAnchor.UpperLeft,
                     Color = "1.0 1.0 1.0 1.0"
@@ -7748,7 +8307,7 @@ namespace Oxide.Plugins
                 {
                     Text =
                 {
-                    Text = $"{XPLang("aboutchemist", player.UserIDString)}",
+                    Text = $"{XPLang("aboutcaptaincy", player.UserIDString)}",
                     FontSize = 12,
                     Align = TextAnchor.UpperLeft,
                     Color = "1.0 1.0 1.0 1.0"
@@ -7763,7 +8322,7 @@ namespace Oxide.Plugins
                 {
                     Text =
                 {
-                    Text = $"{XPLang("aboutchemistsettings", player.UserIDString, ServerSettings("chemlevel"), ServerSettings("chemcost"), ServerSettings("chemmultiplier"), ServerSettings("chemcraft"))}",
+                    Text = $"{XPLang("aboutcaptaincysettings", player.UserIDString, ServerSettings("captlevel"), ServerSettings("captcost"), ServerSettings("captmultiplier"), ServerSettings("captdistance"), ServerSettings("captskillboost"), ServerSettings("captxpboostenabled"), ServerSettings("captxpboost"))}",
                     FontSize = 10,
                     Align = TextAnchor.UpperLeft,
                     Color = "1.0 1.0 1.0 1.0"
@@ -7774,7 +8333,6 @@ namespace Oxide.Plugins
                     AnchorMax = "0.99 0.20"
                 }
                 }, XPerienceHelp);
-                */
             }
             if (page == 4)
             {
@@ -8349,7 +8907,10 @@ namespace Oxide.Plugins
                 TimeSpan datainterval = resettimedata - DateTime.Now;
                 int datatimer = (int)datainterval.TotalMinutes;
                 var button = "";
-
+                if (config.defaultOptions.bypassadminreset && player.IsAdmin && permission.UserHasPermission(player.UserIDString, XPerience.Admin))
+                {
+                    datatimer = 0;
+                }
                 if (datatimer > 0)
                 {
                     button = $"{XPLang("resettimerdata", player.UserIDString, datatimer)}";
@@ -8358,27 +8919,52 @@ namespace Oxide.Plugins
                 {
                     button = $"{XPLang("playerfixdatabutton", player.UserIDString)}";
                 }
-
-                ControlPanelelements.Add(new CuiButton
+                if (!config.defaultOptions.disableplayerfixdata)
                 {
-                    Button =
-                {
-                    Command = "xp.playerfixdata",
-                    Color = "1.0 0.0 0.0 1.0"
-                },
-                    RectTransform =
-                {
-                    AnchorMin = "0.45 0.45",
-                    AnchorMax = "0.55 0.50"
-                },
-                    Text =
-                {
-                    Text = $"{button}",
-                    FontSize = 12,
-                    Color = "1.0 1.0 1.0 1.0",
-                    Align = TextAnchor.MiddleCenter
+                    ControlPanelelements.Add(new CuiButton
+                    {
+                        Button =
+                    {
+                        Command = "xp.playerfixdata",
+                        Color = "1.0 0.0 0.0 1.0"
+                    },
+                            RectTransform =
+                    {
+                        AnchorMin = "0.45 0.45",
+                        AnchorMax = "0.55 0.50"
+                    },
+                            Text =
+                    {
+                        Text = $"{button}",
+                        FontSize = 12,
+                        Color = "1.0 1.0 1.0 1.0",
+                        Align = TextAnchor.MiddleCenter
+                    }
+                    }, XPerienceHelp);
                 }
-                }, XPerienceHelp);
+                else
+                {
+                    ControlPanelelements.Add(new CuiButton
+                    {
+                        Button =
+                    {
+                        Command = "",
+                        Color = "1.0 0.0 0.0 1.0"
+                    },
+                        RectTransform =
+                    {
+                        AnchorMin = "0.45 0.45",
+                        AnchorMax = "0.55 0.50"
+                    },
+                        Text =
+                    {
+                        Text = $"{XPLang("fixdatadisablled", player.UserIDString)}",
+                        FontSize = 12,
+                        Color = "1.0 1.0 1.0 1.0",
+                        Align = TextAnchor.MiddleCenter
+                    }
+                    }, XPerienceHelp);
+                }
             }
             // UI End
             CuiHelper.AddUi(player, ControlPanelelements);
@@ -8497,85 +9083,7 @@ namespace Oxide.Plugins
                     AdminResetPage(player);
                     break;              
                 case "fix":
-                    foreach (var allPlayer in BasePlayer.allPlayerList)
-                    {
-                        if (!allPlayer.UserIDString.IsSteamId()) continue;
-                        XPRecord xprecord = GetXPRecord(allPlayer);
-                        // Reset Level, Required XP & Stat/Skill Points
-                        xprecord.level = 0;
-                        if (xprecord.experience <= 0)
-                        {
-                            xprecord.experience = 0;
-                        }
-                        xprecord.requiredxp = 25;
-                        xprecord.statpoint = 0;
-                        xprecord.skillpoint = 0;
-                        // Reset max health if needed before removing points
-                        if (allPlayer._maxHealth > 100 || allPlayer._health > 100)
-                        {
-                            // Get Stats
-                            double armor = (xprecord.Might * config.might.armor) * 100;
-                            double currentmaxhealth = allPlayer._maxHealth;
-                            double currenthealth = Mathf.Ceil(allPlayer._health);
-                            // Remove Armor
-                            double newmaxhealth = currentmaxhealth - armor;
-                            double newhealth = currenthealth - armor;
-                            // Change Health
-                            if (newmaxhealth < 100)
-                            {
-                                allPlayer._maxHealth = 100;
-                                allPlayer._health = (float)newhealth;
-                            }
-                            else
-                            {
-                                allPlayer._maxHealth = (float)newmaxhealth;
-                                allPlayer._health = (float)newhealth;
-                            }
-                            //allPlayer._health = 100;
-                        }
-                        // Reset Stat Levels
-                        xprecord.Mentality = 0;
-                        xprecord.Dexterity = 0;
-                        xprecord.Might = 0;
-                        xprecord.Chemist = 0;
-                        // Reset Stat Spent Points
-                        xprecord.MentalityP = 0;
-                        xprecord.DexterityP = 0;
-                        xprecord.MightP = 0;
-                        xprecord.ChemistP = 0;
-                        // Reset Skill Levels
-                        xprecord.WoodCutter = 0;
-                        xprecord.Smithy = 0;
-                        xprecord.Miner = 0;
-                        xprecord.Forager = 0;
-                        xprecord.Hunter = 0;
-                        xprecord.Fisher = 0;
-                        xprecord.Crafter = 0;
-                        xprecord.Framer = 0;
-                        xprecord.Medic = 0;
-                        xprecord.Tamer = 0;
-                        // Reset Skill Spents Points
-                        xprecord.WoodCutterP = 0;
-                        xprecord.SmithyP = 0;
-                        xprecord.MinerP = 0;
-                        xprecord.ForagerP = 0;
-                        xprecord.HunterP = 0;
-                        xprecord.FisherP = 0;
-                        xprecord.CrafterP = 0;
-                        xprecord.FramerP = 0;
-                        xprecord.MedicP = 0;
-                        xprecord.TamerP = 0;
-                        // Check/Reset Tamer permissions
-                        PetChecks(allPlayer, true);
-                        // Set LiveUI Location to Default
-                        xprecord.UILocation = config.defaultOptions.liveuistatslocation;
-                        // Run Level Up to Recalculate Players Data
-                        LvlUp(allPlayer, 0, 0);
-                        // Update Live UI
-                        LiveStats(allPlayer, true);
-                        // Notify Players
-                        player.ChatMessage(XPLang("adminfixplayers", player.UserIDString));
-                   }
+                    PlayerFixDataAll(player);
                     break;              
             }
         }
@@ -8738,6 +9246,22 @@ namespace Oxide.Plugins
                         case "deathamt":
                             config.xpReducer.deathreduceamount = (double)value;
                             break;
+                        // Teams
+                        case "enableteamxpgain":
+                            config.xpTeams.enableteamxpgain = setting;
+                            break;
+                        case "enableteamxploss":
+                            config.xpTeams.enableteamxploss = setting;
+                            break;
+                        case "teamdistance":
+                            config.xpTeams.teamdistance = (float)value;
+                            break;
+                        case "teamxpgainamt":
+                            config.xpTeams.teamxpgainamount = (double)value;
+                            break;
+                        case "teamxplossamt":
+                            config.xpTeams.teamxplossamount = (double)value;
+                            break;
                         // Missions
                         case "missionsucceeded":
                             config.xpMissions.missionsucceededxp = (int)value;
@@ -8800,17 +9324,26 @@ namespace Oxide.Plugins
                             config.dexterity.reducearmordmg = (double)value;
                             break;
                         // Chemist
-                        case "chemistmaxlevel":
-                            config.chemist.maxlvl = (int)value;
+                        case "captaincymaxlevel":
+                            config.captaincy.maxlvl = (int)value;
                             break;
-                        case "chemistcost":
-                            config.chemist.pointcoststart = (int)value;
+                        case "captaincycost":
+                            config.captaincy.pointcoststart = (int)value;
                             break;
-                        case "chemistcostmultiplier":
-                            config.chemist.costmultiplier = (int)value;
+                        case "captaincycostmultiplier":
+                            config.captaincy.costmultiplier = (int)value;
                             break;
-                        case "chemistspeed":
-                            config.chemist.crafttime = (double)value;
+                        case "captaincyskillboost":
+                            config.captaincy.skillboost = (double)value;
+                            break;
+                        case "captaincyenablexpboost":
+                            config.captaincy.enablexpboost = setting;
+                            break;
+                        case "captaincyxpboost":
+                            config.captaincy.xpboost = (double)value;
+                            break;
+                        case "captaincydistance":
+                            config.captaincy.captaincydistance = (float)value;
                             break;
                         // Might
                         case "mightmaxlevel":
@@ -9113,6 +9646,12 @@ namespace Oxide.Plugins
                             break;
                         case "defaultadminbypass":
                             config.defaultOptions.bypassadminreset = setting;
+                            break;
+                        case "defaultfixdatadisable":
+                            config.defaultOptions.disableplayerfixdata = setting;
+                            break;
+                        case "defaulthardcore":
+                            config.defaultOptions.hardcorenoreset = setting;
                             break;
                         case "defaultuicolor":
                             switch ((int)value)
@@ -9939,8 +10478,42 @@ namespace Oxide.Plugins
             ControlPanelelements.Add(XPUILabel($"|       {config.xpReducer.deathreduceamount}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
             ControlPanelelements.Add(XPUIButton($"xp.config levelxp deathamt {config.xpReducer.deathreduceamount + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
             ControlPanelelements.Add(XPUIButton($"xp.config levelxp deathamt {config.xpReducer.deathreduceamount - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
-            // Mission Settings
+            // Teams Settings
             int rowthree = 5;
+            ControlPanelelements.Add(XPUILabel($"[Team XP Settings]", rowthree, height, TextAnchor.MiddleLeft, 15, "0.66", "0.99", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            // Team XP Gain
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Enable Team XP Gain:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUILabel($"|       {config.xpTeams.enableteamxpgain}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.88", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp enableteamxpgain 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.88", "0.89", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp enableteamxpgain 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.90", "0.91", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            // Team XP Loss
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Enable Team XP Loss:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUILabel($"|       {config.xpTeams.enableteamxploss}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.88", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp enableteamxploss 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.88", "0.89", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp enableteamxploss 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.90", "0.91", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            // Team Gain Amount
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Team XP Gain (%):", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUILabel($"|       {config.xpTeams.teamxpgainamount}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.88", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp teamxpgainamt {config.xpTeams.teamxpgainamount + 0.01} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.88", "0.89", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp teamxpgainamt {config.xpTeams.teamxpgainamount - 0.01} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.90", "0.91", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            // Team Loss Amount
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Team XP Loss (%):", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUILabel($"|       {config.xpTeams.teamxplossamount}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.88", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp teamxplossamt {config.xpTeams.teamxplossamount + 0.01} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.88", "0.89", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp teamxplossamt {config.xpTeams.teamxplossamount - 0.01} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.90", "0.91", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            // Team Distance
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Team Distance (feet):", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUILabel($"|       {config.xpTeams.teamdistance}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.88", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp teamdistance {config.xpTeams.teamdistance + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.88", "0.89", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp teamdistance {config.xpTeams.teamdistance - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.90", "0.91", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            // Mission Settings
+            rowthree++;
+            rowthree++;
             ControlPanelelements.Add(XPUILabel($"[Mission XP Settings]", rowthree, height, TextAnchor.MiddleLeft, 15, "0.66", "0.99", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
             // Mission Succeeded
             rowthree++;
@@ -9973,7 +10546,7 @@ namespace Oxide.Plugins
             var mentmaxlevel = "off";
             var dexmaxlevel = "off";
             var mightmaxlevel = "off";
-            var chemmaxlevel = "off";
+            var captmaxlevel = "off";
             ControlPanelelements.Add(XPUIPanel("0.18 0.0", "1.0 1.0", "0.0 0.0 0.0 0.7"), XPerienceAdminPanelMain, XPerienceAdminPanelStats);
             ControlPanelelements.Add(XPUILabel($"Stat Settings - Note that these settings are what players gain per level of each stat.", 1, 0.090f, TextAnchor.MiddleLeft, 18, "0.01", "1", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
             // Mentality Settings
@@ -10080,43 +10653,59 @@ namespace Oxide.Plugins
             ControlPanelelements.Add(XPUILabel($"|       {config.dexterity.reducearmordmg}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
             ControlPanelelements.Add(XPUIButton($"xp.config stats dexterityarmor {config.dexterity.reducearmordmg + 0.01} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
             ControlPanelelements.Add(XPUIButton($"xp.config stats dexterityarmor {config.dexterity.reducearmordmg - 0.01} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
-            // Chemist Settings
-            /*
+            // Captaincy Settings            
             row++;
             row++;
-            ControlPanelelements.Add(XPUILabel($"[Chemist Settings]", row, height, TextAnchor.MiddleLeft, 15, "0.01", "0.30", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUILabel($"[Captaincy Settings]", row, height, TextAnchor.MiddleLeft, 15, "0.01", "0.30", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
             row++;
             // Max Level
-            if (config.chemist.maxlvl > 0)
+            if (config.captaincy.maxlvl > 0)
             {
-                chemmaxlevel = config.chemist.maxlvl.ToString();
+                captmaxlevel = config.captaincy.maxlvl.ToString();
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUILabel($"|       {chemmaxlevel}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUIButton($"xp.config stats chemistmaxlevel {config.chemist.maxlvl + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
-            if (config.chemist.maxlvl > 0)
+            ControlPanelelements.Add(XPUILabel($"|       {captmaxlevel}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincymaxlevel {config.captaincy.maxlvl + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
+            if (config.captaincy.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config stats chemistmaxlevel {config.chemist.maxlvl - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
+                ControlPanelelements.Add(XPUIButton($"xp.config stats captaincymaxlevel {config.captaincy.maxlvl - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
             }
             // Cost to Start
             row++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUILabel($"|       {config.chemist.pointcoststart}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUIButton($"xp.config stats chemistcost {config.chemist.pointcoststart + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUIButton($"xp.config stats chemistcost {config.chemist.pointcoststart - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUILabel($"|       {config.captaincy.pointcoststart}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincycost {config.captaincy.pointcoststart + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincycost {config.captaincy.pointcoststart - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
             // Cost Multiplier
             row++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUILabel($"|       {config.chemist.costmultiplier}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUIButton($"xp.config stats chemistcostmultiplier {config.chemist.costmultiplier + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUIButton($"xp.config stats chemistcostmultiplier {config.chemist.costmultiplier - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
-            // Craft Speed
+            ControlPanelelements.Add(XPUILabel($"|       {config.captaincy.costmultiplier}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincycostmultiplier {config.captaincy.costmultiplier + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincycostmultiplier {config.captaincy.costmultiplier - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
+             // Effective Distance
             row++;
-            ControlPanelelements.Add(XPUILabel($"Craft Speed Reduction:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUILabel($"|       {config.chemist.crafttime}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUIButton($"xp.config stats chemistspeed {config.chemist.crafttime + 0.1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
-            ControlPanelelements.Add(XPUIButton($"xp.config stats chemistspeed {config.chemist.crafttime - 0.1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
-            */
+            ControlPanelelements.Add(XPUILabel($"Effective Distance (feet):", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUILabel($"|       {config.captaincy.captaincydistance}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincydistance {config.captaincy.captaincydistance + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincydistance {config.captaincy.captaincydistance - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
+            // Skill Boost
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Team Skill Boost:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUILabel($"|       {config.captaincy.skillboost}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincyskillboost {config.captaincy.skillboost + 0.01} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincyskillboost {config.captaincy.skillboost - 0.01} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
+            // Enable XP Boost
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Enable Team XP Boost:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUILabel($"|       {config.captaincy.enablexpboost}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincyenablexpboost 0 true", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincyenablexpboost 0 false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
+             // XP Boost
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Team XP Boost:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUILabel($"|       {config.captaincy.xpboost}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincyxpboost {config.captaincy.xpboost + 0.01} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelStats);
+            ControlPanelelements.Add(XPUIButton($"xp.config stats captaincyxpboost {config.captaincy.xpboost - 0.01} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelStats);
             // Might
             int rowtwo = 5;
             ControlPanelelements.Add(XPUILabel($"[Might Settings]", rowtwo, height, TextAnchor.MiddleLeft, 15, "0.33", "0.66", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelStats);
@@ -10814,12 +11403,24 @@ namespace Oxide.Plugins
             ControlPanelelements.Add(XPUILabel($"|       {config.defaultOptions.playerfixdatatimer}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
             ControlPanelelements.Add(XPUIButton($"xp.config timercolor defaultplayerfixdata {config.defaultOptions.playerfixdatatimer + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelTimerColor);
             ControlPanelelements.Add(XPUIButton($"xp.config timercolor defaultplayerfixdata {config.defaultOptions.playerfixdatatimer - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelTimerColor);
+            // Disable Fix Data
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Disable Fix Data (players):", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
+            ControlPanelelements.Add(XPUILabel($"|       {config.defaultOptions.disableplayerfixdata}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
+            ControlPanelelements.Add(XPUIButton($"xp.config timercolor defaultfixdatadisable 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelTimerColor);
+            ControlPanelelements.Add(XPUIButton($"xp.config timercolor defaultfixdatadisable 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelTimerColor);
             // Admin Bypass Resets
             row++;
             ControlPanelelements.Add(XPUILabel($"Admins Bypass:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
             ControlPanelelements.Add(XPUILabel($"|       {config.defaultOptions.bypassadminreset}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
             ControlPanelelements.Add(XPUIButton($"xp.config timercolor defaultadminbypass 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelTimerColor);
             ControlPanelelements.Add(XPUIButton($"xp.config timercolor defaultadminbypass 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelTimerColor);
+            // Hardcore Mode Resets
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Hardcore Mode (No Resets):", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
+            ControlPanelelements.Add(XPUILabel($"|       {config.defaultOptions.hardcorenoreset}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
+            ControlPanelelements.Add(XPUIButton($"xp.config timercolor defaulthardcore 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelTimerColor);
+            ControlPanelelements.Add(XPUIButton($"xp.config timercolor defaulthardcore 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelTimerColor);
             // Color Options
             row++;
             row++;
@@ -11301,7 +11902,7 @@ namespace Oxide.Plugins
                 "Mentality: {5} \n" +
                 "Dexterity: {6} \n" +
                 "Might: {7} \n" +
-                "Chemist: {8} \n" +
+                "Captaincy: {8} \n" +
                 "---------------- \n" +
                 "WoodCutter: {9} \n" +
                 "Smithy: {10} \n" +
@@ -11343,12 +11944,17 @@ namespace Oxide.Plugins
                 ["medicrecoverplayer"] = "You have recovered with an extra {0} health.",
                 ["medicreviveplayer"] = "You have been revived with an extra {0} health.",
                 ["medicrevivereviver"] = "You have revived player with an extra {0} health.",
+                ["captaincyskillboost"] = "Team Skill Boost",
+                ["captaincyxpboost"] = "Team XP Boost",
+                ["captaincydistance"] = "Effective Distance",
+                ["captaincyteamrequired"] = "Must be part of a team!",
                 ["level"] = "Level",
                 ["experience"] = "Experience",
                 ["xp"] = "XP",
                 ["mentality"] = "Mentality",
                 ["dexterity"] = "Dexterity",
                 ["might"] = "Might",
+                ["captaincy"] = "Captaincy",
                 ["chemist"] = "Chemist",
                 ["woodcutter"] = "WoodCutter",
                 ["smithy"] = "Smithy",
@@ -11521,8 +12127,8 @@ namespace Oxide.Plugins
                 "as well as increases the damage you do with melee weapons.",
                 ["aboutmightsettings"] = "[Current Might Settings] \nMax Level: {0} \nStarting Cost: {1} \nCost Multiplier: {2}x Level \nArmor: {3}% | Increased Max Health \nMelee Damage Increase: {4}% \n" +
                 "Metabolism Increase: {5}% | Thirst/Hunger \nBleed Reduction: {6}% \nRadiation Reduction: {7}% \nIncreased Heat Tolerance: {8}% \nIncreased Cold Tolerance: {9}%",
-                ["aboutchemist"] = "Grants reduced crafting speed when using the mixing table.",
-                ["aboutchemistsettings"] = "[Current Chemist Settings]\nMax Level: {0} \nStarting Cost: {1} \nCost Multiplier: {2}x Level \nReduced Crafting Time: {3} | Mixing Table",
+                ["aboutcaptaincy"] = "Gives other team members overall skill boosts and XP boost within a certain range. Stacks on a % increase of the team members skills to increase the skills abilities for each team member seperatly based on the skill level of each member. Only effects skills and not stats. Requires at least 2 members in a team and has no effect on the current player.",
+                ["aboutcaptaincysettings"] = "[Current Captaincy Settings]\nMax Level: {0} \nStarting Cost: {1} \nCost Multiplier: {2}x Level \nEffective Distance: {3}FT \nSkill Boost: {4}%\n XP Boost Enabled: {5}\n XP Boost: {6}%",
                 ["aboutskills"] = "The 9 secondary skills are Woodcutter, Smithy, Miner, Forager, Hunter, Crafter, Framer, Fisher, and Tamer\n(taming requires pets mod and may not be available on certain servers).\nThe current server settings are listed below and represent the strength of each Skill per level gained.",
                 ["aboutwoodcutter"] = "Increases the amount of wood you receive from cutting down trees, increases the bonus amount you get when a tree has been cut down, and gives you increased chances to have apples fall while cutting a tree.",
                 ["aboutwoodcuttersettings"] = "[Current WoodCutter Settingss] \nMax Level: {0} \nStarting Cost: {1} \nCost Multiplier: {2}x Level \nGather Rate: +{3}% \nBonus: +{4}% \nApple Chance: {5}%",
@@ -11550,6 +12156,9 @@ namespace Oxide.Plugins
                 ["xpgivenotfound"] = "Player not found",
                 ["xpgiveneedamount"] = "Need to enter an amount /xpgive (playername) (amount)",
                 ["xpgiveplayer"] = "You have given {0} {1} experience, they now have a total of {2} experience.",
+                ["xpresetneedname"] = "Need to enter a player name /xpreset (playername)",
+                ["xpresetnotfound"] = "Player not found",
+                ["xpresetplayer"] = "You have reset {0}",
                 ["xptakeneedname"] = "Need to enter a player name /xptake (playername) (amount)",
                 ["xptakenotfound"] = "Player not found",
                 ["xptakeneedamount"] = "Need to enter an amount /xptake (playername) (amount)",
@@ -11571,6 +12180,9 @@ namespace Oxide.Plugins
                 ["econwidthdrawresetskill"] = "You spent {0} for resetting skills",
                 ["srewardsup"] = "You recieved {0} points in server rewards for leveling up",
                 ["srewardsdown"] = "You lost {0} points in server rewards for leveling down",
+                ["fixdatadisabled"] = "Fix Data Option Disabled By Admin",
+                ["hardcorenoreset"] = "Hardcore mode enabled, Stat/Skill Reset is Disabed",
+                ["crafternotenough"] = "Not enough resources to repair item",
 
             }, this);
         }

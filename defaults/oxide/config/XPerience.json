@@ -10,7 +10,9 @@
     "vipresetminstats": 30,
     "vipresetminsskills": 30,
     "playerfixdatatimer": 60,
-    "disablearmorchat": false
+    "disableplayerfixdata": false,
+    "disablearmorchat": false,
+    "hardcorenoreset": false
   },
   "UI Text Colors": {
     "defaultcolor": "white",
@@ -87,6 +89,13 @@
     "metalstructure": 15.0,
     "armoredstructure": 20.0
   },
+  "XP - Teams": {
+    "enableteamxpgain": true,
+    "enableteamxploss": true,
+    "teamxpgainamount": 0.1,
+    "teamxplossamount": 0.05,
+    "teamdistance": 50.0
+  },
   "XP - Mission Amounts": {
     "missionsucceededxp": 50.0,
     "missionfailed": false,
@@ -152,6 +161,15 @@
     "radreduction": 0.05,
     "heattolerance": 0.05,
     "coldtolerance": 0.05
+  },
+  "Captaincy Stat": {
+    "maxlvl": 0,
+    "pointcoststart": 4,
+    "costmultiplier": 4,
+    "skillboost": 0.05,
+    "enablexpboost": false,
+    "xpboost": 0.05,
+    "captaincydistance": 10.0
   },
   "Chemist Stat": {
     "maxlvl": 10,
