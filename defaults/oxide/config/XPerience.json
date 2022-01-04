@@ -291,8 +291,8 @@
     "bearlevel": 5
   },
   "Clans (requires Clans plugin)": {
-    "enableclanbonus": false,
-    "enableclanreduction": false,
+    "enableclanbonus": true,
+    "enableclanreduction": true,
     "clanbonusamount": 0.1,
     "clanreductionamount": 0.02
   },

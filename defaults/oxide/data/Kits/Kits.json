@@ -12,6 +12,8 @@
       "Cooldown": 1800.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -192,6 +194,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -372,6 +376,8 @@
       "Cooldown": 600.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -567,6 +573,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -736,6 +744,8 @@
       "Cooldown": 600.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -862,6 +872,8 @@
       "Cooldown": 600.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -1057,6 +1069,8 @@
       "Cooldown": 900.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -1297,6 +1311,8 @@
       "Cooldown": 0.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -1507,6 +1523,8 @@
       "Cooldown": 0.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -1514,7 +1532,7 @@
           "ShortName": "hat.miner",
           "Amount": 1,
           "Blueprint": 0,
-          "SkinID": 0,
+          "SkinID": 788260164,
           "Container": "wear",
           "Condition": 0.0,
           "Chance": 100,
@@ -1525,24 +1543,9 @@
             {
               "ShortName": "lowgradefuel",
               "Condition": 0.0,
-              "Amount": 10
+              "Amount": 20
             }
           ]
-        },
-        {
-          "Type": "Item",
-          "Command": "",
-          "ShortName": "largemedkit",
-          "Amount": 1,
-          "Blueprint": 0,
-          "SkinID": 0,
-          "Container": "main",
-          "Condition": 0.0,
-          "Chance": 100,
-          "Position": 5,
-          "Image": null,
-          "Weapon": null,
-          "Content": null
         },
         {
           "Type": "Item",
@@ -1552,7 +1555,7 @@
           "Blueprint": 0,
           "SkinID": 0,
           "Container": "belt",
-          "Condition": 100.0,
+          "Condition": 90.64801,
           "Chance": 100,
           "Position": 0,
           "Image": null,
@@ -1588,6 +1591,8 @@
       "Cooldown": 3600.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -1807,6 +1812,8 @@
       "Cooldown": 3600.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -2026,6 +2033,8 @@
       "Cooldown": 3600.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -2314,6 +2323,8 @@
       "Cooldown": 3600.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -2590,6 +2601,8 @@
       "Cooldown": 0.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -2881,6 +2894,8 @@
       "Cooldown": 0.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -3172,6 +3187,8 @@
       "Cooldown": 0.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -3430,6 +3447,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -3535,6 +3554,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -3580,6 +3601,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -3640,6 +3663,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -3700,6 +3725,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -3790,6 +3817,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -3865,6 +3894,8 @@
       "Cooldown": 0.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -4066,6 +4097,8 @@
       "Cooldown": 0.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -4369,6 +4402,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -4624,6 +4659,8 @@
       "Cooldown": 300.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
@@ -4714,6 +4751,8 @@
       "Cooldown": 0.0,
       "Wipe Block": 0.0,
       "Building": null,
+      "Enable sale": false,
+      "Selling price": 0,
       "Items": [
         {
           "Type": "Item",
