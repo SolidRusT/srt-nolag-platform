@@ -32,11 +32,11 @@
     "xpgainloss": true,
     "xpgainlosstype": 0,
     "levelupdown": true,
-    "levelupdowntype": 0,
+    "levelupdowntype": 1,
     "dodgeblock": true,
-    "dodgeblocktype": 0,
+    "dodgeblocktype": 2,
     "criticalhit": true,
-    "criticalhittype": 0
+    "criticalhittype": 3
   },
   "XP - Level Config": {
     "levelstart": 25.0,
@@ -117,10 +117,10 @@
     "multibonustype": "fixed"
   },
   "Economics Rewards (requires Economics plugin)": {
-    "econlevelup": false,
-    "econleveldown": false,
-    "econresetstats": false,
-    "econresetskills": false,
+    "econlevelup": true,
+    "econleveldown": true,
+    "econresetstats": true,
+    "econresetskills": true,
     "econlevelreward": 50.0,
     "econlevelreduction": 25.0,
     "econresetstatscost": 100.0,
@@ -163,12 +163,12 @@
     "coldtolerance": 0.05
   },
   "Captaincy Stat": {
-    "maxlvl": 0,
-    "pointcoststart": 4,
-    "costmultiplier": 4,
-    "skillboost": 0.05,
-    "enablexpboost": false,
-    "xpboost": 0.05,
+    "maxlvl": 10,
+    "pointcoststart": 3,
+    "costmultiplier": 3,
+    "skillboost": 0.01,
+    "enablexpboost": true,
+    "xpboost": 0.01,
     "captaincydistance": 10.0
   },
   "Chemist Stat": {
@@ -297,11 +297,11 @@
     "clanreductionamount": 0.02
   },
   "SQL Info": {
-    "enablesql": false,
-    "SQLhost": "localhost",
+    "enablesql": true,
+    "SQLhost": "data",
     "SQLport": 3306,
-    "SQLdatabase": "databasename",
-    "SQLusername": "username",
-    "SQLpassword": "password"
+    "SQLdatabase": "XPerience",
+    "SQLusername": "srt_xperience",
+    "SQLpassword": "lcy_407"
   }
 }

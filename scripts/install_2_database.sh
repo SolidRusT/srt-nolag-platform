@@ -74,3 +74,9 @@ GRANT ALL PRIVILEGES ON *.* TO 'srt_sl_lcy'@'%'
     WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 ### Import verification.sql now
+
+create database XPerience;
+GRANT ALL PRIVILEGES ON *.* TO 'srt_xperience'@'%' 
+    IDENTIFIED BY 'lcy_407' 
+    WITH GRANT OPTION;
+FLUSH PRIVILEGES;
