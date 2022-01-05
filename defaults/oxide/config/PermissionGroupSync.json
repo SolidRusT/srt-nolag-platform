@@ -260,7 +260,8 @@
                 "respawnbradley.nocosts",
                 "respawnbradley.nocooldown",
                 "zombiehorde.admin",
-                "xperience.vip"
+                "xperience.vip",
+                "discordmessages.ban"
             ],
             "AdditionalCommands": []
         },
