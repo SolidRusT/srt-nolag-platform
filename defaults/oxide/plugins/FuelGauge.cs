@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Fuel Gauge", "Oryx", "0.5.6")]
+    [Info("Fuel Gauge", "Oryx", "0.5.8")]
     [Description("HUD for amount of fuel when riding a vehicle")]
     public class FuelGauge : RustPlugin
     {
@@ -40,9 +40,9 @@ namespace Oxide.Plugins
                     return (entity.GetParentEntity() as MiniCopter).GetFuelSystem()?.GetFuelAmount() ?? 0;
                 }
 
-                if (entity.GetParentEntity() is ModularCar)
+                if (entity.GetParentEntity() is BaseVehicle)
                 {
-                    return (entity.GetParentEntity() as ModularCar).GetFuelSystem()?.GetFuelAmount() ?? 0;
+                    return (entity.VehicleParent() as ModularCar).GetFuelSystem()?.GetFuelAmount() ?? 0;
                 }
 
                 if (entity.GetParentEntity() is MotorRowboat) // Includes RHIB
@@ -161,7 +161,8 @@ namespace Oxide.Plugins
 
         void OnEntityMounted(BaseMountable entity, BasePlayer player)
         {
-            if (!(entity.GetParentEntity() is MiniCopter || entity.GetParentEntity() is ModularCar || entity.GetParentEntity() is MotorRowboat))
+
+            if (!(entity.GetParentEntity() is MiniCopter || entity.VehicleParent() is ModularCar || entity.GetParentEntity() is MotorRowboat))
             {
                 return;
             }
@@ -170,6 +171,7 @@ namespace Oxide.Plugins
             {
                 return;
             }
+
 
             if (GetPlayer(player))
             {
@@ -187,9 +189,12 @@ namespace Oxide.Plugins
                 }
             }
 
-            VehicleCache vehicle = new VehicleCache();
-            vehicle.player = player;
-            vehicle.entity = entity;
+
+            VehicleCache vehicle = new VehicleCache
+            {
+                player = player,
+                entity = entity
+            };
             vehicles.Add(vehicle);
             CreateUI(vehicle);
         }
