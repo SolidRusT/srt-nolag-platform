@@ -158,7 +158,7 @@ function update_server() {
   sudo apt -y dist-upgrade | tee -a ${LOGS}
   # TODO: output a message to reboot if kernel or initrd was updated
   echo "=> Validating installed Steam components..." | tee -a ${LOGS}
-  /usr/games/steamcmd +login anonymous +force_install_dir ${GAME_ROOT}/ +app_update 258550 validate +quit | tee -a ${LOGS}
+  /usr/games/steamcmd +force_install_dir ${GAME_ROOT}/ +login anonymous +app_update 258550 validate +quit | tee -a ${LOGS}
   # Update RCON CLI tool
   echo " - No rcon found here, downloading it..." | tee -a ${LOGS}
   LATEST_RCON=$(curl -q https://github.com/gorcon/rcon-cli/releases | grep "/releases/tag" | head -n 1 | awk -F "v" '{ print $3 }' | awk -F "\"" {' print $1 '})
@@ -184,18 +184,6 @@ function update_server() {
   #echo "=> Downloading Rust:IO binary..." | tee -a ${LOGS}
   #wget http://playrust.io/latest -O \
   #    ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.RustIO.dll | tee -a ${LOGS}
-}
-
-function update_umod() {
-  echo "Currently Disabled. This method causes conflicts now that we use custom plugins from many sources."
-  #    echo "=> Download fresh plugins from uMod" | tee -a ${LOGS}
-  #    cd ${GAME_ROOT}/oxide/plugins
-  #    plugins=$(ls -1 *.cs)
-  #    for plugin in ${plugins[@]}; do
-  #        echo " - Attempting to replace $plugin from umod" | tee -a ${LOGS}
-  #        wget "https://umod.org/plugins/$plugin" -O $plugin | tee -a ${LOGS}
-  #        sleep 3 | tee -a ${LOGS}
-  #    done
 }
 
 function update_permissions() {
