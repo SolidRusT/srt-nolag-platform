@@ -64,13 +64,13 @@ function update_mods() {
     oxide/data/BetterLoot/LootTables.json
     oxide/data/Kits/Kits.json
     oxide/data/FancyDrop.json
-    oxide/data/BetterChat.json
     oxide/data/CompoundOptions.json
     oxide/data/death.png
     oxide/data/hit.png
     oxide/data/GuardedCrate.json
     oxide/data/CustomChatCommands.json
   )
+  # oxide/data/BetterChat.json
   echo "=> Updating plugin data" | tee -a ${LOGS}
   mkdir -p "${GAME_ROOT}/oxide/data/BetterLoot" "${GAME_ROOT}/oxide/data/Kits"
   for data in ${OXIDE[@]}; do

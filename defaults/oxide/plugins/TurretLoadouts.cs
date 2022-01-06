@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Turret Loadouts", "WhiteThunder", "1.1.0")]
+    [Info("Turret Loadouts", "WhiteThunder", "1.1.1")]
     [Description("Automatically fills turrets with weapons, attachments and ammo, using configurable loadouts.")]
     internal class TurretLoadouts : CovalencePlugin
     {
@@ -151,7 +151,7 @@ namespace Oxide.Plugins
                 {
                     AddReserveAmmo(samSite.inventory, loadout, ownerPlayer);
 
-                    if (!samSite.inventory.IsEmpty() && HasPermissionAny(ownerPlayer, Permission_AutoToggleSamSite))
+                    if (HasPermissionAny(ownerPlayer, Permission_AutoToggleSamSite))
                         samSite.SetFlag(IOEntity.Flag_HasPower, true);
 
                     if (_pluginConfig.LockAutoFilledTurrets)
@@ -732,13 +732,13 @@ namespace Oxide.Plugins
 
         private void SetupLockedContainer(ContainerIOEntity container)
         {
-            container.dropChance = 0;
+            container.dropsLoot = false;
             container.pickup.requireEmptyInv = false;
         }
 
         private void SetupLockedContainer(StorageContainer container)
         {
-            container.dropChance = 0;
+            container.dropsLoot = false;
             container.pickup.requireEmptyInv = false;
         }
 
