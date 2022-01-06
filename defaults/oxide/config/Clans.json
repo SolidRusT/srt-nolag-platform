@@ -20,7 +20,7 @@
     "General text color (hex)": "#e0e0e0"
   },
   "Clan Tag Options": {
-    "Enable clan tags (requires BetterChat)": true,
+    "Enable clan tags (requires BetterChat)": false,
     "Tag opening character": "[",
     "Tag closing character": "]",
     "Tag color (hex)": "#aaff55",

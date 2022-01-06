@@ -40,7 +40,7 @@ using UnityEngine.SceneManagement;
 
 namespace Oxide.Plugins
 {
-    [Info("Raidable Bases", "nivex", "2.4.0")]
+    [Info("Raidable Bases", "nivex", "2.4.1")]
     [Description("Create fully automated raidable bases with npcs.")]
     class RaidableBases : RustPlugin
     {
@@ -49,6 +49,7 @@ namespace Oxide.Plugins
             DangerousTreasures, ZoneManager, IQEconomic, Economics, ServerRewards, GUIAnnouncements, CopyPaste, 
             Friends, Clans, Kits, TruePVE, NightLantern, Wizardry, NextGenPVE, Imperium, Backpacks, BaseRepair, Notify;
 
+        private new const string Name = "RaidableBases";
         private const int visibleLayer = Layers.Mask.Deployed | Layers.Mask.Default | Layers.Mask.Construction | Layers.Mask.World | Layers.Mask.Terrain;
         private const int targetLayer = Layers.Mask.Default | Layers.Mask.Water | Layers.Solid;
         private static RaidableBases Instance { get; set; }
@@ -69,11 +70,11 @@ namespace Oxide.Plugins
         private bool IsUnloading { get; set; }
         private bool bypassRestarting { get; set; }
         private List<string> tryBuyCooldowns { get; set; } = new List<string>();
-        private static BuildingTables Buildings { get; set; }
-        private bool debugMode { get; set; }
+        private BuildingTables Buildings { get; set; }
+        private bool DebugMode { get; set; }
         private List<RandomBase> Locations { get; set; } = new List<RandomBase>();
-        private static Dictionary<string, ItemDefinition> _shortnames { get; set; } = new Dictionary<string, ItemDefinition>();
-        private static Dictionary<Vector3, float> LoadingTimes { get; set; } = new Dictionary<Vector3, float>();
+        private Dictionary<string, ItemDefinition> _definitions { get; set; } = new Dictionary<string, ItemDefinition>();
+        private Dictionary<Vector3, float> LoadingTimes { get; set; } = new Dictionary<Vector3, float>();
         private List<string> Helms { get; set; } = new List<string> { "hat.wolf", "attire.hide.helterneck", "hat.beenie", "hat.boonie", "bucket.helmet", "burlap.headwrap", "hat.candle", "hat.cap", "clatter.helmet", "coffeecan.helmet", "deer.skull.mask", "heavy.plate.helmet", "hat.miner", "partyhat", "riot.helmet", "wood.armor.helmet", "mask.balaclava", "mask.bandana", "metal.facemask", "nightvisiongoggles", "hat.dragonmask", "hat.ratmask", "attire.nesthat" };
         private List<string> Boots { get; set; } = new List<string> { "boots.frog", "shoes.boots", "burlap.shoes", "attire.hide.boots" };
         private List<string> Gloves { get; set; } = new List<string> { "burlap.gloves.new", "burlap.gloves", "roadsign.gloves", "tactical.gloves" };
@@ -111,7 +112,7 @@ namespace Oxide.Plugins
 
         public enum AlliedType { All, Clan, Friend, Team }
 
-        public enum CacheType { Delete, Generic, Temporary, Privilege, Submerged }
+        public enum CacheType { Close, Delete, Generic, Temporary, Privilege, Submerged }
 
         public enum ConstructionType { Barricade, Ladder, Any }
 
@@ -127,6 +128,22 @@ namespace Oxide.Plugins
             public string RaidTime { get; set; } = DateTime.MinValue.ToString();
             public int TotalEvents { get; set; }
             public StoredData() { }
+            public static void Load()
+            {
+                try { data = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(Name); } catch { }
+
+                if (data == null) data = new StoredData();
+                if (data.UI == null) data.UI = new Dictionary<string, UI.Info>();
+                if (data.Players == null) data.Players = new Dictionary<string, PlayerInfo>();
+            }
+            public void Save()
+            {
+                data.Lockouts.RemoveAll((userid, lo) => lo.IsExpired());
+                data.UI.RemoveAll((userid, uii) => uii.All());
+                data.Players.RemoveAll((userid, playerInfo) => playerInfo.TotalRaids == 0 || playerInfo.IsExpired());
+
+                Interface.Oxide.DataFileSystem.WriteObject(Name, this);
+            }
         }
 
         public class RandomBase
@@ -135,14 +152,6 @@ namespace Oxide.Plugins
             public Vector3 Position;
             public BaseProfile Profile;
             public RaidableType Type;
-        }
-
-        public class BlockProperties
-        {
-            public OBB obb;
-            public Vector3 position;
-            public BaseEntity entity;
-            public string ShortPrefabName;
         }
 
         public class BackpackData
@@ -199,13 +208,29 @@ namespace Oxide.Plugins
 
         public class Lockout
         {
-            public double Easy;
-            public double Medium;
-            public double Hard;
-            public double Expert;
-            public double Nightmare;
+            public double Easy, Medium, Hard, Expert, Nightmare;
 
             public bool Any() => Easy > 0 || Medium > 0 || Hard > 0 || Expert > 0 || Nightmare > 0;
+
+            public bool IsExpired(RaidableMode mode)
+            {
+                switch (mode)
+                {
+                    case RaidableMode.Easy: return Easy <= 0 || Easy - Epoch.Current <= 0;
+                    case RaidableMode.Medium: return Medium <= 0 || Medium - Epoch.Current <= 0;
+                    case RaidableMode.Hard: return Hard <= 0 || Hard - Epoch.Current <= 0;
+                    case RaidableMode.Expert: return Expert <= 0 || Expert - Epoch.Current <= 0;
+                    case RaidableMode.Nightmare: return Nightmare <= 0 || Nightmare - Epoch.Current <= 0;
+                    default: return true;
+                }
+            }
+
+            public bool IsExpired()
+            {
+                var modes = (RaidableMode[])Enum.GetValues(typeof(RaidableMode));
+
+                return modes.All(mode => IsExpired(mode));
+            }
         }
 
         public class Record
@@ -423,18 +448,6 @@ namespace Oxide.Plugins
                 }
             }
 
-            public void InitializeSkins()
-            {
-                foreach (var def in ItemManager.GetItemDefinitions())
-                {
-                    ItemModDeployable imd;
-                    if (def.TryGetComponent(out imd))
-                    {
-                        _shortnames[imd.entityPrefab.resourcePath] = def;
-                    }
-                }
-            }
-
             public void Message(BasePlayer player, string key, params object[] args)
             {
                 if (player.IsValid())
@@ -600,7 +613,7 @@ done:
 
                             if (ice != null)
                             {
-                                DropUtil.DropItems(ice.inventory, entity.transform.position + Vector3.up, 1f);
+                                DropUtil.DropItems(ice.inventory, entity.transform.position + Vector3.up);
                             }
                         }
 
@@ -714,33 +727,9 @@ done:
             private Vector3 position;
             private float radius;
 
-            public static bool IsValid => _ejectController != null;
-
-            public static void Initialize(Vector3 position, float radius)
+            private void OnDestroy()
             {
-                if (_ejectController == null)
-                {
-                    var go = new GameObject("EjectController");
-
-                    _ejectController = go.AddComponent<EjectController>();
-                    _ejectController._gameObject = go;
-                }
-
-                _ejectController.SetupCollider(position, radius);
-            }
-
-            private void SetupCollider(Vector3 position, float radius)
-            {
-                transform.position = this.position = position;
-                this.radius = radius;
-
-                var collider = gameObject.AddComponent<SphereCollider>();
-
-                collider.isTrigger = true;
-                collider.radius = radius;
-                collider.center = Vector3.zero;
-
-                gameObject.layer = (int)Layer.Trigger;
+                _ejectController = null;
             }
 
             public static void DestroyMe()
@@ -751,6 +740,28 @@ done:
                 }
 
                 DestroyImmediate(_ejectController._gameObject);
+            }
+
+            public static void Initialize(Vector3 position, float radius)
+            {
+                GameObject go;
+                if (_ejectController == null)
+                {
+                    go = new GameObject("EjectController");
+
+                    _ejectController = go.AddComponent<EjectController>();
+                    _ejectController._gameObject = go;
+                }
+                else go = _ejectController._gameObject;
+
+                go.transform.position = _ejectController.position = position;
+                go.layer = (int)Layer.Trigger;
+
+                var collider = go.AddComponent<SphereCollider>();
+
+                collider.isTrigger = true;
+                collider.radius = _ejectController.radius = radius;
+                collider.center = Vector3.zero;
             }
 
             private void OnTriggerEnter(Collider collider)
@@ -766,7 +777,7 @@ done:
                 {
                     var player = entity as BasePlayer;
 
-                    if (CanBypass(player))
+                    if (CanBypass(player) || IsUnderground(player.transform.position))
                     {
                         return;
                     }
@@ -787,7 +798,7 @@ done:
                 }
             }
 
-            public bool CanBypass(BasePlayer player)
+            private bool CanBypass(BasePlayer player)
             {
                 return !player.IsHuman() || player.IsFlying || player.limitNetworking || player.HasPermission("raidablebases.canbypass");
             }
@@ -844,16 +855,16 @@ done:
 
                 gridTime = Time.realtimeSinceStartup;
 
-                float waterDepthMax = Buildings.Profiles.Exists(x => x.Value.Options.Water.AllowSubmerged) ? 3f : 0f;
+                float waterDepthMax = Instance.Buildings.Profiles.Exists(x => x.Value.Options.Water.AllowSubmerged) ? 3f : 0f;
                 float monumentDist = M_RADIUS * 2f + config.Settings.Management.MonumentDistance;
-                bool seabed = Buildings.Profiles.Exists(x => x.Value.Options.Water.Seabed > 0f);
+                bool seabed = Instance.Buildings.Profiles.Exists(x => x.Value.Options.Water.Seabed > 0f);
                 int minPos = (int)(World.Size / -2f);
                 int maxPos = (int)(World.Size / 2f);
                 float protectionRadius = 50f;
                 float elevation = 0.5f;
                 int checks = 0;
 
-                foreach (var profile in Buildings.Profiles.Values)
+                foreach (var profile in Instance.Buildings.Profiles.Values)
                 {
                     protectionRadius = Mathf.Max(profile.Options.ProtectionRadii.Max(), profile.Options.ArenaWalls.Radius, protectionRadius);
 
@@ -1053,25 +1064,25 @@ done:
                         }
                         else if (SaveRestore.IsSaving)
                         {
-                            PrintDebugMessage("Server saving");
+                            PrintDebugMessage("Maintained: Server saving");
                             yield return CoroutineEx.waitForSeconds(15f);
                         }
-                        else if (!IsModeValid(mode = GetRandomDifficulty(RaidableType.Maintained)))
+                        else if (!IsModeValid(mode = Instance.GetRandomDifficulty(RaidableType.Maintained)))
                         {
-                            PrintDebugMessage($"Invalid mode {mode}");
+                            PrintDebugMessage($"Maintained: Invalid mode {mode}");
                             yield return CoroutineEx.waitForSeconds(1f);
                         }
                         else if ((randomBase = Instance.SpawnRandomBase(out message, RaidableType.Maintained, mode)) != null)
                         {
                             RaidableBase.IsSpawning = true;
 
-                            PrintDebugMessage($"Waiting for base at {randomBase.Position} to be setup by the plugin.");
+                            PrintDebugMessage($"Maintained: Waiting for base at {randomBase.Position} to be setup by the plugin.");
                             yield return new WaitWhile(() => RaidableBase.IsSpawning);
-                            PrintDebugMessage($"Base has been setup by the plugin.");
+                            PrintDebugMessage($"Maintained: Base has been setup by the plugin.");
 
                             if (config.Settings.Maintained.Time > 0)
                             {
-                                PrintDebugMessage($"Waiting {config.Settings.Maintained.Time} seconds.");
+                                PrintDebugMessage($"Maintained: Waiting {config.Settings.Maintained.Time} seconds.");
                                 yield return CoroutineEx.waitForSeconds(config.Settings.Maintained.Time);
                             }
                         }
@@ -1079,7 +1090,7 @@ done:
                         {
                             if (string.IsNullOrEmpty(message))
                             {
-                                message = "Failed to find position; trying again...";
+                                message = "Maintained: Failed to find position; trying again...";
                             }
 
                             PrintDebugMessage(message);
@@ -1093,44 +1104,41 @@ done:
 
             private bool CanMaintainOpenEvent()
             {
-                if (RaidableBase.IsBusy)
+                if (Instance.Raids.Values.Exists(raid => raid.IsDespawning))
                 {
-                    var vector = Instance.Raids.Values.FirstOrDefault(raid => raid.IsDespawning)?.Location;
-                    if (vector != null)
-                    {
-                        PrintDebugMessage($"Maintained: Paste not available; a base is currently despawning at {vector}");
-                        return false;
-                    }
+                    var vector = Instance.Raids.Values.FirstOrDefault(raid => raid.IsDespawning).Location;
+                    PrintDebugMessage($"Maintained: Paste not available; a base is currently despawning at {vector}");
+                    return false;
                 }
-
+                
                 if (!Instance.IsPasteAvailable)
                 {
                     var vector = Instance.Raids.Values.FirstOrDefault(raid => raid.IsLoading)?.Location;
-                    PrintDebugMessage($"Paste not available; a base is currently loading at {vector}");
+                    PrintDebugMessage($"Maintained: Paste not available; a base is currently loading at {vector}");
                     return false;
                 }
 
                 if (RaidableBase.IsSpawning)
                 {
-                    PrintDebugMessage($"Paste not available; a base is currently spawning.");
+                    PrintDebugMessage($"Maintained: Paste not available; a base is currently spawning.");
                     return false;
                 }
 
                 if (Instance.IsGridLoading)
                 {
-                    PrintDebugMessage($"Grid is loading.");
+                    PrintDebugMessage($"Maintained: Grid is loading.");
                     return false;
                 }
 
                 if (config.Settings.Maintained.Max > 0 && RaidableBase.Get(RaidableType.Maintained) >= config.Settings.Maintained.Max)
                 {
-                    PrintDebugMessage($"The max amount of maintained events are spawned.");
+                    PrintDebugMessage($"Maintained: The max amount of maintained events are spawned.");
                     return false;
                 }
 
                 if (BasePlayer.activePlayerList.Count < config.Settings.Maintained.PlayerLimit)
                 {
-                    PrintDebugMessage($"Insufficient amount of players online {BasePlayer.activePlayerList.Count}/{config.Settings.Maintained.PlayerLimit}");
+                    PrintDebugMessage($"Maintained: Insufficient amount of players online {BasePlayer.activePlayerList.Count}/{config.Settings.Maintained.PlayerLimit}");
                     return false;
                 }
 
@@ -1209,12 +1217,12 @@ done:
                             }
                             else if (SaveRestore.IsSaving)
                             {
-                                PrintDebugMessage("Server saving");
+                                PrintDebugMessage("Scheduled: Server saving");
                                 yield return CoroutineEx.waitForSeconds(15f);
                             }
-                            else if (!IsModeValid(mode = GetRandomDifficulty(RaidableType.Scheduled)))
+                            else if (!IsModeValid(mode = Instance.GetRandomDifficulty(RaidableType.Scheduled)))
                             {
-                                PrintDebugMessage($"Invalid mode {mode}");
+                                PrintDebugMessage($"Scheduled: Invalid mode {mode}");
                                 yield return CoroutineEx.waitForSeconds(1f);
                             }
                             else if ((randomBase = Instance.SpawnRandomBase(out message, RaidableType.Scheduled, mode)) != null)
@@ -1222,13 +1230,13 @@ done:
                                 RaidableBase.IsSpawning = true;
                                 _maxOnce++;
 
-                                PrintDebugMessage($"Waiting for base at {randomBase.Position} to be setup by the plugin.");
+                                PrintDebugMessage($"Scheduled: Waiting for base at {randomBase.Position} to be setup by the plugin.");
                                 yield return new WaitWhile(() => RaidableBase.IsSpawning);
-                                PrintDebugMessage($"Base has been setup by the plugin.");
+                                PrintDebugMessage($"Scheduled: Base has been setup by the plugin.");
 
                                 if (config.Settings.Schedule.Time > 0)
                                 {
-                                    PrintDebugMessage($"Waiting {config.Settings.Schedule.Time} seconds.");
+                                    PrintDebugMessage($"Scheduled: Waiting {config.Settings.Schedule.Time} seconds.");
                                     yield return CoroutineEx.waitForSeconds(config.Settings.Schedule.Time);
                                 }
                             }
@@ -1236,7 +1244,7 @@ done:
                             {
                                 if (string.IsNullOrEmpty(message))
                                 {
-                                    message = "Failed to find position; trying again...";
+                                    message = "Scheduled: Failed to find position; trying again...";
                                 }
 
                                 PrintDebugMessage(message);
@@ -1257,14 +1265,11 @@ done:
 
             private bool CanScheduleOpenEvent()
             {
-                if (RaidableBase.IsBusy)
+                if (Instance.Raids.Values.Exists(raid => raid.IsDespawning))
                 {
-                    var vector = Instance.Raids.Values.FirstOrDefault(raid => raid.IsDespawning)?.Location;
-                    if (vector != null)
-                    {
-                        PrintDebugMessage($"Scheduled: Paste not available; a base is currently despawning at {vector}");
-                        return false;
-                    }
+                    var vector = Instance.Raids.Values.FirstOrDefault(raid => raid.IsDespawning).Location;
+                    PrintDebugMessage($"Scheduled: Paste not available; a base is currently despawning at {vector}");
+                    return false;
                 }
 
                 if (!Instance.IsPasteAvailable)
@@ -1276,7 +1281,7 @@ done:
 
                 if (RaidableBase.IsSpawning)
                 {
-                    PrintDebugMessage($"Paste not available; a base is currently spawning.");
+                    PrintDebugMessage($"Scheduled: Paste not available; a base is currently spawning.");
                     return false;
                 }
 
@@ -1288,7 +1293,7 @@ done:
 
                 if (config.Settings.Schedule.Max > 0 && RaidableBase.Get(RaidableType.Scheduled) >= config.Settings.Schedule.Max)
                 {
-                    PrintDebugMessage($"The max amount of scheduled events are spawned.");
+                    PrintDebugMessage($"Scheduled: The max amount of scheduled events are spawned.");
                     return false;
                 }
 
@@ -1300,7 +1305,7 @@ done:
 
                 if (BackboneController.Instance.GetRaidTime() > 0)
                 {
-                    PrintDebugMessage($"{FormatTime(BackboneController.Instance.GetRaidTime())} before next event.");
+                    PrintDebugMessage($"Scheduled: {FormatTime(BackboneController.Instance.GetRaidTime())} before next event.");
                     return false;
                 }
 
@@ -1726,19 +1731,21 @@ done:
                 switch (cacheType)
                 {
                     case CacheType.Submerged:
-                    {
                         rsl.WaterHeight = TerrainMeta.WaterMap.GetHeight(rsl.Location);
                         rsl.Surroundings.Clear();
-                    }
-                    break;
+                        break;
                     case CacheType.Generic:
-                    {
                         if (Instance.EventTerritory(rsl.Location))
                         {
                             return;
                         }
-                    }
-                    break;
+                        break;
+                    case CacheType.Close:
+                        if (RaidableBase.IsTooClose(rsl.Location, GetDistance(RaidableType.None)))
+                        {
+                            return;
+                        }
+                        break;
                 }
 
                 Spawns.Add(rsl);
@@ -1873,6 +1880,11 @@ done:
             public int Hard { get; set; }
             public int Expert { get; set; }
             public int Nightmare { get; set; }
+            public int EasyPoints { get; set; }
+            public int MediumPoints { get; set; }
+            public int HardPoints { get; set; }
+            public int ExpertPoints { get; set; }
+            public int NightmarePoints { get; set; }
             public int TotalRaids { get; set; }
             public int TotalPoints { get; set; }
             public int TotalEasy { get; set; }
@@ -1880,19 +1892,31 @@ done:
             public int TotalHard { get; set; }
             public int TotalExpert { get; set; }
             public int TotalNightmare { get; set; }
-            public int EasyPoints { get; set; }
-            public int MediumPoints { get; set; }
-            public int HardPoints { get; set; }
-            public int ExpertPoints { get; set; }
-            public int NightmarePoints { get; set; }
             public int TotalEasyPoints { get; set; }
             public int TotalMediumPoints { get; set; }
             public int TotalHardPoints { get; set; }
             public int TotalExpertPoints { get; set; }
             public int TotalNightmarePoints { get; set; }
+            public DateTime ExpiredDate { get; set; } = DateTime.MinValue;
+            public bool IsExpired()
+            {
+                if (ExpiredDate == DateTime.MinValue)
+                {
+                    ResetExpiredDate();
+                }
 
-            public PlayerInfo() { }
-
+                return ExpiredDate < DateTime.Now;
+            }
+            public void ResetExpiredDate() => ExpiredDate = DateTime.Now.AddDays(60);
+            public static PlayerInfo Get(string userid)
+            {
+                PlayerInfo playerInfo;
+                if (!data.Players.TryGetValue(userid, out playerInfo))
+                {
+                    data.Players[userid] = playerInfo = new PlayerInfo();
+                }
+                return playerInfo;
+            }
             public void Reset()
             {
                 Raids = 0;
@@ -1952,7 +1976,7 @@ done:
 
             public bool TryClear(RaidableType type, RaidableMode mode, List<string> keyList)
             {
-                foreach (var profile in Buildings.Profiles)
+                foreach (var profile in Instance.Buildings.Profiles)
                 {
                     if (profile.Value.Options.Mode != mode || !CanSpawnDifficultyToday(mode) || MustExclude(type, profile.Value.Options.AllowPVP))
                     {
@@ -2187,38 +2211,32 @@ done:
                 Explosive,
                 FlameThrower,
                 Melee,
+                Water,
+                Syringe,
                 None
             }
 
-            internal global::HumanNPC npc;
-            internal AttackEntity _attackEntity;
-            internal FlameThrower flameThrower;
-            internal Chainsaw chainsaw;
-            internal BaseMelee baseMelee;
-            internal BasePlayer AttackTarget;
+            internal ScientistNPC npc;
+            private AttackEntity _attackEntity;
+            private FlameThrower flameThrower;
+            private BaseProjectile launcher;
+            private LiquidWeapon liquidWeapon;
+            private MedicalTool syringe;
+            private BaseMelee baseMelee;
+            private BasePlayer AttackTarget;
             internal RaidableBase raid;
-            internal List<Vector3> positions;
+            internal NpcSettings Settings;
+            private List<Vector3> positions;
             internal Vector3 DestinationOverride;
-            internal Vector3 Location;
-            internal ulong uid;
-            internal bool canShoot;
-            internal bool canLeave;
+            private ulong uid;
             internal bool isStationary;
-            internal bool isMurderer;
-            internal bool playCatch;
-            internal float lastWarpTime;
-            internal float _senseRange;
+            private float lastWarpTime;
             internal float softLimitSenseRange;
-            internal float ProtectionRadius;
-            internal float nextAttackTime;
-            internal float attackRange;
-            internal float cooldownDelay;
-            internal float throwDistance = 17.5f;
-            internal float throwTime = 1f;
-            internal float damageAmount = 15f;
-            internal float baseMeleeDamage = 15f;
+            private float nextAttackTime;
+            private float attackRange;
+            private float attackCooldown;
             internal AttackType attackType = AttackType.None;
-            internal BaseNavigator.NavigationSpeed CurrentSpeed = BaseNavigator.NavigationSpeed.Normal;
+            private BaseNavigator.NavigationSpeed CurrentSpeed = BaseNavigator.NavigationSpeed.Normal;
 
             internal Vector3 AttackPosition => AttackTarget.ServerPosition;
 
@@ -2230,37 +2248,135 @@ done:
                 {
                     if (_attackEntity == null)
                     {
-                        _attackEntity = GetEntity().GetAttackEntity();
-
-                        if (_attackEntity is BaseMelee)
-                        {
-                            if (_attackEntity is Chainsaw)
-                            {
-                                chainsaw = _attackEntity as Chainsaw;
-                            }
-                            
-                            damageAmount = 0f;
-
-                            baseMelee = _attackEntity as BaseMelee;
-
-                            baseMelee.damageTypes.ForEach(damageType => damageAmount += damageType.amount);
-                        }
-                        else if (_attackEntity is FlameThrower)
-                        {
-                            damageAmount = 0f;
-
-                            flameThrower = _attackEntity as FlameThrower;
-
-                            flameThrower.ServerReload();
-
-                            flameThrower.damagePerSec.ForEach(damageType => damageAmount += damageType.amount);
-                        }
-
-                        SetAttackType();
+                        IdentifyWeapon();
                     }
 
                     return _attackEntity;
                 }
+            }
+
+            internal void IdentifyWeapon()
+            {
+                _attackEntity = GetEntity().GetAttackEntity();
+
+                attackRange = 0f;
+                attackCooldown = 99999f;
+                attackType = AttackType.None;
+                baseMelee = null; 
+                flameThrower = null; 
+                launcher = null; 
+                liquidWeapon = null;
+
+                if (_attackEntity == null)
+                {
+                    return;
+                }
+
+                switch (_attackEntity.ShortPrefabName)
+                {
+                    case "ak47u.entity":
+                    case "bolt_rifle.entity":
+                    case "double_shotgun.entity":
+                    case "l96.entity":
+                    case "lr300.entity":
+                    case "m249.entity":
+                    case "m39.entity":
+                    case "m92.entity":
+                    case "mp5.entity":
+                    case "nailgun.entity":
+                    case "pistol_eoka.entity":
+                    case "pistol_revolver.entity":
+                    case "pistol_semiauto.entity":
+                    case "python.entity":
+                    case "semi_auto_rifle.entity":
+                    case "shotgun_pump.entity":
+                    case "shotgun_waterpipe.entity":
+                    case "spas12.entity":
+                    case "thompson.entity":
+                    case "smg.entity":
+                        SetAttackRestrictions(AttackType.BaseProjectile, 300f, 0f, 150f);
+                        break;
+                    case "snowballgun.entity":
+                        SetAttackRestrictions(AttackType.BaseProjectile, 15f, 0.1f, 15f);
+                        break;
+                    case "chainsaw.entity":
+                    case "jackhammer.entity":
+                        baseMelee = _attackEntity as BaseMelee;
+                        SetAttackRestrictions(AttackType.Melee, 2.5f, (_attackEntity.animationDelay + _attackEntity.deployDelay) * 2f);
+                        break;
+                    case "axe_salvaged.entity":
+                    case "bone_club.entity":
+                    case "butcherknife.entity":
+                    case "candy_cane.entity":
+                    case "hammer_salvaged.entity":
+                    case "hatchet.entity":
+                    case "icepick_salvaged.entity":
+                    case "knife.combat.entity":
+                    case "knife_bone.entity":
+                    case "longsword.entity":
+                    case "mace.entity":
+                    case "machete.weapon":
+                    case "pickaxe.entity":
+                    case "pitchfork.entity":
+                    case "salvaged_cleaver.entity":
+                    case "salvaged_sword.entity":
+                    case "sickle.entity":
+                    case "spear_stone.entity":
+                    case "spear_wooden.entity":
+                    case "stone_pickaxe.entity":
+                    case "stonehatchet.entity":
+                        baseMelee = _attackEntity as BaseMelee;
+                        SetAttackRestrictions(AttackType.Melee, 2.5f, _attackEntity.animationDelay + _attackEntity.deployDelay);
+                        break;
+                    case "explosive.satchel.entity":
+                    case "explosive.timed.entity":
+                        SetAttackRestrictions(AttackType.Explosive, 17.5f, 10f);
+                        break;
+                    case "grenade.beancan.entity":
+                    case "grenade.f1.entity":
+                        SetAttackRestrictions(AttackType.Explosive, 17.5f, 5f);
+                        break;
+                    case "mgl.entity":
+                        launcher = _attackEntity as BaseProjectile;
+                        SetAttackRestrictions(AttackType.Explosive, 150f, 4f, 150f);
+                        break;
+                    case "rocket_launcher.entity":
+                        launcher = _attackEntity as BaseProjectile;
+                        SetAttackRestrictions(AttackType.Explosive, 300f, 6f, 150f);
+                        break;
+                    case "flamethrower.entity":
+                        flameThrower = _attackEntity as FlameThrower;
+                        SetAttackRestrictions(AttackType.FlameThrower, 10f, (_attackEntity.animationDelay + _attackEntity.deployDelay) * 2f);
+                        break;
+                    case "compound_bow.entity":
+                    case "crossbow.entity":
+                    case "speargun.entity":
+                        SetAttackRestrictions(AttackType.BaseProjectile, 200f, (_attackEntity.animationDelay + _attackEntity.deployDelay) * 1.25f, 150f);
+                        break;
+                    case "watergun.entity":
+                    case "waterpistol.entity":
+                        liquidWeapon = _attackEntity as LiquidWeapon;
+                        liquidWeapon.AutoPump = true;
+                        SetAttackRestrictions(AttackType.Water, 10f, 2f);
+                        break;
+                    case "syringe_medical.entity":
+                        syringe = _attackEntity as MedicalTool;
+                        SetAttackRestrictions(AttackType.Syringe, 2.5f, 4f);
+                        break;
+                    default: _attackEntity = null; break;
+                }
+            }
+
+            private void SetAttackRestrictions(AttackType attackType, float attackRange, float attackCooldown, float effectiveRange = 0f)
+            {
+                if (effectiveRange != 0f)
+                {
+                    _attackEntity.effectiveRange = effectiveRange;
+                }
+
+                this.attackType = attackType;
+                this.attackRange = attackRange;
+                this.attackCooldown = attackCooldown;
             }
 
             public bool ValidTarget
@@ -2330,7 +2446,7 @@ done:
                 private new HumanoidBrain brain;
 
                 private IAIAttack attack => brain.Senses.ownerAttack;
-
+                
                 public AttackState(HumanoidBrain humanoidBrain)
                 {
                     base.brain = brain = humanoidBrain;
@@ -2354,7 +2470,7 @@ done:
                         {
                             StopAttacking();
                         }
-                        if (!brain.isStationary)
+                        if (!brain.isStationary && brain.Navigator.CanUseNavMesh)
                         {
                             brain.Navigator.SetDestination(brain.DestinationOverride, BaseNavigator.NavigationSpeed.Fast, 0f, 0f);
                         }
@@ -2391,7 +2507,7 @@ done:
                     {
                         return StateStatus.Error;
                     }
-                    if (!brain.isStationary && !brain.Navigator.SetDestination(brain.DestinationOverride, BaseNavigator.NavigationSpeed.Fast, 0f, 0f))
+                    if (!brain.isStationary && brain.Navigator.CanUseNavMesh && !brain.Navigator.SetDestination(brain.DestinationOverride, BaseNavigator.NavigationSpeed.Fast, 0f, 0f))
                     {
                         return StateStatus.Error;
                     }
@@ -2411,13 +2527,12 @@ done:
                     {
                         StopAttacking();
                     }
-
                     return StateStatus.Running;
                 }
 
                 private bool InAttackRange()
                 {
-                    return attack.CanAttack(brain.AttackTarget) && brain.IsInAttackRange() && brain.CanSeeTarget();
+                    return attack.CanAttack(brain.AttackTarget) && brain.IsInAttackRange() && brain.CanSeeTarget(brain.AttackTarget);
                 }
 
                 private void StartAttacking()
@@ -2429,7 +2544,11 @@ done:
                         return;
                     }
 
-                    if (brain.attackType == AttackType.BaseProjectile)
+                    if (brain.attackType == AttackType.Explosive && brain.launcher != null)
+                    {
+                        brain.EmulatedFire();
+                    }
+                    else if (brain.attackType == AttackType.BaseProjectile)
                     {
                         GetEntity().ShotTest(Vector3.Distance(brain.AttackPosition, brain.ServerPosition));
                     }
@@ -2437,27 +2556,39 @@ done:
                     {
                         brain.UseFlameThrower();
                     }
+                    else if (brain.attackType == AttackType.Water)
+                    {
+                        brain.UseWaterGun();
+                    }
+                    else if (brain.CanUseMedicalTool())
+                    {
+                        brain.UseSyringe(true);
+                    }
                     else brain.MeleeAttack();
                 }
             }
 
+            private bool init;
+
             public void Init()
             {
-                Instance.HumanoidBrains[uid = npc.userID] = this;
-
-                _attackEntity = AttackEntity;
-                npc.spawnPos = Location;
-                npc.AdditionalLosBlockingLayer = visibleLayer;
+                if (init) return;
+                init = true;
                 lastWarpTime = Time.time;
-                                
-                SetupNavigator(GetEntity(), GetComponent<BaseNavigator>(), ProtectionRadius, isStationary);
+                npc.spawnPos = raid.Location;
+                npc.AdditionalLosBlockingLayer = visibleLayer;
+                Instance.HumanoidBrains[uid = npc.userID] = this;
+                
+                IdentifyWeapon();
+
+                SetupNavigator(GetEntity(), GetComponent<BaseNavigator>(), raid.ProtectionRadius, isStationary);
             }
 
             private void Converge()
             {
                 foreach (var brain in Instance.HumanoidBrains.Values)
                 {
-                    if (brain != this && brain.isMurderer == isMurderer && brain.CanConverge(npc) && CanLeave(AttackPosition))
+                    if (brain != this && brain.attackType == attackType && brain.CanConverge(npc) && CanLeave(AttackPosition))
                     {
                         brain.SetTarget(AttackTarget, false);
                         brain.TryToAttack(AttackTarget);
@@ -2475,7 +2606,7 @@ done:
                 Navigator.ClearFacingDirectionOverride();
 
                 DestinationOverride = GetRandomRoamPosition();
-                SenseRange = ListenRange = _senseRange;
+                SenseRange = ListenRange = Settings.AggressionRange;
                 TargetLostRange = SenseRange * 1.25f;
                 AttackTarget = null;
 
@@ -2491,49 +2622,6 @@ done:
                 SetDestination(to);
             }
 
-            private List<string> _explosives = new List<string>
-            {
-                "rocket", "grenade", "explosive"
-            };
-
-            private void SetAttackType()
-            {
-                if (_attackEntity == null)
-                {
-                    return;
-                }
-
-                if (_attackEntity is FlameThrower)
-                {
-                    attackType = AttackType.FlameThrower;
-                    cooldownDelay = _attackEntity.animationDelay + _attackEntity.deployDelay * 2f;
-                    attackRange = _attackEntity.effectiveRange;
-                }
-                else if (_attackEntity is BaseMelee)
-                {
-                    cooldownDelay = _attackEntity.animationDelay + _attackEntity.deployDelay;
-                    attackRange = _attackEntity.effectiveRange;
-
-                    if (_attackEntity is Jackhammer || _attackEntity is Chainsaw)
-                    {                        
-                        cooldownDelay *= 2f;
-                        attackRange = 2.5f;
-                    }
-
-                    attackType = AttackType.Melee;
-                }
-                else if (_explosives.Exists(_attackEntity.ShortPrefabName.Contains))
-                {
-                    cooldownDelay = 10f;
-                    attackType = AttackType.Explosive;
-                }
-                else if (_attackEntity is BaseProjectile)
-                {
-                    cooldownDelay = 0f;
-                    attackType = AttackType.BaseProjectile;
-                }
-            }
-
             public void SetupNavigator(BaseCombatEntity owner, BaseNavigator navigator, float distance, bool isStationary)
             {
                 navigator.CanUseNavMesh = !isStationary && !Rust.Ai.AiManager.nav_disable;
@@ -2547,11 +2635,12 @@ done:
                 {
                     navigator.MaxRoamDistanceFromHome = navigator.BestMovementPointMaxDistance = navigator.BestRoamPointMaxDistance = distance * 0.85f;
                     navigator.DefaultArea = "Walkable";
+                    navigator.topologyPreference = ((TerrainTopology.Enum)TerrainTopology.EVERYTHING);
                 }
 
                 navigator.Agent.agentTypeID = -1372625422;
                 navigator.MaxWaterDepth = config.Settings.Management.WaterDepth;
-                navigator.Init(owner, navigator.Agent);
+                if (navigator.CanUseNavMesh) navigator.Init(owner, navigator.Agent);
             }
 
             private void SetAimDirection()
@@ -2570,9 +2659,9 @@ done:
                 {
                     if (attackType != AttackType.BaseProjectile)
                     {
-                        destination = ((destination.XZ3D() - Location.XZ3D()).normalized * (ProtectionRadius * 0.75f)) + Location;
+                        destination = ((destination.XZ3D() - raid.Location.XZ3D()).normalized * (raid.ProtectionRadius * 0.75f)) + raid.Location;
 
-                        destination += UnityEngine.Random.onUnitSphere * (ProtectionRadius * 0.2f);
+                        destination += UnityEngine.Random.onUnitSphere * (raid.ProtectionRadius * 0.2f);
                     }
                     else
                     {
@@ -2582,9 +2671,12 @@ done:
                     CurrentSpeed = BaseNavigator.NavigationSpeed.Normal;
                 }
 
-                destination.y = TerrainMeta.HeightMap.GetHeight(destination);
+                if (destination != DestinationOverride)
+                {
+                    destination.y = TerrainMeta.HeightMap.GetHeight(destination);
 
-                DestinationOverride = destination;
+                    DestinationOverride = destination;
+                }
 
                 Navigator.SetCurrentSpeed(CurrentSpeed);
 
@@ -2613,7 +2705,7 @@ done:
 
                 if (!IsInSenseRange(player.transform.position))
                 {
-                    SenseRange = ListenRange = _senseRange + Vector3.Distance(player.transform.position, ServerPosition);
+                    SenseRange = ListenRange = Settings.AggressionRange + Vector3.Distance(player.transform.position, ServerPosition);
                     TargetLostRange = SenseRange + (SenseRange * 0.25f);
                 }
                 else
@@ -2630,36 +2722,11 @@ done:
 
             private void TryReturnHome()
             {
-                if (!isStationary && canLeave && !IsInHomeRange())
+                if (!isStationary && Settings.CanLeave && !IsInHomeRange())
                 {
                     CurrentSpeed = BaseNavigator.NavigationSpeed.Normal;
 
                     Warp();
-                }
-            }
-
-            private void TryStationaryAttack()
-            {
-                var attacker = GetBestTarget();
-
-                if (attacker == null)
-                {
-                    return;
-                }
-
-                if (ShouldForgetTarget(attacker))
-                {
-                    Forget();
-
-                    return;
-                }
-
-                SetTarget(attacker, false);
-
-                if (CanSeeTarget(attacker))
-                {
-                    SetAimDirection();
-                    SwitchToState(AIState.Attack, -1);
                 }
             }
 
@@ -2686,18 +2753,22 @@ done:
 
                 SetTarget(attacker);
 
-                if (!CanSeeTarget())
+                if (!CanSeeTarget(attacker))
                 {
                     return;
                 }
 
-                if (isMurderer)
+                if (isStationary)
                 {
-                    TryMurdererActions();
+                    SetAimDirection();
+                }
+                else if (attackType == AttackType.BaseProjectile)
+                {
+                    TryScientistActions(); 
                 }
                 else
                 {
-                    TryScientistActions();
+                    TryMurdererActions();
                 }
 
                 SwitchToState(AIState.Attack, -1);
@@ -2709,11 +2780,14 @@ done:
 
                 if (attackType == AttackType.Explosive)
                 {
-                    if (IsInAttackRange(10f))
+                    if (IsInAttackRange(20f))
                     {
                         RandomMove(15f);
                     }
-                    else SetDestination(AttackPosition);
+                    else
+                    {
+                        SetDestination(AttackPosition);
+                    }
                 }
                 else if (!IsInReachableRange())
                 {
@@ -2725,7 +2799,10 @@ done:
                     {
                         RandomMove(attackRange);
                     }
-                    else SetDestination(AttackPosition);
+                    else
+                    {
+                        SetDestination(AttackPosition);
+                    }
                 }
             }
 
@@ -2740,15 +2817,15 @@ done:
             {
                 this.positions = positions;
 
+                
                 if (positions == null)
                 {
                     isStationary = true;
-                    isMurderer = false;
                 }
-
+                
                 if (isStationary)
                 {
-                    InvokeRepeating(TryStationaryAttack, 1f, 1f);
+                    InvokeRepeating(TryToAttack, 1f, 1f);
                 }
                 else
                 {
@@ -2805,21 +2882,87 @@ done:
                 {
                     flameThrower.SetFlameState(false);
                     flameThrower.ServerReload();
+                    return;
                 }
-                npc.triggerEndTime = Time.time + cooldownDelay;
+                npc.triggerEndTime = Time.time + attackCooldown;
                 flameThrower.SetFlameState(true);
                 flameThrower.Invoke(() => flameThrower.SetFlameState(false), 2f);
             }
 
+            private void UseWaterGun()
+            {
+                RaycastHit hit;
+                Physics.Raycast(npc.eyes.BodyRay(), out hit, 10f, 1218652417);
+                List<DamageTypeEntry> damage = new List<DamageTypeEntry>();
+                WaterBall.DoSplash(hit.point, 2f, ItemManager.FindItemDefinition("water"), 10);
+                DamageUtil.RadiusDamage(npc, liquidWeapon.LookupPrefab(), hit.point, 0.15f, 0.15f, damage, 131072, true);
+            }
+
+            public bool CanUseMedicalTool()
+            {
+                return npc.inventory.containerBelt.itemList.Exists(item => item.info.shortname == "syringe.medical") && npc.health <= npc.MaxHealth() / 2f;
+            }
+
+            private void UseSyringe(bool now = false)
+            {                
+                raid.EquipWeapon(npc, this, now);
+                IdentifyWeapon();
+                if (syringe == null) return;
+                syringe.ServerUse();
+                Invoke(() => UseSyringe(), 4f);
+            }
+
             private void UseChainsaw()
             {
-                chainsaw.ammo = chainsaw.maxAmmo;
-                chainsaw.ServerUse();
-                AttackTarget.Hurt(damageAmount, DamageType.Bleeding, npc, true);
+                AttackEntity.TopUpAmmo();
+                AttackEntity.ServerUse(); 
+                AttackTarget.Hurt(10f * AttackEntity.npcDamageScale, DamageType.Bleeding, npc);
+            }
+
+            private void EmulatedFire()
+            {
+                if (launcher.HasAttackCooldown()) return;
+                float dist; 
+                string prefab;
+                switch (launcher.ShortPrefabName)
+                {
+                    case "rocket_launcher.entity":
+                        prefab = "assets/prefabs/ammo/rocket/rocket_basic.prefab";
+                        dist = Vector3.Distance(ServerPosition, AttackPosition);
+                        launcher.repeatDelay = 6f;
+                        break;
+                    case "mgl.entity":
+                        prefab = "assets/prefabs/ammo/40mmgrenade/40mm_grenade_he.prefab";
+                        launcher.repeatDelay = 4f;
+                        dist = Vector3.Distance(ServerPosition, AttackPosition) + 5f;
+                        break;
+                    default: return;
+                }
+                Vector3 vector3 = launcher.MuzzlePoint.transform.forward + Vector3.up;
+                Vector3 position = launcher.MuzzlePoint.transform.position + (Vector3.up * 1.6f);
+                BaseEntity entity = GameManager.server.CreateEntity(prefab, position, GetEntity().eyes.GetLookRotation());
+                if (entity == null) return;
+                entity.creatorEntity = GetEntity(); 
+                var serverProjectile = entity.GetComponent<ServerProjectile>();
+                if (serverProjectile == null) return;
+                serverProjectile.InitializeVelocity(Quaternion.Euler(vector3) * entity.transform.forward * dist);
+                TimedExplosive explosive = entity as TimedExplosive;
+                if (explosive != null)
+                {
+                    explosive.timerAmountMin = 1;
+                    explosive.timerAmountMax = 15;
+                }
+                entity.Spawn();
+                launcher.StartAttackCooldown(launcher.repeatDelay);
             }
 
             private void MeleeAttack()
             {
+                if (baseMelee == null)
+                {
+                    return;
+                }
+
                 if (AttackEntity is Chainsaw)
                 {
                     UseChainsaw();
@@ -2829,7 +2972,7 @@ done:
                 Vector3 position = AttackPosition;
                 AttackEntity.StartAttackCooldown(AttackEntity.repeatDelay * 2f);
                 npc.SignalBroadcast(BaseEntity.Signal.Attack, string.Empty, null);
-                if (baseMelee != null && baseMelee.swingEffect.isValid)
+                if (baseMelee.swingEffect.isValid)
                 {
                     Effect.server.Run(baseMelee.swingEffect.resourcePath, position, Vector3.forward, npc.Connection, false);
                 }
@@ -2848,14 +2991,15 @@ done:
                     Weapon = AttackEntity,
                     WeaponPrefab = AttackEntity
                 };
-                hitInfo.damageTypes.Set(DamageType.Slash, damageAmount * AttackEntity.npcDamageScale);
+
+                hitInfo.damageTypes.Set(DamageType.Slash, baseMelee.TotalDamage() * AttackEntity.npcDamageScale);
                 Effect.server.ImpactEffect(hitInfo);
                 AttackTarget.OnAttacked(hitInfo);
             }
 
             public bool TryThrowWeapon()
             {
-                if (!CanThrowWeapon())
+                if (!IsInThrowRange())
                 {
                     return false;
                 }
@@ -2883,15 +3027,16 @@ done:
                         return;
                     }
 
-                    if (CanThrowWeapon())
+                    if (IsInThrowRange())
                     {
-                        thrownWeapon.GetItem().amount = 2;
+                        thrownWeapon.GetItem().amount++;
                         thrownWeapon.ServerThrow(AttackPosition);
                     }
+                    else nextAttackTime = Time.realtimeSinceStartup + 1f;
 
                     npc.SetAiming(false);
                     RandomMove(15f);
-                }, throwTime);
+                }, 1f);
 
                 return true;
             }
@@ -2905,30 +3050,34 @@ done:
 
             private bool CanLeave(Vector3 destination)
             {
-                return canLeave || isStationary || IsInLeaveRange(destination);
+                return Settings.CanLeave || isStationary || IsInLeaveRange(destination);
             }
 
-            private bool CanSeeTarget()
+            private bool CanSeeTarget(BasePlayer target)
             {
-                return CanSeeTarget(AttackTarget);
-            }
-
-            private bool CanSeeTarget(BasePlayer player)
-            {
-                if (attackType == AttackType.Explosive && raid.IsInForwardOperatingBase(player.transform.position))
+                if (isStationary)
                 {
-                    return !raid.Options.NPC.CounterRaid;
+                    return Senses.Memory.IsLOS(target);
                 }
 
-                if (Navigator.CurrentNavigationType == BaseNavigator.NavigationType.None)
+                if (attackType == AttackType.Explosive && raid.Options.NPC.CounterRaid && raid.IsInForwardOperatingBase(target.ServerPosition))
                 {
-                    if (attackType == AttackType.FlameThrower || attackType == AttackType.Melee)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
 
-                return Senses.Memory.IsLOS(player);
+                if (Navigator.CurrentNavigationType == BaseNavigator.NavigationType.None && (attackType == AttackType.FlameThrower || attackType == AttackType.Melee))
+                {
+                    return true;
+                }
+                
+                if (Vector3.Distance(ServerPosition, target.ServerPosition) < 10f || Senses.Memory.IsLOS(target))
+                {
+                    return true;
+                }
+
+                nextAttackTime = Time.realtimeSinceStartup + 1f;
+
+                return false;
             }
 
             public bool CanRoam(Vector3 destination)
@@ -2938,17 +3087,12 @@ done:
 
             private bool CanShoot()
             {
-                return canShoot || attackType != AttackType.BaseProjectile && attackType != AttackType.Explosive || IsInLeaveRange(AttackPosition);
-            }
-
-            private bool CanThrowWeapon()
-            {
-                if (!isMurderer || attackType == AttackType.Melee || !IsInThrowRange())
+                if (attackType == AttackType.None)
                 {
                     return false;
                 }
 
-                return true;
+                return Settings.CanShoot || attackType != AttackType.BaseProjectile && attackType != AttackType.Explosive || IsInLeaveRange(AttackPosition);
             }
 
             public BasePlayer GetBestTarget()
@@ -2957,31 +3101,15 @@ done:
                 {
                     return null;
                 }
-
                 float delta = -1f;
                 BasePlayer target = null;
-                Vector3 bodyForward = npc.eyes.BodyForward();
-                foreach (var entity in Senses.Players)
+                foreach (var player in Senses.Memory.Targets.OfType<BasePlayer>())
                 {
-                    BasePlayer player = entity as BasePlayer;
-                    if (player == null || !player.IsHuman() || player.IsDead())
-                    {
-                        continue;
-                    }
-                    float dist = Vector3.Distance(player.transform.position, ServerPosition);
-                    float dot = Vector3.Dot((player.transform.position - npc.eyes.position).normalized, bodyForward);
+                    if (player == null || !player.IsHuman() || player.health <= 0f || player.IsDead()) continue;
+                    float dist = Vector3.Distance(player.transform.position, npc.transform.position);
                     float rangeDelta = 1f - Mathf.InverseLerp(1f, SenseRange, dist);
-                    bool isLOS = CanSeeTarget(player);
-                    if (!isLOS)
-                    {
-                        continue;
-                    }
-                    rangeDelta += Mathf.InverseLerp(VisionCone, 1f, dot) / 2f;
-                    rangeDelta += isLOS ? 2f : 0f;
-                    if (delta > rangeDelta)
-                    {
-                        continue;
-                    }
+                    rangeDelta += (CanSeeTarget(player) ? 2f : 0f);
+                    if (rangeDelta <= delta) continue;
                     target = player;
                     delta = rangeDelta;
                 }
@@ -2995,19 +3123,19 @@ done:
 
             private bool IsAttackOnCooldown()
             {
-                if (isStationary || attackType == AttackType.BaseProjectile)
+                if (isStationary && attackType == AttackType.BaseProjectile)
                 {
                     return false;
                 }
 
-                if (Time.realtimeSinceStartup < nextAttackTime)
+                if (attackType == AttackType.None || Time.realtimeSinceStartup < nextAttackTime)
                 {
                     return true;
                 }
 
-                if (cooldownDelay > 0f)
+                if (attackCooldown > 0f)
                 {
-                    nextAttackTime = Time.realtimeSinceStartup + cooldownDelay;
+                    nextAttackTime = Time.realtimeSinceStartup + attackCooldown;
                 }
 
                 return false;
@@ -3020,12 +3148,12 @@ done:
 
             private bool IsInHomeRange()
             {
-                return InRange(ServerPosition, Location, Mathf.Max(ProtectionRadius, TargetLostRange), false);
+                return InRange(ServerPosition, raid.Location, Mathf.Max(raid.ProtectionRadius, TargetLostRange), false);
             }
 
             private bool IsInLeaveRange(Vector3 destination)
             {
-                return InRange(Location, destination, ProtectionRadius, false);
+                return InRange(raid.Location, destination, raid.ProtectionRadius, false);
             }
 
             private bool IsInReachableRange()
@@ -3040,17 +3168,17 @@ done:
 
             private bool IsInSenseRange(Vector3 destination)
             {
-                return InRange(Location, destination, SenseRange);
+                return InRange(raid.Location, destination, SenseRange);
             }
 
             private bool IsInTargetRange(Vector3 destination)
             {
-                return InRange(Location, destination, TargetLostRange);
+                return InRange(raid.Location, destination, TargetLostRange);
             }
 
             private bool IsInThrowRange()
             {
-                return InRange(ServerPosition, AttackPosition, throwDistance, false);
+                return InRange(ServerPosition, AttackPosition, attackRange, false);
             }
 
             private bool ShouldForgetTarget(BasePlayer target)
@@ -3064,12 +3192,10 @@ done:
             private const float Radius = M_RADIUS;
             public Hash<uint, float> conditions { get; set; } = Pool.Get<Hash<uint, float>>();
             public List<StorageContainer> _boxes { get; set; } = Pool.GetList<StorageContainer>();
-            public List<Vector3> _boxPositions { get; set; } = Pool.GetList<Vector3>();
             public List<StorageContainer> _containers { get; set; } = Pool.GetList<StorageContainer>();
             public List<StorageContainer> _allcontainers { get; set; } = Pool.GetList<StorageContainer>();
             public Dictionary<BasePlayer, PlayerInputEx> Inputs { get; set; } = Pool.Get<Dictionary<BasePlayer, PlayerInputEx>>();
             public List<ScientistNPC> npcs { get; set; } = Pool.GetList<ScientistNPC>();
-            public Dictionary<ulong, bool> npcTypes { get; set; } = Pool.Get<Dictionary<ulong, bool>>();
             public Dictionary<uint, BasePlayer> records { get; set; } = Pool.Get<Dictionary<uint, BasePlayer>>();
             public List<RaiderInfo> raiders { get; set; } = Pool.GetList<RaiderInfo>();
             public List<ulong> friends { get; set; } = Pool.GetList<ulong>();
@@ -3078,7 +3204,7 @@ done:
             public List<RaiderInfo> lockedToRaid { get; set; } = Pool.GetList<RaiderInfo>();
             public Dictionary<uint, BackpackData> backpacks { get; set; } = Pool.Get<Dictionary<uint, BackpackData>>();
             public List<Vector3> foundations { get; set; } = Pool.GetList<Vector3>();
-            private List<BlockProperties> _blockProperties { get; set; } = Pool.GetList<BlockProperties>();
+            private List<BuildingBlock> blocks { get; set; } = Pool.GetList<BuildingBlock>();
             private List<Vector3> _randomSpots { get; set; } = Pool.GetList<Vector3>();
             private List<SphereEntity> spheres { get; set; } = Pool.GetList<SphereEntity>();
             private List<BaseEntity> lights { get; set; } = Pool.GetList<BaseEntity>();
@@ -3094,10 +3220,12 @@ done:
             private Dictionary<uint, ulong> skinIds { get; set; } = Pool.Get<Dictionary<uint, ulong>>();
             private Dictionary<TriggerBase, BaseEntity> triggers { get; set; } = Pool.Get<Dictionary<TriggerBase, BaseEntity>>();
             private List<SleepingBag> _beds { get; set; } = Pool.GetList<SleepingBag>();
+            private Dictionary<SleepingBag, ulong> _bags { get; set; } = Pool.Get<Dictionary<SleepingBag, ulong>>();
             private List<BaseEntity> _rugs { get; set; } = Pool.GetList<BaseEntity>();
             public List<StabilityEntity> ses { get; set; } = Pool.GetList<StabilityEntity>();
             public List<SamSite> samsites { get; set; } = Pool.GetList<SamSite>();
             public List<VendingMachine> vms { get; set; } = Pool.GetList<VendingMachine>();
+            public Dictionary<string, ItemDefinition> Definitions { get; set; }
             public BuildingPrivlidge priv { get; set; }
             private Dictionary<string, List<string>> npcKits { get; set; }
             private MapMarkerExplosion explosionMarker { get; set; }
@@ -3161,8 +3289,6 @@ done:
             public bool IsDamaged { get; set; }
             public bool IsCompleted { get; set; }
             public List<Payment> payments { get; set; } = Pool.GetList<Payment>();
-            private static bool isBusy { get; set; }
-            public static float isBusyTime { get; set; }
             private static bool isSpawning { get; set; }
             private static float isSpawningTime { get; set; }
             public float ProtectionRadius => Options.ProtectionRadius(Type);
@@ -3194,24 +3320,6 @@ done:
                 }
             }
 
-            public static bool IsBusy
-            {
-                get
-                {
-                    if (Time.realtimeSinceStartup - isBusyTime > 30f)
-                    {
-                        isBusy = false;
-                    }
-
-                    return isBusy;
-                }
-                set
-                {
-                    isBusyTime = Time.realtimeSinceStartup;
-                    isBusy = value;
-                }
-            }
-
             private void ResetToPool<T>(ICollection<T> collection)
             {
                 collection.Clear();
@@ -3227,13 +3335,11 @@ done:
                 ResetToPool(raiders);
                 ResetToPool(backpacks);
                 ResetToPool(lastActive);
-                ResetToPool(_blockProperties);
+                ResetToPool(blocks);
                 ResetToPool(_boxes);
-                ResetToPool(_boxPositions);
                 ResetToPool(_containers);
                 ResetToPool(_allcontainers);
                 ResetToPool(npcs);
-                ResetToPool(npcTypes);
                 ResetToPool(friends);
                 ResetToPool(allowed);
                 ResetToPool(intruders);
@@ -3252,6 +3358,7 @@ done:
                 ResetToPool(skinIds);
                 ResetToPool(triggers);
                 ResetToPool(_beds);
+                ResetToPool(_bags);
                 ResetToPool(_rugs);
                 ResetToPool(ses);
                 ResetToPool(samsites);
@@ -3308,7 +3415,7 @@ done:
 
             private void OnPreEnterRaid(BasePlayer player)
             {
-                if (!player.IsHuman() || intruders.Contains(player) && allowed.Contains(player))
+                if (!player.IsHuman() || intruders.Contains(player) && allowed.Contains(player) || IsUnderground(player.transform.position))
                 {
                     return;
                 }
@@ -3329,11 +3436,16 @@ done:
                     return;
                 }
 
-                OnEnterRaid(player);
+                OnEnterRaid(player, false);
             }
 
-            public void OnEnterRaid(BasePlayer target)
+            public void OnEnterRaid(BasePlayer target, bool checkUnderground = true)
             {
+                if (checkUnderground && IsUnderground(target.transform.position))
+                {
+                    return;
+                }
+
                 if (Type != RaidableType.None && CannotEnter(target, true) && RemovePlayer(target, 1, Location, ProtectionRadius, Type))
                 {
                     return;
@@ -3388,6 +3500,8 @@ done:
                     //brain.states[AIState.Attack].StateEnter();
                     brain.SwitchToState(AIState.Attack, -1);
                 }
+
+                UpdateTime(target, true);
             }
 
             private void OnTriggerExit(Collider collider)
@@ -3421,6 +3535,7 @@ done:
                     return;
                 }
 
+                UpdateTime(target, false);
                 UI.DestroyStatusUI(target);
 
                 PlayerInputEx component;
@@ -3720,9 +3835,9 @@ enterExit:
                 }
             }
 
-            public static void Unload(bool isShutdown)
+            public static void Unload(List<RaidableBase> raids, bool isShutdown)
             {
-                foreach (var raid in Instance.Raids.Values)
+                foreach (var raid in raids.ToList())
                 {
                     if (raid.setupRoutine != null)
                     {
@@ -3749,18 +3864,21 @@ enterExit:
                     return;
                 }
 
-                StopAllCoroutines();
-                CancelInvoke();
-                CheckSubscribe();
-                SetNoDrops();
-                UpdateUI();
-                DestroyNpcs();
-                DestroyInputs();
-                DestroySpheres();
-                DestroyMapMarkers();
-                DestroyEntities();
-                ResetToPool();
-                FinishDespawn();
+                TryInvokeMethod(StopAllCoroutines);
+                TryInvokeMethod(CancelInvoke);
+                TryInvokeMethod(SetNoDrops);
+                TryInvokeMethod(UpdateUI);
+                TryInvokeMethod(DestroyNpcs);
+                TryInvokeMethod(DestroyInputs);
+                TryInvokeMethod(DestroySpheres);
+                TryInvokeMethod(DestroyMapMarkers);
+                TryInvokeMethod(DestroyEntities);
+                TryInvokeMethod(ResetSleepingBags);
+                TryInvokeMethod(ResetToPool);
+                TryInvokeMethod(CheckSubscribe);
+
+                Interface.CallHook("OnRaidableBaseEnded", hookObjects); 
+                
                 Destroy(this);
             }
 
@@ -3775,18 +3893,10 @@ enterExit:
 
                 IsDespawning = true;
                 IsOpened = false;
-                IsBusy = true;
 
-                Instance?.Locations.RemoveAll(e => e.Position == PastedLocation);
+                Instance?.Locations?.RemoveAll(e => e.Position == PastedLocation);
 
                 return true;
-            }
-
-            private void FinishDespawn()
-            {                
-                spawns?.AddNear(Location, RemoveNearDistance, CacheType.Generic, HasDroppedItems);
-
-                Interface.CallHook("OnRaidableBaseEnded", hookObjects);
             }
 
             private void CheckSubscribe()
@@ -3805,7 +3915,11 @@ enterExit:
                     {
                         UnsetStatics();
                     }
-                    else Instance.UnsubscribeHooks();
+                    else
+                    {
+                        Instance.UnsubscribeHooks();
+                        spawns?.AddNear(Location, RemoveNearDistance, CacheType.Generic, HasDroppedItems);
+                    }
                 }
             }
 
@@ -3813,12 +3927,13 @@ enterExit:
             {
                 if (elevators != null && elevators.Count > 0)
                 {
+                    TryInvokeMethod(RemoveParentFromEntitiesOnElevators); 
                     elevators.ToList().ForEach(element => Destroy(element.Value));
-                    TryInvokeMethod(() => CheckBackpacks(true));
-                    TryInvokeMethod(EjectCorpsesFromElevators);
                 }
 
-                UndoSettings undo = new UndoSettings
+                TryInvokeMethod(SwitchNetworkGroup);
+
+                GarbageController.UndoLoop(new UndoSettings
                 {
                     Structures = _undoStructures,
                     Deployables = _undoDeployables,
@@ -3827,9 +3942,7 @@ enterExit:
                     Limit = _undoLimit,
                     Entities = Entities,
                     hookObjects = hookObjects
-                };
-                
-                GarbageController.UndoLoop(undo);
+                });
             }
 
             public void UndoInit()
@@ -3844,6 +3957,30 @@ enterExit:
             public void BuildingPrivilegeDestroyed()
             {
                 Interface.CallHook("OnRaidableBasePrivilegeDestroyed", hookObjects);
+            }
+
+            public void UpdateTime(BasePlayer player, bool state)
+            {
+                if (!player.HasPermission("raidablebases.time"))
+                {
+                    return;
+                }
+                
+                int time = state ? Options.ForcedTime : -1;
+
+                if (player.IsAdmin)
+                {
+                    player.SendConsoleCommand("admintime", time);
+                    player.SendNetworkUpdateImmediate();
+                }
+                else if (!player.IsFlying)
+                {
+                    player.SetPlayerFlag(BasePlayer.PlayerFlags.IsAdmin, true);
+                    player.SendNetworkUpdateImmediate();
+                    player.SendConsoleCommand("admintime", time);
+                    player.SetPlayerFlag(BasePlayer.PlayerFlags.IsAdmin, false);
+                    player.SendNetworkUpdateImmediate();
+                }
             }
 
             public BasePlayer GetOwner()
@@ -4217,7 +4354,7 @@ enterExit:
                 }
 
                 Interface.CallHook("OnRaidableBaseCompleted", hookObjects);
-                
+
                 if (sb.Length == 0)
                 {
                     return;
@@ -4276,11 +4413,9 @@ enterExit:
 
                     if (config.RankedLadder.Enabled)
                     {
-                        PlayerInfo playerInfo;
-                        if (!data.Players.TryGetValue(raider.id, out playerInfo))
-                        {
-                            data.Players[raider.id] = playerInfo = new PlayerInfo();
-                        }
+                        PlayerInfo playerInfo = PlayerInfo.Get(raider.id);
+
+                        playerInfo.ResetExpiredDate();
 
                         int points = GetRankedLadderPointsForDifficulty(raider.id);
 
@@ -4358,6 +4493,7 @@ enterExit:
                     {
                         int amount = config.Settings.Management.DivideRewards ? Options.Rewards.Custom.Amount / players.Count : Options.Rewards.Custom.Amount;
                         Item item = ItemManager.Create(Options.Rewards.Custom.Definition, amount);
+                        if (!string.IsNullOrEmpty(Options.Rewards.Custom.Name)) item.name = Options.Rewards.Custom.Name;
                         if (!raider.player.inventory.GiveItem(item)) item.DropAndTossUpwards(raider.player.eyes.position);
                         string message = BackboneController.Instance.GetMessage("CustomDeposit", raider.id, string.Format("{0} {1}", item.info.displayName.english, amount));
                         Instance.Player.Message(raider.player, message, config.Settings.ChatID);
@@ -4377,7 +4513,7 @@ enterExit:
 
                     if (Options.Rewards.Money > 0 && Instance.IQEconomic.CanCall())
                     {
-                        double money = config.Settings.Management.DivideRewards ? Options.Rewards.Money / players.Count : Options.Rewards.Money;
+                        int money = Convert.ToInt32(config.Settings.Management.DivideRewards ? Options.Rewards.Money / players.Count : Options.Rewards.Money);
                         Instance.IQEconomic?.Call("API_SET_BALANCE", raider.id, money);
                         string message = BackboneController.Instance.GetMessage("EconomicsDeposit", raider.id, money);
                         Instance.Player.Message(raider.player, message, config.Settings.ChatID);
@@ -4460,7 +4596,8 @@ enterExit:
 
             public bool HasLockout(BasePlayer player)
             {
-                if (!config.Settings.Management.Lockout.Any() || player == null || CanBypass(player) || player.HasPermission("raidablebases.lockoutbypass") || Type == RaidableType.None)                {
+                if (!config.Settings.Management.Lockout.Any() || player == null || CanBypass(player) || player.HasPermission("raidablebases.lockoutbypass") || Type == RaidableType.None)
+                {
                     return false;
                 }
 
@@ -4486,7 +4623,7 @@ enterExit:
 
                     if (config.Settings.Management.Lockout.Global)
                     {
-                        time = Mathf.Max((float)lo.Easy, (float)lo.Medium, (float)lo.Hard, (float)lo.Expert, (float)lo.Nightmare);
+                        time = Mathf.Max((float)lo.Easy, (float)lo.Medium, (float)lo.Hard, (float)lo.Expert, (float)lo.Nightmare) - Epoch.Current;
                     }
                     else time = GetLockoutTime(Options.Mode, lo, player.UserIDString);
 
@@ -4495,6 +4632,11 @@ enterExit:
                         TryMessage(player, "LockedOut", DifficultyMode, FormatTime(time, player.UserIDString));
                         return true;
                     }
+                }
+
+                if (UI.Lockouts.Contains(player))
+                {
+                    UI.DestroyLockoutUI(player);
                 }
 
                 return false;
@@ -4508,11 +4650,12 @@ enterExit:
                     data.Lockouts[playerId] = lo = new Lockout();
                 }
 
-                if (lo.Easy <= 0) lo.Easy = GetLockoutTime(RaidableMode.Easy) + Epoch.Current;
-                if (lo.Medium <= 0) lo.Medium = GetLockoutTime(RaidableMode.Medium) + Epoch.Current;
-                if (lo.Hard <= 0) lo.Hard = GetLockoutTime(RaidableMode.Hard) + Epoch.Current;
-                if (lo.Expert <= 0) lo.Expert = GetLockoutTime(RaidableMode.Expert) + Epoch.Current;
-                if (lo.Nightmare <= 0) lo.Nightmare = GetLockoutTime(RaidableMode.Nightmare) + Epoch.Current;
+                double time;
+                if (lo.Easy <= 0 && ((time = GetLockoutTime(RaidableMode.Easy)) > 0)) lo.Easy = Epoch.Current + time;
+                if (lo.Medium <= 0 && ((time = GetLockoutTime(RaidableMode.Medium)) > 0)) lo.Medium = Epoch.Current + time;
+                if (lo.Hard <= 0 && ((time = GetLockoutTime(RaidableMode.Hard)) > 0)) lo.Hard = Epoch.Current + time;
+                if (lo.Expert <= 0 && ((time = GetLockoutTime(RaidableMode.Expert)) > 0)) lo.Expert = Epoch.Current + time;
+                if (lo.Nightmare <= 0 && ((time = GetLockoutTime(RaidableMode.Nightmare)) > 0)) lo.Nightmare = Epoch.Current + time;
 
                 if (lo.Any())
                 {
@@ -4552,48 +4695,20 @@ enterExit:
                     data.Lockouts[playerId] = lo = new Lockout();
                 }
 
+                time += Epoch.Current;
+
                 switch (Options.Mode)
                 {
                     case RaidableMode.Easy:
-                    {
-                        if (lo.Easy <= 0)
-                        {
-                            lo.Easy = Epoch.Current + time;
-                        }
-                        break;
-                    }
+                        if (lo.IsExpired(RaidableMode.Easy)) lo.Easy = time; break;
                     case RaidableMode.Medium:
-                    {
-                        if (lo.Medium <= 0)
-                        {
-                            lo.Medium = Epoch.Current + time;
-                        }
-                        break;
-                    }
+                        if (lo.IsExpired(RaidableMode.Medium)) lo.Medium = time; break;
                     case RaidableMode.Hard:
-                    {
-                        if (lo.Hard <= 0)
-                        {
-                            lo.Hard = Epoch.Current + time;
-                        }
-                        break;
-                    }
+                        if (lo.IsExpired(RaidableMode.Hard)) lo.Hard = time; break;
                     case RaidableMode.Expert:
-                    {
-                        if (lo.Expert <= 0)
-                        {
-                            lo.Expert = Epoch.Current + time;
-                        }
-                        break;
-                    }
-                    default:
-                    {
-                        if (lo.Nightmare <= 0)
-                        {
-                            lo.Nightmare = Epoch.Current + time;
-                        }
-                        break;
-                    }
+                        if (lo.IsExpired(RaidableMode.Expert)) lo.Expert = time; break;
+                    case RaidableMode.Nightmare:
+                        if (lo.IsExpired(RaidableMode.Nightmare)) lo.Nightmare = time; break;
                 }
 
                 if (lo.Any())
@@ -4634,63 +4749,15 @@ enterExit:
 
             public static double GetLockoutTime(RaidableMode mode, Lockout lo, string playerId)
             {
-                double time;
-
                 switch (mode)
                 {
-                    case RaidableMode.Easy:
-                    {
-                        if ((time = lo.Easy) <= 0 || (time -= Epoch.Current) <= 0)
-                        {
-                            lo.Easy = 0;
-                        }
-
-                        break;
-                    }
-                    case RaidableMode.Medium:
-                    {
-                        if ((time = lo.Medium) <= 0 || (time -= Epoch.Current) <= 0)
-                        {
-                            lo.Medium = 0;
-                        }
-
-                        break;
-                    }
-                    case RaidableMode.Hard:
-                    {
-                        if ((time = lo.Hard) <= 0 || (time -= Epoch.Current) <= 0)
-                        {
-                            lo.Hard = 0;
-                        }
-
-                        break;
-                    }
-                    case RaidableMode.Expert:
-                    {
-                        if ((time = lo.Expert) <= 0 || (time -= Epoch.Current) <= 0)
-                        {
-                            lo.Expert = 0;
-                        }
-
-                        break;
-                    }
-                    default:
-                    {
-                        if ((time = lo.Nightmare) <= 0 || (time -= Epoch.Current) <= 0)
-                        {
-                            lo.Nightmare = 0;
-                        }
-
-                        break;
-                    }
+                    case RaidableMode.Easy: return lo.IsExpired(RaidableMode.Easy) ? lo.Easy = 0 : lo.Easy - Epoch.Current;
+                    case RaidableMode.Medium: return lo.IsExpired(RaidableMode.Medium) ? lo.Medium = 0 : lo.Medium - Epoch.Current;
+                    case RaidableMode.Hard: return lo.IsExpired(RaidableMode.Hard) ? lo.Hard = 0 : lo.Hard - Epoch.Current;
+                    case RaidableMode.Expert: return lo.IsExpired(RaidableMode.Expert) ? lo.Expert = 0 : lo.Expert - Epoch.Current;
+                    case RaidableMode.Nightmare: return lo.IsExpired(RaidableMode.Nightmare) ? lo.Nightmare = 0 : lo.Nightmare - Epoch.Current;
+                    default: return 0d;
                 }
-
-                if (!lo.Any())
-                {
-                    data.Lockouts.Remove(playerId);
-                }
-
-                return time < 0 ? 0 : time;
             }
 
             public string Mode(bool forceShowName = false)
@@ -4738,7 +4805,6 @@ enterExit:
                     friends.Add(ownerId);
                     ClearEnemies();
                     UpdateMarker();
-                    Instance.DrawRaidLocation(owner, Location);
                     Interface.CallHook("OnRaidableBasePurchased", new object[] { owner.displayName, Location, PhoneController.PositionToGridCoord(Location), (int)Options.Mode, AllowPVP, spawnTime, loadTime });
                 }
             }
@@ -4767,6 +4833,11 @@ enterExit:
 
                             Item item = ItemManager.Create(def, option.Amount);
 
+                            if (!string.IsNullOrEmpty(option.Name))
+                            {
+                                item.name = option.Name;
+                            }
+
                             if (!player.inventory.GiveItem(item))
                             {
                                 item.DropAndTossUpwards(player.eyes.position);
@@ -4784,7 +4855,7 @@ enterExit:
                         double money = payment.money * config.Settings.Buyable.Refunds.Percentage / 100.0;
 
                         Instance.Economics?.Call("Deposit", player.userID, money);
-                        Instance.IQEconomic?.Call("API_SET_BALANCE", player.userID, money);
+                        Instance.IQEconomic?.Call("API_SET_BALANCE", player.userID, (int)money);
                     }
                 }
             }
@@ -4812,7 +4883,7 @@ enterExit:
                 }
 
                 float time;
-                
+
                 return !lastActive.TryGetValue(playerId, out time) || Time.realtimeSinceStartup - time <= config.Settings.Management.LockTime * 60f;
             }
 
@@ -5072,6 +5143,11 @@ enterExit:
             {
                 UpdateStatus(player);
 
+                if (e.ShortPrefabName == "coffinstorage" && Mathf.Approximately(Vector3.Distance(e.transform.position, new Vector3(0f, -50f, 0f)), 0f))
+                {
+                    return;
+                }
+
                 if (e.OwnerID == player.userID || e is BaseMountable)
                 {
                     return;
@@ -5109,7 +5185,7 @@ enterExit:
                     return;
                 }
 
-                if (Options.RequiresCupboardAccess && !player.CanBuild()) 
+                if (Options.RequiresCupboardAccess && !player.CanBuild())
                 {
                     BackboneController.Instance.Message(player, "MustBeAuthorized");
                     player.Invoke(player.EndLooting, 0.01f);
@@ -5140,6 +5216,7 @@ enterExit:
             {
                 foreach (var container in _allcontainers)
                 {
+                    
                     if (container.IsKilled())
                     {
                         continue;
@@ -5149,8 +5226,8 @@ enterExit:
                         DropOrRemoveItems(container, IsProtectedWeapon(container));
                     }
                     else
-                    {
-                        container.dropChance = 0f;
+                    {                        
+                        container.dropsLoot = false;
                         container.inventory.Clear();
                     }
                 }
@@ -5170,11 +5247,13 @@ enterExit:
             public void SetEntities(int baseIndex, List<BaseEntity> entities, Dictionary<Elevator, BMGELEVATOR> elevators = null)
             {
                 if (!IsLoading)
-                {                    
+                {
                     Entities = entities;
                     BaseIndex = baseIndex;
                     setupRoutine = ServerMgr.Instance.StartCoroutine(EntitySetup());
                     TryInvokeMethod(() => SetupElevators(elevators));
+                    EjectController.DestroyMe();
+                    TryInvokeMethod(SetupCollider);
                 }
             }
 
@@ -5205,7 +5284,7 @@ enterExit:
                     x += position.x;
                     z += position.z;
                 }
-                
+
                 var vector = new Vector3(x / foundations.Count, 0f, z / foundations.Count);
 
                 if (Options.Setup.ForcedHeight != -1)
@@ -5264,7 +5343,7 @@ enterExit:
                 float maxHeight = -999f;
                 float minHeight = 999f;
                 int next1 = Mathf.CeilToInt(360 / Options.ArenaWalls.Radius * 0.1375f);
-                
+
                 foreach (var position in SpawnsController.GetCircumferencePositions(center, Options.ArenaWalls.Radius, next1, false, 1f))
                 {
                     float y = SpawnsController.GetSpawnHeight(position, false, true);
@@ -5272,7 +5351,7 @@ enterExit:
                     minHeight = Mathf.Min(y, minHeight);
                     center.y = minHeight;
                 }
-                
+
                 float gap = Options.ArenaWalls.Stone || Options.ArenaWalls.Ice ? 0.3f : 0.5f;
                 stacks += Mathf.CeilToInt((maxHeight - minHeight) / 6f) + Options.ArenaWalls.Stacks;
                 float next2 = 360 / Options.ArenaWalls.Radius - gap;
@@ -5363,26 +5442,60 @@ enterExit:
                 }
             }
 
-            private void KillTrees()
+            private void KillClutter()
             {
-                int hits = Physics.OverlapSphereNonAlloc(Location, ProtectionRadius * 1.3f, Vis.colBuffer, -1, QueryTriggerInteraction.Ignore);
+                int hits = Physics.OverlapSphereNonAlloc(Location, ProtectionRadius, Vis.colBuffer, -1, QueryTriggerInteraction.Ignore);
 
                 for (int i = 0; i < hits; i++)
                 {
                     var e = Vis.colBuffer[i].ToBaseEntity();
 
-                    if (e is TreeEntity)
+                    if (e is TreeEntity) // && NearFoundation(e.transform.position, 10f))
                     {
                         e.SafelyKill();
+                    }
+                    else if (e is SleepingBag)
+                    {
+                        SleepingBagHandler(e as SleepingBag);
                     }
 
                     Vis.colBuffer[i] = null;
                 }
             }
 
-            private IEnumerator EntitySetup()
+            private void SleepingBagHandler(SleepingBag bag)
             {
-                try { SetupCollider(); } catch { }
+                if (Entities.Contains(bag))
+                {
+                    return;
+                }
+
+                if (spawns?.IsCustomSpawn == true && Options.CustomSpawns.KillSleepingBags)
+                {
+                    bag.SafelyKill();
+                }
+                else
+                {
+                    _bags[bag] = bag.deployerUserID;
+
+                    bag.deployerUserID = 0uL;
+                    bag.unlockTime = UnityEngine.Time.realtimeSinceStartup + 99999f;
+                }
+            }
+
+            private void ResetSleepingBags()
+            {
+                foreach (var element in _bags)
+                {
+                    if (element.Key.IsKilled()) continue;
+                    element.Key.deployerUserID = element.Value;
+                    element.Key.unlockTime = UnityEngine.Time.realtimeSinceStartup;
+                }
+            }
+
+            private IEnumerator EntitySetup()
+            {                
+                TryInvokeMethod(KillClutter);
 
                 int checks = 0;
                 float invokeTime = 0f;
@@ -5410,7 +5523,7 @@ enterExit:
 
                     NetworkID = Math.Min(NetworkID, e.net.ID);
                     e.OwnerID = 0;
-                    
+
                     //if (e.tag == "Untagged")
                     //{
                     //    e.tag = "RaidableBaseEntity";
@@ -5546,13 +5659,11 @@ enterExit:
 
                 yield return CoroutineEx.waitForSeconds(2f);
 
-                TryInvokeMethod(SetupCollider);
                 TryInvokeMethod(SetupLoot);
                 TryInvokeMethod(Subscribe);
                 TryInvokeMethod(CreateGenericMarker);
                 TryInvokeMethod(UpdateMarker);
-                TryInvokeMethod(EjectSleepers);
-                TryInvokeMethod(KillTrees);
+                TryInvokeMethod(EjectSleepers);                
                 TryInvokeMethod(CreateZoneWalls);
                 TryInvokeMethod(CreateSpheres);
                 TryInvokeMethod(SetupLights);
@@ -5562,19 +5673,15 @@ enterExit:
                 TryInvokeMethod(SetupContainers);
                 TryInvokeMethod(MakeAnnouncements);
                 TryInvokeMethod(SetupRugs);
+                TryInvokeMethod(SetLoadTime);
                 InvokeRepeating(Protector, 1f, 1f);
-                
-                float time;
-                if (LoadingTimes.TryGetValue(PastedLocation, out time))
-                {
-                    loadTime = Time.time - time;
-                    LoadingTimes.Remove(PastedLocation);
-                }
 
                 IsSpawning = false;
                 setupRoutine = null;
                 Interface.CallHook("OnRaidableBaseStarted", hookObjects);
             }
+
+            private int _failedInvokes;
 
             private void TryInvokeMethod(Action action)
             {
@@ -5584,7 +5691,18 @@ enterExit:
                 }
                 catch (Exception ex)
                 {
+                    if (++_failedInvokes > 10) return;
                     Puts("{0} ERROR: {1}", action.Method.Name, ex);
+                }
+            }
+
+            private void SetLoadTime()
+            {
+                float time;
+                if (Instance.LoadingTimes.TryGetValue(PastedLocation, out time))
+                {
+                    loadTime = Time.time - time;
+                    Instance.LoadingTimes.Remove(PastedLocation);
                 }
             }
 
@@ -5605,51 +5723,23 @@ enterExit:
 
             private void SetupCollider()
             {
-                transform.position = Location = GetCenterFromMultiplePoints();
+                foreach (var e in Entities.Where(e => !e.IsKilled()))
+                {
+                    if (e.ShortPrefabName == "foundation.triangle" || e.ShortPrefabName == "foundation")
+                    {
+                        foundations.Add(e.transform.position);
+                    }
+                }
+                
+                Location = GetCenterFromMultiplePoints();                
+                go.transform.position = Location;
+                go.layer = (int)Layer.Trigger;
 
-                var collider = gameObject.GetComponent<SphereCollider>() ?? gameObject.AddComponent<SphereCollider>();
+                var collider = go.AddComponent<SphereCollider>();
+
                 collider.radius = ProtectionRadius;
                 collider.isTrigger = true;
-                collider.center = Vector3.zero;
-                gameObject.layer = (int)Layer.Trigger;
-            }
-
-            private void PopulateLoot(bool unique) // rewrite this.
-            {
-                if (unique)
-                {
-                    if (!config.Treasure.UniqueBaseLoot && BaseLoot.Count > 0)
-                    {
-                        AddToLoot(BaseLoot);
-                    }
-
-                    if (!config.Treasure.UniqueDifficultyLoot && DifficultyLoot.Count > 0)
-                    {
-                        AddToLoot(DifficultyLoot);
-                    }
-
-                    if (!config.Treasure.UniqueDefaultLoot && DefaultLoot.Count > 0)
-                    {
-                        AddToLoot(DefaultLoot);
-                    }
-                }
-                else
-                {
-                    if (BaseLoot.Count > 0)
-                    {
-                        AddToLoot(BaseLoot);
-                    }
-
-                    if (DifficultyLoot.Count > 0)
-                    {
-                        AddToLoot(DifficultyLoot);
-                    }
-
-                    if (DefaultLoot.Count > 0)
-                    {
-                        AddToLoot(DefaultLoot);
-                    }
-                }
+                collider.center = Vector3.zero;                
             }
 
             private void SetupLoot()
@@ -5783,15 +5873,16 @@ enterExit:
                     return;
                 }
 
-                container.dropChance = 0f;
+                container.dropsLoot = false;
+                container.dropFloats = true;
 
                 if (container is BuildingPrivlidge)
                 {
-                    container.dropChance = config.Settings.Management.AllowCupboardLoot ? 1f : 0f;
+                    container.dropsLoot = config.Settings.Management.AllowCupboardLoot;
                 }
                 else if (!IsProtectedWeapon(container) && !(container is VendingMachine))
                 {
-                    container.dropChance = 1f;
+                    container.dropsLoot = true;
                 }
                 //else container.isLootable = false;
 
@@ -5803,7 +5894,8 @@ enterExit:
 
             private void SetupIO(ContainerIOEntity io)
             {
-                io.dropChance = IsProtectedWeapon(io) ? 0f : 1f;
+                io.dropFloats = true;
+                io.dropsLoot = !IsProtectedWeapon(io);
                 io.inventory.SetFlag(ItemContainer.Flag.NoItemInput, true);
             }
 
@@ -5860,11 +5952,8 @@ enterExit:
             {
                 vms.Add(vm);
 
-                if (!config.Settings.Management.AllowBroadcasting)
-                {
-                    vm.SetFlag(BaseEntity.Flags.Reserved4, false, false, true);
-                    vm.UpdateMapMarker();
-                }
+                vm.SetFlag(BaseEntity.Flags.Reserved4, config.Settings.Management.AllowBroadcasting, false, true);
+                vm.FullUpdate();
             }
 
             private void SetupSearchLight(SearchLight light)
@@ -5913,22 +6002,9 @@ enterExit:
 
                 bool foundation = block.ShortPrefabName == "foundation.triangle" || block.ShortPrefabName == "foundation";
                 bool floor = block.ShortPrefabName == "floor.triangle" || block.ShortPrefabName == "floor";
+                bool roof = block.ShortPrefabName == "roof" || block.ShortPrefabName == "roof.triangle";
 
-                if (foundation || floor)
-                {
-                    if (foundation)
-                    {
-                        foundations.Add(block.transform.position);
-                    }
-
-                    _blockProperties.Add(new BlockProperties
-                    {
-                        obb = new OBB(block.transform, block.bounds),
-                        position = new Vector3(block.transform.position.x, block.transform.position.y + 0.1f, block.transform.position.z),
-                        entity = block,
-                        ShortPrefabName = block.ShortPrefabName
-                    });
-                }
+                if (foundation || floor || roof) blocks.Add(block);
             }
 
             private void ChangeTier(BuildingBlock block)
@@ -6033,7 +6109,7 @@ enterExit:
 
                 turret.Invoke(turret.UpdateAttachedWeapon, 1f);
 
-                if (Instance.debugMode)
+                if (Instance.DebugMode)
                 {
                     Instance.timer.Once(2.5f, () =>
                     {
@@ -6247,8 +6323,6 @@ enterExit:
                 {
                     SetupDoor(door);
                 }
-
-                doors.Clear();
             }
 
             private void SetupDoorControllers()
@@ -6410,9 +6484,9 @@ enterExit:
                     _rugs.RemoveAll(rug => rug.IsKilled());
                     _rugs.Add(decayEntity);
 
-                    if (Options.NPC.Inside.SpawnOnRugsSkin != 1)
+                    if (Options.NPC.Inside.SpawnOnRugsSkin != 1 && Options.NPC.Inside.SpawnOnRugsSkin >= 0)
                     {
-                        _rugs.RemoveAll(rug => rug.skinID != Options.NPC.Inside.SpawnOnRugsSkin);
+                        _rugs.RemoveAll(rug => rug.skinID != (ulong)Options.NPC.Inside.SpawnOnRugsSkin);
                     }
                 }
             }
@@ -6425,7 +6499,7 @@ enterExit:
                 }
 
                 ItemDefinition def;
-                if (!_shortnames.TryGetValue(container.gameObject.name, out def))
+                if (Definitions.TryGetValue(container.gameObject.name, out def))
                 {
                     return;
                 }
@@ -6489,7 +6563,7 @@ enterExit:
                 }
 
                 ItemDefinition def;
-                if (!_shortnames.TryGetValue(entity.gameObject.name, out def))
+                if (!Definitions.TryGetValue(entity.gameObject.name, out def))
                 {
                     return;
                 }
@@ -6519,6 +6593,20 @@ enterExit:
                 }
             }
 
+            public void SwitchNetworkGroup()
+            {
+                SwitchNetworkGroup(doors.ToList<BaseEntity>());
+                SwitchNetworkGroup(_beds.ToList<BaseEntity>());
+                SwitchNetworkGroup(_allcontainers.ToList<BaseEntity>());
+            }
+
+            private void SwitchNetworkGroup(List<BaseEntity> entities)
+            {
+                entities.RemoveAll(x => x == null || x.IsDestroyed || x.net == null);
+
+                entities.ForEach(entity => entity.net.SwitchGroup(null));
+            }
+
             private void Subscribe()
             {
                 if (IsUnloading)
@@ -6545,8 +6633,8 @@ enterExit:
                 {
                     Options.NPC.SpawnAmount = Mathf.Clamp(Options.NPC.SpawnAmount, 0, 25);
                     Options.NPC.SpawnMinAmount = Mathf.Clamp(Options.NPC.SpawnMinAmount, 0, Options.NPC.SpawnAmount);
-                    Options.NPC.ScientistHealth = Mathf.Clamp(Options.NPC.ScientistHealth, 100, 5000);
-                    Options.NPC.MurdererHealth = Mathf.Clamp(Options.NPC.MurdererHealth, 100, 5000);
+                    Options.NPC.ScientistHealth = Mathf.Clamp(Options.NPC.ScientistHealth, 1, 5000);
+                    Options.NPC.MurdererHealth = Mathf.Clamp(Options.NPC.MurdererHealth, 1, 5000);
                     npcMaxAmount = Options.NPC.SpawnRandomAmount && Options.NPC.SpawnAmount > 1 ? UnityEngine.Random.Range(Options.NPC.SpawnMinAmount, Options.NPC.SpawnAmount + 1) : Options.NPC.SpawnAmount;
 
                     if (Options.NPC.Inside.Max > 0)
@@ -6633,7 +6721,6 @@ enterExit:
                 Subscribe(nameof(OnLootEntity));
                 Subscribe(nameof(OnEntityBuilt));
                 Subscribe(nameof(OnCupboardAuthorize));
-                Subscribe(nameof(OnEntityMounted));
             }
 
             private void Subscribe(string hook) => Instance.Subscribe(hook);
@@ -6898,16 +6985,16 @@ enterExit:
 
                     if (config.Treasure.UseStackSizeLimit || ti.stacksize != -1)
                     {
-                        int stackable = ti.stacksize == -1 ? ti.definition.stackable : ti.stacksize;
+                        int stackable = ti.stacksize <= 0 ? ti.definition.stackable : ti.stacksize;
                         var stacks = GetStacks(amount, stackable);
                         isModified = amount > stackable;
 
                         foreach (int stack in stacks)
                         {
-                            Loot.Add(new LootItem(shortname, stack, stack, ti.skin, isModified, isBlueprint));
+                            Loot.Add(new LootItem(shortname, stack, stack, ti.skin, isModified, isBlueprint, ti.probability, ti.stacksize, ti.name));
                         }
                     }
-                    else Loot.Add(new LootItem(shortname, amount, amount, ti.skin, isModified, isBlueprint));
+                    else Loot.Add(new LootItem(shortname, amount, amount, ti.skin, isModified, isBlueprint, ti.probability, ti.stacksize, ti.name));
                 }
 
                 source.Clear();
@@ -6931,7 +7018,7 @@ enterExit:
             private void TakeLootFrom(LootType type)
             {
                 List<LootItem> lootList;
-                if (Buildings.DifficultyLootLists.TryGetValue(type, out lootList))
+                if (Instance.Buildings.DifficultyLootLists.TryGetValue(type, out lootList))
                 {
                     TakeLootFrom(lootList, DifficultyLoot, false);
                 }
@@ -6948,7 +7035,7 @@ enterExit:
 
                 foreach (var ti in source)
                 {
-                    if (ti == null || ti.amount <= 0 || ti.amountMin < 0 || ti.probability <= 0f)
+                    if (ti == null || ti.amount <= 0 || ti.probability <= 0f)
                     {
                         continue;
                     }
@@ -7029,7 +7116,7 @@ enterExit:
             {
                 var baseLoot = new List<LootItem>();
 
-                foreach (var profile in Buildings.Profiles)
+                foreach (var profile in Instance.Buildings.Profiles)
                 {
                     if (profile.Key == BaseName || profile.Value.Options.AdditionalBases.ContainsKey(BaseName))
                     {
@@ -7066,11 +7153,32 @@ enterExit:
                 }
             }
 
+            private void PopulateLoot(bool unique)
+            {
+                if (!unique || !config.Treasure.UniqueBaseLoot)
+                {
+                    AddToLoot(BaseLoot);
+                }
+
+                if (!unique || !config.Treasure.UniqueDifficultyLoot)
+                {
+                    AddToLoot(DifficultyLoot);
+                }
+
+                if (!unique || !config.Treasure.UniqueDefaultLoot)
+                {
+                    AddToLoot(DefaultLoot);
+                }
+            }
+
             private void TryAddDuplicates()
             {
                 if (Options.AllowDuplicates && Loot.Count > 0 && Loot.Count < treasureAmount)
                 {
-                    var collective = Collective.ToList();
+                    var collective = new List<LootItem>();
+                    
+                    Collective.ForEach(ti => collective.Add(ti.Clone()));
+                    
                     int index = collective.Count;
 
                     while (Loot.Count < treasureAmount && collective.Count > 0 && --index > 0)
@@ -7158,8 +7266,6 @@ enterExit:
                         Loot.Add(ti);
                     }
                 }
-
-
             }
 
             private void SetupSellOrders()
@@ -7174,11 +7280,11 @@ enterExit:
                 foreach (var vm in vms)
                 {
                     vm.InstallDefaultSellOrders();
-                    vm.SetFlag(BaseEntity.Flags.Reserved4, true, false, true);
+                    vm.SetFlag(BaseEntity.Flags.Reserved4, config.Settings.Management.AllowBroadcasting, false, true);
 
                     foreach (Item item in vm.inventory.itemList)
                     {
-                        if (vm.sellOrders.sellOrders.Count < 6)
+                        if (vm.sellOrders.sellOrders.Count < 8)
                         {
                             ItemDefinition itemToSellDef = ItemManager.FindItemDefinition(item.info.itemid);
                             ItemDefinition currencyDef = ItemManager.FindItemDefinition(-932201673);
@@ -7187,7 +7293,7 @@ enterExit:
                             {
                                 int itemToSellAmount = Mathf.Clamp(item.amount, 1, itemToSellDef.stackable);
 
-                                ProtoBuf.VendingMachine.SellOrder sellOrder = new ProtoBuf.VendingMachine.SellOrder
+                                vm.sellOrders.sellOrders.Add(new ProtoBuf.VendingMachine.SellOrder
                                 {
                                     ShouldPool = false,
                                     itemToSellID = item.info.itemid,
@@ -7196,16 +7302,14 @@ enterExit:
                                     currencyAmountPerItem = 999999,
                                     currencyIsBP = true,
                                     itemToSellIsBP = item.IsBlueprint()
-                                };
+                                });
 
-                                vm.sellOrders.sellOrders.Add(sellOrder);
                                 vm.RefreshSellOrderStockLevel(itemToSellDef);
                             }
                         }
                     }
 
-                    vm.UpdateMapMarker();
-                    vm.SendNetworkUpdate(BasePlayer.NetworkQueue.Update);
+                    vm.FullUpdate();
                 }
             }
 
@@ -7298,7 +7402,7 @@ enterExit:
                 }
 
                 var def = ti.definition;
-                ulong skin = GetItemSkin(def, ti.skin);
+                ulong skin = GetItemSkin(def, ti.skin, true);
 
                 Item item;
                 if (ti.isBlueprint)
@@ -7322,7 +7426,7 @@ enterExit:
                     e.SendNetworkUpdate();
                 }
 
-                return item;
+                return item; 
             }
 
             private bool MoveToFridge(Item item)
@@ -7872,7 +7976,7 @@ enterExit:
                 return itemSkin?.Redirect != null || def.isRedirectOf != null;
             }
 
-            public ulong GetItemSkin(ItemDefinition def, ulong defaultSkin)
+            public ulong GetItemSkin(ItemDefinition def, ulong defaultSkin, bool unique)
             {
                 ulong skin = defaultSkin;
 
@@ -7883,7 +7987,7 @@ enterExit:
                         skin = defaultSkin;
                     }
 
-                    if (skin == 0)
+                    if (!unique || skin == 0)
                     {
                         var si = GetItemSkins(def);
                         var random = new List<ulong>();
@@ -7919,7 +8023,7 @@ enterExit:
                 if (!Instance.Skins.TryGetValue(def.shortname, out si))
                 {
                     Instance.Skins[def.shortname] = si = new SkinInfo();
-
+                    
                     foreach (var skin in def.skins)
                     {
                         if (IsBlacklistedSkin(def, skin.id))
@@ -7932,7 +8036,7 @@ enterExit:
                         si.skins.Add(id);
                         si.allSkins.Add(id);
                     }
-
+                    
                     if (config.Skins.Loot.Imported)
                     {
                         HashSet<ulong> value;
@@ -8057,7 +8161,7 @@ enterExit:
                 return data;
             }
 
-            private void EjectCorpsesFromElevators()
+            private void RemoveParentFromEntitiesOnElevators()
             {
                 int hits = Physics.OverlapSphereNonAlloc(Location, ProtectionRadius, Vis.colBuffer, -1, QueryTriggerInteraction.Ignore);
 
@@ -8065,11 +8169,12 @@ enterExit:
                 {
                     var e = Vis.colBuffer[i].ToBaseEntity();
 
-                    if (e is PlayerCorpse)
+                    if (e is PlayerCorpse || e is DroppedItemContainer)
                     {
-                        if (e.HasParent()) e.SetParent(null, false, true);
-                        e.transform.position = RaidableBase.GetEjectLocation(e.transform.position, 10f, Location, ProtectionRadius);
-                        e.TransformChanged();
+                        if (e.HasParent())
+                        {
+                            e.SetParent(null, false, true);
+                        }
                     }
 
                     Vis.colBuffer[i] = null;
@@ -8117,7 +8222,7 @@ enterExit:
                     }
                     catch (Exception ex)
                     {
-                        UnityEngine.Debug.LogException(ex);
+                        Puts("{0}", ex);
                     }
                     finally
                     {
@@ -8373,12 +8478,7 @@ enterExit:
 
             private bool TryRemoveMountable(BaseMountable m, List<BasePlayer> players)
             {
-                if (m == null || Type == RaidableType.None || m.GetParentEntity() is BaseTrain || IsControlledMount(m))
-                {
-                    return false;
-                }
-
-                if (players.Count == 0 && !m.OwnerID.IsSteamId())
+                if (m == null || Type == RaidableType.None || m.GetParentEntity() is BaseTrain || IsControlledMount(m) || Entities.Contains(m))
                 {
                     return false;
                 }
@@ -8583,9 +8683,9 @@ enterExit:
                 return BuiltList.Count > 0 && BuiltList.Values.Exists(to => InRange(from, to, 3f));
             }
 
-            private bool NearFoundation(Vector3 from)
+            public bool NearFoundation(Vector3 from, float range = 5f)
             {
-                return foundations.Exists(to => InRange(from, to, 5f));
+                return foundations.Exists(to => InRange(from, to, range));
             }
 
             private NavMeshHit _navHit;
@@ -8644,7 +8744,7 @@ enterExit:
 
             private List<string> _prefabs = new List<string> { "rock_", "formation_", "cliff" };
 
-            private ScientistNPC InstantiateEntity(Vector3 position, bool isMurderer, bool isStationary, out HumanoidBrain humanoidBrain)
+            private ScientistNPC InstantiateEntity(Vector3 position, bool isStationary, out HumanoidBrain humanoidBrain)
             {
                 var prefabName = StringPool.Get(1536035819);
                 var prefab = GameManager.server.FindPrefab(prefabName);
@@ -8661,33 +8761,21 @@ enterExit:
                 humanoidBrain = go.AddComponent<HumanoidBrain>();
                 humanoidBrain.DestinationOverride = position;
                 humanoidBrain.CheckLOS = humanoidBrain.RefreshKnownLOS = true;
-                humanoidBrain.SenseRange = humanoidBrain._senseRange = Options.NPC.AggressionRange;
+                humanoidBrain.SenseRange = Options.NPC.AggressionRange;
                 humanoidBrain.softLimitSenseRange = humanoidBrain.SenseRange + (humanoidBrain.SenseRange * 0.25f);
                 humanoidBrain.TargetLostRange = humanoidBrain.SenseRange * 1.25f;
-                humanoidBrain.ProtectionRadius = ProtectionRadius;
-                humanoidBrain.playCatch = Options.NPC.PlayCatch;
-                humanoidBrain.canLeave = Options.NPC.CanLeave;
-                humanoidBrain.canShoot = Options.NPC.CanShoot;
-                humanoidBrain.DestinationOverride = position;
+                humanoidBrain.Settings = Options.NPC;
                 humanoidBrain.isStationary = isStationary;
-                humanoidBrain.isMurderer = isMurderer && !isStationary;
                 humanoidBrain.UseAIDesign = false;
-                humanoidBrain.Location = Location;
                 humanoidBrain._baseEntity = npc;
                 humanoidBrain.raid = this;
                 humanoidBrain.npc = npc;                
 
-                UnityEngine.Object.DestroyImmediate(scientistBrain, true);
+                DestroyImmediate(scientistBrain, true);
 
                 SceneManager.MoveGameObjectToScene(go, Rust.Server.EntityScene);
 
-                Spawnable spawnable;
-                if (go.TryGetComponent(out spawnable))
-                {
-                    Destroy(spawnable);
-                }
-
-                go.SetActive(true);
+                go.SetActive(true); //go.AwakeFromInstantiate();
 
                 return npc;
             }
@@ -8771,7 +8859,7 @@ enterExit:
                 }
 
                 HumanoidBrain brain;
-                ScientistNPC npc = InstantiateEntity(position, isMurderer, isStationary, out brain);
+                ScientistNPC npc = InstantiateEntity(position, isStationary, out brain);
 
                 if (npc == null)
                 {
@@ -8781,13 +8869,22 @@ enterExit:
                 if (isStationary)
                 {
                     npcAmountInside++;
+                    isMurderer = false;
                 }
-
+                
                 npc.userID = (ulong)UnityEngine.Random.Range(0, 10000000);
                 npc.UserIDString = npc.userID.ToString();
                 npc.displayName = Options.NPC.RandomNames.Count > 0 ? Options.NPC.RandomNames.GetRandom() : RandomUsernames.Get(npc.userID);
-                npc.loadouts = new PlayerInventoryProperties[1];
-                npc.loadouts[0] = GetLoadout(npc, brain);
+                
+                var loadout = GetLoadout(npc, brain, isMurderer);
+
+                if (loadout.belt.Count > 0 || loadout.main.Count > 0 || loadout.wear.Count > 0)
+                {
+                    npc.loadouts = new PlayerInventoryProperties[1];
+                    npc.loadouts[0] = loadout;
+                }
+                else npc.loadouts = new PlayerInventoryProperties[0];
+
                 BasePlayer.bots.Add(npc);
 
                 Instance.Npcs[npc.userID] = this;
@@ -8797,9 +8894,8 @@ enterExit:
                 npc.CancelInvoke(npc.EquipTest);
 
                 npcs.Add(npc);
-                npcTypes[npc.userID] = isMurderer;
 
-                SetupNpc(npc, brain, positions);
+                SetupNpc(npc, brain, isMurderer, positions);
 
                 return npc;
             }
@@ -8811,9 +8907,9 @@ enterExit:
                 public List<PlayerInventoryProperties.ItemAmountSkinned> wear = new List<PlayerInventoryProperties.ItemAmountSkinned>();
             }
 
-            private PlayerInventoryProperties GetLoadout(ScientistNPC npc, HumanoidBrain brain)
+            private PlayerInventoryProperties GetLoadout(ScientistNPC npc, HumanoidBrain brain, bool isMurderer)
             {
-                var loadout = CreateLoadout(npc, brain);
+                var loadout = CreateLoadout(npc, brain, isMurderer);
                 var pip = ScriptableObject.CreateInstance<PlayerInventoryProperties>();
 
                 pip.belt = loadout.belt;
@@ -8823,11 +8919,11 @@ enterExit:
                 return pip;
             }
 
-            private Loadout CreateLoadout(ScientistNPC npc, HumanoidBrain brain)
+            private Loadout CreateLoadout(ScientistNPC npc, HumanoidBrain brain, bool isMurderer)
             {
                 var loadout = new Loadout();
 
-                switch (brain.isMurderer && !brain.isStationary)
+                switch (isMurderer)
                 {
                     case true:
                         AddItemAmountSkinned(loadout.wear, Options.NPC.MurdererItems.Boots);
@@ -8869,6 +8965,11 @@ enterExit:
 
                 string shortname = shortnames.GetRandom();
 
+                if (shortname == "bow.hunting")
+                {
+                    shortname = "bow.compound";
+                }
+
                 ItemDefinition def = ItemManager.FindItemDefinition(shortname);
 
                 if (def == null)
@@ -8893,7 +8994,7 @@ enterExit:
                 ulong skin = 0uL;
                 if (config.Skins.Npcs)
                 {
-                    skin = GetItemSkin(def, 0uL);
+                    skin = GetItemSkin(def, 0uL, config.Skins.UniqueNpcs);
                 }
 
                 source.Add(new PlayerInventoryProperties.ItemAmountSkinned
@@ -8905,7 +9006,7 @@ enterExit:
                 });
             }
 
-            private void SetupNpc(ScientistNPC npc, HumanoidBrain brain, List<Vector3> positions)
+            private void SetupNpc(ScientistNPC npc, HumanoidBrain brain, bool isMurderer, List<Vector3> positions)
             {
                 if (Options.NPC.DespawnInventory)
                 {
@@ -8927,10 +9028,86 @@ enterExit:
                 npc.DeathEffects = new GameObjectRef[0];
                 npc.RadioChatterEffects = new GameObjectRef[0];
                 npc.radioChatterType = ScientistNPC.RadioChatterType.NONE;
-                npc.startHealth = brain.isMurderer && !brain.isStationary ? Options.NPC.MurdererHealth : Options.NPC.ScientistHealth;
+                npc.startHealth = isMurderer ? Options.NPC.MurdererHealth : Options.NPC.ScientistHealth;
                 npc.InitializeHealth(npc.startHealth, npc.startHealth);
-                npc.Invoke(() => UpdateItems(npc, brain), 0.2f);
+                npc.Invoke(() => UpdateItems(npc, brain, isMurderer), 0.2f);
                 npc.Invoke(() => brain.SetupMovement(positions), 0.3f);
+            }
+
+            private void UpdateItems(ScientistNPC npc, HumanoidBrain brain, bool isMurderer)
+            {
+                List<string> kits;
+                if (npcKits.TryGetValue(isMurderer ? "murderer" : "scientist", out kits) && kits.Count > 0)
+                {
+                    npc.inventory.Strip();
+
+                    Instance.Kits?.Call("GiveKit", npc, kits.GetRandom());
+                }
+
+                EquipWeapon(npc, brain, false);
+
+                if (!ToggleNpcMinerHat(npc, !IsDayTime()))
+                {
+                    npc.inventory.ServerUpdate(0f);
+                }
+            }
+
+            public void EquipWeapon(ScientistNPC npc, HumanoidBrain brain, bool allowSyringe)
+            {
+                foreach (Item item in npc.inventory.AllItems())
+                {
+                    var e = item.GetHeldEntity() as HeldEntity;
+
+                    if (e.IsValid())
+                    {
+                        if (item.skin != 0)
+                        {
+                            e.skinID = item.skin;
+                            e.SendNetworkUpdate();
+                        }
+
+                        if (brain.AttackEntity != null || !allowSyringe && item.info.shortname == "syringe.medical")
+                        {
+                            continue;
+                        }
+
+                        var weapon = e as BaseProjectile;
+
+                        if (weapon.IsValid())
+                        {
+                            weapon.primaryMagazine.contents = weapon.primaryMagazine.capacity;
+                            weapon.SendNetworkUpdateImmediate();
+                        }
+
+                        if (e is AttackEntity && item.GetRootContainer() == npc.inventory.containerBelt)
+                        {
+                            var attackEntity = e as AttackEntity;
+
+                            if (attackEntity.hostile || item.info.shortname == "syringe.medical")
+                            {
+                                UpdateWeapon(npc, brain, attackEntity, item);
+                            }
+                        }
+                    }
+
+                    item.MarkDirty();
+                }
+            }
+
+            private void UpdateWeapon(ScientistNPC npc, HumanoidBrain brain, AttackEntity attackEntity, Item item)
+            {
+                npc.UpdateActiveItem(item.uid);
+
+                if (attackEntity is Chainsaw)
+                {
+                    (attackEntity as Chainsaw).ServerNPCStart();
+                }
+
+                npc.damageScale = 1f;
+
+                attackEntity.TopUpAmmo();
+                attackEntity.SetHeld(true); 
+                brain.Init();
             }
 
             private bool SortRandomSpots()
@@ -8938,56 +9115,52 @@ enterExit:
                 int layers = Layers.Mask.Construction | Layers.Mask.Deployed | Layers.Mask.Player_Server;
                 var entities = Pool.GetList<BaseEntity>();
 
-                if (!Options.NPC.Roofcampers)
-                {
-                    _blockProperties.RemoveAll(block => IsOutside(block.entity) && (block.ShortPrefabName == "floor.triangle" || block.ShortPrefabName == "floor" || block.ShortPrefabName.Contains("roof")));
-                }
+                blocks.RemoveAll(block => block.IsKilled() || (!Options.NPC.Roofcampers && IsOutside(block) && (block.ShortPrefabName == "floor.triangle" || block.ShortPrefabName == "floor" || block.ShortPrefabName.Contains("roof"))));
 
-                foreach (var block in _blockProperties)
+                foreach (var block in blocks)
                 {
                     entities.Clear();
 
                     int walls = 0;
-                    var destination = block.position + Vector3.up * 1.25f;
+                    var destination = block.transform.position + Vector3.up * 1.25f;
 
                     Vis.Entities(destination, 1.5f, entities, layers, QueryTriggerInteraction.Ignore);
 
                     foreach (var e in entities)
                     {
-                        if (e.IsDestroyed || e.transform.position == block.position || e is Door)
+                        if (e.IsDestroyed || e == block || e is Door || e.ShortPrefabName.StartsWith("rug"))
                         {
                             continue;
-                        }
-                        else if (e.ShortPrefabName.StartsWith("rug"))
-                        {
-                            continue;
-                        }
-                        else if (e.ShortPrefabName == "shelves")
-                        {
-                            _boxPositions.Add(e.transform.position);
                         }
                         else if (e.ShortPrefabName == "wall")
                         {
                             walls++;
                         }
-                        else if (!(e is BuildingBlock) || IsOutside(e))
+                        else if (!(e is BuildingBlock) || e.ShortPrefabName.Contains("roof"))
                         {
                             walls = int.MaxValue;
                             break;
                         }
                     }
 
-                    if (walls < 3 && (block.ShortPrefabName == "foundation.triangle" || block.ShortPrefabName == "floor.triangle"))
+                    if (walls > 4)
                     {
-                        _randomSpots.Add(block.position);
+                        continue;
                     }
-                    else if (walls < 4 && (block.ShortPrefabName == "foundation" || block.ShortPrefabName == "floor"))
+
+                    var center = block.WorldSpaceBounds().ToBounds().center;
+
+                    if (walls < 3 && block.ShortPrefabName == "foundation.triangle" || walls < 4 && block.ShortPrefabName == "foundation")
                     {
-                        _randomSpots.Add(block.position);
+                        _randomSpots.Add(center + new Vector3(0f, (block.bounds.size.Max() / 2f) + 0.1125f, 0f));
+                    }
+                    else if (walls < 3 && block.ShortPrefabName == "floor.triangle" || walls < 4 && block.ShortPrefabName == "floor")
+                    {
+                        _randomSpots.Add(center + new Vector3(0f, 0.155f, 0f));
                     }
                 }
 
-                _blockProperties.Clear();
+                blocks.Clear();
                 Pool.FreeList(ref entities);
                 return _randomSpots.Count > 0;
             }
@@ -9039,7 +9212,7 @@ enterExit:
             {
                 if (Options.NPC.Inside.SpawnOnFloors)
                 {
-                    if (_blockProperties.Count > 0)
+                    if (blocks.Count > 0)
                     {
                         SortRandomSpots();
                     }
@@ -9131,91 +9304,10 @@ enterExit:
                     { "scientist", scientistKits }
                 };
             }
-
+            
             private bool IsKit(string kit)
             {
                 return Convert.ToBoolean(Instance.Kits?.Call("isKit", kit));
-            }
-
-            private void UpdateItems(ScientistNPC npc, HumanoidBrain brain)
-            {
-                List<string> kits;
-                if (npcKits.TryGetValue(brain.isMurderer && !brain.isStationary ? "murderer" : "scientist", out kits) && kits.Count > 0)
-                {
-                    npc.inventory.Strip();
-
-                    Instance.Kits?.Call("GiveKit", npc, kits.GetRandom());
-                }
-
-                foreach (Item item in npc.inventory.AllItems())
-                {
-                    var e = item.GetHeldEntity() as HeldEntity;
-
-                    if (e.IsValid())
-                    {
-                        if (item.skin != 0)
-                        {
-                            e.skinID = item.skin;
-                            e.SendNetworkUpdate();
-                        }
-
-                        var weapon = e as BaseProjectile;
-
-                        if (weapon.IsValid())
-                        {
-                            weapon.primaryMagazine.contents = weapon.primaryMagazine.capacity;
-                            weapon.effectiveRange = 150f;
-                            weapon.SendNetworkUpdateImmediate();
-                        }
-
-                        if (e is AttackEntity && item.GetRootContainer() == npc.inventory.containerBelt)
-                        {
-                            UpdateWeapon(npc, brain, e, item);
-                        }
-                    }
-
-                    item.MarkDirty();
-                }
-
-                if (!ToggleNpcMinerHat(npc, !IsDayTime()))
-                {
-                    npc.inventory.ServerUpdate(0f);
-                }
-            }
-
-            private void UpdateWeapon(ScientistNPC npc, HumanoidBrain brain, HeldEntity heldEntity, Item item)
-            {
-                npc.UpdateActiveItem(item.uid);
-
-                var attackEntity = heldEntity as AttackEntity;
-
-                if (attackEntity is Chainsaw)
-                {
-                    (attackEntity as Chainsaw).ServerNPCStart();
-                }
-
-                if (attackEntity is BaseProjectile)
-                {
-                    attackEntity.effectiveRange = 150f;
-                }
-
-                attackEntity.TopUpAmmo();
-
-                if (brain.isMurderer)
-                {
-                    brain.cooldownDelay = attackEntity.animationDelay + attackEntity.deployDelay;
-                    brain.attackRange = attackEntity.effectiveRange;
-                }
-                else
-                {
-                    brain.cooldownDelay = 0f;
-                    brain.attackRange = attackEntity.effectiveRange * (attackEntity.aiOnlyInRange ? 1f : 2f) * brain.AttackRangeMultiplier;
-                }
-
-                npc.damageScale = 1f;
-
-                attackEntity.SetHeld(true);
-                brain.Init();
             }
 
             public static void UpdateAllMarkers()
@@ -9535,7 +9627,7 @@ enterExit:
                 };
             }
 
-            private static bool ContainsTopology(TerrainTopology.Enum mask, Vector3 position, float radius)
+            public static bool ContainsTopology(TerrainTopology.Enum mask, Vector3 position, float radius)
             {
                 return (TerrainMeta.TopologyMap.GetTopology(position, radius) & (int)mask) != 0;
             }
@@ -9549,7 +9641,7 @@ enterExit:
             {
                 CacheType cacheType;
                 string message;
-                if (!IsAreaSafe(vector, radius, Layers.Mask.World | Layers.Mask.Deployed | Layers.Mask.Trigger, null, null, out cacheType, out message))
+                if (!IsAreaSafe(vector, radius, Layers.Mask.World | Layers.Mask.Deployed | Layers.Mask.Trigger, null, out cacheType, out message))
                 {
                     return false;
                 }
@@ -9678,7 +9770,7 @@ enterExit:
                 return 0f;
             }
 
-            public static bool IsAreaSafe(Vector3 position, float radius, int layers, bool? isCustomSpawn, BuildingOptionsDifficultySpawns spawns, out CacheType cacheType, out string message, RaidableType type = RaidableType.None)
+            public static bool IsAreaSafe(Vector3 position, float radius, int layers, BuildingOptionsDifficultySpawns spawns, out CacheType cacheType, out string message, RaidableType type = RaidableType.None)
             {
                 var colliders = Pool.GetList<Collider>();
 
@@ -9733,13 +9825,7 @@ enterExit:
                         }
                         else if (isSteamId && e is SleepingBag)
                         {
-                            if (SleepingBagHandler(e as SleepingBag, isCustomSpawn, position, radius) == null)
-                            {
-                                message = $"Blocked by {e.ShortPrefabName} {e.transform.position}";
-                                cacheType = CacheType.Temporary;
-                                break;
-                            }
-                            else continue;
+                            continue;
                         }
                         else if (isSteamId && spawns?.Skip == true)
                         {
@@ -9970,7 +10056,7 @@ enterExit:
             }
         }
 
-        #region Hooks
+#region Hooks
 
         private void UnsubscribeHooks()
         {
@@ -9997,7 +10083,6 @@ enterExit:
             Unsubscribe(nameof(OnPlayerCommand));
             Unsubscribe(nameof(OnServerCommand));
             Unsubscribe(nameof(OnTrapTrigger));
-            Unsubscribe(nameof(OnEntityMounted));
             Unsubscribe(nameof(OnEntityBuilt));
             Unsubscribe(nameof(OnStructureUpgrade));
             Unsubscribe(nameof(OnEntityGroundMissing));
@@ -10065,7 +10150,7 @@ enterExit:
             permission.RegisterPermission("raidablebases.admin.loot", this);
             permission.RegisterPermission("raidablebases.elevators.bypass.building", this);
             permission.RegisterPermission("raidablebases.elevators.bypass.card", this);
-            RaidableBase.isBusyTime = Time.realtimeSinceStartup + 5f;
+            permission.RegisterPermission("raidablebases.time", this);
             lastSpawnRequestTime = Time.realtimeSinceStartup;
             buyableEnabled = config.Settings.Buyable.Max > 0;
             Unsubscribe(nameof(OnMapMarkerAdded));
@@ -10073,6 +10158,7 @@ enterExit:
             UnsubscribeHooks();
             GridController.Initialize();
             SpawnsController.Initialize();
+            UI.Init();
         }
 
         private void OnServerInitialized(bool isStartup)
@@ -10089,14 +10175,17 @@ enterExit:
             AddCovalenceCommand("rb.toggle", nameof(CommandToggle), "raidablebases.config");
             timer.Repeat(30f, 0, RaidableBase.UpdateAllMarkers);
             timer.Repeat(300f, 0, SaveData);
-            LoadData();
+            StoredData.Load();
+            CheckForWipe();
             Initialize();
         }
+
+        private void SaveData() => data.Save();
 
         private void OnServerShutdown()
         {
             IsUnloading = true;
-            RaidableBase.Unload(true);
+            RaidableBase.Unload(Raids.Values.ToList(), true);
             BackboneController.Instance.StopCoroutines();
             DestroyAll();
         }
@@ -10110,7 +10199,7 @@ enterExit:
 
             IsUnloading = true;
             SaveData();
-            RaidableBase.Unload(false);
+            RaidableBase.Unload(Raids.Values.ToList(), false);
             BackboneController.Instance.StopCoroutines();
             DestroyComponents();
 
@@ -10126,18 +10215,13 @@ enterExit:
         private static void UnsetStatics()
         {
             UnityEngine.Object.Destroy(BackboneController.Instance);
-            RaidableBase.IsBusy = false;
             EjectController.DestroyMe();
             SpawnsController.Clear();
             GridController.Clear();
             UI.DestroyAllLockoutUI();
             UI.DestroyAllBuyableUI();
             UI.DestroyAllStatusUI();
-            UI.InvokeTimers.Clear();
-            LoadingTimes.Clear();
-            _shortnames.Clear();
-            _messages.Clear();
-            Buildings = null;
+            UI.Clear();
             Instance = null;
             config = null;
             data = null;
@@ -10158,11 +10242,9 @@ enterExit:
                 
                 if (data.Players.Count > 0)
                 {
-                    var players = data.Players.ToList();
-
                     if (AssignTreasureHunters())
                     {
-                        foreach (var entry in players)
+                        foreach (var entry in data.Players.ToList())
                         {
                             if (entry.Value.Raids > 0)
                             {
@@ -10177,13 +10259,7 @@ enterExit:
                     {
                         var average = raids.Average();
 
-                        foreach (var entry in players)
-                        {
-                            if (entry.Value.TotalRaids < average)
-                            {
-                                data.Players.Remove(entry.Key);
-                            }
-                        }
+                        data.Players.RemoveAll((userid, playerInfo) => playerInfo.TotalRaids < average);
                     }
                 }
                 
@@ -10248,24 +10324,6 @@ enterExit:
             return !player.IsFlying && (EventTerritory(to) || EventTerritory(player.transform.position) || PvpDelay.ContainsKey(player.userID)) ? BackboneController.Instance.GetMessage("CannotTeleport", player.UserIDString) : null;
         }
 
-        private void OnEntityMounted(BaseMountable m, BasePlayer player)
-        {
-            if (!player.IsHuman() || m.OwnerID == 1337420 || m.GetParentEntity() is BaseTrain)
-            {
-                return;
-            }
-
-            var raid = RaidableBase.Get(player.transform.position);
-
-            if (raid == null || raid.IsControlledMount(m) || raid.intruders.Contains(player) || raid.raiders.Exists(x => x.id == player.UserIDString))
-            {
-                return;
-            }
-
-            raid.DismountAllPlayers(m);
-            RaidableBase.RemovePlayer(player, 4, raid.Location, raid.ProtectionRadius, raid.Type);
-        }
-
         private BasePlayer GetOwnerPlayer(Item item)
         {
             if (item.parentItem == null)
@@ -10283,7 +10341,7 @@ enterExit:
 
         private object OnLoseCondition(Item item, float amount)
         {
-            if (item == null)
+            if (item == null) // || item.info.GetComponent<ItemModWearable>() != null)
             {
                 return null;
             }
@@ -10626,11 +10684,11 @@ enterExit:
                     return;
                 }
 
-                if (config.Settings.Management.UseOwners)
+                if (config.Settings.Management.UseOwners && hitInfo != null && hitInfo.Initiator is BasePlayer)
                 {
-                    var attacker = hitInfo?.Initiator as BasePlayer;
+                    var attacker = hitInfo.Initiator as BasePlayer;
 
-                    if (attacker.IsValid() && attacker.IsHuman() && raid.AddLooter(attacker))
+                    if (attacker.IsHuman() && raid.AddLooter(attacker))
                     {
                         raid.TrySetOwner(attacker, player, hitInfo);
                     }
@@ -10668,7 +10726,7 @@ enterExit:
                 {
                     if (command.EndsWith(value, StringComparison.OrdinalIgnoreCase))
                     {
-                        BackboneController.Instance.Message(player, "CommandNotAllowed");
+                        BackboneController.Instance.Message(player, "CommandNotAllowed");                        
                         return true;
                     }
                 }
@@ -10706,7 +10764,7 @@ enterExit:
             }
 
             HumanoidBrain brain;
-            if (!HumanoidBrains.TryGetValue(npc.userID, out brain) || !brain.playCatch || !brain.ValidTarget)
+            if (!HumanoidBrains.TryGetValue(npc.userID, out brain) || !brain.Settings.PlayCatch || !brain.ValidTarget)
             {
                 return fuseLength;
             }
@@ -11083,11 +11141,10 @@ done:
 
                 Npcs.Remove(corpse.playerSteamID);
 
-                bool isMurderer;
-                if (raid.npcTypes.TryGetValue(corpse.playerSteamID, out isMurderer))
+                HumanoidBrain brain;
+                if (HumanoidBrains.TryGetValue(corpse.playerSteamID, out brain))
                 {
-                    raid.DropItems(corpse.containers, isMurderer);
-                    raid.npcTypes.Remove(corpse.playerSteamID);
+                    raid.DropItems(corpse.containers, brain.attackType != HumanoidBrain.AttackType.BaseProjectile);
                 }
 
                 if (raid.Options.RespawnRateMax > 0f)
@@ -11352,12 +11409,12 @@ done:
         {
             if (weapon is AutoTurret)
             {
-                if (RaidableBase.Has(victim.userID) && (raid.Options.NPC.IgnoreTrapsTurrets || RaidableBase.Has(weapon)))
+                if (RaidableBase.Has(victim.userID) && (raid.Options.NPC.IgnoreTrapsTurrets || RaidableBase.Has(weapon) && !raid.BuiltList.ContainsKey(weapon)))
                 {
                     return false;
                 }
 
-                if (weapon.OwnerID.IsSteamId() && (!raid.AllowPVP || !InRange(weapon.transform.position, raid.Location, raid.ProtectionRadius)))
+                if (weapon.OwnerID.IsSteamId() && (!raid.AllowPVP && victim.IsHuman() || !InRange(weapon.transform.position, raid.Location, raid.ProtectionRadius)))
                 {
                     return false;
                 }
@@ -11686,9 +11743,9 @@ done:
             return true;
         }
 
-        #endregion Hooks
+#endregion Hooks
 
-        #region Spawn
+#region Spawn
 
         private static void Shuffle<T>(IList<T> list) // Fisher-Yates shuffle
         {
@@ -11731,7 +11788,7 @@ done:
 
             raid = new GameObject().AddComponent<RaidableBase>();
             raid.name = Name;
-
+            raid.Definitions = _definitions;
             raid.SetAllowPVP(type, profile.Options.AllowPVP);
             raid.DifficultyMode = BackboneController.Instance.GetMessageEx($"Mode{profile.Options.Mode}");
             raid.PastedLocation = position;
@@ -11776,9 +11833,9 @@ done:
             return true;
         }
 
-        #endregion
+#endregion
 
-        #region Paste
+#region Paste
 
         protected bool IsGridLoading
         {
@@ -11876,6 +11933,11 @@ done:
                             continue;
                         }
 
+                        if (!string.IsNullOrEmpty(option.Name) && slot.name != option.Name)
+                        {
+                            continue;
+                        }
+
                         amount += slot.amount;
 
                         if (amount >= option.Amount)
@@ -11886,7 +11948,8 @@ done:
 
                     if (amount < option.Amount)
                     {
-                        BackboneController.Instance.Message(buyer, "CustomWithdrawFailed", string.Format("{0} ({1})", option.Shortname, option.Amount));
+                        string name = string.IsNullOrEmpty(option.Name) ? option.Shortname : option.Name;
+                        BackboneController.Instance.Message(buyer, "CustomWithdrawFailed", string.Format("{0} ({1})", name, option.Amount));
                         return null;
                     }
                 }
@@ -11970,9 +12033,16 @@ done:
                 {
                     Item item = ItemManager.CreateByItemID(option.Definition.itemid, option.Amount, option.Skin);
 
-                    buyer.GiveItem(item, BaseEntity.GiveItemReason.PickedUp);
+                    string name;
+                    if (!string.IsNullOrEmpty(option.Name))
+                    {
+                        name = item.name = option.Name;
+                    }
+                    else name = item.info.displayName.english;
 
-                    _sb.Append(string.Format("{0} {1}", option.Amount, item.info.displayName.english)).Append(", ");
+                    buyer.GiveItem(item, BaseEntity.GiveItemReason.PickedUp);
+                    
+                    _sb.Append(string.Format("{0} {1}", option.Amount, name)).Append(", ");
                 }
 
                 if (_sb.Length > 2)
@@ -11991,6 +12061,7 @@ done:
                 {
                     var slots = buyer.inventory.FindItemIDs(option.Definition.itemid);
                     var amountLeft = option.Amount;
+                    
                     foreach (var slot in slots)
                     {
                         if (slot == null || option.Skin != 0 && slot.skin != option.Skin)
@@ -12004,7 +12075,8 @@ done:
 
                         if (amountLeft <= 0)
                         {
-                            sb.Append(string.Format("{0} {1}", option.Amount, slot.info.displayName.english)).Append(", ");
+                            string name = string.IsNullOrEmpty(option.Name) ? slot.info.displayName.english : option.Name;
+                            sb.Append(string.Format("{0} {1}", option.Amount, name)).Append(", ");
                             break;
                         }
                     }
@@ -12080,7 +12152,7 @@ done:
             return false;
         }
 
-        private static bool IsDifficultyAvailable(RaidableMode mode, bool checkAllowPVP)
+        private bool IsDifficultyAvailable(RaidableMode mode, bool checkAllowPVP)
         {
             if (!CanSpawnDifficultyToday(mode))
             {
@@ -12313,9 +12385,7 @@ done:
                 int baseIndex = RaidableBase.FreeIndex;
                 Bases[baseIndex] = pastedEntities;
                 raid.SetEntities(baseIndex, pastedEntities, bmgs);
-                t.Destroy();
-
-                EjectController.DestroyMe();
+                t.Destroy();               
             });
         }
 
@@ -12355,21 +12425,22 @@ done:
 
                 if (typeDistance > 0 && RaidableBase.IsTooClose(vector, typeDistance))
                 {
+                    spawns.RemoveNear(vector, options.ProtectionRadius(type), CacheType.Close, type);
                     message = "Too close to another raidable base";
                     continue;
                 }
 
-                if (spawns.IsCustomSpawn && (options.Spawns.Ignore || options.Spawns.SafeRadius > 0f))
+                if (spawns.IsCustomSpawn && (options.CustomSpawns.Ignore || options.CustomSpawns.SafeRadius > 0f))
                 {
-                    if (options.Spawns.SafeRadius <= 0f)
+                    if (options.CustomSpawns.SafeRadius <= 0f)
                     {
                         message = $"Ignoring safe checks enabled for {options.Mode} events; returning {vector}";
                         return vector;
                     }
-                    else safeRadius = options.Spawns.SafeRadius;
+                    else safeRadius = options.CustomSpawns.SafeRadius;
                 }
 
-                if (type == RaidableType.Maintained && (config.Settings.Maintained.Ignore || config.Settings.Maintained.SafeRadius > 0f))
+                if (type == RaidableType.Maintained && spawns.IsCustomSpawn && (config.Settings.Maintained.Ignore || config.Settings.Maintained.SafeRadius > 0f))
                 {
                     if (config.Settings.Maintained.SafeRadius <= 0f)
                     {
@@ -12379,7 +12450,7 @@ done:
                     else safeRadius = config.Settings.Maintained.SafeRadius;
                 }
 
-                if (type == RaidableType.Scheduled && (config.Settings.Schedule.Ignore || config.Settings.Schedule.SafeRadius > 0f))
+                if (type == RaidableType.Scheduled && spawns.IsCustomSpawn && (config.Settings.Schedule.Ignore || config.Settings.Schedule.SafeRadius > 0f))
                 {
                     if (config.Settings.Schedule.SafeRadius <= 0f)
                     {
@@ -12389,7 +12460,7 @@ done:
                     else safeRadius = config.Settings.Schedule.SafeRadius;
                 }
 
-                if (type == RaidableType.Purchased && (config.Settings.Buyable.Ignore || config.Settings.Buyable.SafeRadius > 0f))
+                if (type == RaidableType.Purchased && spawns.IsCustomSpawn && (config.Settings.Buyable.Ignore || config.Settings.Buyable.SafeRadius > 0f))
                 {
                     if (config.Settings.Buyable.SafeRadius <= 0f)
                     {
@@ -12416,7 +12487,7 @@ done:
                     continue;
                 }
 
-                if (!SpawnsController.IsAreaSafe(vector, safeRadius, layers, spawns.IsCustomSpawn, options.Spawns, out cacheType, out message, type))
+                if (!SpawnsController.IsAreaSafe(vector, safeRadius, layers, options.CustomSpawns, out cacheType, out message, type))
                 {
                     if (cacheType == CacheType.Delete)
                     {
@@ -12455,6 +12526,38 @@ done:
             }
 
             return Vector3.zero;
+        }
+
+        private object SpawnRandomBase(string baseName, Vector3 a, int type = 1)
+        {
+            lastSpawnRequestTime = Time.realtimeSinceStartup;
+            if (RaidableBase.IsSpawning)
+            {
+                return 1;
+            }
+
+            var profile = Buildings.Profiles.FirstOrDefault(x => x.Key.Equals(baseName, StringComparison.OrdinalIgnoreCase));
+            if (!IsProfileValid(profile))
+            {
+                return 2;
+            }
+
+            bool checkTerrain;
+            var spawns = GetSpawns((RaidableType)type, profile.Value, out checkTerrain);
+            if (spawns == null)
+            {
+                return 3;
+            }
+
+            string message;
+            if (PasteBuilding((RaidableType)type, a, profile, spawns, null, out message))
+            {
+                RaidableBase.IsSpawning = true;
+                
+                return true;
+            }
+
+            return message;
         }
 
         private RandomBase SpawnRandomBase(out string message, RaidableType type, RaidableMode mode, string baseName = null, bool isAdmin = false, List<Payment> payments = null, string userid = null, float distance = -1, Vector3 scanVector = default(Vector3))
@@ -12510,20 +12613,20 @@ done:
             return null;
         }
 
-        private static List<string> _messages = new List<string>();
+        private List<string> _messages = new List<string>();
 
         private static void PrintDebugMessage(string message)
         {
-            if (!string.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(message) && Instance != null)
             {
-                _messages.Add(message);
+                Instance._messages.Add(message);
 
-                if (_messages.Count > 10)
+                if (Instance._messages.Count > 10)
                 {
-                    _messages.RemoveAt(0);
+                    Instance._messages.RemoveAt(0);
                 }
 
-                if (Instance.debugMode)
+                if (Instance.DebugMode)
                 {
                     Puts("DEBUG: {0}", message);
                 }
@@ -12624,7 +12727,7 @@ done:
         }
 
         private KeyValuePair<string, BaseProfile> GetBuilding(RaidableType type, RaidableMode mode, string baseName)
-        {
+        {            
             var list = new List<KeyValuePair<string, BaseProfile>>();
             bool isBaseNull = string.IsNullOrEmpty(baseName);
             string last = "Start of selection";
@@ -12700,7 +12803,7 @@ done:
             return profile.Value.Options.Mode != RaidableMode.Disabled && profile.Value.Options.Enabled;
         }
 
-        private static RaidableMode GetRandomDifficulty(RaidableType type)
+        private RaidableMode GetRandomDifficulty(RaidableType type)
         {
             var list = new List<RaidableMode>();
 
@@ -12732,7 +12835,7 @@ done:
             {
                 if (config.Settings.Management.Chances.Cumulative)
                 {
-                    return Instance.GetRandomDifficulty(list);
+                    return GetRandomDifficulty(list);
                 }
 
                 decimal chance = Convert.ToDecimal(Core.Random.Range(0.0, 100.0));
@@ -12847,9 +12950,9 @@ done:
             }
         }
 
-        #endregion
+#endregion
 
-        #region Commands
+#region Commands
 
         [ConsoleCommand("ui_buyraid")]
         private void ccmdBuyRaid(ConsoleSystem.Arg arg)
@@ -12877,7 +12980,7 @@ done:
 
         private void CommandReloadConfig(IPlayer user, string command, string[] args)
         {
-            if (user.IsServer || (user.Object as BasePlayer).IsAdmin)
+            if (user.IsServer || user.ToPlayer().IsAdmin)
             {
                 if (!IsPasteAvailable)
                 {
@@ -12910,10 +13013,11 @@ done:
 
         private void Initialize()
         {
+            Instance = this;
             GridController.Initialize();
             GridController.LoadSpawns();
             GridController.Setup();
-            BackboneController.Instance.InitializeSkins();
+            InitializeSkins();
             SpawnsController.BlockZoneManagerZones(ZoneManager);
             Reinitialize();
             UpdateUI();
@@ -12924,7 +13028,7 @@ done:
 
         private void CommandBuyRaid(IPlayer user, string command, string[] args)
         {
-            var player = user.Object as BasePlayer;
+            var player = user.ToPlayer();
 
             if (user.IsServer && args.Length >= 1 && args[0].IsSteamId())
             {
@@ -12942,7 +13046,7 @@ done:
                 return;
             }
 
-            var buyer = user.Object as BasePlayer ?? player;
+            var buyer = user.ToPlayer() ?? player;
 
             if (args.Length == 0)
             {
@@ -13117,7 +13221,7 @@ done:
 
         private void CommandRaidHunter(IPlayer user, string command, string[] args)
         {
-            var player = user.Object as BasePlayer;
+            var player = user.ToPlayer();
             bool isAdmin = user.IsServer || player.IsAdmin;
             string arg = args.Length >= 1 ? args[0].ToLower() : string.Empty;
 
@@ -13126,18 +13230,6 @@ done:
                 case "version":
                 {
                     user.Reply($"Version: {Version}");
-                    return;
-                }
-                case "resetall":
-                {
-                    if (isAdmin)
-                    {
-                        foreach (var entry in data.Players.ToList())
-                        {
-                            entry.Value.Reset();
-                        }
-                    }
-
                     return;
                 }
                 case "resettime":
@@ -13259,10 +13351,9 @@ done:
 
             if (config.RankedLadder.Enabled)
             {
-                int raids = data.Players.ContainsKey(user.Id) ? data.Players[user.Id].Raids : 0;
-                int points = data.Players.ContainsKey(user.Id) ? data.Players[user.Id].Points : 0;
+                PlayerInfo playerInfo = PlayerInfo.Get(user.Id);
 
-                user.Reply(BackboneController.Instance.GetMessage("RankedWins", user.Id, raids, points, config.Settings.HunterCommand));
+                user.Reply(BackboneController.Instance.GetMessage("RankedWins", user.Id, playerInfo.Raids, playerInfo.Points, config.Settings.HunterCommand));
                 user.Reply(BackboneController.Instance.GetMessage("RankedWins2", user.Id, config.Settings.HunterCommand));
             }
 
@@ -13275,31 +13366,6 @@ done:
             if (player.IsValid())
             {
                 DrawRaidLocations(player, isAdmin || player.HasPermission("raidablebases.ddraw"));
-            }
-        }
-
-        protected void DrawRaidLocation(BasePlayer player, Vector3 position)
-        {
-            if (config.Settings.Management.DrawTime <= 0)
-            {
-                return;
-            }
-
-            bool isAdmin = player.IsAdmin;
-
-            try
-            {
-                ToggleAdminFlag(player, isAdmin, true);
-
-                player.SendConsoleCommand("ddraw.arrow", config.Settings.Management.DrawTime, Color.red, player.transform.position, position, 5f);
-            }
-            catch (Exception ex)
-            {
-                UnityEngine.Debug.LogException(ex);
-            }
-            finally
-            {
-                ToggleAdminFlag(player, isAdmin, false);
             }
         }
 
@@ -13360,7 +13426,7 @@ done:
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogException(ex);
+                Puts("{0}", ex);
             }
             finally
             {
@@ -13438,9 +13504,10 @@ done:
                 return;
             }
 
-            if (args.Length == 2 && args[1].ToLower() == "resetme" && data.Players.ContainsKey(user.Id))
+            if (args.Length == 2 && args[1].ToLower() == "resetme")
             {
                 data.Players[user.Id] = new PlayerInfo();
+                user.Reply("Your ranked stats have been reset.");
                 return;
             }
 
@@ -13544,7 +13611,7 @@ done:
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogException(ex);
+                Puts("{0}", ex);
             }
             finally
             {
@@ -13568,7 +13635,7 @@ done:
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogException(ex);
+                Puts("{0}", ex);
             }
             finally
             {
@@ -13621,7 +13688,8 @@ done:
         {
             int value;
             int points;
-            PlayerInfo playerInfo = data.Players[key];
+            PlayerInfo playerInfo = PlayerInfo.Get(key);
+            playerInfo.ResetExpiredDate();
             string name = covalence.Players.FindPlayerById(key)?.Name ?? key;
             string message = lang.GetMessage("NotifyPlayerFormat", this, user.Id);
 
@@ -13664,7 +13732,7 @@ done:
 
         private void CommandRaidBase(IPlayer user, string command, string[] args)
         {
-            var player = user.Object as BasePlayer;
+            var player = user.ToPlayer();
             bool isAllowed = user.IsServer || player.IsAdmin || user.HasPermission("raidablebases.allow");
 
             if (!CanCommandContinue(player, user, isAllowed, args))
@@ -13702,7 +13770,7 @@ done:
                 {
                     CacheType cacheType;
                     int layers2 = Layers.Mask.Player_Server | Layers.Mask.Construction | Layers.Mask.Deployed;
-                    var safe = player.IsAdmin || SpawnsController.IsAreaSafe(hit.point, Mathf.Max(M_RADIUS * 2f, profile.Value.Options.ArenaWalls.Radius), layers2, null, profile.Value.Options.Spawns, out cacheType, out message, RaidableType.Manual);
+                    var safe = player.IsAdmin || SpawnsController.IsAreaSafe(hit.point, Mathf.Max(M_RADIUS * 2f, profile.Value.Options.ArenaWalls.Radius), layers2, profile.Value.Options.CustomSpawns, out cacheType, out message, RaidableType.Manual);
 
                     if (!safe && !player.IsFlying && InRange(player.transform.position, hit.point, 50f, false))
                     {
@@ -13845,8 +13913,8 @@ done:
                 }
                 case "debug":
                 {
-                    debugMode = !debugMode;
-                    user.Reply(string.Format("Debug mode: {0}", debugMode));
+                    DebugMode = !DebugMode;
+                    user.Reply(string.Format("Debug mode: {0}", DebugMode));
                     user.Reply(string.Format("Scheduled Events Running: {0}", BackboneController.Instance.Scheduled.Coroutine != null));
                     user.Reply(string.Format("Maintained Events Running: {0}", BackboneController.Instance.Maintained.Coroutine != null));
                     if (_messages.Count > 0)
@@ -13865,11 +13933,11 @@ done:
                 {
                     BaseNetworkable.serverEntities.OfType<BaseEntity>().ToList().ForEach(entity =>
                     {
-                        if (entity.OwnerID != 0 || entity.Distance(player) > 100f || !GarbageController.RaidEntities.ContainsKey(entity)) return;
-                        entity.SafelyKill();
+                        if (entity.OwnerID != 0 || entity.Distance(player) > 100f) return;
+                        if (entity.name.Contains("building") || entity.name.Contains("deploy")) entity.Kill();
                     });
 
-                    break;
+                    return true;
                 }
                 case "despawnall":
                 case "despawn_inactive":
@@ -14026,7 +14094,7 @@ done:
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogException(ex);
+                Puts("{0}", ex);
             }
             finally
             {
@@ -14136,9 +14204,23 @@ done:
             }
         }
 
-        #endregion Commands
+#endregion Commands
 
-        #region Helpers        
+#region Helpers        
+
+        public static bool IsUnderground(Vector3 a) => GamePhysics.CheckSphere<TerrainCollisionTrigger>(a, 5f, 262144, QueryTriggerInteraction.Collide);
+
+        public void InitializeSkins()
+        {
+            foreach (var def in ItemManager.GetItemDefinitions())
+            {
+                ItemModDeployable imd;
+                if (def.TryGetComponent(out imd))
+                {
+                    _definitions[imd.entityPrefab.resourcePath] = def;
+                }
+            }
+        }
 
         private static void ToggleAdminFlag(BasePlayer player, bool isAdmin, bool state)
         {
@@ -14161,23 +14243,6 @@ done:
             }
 
             return entity;
-        }
-
-        private static object SleepingBagHandler(SleepingBag bag, bool? isCustomSpawn, Vector3 target, float radius)
-        {
-            if (isCustomSpawn == true)
-            {
-                bag.SafelyKill();
-
-                return true;
-            }
-            else if (isCustomSpawn == false)
-            {
-                bag.transform.position = RaidableBase.GetEjectLocation(bag.transform.position, 10f, target, radius);
-                bag.TransformChanged();
-            }
-
-            return null;
         }
 
         private List<string> GetMembers(BasePlayer buyer)
@@ -14262,6 +14327,7 @@ done:
                 case RaidableType.Maintained: return config.Settings.Maintained.Distance;
                 case RaidableType.Purchased: return config.Settings.Buyable.Distance;
                 case RaidableType.Scheduled: return config.Settings.Schedule.Distance;
+                case RaidableType.None: return Mathf.Max(config.Settings.Maintained.Distance, config.Settings.Buyable.Distance, config.Settings.Schedule.Distance);
                 default: return 100f;
             }
         }
@@ -14794,14 +14860,9 @@ done:
                 return true;
             }
 
-            var players = data.Players.ToList();
+            var players = data.Players.ToList().Where(x => x.Key.IsSteamId() && IsNormalUser(x.Key));
 
-            players.RemoveAll(kvp => !kvp.Key.IsSteamId() || !IsNormalUser(kvp.Key));
-
-            foreach (var record in Records)
-            {
-                AssignTreasureHunters(record.Permission, record.Group, players, record.Mode);
-            }
+            Records.ForEach(record => AssignTreasureHunters(record, players));
 
             Puts(BackboneController.Instance.GetMessageEx("Log Saved", null, "treasurehunters"));
 
@@ -14820,55 +14881,31 @@ done:
             return !(player == null || player.IsBanned);
         }
 
-        private void AssignTreasureHunters(string perm, string group, List<KeyValuePair<string, PlayerInfo>> players, RaidableMode mode)
+        private void AssignTreasureHunters(Record record, List<KeyValuePair<string, PlayerInfo>> players)
         {
             var ladder = new List<KeyValuePair<string, int>>();
 
             foreach (var entry in players)
             {
-                switch (mode)
+                switch (record.Mode)
                 {
                     case RaidableMode.Points:
-                        if (entry.Value.Points > 0)
-                        {
-                            ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Points));
-                        }
-
+                        if (entry.Value.Points > 0) ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Points));
                         break;
                     case RaidableMode.Easy:
-                        if (entry.Value.Easy > 0)
-                        {
-                            ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Easy));
-                        }
-
+                        if (entry.Value.Easy > 0) ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Easy));
                         break;
                     case RaidableMode.Medium:
-                        if (entry.Value.Medium > 0)
-                        {
-                            ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Medium));
-                        }
-
+                        if (entry.Value.Medium > 0) ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Medium));
                         break;
                     case RaidableMode.Hard:
-                        if (entry.Value.Hard > 0)
-                        {
-                            ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Hard));
-                        }
-
+                        if (entry.Value.Hard > 0) ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Hard));
                         break;
                     case RaidableMode.Expert:
-                        if (entry.Value.Expert > 0)
-                        {
-                            ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Expert));
-                        }
-
+                        if (entry.Value.Expert > 0) ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Expert));
                         break;
                     case RaidableMode.Nightmare:
-                        if (entry.Value.Nightmare > 0) 
-                        {
-                            ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Nightmare));
-                        }
-
+                        if (entry.Value.Nightmare > 0) ladder.Add(new KeyValuePair<string, int>(entry.Key, entry.Value.Nightmare));
                         break;
                 }
             }
@@ -14889,13 +14926,13 @@ done:
                     continue;
                 }
 
-                permission.GrantUserPermission(p.Id, perm, this);
-                permission.AddUserGroup(p.Id, group);
+                permission.GrantUserPermission(p.Id, record.Permission, this);
+                permission.AddUserGroup(p.Id, record.Group);
 
                 string message = BackboneController.Instance.GetMessageEx("Log Stolen", null, p.Name, p.Id, kvp.Value);
 
                 LogToFile("treasurehunters", $"{DateTime.Now} : {message}", this, true);
-                Puts(BackboneController.Instance.GetMessageEx("Log Granted", null, p.Name, p.Id, perm, group));
+                Puts(BackboneController.Instance.GetMessageEx("Log Granted", null, p.Name, p.Id, record.Permission, record.Group));
             }
         }
 
@@ -14913,90 +14950,6 @@ done:
         }
 
         private static bool IsModeValid(RaidableMode mode) => mode != RaidableMode.Disabled && mode != RaidableMode.Random;
-
-        private void DoLockoutRemoves()
-        {
-            foreach (var lockout in data.Lockouts.ToList())
-            {
-                if (lockout.Value.Easy - Epoch.Current <= 0)
-                {
-                    lockout.Value.Easy = 0;
-                }
-
-                if (lockout.Value.Medium - Epoch.Current <= 0)
-                {
-                    lockout.Value.Medium = 0;
-                }
-
-                if (lockout.Value.Hard - Epoch.Current <= 0)
-                {
-                    lockout.Value.Hard = 0;
-                }
-
-                if (lockout.Value.Expert - Epoch.Current <= 0)
-                {
-                    lockout.Value.Expert = 0;
-                }
-
-                if (lockout.Value.Nightmare - Epoch.Current <= 0)
-                {
-                    lockout.Value.Nightmare = 0;
-                }
-
-                if (!lockout.Value.Any())
-                {
-                    data.Lockouts.Remove(lockout.Key);
-                }
-            }
-        }
-
-        private void DoUiRemoves()
-        {
-            foreach (var uii in data.UI.ToList())
-            {
-                if (uii.Value.All())
-                {
-                    data.UI.Remove(uii.Key);
-                }
-            }
-        }
-
-        private void DoPlayerRemoves()
-        {
-            foreach (var element in data.Players.ToList())
-            {
-                if (element.Value.TotalRaids == 0)
-                {
-                    data.Players.Remove(element.Key);
-                }
-            }
-        }
-
-        private void LoadData()
-        {
-            try
-            {
-                data = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(Name);
-            }
-            catch
-            {
-            }
-
-            if (data == null || data.Players == null)
-            {
-                data = new StoredData();
-                NextTick(SaveData);
-            }
-            else CheckForWipe();
-        }
-
-        private void SaveData()
-        {
-            DoLockoutRemoves();
-            DoUiRemoves();
-            DoPlayerRemoves();
-            Interface.Oxide.DataFileSystem.WriteObject(Name, data);
-        }
 
         public static string FormatGridReference(Vector3 position)
         {
@@ -15028,9 +14981,9 @@ done:
             return string.Format(format, ts.Hours, ts.Minutes, ts.Seconds);
         }
 
-        #endregion
+#endregion
 
-        #region Data files
+#region Data files
 
         private void CreateDefaultFiles()
         {
@@ -15096,7 +15049,18 @@ done:
 
         protected void LoadProfiles()
         {
-            string[] files = Interface.Oxide.DataFileSystem.GetFiles($"{Name}{Path.DirectorySeparatorChar}Profiles");
+            string folder = $"{Name}{Path.DirectorySeparatorChar}Profiles";
+            string[] files;
+
+            try
+            {
+                files = Interface.Oxide.DataFileSystem.GetFiles(folder);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Puts("{0}", ex);
+                return;
+            }
 
             foreach (string file in files)
             {
@@ -15111,12 +15075,28 @@ done:
 
                     int index = file.LastIndexOf(Path.DirectorySeparatorChar) + 1;
 
-                    CreateProfile(profileName = file.Substring(index, file.Length - index - 5));
+                    profileName = file.Substring(index, file.Length - index - 5);
+
+                    string fullName = $"{folder}{Path.DirectorySeparatorChar}{profileName}";
+
+                    var options = Interface.Oxide.DataFileSystem.ReadObject<BuildingOptions>(fullName);
+
+                    if (options == null || !options.Enabled)
+                    {
+                        continue;
+                    }
+
+                    if (options.AdditionalBases == null)
+                    {
+                        options.AdditionalBases = new Dictionary<string, List<PasteOption>>();
+                    }
+
+                    Buildings.Profiles[profileName] = new BaseProfile(options, profileName);
                 }
                 catch (Exception ex)
                 {
                     Puts(file);
-                    UnityEngine.Debug.LogException(ex);
+                    Puts("{0}", ex);
                 }
             }
 
@@ -15130,62 +15110,9 @@ done:
             LoadImportedSkins();
         }
 
-        public bool CreateProfile(string profileName)
-        {
-            string folder = $"{Name}{Path.DirectorySeparatorChar}Profiles";
-            string fullName = $"{folder}{Path.DirectorySeparatorChar}{profileName}";
-
-            var options = Interface.Oxide.DataFileSystem.ReadObject<BuildingOptions>(fullName);
-
-            if (options == null || !options.Enabled)
-            {
-                return false;
-            }
-
-            if (options.AdditionalBases == null)
-            {
-                options.AdditionalBases = new Dictionary<string, List<PasteOption>>();
-            }
-
-            Buildings.Profiles[profileName] = new BaseProfile(options, fullName);
-
-            if (GridController.SpawnsFileValid(options.Spawns.SpawnsFile))
-            {
-                var spawns = GridController.GetSpawnsLocations(options.Spawns.SpawnsFile);
-
-                if (spawns?.Count > 0)
-                {
-                    Puts(BackboneController.Instance.GetMessageEx("LoadedDifficulty", null, spawns.Count, options.Mode));
-                    Buildings.Profiles[profileName].Spawns = new RaidableSpawns(spawns);
-                }
-            }
-
-            return true;
-        }
-
         private void LoadImportedSkins()
         {
-            string skinsFilename = $"{Name}{Path.DirectorySeparatorChar}ImportedWorkshopSkins";
-
-            try
-            {
-                if (Interface.Oxide.DataFileSystem.ExistsDatafile(skinsFilename))
-                {
-                    ImportedWorkshopSkins = Interface.Oxide.DataFileSystem.ReadObject<SkinSettingsImportedWorkshop>($"{Name}{Path.DirectorySeparatorChar}ImportedWorkshopSkins");
-                }
-            }
-            catch (JsonException ex)
-            {
-                UnityEngine.Debug.LogException(ex);
-                ImportedWorkshopSkins = new SkinSettingsImportedWorkshop();
-            }
-            finally
-            {
-                if (ImportedWorkshopSkins == null)
-                {
-                    Interface.Oxide.DataFileSystem.WriteObject(skinsFilename, ImportedWorkshopSkins = new SkinSettingsImportedWorkshop());
-                }
-            }
+            ImportedWorkshopSkins = new SkinSettingsImportedWorkshop();
         }
 
         protected void SaveProfile(string key, BuildingOptions options)
@@ -15234,13 +15161,28 @@ done:
                 return;
             }
 
+            if (lootList.All(ti => ti.probability == 0f))
+            {
+                lootList.ForEach(ti => ti.probability = 1f);
+            }
+
+            if (lootList.All(ti => ti.stacksize == 0))
+            {
+                lootList.ForEach(ti => ti.stacksize = -1);
+            }
+
             Interface.Oxide.DataFileSystem.WriteObject(file, lootList);
 
             lootList.RemoveAll(ti => ti == null || ti.amount == 0 && ti.amountMin == 0);
 
+            if (lootList.Count == 0)
+            {
+                return;
+            }
+
             _sb.AppendLine($"Loaded {lootList.Count} items from {file}");
 
-            lootList.ToList().ForEach(ti =>
+            lootList.ForEach(ti =>
             {
                 if (ti != null && ti.amount < ti.amountMin)
                 {
@@ -15262,7 +15204,7 @@ done:
             }
             catch (JsonReaderException ex)
             {
-                UnityEngine.Debug.LogException(ex);
+                Puts("{0}", ex);
             }
 
             if (lootList == null)
@@ -15273,9 +15215,9 @@ done:
             return lootList;
         }
 
-        #endregion
+#endregion
 
-        #region Configuration
+#region Configuration
 
         protected override void LoadDefaultMessages()
         {
@@ -15339,7 +15281,7 @@ done:
                 ["CannotBeMounted"] = "You cannot loot the treasure while mounted!",
                 ["CannotTeleport"] = "You are not allowed to teleport from this event.",
                 ["MustBeAuthorized"] = "You must have building privilege to access this treasure!",
-                ["OwnerLocked"] = "This loot belongs to someone else!",
+                ["OwnerLocked"] = "This treasure belongs to someone else!",
                 ["CannotFindPosition"] = "Could not find a random position!",
                 ["PasteOnCooldown"] = "Paste is on cooldown!",
                 ["SpawnOnCooldown"] = "Try again, a manual spawn was already requested.",
@@ -16397,7 +16339,7 @@ done:
             public bool SpawnOnRugs { get; set; }
 
             [JsonProperty(PropertyName = "Spawn On Rugs With Skin Only")]
-            public ulong SpawnOnRugsSkin { get; set; } = 1;
+            public int SpawnOnRugsSkin { get; set; } = 1;
 
             [JsonProperty(PropertyName = "Spawn Murderers Outside")]
             public bool SpawnMurderersOutside { get; set; } = true;
@@ -16796,6 +16738,9 @@ done:
 
             [JsonProperty(PropertyName = "Ignore Player Entities At Custom Spawn Locations")]
             public bool Skip { get; set; }
+
+            [JsonProperty(PropertyName = "Kill Sleeping Bags")]
+            public bool KillSleepingBags { get; set; } = true;
         }
 
         public class BuildingOptionsElevators
@@ -16907,7 +16852,7 @@ done:
             public BuildingWaterOptions Water { get; set; } = new BuildingWaterOptions();
 
             [JsonProperty(PropertyName = "Spawns Database")]
-            public BuildingOptionsDifficultySpawns Spawns { get; set; } = new BuildingOptionsDifficultySpawns();
+            public BuildingOptionsDifficultySpawns CustomSpawns { get; set; } = new BuildingOptionsDifficultySpawns();
 
             [JsonProperty(PropertyName = "Profile Enabled")]
             public bool Enabled { get; set; } = true;
@@ -17052,6 +16997,9 @@ done:
 
             [JsonProperty(PropertyName = "Skip Treasure Loot And Use Loot In Base Only")]
             public bool SkipTreasureLoot { get; set; }
+
+            [JsonProperty(PropertyName = "Force Time In Dome To (requires raidablebases.time)")]
+            public int ForcedTime { get; set; } = -1;
 
             [JsonProperty(PropertyName = "Always Spawn Base Loot Table")]
             public bool AlwaysSpawn { get; set; }
@@ -17391,6 +17339,9 @@ done:
             [JsonProperty(PropertyName = "Item Shortname")]
             public string Shortname { get; set; } = "scrap";
 
+            [JsonProperty(PropertyName = "Item Name")]
+            public string Name { get; set; } = null;
+
             [JsonProperty(PropertyName = "Amount")]
             public int Amount { get; set; }
 
@@ -17552,6 +17503,9 @@ done:
             [JsonProperty(PropertyName = "Randomize Npc Item Skins")]
             public bool Npcs { get; set; } = true;
 
+            [JsonProperty(PropertyName = "Use Identical Skins For All Npcs")]
+            public bool UniqueNpcs { get; set; } = true;
+
             [JsonProperty(PropertyName = "Ignore If Skinned Already")]
             public bool IgnoreSkinned { get; set; } = true;
         }
@@ -17580,10 +17534,12 @@ done:
             public int amountMin { get; set; }
 
             [JsonProperty(PropertyName = "probability")]
-            public float probability { get; set; } = 1.0f;
+            public float probability { get; set; } = 1f;
 
             [JsonProperty(PropertyName = "stacksize")]
             public int stacksize { get; set; } = -1;
+
+            public LootItem() { }
 
             public LootItem(string shortname, int amountMin = 1, int amount = 1, ulong skin = 0, bool isModified = false, bool isBlueprint = false, float probability = 1.0f, int stacksize = -1, string name = null)
             {
@@ -17595,7 +17551,6 @@ done:
                 this.isBlueprint = isBlueprint;
                 this.probability = probability;
                 this.stacksize = stacksize;
-                this.name = name;
             }
 
             [JsonIgnore]
@@ -17630,12 +17585,7 @@ done:
 
             public LootItem Clone()
             {
-                var ti = MemberwiseClone() as LootItem;
-
-                ti.isBlueprint = isBlueprint;
-                ti.isModified = isModified;
-
-                return ti;
+                return new LootItem(shortname, amountMin, amount, skin, isModified, isBlueprint, probability, stacksize, name);
             }
 
             public bool Equals(LootItem other)
@@ -17654,8 +17604,6 @@ done:
 
             [JsonProperty(PropertyName = "Use Day Of Week Loot")]
             public bool UseDOWL { get; set; }
-
-            public List<LootItem> Loot { get; set; } = new List<LootItem>();
 
             [JsonProperty(PropertyName = "Do Not Duplicate Base Loot")]
             public bool UniqueBaseLoot { get; set; }
@@ -18004,7 +17952,7 @@ done:
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogException(ex);
+                Puts("{0}", ex);
                 LoadDefaultConfig();
             }
         }
@@ -18023,14 +17971,14 @@ done:
             {
                 List<LootItem> lootList;
 
-                if (config.Treasure.UseDOWL && Buildings.WeekdayLootLists.TryGetValue(DateTime.Now.DayOfWeek, out lootList) && lootList.Count > 0)
+                if (config.Treasure.UseDOWL && Instance.Buildings.WeekdayLootLists.TryGetValue(DateTime.Now.DayOfWeek, out lootList) && lootList.Count > 0)
                 {
                     return new List<LootItem>(lootList);
                 }
 
-                if (!Buildings.DifficultyLootLists.TryGetValue(LootType.Default, out lootList))
+                if (!Instance.Buildings.DifficultyLootLists.TryGetValue(LootType.Default, out lootList))
                 {
-                    Buildings.DifficultyLootLists[LootType.Default] = lootList = new List<LootItem>();
+                    Instance.Buildings.DifficultyLootLists[LootType.Default] = lootList = new List<LootItem>();
                 }
 
                 return new List<LootItem>(lootList);
@@ -18045,9 +17993,9 @@ done:
             Puts("Loaded default configuration file");
         }
 
-        #endregion
+#endregion
 
-        #region UI
+#region UI
 
         public class UI // Credits: Absolut & k1lly0u
         {
@@ -18265,7 +18213,7 @@ done:
                         BackboneController.Instance.Message(player, "NoBuyableEventsCostsConfigured");
                     }
 
-                    if (!config.Settings.Buyable.BuyPVP && Buildings.Profiles.ToList().All(profile => !profile.Value.Options.AllowPVP))
+                    if (!config.Settings.Buyable.BuyPVP && Instance.Buildings.Profiles.ToList().All(profile => !profile.Value.Options.AllowPVP))
                     {
                         BackboneController.Instance.Message(player, "NoBuyableEventsPVP");
                     }
@@ -18318,8 +18266,18 @@ done:
                 if (config.Settings.Custom.TryGetValue(mode, out options) && options.All(o => o.IsValid()))
                 {
                     var sb = new StringBuilder();
+                    
+                    options.ForEach(option =>
+                    {
+                        string name;
+                        if (!string.IsNullOrEmpty(option.Name))
+                        {
+                            name = option.Name;
+                        }
+                        else name = option.Shortname;
 
-                    options.ForEach(option => sb.AppendLine(string.Format("{0} ({1} {2})", langMode, option.Amount, option.Shortname)));
+                        sb.AppendLine(string.Format("{0} ({1} {2})", langMode, option.Amount, name));
+                    });
 
                     return sb.ToString();
                 }
@@ -18711,10 +18669,26 @@ done:
             public const string BuyablePanelName = "RB_UI_Buyable";
             public const string DetailsPanelName = "RB_UI_Details";
 
-            public static List<BasePlayer> Players { get; set; } = new List<BasePlayer>();
-            public static List<BasePlayer> Lockouts { get; set; } = new List<BasePlayer>();
-            public static List<BasePlayer> Buyables { get; set; } = new List<BasePlayer>();
-            public static Dictionary<ulong, Timers> InvokeTimers { get; set; } = new Dictionary<ulong, Timers>();
+            public static List<BasePlayer> Players { get; set; }
+            public static List<BasePlayer> Lockouts { get; set; } 
+            public static List<BasePlayer> Buyables { get; set; } 
+            public static Dictionary<ulong, Timers> InvokeTimers { get; set; }
+
+            public static void Clear()
+            {
+                Players = null;
+                Lockouts = null;
+                Buyables = null;
+                InvokeTimers = null;
+            }
+
+            public static void Init()
+            {
+                Players = new List<BasePlayer>();
+                Lockouts = new List<BasePlayer>();
+                Buyables = new List<BasePlayer>();
+                InvokeTimers = new Dictionary<ulong, Timers>();
+            }
 
             public class Timers
             {
@@ -18739,7 +18713,7 @@ done:
             }
 
             var uii = UI.GetSettings(user.Id);
-            var player = user.Object as BasePlayer;
+            var player = user.ToPlayer();
 
             if (args.Length == 0)
             {
@@ -18776,7 +18750,7 @@ done:
             }
         }
 
-        #endregion UI
+#endregion UI
     }
 }
 
@@ -19013,7 +18987,7 @@ namespace Oxide.Plugins.RaidableBasesExtensionMethods
 
             return result;
         }
-                
+
         public static int Sum<TSource>(this IList<TSource> source, Func<TSource, int> predicate)
         {
             int result = 0;
@@ -19073,6 +19047,11 @@ namespace Oxide.Plugins.RaidableBasesExtensionMethods
         public static bool CanCall(this Plugin plugin)
         {
             return plugin != null && plugin.IsLoaded;
+        }
+
+        public static BasePlayer ToPlayer(this IPlayer user)
+        {
+            return user.Object as BasePlayer;
         }
     }
 }
