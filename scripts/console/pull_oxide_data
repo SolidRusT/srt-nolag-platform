@@ -51,6 +51,10 @@ craftsman|Craftsman)
   echo "/game/oxide/data/PlayerCrafting*"
   $SCP_CMD:/game/oxide/data/PlayerCrafting* "${REPO_DIR}/oxide/data/"
   ;;
+raidablebases|RaidableBases)
+  echo "/game/oxide/data/RaidableBases"
+  $SCP_CMD:/game/oxide/data/RaidableBases "${REPO_DIR}/oxide/data/"
+  ;;
 *)
   echo "pull_data: Invalid plugin selection"
   echo ""
