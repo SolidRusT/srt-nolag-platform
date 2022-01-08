@@ -4,9 +4,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using MySql.Data.MySqlClient;
-using System.Text;
-using System.Web;
-using Facepunch.Extend;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core;
@@ -21,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("XPerience", "MACHIN3", "1.2.4")]
+    [Info("XPerience", "MACHIN3", "1.2.5")]
     [Description("Player level system with xp, stats, and skills")]
     public class XPerience : RustPlugin
     {
@@ -29,9 +26,47 @@ namespace Oxide.Plugins
 
         /*****************************************************
 		【 𝓜𝓐𝓒𝓗𝓘𝓝𝓔 】
-		01 / 01 / 2022
+		01 / 05 / 2022
         Discord: discord.skilledsoldiers.net
         *****************************************************/
+        #region version 1.2.5
+        /*****************************************************
+		----------------------
+		✯ version 1.2.5
+		----------------------
+        DELETE LANG FILE BEFORE UPLOADING UPDATE!
+
+        ✯ New Fullscreen UI for players (old UI will be removed in the future)
+        ✯ Fixed issues with Medic points and Calculations
+        ✯ Rewrote hooks to work with new scavenger skill
+        ✯ Fixed player chat profile on connect not showing properly
+        ✯ Removed unused code (more to come when old UI removed)
+        ✯ Changed critical hit amount to round up to prevent 0 crital damage
+        ✯ Fixed loot container IDs not saving causing exploits
+        ✯ Fixed new players LiveStatsUI not being set to config default location
+        ✯ Moved Tamer skill settings in admin panel to Other Mod settings page
+
+        NEW SKILL: Scavenger
+        ✯ Chance for more loot in Drops/Crates  
+        ✯ Loot Multiplier per level
+        ✯ Option to set Extra loot to components only
+        ✯ Custom item list in config to drop what items you want
+        ✯ Custom item Multiplier per level x base item amount
+        ✯ Option to set base amount per custom item
+        ✯ Option to set max amount per custom item
+        ✯ Option to enable/disable Drops & Different Crates 
+        NOTE: (required level in custom item list not implemented yet)
+
+        New Fullscreen UI For Players:
+        ✯ Smarter UI where users can edit everything in one page
+        ✯ Displays points needed for next level for stats/skills
+        ✯ Only shows active Stat/Skill abilities in a cleaner list
+        ✯ Kill Records page so players can view their records inside XPerience (Kill Records plugin required)
+        ✯ Auto close feature closes UI when player takes damage
+        ✯ Quick link button for admins to go to admin panel and vise versa
+
+        *****************************************************/
+        #endregion
         #region version 1.2.4
         /*****************************************************
 		----------------------
@@ -468,6 +503,9 @@ namespace Oxide.Plugins
             [JsonProperty("Medic Skill")]
             public Medic medic = new Medic();
 
+            [JsonProperty("Scavenger Skill")]
+            public Scavenger scavenger = new Scavenger();
+
             [JsonProperty("Tamer Skill")]
             public Tamer tamer = new Tamer();
 
@@ -481,6 +519,7 @@ namespace Oxide.Plugins
 
         public class DefaultOptions
         {
+            //public bool fullscreenui = true;
             public int liveuistatslocation = 1;
             public bool liveuistatslocationmoveable = true;
             public bool showchatprofileonconnect = true;
@@ -828,6 +867,48 @@ namespace Oxide.Plugins
             public double tools = 2;
         }
 
+        public class Scavenger
+        {
+            public int maxlvl = 10;
+            public int pointcoststart = 2;
+            public int costmultiplier = 2;
+            public double scavlootchance = 0.10;
+            public double scavchance = 0.05;
+            public double scavmultiplier = 1.0;
+            public double customscavmultiplier = 0.5;
+            public bool drops = true;
+            public bool crates = true;
+            public bool uncrates = true;
+            public bool lockedcrates = true;
+            public bool hackcrates = true;
+            public bool componentsonly = true;
+            public Dictionary<int, ScavChanceList> scavChanceList = new Dictionary<int, ScavChanceList>
+            {
+                [0] = new ScavChanceList
+                {
+                    shortname = "scrap",
+                    amount = 1,
+                    maxamount = 10,
+                    requiredlevel = 1
+                },
+                [1] = new ScavChanceList
+                {
+                    shortname = "metal.fragments",
+                    amount = 1,
+                    maxamount = 10,
+                    requiredlevel = 5
+                }
+            };
+        }
+
+        public class ScavChanceList
+        {
+            public string shortname = "";
+            public int amount = 1;
+            public int maxamount = 10;
+            public int requiredlevel = 1;
+        }
+
         public class Tamer
         {
             public bool enabletame = false;
@@ -998,7 +1079,7 @@ namespace Oxide.Plugins
         private void SaveLoot()
         {
             _LootContainData = Interface.Oxide.DataFileSystem.GetFile(nameof(XPerience) + "/XPLootData");
-            _lootCache.Clear();
+            //_lootCache.Clear();
             if (_lootData != null)
             {
                 _lootData.LootRecords = _lootCache;
@@ -1068,6 +1149,8 @@ namespace Oxide.Plugins
             public int FramerP;
             public int Medic;
             public int MedicP;
+            public int Scavenger;
+            public int ScavengerP;
             public int Tamer;
             public int TamerP;
             public int UILocation;
@@ -1085,7 +1168,7 @@ namespace Oxide.Plugins
 
         private class Loot
         {
-            public uint entity;
+            public uint lootcontainer;
             public List<string> id;
         }
 
@@ -1135,6 +1218,8 @@ namespace Oxide.Plugins
                 $" `FramerP` BIGINT(255) NOT NULL," +
                 $" `Medic` BIGINT(255) NOT NULL," +
                 $" `MedicP` BIGINT(255) NOT NULL," +
+                $" `Scavenger` BIGINT(255) NOT NULL," +
+                $" `ScavengerP` BIGINT(255) NOT NULL," +
                 $" `Tamer` BIGINT(255) NOT NULL," +
                 $" `TamerP` BIGINT(255) NOT NULL," +
                 $"PRIMARY KEY (id)" +
@@ -1149,6 +1234,14 @@ namespace Oxide.Plugins
                 {
                     foreach (var entry in list)
                     {
+                        if (!entry.ContainsKey("Scavenger"))
+                        {
+                            sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Scavenger` BIGINT(255) NOT NULL DEFAULT '0' AFTER MedicP"), sqlConnection);
+                        }
+                        if (!entry.ContainsKey("ScavengerP"))
+                        {
+                            sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `ScavengerP` BIGINT(255) NOT NULL DEFAULT '0' AFTER Scavenger"), sqlConnection);
+                        }
                         if (!entry.ContainsKey("Captaincy"))
                         {
                             sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Captaincy` BIGINT(255) NOT NULL DEFAULT '0' AFTER MightP"), sqlConnection);
@@ -1182,7 +1275,7 @@ namespace Oxide.Plugins
             string replacename = "\\$1";
             Regex rgx = new Regex(removespecials);
             var playername = rgx.Replace(xprecord.displayname, replacename);
-            sqlLibrary.Insert(Sql.Builder.Append($"INSERT XPerience (steamid, displayname, level, experience, requiredxp, statpoint, skillpoint, Mentality, MentalityP, Dexterity, DexterityP, Might, MightP, Captaincy, CaptaincyP, Chemist, ChemistP, WoodCutter, WoodCutterP, Smithy, SmithyP, Miner, MinerP, Forager, ForagerP, Hunter, HunterP, Fisher, FisherP, Crafter, CrafterP, Framer, FramerP, Medic, MedicP, Tamer, TamerP) " +
+            sqlLibrary.Insert(Sql.Builder.Append($"INSERT XPerience (steamid, displayname, level, experience, requiredxp, statpoint, skillpoint, Mentality, MentalityP, Dexterity, DexterityP, Might, MightP, Captaincy, CaptaincyP, Chemist, ChemistP, WoodCutter, WoodCutterP, Smithy, SmithyP, Miner, MinerP, Forager, ForagerP, Hunter, HunterP, Fisher, FisherP, Crafter, CrafterP, Framer, FramerP, Medic, MedicP, Scavenger, ScavengerP, Tamer, TamerP) " +
             $"VALUES ('" +
             $"{xprecord.id}', " +
             $"'{playername}', " +
@@ -1219,6 +1312,8 @@ namespace Oxide.Plugins
             $"'{xprecord.FramerP}', " +
             $"'{xprecord.Medic}', " +
             $"'{xprecord.MedicP}', " +
+            $"'{xprecord.Scavenger}', " +
+            $"'{xprecord.ScavengerP}', " +
             $"'{xprecord.Tamer}', " +
             $"'{xprecord.TamerP}');"), sqlConnection);
         }
@@ -1269,6 +1364,8 @@ namespace Oxide.Plugins
                 $"FramerP='{r.Value.FramerP}', " +
                 $"Medic='{r.Value.Medic}', " +
                 $"MedicP='{r.Value.MedicP}', " +
+                $"Scavenger='{r.Value.Scavenger}', " +
+                $"ScavengerP='{r.Value.ScavengerP}', " +
                 $"Tamer='{r.Value.Tamer}', " +
                 $"TamerP='{r.Value.TamerP}' " +
                 $"WHERE steamid = '{r.Key}';"), sqlConnection);
@@ -1320,6 +1417,8 @@ namespace Oxide.Plugins
             $"FramerP='{xprecord.FramerP}', " +
             $"Medic='{xprecord.Medic}', " +
             $"MedicP='{xprecord.MedicP}', " +
+            $"Scavenger='{xprecord.Scavenger}', " +
+            $"ScavengerP='{xprecord.ScavengerP}', " +
             $"Tamer='{xprecord.Tamer}', " +
             $"TamerP='{xprecord.TamerP}' " +
             $"WHERE steamid = '{player.UserIDString}';"), sqlConnection);
@@ -1405,12 +1504,14 @@ namespace Oxide.Plugins
         private void Unload()
         {
             SaveData();
+            SaveLoot();
             foreach (var player in BasePlayer.activePlayerList)
             {
                 DestroyUi(player, XPerienceLivePrimary);
                 DestroyUi(player, XPeriencePlayerControlPrimary);
                 DestroyUi(player, XPerienceTopMain);
                 DestroyUi(player, XPerienceAdminPanelMain);
+                DestroyUi(player, XPeriencePlayerControlFullMain);
             }
             if (config.sql.enablesql)
             {
@@ -1427,11 +1528,14 @@ namespace Oxide.Plugins
                 UpdatePlayersDataSQL();
                 sqlLibrary.CloseDb(sqlConnection);
             }
+            _lootCache.Clear();
+            _LootContainData.Clear();
         }
 
         private void OnServerSave()
         {
             SaveData();
+            SaveLoot();
             if (config.sql.enablesql)
             {
                 foreach (var player in BasePlayer.activePlayerList)
@@ -1460,6 +1564,7 @@ namespace Oxide.Plugins
             DestroyUi(player, XPeriencePlayerControlPrimary);
             DestroyUi(player, XPerienceTopMain);
             DestroyUi(player, XPerienceAdminPanelMain);
+            DestroyUi(player, XPeriencePlayerControlFullMain);
             if (config.sql.enablesql)
             {
                 CheckPlayerDataSQL(player);
@@ -1529,7 +1634,7 @@ namespace Oxide.Plugins
                     MedicP = 0,
                     Tamer = 0,
                     TamerP = 0,
-                    UILocation = 1,
+                    UILocation = config.defaultOptions.liveuistatslocation,
                     resettimerstats = DateTime.Now,
                     resettimerskills = DateTime.Now,
                     playerfixdata = DateTime.Now,
@@ -1551,12 +1656,12 @@ namespace Oxide.Plugins
             return xprecord;
         }
 
-        private void AddLootData(BasePlayer player, BaseEntity entity)
+        private void AddLootData(BasePlayer player, LootContainer lootcontainer)
         {
             Loot loot;
-            if (!_lootCache.TryGetValue(entity.net.ID, out loot))
+            if (!_lootCache.TryGetValue(lootcontainer.net.ID, out loot))
             {
-                _lootCache.Add(entity.net.ID, loot = new Loot
+                _lootCache.Add(lootcontainer.net.ID, loot = new Loot
                 {
                     id = new List<string>(),
                 });
@@ -1570,14 +1675,6 @@ namespace Oxide.Plugins
 
         private static BasePlayer FindPlayer(string playerid)
         {
-            /*
-            foreach (var player in BaseNetworkable.serverEntities.OfType<BasePlayer>())
-            {
-                if (player.userID.IsSteamId() && player.UserIDString == playerid)
-                    return player;
-            }
-            return null;
-            */
             foreach (var activePlayer in BasePlayer.activePlayerList)
             {
                 if (activePlayer.UserIDString == playerid)
@@ -1820,7 +1917,7 @@ namespace Oxide.Plugins
             // If player does not have enough unspent stat points then get first available stat to level down and remove points
             if (removestatlvl == true)
             {
-                int allstats = xprecord.Mentality + xprecord.Dexterity + xprecord.Might + xprecord.Chemist + xprecord.Captaincy;
+                int allstats = xprecord.Mentality + xprecord.Dexterity + xprecord.Might + xprecord.Captaincy;
                 if (allstats == 0)
                 {
                     xprecord.statpoint = 0;
@@ -1834,14 +1931,14 @@ namespace Oxide.Plugins
                 bool dropmentality = false;
                 bool dropdexterity = false;
                 bool dropmight = false;
-                bool dropchemist = false;
+                //bool dropchemist = false;
                 bool dropcaptaincy = false;
 
                 // Check each stat for levels
                 if (xprecord.Mentality > 0) { dropmentality = true; }
                 else if (xprecord.Dexterity > 0) { dropdexterity = true; }
                 else if (xprecord.Might > 0) { dropmight = true; }
-                else if (xprecord.Chemist > 0) { dropchemist = true; }
+                //else if (xprecord.Chemist > 0) { dropchemist = true; }
                 else if (xprecord.Captaincy > 0) { dropcaptaincy = true; }
 
                 // Random stat chosen
@@ -1894,6 +1991,7 @@ namespace Oxide.Plugins
                     xprecord.statpoint = pointadj;
                     MightAttributes(player);
                 }
+                /*
                 else if (dropchemist == true)
                 {
                     stat = "Chemist";
@@ -1909,7 +2007,8 @@ namespace Oxide.Plugins
                     xprecord.Chemist = xprecord.Chemist - 1;
                     xprecord.ChemistP = xprecord.ChemistP - statpoints;
                     xprecord.statpoint = pointadj;
-                }                
+                }
+                */                
                 else if (dropcaptaincy == true)
                 {
                     stat = "Captaincy";
@@ -1938,7 +2037,7 @@ namespace Oxide.Plugins
             // If player does not have enough unspent skill points then get first available skill to level down and remove points
             if (removeskilllvl == true)
             {
-                int allskills = xprecord.WoodCutter + xprecord.Smithy + xprecord.Miner + xprecord.Forager + xprecord.Hunter + xprecord.Fisher + xprecord.Crafter + xprecord.Framer + xprecord.Medic + xprecord.Tamer;
+                int allskills = xprecord.WoodCutter + xprecord.Smithy + xprecord.Miner + xprecord.Forager + xprecord.Hunter + xprecord.Fisher + xprecord.Crafter + xprecord.Framer + xprecord.Medic + xprecord.Scavenger + xprecord.Tamer;
                 if (allskills == 0)
                 {
                     xprecord.skillpoint = 0;
@@ -1958,6 +2057,7 @@ namespace Oxide.Plugins
                 bool dropcrafter = false;
                 bool dropframer = false;
                 bool dropmedic = false;
+                bool dropscavenger = false;
                 bool droptamer = false;
 
                 // Check each skill for levels
@@ -1970,6 +2070,7 @@ namespace Oxide.Plugins
                 else if (xprecord.Crafter > 0) { dropcrafter = true; }
                 else if (xprecord.Framer > 0) { dropframer = true; }
                 else if (xprecord.Medic > 0) { dropmedic = true; }
+                else if (xprecord.Scavenger > 0) { dropscavenger = true; }
                 else if (xprecord.Tamer > 0) { droptamer = true; }
 
                 // Random Skill Chosen
@@ -2113,8 +2214,24 @@ namespace Oxide.Plugins
                         skillpoints = xprecord.Medic * config.medic.costmultiplier;
                     }
                     pointadj = skillpoints - config.xpLevel.skillpointsperlvl;
-                    xprecord.Medic = xprecord.Framer - 1;
+                    xprecord.Medic = xprecord.Medic - 1;
                     xprecord.MedicP = xprecord.MedicP - skillpoints;
+                    xprecord.skillpoint = pointadj;
+                }
+                else if (dropscavenger == true)
+                {
+                    skill = "Scavenger";
+                    if (xprecord.Scavenger == 1)
+                    {
+                        skillpoints = config.scavenger.pointcoststart;
+                    }
+                    else
+                    {
+                        skillpoints = xprecord.Scavenger * config.scavenger.costmultiplier;
+                    }
+                    pointadj = skillpoints - config.xpLevel.skillpointsperlvl;
+                    xprecord.Scavenger = xprecord.Scavenger - 1;
+                    xprecord.ScavengerP = xprecord.ScavengerP - skillpoints;
                     xprecord.skillpoint = pointadj;
                 }
                 else if (droptamer == true)
@@ -2523,6 +2640,32 @@ namespace Oxide.Plugins
                 xprecord.skillpoint = pointsremaining;
                 xprecord.MedicP = pointsinskill;
             }
+            // Scavenger
+            if (skill == "scavenger" && config.scavenger.maxlvl != 0)
+            {
+                if (xprecord.Scavenger == 0)
+                {
+                    nextlevel = 1;
+                    skillcost = config.scavenger.pointcoststart;
+                    pointsremaining = xprecord.skillpoint - skillcost;
+                    pointsinskill = xprecord.ScavengerP + skillcost;
+                }
+                else
+                {
+                    nextlevel = xprecord.Scavenger + 1;
+                    skillcost = nextlevel * config.scavenger.costmultiplier;
+                    pointsremaining = xprecord.skillpoint - skillcost;
+                    pointsinskill = xprecord.ScavengerP + skillcost;
+                }
+                if (xprecord.skillpoint < skillcost)
+                {
+                    player.ChatMessage(XPLang("notenoughskillpoints", player.UserIDString, nextlevel, skill, skillcost));
+                    return;
+                }
+                xprecord.Scavenger = nextlevel;
+                xprecord.skillpoint = pointsremaining;
+                xprecord.ScavengerP = pointsinskill;
+            }
             // Tamer
             if (skill == "tamer")
             {
@@ -2673,7 +2816,7 @@ namespace Oxide.Plugins
                 player.ChatMessage(XPLang("econwidthdrawresetskill", player.UserIDString, config.xpEcon.econresetskillscost));
             }
             // Add all spent points
-            int skillpoints = xprecord.skillpoint + xprecord.WoodCutterP + xprecord.SmithyP + xprecord.MinerP + xprecord.ForagerP + xprecord.HunterP + xprecord.FisherP + xprecord.CrafterP + xprecord.FramerP + +xprecord.MedicP + xprecord.TamerP;
+            int skillpoints = xprecord.skillpoint + xprecord.WoodCutterP + xprecord.SmithyP + xprecord.MinerP + xprecord.ForagerP + xprecord.HunterP + xprecord.FisherP + xprecord.CrafterP + xprecord.FramerP + xprecord.MedicP + xprecord.ScavengerP + xprecord.TamerP;
             // Reset Skill Levels
             xprecord.skillpoint = skillpoints;
             xprecord.WoodCutter = 0;
@@ -2685,6 +2828,7 @@ namespace Oxide.Plugins
             xprecord.Crafter = 0;
             xprecord.Framer = 0;
             xprecord.Medic = 0;
+            xprecord.Scavenger = 0;
             xprecord.Tamer = 0;
             // Reset Skill Spents Points
             xprecord.WoodCutterP = 0;
@@ -2696,6 +2840,7 @@ namespace Oxide.Plugins
             xprecord.CrafterP = 0;
             xprecord.FramerP = 0;
             xprecord.MedicP = 0;
+            xprecord.ScavengerP = 0;
             xprecord.TamerP = 0;
             // Check/Reset Tamer permissions
             PetChecks(player, true);
@@ -2750,6 +2895,7 @@ namespace Oxide.Plugins
                 xprecord.Crafter = 0;
                 xprecord.Framer = 0;
                 xprecord.Medic = 0;
+                xprecord.Scavenger = 0;
                 xprecord.Tamer = 0;
                 // Reset Skill Spents Points
                 xprecord.WoodCutterP = 0;
@@ -2761,6 +2907,7 @@ namespace Oxide.Plugins
                 xprecord.CrafterP = 0;
                 xprecord.FramerP = 0;
                 xprecord.MedicP = 0;
+                xprecord.ScavengerP = 0;
                 xprecord.TamerP = 0;
                 // Set LiveUI Location to Default
                 xprecord.UILocation = config.defaultOptions.liveuistatslocation;                
@@ -2850,6 +2997,7 @@ namespace Oxide.Plugins
             xprecord.Crafter = 0;
             xprecord.Framer = 0;
             xprecord.Medic = 0;
+            xprecord.Scavenger = 0;
             xprecord.Tamer = 0;
             // Reset Skill Spents Points
             xprecord.WoodCutterP = 0;
@@ -2861,6 +3009,7 @@ namespace Oxide.Plugins
             xprecord.CrafterP = 0;
             xprecord.FramerP = 0;
             xprecord.MedicP = 0;
+            xprecord.ScavengerP = 0;
             xprecord.TamerP = 0;
             // Reset calories/hydration if needed
             if (player.metabolism.calories.max > 500)
@@ -2943,6 +3092,7 @@ namespace Oxide.Plugins
             xprecord.Crafter = 0;
             xprecord.Framer = 0;
             xprecord.Medic = 0;
+            xprecord.Scavenger = 0;
             xprecord.Tamer = 0;
             // Reset Skill Spents Points
             xprecord.WoodCutterP = 0;
@@ -2954,6 +3104,7 @@ namespace Oxide.Plugins
             xprecord.CrafterP = 0;
             xprecord.FramerP = 0;
             xprecord.MedicP = 0;
+            xprecord.ScavengerP = 0;
             xprecord.TamerP = 0;
             // Reset calories/hydration if needed
             if (selectplayer.metabolism.calories.max > 500)
@@ -3298,7 +3449,6 @@ namespace Oxide.Plugins
                     addxp = config.xpGain.patrolhelicopter;
                     break;
             }
-
             if (KillRecords != null && config.xpBonus.enablebonus)
             {
                 KRBonus(attacker, KillType, config.xpBonus.requiredkills, config.xpBonus.bonusxp, config.xpBonus.endbonus, config.xpBonus.multibonus, config.xpBonus.multibonustype);
@@ -3310,16 +3460,12 @@ namespace Oxide.Plugins
         {
             // Check for null or NPC
             if (victim == null || !victim.userID.IsSteamId()) return;
-
             BaseEntity attacker = hitInfo?.Initiator;
             if (attacker == null) return;
-
             // If Suicide Ingnore Death
             if (attacker == victim) return;
-
             // If Attack Type Not Detected Remove Error
             if (victim.lastDamage == null) return;
-
             // Update Player Data On deaths if enabled
             if(config.xpReducer.deathreduce)
             {            
@@ -3329,41 +3475,61 @@ namespace Oxide.Plugins
                 LoseExp(victim, reducexp);
                 victim.ChatMessage(XPLang("death", victim.UserIDString, reducexp));
             }
-
         }
 
-        private void OnLootEntity(BasePlayer player, BaseEntity entity)
+        private void OnLootEntity(BasePlayer player, LootContainer lootcontainer)
         {
-            if (player == null || !player.userID.IsSteamId() || !entity.IsValid()) return;
+            if (player == null || !player.userID.IsSteamId() || !lootcontainer.IsValid()) return;
             XPRecord xprecord = GetXPRecord(player);
-            var loot = entity.GetType().Name.ToLower();
-            var lootid = entity.net.ID;
+            var loot = lootcontainer.GetType().Name.ToLower();
+            var lootid = lootcontainer.net.ID;
             double addxp = 0;
-
+            bool increaseloot = false;
             if (_lootCache.ContainsKey(lootid) && _lootCache[lootid].id.Contains(player.UserIDString))
             {
                 return;
             }
-            AddLootData(player, entity);
-
+            AddLootData(player, lootcontainer);
             if (loot == "lootcontainer")
             {
                 addxp = config.xpGain.lootcontainerxp;
+                if (config.scavenger.crates)
+                {
+                    increaseloot = true;
+                }
             }
             else if (loot == "freeablelootcontainer")
             {
                 addxp = config.xpGain.underwaterlootcontainerxp;
+                if (config.scavenger.uncrates)
+                {
+                    increaseloot = true;
+                }
             }
             else if (loot == "lockedbyentcrate")
             {
                 addxp = config.xpGain.lockedcratexp;
+                if (config.scavenger.lockedcrates)
+                {
+                    increaseloot = true;
+                }
             }
             else if (loot == "hackablelockedcrate")
             {
                 addxp = config.xpGain.hackablecratexp;
+                if (config.scavenger.hackcrates)
+                {
+                    increaseloot = true;
+                }
             }
-
             GainExp(player, addxp);
+            // Scavenger
+            if (xprecord.Scavenger <= 0) return;
+            //Custom Items
+            RandomScavengerItem(player);
+            // Increase Loot
+            if (!increaseloot) return;
+            IncreaseLootContainers(player, lootcontainer);         
         }
 
         private void OnEntityTakeDamage(BaseCombatEntity entity, HitInfo hitInfo)
@@ -3383,6 +3549,7 @@ namespace Oxide.Plugins
                 {
                     // If UI open then close
                     DestroyUi(player, XPeriencePlayerControlPrimary);
+                    DestroyUi(player, XPeriencePlayerControlFullMain);
                     DestroyUi(player, XPerienceAdminPanelMain);
                     // Dexterity Armor Reduction
                     if (vxprecord.Dexterity > 0 && player._health > 100)
@@ -3441,16 +3608,13 @@ namespace Oxide.Plugins
                             }
                         }
                     }
-
                 }
             }
-
             var attacker = hitInfo.Initiator as BasePlayer;
             if (attacker == null || !attacker.userID.IsSteamId()) return;
             var KillType = entity?.GetType().Name.ToLower();
             XPRecord xprecord = GetXPRecord(attacker);
             if (xprecord == null) return;
-
             if (diddodge && attacker)
             {
                 // UINotify
@@ -3465,7 +3629,6 @@ namespace Oxide.Plugins
                 }
                 return;
             }
-
             if (didblock && attacker)
             {
                 // UINotify
@@ -3480,7 +3643,6 @@ namespace Oxide.Plugins
                 }
                 return;
             }
-
             // Hunter Wildlife Increase
             if (KillType == "chicken" || KillType == "boar" || KillType == "stag" || KillType == "wolf" || KillType == "bear" || KillType == "horse" || KillType == "simpleshark")
             {
@@ -3497,19 +3659,19 @@ namespace Oxide.Plugins
             if (xprecord.Mentality >= 1)
             {
                 double critchance = (xprecord.Mentality * config.mentality.criticalchance) * 100;
-                if (RandomNumber.Between(0, 100) <= critchance)
+                if (RandomNumber.Between(0, 101) <= critchance)
                 {
                     hitInfo.damageTypes?.ScaleAll(1 + 0.10f);
-                    double crithit = Math.Round((int)hitInfo.damageTypes.Total() * 0.10f);
+                    double crithit = Math.Ceiling((int)hitInfo.damageTypes.Total() * 0.10f);
                     // UINotify
                     if (UINotify != null && config.UiNotifier.useuinotify && config.UiNotifier.criticalhit)
                     {
-                        UINotify.Call("SendNotify", attacker, config.UiNotifier.criticalhittype, XPLang("crithit", attacker.UserIDString, Math.Round(crithit)));
+                        UINotify.Call("SendNotify", attacker, config.UiNotifier.criticalhittype, XPLang("crithit", attacker.UserIDString, crithit));
                     }
                     // Disable Chats
                     if (!config.UiNotifier.disablechats)
                     {
-                        attacker.ChatMessage(XPLang("crithit", attacker.UserIDString, Math.Round(crithit)));
+                        attacker.ChatMessage(XPLang("crithit", attacker.UserIDString, crithit));
                     }
                 }
             }
@@ -3527,6 +3689,20 @@ namespace Oxide.Plugins
                     hitInfo.damageTypes?.ScaleAll(1 + (float)meleeincrease);
                 }
             }
+        }
+
+        private void OnContainerDropItems(ItemContainer lootcontainer)
+        {
+            if (lootcontainer == null) return;
+            var lootentity = lootcontainer.entityOwner as LootContainer;
+            if (lootentity == null || lootentity.IsDestroyed) return;
+            var player = lootentity.lastAttacker as BasePlayer;
+            if (player == null) return;
+            // Custom Item Drops
+            RandomScavengerItem(player);
+            // Increase Container Loot
+            if (!config.scavenger.drops) return;
+            IncreaseLootContainerDrops(lootcontainer);         
         }
 
         #endregion
@@ -3752,17 +3928,12 @@ namespace Oxide.Plugins
                 if (itemAmount.itemDef.category != ItemCategory.Component)
                 {
                     defaultamount = Math.Ceiling(itemAmount.amount * repairCostreduction);
-                    Puts($"Default: {defaultamount}");
                     newamount = Math.Ceiling(defaultamount - (config.crafter.repaircost * xprecord.Crafter) * defaultamount);
-                    Puts($"New: {newamount}");
-
                     if (newamount < 1)
                     {
                         newamount = 1;
                     }
-
                     itemAmount.amount = (float)newamount;
-                    Puts($"End: {itemAmount.amount}");
                     reducedlist.Add(itemAmount);
                 }
             }
@@ -3796,7 +3967,7 @@ namespace Oxide.Plugins
                 return;
             }
             bool takematerials = true;
-            if (Random.Range(0, 100) <= repairincrease)
+            if (Random.Range(0, 101) <= repairincrease)
             {
                 if (item.GetHeldEntity() is BaseProjectile)
                 {
@@ -3979,7 +4150,8 @@ namespace Oxide.Plugins
             foreach (ItemAmount amount in itemAmounts)
             {
                 if (amount.amount < 1) return;
-                player.GiveItem(ItemManager?.CreateByItemID(amount.itemid, (int)amount.amount));
+                Item item = ItemManager.CreateByItemID(amount.itemid, (int)amount.amount);
+                player.GiveItem(item);
             }
         }
 
@@ -4059,9 +4231,9 @@ namespace Oxide.Plugins
                 gatherincrease = config.woodcutter.gatherrate;
                 skilllevel = xprecord.WoodCutter;
                 double chance = (config.woodcutter.applechance * skilllevel) * 100;
-                if ((Random.Range(0, 100) <= chance) == true)
+                if ((Random.Range(0, 101) <= chance) == true)
                 {
-                    var roll = Random.Range(1, 10);
+                    var roll = Random.Range(0, 11);
                     if (roll < 5)
                     {
                         // Bad
@@ -4182,7 +4354,7 @@ namespace Oxide.Plugins
                 ItemDefinition definition = ItemManager.FindItemDefinition(selected.shortname);
                 if (definition == null)
                 {
-                    Puts($"invalid shortname in config for item number {selected}");
+                    Puts($"invalid shortname in config (forager) for item number {selected}");
                 }
                 player.Command("note.inv", definition.itemid, selected.amount);
                 ItemManager.CreateByName(selected.shortname, selected.amount)?.DropAndTossUpwards(player.GetDropPosition());
@@ -4588,6 +4760,88 @@ namespace Oxide.Plugins
             return false;
         }
 
+        // Scavenger
+        private void RandomScavengerItem(BasePlayer player)
+        {
+            if (player == null) return;
+            XPRecord xprecord = GetXPRecord(player);
+            double scavchance = (config.scavenger.scavchance * xprecord.Scavenger) * 100;
+            if ((Random.Range(0, 101) <= scavchance) == true)
+            {
+                int scavroll = Random.Range(0, config.scavenger.scavChanceList.Count);
+                var scavitem = config.scavenger.scavChanceList[scavroll];
+                ItemDefinition definition = ItemManager.FindItemDefinition(scavitem.shortname);
+                if (definition == null)
+                {
+                    Puts($"invalid shortname in config (scavenger) for item number {scavitem}");
+                }
+                var scavmultiplier = Math.Ceiling(xprecord.Scavenger * (scavitem.amount * config.scavenger.customscavmultiplier));
+                if (scavmultiplier > scavitem.maxamount)
+                {
+                    scavmultiplier = scavitem.maxamount;
+                }
+                ItemManager.CreateByName(scavitem.shortname, (int)scavmultiplier)?.DropAndTossUpwards(player.GetDropPosition());
+            }
+        }
+
+        private void IncreaseLootContainers(BasePlayer player, LootContainer lootcontainer)
+        {
+            XPRecord xprecord = GetXPRecord(player);
+            double scavlootchance = (config.scavenger.scavlootchance * xprecord.Scavenger) * 100;
+            if ((Random.Range(0, 101) <= scavlootchance) == true)
+            {
+                if (lootcontainer.inventory == null) return;
+                lootcontainer.inventory.itemList.ForEach(item =>
+                {
+                    if (config.scavenger.componentsonly)
+                    {
+                        if (item != null && item.info.category == ItemCategory.Component)
+                        {
+                            item.amount = (int)Math.Ceiling((xprecord.Scavenger * config.scavenger.scavmultiplier) * item.amount);
+                        }
+                    }
+                    else
+                    {
+                        if (item != null)
+                        {
+                            item.amount = (int)Math.Ceiling((xprecord.Scavenger * config.scavenger.scavmultiplier) * item.amount);
+                        }
+                    }
+                });
+            }
+        }
+
+        private void IncreaseLootContainerDrops(ItemContainer lootcontainer)
+        {
+            if (lootcontainer == null) return;
+            var lootentity = lootcontainer.entityOwner as LootContainer;
+            if (lootentity == null || lootentity.IsDestroyed) return;
+            var player = lootentity.lastAttacker as BasePlayer;
+            if (player == null) return;
+            XPRecord xprecord = GetXPRecord(player);
+            if (xprecord == null || xprecord.Scavenger <= 0) return;
+            double scavlootchance = (config.scavenger.scavlootchance * xprecord.Scavenger) * 100;
+            if ((Random.Range(0, 101) <= scavlootchance) == true)
+            {
+                lootcontainer.itemList.ForEach(item =>
+                {
+                    if (config.scavenger.componentsonly)
+                    {
+                        if (item != null && item.info.category == ItemCategory.Component)
+                        {
+                            item.amount = (int)Math.Ceiling((xprecord.Scavenger * config.scavenger.scavmultiplier) * item.amount);
+                        }
+                    }
+                    else
+                    {
+                        if (item != null)
+                        {
+                            item.amount = (int)Math.Ceiling((xprecord.Scavenger * config.scavenger.scavmultiplier) * item.amount);
+                        }
+                    }
+                });
+            }
+        }
 
         #endregion
 
@@ -4598,6 +4852,7 @@ namespace Oxide.Plugins
         [ChatCommand("dmg")]
         private void cmddmg(BasePlayer player, string command, string[] args)
         {
+            if (!player.IsAdmin && !permission.UserHasPermission(player.UserIDString, Admin)) return;
             var item = player.GetActiveItem();
             //item._maxCondition = ;  < optional
             item.condition = 10f;
@@ -4615,8 +4870,9 @@ namespace Oxide.Plugins
         {
             if (args.Length == 0)
             {
-                DestroyUi(player, XPeriencePlayerControlPrimary);
-                PlayerControlPanel(player);
+                DestroyUi(player, XPeriencePlayerControlFullMain);
+                PlayerControlPanelFullMain(player);
+                PlayerInfoPage(player);
             }
             else
             {
@@ -5069,7 +5325,7 @@ namespace Oxide.Plugins
         private void PlayerStatsChat(BasePlayer player)
         {
             XPRecord xprecord = GetXPRecord(player);
-            player.ChatMessage(XPLang("playerprofilechat", player.UserIDString, xprecord.level, (int)xprecord.experience, (int)xprecord.requiredxp, xprecord.statpoint, xprecord.skillpoint, xprecord.Mentality, xprecord.Dexterity, xprecord.Might, xprecord.Chemist, xprecord.WoodCutter, xprecord.Smithy, xprecord.Miner, xprecord.Forager, xprecord.Hunter, xprecord.Fisher, xprecord.Crafter, xprecord.Framer, xprecord.Tamer));
+            player.ChatMessage(XPLang("playerprofilechat", player.UserIDString, xprecord.level, (int)xprecord.experience, (int)xprecord.requiredxp, xprecord.statpoint, xprecord.skillpoint, xprecord.Mentality, xprecord.Dexterity, xprecord.Might, xprecord.Captaincy, xprecord.WoodCutter, xprecord.Smithy, xprecord.Miner, xprecord.Forager, xprecord.Hunter, xprecord.Fisher, xprecord.Crafter, xprecord.Framer, xprecord.Medic, xprecord.Scavenger, xprecord.Tamer));
         }
 
         private IEnumerable<XPRecord> GetTopXP(int page, int takeCount, string info)
@@ -5134,6 +5390,10 @@ namespace Oxide.Plugins
             else if (info == "medic")
             {
                 data = _xperienceCache.Values.OrderByDescending(i => i.Medic);
+            }
+            else if (info == "scavenger")
+            {
+                data = _xperienceCache.Values.OrderByDescending(i => i.Scavenger);
             }
             else if (info == "tamer")
             {
@@ -5827,21 +6087,34 @@ namespace Oxide.Plugins
 
         #region UI Constants
 
+        // Live Stats
         private const string XPerienceLivePrimary = "XPerienceLivePrimary";
         private const string XPerienceLiveArmorIcon = "XPerienceLiveArmorIcon";
         private const string XPerienceLiveArmorBar = "XPerienceLiveArmorBar";
         private const string XPerienceLiveLevelIcon = "XPerienceLiveLevelIcon";
         private const string XPerienceLiveLevelBar = "XPerienceLiveLevelBar";
+        // Player Panels
         private const string XPeriencePlayerControlPrimary = "XPeriencePlayerControlPrimary";
         private const string XPeriencePlayerControlMain = "XPeriencePlayerControlMain";
         private const string XPeriencePlayerControlStats = "XPeriencePlayerControlStats";
         private const string XPeriencePlayerControlSkills = "XPeriencePlayerControlSkills";
         private const string XPeriencePlayerControlSkillsL = "XPeriencePlayerControlSkillsL";
         private const string XPeriencePlayerControlSkillsR = "XPeriencePlayerControlSkillsR";
+        // New Player Panels
+        private const string XPeriencePlayerControlFullMain = "XPeriencePlayerControlFullMain";
+        private const string XPeriencePlayerControlFullInfo = "XPeriencePlayerControlFullInfo";
+        private const string XPeriencePlayerControlFullHelp = "XPeriencePlayerControlFullHelp";
+        private const string XPeriencePlayerControlFullHelpNav = "XPeriencePlayerControlFullHelpNav";
+        private const string XPeriencePlayerControlFullMenu = "XPeriencePlayerControlFullMenu";
+        private const string XPeriencePlayerControlFullKR = "XPeriencePlayerControlFullKR";
+        private const string XPeriencePlayerControlFullLiveStatLoc = "XPeriencePlayerControlFullLiveStatLoc";
+        private const string XPeriencePlayerControlFullFixData = "XPeriencePlayerControlFullFixData";
+        // Top List UI
         private const string XPerienceTopMain = "XPerienceTopMain";
         private const string XPerienceTopSelection = "XPerienceTopSelection";
         private const string XPerienceTopInner = "XPerienceTopInner";
         private const string XPerienceHelp = "XPerienceHelp";
+        // Admin Panels
         private const string XPerienceAdminPanelMain = "XPerienceAdminPanelMain";
         private const string XPerienceAdminPanelMenu = "XPerienceAdminPanelMenu";
         private const string XPerienceAdminPanelInfo = "XPerienceAdminPanelInfo";
@@ -5955,6 +6228,7 @@ namespace Oxide.Plugins
 
         #region UI Panels
 
+        // UI Defaults
         private CuiPanel XPUIPanel(string anchorMin, string anchorMax, string color = "0 0 0 0")
         {
             return new CuiPanel
@@ -6013,7 +6287,7 @@ namespace Oxide.Plugins
                 }
             };
         }
-
+        // Live Stats
         private void LiveStats(BasePlayer player, bool update = false)
         {
             if (player == null) return;
@@ -6246,6 +6520,7 @@ namespace Oxide.Plugins
             return;
         }
 
+        // Players and Other UIs
         private void PlayerControlPanel(BasePlayer player)
         {
             if (player == null) return;
@@ -6255,16 +6530,21 @@ namespace Oxide.Plugins
             float buttonheight = 0.035f;
             var ControlPanelelements = new CuiElementContainer();
             // Main UI
+            string aMin = "0.10 0.10";
+            string aMax = "0.90 0.95";
             ControlPanelelements.Add(new CuiPanel
             {
                 Image =
                 {
-                    Color = "0.1 0.1 0.1 0.95"
+                    Color = "0.0 0.0 0.0 0.98"
                 },
                 RectTransform =
-                {
-                    AnchorMin = $"0.10 0.10",
-                    AnchorMax = $"0.90 0.95"
+                { 
+                    AnchorMin = $"{aMin}",
+                    AnchorMax = $"{aMax}"
+                    //AnchorMin = $"0.10 0.10",
+                    //AnchorMax = $"0.90 0.95"
+                    
                 },
                 CursorEnabled = true
             }, "Overlay", XPeriencePlayerControlPrimary);
@@ -6458,7 +6738,7 @@ namespace Oxide.Plugins
                 levelpercent = ((xprecord.experience - (xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier))) / (xprecord.requiredxp - (xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier)))) * 100;
             }
 
-            ControlPanelelements.Add(XPUIPanel("0.0 0.0", "0.25 0.93", "0.0 0.0 0.0 0.95"), XPeriencePlayerControlPrimary, XPeriencePlayerControlMain);
+            ControlPanelelements.Add(XPUIPanel("0.01 0.0", "0.25 0.93", "0.0 0.0 0.0 0.95"), XPeriencePlayerControlPrimary, XPeriencePlayerControlMain);
             ControlPanelelements.Add(XPUILabel($"{player.displayName}", 1, height, TextAnchor.MiddleCenter, 15, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             ControlPanelelements.Add(XPUILabel($"----------------------------------------------------------------", 2, height, TextAnchor.MiddleCenter, 9, "0.0", "1.0", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             ControlPanelelements.Add(XPUILabel($"{XPLang("level", player.UserIDString)}: <color={TextColor("mainlevel", (int)xprecord.level)}>{xprecord.level} ({(int)levelpercent}%)</color>", 3, height, TextAnchor.MiddleLeft, 13, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
@@ -7365,15 +7645,23 @@ namespace Oxide.Plugins
             {
                 ControlPanelelements.Add(XPUIButton("xp.topxp medic", 14, selectionheight, 11, dcolor, $" {XPLang("medic", player.UserIDString)}"), XPerienceTopSelection);
             }
+            if (info == "scavenger")
+            {
+                ControlPanelelements.Add(XPUIButton("xp.topxp scavenger", 15, selectionheight, 11, scolor, $"{selected} {XPLang("scavenger", player.UserIDString)}"), XPerienceTopSelection);
+            }
+            else
+            {
+                ControlPanelelements.Add(XPUIButton("xp.topxp scavenger", 15, selectionheight, 11, dcolor, $" {XPLang("scavenger", player.UserIDString)}"), XPerienceTopSelection);
+            }
             if (config.tamer.enabletame)
             {
                 if (info == "tamer")
                 {
-                    ControlPanelelements.Add(XPUIButton("xp.topxp tamer", 15, selectionheight, 11, scolor, $"{selected} {XPLang("tamer", player.UserIDString)}"), XPerienceTopSelection);
+                    ControlPanelelements.Add(XPUIButton("xp.topxp tamer", 16, selectionheight, 11, scolor, $"{selected} {XPLang("tamer", player.UserIDString)}"), XPerienceTopSelection);
                 }
                 else
                 {
-                    ControlPanelelements.Add(XPUIButton("xp.topxp tamer", 15, selectionheight, 11, dcolor, $" {XPLang("tamer", player.UserIDString)}"), XPerienceTopSelection);
+                    ControlPanelelements.Add(XPUIButton("xp.topxp tamer", 16, selectionheight, 11, dcolor, $" {XPLang("tamer", player.UserIDString)}"), XPerienceTopSelection);
                 }
             }
 
@@ -7504,6 +7792,14 @@ namespace Oxide.Plugins
                         ControlPanelelements.Add(XPUILabel(("➤"), i, height, TextAnchor.MiddleLeft, 15, "-0.050", "1", "1 0.92 0.016 1"), XPerienceTopInner);
                     }
                     ControlPanelelements.Add(XPUIButton($"xp.player {playerdata.id}", i, height, 15, "0.0 0.0 0.0 0.0", $"{n}. {playerdata.displayname}: {playerdata.Medic}", "0.03", "1"), XPerienceTopInner);
+                }
+                else if (info == "scavenger" && playerdata.Scavenger != 0)
+                {
+                    if (playerdata.displayname == _xperienceCache[player.UserIDString].displayname)
+                    {
+                        ControlPanelelements.Add(XPUILabel(("➤"), i, height, TextAnchor.MiddleLeft, 15, "-0.050", "1", "1 0.92 0.016 1"), XPerienceTopInner);
+                    }
+                    ControlPanelelements.Add(XPUIButton($"xp.player {playerdata.id}", i, height, 15, "0.0 0.0 0.0 0.0", $"{n}. {playerdata.displayname}: {playerdata.Scavenger}", "0.03", "1"), XPerienceTopInner);
                 }
                 else if (info == "tamer" && playerdata.Tamer != 0)
                 {
@@ -7641,9 +7937,13 @@ namespace Oxide.Plugins
             {
                 ControlPanelelements.Add(XPUILabel($"{XPLang("medic", player.UserIDString)}: <color={TextColor("spent", xprecord.MedicP)}>{xprecord.MedicP}</color>", 23, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             }
+            if (config.scavenger.maxlvl != 0)
+            {
+                ControlPanelelements.Add(XPUILabel($"{XPLang("scavenger", player.UserIDString)}: <color={TextColor("spent", xprecord.ScavengerP)}>{xprecord.ScavengerP}</color>", 24, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
+            }
             if (config.tamer.enabletame)
             {
-                ControlPanelelements.Add(XPUILabel($"{XPLang("tamer", player.UserIDString)}: <color={TextColor("spent", xprecord.TamerP)}>{xprecord.TamerP}</color>", 24, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
+                ControlPanelelements.Add(XPUILabel($"{XPLang("tamer", player.UserIDString)}: <color={TextColor("spent", xprecord.TamerP)}>{xprecord.TamerP}</color>", 25, height, TextAnchor.MiddleLeft, 11, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlMain);
             }            
             // Kill Records Button
             if (KillRecords != null && config.xpBonus.showkrbutton)
@@ -7657,8 +7957,8 @@ namespace Oxide.Plugins
                         },
                     RectTransform =
                         {
-                    AnchorMin = $"0.20 {1 - height*26 + 26 * .002f}",
-                    AnchorMax = $"0.80 {1 - height*(26-1) + 26 * .002f}"
+                    AnchorMin = $"0.20 {1 - height*27 + 27 * .002f}",
+                    AnchorMax = $"0.80 {1 - height*(27-1) + 27 * .002f}"
                         },
                     Text =
                         {
@@ -7770,6 +8070,41 @@ namespace Oxide.Plugins
                 ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("damagewildlife", player.UserIDString)}: <color={TextColor("perk", xprecord.Hunter)}>+{(xprecord.Hunter * config.hunter.damageincrease) * 100}%</color>", 23, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
                 ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("nightdamage", player.UserIDString)}: <color={TextColor("perk", xprecord.Hunter)}>+{(xprecord.Hunter * config.hunter.nightdmgincrease) * 100}%</color>", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
             }
+            // Spacer
+            ControlPanelelements.Add(XPUILabel($"----------------------------------------------------------------", 25, height, TextAnchor.MiddleLeft, 5, "0.0", "1.0", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+            // Tamer
+            if (config.tamer.enabletame)
+            {
+                ControlPanelelements.Add(XPUILabel($"{XPLang("tamer", player.UserIDString)}: <color={TextColor("level", xprecord.Tamer)}>{xprecord.Tamer}</color>", 26, height, TextAnchor.MiddleLeft, 12, "0.1", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+                if (xprecord.Tamer == 0)
+                {
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("tamerinc", player.UserIDString)}", 27, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+                }
+                if (xprecord.Tamer > 0)
+                {
+                    ControlPanelelements.Add(XPUILabel($"{XPLang("tamerpets", player.UserIDString)}:", 27, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+                }
+                if (xprecord.Tamer >= config.tamer.chickenlevel)
+                {
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("chicken", player.UserIDString)}</color>", 28, height, TextAnchor.MiddleLeft, 10, "0.01", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+                }
+                if (xprecord.Tamer >= config.tamer.boarlevel)
+                {
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("boar", player.UserIDString)}</color>", 28, height, TextAnchor.MiddleLeft, 10, "0.20", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+                }
+                if (xprecord.Tamer >= config.tamer.staglevel)
+                {
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("stag", player.UserIDString)}</color>", 28, height, TextAnchor.MiddleLeft, 10, "0.40", "0.60", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+                }
+                if (xprecord.Tamer >= config.tamer.wolflevel)
+                {
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("wolf", player.UserIDString)}</color>", 28, height, TextAnchor.MiddleLeft, 10, "0.60", "0.80", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+                }
+                if (xprecord.Tamer >= config.tamer.bearlevel)
+                {
+                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("bear", player.UserIDString)}</color>", 28, height, TextAnchor.MiddleLeft, 10, "0.80", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsL);
+                }
+            }
             // Right Column
             ControlPanelelements.Add(XPUIPanel("0.5 0.0", "1.0 0.915", "0.0 0.0 0.0 0.0"), XPeriencePlayerControlSkills, XPeriencePlayerControlSkillsR);
             // Crafter
@@ -7814,38 +8149,14 @@ namespace Oxide.Plugins
             }
             // Spacer
             ControlPanelelements.Add(XPUILabel($"----------------------------------------------------------------", 22, height, TextAnchor.MiddleLeft, 5, "0.0", "1.0", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-            // Tamer
-            if (config.tamer.enabletame)
+            // Scavenger
+            if (config.scavenger.maxlvl != 0)
             {
-                ControlPanelelements.Add(XPUILabel($"{XPLang("tamer", player.UserIDString)}: <color={TextColor("level", xprecord.Tamer)}>{xprecord.Tamer}</color>", 23, height, TextAnchor.MiddleLeft, 12, "0.1", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-                if (xprecord.Tamer == 0)
-                {
-                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("tamerinc", player.UserIDString)}", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-                }
-                if (xprecord.Tamer > 0)
-                {
-                    ControlPanelelements.Add(XPUILabel($"{XPLang("tamerpets", player.UserIDString)}:", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-                }
-                if (xprecord.Tamer >= config.tamer.chickenlevel)
-                {
-                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("chicken", player.UserIDString)}</color>", 25, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-                }
-                if (xprecord.Tamer >= config.tamer.boarlevel)
-                {
-                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("boar", player.UserIDString)}</color>", 26, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-                }
-                if (xprecord.Tamer >= config.tamer.staglevel)
-                {
-                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("stag", player.UserIDString)}</color>", 27, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-                }
-                if (xprecord.Tamer >= config.tamer.wolflevel)
-                {
-                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("wolf", player.UserIDString)}</color>", 28, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-                }
-                if (xprecord.Tamer >= config.tamer.bearlevel)
-                {
-                    ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("bear", player.UserIDString)}</color>", 29, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
-                }
+                ControlPanelelements.Add(XPUILabel($"{XPLang("scavenger", player.UserIDString)}: <color={TextColor("level", xprecord.Scavenger)}>{xprecord.Scavenger}</color>", 23, height, TextAnchor.MiddleLeft, 12, "0.1", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
+                ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("scavchance", player.UserIDString)}: <color={TextColor("perk", xprecord.Scavenger)}>+{(xprecord.Scavenger * config.scavenger.scavlootchance) * 100}%</color>", 24, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
+                ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("scavmultiplier", player.UserIDString)}: <color={TextColor("perk", xprecord.Scavenger)}>x{Math.Ceiling(xprecord.Scavenger * config.scavenger.scavmultiplier)}</color>", 25, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
+                ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("customscavchance", player.UserIDString)}: <color={TextColor("perk", xprecord.Scavenger)}>+{(xprecord.Scavenger * config.scavenger.scavchance) * 100}%</color>", 26, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
+                ControlPanelelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("customscavmultiplier", player.UserIDString)}: <color={TextColor("perk", xprecord.Scavenger)}>x{Math.Ceiling(xprecord.Scavenger * config.scavenger.customscavmultiplier)}</color>", 27, height, TextAnchor.MiddleLeft, 10, "0.01", "0.90", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlSkillsR);
             }
             // UI End
             CuiHelper.AddUi(player, ControlPanelelements);
@@ -7860,16 +8171,18 @@ namespace Oxide.Plugins
             //page = "1";
             var ControlPanelelements = new CuiElementContainer();
             // Main UI
+            string aMin = "0.05 0.12";
+            string aMax = "0.95 0.95";
             ControlPanelelements.Add(new CuiPanel
             {
                 Image =
                 {
-                    Color = "0.1 0.1 0.1 0.95"
+                    Color = "0.0 0.0 0.0 0.98"
                 },
                 RectTransform =
                 {
-                    AnchorMin = $"0.05 0.12",
-                    AnchorMax = $"0.95 0.95"
+                    AnchorMin = $"{aMin}",
+                    AnchorMax = $"{aMax}"
                 },
                 CursorEnabled = true
             }, "Overlay", XPeriencePlayerControlPrimary);
@@ -8970,7 +9283,1610 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, ControlPanelelements);
             return;
         }
+
+        #endregion
+
+        #region New Player Control Panel
         
+        // Handlers
+        [ConsoleCommand("xp.playercontrol")]
+        private void cmdplayercontrolnew(ConsoleSystem.Arg arg)
+        {
+            var player = arg.Player();
+            if (player == null) return;
+            string page = arg.GetString(0);
+            string type = arg.GetString(1);
+            switch (page)
+            {
+                case "main":
+                    DestroyUi(player, XPeriencePlayerControlFullInfo);
+                    DestroyUi(player, XPeriencePlayerControlFullKR);
+                    DestroyUi(player, XPeriencePlayerControlFullLiveStatLoc);
+                    DestroyUi(player, XPeriencePlayerControlFullFixData);
+                    DestroyUi(player, XPeriencePlayerControlFullHelp);
+                    DestroyUi(player, XPeriencePlayerControlFullHelpNav);
+                    PlayerInfoPage(player);
+                    break;
+                case "reset":
+                    switch (type)
+                    {
+                        case "stats":
+                            if (config.defaultOptions.hardcorenoreset)
+                            {
+                                player.ChatMessage(XPLang("hardcorenoreset", player.UserIDString));
+                                return;
+                            }
+                            StatsReset(player);
+                            DestroyUi(player, XPeriencePlayerControlFullMain);
+                            PlayerControlPanelFullMain(player);
+                            PlayerInfoPage(player);
+                            break;
+                        case "skills":
+                            if (config.defaultOptions.hardcorenoreset)
+                            {
+                                player.ChatMessage(XPLang("hardcorenoreset", player.UserIDString));
+                                return;
+                            }
+                            SkillsReset(player);
+                            DestroyUi(player, XPeriencePlayerControlFullMain);
+                            PlayerControlPanelFullMain(player);
+                            PlayerInfoPage(player);
+                            break;
+                    }
+                    break;
+                case "killrecords":
+                    DestroyUi(player, XPeriencePlayerControlFullInfo);
+                    DestroyUi(player, XPeriencePlayerControlFullKR);
+                    DestroyUi(player, XPeriencePlayerControlFullLiveStatLoc);
+                    DestroyUi(player, XPeriencePlayerControlFullFixData);
+                    DestroyUi(player, XPeriencePlayerControlFullHelp);
+                    DestroyUi(player, XPeriencePlayerControlFullHelpNav);
+                    PlayerKillRecordsPage(player);
+                    break;
+                case "close":
+                    DestroyUi(player, XPeriencePlayerControlFullMain);
+                    break;
+                case "help":
+                    DestroyUi(player, XPeriencePlayerControlFullInfo);
+                    DestroyUi(player, XPeriencePlayerControlFullKR);
+                    DestroyUi(player, XPeriencePlayerControlFullLiveStatLoc);
+                    DestroyUi(player, XPeriencePlayerControlFullFixData);
+                    DestroyUi(player, XPeriencePlayerControlFullHelp);
+                    DestroyUi(player, XPeriencePlayerControlFullHelpNav);
+                    PlayerHelpPage(player, 0);
+                    break;
+                case "fix":
+                    PlayerFixData(player);
+                    DestroyUi(player, XPeriencePlayerControlFullMain);
+                    PlayerControlPanelFullMain(player);
+                    PlayerInfoPage(player);
+                    break;
+                case "admin":
+                    if (!player.IsAdmin && !permission.UserHasPermission(player.UserIDString, Admin)) return;
+                    DestroyUi(player, XPeriencePlayerControlFullMain);
+                    DestroyUi(player, XPerienceAdminPanelMain);
+                    AdminControlPanel(player);
+                    AdminInfoPage(player);
+                    break;
+            }
+        }
+
+        [ConsoleCommand("xp.playeredits")]
+        private void cmdplayeredits(ConsoleSystem.Arg arg)
+        {
+            var player = arg.Player();
+            if (player == null) return;
+            string type = arg.GetString(0);  
+            switch(type)
+            {
+                case "liveui":
+                    int location = arg.GetInt(1);
+                    _xperienceCache[player.UserIDString].UILocation = location;
+                    LiveStats(player, true);
+                    DestroyUi(player, XPeriencePlayerControlFullInfo);
+                    PlayerInfoPage(player);
+                    break;
+                case "stat":
+                    StatUp(player, arg.GetString(1));
+                    DestroyUi(player, XPeriencePlayerControlFullInfo);
+                    PlayerInfoPage(player);
+                    break;
+                case "skill":
+                    SkillUp(player, arg.GetString(1));
+                    DestroyUi(player, XPeriencePlayerControlFullInfo);
+                    PlayerInfoPage(player);
+                    break;
+                case "help":
+                    int page = arg.GetInt(1);
+                    DestroyUi(player, XPeriencePlayerControlFullHelp);
+                    PlayerHelpPage(player, page);
+                    break;
+            }
+        }
+
+        // UI Panels
+        private void PlayerControlPanelFullMain(BasePlayer player)
+        {
+            if (player == null) return;
+            XPRecord xprecord = GetXPRecord(player);
+            if (xprecord == null) return;
+            var FullScreenelements = new CuiElementContainer();
+            var height = 0.050f;
+            // Timer Data
+            DateTime resettimestats = xprecord.resettimerstats.AddMinutes(config.defaultOptions.resetminsstats);
+            DateTime resettimeskills = xprecord.resettimerskills.AddMinutes(config.defaultOptions.resetminsskills);
+            TimeSpan statsinterval = resettimestats - DateTime.Now;
+            TimeSpan skillinterval = resettimeskills - DateTime.Now;
+            int statstimer = (int)statsinterval.TotalMinutes;
+            int skilltimer = (int)skillinterval.TotalMinutes;
+            if (config.defaultOptions.bypassadminreset && player.IsAdmin && permission.UserHasPermission(player.UserIDString, XPerience.Admin))
+            {
+                statstimer = 0;
+                skilltimer = 0;
+            }
+            // Main Screen
+            FullScreenelements.Add(new CuiPanel
+            {
+                Image =
+                {
+                    Color = "0.1 0.1 0.1 0.99"
+                },
+                RectTransform =
+                {
+                    AnchorMin = $"0 0",
+                    AnchorMax = $"1 1"
+                },
+                CursorEnabled = true
+            }, "Overlay", XPeriencePlayerControlFullMain);
+            FullScreenelements.Add(XPUILabel($"ⓍⓅerience Profile:", 1, 0.060f, TextAnchor.MiddleLeft, 20, "0.01", "0.18", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullMain);
+            // Navigation Menu
+            FullScreenelements.Add(XPUIPanel("0.0 0.0", "0.15 0.85", "1.0 1.0 1.0 0.0"), XPeriencePlayerControlFullMain, XPeriencePlayerControlFullMenu);
+            FullScreenelements.Add(XPUIButton("xp.playercontrol main", 3, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_014", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            // Reset Stats Button
+            if (statstimer > 0)
+            {
+                FullScreenelements.Add(XPUIButton("", 5, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("canresetstats", player.UserIDString, statstimer)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            }
+            else 
+            {
+                FullScreenelements.Add(XPUIButton("xp.playercontrol reset stats", 5, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("resetstatsbutton", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            }
+            // Reset Skills Button
+            if (skilltimer > 0)
+            {
+                FullScreenelements.Add(XPUIButton("", 7, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("canresetskills", player.UserIDString, skilltimer)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            }
+            else
+            {
+                FullScreenelements.Add(XPUIButton("xp.playercontrol reset skills", 7, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("resetskillsbutton", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            }
+            // Help Button
+            FullScreenelements.Add(XPUIButton("xp.playercontrol help", 11, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("help", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            // Kill Records Button
+            if (KillRecords != null && config.xpBonus.showkrbutton)
+            {
+                FullScreenelements.Add(XPUIButton("xp.playercontrol killrecords", 9, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("killrecords", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            }
+            // Close Button
+            FullScreenelements.Add(XPUIButton("xp.playercontrol close", 13, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_009", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            // Admin Button
+            if (player.IsAdmin && permission.UserHasPermission(player.UserIDString, Admin)) 
+            {
+                FullScreenelements.Add(XPUIButton("xp.playercontrol admin", 16, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminpanel", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPeriencePlayerControlFullMenu);
+            }
+            // UI End
+            CuiHelper.AddUi(player, FullScreenelements);
+            return;
+        }
+
+        private void PlayerInfoPage(BasePlayer player)
+        {
+            if (player == null) return;
+            XPRecord xprecord = GetXPRecord(player);
+            if (xprecord == null) return;
+            float height = 0.036f;
+            float liveuiheight = 0.4f;
+            float skillheight = 0.030f;
+            float buttonheight = 0.035f;
+            int row = 1;
+            var FullScreenelements = new CuiElementContainer();
+            // Main UI
+            FullScreenelements.Add(XPUIPanel("0.16 0.0", "1 1", "0 0 0 0.75"), XPeriencePlayerControlFullMain, XPeriencePlayerControlFullInfo);
+            // Player Name
+            FullScreenelements.Add(XPUILabel($"{player.displayName}", row, 0.060f, TextAnchor.MiddleLeft, 20, "0.01", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            // Main - Player Info
+            int statpoints = xprecord.MentalityP + xprecord.DexterityP + xprecord.MightP + xprecord.ChemistP;
+            int skillpoints = xprecord.WoodCutterP + xprecord.SmithyP + xprecord.MinerP + xprecord.ForagerP + xprecord.HunterP + xprecord.FisherP + xprecord.CrafterP + xprecord.FramerP + xprecord.TamerP;
+            // XP Calulations
+            double levelpercent = 0;
+            if (xprecord.experience == 0 || xprecord.level == 0)
+            {
+                levelpercent = ((xprecord.experience - 0) / config.xpLevel.levelstart) * 100;
+            }
+            else
+            {
+                levelpercent = ((xprecord.experience - (xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier))) / (xprecord.requiredxp - (xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier)))) * 100;
+            }
+            // Level / XP Info
+            FullScreenelements.Add(XPUILabel($"----------------------------------------------------------------", row, height, TextAnchor.MiddleLeft, 9, "0.0", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            FullScreenelements.Add(XPUILabel($"{XPLang("level", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUILabel($"<color={TextColor("mainlevel", (int)xprecord.level)}>{xprecord.level} ({(int)levelpercent}%)</color>", row, height, TextAnchor.MiddleLeft, 13, "0.11", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            FullScreenelements.Add(XPUILabel($"{XPLang("experience", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUILabel($"<color={TextColor("experience", (int)xprecord.experience)}>{(int)xprecord.experience}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.11", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            FullScreenelements.Add(XPUILabel($"{XPLang("nextlevel", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUILabel($"<color={TextColor("nextlevel", (int)xprecord.requiredxp)}>{(int)xprecord.requiredxp}</color> (<color={TextColor("remainingxp", (int)(xprecord.requiredxp - xprecord.experience))}>{(int)(xprecord.requiredxp - xprecord.experience)}</color>)", row, height, TextAnchor.MiddleLeft, 13, "0.11", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            // Unspent Points
+            FullScreenelements.Add(XPUILabel($"{XPLang("unusedstatpoints", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUILabel($"<color={TextColor("unspent", xprecord.statpoint)}>{xprecord.statpoint}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.11", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            FullScreenelements.Add(XPUILabel($"{XPLang("unusedskillpoints", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUILabel($"<color={TextColor("unspent", xprecord.skillpoint)}>{xprecord.skillpoint}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.11", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            FullScreenelements.Add(XPUILabel($"{XPLang("totalspent", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUILabel($"<color={TextColor("spent", statpoints + skillpoints)}>{statpoints + skillpoints}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.11", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            // Stats
+            FullScreenelements.Add(XPUILabel($"----------------------------------------------------------------", row, height, TextAnchor.MiddleLeft, 9, "0.0", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            if (config.mentality.maxlvl != 0)
+            {
+                if (xprecord.Mentality < config.mentality.maxlvl && (((xprecord.Mentality + 1) * config.mentality.costmultiplier) <= xprecord.statpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits stat mentality {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("mentality", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Mentality)}>{xprecord.Mentality}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Mentality < config.mentality.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Mentality)}>{(xprecord.Mentality + 1) * config.mentality.costmultiplier}</color> / <color={TextColor("spent", xprecord.MentalityP)}>{xprecord.MentalityP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.MentalityP)}>{xprecord.MentalityP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.dexterity.maxlvl != 0)
+            {
+                if (xprecord.Dexterity < config.dexterity.maxlvl && (((xprecord.Dexterity + 1) * config.dexterity.costmultiplier) <= xprecord.statpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits stat dexterity {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("dexterity", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Dexterity)}>{xprecord.Dexterity}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Dexterity < config.dexterity.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Dexterity)}>{(xprecord.Dexterity + 1) * config.dexterity.costmultiplier}</color> / <color={TextColor("spent", xprecord.DexterityP)}>{xprecord.DexterityP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.DexterityP)}>{xprecord.DexterityP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.might.maxlvl != 0)
+            {
+                if (xprecord.Might < config.might.maxlvl && (((xprecord.Might + 1) * config.might.costmultiplier) <= xprecord.statpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits stat might {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("might", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Might)}>{xprecord.Might}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Might < config.might.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Might)}>{(xprecord.Might + 1) * config.might.costmultiplier}</color> / <color={TextColor("spent", xprecord.MightP)}>{xprecord.MightP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.MightP)}>{xprecord.MightP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.captaincy.maxlvl != 0)
+            {
+                if (xprecord.Captaincy < config.captaincy.maxlvl && (((xprecord.Captaincy + 1) * config.captaincy.costmultiplier) <= xprecord.statpoint) && player.Team != null)
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits stat captaincy {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("captaincy", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Captaincy)}>{xprecord.Captaincy}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Captaincy < config.captaincy.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Captaincy)}>{(xprecord.Captaincy + 1) * config.captaincy.costmultiplier}</color> / <color={TextColor("spent", xprecord.CaptaincyP)}>{xprecord.CaptaincyP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.CaptaincyP)}>{xprecord.CaptaincyP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            // Skills
+            FullScreenelements.Add(XPUILabel($"----------------------------------------------------------------", row, height, TextAnchor.MiddleLeft, 9, "0.0", "0.25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            row++;
+            if (config.woodcutter.maxlvl != 0)
+            {
+                if (xprecord.WoodCutter < config.woodcutter.maxlvl && (((xprecord.WoodCutter + 1) * config.woodcutter.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill woodcutter {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("woodcutter", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.WoodCutter)}>{xprecord.WoodCutter}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.WoodCutter < config.woodcutter.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.WoodCutter)}>{(xprecord.WoodCutter + 1) * config.woodcutter.costmultiplier}</color> / <color={TextColor("spent", xprecord.WoodCutterP)}>{xprecord.WoodCutterP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.WoodCutterP)}>{xprecord.WoodCutterP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.smithy.maxlvl != 0)
+            {
+                if (xprecord.Smithy < config.smithy.maxlvl && (((xprecord.Smithy + 1) * config.smithy.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill smithy {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("smithy", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Smithy)}>{xprecord.Smithy}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Smithy < config.smithy.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Smithy)}>{(xprecord.Smithy + 1) * config.smithy.costmultiplier}</color> / <color={TextColor("spent", xprecord.SmithyP)}>{xprecord.SmithyP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.SmithyP)}>{xprecord.SmithyP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.miner.maxlvl != 0)
+            {
+                if (xprecord.Miner < config.miner.maxlvl && (((xprecord.Miner + 1) * config.miner.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill miner {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("miner", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Miner)}>{xprecord.Miner}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Miner < config.miner.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Miner)}>{(xprecord.Miner + 1) * config.miner.costmultiplier}</color> / <color={TextColor("spent", xprecord.MinerP)}>{xprecord.MinerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.MinerP)}>{xprecord.MinerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.forager.maxlvl != 0)
+            {
+                if (xprecord.Forager < config.forager.maxlvl && (((xprecord.Forager + 1) * config.forager.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill forager {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("forager", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Forager)}>{xprecord.Forager}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Forager < config.forager.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Forager)}>{(xprecord.Forager + 1) * config.forager.costmultiplier}</color> / <color={TextColor("spent", xprecord.ForagerP)}>{xprecord.ForagerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.ForagerP)}>{xprecord.ForagerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.hunter.maxlvl != 0)
+            {
+                if (xprecord.Hunter < config.hunter.maxlvl && (((xprecord.Hunter + 1) * config.hunter.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill hunter {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("hunter", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Hunter)}>{xprecord.Hunter}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Hunter < config.hunter.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Hunter)}>{(xprecord.Hunter + 1) * config.hunter.costmultiplier}</color> / <color={TextColor("spent", xprecord.HunterP)}>{xprecord.HunterP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.HunterP)}>{xprecord.HunterP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.crafter.maxlvl != 0)
+            {
+                if (xprecord.Crafter < config.crafter.maxlvl && (((xprecord.Crafter + 1) * config.crafter.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill crafter {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("crafter", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Crafter)}>{xprecord.Crafter}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Crafter < config.crafter.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Crafter)}>{(xprecord.Crafter + 1) * config.crafter.costmultiplier}</color> / <color={TextColor("spent", xprecord.CrafterP)}>{xprecord.CrafterP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.CrafterP)}>{xprecord.CrafterP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.framer.maxlvl != 0)
+            {
+                if (xprecord.Framer < config.framer.maxlvl && (((xprecord.Framer + 1) * config.framer.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill framer {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("framer", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Framer)}>{xprecord.Framer}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Framer < config.framer.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Framer)}>{(xprecord.Framer + 1) * config.framer.costmultiplier}</color> / <color={TextColor("spent", xprecord.FramerP)}>{xprecord.FramerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.FramerP)}>{xprecord.FramerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.fisher.maxlvl != 0)
+            {
+                if (xprecord.Fisher < config.fisher.maxlvl && (((xprecord.Fisher + 1) * config.fisher.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill fisher {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("fisher", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Fisher)}>{xprecord.Fisher}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Fisher < config.fisher.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Fisher)}>{(xprecord.Fisher + 1) * config.fisher.costmultiplier}</color> / <color={TextColor("spent", xprecord.FisherP)}>{xprecord.FisherP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.FisherP)}>{xprecord.FisherP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.medic.maxlvl != 0)
+            {
+                if (xprecord.Medic < config.medic.maxlvl && (((xprecord.Medic + 1) * config.medic.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill medic {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("medic", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Medic)}>{xprecord.Medic}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Medic < config.medic.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Medic)}>{(xprecord.Medic + 1) * config.medic.costmultiplier}</color> / <color={TextColor("spent", xprecord.MedicP)}>{xprecord.MedicP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.MedicP)}>{xprecord.MedicP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.scavenger.maxlvl != 0)
+            {
+                if (xprecord.Scavenger < config.scavenger.maxlvl && (((xprecord.Scavenger + 1) * config.scavenger.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill scavenger {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("scavenger", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Scavenger)}>{xprecord.Scavenger}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Scavenger < config.scavenger.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Scavenger)}>{(xprecord.Scavenger + 1) * config.scavenger.costmultiplier}</color> / <color={TextColor("spent", xprecord.ScavengerP)}>{xprecord.ScavengerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.ScavengerP)}>{xprecord.ScavengerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            if (config.tamer.enabletame)
+            {
+                if (xprecord.Tamer < config.tamer.maxlvl && (((xprecord.Tamer + 1) * config.tamer.costmultiplier) <= xprecord.skillpoint))
+                {
+                    FullScreenelements.Add(XPUIButton($"xp.playeredits skill tamer {player.UserIDString}", row, height, 18, "0 0 0 0", "⇧", "0", "0.025", TextAnchor.MiddleCenter, "0 1 0 1"), XPeriencePlayerControlFullInfo);
+                }
+                FullScreenelements.Add(XPUILabel($"{XPLang("tamer", player.UserIDString)}:", row, height, TextAnchor.MiddleLeft, 12, "0.025", "0.11", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("level", xprecord.Tamer)}>{xprecord.Tamer}</color>", row, height, TextAnchor.MiddleLeft, 12, "0.11", "0.15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                if (xprecord.Tamer < config.tamer.maxlvl)
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("nextlevel", xprecord.Tamer)}>{(xprecord.Tamer + 1) * config.tamer.costmultiplier}</color> / <color={TextColor("spent", xprecord.TamerP)}>{xprecord.TamerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                else
+                {
+                    FullScreenelements.Add(XPUILabel($"( <color={TextColor("spent", xprecord.TamerP)}>{xprecord.TamerP}</color> )", row, height, TextAnchor.MiddleCenter, 10, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                }
+                row++;
+            }
+            //Live UI Location Selection
+            if (config.defaultOptions.liveuistatslocationmoveable)
+            {
+                int rowloc = 0;
+                FullScreenelements.Add(XPUIPanel("0.01 0.09", "0.20 0.14", "0 0 0 0"), XPeriencePlayerControlFullInfo, XPeriencePlayerControlFullLiveStatLoc);
+                rowloc++;
+                FullScreenelements.Add(XPUILabel($"{XPLang("liveuiselection", player.UserIDString)}:", rowloc, liveuiheight, TextAnchor.MiddleLeft, 11, "0.01", "1", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullLiveStatLoc);
+                rowloc++;
+                // UI Off
+                FullScreenelements.Add(XPUIButton($"xp.playeredits liveui 0", rowloc, liveuiheight, 13, $"{TextColor("UI0", xprecord.UILocation)}", "off", "0", "0.20", TextAnchor.MiddleCenter, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullLiveStatLoc);
+                // UI 1
+                FullScreenelements.Add(XPUIButton($"xp.playeredits liveui 1", rowloc, liveuiheight, 13, $"{TextColor("UI1", xprecord.UILocation)}", "1", "0.21", "0.36", TextAnchor.MiddleCenter, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullLiveStatLoc);
+                // UI 2
+                FullScreenelements.Add(XPUIButton($"xp.playeredits liveui 2", rowloc, liveuiheight, 13, $"{TextColor("UI2", xprecord.UILocation)}", "2", "0.37", "0.52", TextAnchor.MiddleCenter, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullLiveStatLoc);
+                // UI 3
+                FullScreenelements.Add(XPUIButton($"xp.playeredits liveui 3", rowloc, liveuiheight, 13, $"{TextColor("UI3", xprecord.UILocation)}", "3", "0.53", "0.68", TextAnchor.MiddleCenter, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullLiveStatLoc);
+                // UI 4
+                FullScreenelements.Add(XPUIButton($"xp.playeredits liveui 4", rowloc, liveuiheight, 13, $"{TextColor("UI4", xprecord.UILocation)}", "4", "0.69", "0.84", TextAnchor.MiddleCenter, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullLiveStatLoc);
+                // UI 5
+                FullScreenelements.Add(XPUIButton($"xp.playeredits liveui 5", rowloc, liveuiheight, 13, $"{TextColor("UI5", xprecord.UILocation)}", "5", "0.85", "1", TextAnchor.MiddleCenter, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullLiveStatLoc);
+            }
+            // Fix Data Button
+            DateTime resettimedata = xprecord.playerfixdata.AddMinutes(config.defaultOptions.playerfixdatatimer);
+            TimeSpan datainterval = resettimedata - DateTime.Now;
+            int datatimer = (int)datainterval.TotalMinutes;
+            var button = "";
+            if (config.defaultOptions.bypassadminreset && player.IsAdmin && permission.UserHasPermission(player.UserIDString, XPerience.Admin))
+            {
+                datatimer = 0;
+            }
+            if (datatimer > 0)
+            {
+                button = $"{XPLang("resettimerdata", player.UserIDString, datatimer)}";
+            }
+            else
+            {
+                button = $"{XPLang("playerfixdatabutton", player.UserIDString)}";
+            }
+            if (!config.defaultOptions.disableplayerfixdata)
+            {
+                FullScreenelements.Add(XPUIPanel("0.01 0.02", "0.20 0.06", "0 0 0 0"), XPeriencePlayerControlFullInfo, XPeriencePlayerControlFullFixData);
+                FullScreenelements.Add(XPUIButton("xp.playercontrol fix", 1, 1f, 18, "0.5 0.0 0.0 0.7", $"〖 {button} 〗", "0.02", "0.98", TextAnchor.MiddleCenter), XPeriencePlayerControlFullFixData);
+            }
+            // Column Two Stat Effects
+            int rowtwo = 1;
+            FullScreenelements.Add(XPUILabel($"Stat Effects:", rowtwo, 0.055f, TextAnchor.MiddleLeft, 18, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"----------------------------------------------------------------", rowtwo, height, TextAnchor.UpperLeft, 9, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            rowtwo++; 
+            if (xprecord.Mentality > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("researchcost", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Mentality)}>-{(xprecord.Mentality * config.mentality.researchcost) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("researchspeed", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Mentality)}>-{(xprecord.Mentality * config.mentality.researchspeed) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("critchance", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Mentality)}>+{(xprecord.Mentality * config.mentality.criticalchance) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+            }
+            if (xprecord.Dexterity > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("blockchance", player.UserIDString)}: (<color=yellow>Damage</color>)", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Dexterity)}>+{(xprecord.Dexterity * config.dexterity.blockchance) * 100}%</color> (<color=yellow>-{(xprecord.Dexterity * config.dexterity.blockamount) * 100}%</color>)", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("dodgechance", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Dexterity)}>+{(xprecord.Dexterity * config.dexterity.dodgechance) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("armordmgabsorb", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Dexterity)}>-{(xprecord.Dexterity * config.dexterity.reducearmordmg) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+            }
+            if (xprecord.Might > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("armor", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Might)}>+{(xprecord.Might * config.might.armor) * 100}</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("melee", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Might)}>+{(xprecord.Might * config.might.meleedmg) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("calories", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Might)}>+{(int)((config.might.metabolism * xprecord.Might) * player.metabolism.calories.max)}</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("hydration", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Might)}>+{(int)((config.might.metabolism * xprecord.Might) * player.metabolism.hydration.max)}</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("bleed", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Might)}>-{(config.might.bleedreduction * xprecord.Might) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("radiation", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Might)}>-{(config.might.radreduction * xprecord.Might) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("heat", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Might)}>+{(config.might.heattolerance * xprecord.Might) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("cold", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Might)}>+{(config.might.coldtolerance * xprecord.Might) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+            }
+            if (xprecord.Captaincy > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("captaincyskillboost", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Captaincy)}>+{(xprecord.Captaincy * config.captaincy.skillboost) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("captaincyxpboost", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Captaincy)}>+{(xprecord.Captaincy * config.captaincy.xpboost) * 100}%</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("captaincydistance", player.UserIDString)}:", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Captaincy)}>+{xprecord.Captaincy * config.captaincy.captaincydistance} FT</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+            }
+            // Colum Three Skill Effects
+            int rowthree = 1;
+            FullScreenelements.Add(XPUILabel($"Skill Effects:", rowthree, 0.055f, TextAnchor.MiddleLeft, 18, "0.6", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            rowthree++;
+            FullScreenelements.Add(XPUILabel($"----------------------------------------------------------------", rowthree, height, TextAnchor.UpperLeft, 9, "0.6", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            rowthree++;
+            if(xprecord.WoodCutter > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("woodgather", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.WoodCutter)}>+{(xprecord.WoodCutter * config.woodcutter.gatherrate)}x</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> Wood Bonus:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.WoodCutter)}>+{(xprecord.WoodCutter * config.woodcutter.bonusincrease)}x</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("woodapple", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.WoodCutter)}>+{(xprecord.WoodCutter * config.woodcutter.applechance) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if(xprecord.Smithy > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("productionrate", player.UserIDString)}: (<color=yellow>{XPLang("productionamount", player.UserIDString)}</color>)", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Smithy)}>+{(xprecord.Smithy * config.smithy.productionrate) * 100}%</color> (<color=yellow>+{Math.Round((xprecord.Smithy * config.smithy.productionrate) * 5)}</color>)", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("fuelconsumption", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Smithy)}>-{(xprecord.Smithy * config.smithy.fuelconsumption) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if (xprecord.Miner > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("oregather", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Miner)}>+{(xprecord.Miner * config.miner.gatherrate)}x</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> Ore Bonus:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Miner)}>+{(xprecord.Miner * config.miner.bonusincrease)}x</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("fuelconsumptionhats", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Miner)}>-{(xprecord.Miner * config.miner.fuelconsumption) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if (xprecord.Forager > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> Ground {XPLang("gather", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Forager)}>+{(xprecord.Forager * config.forager.gatherrate)}x</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("seedbonus", player.UserIDString)}: (<color=yellow>Amount</color>)", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Forager)}>+{(config.forager.chanceincrease * xprecord.Forager) * 100}%</color> (<color=yellow>{(config.forager.chanceincrease * xprecord.Forager) * 10}</color>)", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("randomitem", player.UserIDString)} Chance:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Forager)}>+{(xprecord.Forager * config.forager.randomchance) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if (xprecord.Hunter > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("foodgather", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Hunter)}>+{(xprecord.Hunter * config.hunter.gatherrate)}x</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> Food Bonus:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Hunter)}>+{(xprecord.Hunter * config.hunter.bonusincrease)}x</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("damagewildlife", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Hunter)}>+{(xprecord.Hunter * config.hunter.damageincrease) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("nightdamage", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Hunter)}>+{(xprecord.Hunter * config.hunter.nightdmgincrease) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if (xprecord.Crafter > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("craftspeed", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Crafter)}>-{(config.crafter.craftspeed * xprecord.Crafter) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> Craft {XPLang("costreduction", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Crafter)}>-{(xprecord.Crafter * config.crafter.craftcost) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("fullrepair", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Crafter)}>{(xprecord.Crafter * config.crafter.repairincrease) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("repaircost", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Crafter)}>-{(xprecord.Crafter * config.crafter.repaircost) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("highcond", player.UserIDString)}: (<color=yellow>Amount</color>)", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Crafter)}>+{(config.crafter.conditionchance * xprecord.Crafter) * 100}%</color> (<color=yellow>+{config.crafter.conditionamount * 100}%</color>)", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if (xprecord.Framer > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> Building {XPLang("upgradecost", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Framer)}>-{(config.framer.upgradecost * xprecord.Framer) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> Building {XPLang("repairtime", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Framer)}>-{(xprecord.Framer * config.framer.repairtime) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> Building {XPLang("repaircost", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Framer)}>-{(xprecord.Framer * config.framer.repaircost) * 100}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if (xprecord.Fisher > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("fishamount", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Fisher)}>+{Math.Round(xprecord.Fisher * config.fisher.fishamountincrease)}</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("fishitems", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Fisher)}>+{Math.Round(xprecord.Fisher * config.fisher.itemamountincrease)}</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if (xprecord.Medic > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("medicrevive", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Medic)}>+{Math.Round(xprecord.Medic * config.medic.recoverhp)}</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("medicrecover", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Medic)}>+{Math.Round(xprecord.Medic * config.medic.revivehp)}</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("medictools", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Medic)}>+{Math.Round(xprecord.Medic * config.medic.tools)}</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("mediccrafting", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Medic)}>+{Math.Round((xprecord.Medic * config.medic.crafttime) * 100)}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            if (xprecord.Scavenger > 0)
+            {
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("scavchance", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Scavenger)}>+{Math.Round((xprecord.Scavenger * config.scavenger.scavlootchance) * 100)}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("scavmultiplier", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Scavenger)}>x{Math.Ceiling(xprecord.Scavenger * config.scavenger.scavmultiplier)}</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("customscavchance", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Scavenger)}>+{Math.Round((xprecord.Scavenger * config.scavenger.scavchance) * 100)}%</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+                FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> {XPLang("customscavmultiplier", player.UserIDString)}:", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.6", "0.75", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", xprecord.Scavenger)}>x{Math.Ceiling(xprecord.Scavenger * config.scavenger.customscavmultiplier)}</color>", rowthree, skillheight, TextAnchor.UpperLeft, 10, "0.75", "0.9", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowthree++;
+            }
+            // Tamer Section
+            if (xprecord.Tamer > 0)
+            {
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"Taming Ability:", rowtwo, height, TextAnchor.MiddleLeft, 18, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo++;
+                FullScreenelements.Add(XPUILabel($"----------------------------------------------------------------", rowtwo, height, TextAnchor.MiddleLeft, 9, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                rowtwo  = rowtwo + 6;
+                if (xprecord.Tamer >= config.tamer.chickenlevel)
+                {
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("chicken", player.UserIDString)}</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowtwo++;
+                }
+                if (xprecord.Tamer >= config.tamer.boarlevel)
+                {
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("boar", player.UserIDString)}</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowtwo++;
+                }
+                if (xprecord.Tamer >= config.tamer.staglevel)
+                {
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("stag", player.UserIDString)}</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowtwo++;
+                }
+                if (xprecord.Tamer >= config.tamer.wolflevel)
+                {
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("wolf", player.UserIDString)}</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowtwo++;
+                }
+                if (xprecord.Tamer >= config.tamer.bearlevel)
+                {
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={TextColor("pets", xprecord.Tamer)}>{XPLang("bear", player.UserIDString)}</color>", rowtwo, skillheight, TextAnchor.UpperLeft, 10, "0.3", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowtwo++;
+                }
+            }
+            CuiHelper.AddUi(player, FullScreenelements);
+        }
+
+        private object GetKillRecords(BasePlayer player, string entity)
+        {
+            if (KillRecords == null) return null;
+            object value = KillRecords.Call("GetKillRecord", player.UserIDString, entity);
+            return (int)value;
+        }
+
+        private void PlayerKillRecordsPage(BasePlayer player)
+        {
+            if (player == null) return;
+            if (KillRecords == null) return;
+            XPRecord xprecord = GetXPRecord(player);
+            if (xprecord == null) return;
+            float height = 0.036f;
+            float liveuiheight = 0.025f;
+            float buttonheight = 0.035f;
+            int row = 1;
+            var FullScreenelements = new CuiElementContainer();
+            // Main UI
+            FullScreenelements.Add(XPUIPanel("0.16 0.0", "1 1", "0 0 0 0.75"), XPeriencePlayerControlFullMain, XPeriencePlayerControlFullKR);
+            // Player Name
+            FullScreenelements.Add(XPUILabel($"{player.displayName} | ☠ {XPLang("killrecords", player.UserIDString)}", row, 0.060f, TextAnchor.MiddleLeft, 20, "0.01", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            row++;
+            // Kill Records
+            FullScreenelements.Add(XPUILabel($"Kills:", row, height, TextAnchor.MiddleLeft, 15, "0.01", "25", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Chickens:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "chicken"))}>{GetKillRecords(player, "chicken")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Boars:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "boar"))}>{GetKillRecords(player, "boar")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Stags:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "stag"))}>{GetKillRecords(player, "stag")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Wolves:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "wolf"))}>{GetKillRecords(player, "wolf")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Bears:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "bear"))}>{GetKillRecords(player, "bear")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Sharks:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "shark"))}>{GetKillRecords(player, "shark")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Horses:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "horse"))}>{GetKillRecords(player, "horse")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Fish:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "fish"))}>{GetKillRecords(player, "fish")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Scientist:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "scientistnpcnew"))}>{GetKillRecords(player, "scientistnpcnew")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Dwellers:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "tunneldweller"))}>{GetKillRecords(player, "tunneldweller")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Players:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "baseplayer"))}>{GetKillRecords(player, "baseplayer")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Bradley APCs:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "bradleyapc"))}>{GetKillRecords(player, "bradleyapc")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
+            FullScreenelements.Add(XPUILabel($"Patrol Helicopters:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "patrolhelicopter"))}>{GetKillRecords(player, "patrolhelicopter")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            // Column Two
+            int rowtwo = 3;
+            FullScreenelements.Add(XPUILabel($"Deaths / Harvests:", rowtwo, height, TextAnchor.MiddleLeft, 15, "0.26", "50", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Animal Harvested:", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.26", "40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "basecorpse"))}>{GetKillRecords(player, "basecorpse")}</color>", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.40", "45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Corpse Harvested:", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.26", "40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "npcplayercorpse"))}>{GetKillRecords(player, "npcplayercorpse")}</color>", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.40", "45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Deaths:", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.26", "40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "death"))}>{GetKillRecords(player, "death")}</color>", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.40", "45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Suicides:", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.26", "40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "suicide"))}>{GetKillRecords(player, "suicide")}</color>", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.40", "45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Loots:", rowtwo, height, TextAnchor.MiddleLeft, 15, "0.26", "50", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Loot Containers:", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.26", "40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "lootcontainer"))}>{GetKillRecords(player, "lootcontainer")}</color>", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.40", "45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Underwater Containers:", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.26", "40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "underwaterlootcontainer"))}>{GetKillRecords(player, "underwaterlootcontainer")}</color>", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.40", "45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Brad/Heli Crates:", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.26", "40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "lockedbyentcrate"))}>{GetKillRecords(player, "lockedbyentcrate")}</color>", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.40", "45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            rowtwo++;
+            FullScreenelements.Add(XPUILabel($"Hackable Crates:", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.26", "40", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(player, "hackablelockedcrate"))}>{GetKillRecords(player, "hackablelockedcrate")}</color>", rowtwo, height, TextAnchor.MiddleLeft, 13, "0.40", "45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            CuiHelper.AddUi(player, FullScreenelements);
+        }
+  
+        private void PlayerHelpPage(BasePlayer player, int page)
+        {
+            if (player == null) return;
+            if (page == null) page = 0;
+            float height = 0.5f;
+            var FullScreenelements = new CuiElementContainer();
+            int row = 1;
+            // Main UI
+            FullScreenelements.Add(XPUIPanel("0.16 0", "1 1", "0 0 0 0.75"), XPeriencePlayerControlFullMain, XPeriencePlayerControlFullHelp);
+            //FullScreenelements.Add(XPUILabel($"{XPLang("moddetails", player.UserIDString)} MACHIN3", 1, 0.060f, TextAnchor.MiddleCenter, 20, "0.3", "0.70", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullHelp);
+            // Navigation Buttons
+            string selected0 = "1 1 1 1";
+            string selected1 = "1 1 1 1";
+            string selected2 = "1 1 1 1";
+            string selected3 = "1 1 1 1";
+            string selected4 = "1 1 1 1";
+            switch (page)
+            {
+                case 0:
+                    selected0 = "0 1 0 1";
+                    break;
+                case 1:
+                    selected1 = "0 1 0 1";
+                    break;
+                case 2:
+                    selected2 = "0 1 0 1";
+                    break;
+                case 3:
+                    selected3 = "0 1 0 1";
+                    break;
+                case 4:
+                    selected4 = "0 1 0 1";
+                    break;
+            }
+            FullScreenelements.Add(XPUIPanel("0.25 0.95", "0.75 1", "0 0 0 0.75"), XPeriencePlayerControlFullHelp, XPeriencePlayerControlFullHelpNav);
+            FullScreenelements.Add(XPUILabel($"〚 Help Page Navigation 〛", 1, height, TextAnchor.MiddleCenter, 15, "0", "1", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullHelpNav);
+            FullScreenelements.Add(XPUIButton($"xp.playeredits help 0", 2, height, 13, "0 0 0 0", "〘 About 〙", "0.01", "0.20", TextAnchor.MiddleCenter, $"{selected0}"), XPeriencePlayerControlFullHelpNav);
+            FullScreenelements.Add(XPUIButton($"xp.playeredits help 1", 2, height, 13, "0 0 0 0", "〘 Commands 〙", "0.21", "0.40", TextAnchor.MiddleCenter, $"{selected1}"), XPeriencePlayerControlFullHelpNav);
+            FullScreenelements.Add(XPUIButton($"xp.playeredits help 2", 2, height, 13, "0 0 0 0", "〘 Stats 〙", "0.41", "0.60", TextAnchor.MiddleCenter, $"{selected2}"), XPeriencePlayerControlFullHelpNav);
+            FullScreenelements.Add(XPUIButton($"xp.playeredits help 3", 2, height, 13, "0 0 0 0", "〘 Skills 〙", "0.61", "0.80", TextAnchor.MiddleCenter, $"{selected3}"), XPeriencePlayerControlFullHelpNav);
+            FullScreenelements.Add(XPUIButton($"xp.playeredits help 4", 2, height, 13, "0 0 0 0", "〘 Server 〙", "0.81", "0.99", TextAnchor.MiddleCenter, $"{selected4}"), XPeriencePlayerControlFullHelpNav);
+            // Pages
+            if(page == 0)
+            {
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("moddetails", player.UserIDString)} MACHIN3{XPLang("aboutxperience", player.UserIDString)}",
+                    FontSize = 18,
+                    Align = TextAnchor.UpperCenter,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.0",
+                    AnchorMax = "0.98 0.90"
+                }
+                }, XPeriencePlayerControlFullHelp);
+            }
+            if(page == 1)
+            {
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("helpcommandslist", player.UserIDString)} \n{XPLang("bindkey", player.UserIDString)}",
+                    FontSize = 11,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.0",
+                    AnchorMax = "0.98 0.83"
+                }
+                }, XPeriencePlayerControlFullHelp);
+            }
+            if(page == 2)
+            {
+                // About Stats
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutstats", player.UserIDString)}\n-----------------------------------------------------------------------------------------------------------------------\n\n",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperCenter,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.85",
+                    AnchorMax = "0.99 0.93"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Mentality
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("mentality", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.82",
+                    AnchorMax = "0.98 0.85"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutmentality", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.70",
+                    AnchorMax = "0.98 0.82"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Dexterity
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("dexterity", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.67",
+                    AnchorMax = "0.98 0.70"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutdexterity", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.55",
+                    AnchorMax = "0.98 0.67"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Might
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("might", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.52",
+                    AnchorMax = "0.98 0.55"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutmight", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.40",
+                    AnchorMax = "0.98 0.52"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Captaincy
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("captaincy", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.37",
+                    AnchorMax = "0.98 0.40"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutcaptaincy", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.01",
+                    AnchorMax = "0.98 0.37"
+                }
+                }, XPeriencePlayerControlFullHelp);
+            }
+            if(page == 3)
+            {
+                // About Skills
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutskills", player.UserIDString)}\n-----------------------------------------------------------------------------------------------------------------------\n\n",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperCenter,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.85",
+                    AnchorMax = "0.98 0.93"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // WoodCutter
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("woodcutter", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.82",
+                    AnchorMax = "0.98 0.85"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutwoodcutter", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.78",
+                    AnchorMax = "0.98 0.82"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Smithy
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("smithy", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.75",
+                    AnchorMax = "0.98 0.78"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutsmithy", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.71",
+                    AnchorMax = "0.98 0.75"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Miner
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("miner", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.68",
+                    AnchorMax = "0.98 0.71"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutminer", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.64",
+                    AnchorMax = "0.98 0.68"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Forager
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("forager", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.61",
+                    AnchorMax = "0.98 0.64"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutforager", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.55",
+                    AnchorMax = "0.98 0.61"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Hunter
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("hunter", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.52",
+                    AnchorMax = "0.98 0.55"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("abouthunter", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.48",
+                    AnchorMax = "0.98 0.52"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Fisher
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("fisher", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.45",
+                    AnchorMax = "0.98 0.48"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutfisher", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.41",
+                    AnchorMax = "0.98 0.45"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Crafter
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("crafter", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.38",
+                    AnchorMax = "0.98 0.41"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutcrafter", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.34",
+                    AnchorMax = "0.98 0.38"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Framer
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("framer", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.31",
+                    AnchorMax = "0.98 0.34"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutframer", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.28",
+                    AnchorMax = "0.98 0.31"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Medic
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("medic", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.25",
+                    AnchorMax = "0.75 0.28"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutmedic", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.22",
+                    AnchorMax = "0.98 0.25"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Scavenger
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("scavenger", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.19",
+                    AnchorMax = "0.75 0.22"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("aboutscavenger", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.15",
+                    AnchorMax = "0.98 0.19"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                // Tamer
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"[{XPLang("tamer", player.UserIDString)}]",
+                    FontSize = 15,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.12",
+                    AnchorMax = "0.98 0.15"
+                }
+                }, XPeriencePlayerControlFullHelp);
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("abouttamer", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.08",
+                    AnchorMax = "0.75 0.12"
+                }
+                }, XPeriencePlayerControlFullHelp);
+            }
+            if(page == 4)
+            {
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("serversettings", player.UserIDString, ServerSettings("levelstart"), ServerSettings("levelmultiplier"), ServerSettings("levelxpboost"), ServerSettings("statpointsperlvl"), ServerSettings("skillpointsperlvl"), ServerSettings("resettimerenabled"), ServerSettings("resettimerstats"), ServerSettings("resettimerskills"), ServerSettings("vipresettimerstats"), ServerSettings("vipresettimerskills"), ServerSettings("nightbonusenable"), ServerSettings("nightbonus"), ServerSettings("nightstart"), ServerSettings("nightend"), ServerSettings("nightskill"))}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.50",
+                    AnchorMax = "0.99 0.80"
+                }
+                }, XPeriencePlayerControlFullHelp);
+
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("xpsettings", player.UserIDString)}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.46",
+                    AnchorMax = "0.99 0.50"
+                }
+                }, XPeriencePlayerControlFullHelp);
+
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("xpsettingskills", player.UserIDString, ServerSettings("chicken"), ServerSettings("fish"), ServerSettings("boar"), ServerSettings("stag"), ServerSettings("wolf"), ServerSettings("bear"), ServerSettings("shark"), ServerSettings("horse"), ServerSettings("scientist"), ServerSettings("dweller"), ServerSettings("player"), ServerSettings("bradley"), ServerSettings("heli"), ServerSettings("revive"))}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.02 0.0",
+                    AnchorMax = "0.15 0.46"
+                }
+                }, XPeriencePlayerControlFullHelp);
+
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("xpsettingsloot", player.UserIDString, ServerSettings("loot"), ServerSettings("uloot"), ServerSettings("lloot"), ServerSettings("hloot"), ServerSettings("aharvest"), ServerSettings("charvest"), ServerSettings("tree"), ServerSettings("ore"), ServerSettings("gather"), ServerSettings("plant"))}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.16 0.0",
+                    AnchorMax = "0.37 0.46"
+                }
+                }, XPeriencePlayerControlFullHelp);
+
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("xpsettingscraft", player.UserIDString, ServerSettings("craft"), ServerSettings("wood"), ServerSettings("stone"), ServerSettings("metal"), ServerSettings("armored"))}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.38 0.0",
+                    AnchorMax = "0.55 0.46"
+                }
+                }, XPeriencePlayerControlFullHelp);
+
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("xpmissionsettings", player.UserIDString, ServerSettings("missionsucceed"), ServerSettings("missionfailed"), ServerSettings("missionfailedxp"))}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.56 0.0",
+                    AnchorMax = "0.80 0.46"
+                }
+                }, XPeriencePlayerControlFullHelp);
+
+                FullScreenelements.Add(new CuiLabel
+                {
+                    Text =
+                {
+                    Text = $"{XPLang("xpreductionsettings", player.UserIDString, ServerSettings("death"), ServerSettings("deathenable"), ServerSettings("suicide"), ServerSettings("suicideenable"))}",
+                    FontSize = 12,
+                    Align = TextAnchor.UpperLeft,
+                    Color = "1.0 1.0 1.0 1.0"
+                },
+                    RectTransform =
+                {
+                    AnchorMin = "0.81 0.0",
+                    AnchorMax = "0.99 0.46"
+                }
+                }, XPeriencePlayerControlFullHelp);
+            }
+
+            CuiHelper.AddUi(player, FullScreenelements);
+        }
+
         #endregion
 
         #region Admin Control Panel
@@ -9084,6 +11000,11 @@ namespace Oxide.Plugins
                     break;              
                 case "fix":
                     PlayerFixDataAll(player);
+                    break;              
+                case "mystats":
+                    DestroyUi(player, XPerienceAdminPanelMain);
+                    PlayerControlPanelFullMain(player);
+                    PlayerInfoPage(player);
                     break;              
             }
         }
@@ -9563,50 +11484,46 @@ namespace Oxide.Plugins
                         case "medictools":
                             config.medic.tools = (double)value;
                             break;
-                        // Tamer
-                        case "tamerenable":
-                            config.tamer.enabletame = setting;
+                        // Scavenger
+                        case "scavmaxlevel":
+                            config.scavenger.maxlvl = (int)value;
                             break;
-                        case "tamermaxlevel":
-                            config.tamer.maxlvl = (int)value;
+                        case "scavccost":
+                            config.scavenger.pointcoststart = (int)value;
                             break;
-                        case "tamercost":
-                            config.tamer.pointcoststart = (int)value;
+                        case "scavcostmultiplier":
+                            config.scavenger.costmultiplier = (int)value;
                             break;
-                        case "tamercostmultiplier":
-                            config.tamer.costmultiplier = (int)value;
+                        case "scavchance":
+                            config.scavenger.scavchance = (double)value;
                             break;
-                        case "tamerchicken":
-                            config.tamer.tamechicken = setting;
+                        case "scavlootchance":
+                            config.scavenger.scavlootchance = (double)value;
                             break;
-                        case "tamerboar":
-                            config.tamer.tameboar = setting;
+                        case "scavmultiplier":
+                            config.scavenger.scavmultiplier = (double)value;
                             break;
-                        case "tamerstag":
-                            config.tamer.tamestag = setting;
+                        case "customscavmultiplier":
+                            config.scavenger.customscavmultiplier = (double)value;
                             break;
-                        case "tamerwolf":
-                            config.tamer.tamewolf = setting;
+                        case "scavbarrel":
+                            config.scavenger.drops = setting;
                             break;
-                        case "tamerbear":
-                            config.tamer.tamebear = setting;
+                        case "scavcrate":
+                            config.scavenger.crates = setting;
                             break;
-                        case "tamerchickenlevel":
-                            config.tamer.chickenlevel = (int)value;
+                        case "scavuncrate":
+                            config.scavenger.uncrates = setting;
                             break;
-                        case "tamerboarlevel":
-                            config.tamer.boarlevel = (int)value;
+                        case "scavlockedcrate":
+                            config.scavenger.lockedcrates = setting;
                             break;
-                        case "tamerstaglevel":
-                            config.tamer.staglevel = (int)value;
+                        case "scavhackcrate":
+                            config.scavenger.hackcrates = setting;
                             break;
-                        case "tamerwolflevel":
-                            config.tamer.wolflevel = (int)value;
+                        case "scavcomponly":
+                            config.scavenger.componentsonly = setting;
                             break;
-                        case "tamerbearlevel":
-                            config.tamer.bearlevel = (int)value;
-                            break;
-
                     }
                     DestroyUi(player, XPerienceAdminPanelSkills);
                     AdminSkillsPage(player);
@@ -10071,6 +11988,49 @@ namespace Oxide.Plugins
                         case "uinotifycriticaltype":
                             config.UiNotifier.criticalhittype = (int)value;
                             break;
+                        // Tamer
+                        case "tamerenable":
+                            config.tamer.enabletame = setting;
+                            break;
+                        case "tamermaxlevel":
+                            config.tamer.maxlvl = (int)value;
+                            break;
+                        case "tamercost":
+                            config.tamer.pointcoststart = (int)value;
+                            break;
+                        case "tamercostmultiplier":
+                            config.tamer.costmultiplier = (int)value;
+                            break;
+                        case "tamerchicken":
+                            config.tamer.tamechicken = setting;
+                            break;
+                        case "tamerboar":
+                            config.tamer.tameboar = setting;
+                            break;
+                        case "tamerstag":
+                            config.tamer.tamestag = setting;
+                            break;
+                        case "tamerwolf":
+                            config.tamer.tamewolf = setting;
+                            break;
+                        case "tamerbear":
+                            config.tamer.tamebear = setting;
+                            break;
+                        case "tamerchickenlevel":
+                            config.tamer.chickenlevel = (int)value;
+                            break;
+                        case "tamerboarlevel":
+                            config.tamer.boarlevel = (int)value;
+                            break;
+                        case "tamerstaglevel":
+                            config.tamer.staglevel = (int)value;
+                            break;
+                        case "tamerwolflevel":
+                            config.tamer.wolflevel = (int)value;
+                            break;
+                        case "tamerbearlevel":
+                            config.tamer.bearlevel = (int)value;
+                            break;
                     }
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     AdminOtherModsPage(player);
@@ -10156,8 +12116,8 @@ namespace Oxide.Plugins
             ControlPanelelements.Add(XPUIButton("xp.admin reload", 10, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_008", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
             ControlPanelelements.Add(XPUIButton("xp.admin fix", 12, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_011", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
             ControlPanelelements.Add(XPUIButton("xp.admin close", 14, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_009", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
-            //ControlPanelelements.Add(XPUIButton("xp.admin reset", 16, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_010", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
-            ControlPanelelements.Add(XPUIButton("xp.admin reset", 16, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_013", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
+            ControlPanelelements.Add(XPUIButton("xp.admin mystats", 16, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_014", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
+            ControlPanelelements.Add(XPUIButton("xp.admin reset", 18, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_013", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
             // UI End
             CuiHelper.AddUi(player, ControlPanelelements);
             return;
@@ -10785,6 +12745,7 @@ namespace Oxide.Plugins
         {
             var ControlPanelelements = new CuiElementContainer();
             var height = 0.027f;
+            int buttonsize = 18;
             int row = 5;
             var woodcuttermaxlevel = "off";
             var smithymaxlevel = "off";
@@ -10795,6 +12756,7 @@ namespace Oxide.Plugins
             var craftermaxlevel = "off";
             var framermaxlevel = "off";
             var medicmaxlevel = "off";
+            var scavmaxlevel = "off";
             ControlPanelelements.Add(XPUIPanel("0.18 0.0", "1.0 1.0", "0.0 0.0 0.0 0.7"), XPerienceAdminPanelMain, XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"Skills Settings - Note that these settings are what players gain per level of each skill.", 1, 0.090f, TextAnchor.MiddleLeft, 18, "0.01", "1", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             // WoodCutter Settings
@@ -10807,41 +12769,41 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {woodcuttermaxlevel}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttermaxlevel {config.woodcutter.maxlvl + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttermaxlevel {config.woodcutter.maxlvl + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             if (config.woodcutter.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttermaxlevel {config.woodcutter.maxlvl - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+                ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttermaxlevel {config.woodcutter.maxlvl - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Cost to Start
             row++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.woodcutter.pointcoststart}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttercost {config.woodcutter.pointcoststart + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttercost {config.woodcutter.pointcoststart - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttercost {config.woodcutter.pointcoststart + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttercost {config.woodcutter.pointcoststart - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             row++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.woodcutter.costmultiplier}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttercostmultiplier {config.woodcutter.costmultiplier + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttercostmultiplier {config.woodcutter.costmultiplier - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttercostmultiplier {config.woodcutter.costmultiplier + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttercostmultiplier {config.woodcutter.costmultiplier - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Gather Rate
             row++;
             ControlPanelelements.Add(XPUILabel($"Gather Rate:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.woodcutter.gatherrate}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttergatherrate {config.woodcutter.gatherrate + 0.1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttergatherrate {config.woodcutter.gatherrate - 0.1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttergatherrate {config.woodcutter.gatherrate + 0.1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcuttergatherrate {config.woodcutter.gatherrate - 0.1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Bonus Amount
             row++;
             ControlPanelelements.Add(XPUILabel($"Bonus Amount:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.woodcutter.bonusincrease}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcutterbonus {config.woodcutter.bonusincrease + 0.1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcutterbonus {config.woodcutter.bonusincrease - 0.1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcutterbonus {config.woodcutter.bonusincrease + 0.1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcutterbonus {config.woodcutter.bonusincrease - 0.1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Apple Chance
             row++;
             ControlPanelelements.Add(XPUILabel($"Apple Chance:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.woodcutter.applechance}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcutterapple {config.woodcutter.applechance + 0.01} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcutterapple {config.woodcutter.applechance - 0.01} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcutterapple {config.woodcutter.applechance + 0.01} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills woodcutterapple {config.woodcutter.applechance - 0.01} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Smithy Settings
             row++;
             row++;
@@ -10854,35 +12816,35 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {smithymaxlevel}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithymaxlevel {config.smithy.maxlvl + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithymaxlevel {config.smithy.maxlvl + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             if (config.smithy.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config skills smithymaxlevel {config.smithy.maxlvl - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+                ControlPanelelements.Add(XPUIButton($"xp.config skills smithymaxlevel {config.smithy.maxlvl - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Cost to Start
             row++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.smithy.pointcoststart}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithycost {config.smithy.pointcoststart + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithycost {config.smithy.pointcoststart - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithycost {config.smithy.pointcoststart + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithycost {config.smithy.pointcoststart - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             row++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.smithy.costmultiplier}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithycostmultiplier {config.smithy.costmultiplier + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithycostmultiplier {config.smithy.costmultiplier - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithycostmultiplier {config.smithy.costmultiplier + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithycostmultiplier {config.smithy.costmultiplier - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Production Rate
             row++;
             ControlPanelelements.Add(XPUILabel($"Production Rate:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.smithy.productionrate}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithyprate {config.smithy.productionrate + 0.1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithyprate {config.smithy.productionrate - 0.1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithyprate {config.smithy.productionrate + 0.1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithyprate {config.smithy.productionrate - 0.1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Fuel Consumption
             row++;
             ControlPanelelements.Add(XPUILabel($"Fuel Consumption:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.smithy.fuelconsumption}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithyfuel {config.smithy.fuelconsumption + 0.1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills smithyfuel {config.smithy.fuelconsumption - 0.1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithyfuel {config.smithy.fuelconsumption + 0.1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills smithyfuel {config.smithy.fuelconsumption - 0.1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Miner Settings
             row++;
             row++;
@@ -10895,41 +12857,41 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {minermaxlevel}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minermaxlevel {config.miner.maxlvl + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minermaxlevel {config.miner.maxlvl + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             if (config.miner.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config skills minermaxlevel {config.miner.maxlvl - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+                ControlPanelelements.Add(XPUIButton($"xp.config skills minermaxlevel {config.miner.maxlvl - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Cost to Start
             row++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.miner.pointcoststart}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minercost {config.miner.pointcoststart + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minercost {config.miner.pointcoststart - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minercost {config.miner.pointcoststart + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minercost {config.miner.pointcoststart - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             row++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.miner.costmultiplier}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minercostmultiplier {config.miner.costmultiplier + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minercostmultiplier {config.miner.costmultiplier - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minercostmultiplier {config.miner.costmultiplier + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minercostmultiplier {config.miner.costmultiplier - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Gather Rate
             row++;
             ControlPanelelements.Add(XPUILabel($"Production Rate:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.miner.gatherrate}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minergatherrate {config.miner.gatherrate + 0.1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minergatherrate {config.miner.gatherrate - 0.1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minergatherrate {config.miner.gatherrate + 0.1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minergatherrate {config.miner.gatherrate - 0.1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Bonus Amount
             row++;
             ControlPanelelements.Add(XPUILabel($"Bonus Amount:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.miner.bonusincrease}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minerbonus {config.miner.bonusincrease + 0.1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minerbonus {config.miner.bonusincrease - 0.1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minerbonus {config.miner.bonusincrease + 0.1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minerbonus {config.miner.bonusincrease - 0.1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Fuel Consumption
             row++;
             ControlPanelelements.Add(XPUILabel($"Fuel Consumption:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.miner.fuelconsumption}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minerfuel {config.miner.fuelconsumption + 0.1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills minerfuel {config.miner.fuelconsumption - 0.1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minerfuel {config.miner.fuelconsumption + 0.1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills minerfuel {config.miner.fuelconsumption - 0.1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Fisher Settings
             row++;
             row++;
@@ -10942,35 +12904,35 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {fishermaxlevel}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fishermaxlevel {config.fisher.maxlvl + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fishermaxlevel {config.fisher.maxlvl + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             if (config.woodcutter.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config skills fishermaxlevel {config.fisher.maxlvl - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+                ControlPanelelements.Add(XPUIButton($"xp.config skills fishermaxlevel {config.fisher.maxlvl - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Cost to Start
             row++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.fisher.pointcoststart}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fishercost {config.fisher.pointcoststart + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fishercost {config.fisher.pointcoststart - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fishercost {config.fisher.pointcoststart + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fishercost {config.fisher.pointcoststart - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             row++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.fisher.costmultiplier}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fishercostmultiplier {config.fisher.costmultiplier + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fishercostmultiplier {config.fisher.costmultiplier - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fishercostmultiplier {config.fisher.costmultiplier + 1} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fishercostmultiplier {config.fisher.costmultiplier - 1} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Fish Amount
             row++;
             ControlPanelelements.Add(XPUILabel($"Fish Amount:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.fisher.fishamountincrease}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheramount {config.fisher.fishamountincrease + 0.05} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheramount {config.fisher.fishamountincrease - 0.05} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheramount {config.fisher.fishamountincrease + 0.05} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheramount {config.fisher.fishamountincrease - 0.05} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Item Amount
             row++;
             ControlPanelelements.Add(XPUILabel($"Item Amount:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.fisher.itemamountincrease}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheritem {config.fisher.itemamountincrease + 0.05} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheritem {config.fisher.itemamountincrease - 0.05} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheritem {config.fisher.itemamountincrease + 0.05} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheritem {config.fisher.itemamountincrease - 0.05} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Forager
             int rowtwo = 5;
             ControlPanelelements.Add(XPUILabel($"[Forager Settings]", rowtwo, height, TextAnchor.MiddleLeft, 15, "0.33", "0.66", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
@@ -10982,41 +12944,41 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {foragermaxlevel}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragermaxlevel {config.forager.maxlvl + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragermaxlevel {config.forager.maxlvl + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             if (config.forager.maxlvl > 0)
             {
-               ControlPanelelements.Add(XPUIButton($"xp.config skills foragermaxlevel {config.forager.maxlvl - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+               ControlPanelelements.Add(XPUIButton($"xp.config skills foragermaxlevel {config.forager.maxlvl - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Max Cost to Start
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.forager.pointcoststart}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragercost {config.forager.pointcoststart + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragercost {config.forager.pointcoststart - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragercost {config.forager.pointcoststart + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragercost {config.forager.pointcoststart - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.forager.costmultiplier}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragercostmultiplier {config.forager.costmultiplier + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragercostmultiplier {config.forager.costmultiplier - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragercostmultiplier {config.forager.costmultiplier + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragercostmultiplier {config.forager.costmultiplier - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Gather Rate
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Gather Rate:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.forager.gatherrate}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragergatherrate {config.forager.gatherrate + 0.1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragergatherrate {config.forager.gatherrate - 0.1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragergatherrate {config.forager.gatherrate + 0.1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragergatherrate {config.forager.gatherrate - 0.1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Seed Chance
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Increase Seed Chance/Amount:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.forager.chanceincrease}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragerseed {config.forager.chanceincrease + 0.1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragerseed {config.forager.chanceincrease - 0.1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragerseed {config.forager.chanceincrease + 0.1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragerseed {config.forager.chanceincrease - 0.1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Seed Chance
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Random Item Chance:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.forager.randomchance}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragerrandom {config.forager.randomchance + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills foragerrandom {config.forager.randomchance - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragerrandom {config.forager.randomchance + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills foragerrandom {config.forager.randomchance - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Hunter
             rowtwo++;
             rowtwo++;
@@ -11029,47 +12991,47 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {huntermaxlevel}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills huntermaxlevel {config.hunter.maxlvl + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills huntermaxlevel {config.hunter.maxlvl + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             if (config.hunter.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config skills huntermaxlevel {config.hunter.maxlvl - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+                ControlPanelelements.Add(XPUIButton($"xp.config skills huntermaxlevel {config.hunter.maxlvl - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Max Cost to Start
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.hunter.pointcoststart}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills huntercost {config.hunter.pointcoststart + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills huntercost {config.hunter.pointcoststart - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills huntercost {config.hunter.pointcoststart + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills huntercost {config.hunter.pointcoststart - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.hunter.costmultiplier}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills huntercostmultiplier {config.hunter.costmultiplier + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills huntercostmultiplier {config.hunter.costmultiplier - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills huntercostmultiplier {config.hunter.costmultiplier + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills huntercostmultiplier {config.hunter.costmultiplier - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Gather Rate
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Gather Rate:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.hunter.gatherrate}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills huntergatherrate {config.hunter.gatherrate + 0.1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills huntergatherrate {config.hunter.gatherrate - 0.1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills huntergatherrate {config.hunter.gatherrate + 0.1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills huntergatherrate {config.hunter.gatherrate - 0.1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Bonus Amount
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Bonus Amount:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.hunter.bonusincrease}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterbonus {config.hunter.bonusincrease + 0.1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterbonus {config.hunter.bonusincrease - 0.1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterbonus {config.hunter.bonusincrease + 0.1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterbonus {config.hunter.bonusincrease - 0.1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Damage Increase Wildlife
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Damage Increase (Wildlife):", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.hunter.damageincrease}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterdamage {config.hunter.damageincrease + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterdamage {config.hunter.damageincrease - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterdamage {config.hunter.damageincrease + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterdamage {config.hunter.damageincrease - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Damage Increase Night
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Night Damage Increase (Wildlife):", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.hunter.nightdmgincrease}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterndamage {config.hunter.nightdmgincrease + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterndamage {config.hunter.nightdmgincrease - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterndamage {config.hunter.nightdmgincrease + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills hunterndamage {config.hunter.nightdmgincrease - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Crafter
             rowtwo++;
             rowtwo++;
@@ -11082,59 +13044,59 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {craftermaxlevel}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftermaxlevel {config.crafter.maxlvl + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftermaxlevel {config.crafter.maxlvl + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             if (config.crafter.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config skills craftermaxlevel {config.crafter.maxlvl - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+                ControlPanelelements.Add(XPUIButton($"xp.config skills craftermaxlevel {config.crafter.maxlvl - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Max Cost to Start
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.crafter.pointcoststart}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercost {config.crafter.pointcoststart + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercost {config.crafter.pointcoststart - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercost {config.crafter.pointcoststart + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercost {config.crafter.pointcoststart - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.crafter.costmultiplier}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercostmultiplier {config.crafter.costmultiplier + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercostmultiplier {config.crafter.costmultiplier - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercostmultiplier {config.crafter.costmultiplier + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercostmultiplier {config.crafter.costmultiplier - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Craft Speed
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Crafting Speed:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.crafter.craftspeed}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterspeed {config.crafter.craftspeed + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterspeed {config.crafter.craftspeed - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterspeed {config.crafter.craftspeed + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterspeed {config.crafter.craftspeed - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Craft Cost
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Crafting Cost:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.crafter.craftcost}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercosts {config.crafter.craftcost + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercosts {config.crafter.craftcost - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercosts {config.crafter.craftcost + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercosts {config.crafter.craftcost - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Repair Increase
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Repair Increase:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.crafter.repairincrease}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterrepair {config.crafter.repairincrease + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterrepair {config.crafter.repairincrease - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterrepair {config.crafter.repairincrease + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterrepair {config.crafter.repairincrease - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Repair Cost
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Repair Cost:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.crafter.repaircost}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterrepaircost {config.crafter.repaircost + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterrepaircost {config.crafter.repaircost - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterrepaircost {config.crafter.repaircost + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills crafterrepaircost {config.crafter.repaircost - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Condition Chance
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Condition Chance:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.crafter.conditionchance}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercondtition {config.crafter.conditionchance + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercondtition {config.crafter.conditionchance - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercondtition {config.crafter.conditionchance + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercondtition {config.crafter.conditionchance - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Condition Amount
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Condition Amount:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       +{config.crafter.conditionamount * 100}%", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercondtitionamt {config.crafter.conditionamount + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercondtitionamt {config.crafter.conditionamount - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercondtitionamt {config.crafter.conditionamount + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills craftercondtitionamt {config.crafter.conditionamount - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Framer Settings
             rowtwo++;
             rowtwo++;
@@ -11147,41 +13109,41 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {framermaxlevel}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framermaxlevel {config.framer.maxlvl + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framermaxlevel {config.framer.maxlvl + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             if (config.framer.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config skills framermaxlevel {config.framer.maxlvl - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+                ControlPanelelements.Add(XPUIButton($"xp.config skills framermaxlevel {config.framer.maxlvl - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Max Cost to Start
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.framer.pointcoststart}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framercost {config.framer.pointcoststart + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framercost {config.framer.pointcoststart - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framercost {config.framer.pointcoststart + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framercost {config.framer.pointcoststart - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.framer.costmultiplier}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framercostmultiplier {config.framer.costmultiplier + 1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framercostmultiplier {config.framer.costmultiplier - 1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framercostmultiplier {config.framer.costmultiplier + 1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framercostmultiplier {config.framer.costmultiplier - 1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Upgrade Cost
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Upgrade Cost:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.framer.upgradecost}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framerupgrade {config.framer.upgradecost + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framerupgrade {config.framer.upgradecost - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framerupgrade {config.framer.upgradecost + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framerupgrade {config.framer.upgradecost - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Repair Cost
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Repair Cost:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.framer.repaircost}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framerrepair {config.framer.repaircost + 0.01} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framerrepair {config.framer.repaircost - 0.01} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framerrepair {config.framer.repaircost + 0.01} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framerrepair {config.framer.repaircost - 0.01} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Repair Time
             rowtwo++;
             ControlPanelelements.Add(XPUILabel($"Repair Time:", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.33", "0.48", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.framer.repairtime}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.48", "0.53", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framertime {config.framer.repairtime + 0.1} false", rowtwo, height, 18, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills framertime {config.framer.repairtime - 0.1} false", rowtwo, height, 18, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framertime {config.framer.repairtime + 0.1} false", rowtwo, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.53", "0.54", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills framertime {config.framer.repairtime - 0.1} false", rowtwo, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.55", "0.56", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Medic Settings
             int rowthree = 5;
             ControlPanelelements.Add(XPUILabel($"[Medic Settings]", rowthree, height, TextAnchor.MiddleLeft, 15, "0.66", "0.99", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
@@ -11193,135 +13155,136 @@ namespace Oxide.Plugins
             }
             ControlPanelelements.Add(XPUILabel($"Max Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {medicmaxlevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills medicmaxlevel {config.medic.maxlvl + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            if (config.framer.maxlvl > 0)
+            ControlPanelelements.Add(XPUIButton($"xp.config skills medicmaxlevel {config.medic.maxlvl + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            if (config.medic.maxlvl > 0)
             {
-                ControlPanelelements.Add(XPUIButton($"xp.config skills medicmaxlevel {config.medic.maxlvl - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+                ControlPanelelements.Add(XPUIButton($"xp.config skills medicmaxlevel {config.medic.maxlvl - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             }
             // Max Cost to Start
             rowthree++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.medic.pointcoststart}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccost {config.medic.pointcoststart + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccost {config.medic.pointcoststart - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccost {config.medic.pointcoststart + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccost {config.medic.pointcoststart - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             rowthree++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.medic.costmultiplier}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccostmultiplier {config.medic.costmultiplier + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccostmultiplier {config.medic.costmultiplier - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccostmultiplier {config.medic.costmultiplier + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccostmultiplier {config.medic.costmultiplier - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Revive HP
             rowthree++;
             ControlPanelelements.Add(XPUILabel($"Revival Amount:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.medic.revivehp}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills medicrevival {config.medic.revivehp + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills medicrevival {config.medic.revivehp - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills medicrevival {config.medic.revivehp + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills medicrevival {config.medic.revivehp - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Recover HP
             rowthree++;
             ControlPanelelements.Add(XPUILabel($"Recover Amount:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.medic.recoverhp}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills medicrecover {config.medic.recoverhp + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills medicrecover {config.medic.recoverhp - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills medicrecover {config.medic.recoverhp + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills medicrecover {config.medic.recoverhp - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Medic Tools
             rowthree++;
             ControlPanelelements.Add(XPUILabel($"Medical Tools:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.medic.tools}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills medictools {config.medic.tools + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills medictools {config.medic.tools - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills medictools {config.medic.tools + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills medictools {config.medic.tools - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // RCraft Speed
             rowthree++;
             ControlPanelelements.Add(XPUILabel($"Mixing Table Speed:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUILabel($"|       {config.medic.crafttime}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccraft {config.medic.crafttime + 0.1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccraft {config.medic.crafttime - 0.1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Tamer Settings
+            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccraft {config.medic.crafttime + 0.1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills mediccraft {config.medic.crafttime - 0.1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Scavenger Settings
             rowthree++;
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"[Tamer Settings (Requires Pets Mod)]", rowthree, height, TextAnchor.MiddleLeft, 15, "0.66", "0.99", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            // Enable / Disable
-            rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Enable Pets:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.enabletame}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerenable 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerenable 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"[Scavenger Settings]", rowthree, height, TextAnchor.MiddleLeft, 15, "0.66", "0.99", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             // Max Level
             rowthree++;
+            if (config.scavenger.maxlvl > 0)
+            {
+                scavmaxlevel = config.scavenger.maxlvl.ToString();
+            }
             ControlPanelelements.Add(XPUILabel($"Max Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.maxlvl}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamermaxlevel {config.tamer.maxlvl + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamermaxlevel {config.tamer.maxlvl - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {scavmaxlevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavmaxlevel {config.scavenger.maxlvl + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            if (config.scavenger.maxlvl > 0)
+            {
+                ControlPanelelements.Add(XPUIButton($"xp.config skills scavmaxlevel {config.scavenger.maxlvl - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            }
             // Max Cost to Start
             rowthree++;
             ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.pointcoststart}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamercost {config.tamer.pointcoststart + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamercost {config.tamer.pointcoststart - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.pointcoststart}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavccost {config.scavenger.pointcoststart + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavccost {config.scavenger.pointcoststart - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Cost Multiplier
             rowthree++;
             ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.costmultiplier}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamercostmultiplier {config.tamer.costmultiplier + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamercostmultiplier {config.tamer.costmultiplier - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Enable Chicken
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.costmultiplier}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavcostmultiplier {config.scavenger.costmultiplier + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavcostmultiplier {config.scavenger.costmultiplier - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Default Multiplier Chance
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Chicken:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tamechicken}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerchicken 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerchicken 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Enable Boar
+            ControlPanelelements.Add(XPUILabel($"Extra Loot Chance:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.scavlootchance}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavlootchance {config.scavenger.scavlootchance + 0.01} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavlootchance {config.scavenger.scavlootchance - 0.01} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Default Multiplier
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Boar:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tameboar}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerboar 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerboar 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Enable Stag
+            ControlPanelelements.Add(XPUILabel($"Extra Loot Multiplier:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.scavmultiplier}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavmultiplier {config.scavenger.scavmultiplier + 0.1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavmultiplier {config.scavenger.scavmultiplier - 0.1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Custom Item Chance
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Stag:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tamestag}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerstag 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerstag 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Enable Wolf
+            ControlPanelelements.Add(XPUILabel($"Custom Item Chance:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.scavchance}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavchance {config.scavenger.scavchance + 0.01} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavchance {config.scavenger.scavchance - 0.01} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Custom Multiplier
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Wolf:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tamewolf}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerwolf 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerwolf 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Enable Bear
+            ControlPanelelements.Add(XPUILabel($"Custom Item Multiplier:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.customscavmultiplier}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills customscavmultiplier {config.scavenger.customscavmultiplier + 0.1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills customscavmultiplier {config.scavenger.customscavmultiplier - 0.1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Drops
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Bear:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tamebear}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerbear 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerbear 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Chicken Level
+            ControlPanelelements.Add(XPUILabel($"Increase Loot Drops:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.drops}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavbarrel 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavbarrel 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Loot Crates
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Chicken Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.chickenlevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerchickenlevel {config.tamer.chickenlevel + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerchickenlevel {config.tamer.chickenlevel - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Boar Level
+            ControlPanelelements.Add(XPUILabel($"Increase Loot Crates:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.crates}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavcrate 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavcrate 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // UnLoot Crates
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Boar Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.boarlevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerboarlevel {config.tamer.boarlevel + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerboarlevel {config.tamer.boarlevel - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Stag Level
+            ControlPanelelements.Add(XPUILabel($"Increase Water Loot Crates:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.uncrates}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavuncrate 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavuncrate 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Locked Crates
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Stag Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.staglevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerstaglevel {config.tamer.staglevel + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerstaglevel {config.tamer.staglevel - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Wolf Level
+            ControlPanelelements.Add(XPUILabel($"Increase Locked Crates:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.lockedcrates}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavlockedcrate 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavlockedcrate 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Hack Crates
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Wolf Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.wolflevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerwolflevel {config.tamer.wolflevel + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerwolflevel {config.tamer.wolflevel - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            // Bear Level
+            ControlPanelelements.Add(XPUILabel($"Increase Hackable Crates:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.hackcrates}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavhackcrate 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavhackcrate 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Components Only
             rowthree++;
-            ControlPanelelements.Add(XPUILabel($"Bear Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.bearlevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerbearlevel {config.tamer.bearlevel + 1} false", rowthree, height, 18, "0.0 1.0 0.0 0", "⇧", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
-            ControlPanelelements.Add(XPUIButton($"xp.config skills tamerbearlevel {config.tamer.bearlevel - 1} false", rowthree, height, 18, "1.0 0.0 0.0 0", "⇩", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"Increase Components Only:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.66", "0.81", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.scavenger.componentsonly}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.81", "0.86", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavcomponly 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.86", "0.87", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills scavcomponly 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.88", "0.89", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // UI End
             CuiHelper.AddUi(player, ControlPanelelements);
             return;
@@ -11334,8 +13297,8 @@ namespace Oxide.Plugins
             int row = 5;
             ControlPanelelements.Add(XPUIPanel("0.18 0.0", "1.0 1.0", "0.0 0.0 0.0 0.7"), XPerienceAdminPanelMain, XPerienceAdminPanelTimerColor);
             ControlPanelelements.Add(XPUILabel($"Timers, Chat, and UI Settings", 1, 0.090f, TextAnchor.MiddleLeft, 18, "0.01", "1", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
-            // Main Level Settings
-            ControlPanelelements.Add(XPUILabel($"[Live Stats UI / Chat Settings]", row, height, TextAnchor.MiddleLeft, 15, "0.01", "0.30", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
+            // Main UI Settings
+            ControlPanelelements.Add(XPUILabel($"[Live Stats & UI / Chat Settings]", row, height, TextAnchor.MiddleLeft, 15, "0.01", "0.30", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
             // Allow LiveStats Location
             row++;
             ControlPanelelements.Add(XPUILabel($"Allow Players to Move UI:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelTimerColor);
@@ -11557,6 +13520,7 @@ namespace Oxide.Plugins
         {
             var ControlPanelelements = new CuiElementContainer();
             var height = 0.030f;
+            int buttonsize = 18;
             int row = 5;
             ControlPanelelements.Add(XPUIPanel("0.18 0.0", "1.0 1.0", "0.0 0.0 0.0 0.7"), XPerienceAdminPanelMain, XPerienceAdminPanelOtherMods);
             ControlPanelelements.Add(XPUILabel($"Other Mod Support Settings", 1, 0.090f, TextAnchor.MiddleLeft, 18, "0.01", "1", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
@@ -11775,6 +13739,93 @@ namespace Oxide.Plugins
             ControlPanelelements.Add(XPUILabel($"|       {config.UiNotifier.criticalhittype}", rowtwo, height, TextAnchor.MiddleLeft, 12, "0.55", "0.60", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
             ControlPanelelements.Add(XPUIButton($"xp.config othermods uinotifycriticaltype {config.UiNotifier.criticalhittype + 1} false", rowtwo, height, 12, "0.0 1.0 0.0 0", "⇧", "0.61", "0.62", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
             ControlPanelelements.Add(XPUIButton($"xp.config othermods uinotifycriticaltype {config.UiNotifier.criticalhittype - 1} false", rowtwo, height, 12, "1.0 0.0 0.0 0", "⇩", "0.63", "0.64", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Tamer Settings
+            int rowthree = 5;
+            ControlPanelelements.Add(XPUILabel($"[Tamer Settings (Requires Pets Mod)]", rowthree, height, TextAnchor.MiddleLeft, 15, "0.70", "0.99", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Enable / Disable
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Enable Pets:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.enabletame}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerenable 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerenable 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Max Level
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Max Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.maxlvl}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamermaxlevel {config.tamer.maxlvl + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamermaxlevel {config.tamer.maxlvl - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Max Cost to Start
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Point Cost To Start:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.pointcoststart}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamercost {config.tamer.pointcoststart + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamercost {config.tamer.pointcoststart - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Cost Multiplier
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Cost Multiplier:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.costmultiplier}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamercostmultiplier {config.tamer.costmultiplier + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamercostmultiplier {config.tamer.costmultiplier - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Enable Chicken
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Chicken:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tamechicken}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerchicken 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerchicken 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Enable Boar
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Boar:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tameboar}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerboar 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerboar 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Enable Stag
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Stag:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tamestag}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerstag 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerstag 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Enable Wolf
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Wolf:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tamewolf}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerwolf 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerwolf 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Enable Bear
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Bear:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.tamebear}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerbear 0 true", rowthree, height, 12, "0.0 1.0 0.0 0", "T", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerbear 0 false", rowthree, height, 12, "1.0 0.0 0.0 0", "F", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Chicken Level
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Chicken Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.chickenlevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerchickenlevel {config.tamer.chickenlevel + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerchickenlevel {config.tamer.chickenlevel - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Boar Level
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Boar Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.boarlevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerboarlevel {config.tamer.boarlevel + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerboarlevel {config.tamer.boarlevel - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Stag Level
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Stag Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.staglevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerstaglevel {config.tamer.staglevel + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerstaglevel {config.tamer.staglevel - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Wolf Level
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Wolf Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.wolflevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerwolflevel {config.tamer.wolflevel + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerwolflevel {config.tamer.wolflevel - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            // Bear Level
+            rowthree++;
+            ControlPanelelements.Add(XPUILabel($"Bear Level:", rowthree, height, TextAnchor.MiddleLeft, 12, "0.70", "0.85", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUILabel($"|       {config.tamer.bearlevel}", rowthree, height, TextAnchor.MiddleLeft, 12, "0.85", "0.90", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerbearlevel {config.tamer.bearlevel + 1} false", rowthree, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.90", "0.91", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
+            ControlPanelelements.Add(XPUIButton($"xp.config othermods tamerbearlevel {config.tamer.bearlevel - 1} false", rowthree, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.92", "0.93", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelOtherMods);
 
 
             CuiHelper.AddUi(player, ControlPanelelements);
@@ -11867,6 +13918,7 @@ namespace Oxide.Plugins
                 ["adminmenu_011"] = "Fix Player Data",
                 ["adminmenu_012"] = "Other Mod Settings",
                 ["adminmenu_013"] = "Reset Options",
+                ["adminmenu_014"] = "My Stats",
                 ["adminfixplayers"] = "All player data has been reset except experience.\nLevels, points and requirements recalculated.",
                 ["adminresetconfig"] = "Config has been reset to default values.",
                 ["saveconfig"] = "New Config has been Saved",
@@ -11912,7 +13964,9 @@ namespace Oxide.Plugins
                 "Fisher: {14} \n" +
                 "Crafter: {15} \n" +
                 "Framer: {16} \n" +
-                "Tamer: {17} \n",
+                "Medic: {17} \n" +
+                "Scavenger: {18} \n" +
+                "Tamer: {19} \n",
                 ["suicide"] = "You have lost {0} XP for commiting suicide",
                 ["death"] = "Your XP has been reduced by {0} for death",
                 ["levelup"] = "You are now Level {0}.  You have recieved {1} stat point and {2} skill points",
@@ -11965,6 +14019,7 @@ namespace Oxide.Plugins
                 ["crafter"] = "Crafter",
                 ["framer"] = "Framer",
                 ["medic"] = "Medic",
+                ["scavenger"] = "Scavenger",
                 ["tamer"] = "Tamer",
                 ["stats"] = "Stats",
                 ["skills"] = "Skills",
@@ -12010,9 +14065,13 @@ namespace Oxide.Plugins
                 ["medicrevive"] = "Revival Health",
                 ["medicrecover"] = "Recover Health",
                 ["mediccrafting"] = "Mixing Table Speed",
-                ["unusedstatpoints"] = "Unused Stat Points",
-                ["unusedskillpoints"] = "Unused Skill Points",
-                ["totalspent"] = "Total Used Points",
+                ["scavchance"] = "Extra Loot Chance",
+                ["scavmultiplier"] = "Extra Loot Multiplier",
+                ["customscavchance"] = "Custom Loot Chance",
+                ["customscavmultiplier"] = "Custom Loot Multiplier",
+                ["unusedstatpoints"] = "Stat Points",
+                ["unusedskillpoints"] = "Skill Points",
+                ["totalspent"] = "Points Used",
                 ["liveuilocationoff"] = "Live XP UI Stats are off",
                 ["liveuilocation"] = "Live XP UI location is {0}",
                 ["liveuilocationhelp"] = "/xpliveui (0-4) - Live UI Location / 0 = off \n Current UI location is {0}",
@@ -12059,11 +14118,11 @@ namespace Oxide.Plugins
                 "Next execute the writecfg command in your console to save the config so it won't reset when you relaunch the game",
                 ["aboutxperience"] = "\n\n XPerience is an extremely detailed RPG based mod that allows players to earn experience and levels by interacting with all aspects of the game. You can earn experience from just about " +
                 "anything from cutting down trees, mining ore, hunting, killing, fishing, building, and more.. As you earn experience you will progress in levels that grant stat points and skill points you can spend in different traits " +
-                "that will give you increased abilities. There are currently 3 major Stats and 10 secondary Skills each with their own special attributes, more may come in the future. Stats will grant you overall character strengths while Skills grant you increased abilities when " +
+                "that will give you increased abilities. There are currently 4 major Stats and 10 secondary Skills each with their own special attributes, more may come in the future. Stats will grant you overall character strengths while Skills grant you increased abilities when " +
                 "interacting with the world. For every level you increase these traits it will increase the strength of the abilities that each one gives you. The higher the level of each trait the more points it requires to reach the next level. " +
                 "Server owners can configure and adjust every aspect of the XPerience mod including level requirements, level multiplier, xp gained from each source, points awarded per level, point cost per level, bonuses, stat and skill strengths per level, max level of stats " +
-                "and skills, reset timers, and more. \n\n To see the current server settings or details about stats and skills click Next Page at the top. \n\n",
-                ["serversettings"] = "Every server that uses XPerience can be setup differently to fit their preference. Below are some of the settings for this server: \n\n" +
+                "and skills, reset timers, and more.",
+                ["serversettings"] = "Every server that uses XPerience can be setup differently to fit their preference. Below are some of the settings for this server. Many things can effect these values like other mods that may be installed. \n\n" +
                 "[MAIN SETTINGS] Levels, Multipliers, Points, Timers, etc..\n" +
                 "Level Start: {0} | Required XP to reach level 1 \n" +
                 "XP Requirment: {1} | XP Requirement increase for next level ex. ({0} + {1} to reach level 2) \n" +
@@ -12115,7 +14174,7 @@ namespace Oxide.Plugins
                 "Death: {0}% Enabled: {1}\n" +
                 "Suicide: {2}% Enabled: {3}\n",
                 ["nextpagestats"] = "To view details about Stats and Skills click Next Page at the top.",
-                ["aboutstats"] = "The 3 major Stats are Mentality, Dexterity & Might.\nThe current server settings are listed below and represent the strength of each Stat per level gained.",
+                ["aboutstats"] = "The 4 major Stats are Mentality, Dexterity, Might & Captaincy.",
                 ["aboutmentality"] = "Grants you the ability to lower research costs such as the amount of scrap required to unlock new items, Reduces Research Speed that decreases the amount of time it takes to research items in the research station, and " +
                 "gives you increased chance to attack with a critical hit and cause more damage to an enemy or animal.",
                 ["aboutmentalitysettings"] = "[Current Mentality Settings] \nMax Level: {0} \nStarting Cost: {1} \nCost Multiplier: {2}x  Level \nResearch Cost Reduction: {3}% \nResearch Speed Reduction: {4}% \n" +
@@ -12129,7 +14188,7 @@ namespace Oxide.Plugins
                 "Metabolism Increase: {5}% | Thirst/Hunger \nBleed Reduction: {6}% \nRadiation Reduction: {7}% \nIncreased Heat Tolerance: {8}% \nIncreased Cold Tolerance: {9}%",
                 ["aboutcaptaincy"] = "Gives other team members overall skill boosts and XP boost within a certain range. Stacks on a % increase of the team members skills to increase the skills abilities for each team member seperatly based on the skill level of each member. Only effects skills and not stats. Requires at least 2 members in a team and has no effect on the current player.",
                 ["aboutcaptaincysettings"] = "[Current Captaincy Settings]\nMax Level: {0} \nStarting Cost: {1} \nCost Multiplier: {2}x Level \nEffective Distance: {3}FT \nSkill Boost: {4}%\n XP Boost Enabled: {5}\n XP Boost: {6}%",
-                ["aboutskills"] = "The 9 secondary skills are Woodcutter, Smithy, Miner, Forager, Hunter, Crafter, Framer, Fisher, and Tamer\n(taming requires pets mod and may not be available on certain servers).\nThe current server settings are listed below and represent the strength of each Skill per level gained.",
+                ["aboutskills"] = "The 10 secondary skills are Woodcutter, Smithy, Miner, Forager, Hunter, Crafter, Framer, Fisher, Medic, & Tamer\n(taming requires pets mod and may not be available on certain servers).",
                 ["aboutwoodcutter"] = "Increases the amount of wood you receive from cutting down trees, increases the bonus amount you get when a tree has been cut down, and gives you increased chances to have apples fall while cutting a tree.",
                 ["aboutwoodcuttersettings"] = "[Current WoodCutter Settingss] \nMax Level: {0} \nStarting Cost: {1} \nCost Multiplier: {2}x Level \nGather Rate: +{3}% \nBonus: +{4}% \nApple Chance: {5}%",
                 ["aboutsmithy"] = "Increases the chance of extra production from smelting or cooking in a furnace or grill and reduces the amount of fuel used in a furnace or grill so they burn longer with less fuel.",
@@ -12147,6 +14206,7 @@ namespace Oxide.Plugins
                 ["aboutfisher"] = "Gives you the ability to catch more fish at one time or increases the items you collect when fishing if you don't catch a fish.",
                 ["aboutfishersettings"] = "[Current Fisher Settings]\nMax Level: {0}\nStarting Cost: {1} \nCost Multiplier: {2} \nFish Increase: {3} \nItem Increase: {4}",
                 ["aboutmedic"] = "Gives you the ability to revive yourself and other players with more health once revived as well as reduces the time it takes to craft teas or other items in the mixing table.",
+                ["aboutscavenger"] = "Increases chance to find more loot inside containers with chance to find bonus items when looting containers. The higher your level the more items you'll find. Keep an eye out around these containers for your extra loot!",
                 ["aboutmedicsettings"] = "[Current Medic Settings]\nMax Level: {0}\nStarting Cost: {1} \nCost Multiplier: {2} \nRevival Health: {3} \nRecover Health: {4} \nCrafting Time: {5}%",
                 ["abouttamer"] = "If this skill is available then it will grant you the ability to tame animals as pets. Each level allows you to tame a bigger animal that can help you survive in the world. These pets can also carry items and even attack your enemies. Pets are currently controlled by a seperate mod with it's own settings and adjustments. More details about Pets can be found using the '/pet help' chat command",
                 ["abouttamersettings"] = "[Current Tamer Settings]\nEnabled: {0} \nMax Level: {1} \nStarting Cost: {2} \nCost Multiplier: {3} \n\n[Tameable Pets]\nChicken: {4} | Level Req: {5} \nBoar: {6} | Level Req: {7} \nStag: {8} | Level Req:{9} \nWolf: {10} | Level Req: {11} \nBear: {12} | Level Req: {13}",
@@ -12183,6 +14243,7 @@ namespace Oxide.Plugins
                 ["fixdatadisabled"] = "Fix Data Option Disabled By Admin",
                 ["hardcorenoreset"] = "Hardcore mode enabled, Stat/Skill Reset is Disabed",
                 ["crafternotenough"] = "Not enough resources to repair item",
+                ["killrecords"] = "Kill Records",
 
             }, this);
         }
