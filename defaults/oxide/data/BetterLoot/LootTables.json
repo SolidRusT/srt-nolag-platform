@@ -189,10 +189,6 @@
         "tool.binoculars": {
           "Max": 1,
           "Min": 1
-        },
-        "explosive.satchel": {
-          "Max": 5,
-          "Min": 2
         }
       },
       "ItemsMax": 8,
@@ -223,14 +219,6 @@
           "Max": 1,
           "Min": 1
         },
-        "explosives": {
-          "Max": 20,
-          "Min": 20
-        },
-        "hazmatsuit": {
-          "Max": 1,
-          "Min": 1
-        },
         "metal.facemask": {
           "Max": 1,
           "Min": 1
@@ -240,16 +228,8 @@
           "Min": 1
         },
         "metal.refined": {
-          "Max": 50,
-          "Min": 50
-        },
-        "metalpipe": {
-          "Max": 10,
-          "Min": 10
-        },
-        "nightvisiongoggles": {
-          "Max": 1,
-          "Min": 1
+          "Max": 150,
+          "Min": 150
         },
         "rifle.ak": {
           "Max": 1,
@@ -291,39 +271,23 @@
           "Max": 2,
           "Min": 1
         },
-        "supply.signal": {
-          "Max": 1,
-          "Min": 1
-        },
-        "syringe.medical": {
-          "Max": 2,
-          "Min": 2
-        },
-        "targeting.computer": {
-          "Max": 3,
-          "Min": 2
-        },
-        "techparts": {
-          "Max": 4,
-          "Min": 4
-        },
-        "weapon.mod.holosight": {
-          "Max": 1,
-          "Min": 1
-        },
         "weapon.mod.small.scope": {
           "Max": 1,
           "Min": 1
         },
-        "heavy.plate.helmet": {
+        "electric.generator.small": {
           "Max": 1,
           "Min": 1
         },
-        "heavy.plate.jacket": {
+        "rifle.lr300": {
           "Max": 1,
           "Min": 1
         },
-        "heavy.plate.pants": {
+        "hazmatsuit.nomadsuit": {
+          "Max": 1,
+          "Min": 1
+        },
+        "clatter.helmet": {
           "Max": 1,
           "Min": 1
         }
@@ -393,19 +357,11 @@
           "Max": 1,
           "Min": 1
         },
-        "chainsaw": {
-          "Max": 1,
-          "Min": 1
-        },
         "coffeecan.helmet": {
           "Max": 1,
           "Min": 1
         },
         "computerstation": {
-          "Max": 1,
-          "Min": 1
-        },
-        "flamethrower": {
           "Max": 1,
           "Min": 1
         },
@@ -417,25 +373,13 @@
           "Max": 1,
           "Min": 1
         },
-        "hoodie": {
-          "Max": 1,
-          "Min": 1
-        },
         "icepick.salvaged": {
           "Max": 1,
           "Min": 1
         },
-        "metal.refined": {
-          "Max": 25,
-          "Min": 25
-        },
         "metalpipe": {
-          "Max": 10,
-          "Min": 10
-        },
-        "nightvisiongoggles": {
-          "Max": 1,
-          "Min": 1
+          "Max": 15,
+          "Min": 15
         },
         "pistol.python": {
           "Max": 1,
@@ -469,10 +413,6 @@
           "Max": 1,
           "Min": 1
         },
-        "shoes.boots": {
-          "Max": 1,
-          "Min": 1
-        },
         "shotgun.pump": {
           "Max": 1,
           "Min": 1
@@ -501,32 +441,16 @@
           "Max": 3,
           "Min": 2
         },
-        "techparts": {
-          "Max": 4,
-          "Min": 4
-        },
         "weapon.mod.holosight": {
           "Max": 1,
           "Min": 1
         },
-        "grenade.f1": {
-          "Max": 2,
-          "Min": 2
-        },
-        "heavy.plate.helmet": {
-          "Max": 1,
-          "Min": 1
-        },
-        "heavy.plate.jacket": {
-          "Max": 1,
-          "Min": 1
-        },
-        "heavy.plate.pants": {
+        "nightvisiongoggles": {
           "Max": 1,
           "Min": 1
         }
       },
-      "ItemsMax": 4,
+      "ItemsMax": 5,
       "ItemsMin": 4,
       "MaxBPs": 0,
       "Scrap": 35
@@ -534,29 +458,13 @@
     "assets/bundled/prefabs/radtown/crate_normal_2.prefab": {
       "Enabled": true,
       "ItemList": {
-        "cctv.camera": {
-          "Max": 3,
-          "Min": 2
-        },
         "explosive.satchel": {
           "Max": 10,
-          "Min": 2
-        },
-        "fuse": {
-          "Max": 2,
           "Min": 2
         },
         "gears": {
           "Max": 10,
           "Min": 10
-        },
-        "grenade.beancan": {
-          "Max": 3,
-          "Min": 2
-        },
-        "hazmatsuit": {
-          "Max": 2,
-          "Min": 1
         },
         "jacket": {
           "Max": 1,
@@ -582,10 +490,6 @@
           "Max": 1,
           "Min": 1
         },
-        "pistol.revolver": {
-          "Max": 1,
-          "Min": 1
-        },
         "riot.helmet": {
           "Max": 1,
           "Min": 1
@@ -595,20 +499,12 @@
           "Min": 10
         },
         "semibody": {
-          "Max": 1,
-          "Min": 1
+          "Max": 3,
+          "Min": 3
         },
         "sheetmetal": {
           "Max": 10,
           "Min": 10
-        },
-        "shotgun.double": {
-          "Max": 1,
-          "Min": 1
-        },
-        "targeting.computer": {
-          "Max": 3,
-          "Min": 2
         },
         "hoodie": {
           "Max": 1,
@@ -622,21 +518,25 @@
           "Max": 1,
           "Min": 1
         },
-        "propanetank": {
-          "Max": 10,
-          "Min": 10
-        },
         "metalblade": {
           "Max": 10,
           "Min": 10
         },
-        "tarp": {
-          "Max": 3,
-          "Min": 3
+        "techparts": {
+          "Max": 5,
+          "Min": 5
         },
-        "grenade.f1": {
+        "shotgun.double": {
           "Max": 1,
           "Min": 1
+        },
+        "pistol.revolver": {
+          "Max": 1,
+          "Min": 1
+        },
+        "fuse": {
+          "Max": 2,
+          "Min": 2
         }
       },
       "ItemsMax": 5,
@@ -729,19 +629,11 @@
           "Max": 1,
           "Min": 1
         },
-        "targeting.computer": {
-          "Max": 1,
-          "Min": 1
-        },
-        "cctv.camera": {
-          "Max": 1,
-          "Min": 1
-        },
-        "hoodie": {
-          "Max": 1,
-          "Min": 1
-        },
         "wood.armor.helmet": {
+          "Max": 1,
+          "Min": 1
+        },
+        "flamethrower": {
           "Max": 1,
           "Min": 1
         }
@@ -1796,35 +1688,7 @@
     "assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate.prefab": {
       "Enabled": true,
       "ItemList": {
-        "autoturret": {
-          "Max": 1,
-          "Min": 1
-        },
-        "cctv.camera": {
-          "Max": 1,
-          "Min": 1
-        },
-        "door.double.hinged.toptier": {
-          "Max": 1,
-          "Min": 1
-        },
-        "door.hinged.toptier": {
-          "Max": 1,
-          "Min": 1
-        },
         "explosive.timed": {
-          "Max": 1,
-          "Min": 1
-        },
-        "explosives": {
-          "Max": 50,
-          "Min": 25
-        },
-        "hazmatsuit": {
-          "Max": 1,
-          "Min": 1
-        },
-        "hoodie": {
           "Max": 1,
           "Min": 1
         },
@@ -1837,24 +1701,16 @@
           "Min": 1
         },
         "metal.refined": {
-          "Max": 50,
-          "Min": 50
-        },
-        "metalpipe": {
-          "Max": 10,
-          "Min": 10
-        },
-        "nightvisiongoggles": {
-          "Max": 1,
-          "Min": 1
+          "Max": 350,
+          "Min": 300
         },
         "pistol.python": {
           "Max": 1,
           "Min": 1
         },
         "rifle.ak": {
-          "Max": 2,
-          "Min": 2
+          "Max": 1,
+          "Min": 1
         },
         "rifle.bolt": {
           "Max": 1,
@@ -1862,10 +1718,6 @@
         },
         "rifle.semiauto": {
           "Max": 1,
-          "Min": 1
-        },
-        "riflebody": {
-          "Max": 2,
           "Min": 1
         },
         "smg.2": {
@@ -1879,18 +1731,6 @@
         "smg.thompson": {
           "Max": 1,
           "Min": 1
-        },
-        "smgbody": {
-          "Max": 1,
-          "Min": 1
-        },
-        "supply.signal": {
-          "Max": 1,
-          "Min": 1
-        },
-        "targeting.computer": {
-          "Max": 3,
-          "Min": 3
         },
         "weapon.mod.small.scope": {
           "Max": 1,
@@ -1925,14 +1765,6 @@
           "Max": 6,
           "Min": 6
         },
-        "chainsaw": {
-          "Max": 1,
-          "Min": 1
-        },
-        "explosive.satchel": {
-          "Max": 10,
-          "Min": 2
-        },
         "explosive.timed": {
           "Max": 1,
           "Min": 1
@@ -1940,14 +1772,6 @@
         "gears": {
           "Max": 10,
           "Min": 10
-        },
-        "grenade.f1": {
-          "Max": 1,
-          "Min": 1
-        },
-        "hoodie": {
-          "Max": 1,
-          "Min": 1
         },
         "jackhammer": {
           "Max": 1,
@@ -1958,18 +1782,10 @@
           "Min": 50
         },
         "metalpipe": {
-          "Max": 10,
-          "Min": 10
-        },
-        "pants": {
-          "Max": 1,
-          "Min": 1
+          "Max": 15,
+          "Min": 15
         },
         "pistol.m92": {
-          "Max": 1,
-          "Min": 1
-        },
-        "rifle.lr300": {
           "Max": 1,
           "Min": 1
         },
@@ -1982,16 +1798,12 @@
           "Min": 1
         },
         "scrap": {
-          "Max": 160,
-          "Min": 100
+          "Max": 250,
+          "Min": 200
         },
         "sheetmetal": {
-          "Max": 10,
-          "Min": 10
-        },
-        "shotgun.spas12": {
-          "Max": 1,
-          "Min": 1
+          "Max": 20,
+          "Min": 20
         },
         "smg.2": {
           "Max": 1,
@@ -2004,10 +1816,6 @@
         "smg.thompson": {
           "Max": 1,
           "Min": 1
-        },
-        "techparts": {
-          "Max": 5,
-          "Min": 5
         }
       },
       "ItemsMax": 8,
@@ -2030,10 +1838,6 @@
           "Max": 3,
           "Min": 3
         },
-        "cctv.camera": {
-          "Max": 5,
-          "Min": 5
-        },
         "explosive.timed": {
           "Max": 2,
           "Min": 1
@@ -2042,16 +1846,8 @@
           "Max": 1,
           "Min": 1
         },
-        "pistol.m92": {
-          "Max": 1,
-          "Min": 1
-        },
         "rifle.ak": {
           "Max": 2,
-          "Min": 1
-        },
-        "rifle.bolt": {
-          "Max": 1,
           "Min": 1
         },
         "rifle.l96": {
@@ -2062,33 +1858,25 @@
           "Max": 1,
           "Min": 1
         },
-        "rifle.m39": {
-          "Max": 1,
-          "Min": 1
-        },
-        "smg.2": {
-          "Max": 1,
-          "Min": 1
-        },
         "smg.mp5": {
           "Max": 1,
           "Min": 1
-        },
-        "smg.thompson": {
-          "Max": 1,
-          "Min": 1
-        },
-        "targeting.computer": {
-          "Max": 5,
-          "Min": 5
         },
         "weapon.mod.8x.scope": {
           "Max": 1,
           "Min": 1
         },
+        "ammo.rocket.basic": {
+          "Max": 3,
+          "Min": 2
+        },
         "weapon.mod.small.scope": {
           "Max": 1,
           "Min": 1
+        },
+        "metal.refined": {
+          "Max": 400,
+          "Min": 400
         }
       },
       "ItemsMax": 10,
@@ -2112,20 +1900,12 @@
           "Min": 3
         },
         "explosive.timed": {
-          "Max": 3,
+          "Max": 2,
           "Min": 1
-        },
-        "explosives": {
-          "Max": 35,
-          "Min": 35
         },
         "lmg.m249": {
           "Max": 1,
           "Min": 1
-        },
-        "pistol.m92": {
-          "Max": 3,
-          "Min": 0
         },
         "rifle.l96": {
           "Max": 1,
@@ -2134,14 +1914,6 @@
         "rifle.lr300": {
           "Max": 2,
           "Min": 0
-        },
-        "shotgun.spas12": {
-          "Max": 2,
-          "Min": 0
-        },
-        "smg.mp5": {
-          "Max": 1,
-          "Min": 1
         },
         "weapon.mod.8x.scope": {
           "Max": 1,
