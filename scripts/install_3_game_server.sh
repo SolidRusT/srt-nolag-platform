@@ -32,7 +32,8 @@ sudo apt clean
 sudo apt autoclean
 # Installed required dependencies
 ## Buster required lib32gcc1 instead of lib32gcc-s1
-## Bullseye required lib32gcc-s1 instead of lib32gcc1       
+## Bullseye required lib32gcc-s1 instead of lib32gcc1
+## Works perfect with Ubuntu 20.04
 sudo apt-get -y install \
     git \
     apt-transport-https \

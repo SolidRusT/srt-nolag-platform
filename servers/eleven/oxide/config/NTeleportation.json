@@ -2,10 +2,7 @@
   "Settings": {
     "Chat Command Color": "#FFFF00",
     "Chat Command Argument Color": "#FFA500",
-    "Enable Popup Support": true,
-    "TPB Available After X Seconds": 0.0,
     "Interrupt TP": {
-      "Interrupt Teleport At Specific Monuments": [],
       "Above Water": false,
       "Balloon": true,
       "Boats": false,
@@ -14,17 +11,16 @@
       "Excavator": false,
       "Hot": false,
       "Hostile": false,
-      "Hurt": true,
-      "Junkpiles": false,
+      "Hurt": false,
       "Lift": true,
       "Monument": false,
       "Ignore Monument Marker Prefab": false,
       "Mounted": true,
-      "Oil Rig": true,
-      "Safe Zone": true,
+      "Oil Rig": false,
+      "Safe Zone": false,
       "Swimming": false
     },
-    "Block Teleport (NoEscape)": true,
+    "Block Teleport (NoEscape)": false,
     "Block Teleport (ZoneManager)": false,
     "Chat Name": "<color=red>Teleportation</color> \n\n",
     "Chat Steam64ID": 76561199056025689,
@@ -47,8 +43,8 @@
     "Use Economics": true,
     "Use Server Rewards": false,
     "Wipe On Upgrade Or Change": true,
-    "Auto Generate Outpost Location": true,
-    "Auto Generate Bandit Location": true,
+    "Auto Generate Outpost Location": false,
+    "Auto Generate Bandit Location": false,
     "Show Time As Seconds Instead": false
   },
   "Admin": {
@@ -112,12 +108,12 @@
     "Use Friends": true,
     "Use Clans": true,
     "Use Teams": true,
-    "Usable Out Of Building Blocked": false,
-    "Usable Into Building Blocked": false,
+    "Usable Out Of Building Blocked": true,
+    "Usable Into Building Blocked": true,
     "Usable From Safe Zone Only": false,
     "Allow Cupboard Owner When Building Blocked": true,
-    "Allow Iceberg": false,
-    "Allow Cave": false,
+    "Allow Iceberg": true,
+    "Allow Cave": true,
     "Allow Crafting": false,
     "Allow Above Foundation": true,
     "Check If Home Is Valid On Listhomes": false,
@@ -125,7 +121,7 @@
     "Bypass": 10
   },
   "TPT": {
-    "Use Friends": false,
+    "Use Friends": true,
     "Use Clans": true,
     "Use Teams": true,
     "Allow Cave": true
@@ -166,8 +162,8 @@
     },
     "Request Duration": 30,
     "Block TPA On Ceiling": true,
-    "Usable Out Of Building Blocked": false,
-    "Usable Into Building Blocked": false,
+    "Usable Out Of Building Blocked": true,
+    "Usable Into Building Blocked": true,
     "Allow Cupboard Owner When Building Blocked": true,
     "Allow Crafting": false,
     "Pay": 0,
@@ -259,7 +255,7 @@
       "Bypass": 10
     },
     "Outpost": {
-      "Command Enabled": true,
+      "Command Enabled": false,
       "Allow TPB": true,
       "Allow Cave": false,
       "Cooldown": 600,
@@ -301,7 +297,7 @@
       "Bypass": 10
     },
     "Bandit": {
-      "Command Enabled": true,
+      "Command Enabled": false,
       "Allow TPB": true,
       "Allow Cave": false,
       "Cooldown": 600,
