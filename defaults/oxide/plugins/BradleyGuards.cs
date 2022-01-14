@@ -10,7 +10,7 @@ using VLB;
 
 namespace Oxide.Plugins
 {
-    [Info("Bradley Guards", "Bazz3l", "1.4.0")]
+    [Info("Bradley Guards", "Bazz3l", "1.4.1")]
     [Description("Call in armed reinforcements when bradley is destroyed at launch site.")]
     public class BradleyGuards : RustPlugin
     {
@@ -230,7 +230,7 @@ namespace Oxide.Plugins
                 return;
 
             npc.Brain.Navigator.PlaceOnNavMesh();
-            npc.Brain.Navigator.SetDestination(_bradleyPosition);
+            npc.Brain.Navigator.SetDestination(RandomCircle(_bradleyPosition, 5f));
         }
 
         #endregion
@@ -280,6 +280,9 @@ namespace Oxide.Plugins
             NextFrame(() =>
             {
                 if (npc == null || npc.IsDestroyed) return;
+
+                Vector3 roamPoint = RandomCircle(eventPos, 5f);
+
                 npc.Brain.Navigator.Agent.agentTypeID = -1372625422;
                 npc.Brain.Navigator.DefaultArea = "Walkable";
                 npc.Brain.AllowedToSleep = false;
@@ -292,9 +295,9 @@ namespace Oxide.Plugins
                 npc.Brain.Navigator.BestCoverPointMaxDistance = settings.MaxRoamRadius / 2;
                 npc.Brain.Navigator.BestRoamPointMaxDistance = settings.MaxRoamRadius;
                 npc.Brain.Navigator.MaxRoamDistanceFromHome = settings.MaxRoamRadius;
-                npc.Brain.AddState(new TakeCoverState { brain = npc.Brain, Position = eventPos });
+                npc.Brain.AddState(new TakeCoverState { brain = npc.Brain, Position = roamPoint });
                 npc.Brain.AddState(new ChaseState { brain = npc.Brain });
-                npc.Brain.AddState(new RoamState { brain = npc.Brain, Position = eventPos });
+                npc.Brain.AddState(new RoamState { brain = npc.Brain, Position = roamPoint });
                 npc.Brain.Senses.Init(npc, 5f, settings.MaxAggressionRange, settings.MaxAggressionRange + 5f, -1f, true, true, true, settings.MaxAggressionRange, false, false, true, EntityType.Player, false);
             });
         }
@@ -673,14 +676,17 @@ namespace Oxide.Plugins
         void MessageAll(string key) =>
             Server.Broadcast(Lang(key, null), _config.ChatIcon);
 
-        Vector3 GetRandomPoint(Vector3 position, float radius)
+        static Vector3 RandomCircle(Vector3 center, float radius)
         {
-            Vector3 pos = position + UnityEngine.Random.onUnitSphere * radius;
-            pos.y = TerrainMeta.HeightMap.GetHeight(pos);
+            float ang = UnityEngine.Random.value * 360;
+            Vector3 pos;
+            pos.x = center.x + radius * Mathf.Sin(ang * Mathf.Deg2Rad);
+            pos.z = center.z + radius * Mathf.Cos(ang * Mathf.Deg2Rad);
+            pos.y = center.y;
             return pos;
         }
 
-        private static void GiveKit(ScientistNPC npc, GuardSetting settings)
+        static void GiveKit(ScientistNPC npc, GuardSetting settings)
         {
             if (settings.KitEnabled)
             {
@@ -707,12 +713,6 @@ namespace Oxide.Plugins
             }
 
             npc.Invoke(npc.EquipWeapon, 0.25f);
-        }
-
-        static void UpdateItem(ScientistNPC player)
-        {
-            player.EquipWeapon();
-            player.SendNetworkUpdateImmediate();
         }
 
         #endregion
