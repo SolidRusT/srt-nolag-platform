@@ -290,6 +290,10 @@
         "clatter.helmet": {
           "Max": 1,
           "Min": 1
+        },
+        "aiming.module.mlrs": {
+          "Max": 2,
+          "Min": 1
         }
       },
       "ItemsMax": 5,
@@ -1739,6 +1743,10 @@
         "weapon.mod.8x.scope": {
           "Max": 1,
           "Min": 1
+        },
+        "ammo.rocket.mlrs": {
+          "Max": 3,
+          "Min": 3
         }
       },
       "ItemsMax": 12,
@@ -1877,6 +1885,10 @@
         "metal.refined": {
           "Max": 400,
           "Min": 400
+        },
+        "ammo.rocket.mlrs": {
+          "Max": 3,
+          "Min": 3
         }
       },
       "ItemsMax": 10,
@@ -1918,6 +1930,10 @@
         "weapon.mod.8x.scope": {
           "Max": 1,
           "Min": 1
+        },
+        "ammo.rocket.mlrs": {
+          "Max": 4,
+          "Min": 4
         }
       },
       "ItemsMax": 6,
