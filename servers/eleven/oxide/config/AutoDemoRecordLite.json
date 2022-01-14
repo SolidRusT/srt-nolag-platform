@@ -1,0 +1,13 @@
+{
+    "Auto record after X reports": 1,
+    "Auto record for X minutes": 1,
+    "Clear report counter after recording?": false,
+    "Discord MSG Color": 39423,
+    "Discord Webhook": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5",
+    "Discord: Include report with end message?": true,
+    "Discord: Include report with start message?": true,
+    "Discord: Notify if recording is started": true,
+    "Discord: Notify if recording is stopped": true,
+    "Only record when reports within X seconds": 0,
+    "Save/Load reports to datafile on reload": true
+}

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Fuel Gauge", "Oryx", "0.5.8")]
+    [Info("Fuel Gauge", "Oryx", "0.6.0")]
     [Description("HUD for amount of fuel when riding a vehicle")]
     public class FuelGauge : RustPlugin
     {
@@ -28,6 +28,11 @@ namespace Oxide.Plugins
         private float backgroundTransparency;
         private string gaugeType = "bar";
 
+        private readonly List<string> driverSeats = new List<string>()
+        {
+            "miniheliseat", "modularcardriverseat", "transporthelipilot", "driverseat", "smallboatdriver", "standingdriver", "submarinesolodriverstanding", "submarineduodriverseat"
+        };
+
         public class VehicleCache
         {
             public BaseMountable entity;
@@ -40,7 +45,7 @@ namespace Oxide.Plugins
                     return (entity.GetParentEntity() as MiniCopter).GetFuelSystem()?.GetFuelAmount() ?? 0;
                 }
 
-                if (entity.GetParentEntity() is BaseVehicle)
+                if (entity.VehicleParent() as ModularCar)
                 {
                     return (entity.VehicleParent() as ModularCar).GetFuelSystem()?.GetFuelAmount() ?? 0;
                 }
@@ -50,7 +55,38 @@ namespace Oxide.Plugins
                     return (entity.GetParentEntity() as MotorRowboat).GetFuelSystem()?.GetFuelAmount() ?? 0;
                 }
 
+                if(entity.GetParentEntity() is BaseSubmarine)
+                {
+                    return (entity.GetParentEntity() as BaseSubmarine).GetFuelSystem()?.GetFuelAmount() ?? 0;
+                }
+
                 return 0;
+            }
+
+            //Checks if a vehicle has fuel system
+            public static bool HasFuelSystem(BaseMountable entity)
+            {
+                if (entity.GetParentEntity() is MiniCopter) // Includes ScrapTransportHelicopter
+                {
+                    return true;
+                }
+
+                if (entity.VehicleParent() as ModularCar) //Includes Modular Cars
+                {
+                    return true;
+                }
+
+                if (entity.GetParentEntity() is MotorRowboat) // Includes RHIB
+                {
+                    return true;
+                }
+
+                if (entity.GetParentEntity() is BaseSubmarine) // Includes Base Submarines 
+                {
+                    return true;
+                }
+
+                return false;
             }
         }
         #endregion
@@ -162,10 +198,9 @@ namespace Oxide.Plugins
         void OnEntityMounted(BaseMountable entity, BasePlayer player)
         {
 
-            if (!(entity.GetParentEntity() is MiniCopter || entity.VehicleParent() is ModularCar || entity.GetParentEntity() is MotorRowboat))
-            {
-                return;
-            }
+            Puts("Prefab: " + entity.ShortPrefabName);
+
+            
 
             if (!permission.UserHasPermission(player.UserIDString, perm))
             {
@@ -180,15 +215,11 @@ namespace Oxide.Plugins
 
             if (onlyDriver)
             {
-                if (!(entity.ShortPrefabName == "miniheliseat" /* MiniCopter */ | entity.ShortPrefabName == "modularcardriverseat" /* ModularCar */
-                    | entity.ShortPrefabName == "transporthelipilot" | entity.ShortPrefabName == "transporthelicopilot" /* ScrapTransportHelicopter */
-                    | entity.ShortPrefabName == "driverseat" | entity.ShortPrefabName == "smallboatdriver" /* MotorRowBoat*/ | entity.ShortPrefabName == "standingdriver" /* RHIB */))
+                if (!(driverSeats.Contains(entity.ShortPrefabName)))
                 {
-                    Puts(entity.ShortPrefabName);
                     return;
                 }
             }
-
 
             VehicleCache vehicle = new VehicleCache
             {
