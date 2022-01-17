@@ -2226,48 +2226,6 @@
       "skinid": 0
     },
     {
-      "flags": {},
-      "items": [
-        {
-          "amount": 6,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": 1199391518,
-          "position": 0,
-          "skinid": 0
-        },
-        {
-          "amount": 1,
-          "blueprintTarget": 0,
-          "condition": "450",
-          "id": 1266491000,
-          "position": 1,
-          "skinid": 0
-        },
-        {
-          "amount": 10,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": -932201673,
-          "position": 2,
-          "skinid": 0
-        }
-      ],
-      "ownerid": 0,
-      "pos": {
-        "x": "-2.957671",
-        "y": "-1.629513",
-        "z": "1.680151"
-      },
-      "prefabname": "assets/bundled/prefabs/radtown/crate_normal_2.prefab",
-      "rot": {
-        "x": "6.238433",
-        "y": "3.030777",
-        "z": "0.1965375"
-      },
-      "skinid": 0
-    },
-    {
       "flags": {
         "Reserved2": true
       },
@@ -2545,40 +2503,6 @@
       "skinid": 0
     },
     {
-      "flags": {},
-      "items": [
-        {
-          "amount": 2,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": 1414245522,
-          "position": 0,
-          "skinid": 0
-        },
-        {
-          "amount": 4,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": -932201673,
-          "position": 1,
-          "skinid": 0
-        }
-      ],
-      "ownerid": 0,
-      "pos": {
-        "x": "-4.195982",
-        "y": "-0.9617221",
-        "z": "3.396578"
-      },
-      "prefabname": "assets/bundled/prefabs/radtown/loot_barrel_1.prefab",
-      "rot": {
-        "x": "6.218303",
-        "y": "4.097991",
-        "z": "0.03178775"
-      },
-      "skinid": 0
-    },
-    {
       "flags": {
         "Reserved1": true,
         "Reserved2": true
@@ -2651,116 +2575,6 @@
         "x": "0",
         "y": "0.9317085",
         "z": "0"
-      },
-      "skinid": 0
-    },
-    {
-      "flags": {},
-      "items": [
-        {
-          "amount": 1,
-          "blueprintTarget": 0,
-          "condition": "100",
-          "id": -44876289,
-          "position": 0,
-          "skinid": 0
-        },
-        {
-          "amount": 8,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": -932201673,
-          "position": 1,
-          "skinid": 0
-        }
-      ],
-      "ownerid": 0,
-      "pos": {
-        "x": "-4.195792",
-        "y": "-1.806289",
-        "z": "3.396543"
-      },
-      "prefabname": "assets/bundled/prefabs/radtown/loot_barrel_2.prefab",
-      "rot": {
-        "x": "6.218303",
-        "y": "4.09799",
-        "z": "6.057923"
-      },
-      "skinid": 0
-    },
-    {
-      "flags": {},
-      "items": [
-        {
-          "amount": 8,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": 215754713,
-          "position": 0,
-          "skinid": 0
-        },
-        {
-          "amount": 4,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": 14241751,
-          "position": 1,
-          "skinid": 0
-        },
-        {
-          "amount": 20,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": -932201673,
-          "position": 2,
-          "skinid": 0
-        }
-      ],
-      "ownerid": 0,
-      "pos": {
-        "x": "-2.957603",
-        "y": "-1.629512",
-        "z": "1.680099"
-      },
-      "prefabname": "assets/bundled/prefabs/radtown/crate_tools.prefab",
-      "rot": {
-        "x": "6.238433",
-        "y": "3.030776",
-        "z": "0.1965375"
-      },
-      "skinid": 0
-    },
-    {
-      "flags": {},
-      "items": [
-        {
-          "amount": 3,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": 1234880403,
-          "position": 0,
-          "skinid": 0
-        },
-        {
-          "amount": 4,
-          "blueprintTarget": 0,
-          "condition": "0",
-          "id": -932201673,
-          "position": 1,
-          "skinid": 0
-        }
-      ],
-      "ownerid": 0,
-      "pos": {
-        "x": "-3.495947",
-        "y": "-1.762045",
-        "z": "-0.3246536"
-      },
-      "prefabname": "assets/bundled/prefabs/radtown/loot_barrel_1.prefab",
-      "rot": {
-        "x": "0.1377355",
-        "y": "3.419392",
-        "z": "0.1109034"
       },
       "skinid": 0
     },

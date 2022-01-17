@@ -15,12 +15,12 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Bank System", "Mevent", "1.0.14")]
+    [Info("Bank System", "Mevent", "1.0.15")]
     public class BankSystem : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, Notify, StackSizeController, StackModifier;
+        [PluginReference] private Plugin ImageLibrary, Notify, StackSizeController, StackModifier, Economics;
 
         private const string Layer = "UI.BankSystem";
 
@@ -1091,6 +1091,9 @@ namespace Oxide.Plugins
 
             if (StackSizeController || StackModifier)
                 Unsubscribe(nameof(OnItemSplit));
+
+            if (Economics)
+                Unsubscribe(nameof(Balance));
 
             if (!string.IsNullOrEmpty(_config.Permission) &&
                 !permission.PermissionExists(_config.Permission))

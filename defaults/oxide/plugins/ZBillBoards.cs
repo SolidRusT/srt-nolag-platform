@@ -1,22 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Oxide.Core;
-using Oxide.Core.Plugins;
 using Newtonsoft.Json;
 using System.Collections;
 using UnityEngine.Networking;
 using System.Drawing;
 using System.IO;
 using System.Drawing.Imaging;
-using System;
 
 namespace Oxide.Plugins
 {
-    [Info("ZBillBoards", "JOSH-Z", "1.2.3")]
+    [Info("ZBillBoards", "JOSH-Z", "1.3.0")]
     [Description("Create huge (or small) billboards")]
     public class ZBillBoards : RustPlugin
     {
-
         private static ZBillBoards ins;
         private GameObject downloadControllerObject;
         private DownloadController downloadController;
@@ -29,7 +26,6 @@ namespace Oxide.Plugins
         const string permTier2 = "zbillboards.tier2";
         const string permTier3 = "zbillboards.tier3";
         const string dataFileName = "ZBillBoards";
-       
 
         #region Hooks
         void Init()
@@ -103,9 +99,40 @@ namespace Oxide.Plugins
             }
         }
 
+        //private static void ProcessDrawing(Signage sign, int targetWidth, int targetHeight, DownloadRequest request)
+        //{
+        //    //byte[] bytesEditedImage;
+
+        //    var textureId = sign.textureIDs[0];
+        //    if (textureId == 0)
+        //    {
+        //        Debug.LogError("Image texture ID is 0");
+        //        return;
+        //    }
+
+        //    var imageByte = FileStorage.server.Get(textureId, FileStorage.Type.png, sign.net.ID);
+        //    using (MemoryStream ms = new MemoryStream(imageByte))
+        //    {
+        //        Bitmap image = (Bitmap)Image.FromStream(ms);
+
+
+        //        Bitmap finalImage = new Bitmap(targetWidth, targetHeight);
+
+        //        using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromImage(finalImage))
+        //        {
+        //            graphics.DrawImage(image, new Rectangle(0, 0, targetWidth, targetHeight));
+
+        //        }
+        //            SplitImageAndPaste(request, image, ins.configData.imageSize, ins.configData.imageSize);
+
+               
+
+        //        image.Dispose();
+        //    }
+        //}
+
         private static void SplitImageAndPaste(DownloadRequest request, Bitmap sourceImage, int defWidth, int defHeight)
         {
-
             if(ins.configData.debug)
                 Debug.Log("Image url: " + request.imageURL);
 
@@ -115,18 +142,14 @@ namespace Oxide.Plugins
                 return;
             }
 
-            //if (!ins.storedData.billBoards.ContainsKey(request.targetSign.net.ID)) return;
-            List<uint> billBoardSigns;
-            if (!ins.storedData.billBoards.TryGetValue(request.targetSign.net.ID, out billBoardSigns)) return;
+            BillBoardData billBoardData;
+            if (!ins.storedData.billBoards.TryGetValue(request.targetSign.net.ID, out billBoardData)) return;
 
             var sTotCols = request.width;
             var curCol = 1;
             var curRow = 1;
 
-
-
-            //foreach (uint signID in ins.storedData.billBoards[request.targetSign.net.ID])
-            foreach (uint signID in billBoardSigns)
+            foreach (uint signID in billBoardData.billBoardSigns)
             {
                 byte[] imagePart = GetImagePart(sourceImage, ins.configData.imageSize, ins.configData.imageSize, curCol, curRow);
                 ins.pasteController.AddToPasteList(imagePart, signID, curCol, curRow);
@@ -414,7 +437,7 @@ namespace Oxide.Plugins
                 uint posID;
                 if (!uint.TryParse(arg.Args[0], out posID)) return;
 
-                NeonSign mainSign = GetMainSign(posID);
+                NeonSign mainSign = GetMainSign(posID) as NeonSign;
                 if (mainSign == null) return;
 
                 if (configData.debug)
@@ -468,15 +491,76 @@ namespace Oxide.Plugins
                     case "next": CommandPasteNext(player); break;
                     case "emptypaste": CommandPasteEmpty(player); break;
                     case "sil": SilBillBoard(player, args); break;
+                    //case "draw": DrawingToBillBoard(player, args); break;
                 }
             }
         }
         #endregion
 
         #region Functions
+        // for next version
+        //public void DrawingToBillBoard(BasePlayer player, string[] args)
+        //{
+        //    if (!selectedSigns.ContainsKey(player))
+        //        selectedSigns.Add(player, null);
+
+        //    if(args.Length == 3)
+        //    {
+        //        int cols;
+        //        int rows;
+        //        if (!int.TryParse(args[1], out cols) || !int.TryParse(args[2], out rows))
+        //        {
+        //            player.ChatMessage("Incorrect syntax: /billboard draw 3 2");
+        //            return;
+        //        }
+
+        //        var startSign = GetBillBoard(player);
+        //        if (startSign == null) return;
+
+        //        Signage selectedSign;
+        //        if (!selectedSigns.TryGetValue(player, out selectedSign) || selectedSign == null)
+        //        {
+        //            player.ChatMessage("Select a source sign first: /billboard draw select");
+        //            return;
+        //        }
+
+        //        player.ChatMessage("Drawing painting from sign to billboard");
+        //        ProcessDrawing(selectedSign, cols, rows, new DownloadRequest("", player, startSign, cols, rows, false));
+        //    }
+        //    else if(args.Length > 1)
+        //    {
+        //        switch(args[1])
+        //        {
+        //            case "select":
+        //                RaycastHit hit;
+        //                if (!Physics.Raycast(player.eyes.HeadRay(), out hit, 6f))
+        //                {
+        //                    player.ChatMessage("Please look at a sign!");
+        //                    return;
+        //                }
+
+        //                var sourceSign = hit.GetEntity() as Signage;
+        //                if(sourceSign == null)
+        //                {
+        //                    player.ChatMessage("Please look at a sign!");
+        //                    return;
+        //                }
+
+        //                selectedSigns[player] = sourceSign;
+        //                player.ChatMessage("Selected " + sourceSign.ShortPrefabName);
+        //                break;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        player.ChatMessage("Incorrect syntax: /billboard draw select | /billboard draw 3 2");
+        //        return;
+        //    }
+        //}
+
         public void ValidateAllBillboards()
         {
-            var allBB = new Dictionary<uint, List<uint>>(storedData.billBoards);
+            var allBB = new Dictionary<uint, BillBoardData>(storedData.billBoards);
             Puts("Validating " + allBB.Count + " billboards...");
             foreach(var mainSign  in allBB)
             {
@@ -488,14 +572,14 @@ namespace Oxide.Plugins
 
         public void ValidateBillboard(uint mainSignID)
         {
-            List<uint> signList;
-            if(!storedData.billBoards.TryGetValue(mainSignID, out signList))
+            BillBoardData billBoardData;
+            if(!storedData.billBoards.TryGetValue(mainSignID, out billBoardData))
             {
                 Puts("Trying to validate a non-existing billboard");
                 return;
             }
 
-            NeonSign signage = BaseNetworkable.serverEntities.Find(mainSignID) as NeonSign;
+            Signage signage = BaseNetworkable.serverEntities.Find(mainSignID) as Signage;
             if (signage == null)
             {
                 storedData.billBoards.Remove(mainSignID);
@@ -506,35 +590,38 @@ namespace Oxide.Plugins
                 return;
             }
 
-            var speed = 1f;
-            float storedSpeed;
-            if (storedData.billBoardSpeeds.TryGetValue(mainSignID, out storedSpeed))
-                speed = storedSpeed;
+            var speed = 3f;
+            if (billBoardData.speed > 0)
+                speed = billBoardData.speed;
 
-            Puts("Billboard " + mainSignID + " has " + signList.Count + " signs, validating...");
-            foreach (var subSign in signList)
+            Puts("Billboard " + mainSignID + " has " + billBoardData.billBoardSigns.Count + " signs, validating...");
+            foreach (var subSign in billBoardData.billBoardSigns)
             {
-                NeonSign subSignage = BaseNetworkable.serverEntities.Find(subSign) as NeonSign;
+                Signage subSignage = BaseNetworkable.serverEntities.Find(subSign) as Signage;
                 if (subSignage == null)
                 {
-                    storedData.billBoards[mainSignID].Remove(subSign);
+                    storedData.billBoards[mainSignID].billBoardSigns.Remove(subSign);
                     Puts("Deleted sign " + subSign + " from billboard " + mainSignID);
                     continue;
                 }
 
-                subSignage.animationSpeed = speed;
-                subSignage.UpdateHasPower(0, 0);
-                //subSignage.UpdateHasPower(25, 0);
-                //subSignage.SendNetworkUpdate();
+                var subSignNeon = subSignage as NeonSign;
+                if (subSignNeon != null)
+                {
+                    subSignNeon.animationSpeed = speed;
+                    subSignNeon.UpdateHasPower(0, 0);
+                }
             }
 
-            SwitchBillBoardPower(signage, 25);
+            if (signage is NeonSign)
+                SwitchBillBoardPower(signage as NeonSign, 25);
+
             Puts("Billboard validated");
         }
 
         public void ToggleBillBoardPower(BasePlayer player)
         {
-            var billboardSign = GetBillBoard(player);
+            var billboardSign = GetBillBoard(player) as NeonSign;
             if (billboardSign == null) return;
 
             SwitchBillBoardPower(billboardSign);
@@ -566,13 +653,13 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (storedData.billBoards[inpID].Contains(newSign.net.ID))
+            if (storedData.billBoards[inpID].billBoardSigns.Contains(newSign.net.ID))
             {
                 player.ChatMessage("Already in billboard!");
                 return;
             }
 
-            storedData.billBoards[inpID].Add(newSign.net.ID);
+            storedData.billBoards[inpID].billBoardSigns.Add(newSign.net.ID);
 
             newSign.UpdateHasPower(25, 0);
             newSign.SendNetworkUpdate();
@@ -596,12 +683,10 @@ namespace Oxide.Plugins
             if (forcePower >= 0)
                 newPower = forcePower;
 
-            List<uint> billBoardSigns;
-            if (!ins.storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardSigns)) return;
+            BillBoardData billBoardData;
+            if (!ins.storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardData)) return;
 
-
-           // foreach (uint signID in storedData.billBoards[billboardSign.net.ID])
-            foreach (uint signID in billBoardSigns)
+            foreach (uint signID in billBoardData.billBoardSigns)
             {
                 Signage signage = BaseNetworkable.serverEntities.Find(signID) as Signage;
                 if (signage == null) continue;
@@ -615,7 +700,7 @@ namespace Oxide.Plugins
 
         public void ChangeBillBoardSpeed(BasePlayer player, string[] args)
         {
-            var billboardSign = GetBillBoard(player);
+            var billboardSign = GetBillBoard(player) as NeonSign;
             if (billboardSign == null) return;
 
             if (args.Length != 2)
@@ -624,24 +709,22 @@ namespace Oxide.Plugins
                 return;
             }
 
-            float newSpeed = 1f;
-
-            float possibleSpeed;
-            if (float.TryParse(args[1], out possibleSpeed) && possibleSpeed >= 0)
-                newSpeed = possibleSpeed;
-
-            if (!storedData.billBoardSpeeds.ContainsKey(billboardSign.net.ID))
-                storedData.billBoardSpeeds.Add(billboardSign.net.ID, newSpeed);
-
-            storedData.billBoardSpeeds[billboardSign.net.ID] = newSpeed;
-
-
-
-            List<uint> billBoardSigns;
-            if (!ins.storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardSigns))
+            BillBoardData billBoardData;
+            if (!storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardData))
+            {
+                player.ChatMessage("Billboard not found");
                 return;
+            }
 
-            foreach (uint signID in billBoardSigns)
+            float newSpeed;
+            if (!float.TryParse(args[1], out newSpeed) && newSpeed >= 0) {
+                player.ChatMessage("Invalid speed, usage: /billboard speed 3");
+                return;
+            }            
+
+            billBoardData.speed = newSpeed;
+
+            foreach (uint signID in billBoardData.billBoardSigns)
             {
                 NeonSign signage = BaseNetworkable.serverEntities.Find(signID) as NeonSign;
                 if (signage == null) continue;
@@ -672,13 +755,10 @@ namespace Oxide.Plugins
             float intensity = 1f;
             if (float.TryParse(args[1], out intensity) && intensity >= 0) newIntensity = intensity;
 
+            BillBoardData billBoardData;
+            if (!ins.storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardData)) return;
 
-            List<uint> billBoardSigns;
-            if (!ins.storedData.billBoards.TryGetValue(billboardSign.net.ID, out billBoardSigns)) return;
-
-      
-            //foreach (uint signID in storedData.billBoards[billboardSign.net.ID])
-            foreach (uint signID in billBoardSigns)
+            foreach (uint signID in billBoardData.billBoardSigns)
             {
                 NeonSign signage = BaseNetworkable.serverEntities.Find(signID) as NeonSign;
                 if (signage == null) return;
@@ -693,29 +773,28 @@ namespace Oxide.Plugins
 
         public void SilBillBoard(BasePlayer player, string[] args)
         {
-            if (args.Length < 4)
+            if (args.Length < 2)
             {
-                //player.ChatMessage("Incorrect syntax: /billboard sil 3 2 <url> [darker]");
-                player.ChatMessage("Incorrect syntax: /billboard sil 3 2 <url>");
+                //player.ChatMessage("Incorrect syntax: /billboard sil <url> [darker]");
+                player.ChatMessage("Incorrect syntax: /billboard sil <url>");
                 return;
             }
-
-            int cols;
-            int rows;
-            if (!int.TryParse(args[1], out cols) || !int.TryParse(args[2], out rows))
-            {
-                player.ChatMessage("Incorrect syntax: /billboard sil 3 2 <url>");
-                return;
-            }
-
-            bool adjustBrightness = false;
-            if (args.Length > 4 && args[4] == "true")
-                adjustBrightness = true;
 
             var startSign = GetBillBoard(player);
             if (startSign == null) return;
 
-            downloadController.QueueDownload(args[3], player, startSign, cols, rows, adjustBrightness);
+            BillBoardData billBoardData;
+            if(!storedData.billBoards.TryGetValue(startSign.net.ID, out billBoardData))
+            {
+                player.ChatMessage("This sign does not seem te be part of a billboard");
+                return;
+            }
+
+            bool adjustBrightness = false;
+            if (args.Length > 2 && args[2] == "true")
+                adjustBrightness = true;
+
+            downloadController.QueueDownload(args[1], player, startSign, billBoardData.signsHorizontal, billBoardData.signsVertical, adjustBrightness);
             player.ChatMessage("Loading images...");           
         }
 
@@ -724,9 +803,9 @@ namespace Oxide.Plugins
             if (!HasPermission(player.UserIDString, permAdmin))
                 return;            
 
-            foreach (KeyValuePair<uint, List<uint>> billboard in storedData.billBoards)
+            foreach (var billBoardData in storedData.billBoards)
             {
-                foreach (uint signID in billboard.Value)
+                foreach (uint signID in billBoardData.Value.billBoardSigns)
                 {
                     BaseEntity ent = BaseNetworkable.serverEntities.Find(signID) as BaseEntity;
                     if (ent != null)
@@ -744,12 +823,14 @@ namespace Oxide.Plugins
             var sign = GetBillBoard(player);
             if (sign == null) return;
 
-
             uint sid = sign.net.ID;
-            List<uint> billBoardSigns;
-            if (!ins.storedData.billBoards.TryGetValue(sid, out billBoardSigns)) return;
+            BillBoardData billBoardData;
+            if (!ins.storedData.billBoards.TryGetValue(sid, out billBoardData)) return;
 
-            foreach (uint signID in billBoardSigns)
+            var signItemName = sign is NeonSign ? "sign.neon.xl.animated" : "sign.pictureframe.xl";
+
+
+            foreach (uint signID in billBoardData.billBoardSigns)
             {
                 BaseEntity ent = BaseNetworkable.serverEntities.Find(signID) as BaseEntity;
                 if (ent != null) ent.Kill();                
@@ -760,7 +841,7 @@ namespace Oxide.Plugins
 
             if(configData.refundOnDestroy)
             {
-                var item = ItemManager.CreateByName("sign.neon.xl.animated");
+                var item = ItemManager.CreateByName(signItemName);
                 if(item != null)
                     player.GiveItem(item);
             }
@@ -782,7 +863,7 @@ namespace Oxide.Plugins
             }
         }
 
-        public NeonSign GetBillBoard(BasePlayer player, bool checkIfBillBoard = true)
+        public Signage GetBillBoard(BasePlayer player, bool checkIfBillBoard = true)
         {
             RaycastHit hit;
             if (!Physics.Raycast(player.eyes.HeadRay(), out hit, 6f))
@@ -790,12 +871,14 @@ namespace Oxide.Plugins
                 player.ChatMessage("Please look at a billboard!");
                 return null;
             }
+
+            Signage billboardSign = null;
+            billboardSign = hit.GetEntity() as Signage;
+
             
-            NeonSign billboardSign = null;
-            billboardSign = hit.GetEntity() as NeonSign;
-            if (billboardSign == null || !billboardSign.ShortPrefabName.Contains("sign.neon.xl.animated"))
+            if (billboardSign == null || (!billboardSign.ShortPrefabName.Contains("sign.neon.xl.animated") && !billboardSign.ShortPrefabName.Contains("sign.pictureframe.xl")))
             {
-                player.ChatMessage("Cannot find Billboard / XL Animated Neon sign!");
+                player.ChatMessage("Cannot find Billboard / XL Animated Neon sign / XL Pictureframe!");
                 return null;
             }
 
@@ -804,7 +887,7 @@ namespace Oxide.Plugins
                 return billboardSign;
             }
 
-            NeonSign mainSign = GetMainSign(billboardSign.net.ID);
+            Signage mainSign = GetMainSign(billboardSign.net.ID);
             if (checkIfBillBoard && mainSign == null)
             {
                 player.ChatMessage("Please look at a billboard!");
@@ -814,17 +897,17 @@ namespace Oxide.Plugins
             return mainSign;            
         }
 
-        public NeonSign GetMainSign(uint raySignID)
+        public Signage GetMainSign(uint raySignID)
         {
             uint parentSignID = 0;
 
-            foreach (KeyValuePair<uint, List<uint>> billboard in storedData.billBoards)
+            foreach (var billBoardData in storedData.billBoards)
             {
-                foreach (uint subSignID in billboard.Value)
+                foreach (uint subSignID in billBoardData.Value.billBoardSigns)
                 {
                     if(subSignID == raySignID)
                     {
-                        parentSignID = billboard.Key;
+                        parentSignID = billBoardData.Key;
                         break;
                     }                    
                 }
@@ -835,7 +918,7 @@ namespace Oxide.Plugins
             if (parentSignID == 0)
                 return null;
 
-            NeonSign ent = BaseNetworkable.serverEntities.Find(parentSignID) as NeonSign;
+            Signage ent = BaseNetworkable.serverEntities.Find(parentSignID) as Signage;
             if (ent == null)
                 return null;
 
@@ -853,7 +936,6 @@ namespace Oxide.Plugins
         {
             int horizontal = 3;
             int vertical = 2;
-
 
             List<uint> userBillboards;
             if(maxBillboards > 0 && storedData.userBillboards.TryGetValue(player.UserIDString, out userBillboards) && userBillboards.Count >= maxBillboards)
@@ -873,7 +955,6 @@ namespace Oxide.Plugins
                 }
             }
 
-
             if(!HasPermission(player.UserIDString, permAdmin) && player.IsBuildingBlocked())
             {
                 player.ChatMessage("You can not create billboards in building blocked zones");
@@ -886,7 +967,6 @@ namespace Oxide.Plugins
                 return;
             }
 
-
             var startSign = GetBillBoard(player, false);
             if (startSign == null)
             {
@@ -894,27 +974,49 @@ namespace Oxide.Plugins
                 return;
             }
 
-
-
             if (storedData.billBoards.ContainsKey(startSign.net.ID))
             {
                 player.ChatMessage("This is already a billboard");
                 return;
             }
 
-            storedData.billBoards.Add(startSign.net.ID, new List<uint>());
-            storedData.billBoards[startSign.net.ID].Add(startSign.net.ID);
+            storedData.billBoards.Add(startSign.net.ID, new BillBoardData());
+
+            BillBoardData billBoardData;
+            if (!storedData.billBoards.TryGetValue(startSign.net.ID, out billBoardData))
+            {
+                player.ChatMessage("Something went wrong while creating the billboard");
+                return;
+            }
+
+            billBoardData.billBoardSigns.Add(startSign.net.ID);
+            billBoardData.signsHorizontal = horizontal;
+            billBoardData.signsVertical = vertical;
 
             if (!storedData.userBillboards.ContainsKey(player.UserIDString))
                 storedData.userBillboards.Add(player.UserIDString, new List<uint>());
             storedData.userBillboards[player.UserIDString].Add(startSign.net.ID);
 
-
             if (configData.lockSigns)
                 startSign.SetFlag(BaseEntity.Flags.Locked, true, false, true);
 
-            startSign.UpdateHasPower(25, 0);
-            startSign.SendNetworkUpdate();
+            string prefab = "assets/prefabs/misc/xmas/neon_sign/sign.neon.xl.animated.prefab";
+            float offset = -2.5f;
+            var rotation = startSign.transform.rotation;
+
+            var startSignNeon = startSign as NeonSign;
+            if (startSignNeon != null)
+            {
+                startSignNeon.UpdateHasPower(25, 0);
+                startSignNeon.SendNetworkUpdate();                
+            }
+            else
+            {
+                prefab = "assets/prefabs/deployable/signs/sign.pictureframe.xl.prefab";
+                offset = -2.7f;
+            }
+
+            
 
             for (int col = 0; col < vertical; col++)
             {
@@ -922,9 +1024,9 @@ namespace Oxide.Plugins
                 {
                     if (row == 0 && col == 0) continue;
 
-                    var newRotation = startSign.transform.rotation;
-                    var newPosition = startSign.transform.position + (startSign.transform.right * row * -2.5f) + (startSign.transform.up * col * -2.5f);
-                    NeonSign sign = GameManager.server.CreateEntity("assets/prefabs/misc/xmas/neon_sign/sign.neon.xl.animated.prefab", newPosition, newRotation) as NeonSign;
+                    var newPosition = startSign.transform.position + (startSign.transform.right * row * offset) + (startSign.transform.up * col * offset);
+
+                    Signage sign = GameManager.server.CreateEntity(prefab, newPosition, rotation) as Signage;
                     if (sign == null) return;
                     sign.Spawn();
                     sign.OwnerID = player.userID;
@@ -932,17 +1034,21 @@ namespace Oxide.Plugins
                     if (configData.lockSigns)
                         sign.SetFlag(BaseEntity.Flags.Locked, true, false, true);
 
-                    sign.UpdateHasPower(25, 0);
-                    sign.SendNetworkUpdate();
+                    if (sign is NeonSign)
+                    {
+                        sign.UpdateHasPower(25, 0);
+                        sign.SendNetworkUpdate();
+                    }
 
-                    storedData.billBoards[startSign.net.ID].Add(sign.net.ID);
+                    //storedData.billBoards[startSign.net.ID].billBoardSigns.Add(sign.net.ID);
+                    billBoardData.billBoardSigns.Add(sign.net.ID);
                     
                     if(configData.debug)
                         Puts("Billboard part " + row + " x " + col + " spawned at " + newPosition);
                 }
             }
         }
-
+        
         public void CommandPasteNext(BasePlayer player)
         {
             if (!HasPermission(player.UserIDString, permAdmin))
@@ -1063,9 +1169,17 @@ namespace Oxide.Plugins
         StoredData storedData;
         class StoredData
         {
-            public Dictionary<uint, List<uint>> billBoards = new Dictionary<uint, List<uint>>();
-            public Dictionary<uint, float> billBoardSpeeds = new Dictionary<uint, float>();
+            public Dictionary<uint, BillBoardData> billBoards = new Dictionary<uint, BillBoardData>();
             public Dictionary<string, List<uint>> userBillboards = new Dictionary<string, List<uint>>();
+        }
+
+        class BillBoardData
+        {
+            public float speed = 3f;
+            public int signsHorizontal = 0;
+            public int signsVertical = 0;
+            public List<uint> billBoardSigns = new List<uint>();
+            
         }
 
         void Loaded()
