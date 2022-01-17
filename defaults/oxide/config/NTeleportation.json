@@ -3,10 +3,21 @@
     "Chat Command Color": "#FFFF00",
     "Chat Command Argument Color": "#FFA500",
     "Enable Popup Support": true,
+    "Block All Teleporting From Inside Authorized Base": false,
     "TPB Available After X Seconds": 0.0,
+    "Global Teleport Cooldown": 0.0,
+    "Global VIP Teleport Cooldown": 0.0,
+    "Play Sounds After Teleport": true,
+    "Sounds To Play After Teleport": [
+      "assets/prefabs/misc/xmas/presents/effects/unwrap.prefab",
+      "assets/bundled/prefabs/fx/player/howl.prefab",
+      "assets/content/vehicles/minicopter/debris_effect.prefab",
+      "assets/prefabs/npc/patrol helicopter/damage_effect_debris.prefab",
+      "assets/prefabs/npc/patrol helicopter/effects/rocket_fire.prefab"
+    ],
     "Interrupt TP": {
       "Interrupt Teleport At Specific Monuments": [],
-      "Above Water": false,
+      "Above Water": true,
       "Balloon": true,
       "Boats": false,
       "Cargo Ship": true,
@@ -20,11 +31,11 @@
       "Monument": false,
       "Ignore Monument Marker Prefab": false,
       "Mounted": true,
-      "Oil Rig": true,
+      "Oil Rig": false,
       "Safe Zone": true,
       "Swimming": false
     },
-    "Block Teleport (NoEscape)": true,
+    "Block Teleport (NoEscape)": false,
     "Block Teleport (ZoneManager)": false,
     "Chat Name": "<color=red>Teleportation</color> \n\n",
     "Chat Steam64ID": 76561199056025689,
@@ -44,7 +55,7 @@
     "Bypass CMD": "pay",
     "Use Monument Topology Check": false,
     "Use Cave Topology Check": false,
-    "Use Economics": true,
+    "Use Economics": false,
     "Use Server Rewards": false,
     "Wipe On Upgrade Or Change": true,
     "Auto Generate Outpost Location": true,
@@ -72,7 +83,8 @@
     "Allow Sethome At Specific Monuments": [
       "HQM Quarry",
       "Stone Quarry",
-      "Sulfur Quarry"
+      "Sulfur Quarry",
+      "Ice Lake"
     ],
     "Allow Sethome At All Monuments": false,
     "Allow TPB": true,
@@ -126,13 +138,13 @@
   },
   "TPT": {
     "Use Friends": false,
-    "Use Clans": true,
-    "Use Teams": true,
-    "Allow Cave": true
+    "Use Clans": false,
+    "Use Teams": false,
+    "Allow Cave": false
   },
   "TPR": {
     "Require Player To Be Friend, Clan Mate, Or Team Mate": false,
-    "Allow Cave": true,
+    "Allow Cave": false,
     "Allow TPB": true,
     "Cooldown": 600,
     "Countdown": 15,
@@ -175,7 +187,7 @@
   },
   "Dynamic Commands": {
     "Town": {
-      "Command Enabled": false,
+      "Command Enabled": true,
       "Allow TPB": true,
       "Allow Cave": false,
       "Cooldown": 600,
@@ -217,7 +229,7 @@
       "Bypass": 10
     },
     "Island": {
-      "Command Enabled": false,
+      "Command Enabled": true,
       "Allow TPB": false,
       "Allow Cave": false,
       "Cooldown": 600,
@@ -292,8 +304,18 @@
         "nteleportation.gm": 5,
         "nteleportation.admin": 5
       },
-      "Location": "123.0647 32.54002 712.0807",
-      "Locations": [],
+      "Location": "-383.4693 32.53944 379.6236",
+      "Locations": [
+        "-380.0458 32.54002 428.2394",
+        "-383.292 32.54002 429.7619",
+        "-381.3115 32.54002 429.5849",
+        "-383.0076 32.54002 426.9157",
+        "-380.0826 32.54002 425.8046",
+        "-381.7014 32.54002 425.617",
+        "-388.9088 33.355 439.0906",
+        "-388.8957 32.53944 386.7985",
+        "-383.4693 32.53944 379.6236"
+      ],
       "Teleport To Random Location": true,
       "Usable Out Of Building Blocked": false,
       "Allow Crafting": false,
@@ -334,8 +356,17 @@
         "nteleportation.gm": 5,
         "nteleportation.admin": 5
       },
-      "Location": "505.4142 27.44166 -325.6425",
-      "Locations": [],
+      "Location": "-679.2739 15.21173 -422.1194",
+      "Locations": [
+        "-615.5574 10.43852 -367.1556",
+        "-679.2196 9.936964 -330.5465",
+        "-678.3706 15.21173 -417.8724",
+        "-678.8347 15.21173 -423.1605",
+        "-678.558 15.21096 -423.9495",
+        "-679.3124 15.21096 -420.9774",
+        "-679.1822 15.21096 -420.1684",
+        "-679.2739 15.21173 -422.1194"
+      ],
       "Teleport To Random Location": true,
       "Usable Out Of Building Blocked": false,
       "Allow Crafting": false,

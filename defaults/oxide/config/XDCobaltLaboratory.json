@@ -111,7 +111,7 @@
   },
   "Настройка уведомлений | Configuring notifications": {
     "ВебХук дискорда (Если не нужны уведомления в дискорд, оставьте поле пустым) | Discord WebHook (If you do not need discord notifications, leave the field blank)": "",
-    "Включить UI Уведомления ? | Enable UI Notifications?": true,
+    "Включить UI Уведомления ? | Enable UI Notifications?": false,
     "Скрывать автоматически UI уведомления? | Auto hide UI notifications?": true,
     "Через сколько после показа будет скрываться? (сек) | How long after the show will it hide? (sec)": 15.0,
     "Цвет заднего фона окна UI | UI window background color": "0.8 0.28 0.2 0.8",
