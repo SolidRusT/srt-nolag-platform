@@ -201,6 +201,7 @@
             "PermissionsRust": 1,
             "PermissionsOxide": [
                 "nteleportation.gm",
+                "deepwater.spawn",
                 "Kits.Survivor",
                 "Kits.Solid",
                 "Kits.Supporter",
@@ -277,6 +278,7 @@
             ],
             "PermissionsOxide": [
                 "adminchat.use",
+                "deepwater.spawn",
                 "adminhammer.allow",
                 "adminnoloot.bypass",
                 "adminpanel.allowed",
