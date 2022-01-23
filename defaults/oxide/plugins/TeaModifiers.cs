@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Oxide.Core;
 
 namespace Oxide.Plugins
 {
-    [Info("Tea Modifiers", "MJSU", "2.0.0")]
+    [Info("Tea Modifiers", "MJSU", "2.1.1")]
     [Description("Allows the modification of tea buffs on items")]
     internal class TeaModifiers : RustPlugin
     {
@@ -16,6 +18,12 @@ namespace Oxide.Plugins
         
         private const string BasePermission = "teamodifiers.";
         private const string UsePermission = BasePermission + "use";
+        
+        private readonly Hash<ulong, float> _playerGlobalDurationCache = new Hash<ulong, float>();
+        private readonly Hash<Modifier.ModifierType, Hash<ulong, float>> _globalTypeValueCache = new Hash<Modifier.ModifierType, Hash<ulong, float>>();
+        private readonly Hash<ulong, float> _playerGlobalValueCache = new Hash<ulong, float>();
+        private readonly Hash<string, Hash<ulong, float>> _playerDurationCache = new Hash<string, Hash<ulong, float>>();
+        private readonly Hash<string, Hash<ulong, float>> _playerValueCache = new Hash<string, Hash<ulong, float>>();
         #endregion
 
         #region Setup & Loading
@@ -63,13 +71,11 @@ namespace Oxide.Plugins
         
         private void OnServerInitialized()
         {
-            permission.RegisterPermission(UsePermission, this);
-            
             bool changed = false;
             foreach (ItemDefinition def in ItemManager.itemList)
             {
                 ItemModConsumable consume = def.GetComponent<ItemModConsumable>();
-                if (consume == null || consume.modifiers == null || consume.modifiers.Count == 0)
+                if (consume.IsUnityNull() || consume.modifiers.IsUnityNull() || consume.modifiers.Count == 0)
                 {
                     continue;
                 }
@@ -96,30 +102,132 @@ namespace Oxide.Plugins
                 Config.WriteObject(_pluginConfig);
             }
 
-            List<string> perms = Pool.GetList<string>();
+            HashSet<string> perms = new HashSet<string> {UsePermission};
             foreach (List<ModifierData> item in _pluginConfig.Modifiers.Values)
             {
                 foreach (ModifierData modifier in item)
                 {
-                    perms.AddRange(modifier.Amount.Keys);
-                    perms.AddRange(modifier.Duration.Keys);
+                    foreach (string key in modifier.Amount.Keys)
+                    {
+                        perms.Add(key);
+                    }
+                    
+                    foreach (string key in modifier.Duration.Keys)
+                    {
+                        perms.Add(key);
+                    }
                 }
             }
             
             foreach (Hash<string, float> modifier in _pluginConfig.GlobalModifierMultiplier.Values)
             {
-                perms.AddRange(modifier.Keys);
+                foreach (string key in modifier.Keys)
+                {
+                    perms.Add(key);
+                }
             }
-            
-            perms.AddRange(_pluginConfig.GlobalAmountMultiplier.Keys);
-            perms.AddRange(_pluginConfig.GlobalDurationMultiplier.Keys);
 
-            foreach (string perm in perms.Distinct().Where(p => !p.Equals(UsePermission, StringComparison.OrdinalIgnoreCase)))
+            foreach (string key in _pluginConfig.GlobalAmountMultiplier.Keys)
             {
-                permission.RegisterPermission(perm, this);  
+                perms.Add(key);
             }
             
-            Pool.FreeList(ref perms);
+            foreach (string key in _pluginConfig.GlobalDurationMultiplier.Keys)
+            {
+                perms.Add(key);
+            }
+
+            foreach (string perm in perms)
+            {
+                permission.RegisterPermission(perm, this);
+            }
+
+            foreach (BasePlayer player in BasePlayer.activePlayerList)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine();
+            
+                foreach (ItemDefinition def in ItemManager.itemList)
+                {
+                    if (!def.shortname.Contains("maxhealthtea"))
+                    {
+                        continue;
+                    }
+            
+                    ItemModConsumable consume = def.GetComponent<ItemModConsumable>();
+                    if (consume == null || consume.modifiers == null || consume.modifiers.Count == 0)
+                    {
+                        continue;
+                    }
+                    
+                    foreach (ModifierDefintion mod in consume.modifiers)
+                    {
+                        sb.AppendLine($"{player.displayName} {def.shortname} - Duration: {GetTeaDuration(player, def.shortname, mod.type)} - Value: {GetTeaValue(player, def.shortname, mod.type)}");
+                    }
+                }
+            
+                Puts(sb.ToString());
+            }
+        }
+        #endregion
+        
+        #region Permission Hooks
+        private void OnUserPermissionGranted(string playerId, string permName)
+        {
+            ulong id = ulong.Parse(playerId);
+            _playerGlobalDurationCache.Remove(id);
+            _globalTypeValueCache.Clear();
+            _playerGlobalValueCache.Remove(id);
+            _playerDurationCache.Clear();
+            _playerValueCache.Clear();
+        }
+        
+        private void OnUserPermissionRevoked(string playerId, string permName)
+        {
+            ulong id = ulong.Parse(playerId);
+            _playerGlobalDurationCache.Remove(id);
+            _globalTypeValueCache.Clear();
+            _playerGlobalValueCache.Remove(id);
+            _playerDurationCache.Clear();
+            _playerValueCache.Clear();
+        }
+        
+        private void OnUserGroupAdded(string playerId, string groupName)
+        {
+            ulong id = ulong.Parse(playerId);
+            _playerGlobalDurationCache.Remove(id);
+            _globalTypeValueCache.Clear();
+            _playerGlobalValueCache.Remove(id);
+            _playerDurationCache.Clear();
+            _playerValueCache.Clear();
+        }
+        
+        private void OnUserGroupRemoved(string playerId, string groupName)
+        {
+            ulong id = ulong.Parse(playerId);
+            _playerGlobalDurationCache.Remove(id);
+            _globalTypeValueCache.Clear();
+            _playerGlobalValueCache.Remove(id);
+            _playerDurationCache.Clear();
+            _playerValueCache.Clear();
+        }
+
+        private void OnGroupPermissionGranted(string groupName, string permName)
+        {
+            _playerGlobalValueCache.Clear();
+            _globalTypeValueCache.Clear();
+            _playerGlobalDurationCache.Clear();
+            _playerDurationCache.Clear();
+            _playerValueCache.Clear();
+        }
+        
+        private void OnGroupPermissionRevoked(string groupName, string permName)
+        {
+            _playerGlobalDurationCache.Clear();
+            _globalTypeValueCache.Clear();
+            _playerGlobalValueCache.Clear();
+            _playerDurationCache.Clear();
+            _playerValueCache.Clear();
         }
         #endregion
 
@@ -130,27 +238,34 @@ namespace Oxide.Plugins
             {
                 return null;
             }
-            
+
+            string shortname = item.info.shortname;
             List<ModifierData> modifiers = _pluginConfig.Modifiers[item.info.shortname];
             if (modifiers == null)
             {
                 return null;
             }
 
-            float globalDuration = GetPermissionValue(player, _pluginConfig.GlobalDurationMultiplier, 1f);
-            float globalAmount = GetPermissionValue(player, _pluginConfig.GlobalAmountMultiplier, 1f);
-            
-            List<ModifierDefintion> mods = Pool.GetList<ModifierDefintion>();
+            if (Interface.Oxide.CallHook("CanApplyTeaModifier", player, item, consumable) != null)
+            {
+                return null;
+            }
 
+            List<ModifierDefintion> mods = Pool.GetList<ModifierDefintion>();
             for (int index = 0; index < modifiers.Count; index++)
             {
                 ModifierData modifier = modifiers[index];
+                if (Interface.Oxide.CallHook("CanApplyTeaModifierType", player, item, modifier.Type) != null)
+                {
+                    continue;
+                }
+                
                 mods.Add(new ModifierDefintion
                 {
                     source = Modifier.ModifierSource.Tea,
                     type = modifier.Type,
-                    duration = globalDuration * GetPermissionValue(player, modifier.Duration, 1f),
-                    value = globalAmount * GetPermissionValue(player, modifier.Amount, 1f) * GetPermissionValue(player, _pluginConfig.GlobalModifierMultiplier[modifier.Type], 1f)
+                    duration = GetPlayerDuration(player, shortname, modifier),
+                    value = GetPlayerValue(player, shortname, modifier)
                 });
             }
 
@@ -162,17 +277,118 @@ namespace Oxide.Plugins
         
         #endregion
 
-        #region Helper Methods
-        public float GetPermissionValue(BasePlayer player, Hash<string, float> permissions, float defaultValue)
+        #region API
+        private bool HasModifiers(string shortName)
         {
+            return _pluginConfig.Modifiers[shortName] != null;
+        }
+        
+        private float GetTeaDuration(BasePlayer player, string shortName, Modifier.ModifierType type)
+        {
+            ModifierData data = GetDataForItemType(shortName, type);
+            if (data == null)
+            {
+                return 0;
+            }
+            
+            return GetPlayerDuration(player, shortName, data);
+        }
+
+        private float GetTeaValue(BasePlayer player, string shortName, Modifier.ModifierType type)
+        {
+            ModifierData data = GetDataForItemType(shortName, type);
+            if (data == null)
+            {
+                return 0;
+            }
+
+            return GetPlayerValue(player, shortName, data);
+        }
+        #endregion
+
+        #region Helper Methods
+        public float GetPlayerDuration(BasePlayer player, string shortName, ModifierData modifier)
+        {
+            float globalDuration = GetPermissionValue(player, _pluginConfig.GlobalDurationMultiplier, 1f, _playerGlobalDurationCache);
+            
+            Hash<ulong, float> durationCache = _playerDurationCache[shortName];
+            if (durationCache == null)
+            {
+                durationCache = new Hash<ulong, float>();
+                _playerDurationCache[shortName] = durationCache;
+            }
+            
+            float duration = GetPermissionValue(player, modifier.Duration, 1f, durationCache);
+            return globalDuration * duration;
+        }
+        
+        public float GetPlayerValue(BasePlayer player, string shortName, ModifierData modifier)
+        {
+            float globalValue = GetPermissionValue(player, _pluginConfig.GlobalAmountMultiplier, 1f, _playerGlobalValueCache);
+            
+            Hash<ulong, float> typeCache = _globalTypeValueCache[modifier.Type];
+            if (typeCache == null)
+            {
+                typeCache = new Hash<ulong, float>();
+                _globalTypeValueCache[modifier.Type] = typeCache;
+            }
+            
+            float globalTypeValue = GetPermissionValue(player, _pluginConfig.GlobalModifierMultiplier[modifier.Type], 1f, typeCache);
+            
+            Hash<ulong, float> valueCache = _playerValueCache[shortName];
+            if (valueCache == null)
+            {
+                valueCache = new Hash<ulong, float>();
+                _playerValueCache[shortName] = valueCache;
+            }
+
+            float playerValue = GetPermissionValue(player, modifier.Amount, 1f, valueCache);
+            return globalValue * globalTypeValue * playerValue;
+        }
+        
+        public ModifierData GetDataForItemType(string shortName, Modifier.ModifierType type)
+        {
+            List<ModifierData> modifiers = _pluginConfig.Modifiers[shortName];
+            if (modifiers == null || modifiers.Count == 0)
+            {
+                return null;
+            }
+            
+            foreach (ModifierData modifier in modifiers)
+            {
+                if (modifier.Type == type)
+                {
+                    return modifier;
+                }
+            }
+
+            return null;
+        }
+        
+        public float GetPermissionValue(BasePlayer player, Hash<string, float> permissions, float defaultValue, Hash<ulong, float> cache)
+        {
+            if (cache != null && cache.ContainsKey(player.userID))
+            {
+                return cache[player.userID];
+            }
+            
             foreach (KeyValuePair<string,float> perm in permissions.OrderByDescending(p => p.Value))
             {
                 if (HasPermission(player, perm.Key))
                 {
+                    if (cache != null)
+                    {
+                        cache[player.userID] = perm.Value;
+                    }
                     return perm.Value;
                 }
             }
-
+            
+            if (cache != null)
+            {
+                cache[player.userID] = defaultValue;
+            }
+            
             return defaultValue;
         }
 
@@ -195,7 +411,7 @@ namespace Oxide.Plugins
             public Hash<string, List<ModifierData>> Modifiers { get; set; }
         }
 
-        private class ModifierData
+        public class ModifierData
         {
             [JsonProperty(PropertyName = "Modifier Duration (Seconds)")]
             public Hash<string, float> Duration { get; set; }
