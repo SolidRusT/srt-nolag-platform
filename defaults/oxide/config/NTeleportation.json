@@ -2,7 +2,7 @@
   "Settings": {
     "Chat Command Color": "#FFFF00",
     "Chat Command Argument Color": "#FFA500",
-    "Enable Popup Support": true,
+    "Enable Popup Support": false,
     "Block All Teleporting From Inside Authorized Base": false,
     "TPB Available After X Seconds": 0.0,
     "Global Teleport Cooldown": 0.0,

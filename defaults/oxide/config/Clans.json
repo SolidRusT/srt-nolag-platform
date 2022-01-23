@@ -20,11 +20,11 @@
     "General text color (hex)": "#e0e0e0"
   },
   "Clan Tag Options": {
-    "Enable clan tags (requires BetterChat)": false,
+    "Enable clan tags (requires BetterChat)": true,
     "Tag opening character": "[",
     "Tag closing character": "]",
     "Tag color (hex)": "#aaff55",
-    "Allow clan leaders to set custom tag colors (BetterChat only)": false,
+    "Allow clan leaders to set custom tag colors (BetterChat only)": true,
     "Tag size": 15,
     "Tag character limits": {
       "Minimum": 2,
