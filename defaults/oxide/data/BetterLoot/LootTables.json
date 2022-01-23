@@ -154,67 +154,15 @@
     "assets/bundled/prefabs/radtown/crate_basic.prefab": {
       "Enabled": true,
       "ItemList": {
-        "barricade.wood.cover": {
-          "Max": 1,
-          "Min": 1
-        },
-        "fun.guitar": {
-          "Max": 1,
-          "Min": 1
-        },
-        "mailbox": {
-          "Max": 1,
-          "Min": 1
-        },
-        "mask.bandana": {
-          "Max": 1,
-          "Min": 1
-        },
-        "rug": {
-          "Max": 1,
-          "Min": 1
-        },
-        "xmas.lightstring": {
-          "Max": 6,
-          "Min": 5
-        },
-        "clatter.helmet": {
-          "Max": 1,
-          "Min": 1
-        },
-        "chair": {
-          "Max": 1,
-          "Min": 1
-        },
-        "fogmachine": {
-          "Max": 1,
-          "Min": 1
-        },
-        "firework.boomer.champagne": {
-          "Max": 1,
-          "Min": 1
-        },
-        "cassette": {
-          "Max": 1,
-          "Min": 1
-        },
-        "fun.casetterecorder": {
-          "Max": 1,
-          "Min": 1
-        },
-        "mobilephone": {
-          "Max": 1,
-          "Min": 1
-        },
-        "megaphone": {
-          "Max": 1,
-          "Min": 1
+        "scrap": {
+          "Max": 100,
+          "Min": 100
         }
       },
-      "ItemsMax": 5,
-      "ItemsMin": 5,
+      "ItemsMax": 1,
+      "ItemsMin": 1,
       "MaxBPs": 0,
-      "Scrap": 20
+      "Scrap": 0
     },
     "assets/bundled/prefabs/radtown/crate_elite.prefab": {
       "Enabled": true,
@@ -325,14 +273,6 @@
           "Max": 3,
           "Min": 3
         },
-        "coffeecan.helmet": {
-          "Max": 1,
-          "Min": 1
-        },
-        "computerstation": {
-          "Max": 1,
-          "Min": 1
-        },
         "grenade.smoke": {
           "Max": 1,
           "Min": 1
@@ -344,10 +284,6 @@
         "metalpipe": {
           "Max": 15,
           "Min": 15
-        },
-        "nightvisiongoggles": {
-          "Max": 1,
-          "Min": 1
         },
         "pistol.python": {
           "Max": 1,
@@ -361,23 +297,7 @@
           "Max": 2,
           "Min": 1
         },
-        "roadsign.gloves": {
-          "Max": 1,
-          "Min": 1
-        },
-        "roadsign.jacket": {
-          "Max": 1,
-          "Min": 1
-        },
-        "roadsign.kilt": {
-          "Max": 1,
-          "Min": 1
-        },
         "rocket.launcher": {
-          "Max": 1,
-          "Min": 1
-        },
-        "shoes.boots": {
           "Max": 1,
           "Min": 1
         },
@@ -420,10 +340,22 @@
         "pistol.m92": {
           "Max": 1,
           "Min": 1
+        },
+        "bleach": {
+          "Max": 1,
+          "Min": 1
+        },
+        "glue": {
+          "Max": 3,
+          "Min": 1
+        },
+        "ducttape": {
+          "Max": 2,
+          "Min": 1
         }
       },
-      "ItemsMax": 4,
-      "ItemsMin": 4,
+      "ItemsMax": 7,
+      "ItemsMin": 7,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -437,10 +369,6 @@
         "gears": {
           "Max": 10,
           "Min": 10
-        },
-        "knife.combat": {
-          "Max": 1,
-          "Min": 1
         },
         "metalpipe": {
           "Max": 10,
@@ -477,20 +405,12 @@
         "metalblade": {
           "Max": 10,
           "Min": 10
-        },
-        "ladder.wooden.wall": {
-          "Max": 1,
-          "Min": 1
-        },
-        "barricade.concrete": {
-          "Max": 1,
-          "Min": 1
         }
       },
       "ItemsMax": 5,
       "ItemsMin": 5,
       "MaxBPs": 0,
-      "Scrap": 5
+      "Scrap": 0
     },
     "assets/bundled/prefabs/radtown/crate_normal_2_food.prefab": {
       "Enabled": true,
@@ -655,7 +575,7 @@
       "ItemsMax": 4,
       "ItemsMin": 4,
       "MaxBPs": 0,
-      "Scrap": 5
+      "Scrap": 0
     },
     "assets/bundled/prefabs/radtown/dmloot/dm ammo.prefab": {
       "Enabled": true,
@@ -1315,8 +1235,8 @@
           "Min": 1
         }
       },
-      "ItemsMax": 2,
-      "ItemsMin": 2,
+      "ItemsMax": 3,
+      "ItemsMin": 3,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -2313,10 +2233,10 @@
           "Min": 5
         }
       },
-      "ItemsMax": 10,
-      "ItemsMin": 10,
+      "ItemsMax": 9,
+      "ItemsMin": 9,
       "MaxBPs": 0,
-      "Scrap": 1000
+      "Scrap": 0
     },
     "assets/prefabs/npc/m2bradley/bradley_crate.prefab": {
       "Enabled": false,
@@ -2337,10 +2257,6 @@
           "Max": 4,
           "Min": 3
         },
-        "cctv.camera": {
-          "Max": 5,
-          "Min": 5
-        },
         "explosive.timed": {
           "Max": 3,
           "Min": 2
@@ -2360,14 +2276,6 @@
         "rifle.lr300": {
           "Max": 1,
           "Min": 1
-        },
-        "smg.mp5": {
-          "Max": 1,
-          "Min": 1
-        },
-        "targeting.computer": {
-          "Max": 5,
-          "Min": 5
         },
         "weapon.mod.8x.scope": {
           "Max": 1,
