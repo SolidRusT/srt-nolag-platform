@@ -3,11 +3,11 @@
   "Erase on Death (true/false)": false,
   "Clear Backpacks on Map-Wipe (true/false)": true,
   "Only Save Backpacks on Server-Save (true/false)": false,
-  "Use Blacklist (true/false)": false,
+  "Use Blacklist (true/false)": true,
   "Blacklisted Items (Item Shortnames)": [
-    "autoturret",
     "lmg.m249",
-    "car.key"
+    "explosives",
+    "ammo.rocket.basic"
   ],
   "Use Whitelist (true/false)": false,
   "Whitelisted Items (Item Shortnames)": [],
@@ -18,8 +18,8 @@
     "GUI Button Position": {
       "Anchors Min": "0.5 0.0",
       "Anchors Max": "0.5 0.0",
-      "Offsets Min": "185 18",
-      "Offsets Max": "245 78"
+      "Offsets Min": "-358 18",
+      "Offsets Max": "-298 78"
     }
   },
   "Softcore": {
