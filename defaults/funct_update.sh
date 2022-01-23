@@ -66,6 +66,7 @@ function update_mods() {
     oxide/data/FancyDrop.json
     oxide/data/CompoundOptions.json
     oxide/data/death.png
+    oxide/data/BetterChat.json
     oxide/data/hit.png
     oxide/data/GuardedCrate.json
     oxide/data/CustomChatCommands.json
