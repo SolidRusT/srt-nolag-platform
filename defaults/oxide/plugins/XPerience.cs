@@ -18,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("XPerience", "MACHIN3", "1.3.1")]
+    [Info("XPerience", "MACHIN3", "1.3.2")]
     [Description("Player level system with xp, stats, and skills")]
     public class XPerience : RustPlugin
     {
@@ -28,6 +28,20 @@ namespace Oxide.Plugins
 		【 𝓜𝓐𝓒𝓗𝓘𝓝𝓔 】
         Discord: discord.skilledsoldiers.net
         *****************************************************/
+        #region version 1.3.2
+        /*****************************************************
+         ----------------------
+         ✯ version 1.3.2
+         ----------------------
+         DELETE LANG FILE BEFORE UPLOADING UPDATE!
+
+        ✯ Adjusted extra armor calculations when using TeaModifiers plugin
+        ✯ Fixed armor bar not showing properly when adjusting tea modifiers
+        ✯ Fixed issues with using full reset commands
+        ✯ Added API for retriving cache of XPerience (used for future addon)
+
+        *****************************************************/
+        #endregion
         #region version 1.3.1
         /*****************************************************
          ----------------------
@@ -1843,7 +1857,6 @@ namespace Oxide.Plugins
                 DestroyUi(player, XPerienceTopMain);
                 DestroyUi(player, XPerienceAdminPanelMain);
                 DestroyUi(player, XPeriencePlayerControlFullMain);
-                _xperienceCache[player.UserIDString].Status = false;
             }
             SaveData();
             SaveLoot();
@@ -5359,7 +5372,10 @@ namespace Oxide.Plugins
 
         private object OnPlayerAddModifiers(BasePlayer player, Item item, ItemModConsumable consumable)
         {
-            LiveStats(player, true, item.info.shortname);
+            if (item.info.shortname.Contains("maxhealthtea"))
+            {
+                LiveStats(player, true, item.info.shortname); 
+            }
             return null;
         }
         
@@ -5862,6 +5878,8 @@ namespace Oxide.Plugins
             _lootCache.Clear();
             _XPerienceData.Clear();
             _LootContainData.Clear();
+            _corpseCache.Clear();
+            _CorpseContainData.Clear();
             if (config.sql.enablesql)
             {
                 DeleteSQL();
@@ -7036,96 +7054,7 @@ namespace Oxide.Plugins
             {
                 DestroyUi(player, XPerienceLivePrimary);
             }
-            // Armor Bar Calculations
-            if(GetTeaCooldown(player) == 0)
-            {
-                xprecord.teacooldown = 0;
-                xprecord.teatype = consumable;
-            }
-            double armor = (xprecord.Might * config.might.armor) * 100;
-            double maxhealth = player._maxHealth - armor;
-            double playerhealth = player._health;
-            double currentarmor = 0;
-            // Default Armor - No Tea Effects
-            if (player._health > maxhealth)
-            {
-                currentarmor = Math.Ceiling((player._health - maxhealth));
-            }
-            // Extra Armor - Add Tea Effects
-            double teatime = 1200;
-            double teaboost = 0;
-            double getteaboost = 0;
-            bool teamodified = false;
-            // Check for TeaModifier Plugin and Values
-            if (TeaModifiers != null)
-            {
-                teatime = TeaModifiers.Call<float>("GetTeaDuration", player, consumable, Modifier.ModifierType.Max_Health);
-                teaboost = TeaModifiers.Call<float>("GetTeaValue", player, consumable, Modifier.ModifierType.Max_Health) * 100;
-                teamodified = true;
-            }
-            // Update PlayerData
-            if (consumable.Contains("maxhealthtea"))
-            {
-                xprecord.teacooldown = (double)CurrentTime + teatime;
-                xprecord.teatype = consumable;
-            }
-            // Get Updated Data
-            if (GetTeaCooldown(player) != 0)
-            {
-                switch (GetTeaTypes(player))
-                {
-                    case "none":
-                        teaboost = 0;
-                        break;
-                    case "maxhealthtea":
-                        if (teamodified)
-                        {
-                            getteaboost = TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
-                            teaboost = (getteaboost * config.might.armor) * xprecord.Might; 
-                        }
-                        else
-                        { 
-                            teaboost = 5; 
-                        }
-                        break;
-                    case "maxhealthtea.advanced":
-                        if (teamodified)
-                        {
-                            getteaboost = TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
-                            teaboost = (getteaboost * config.might.armor) * xprecord.Might; 
-                        }
-                        else
-                        { 
-                            teaboost = 12.5; 
-                        }
-                        break;
-                    case "maxhealthtea.pure":
-                        if (teamodified)
-                        {
-                            getteaboost = TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
-                            teaboost = (getteaboost * config.might.armor) * xprecord.Might; 
-                        }
-                        else
-                        { 
-                            teaboost = 20; 
-                        }
-                        break;
-                }
-            }
-            // Apply Results to Armor
-            if (GetTeaCooldown(player) != 0)
-            {
-                playerhealth += teaboost;
-                if (playerhealth > maxhealth)
-                {
-                    currentarmor = Math.Ceiling((player._health - maxhealth) - teaboost);
-                    if (currentarmor < 0) currentarmor = 0;
-                    armor += Math.Ceiling((teaboost * config.might.armor) * xprecord.Might);
-                }
-            }
-            // Bar Fill
-            var armorperc = currentarmor / armor;
-            // XP Bar Calulations]
+            // XP Bar Calculations
             double lastlevel = 0;
             double nextlevel = 0;
             double currentxp = 0;
@@ -7150,6 +7079,91 @@ namespace Oxide.Plugins
                 remainingxp = nextlevel - currentxp;
                 levelpercent = reqxpperc * 100;
             }
+            // Armor Bar Calculations
+            if(GetTeaCooldown(player) == 0)
+            {
+                xprecord.teacooldown = 0;
+                xprecord.teatype = consumable;
+            }
+            double armor = (xprecord.Might * config.might.armor) * 100;
+            double maxhealth = player._maxHealth - armor;
+            double playerhealth = player._health;
+            double currentarmor = 0;
+            // Default Armor - No Tea Effects
+            if (player._health > maxhealth)
+            {
+                currentarmor = Math.Ceiling((player._health - maxhealth));
+            }
+            // Extra Armor - Add Tea Effects
+            double teatime = 1200;
+            double teaboost = 0;
+            bool teamodified = false;
+            // Check for TeaModifier Plugin and Values
+            if (TeaModifiers != null)
+            {
+                teatime = TeaModifiers.Call<float>("GetTeaDuration", player, consumable, Modifier.ModifierType.Max_Health);
+                teaboost = TeaModifiers.Call<float>("GetTeaValue", player, consumable, Modifier.ModifierType.Max_Health) * 100;
+                teamodified = true;
+            }
+            // Update PlayerData
+            if (consumable.Contains("maxhealthtea"))
+            {
+                xprecord.teacooldown = (double)CurrentTime + teatime;
+                xprecord.teatype = consumable;
+            }
+            // Get Updated Data
+            if (GetTeaCooldown(player) != 0)
+            {
+                if (teamodified)
+                {
+                    teaboost = TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
+                }         
+                switch (GetTeaTypes(player))
+                {
+                    case "none":
+                        teaboost = 0;
+                        break;
+                    case "maxhealthtea":
+                        if (!teamodified)
+                        {
+                            teaboost = 5;
+                        }
+                        break;
+                    case "maxhealthtea.advanced":
+                        if (!teamodified)
+                        {
+                            teaboost = 12.5;
+                        }
+                        break;
+                    case "maxhealthtea.pure":
+                        if (!teamodified)
+                        {
+                            teaboost = 20;
+                        }
+                        break;
+                }
+            }
+            // Apply Results to Armor
+            if (GetTeaCooldown(player) != 0)
+            {
+                playerhealth += teaboost;
+                if (playerhealth > maxhealth)
+                {
+                    if (teamodified)
+                    {
+                        currentarmor = Math.Ceiling((player._health - maxhealth) - teaboost);
+                    }
+                    if (!teamodified)
+                    {
+                        currentarmor = Math.Ceiling((player._health - maxhealth) - teaboost);
+                    }
+                    if (currentarmor < 0) currentarmor = 0;
+                    armor += Math.Ceiling((teaboost * config.might.armor) * xprecord.Might);
+                }
+            }
+            // Calculate Armor Bar Display
+            var armorperc = currentarmor / armor;
+            // Live Stats Display
             var LIVEelements = new CuiElementContainer();
             switch(xprecord.UILocation)
             {
@@ -7279,7 +7293,6 @@ namespace Oxide.Plugins
                     break;
             }         
             CuiHelper.AddUi(player, LIVEelements);
-            return;
         }
 
         // Current Player Panels
@@ -7840,6 +7853,7 @@ namespace Oxide.Plugins
                     double teatime = 0;
                     double teaboost = 0;
                     bool teamodified = false;
+                    double armor = (xprecord.Might * config.might.armor) * 100;
                     // Check for TeaModifier Plugin and Values
                     if (TeaModifiers != null)
                     {
@@ -7858,19 +7872,19 @@ namespace Oxide.Plugins
                                 if (teamodified)
                                 { teaboost = (teaboost * config.might.armor) * xprecord.Might; }
                                 if (!teamodified)
-                                { teaboost = 5; }
+                                { teaboost = (5 * config.might.armor) *xprecord.Might; }
                                 break;
                             case "maxhealthtea.advanced":
                                 if (teamodified)
                                 { teaboost =(teaboost * config.might.armor) * xprecord.Might; }
                                 if (!teamodified)
-                                { teaboost = 12.5; }
+                                { teaboost = (12.5 * config.might.armor) *xprecord.Might; }
                                 break;
                             case "maxhealthtea.pure":
                                 if (teamodified)
                                 { teaboost = (teaboost * config.might.armor) * xprecord.Might; }
                                 if (!teamodified)
-                                { teaboost = 20; }
+                                { teaboost = (20 * config.might.armor) *xprecord.Might; }
                                 break;
                         }
                         teatime = Math.Ceiling(GetTeaCooldown(player) / 60);
@@ -7878,7 +7892,7 @@ namespace Oxide.Plugins
                     FullScreenelements.Add(XPUIImage(XPeriencePlayerControlFullInfo, XPeriencemight, rowtwo, skillheight, "0.285", "0.295"));
                     FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={config.uitextColor.might}>{XPLang("armor", player.UserIDString)}</color>:", rowtwo, skillheight, TextAnchor.MiddleLeft, 10, "0.3", "0.34", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
                     FullScreenelements.Add(XPUILabel($" (<color=yellow>{XPLang("tea", player.UserIDString)}: {XPLang($"teatype{xprecord.teatype}", player.UserIDString)} ({teatime} mins)</color>)", rowtwo, skillheight, TextAnchor.MiddleLeft, 8, "0.34", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
-                    FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", config.might.armor)}>+{(xprecord.Might * config.might.armor) * 100}</color> (<color=yellow>+{teaboost}</color>)", rowtwo, skillheight, TextAnchor.MiddleLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", config.might.armor)}>+{(xprecord.Might * config.might.armor) * 100}</color> (<color=yellow>+{Math.Ceiling(teaboost)}</color>)", rowtwo, skillheight, TextAnchor.MiddleLeft, 10, "0.45", "0.6", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
                     rowtwo++;
                 }
                 if (config.might.meleedmg != 0)
@@ -11497,6 +11511,8 @@ namespace Oxide.Plugins
                             _lootCache.Clear();
                             _XPerienceData.Clear();
                             _LootContainData.Clear();
+                            _corpseCache.Clear();
+                            _CorpseContainData.Clear();
                             if (config.sql.enablesql)
                             {
                                 DeleteSQL();
@@ -14180,6 +14196,129 @@ namespace Oxide.Plugins
         private void TakeXP(BasePlayer player, double amount)
         {
             LoseExp(player, amount);
+        }
+
+        private string GetXPCache(BasePlayer player, string info)
+        {
+            XPRecord xprecord = GetXPRecord(player);
+            switch (info)
+            {
+                case "steamid":
+                    info = xprecord.id;
+                    break;
+                case "displayname":
+                    info = xprecord.displayname;
+                    break;
+                case "level":
+                    info = xprecord.level.ToString();
+                    break;
+                case "xp":
+                    info = xprecord.experience.ToString();
+                    break;
+                case "reqxp":
+                    info = xprecord.requiredxp.ToString();
+                    break;
+                case "statp":
+                    info = xprecord.statpoint.ToString();
+                    break;
+                case "skillp":
+                    info = xprecord.skillpoint.ToString();
+                    break;
+                case "mentality":
+                    info = xprecord.Mentality.ToString();
+                    break;
+                case "mentalityp":
+                    info = xprecord.MentalityP.ToString();
+                    break;
+                case "dexterity":
+                    info = xprecord.Dexterity.ToString();
+                    break;
+                case "dexterityp":
+                    info = xprecord.DexterityP.ToString();
+                    break;
+                case "might":
+                    info = xprecord.Might.ToString();
+                    break;
+                case "mightp":
+                    info = xprecord.MightP.ToString();
+                    break;
+                case "captaincy":
+                    info = xprecord.Captaincy.ToString();
+                    break;
+                case "captaincyp":
+                    info = xprecord.CaptaincyP.ToString();
+                    break;
+                case "woodcutter":
+                    info = xprecord.WoodCutter.ToString();
+                    break;
+                case "woodcutterp":
+                    info = xprecord.WoodCutterP.ToString();
+                    break;
+                case "smithy":
+                    info = xprecord.Smithy.ToString();
+                    break;
+                case "smithyp":
+                    info = xprecord.SmithyP.ToString();
+                    break;
+                case "miner":
+                    info = xprecord.Miner.ToString();
+                    break;
+                case "minerp":
+                    info = xprecord.MinerP.ToString();
+                    break;
+                case "forager":
+                    info = xprecord.Forager.ToString();
+                    break;
+                case "foragerp":
+                    info = xprecord.ForagerP.ToString();
+                    break;
+                case "fisher":
+                    info = xprecord.Fisher.ToString();
+                    break;
+                case "fisherp":
+                    info = xprecord.FisherP.ToString();
+                    break;
+                case "hunter":
+                    info = xprecord.Hunter.ToString();
+                    break;
+                case "hunterp":
+                    info = xprecord.HunterP.ToString();
+                    break;
+                case "scavenger":
+                    info = xprecord.Scavenger.ToString();
+                    break;
+                case "scavengerp":
+                    info = xprecord.ScavengerP.ToString();
+                    break;
+                case "tamer":
+                    info = xprecord.Tamer.ToString();
+                    break;
+                case "tamerp":
+                    info = xprecord.TamerP.ToString();
+                    break;
+                case "medic":
+                    info = xprecord.Medic.ToString();
+                    break;
+                case "medicp":
+                    info = xprecord.MedicP.ToString();
+                    break;
+                case "framer":
+                    info = xprecord.Framer.ToString();
+                    break;
+                case "framerp":
+                    info = xprecord.FramerP.ToString();
+                    break;
+                case "crafter":
+                    info = xprecord.Crafter.ToString();
+                    break;
+                case "crafterp":
+                    info = xprecord.CrafterP.ToString();
+                    break;
+                case "status":
+                    info = xprecord.Status.ToString();
+                    break;
+            }    
+            return info;
         }
 
         #endregion
