@@ -15,7 +15,6 @@ dockercfg
 .terraform
 terraform.tfstate
 terraform.tfstate.backup
-*.pem
 *.lock.hcl
 
 # Archives
