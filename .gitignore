@@ -80,3 +80,6 @@ defaults/oxide/data/Suicide Vest.json
 defaults/oxide/data/ZBillBoards.json
 defaults/oxide/data/ZoneManager/*
 .DS_Store
+
+# node files
+**/node_modules
