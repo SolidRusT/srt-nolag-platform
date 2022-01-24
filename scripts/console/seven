@@ -1,3 +1,0 @@
-#!/bin/bash
-SERVER_KEYS="/c/Users/shaun/repos/"
-ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@44.234.144.233

@@ -1,8 +1,18 @@
 #!/bin/bash
 SERVER=$1
 PLUGIN=$2
-REPO_DIR="/c/Users/shaun/repos/solidrust.net"
-SERVER_KEYS="/c/Users/shaun/repos"
+if [ -z "${SRT_REPO}" ]; then
+  echo "SRT_REPO ver is not configured, using defaults."
+  export SRT_REPO="${HOME}/repos/solidrust.net"
+fi
+echo "Using repo from: ${SRT_REPO} ."
+echo "Checking for SERVER_KEYS in: ${SERVER_KEYS} ."
+if [ -z "${SERVER_KEYS}" ]; then
+  export SERVER_KEYS="/c/Users/shaun/repos"
+  echo "No SERVER_KEYS var defined, using default of ${SERVER_KEYS} ."
+else
+  echo "SERVER_KEYS successfully located in: ${SERVER_KEYS} ."
+fi
 
 function usage_helper() {
   echo ""
@@ -39,15 +49,16 @@ else
   all)
     echo "do it for Dale"
     ${SSH_CMD} "cd /game/oxide/plugins; ls -1 *.cs | rev | cut -c4- | rev > /tmp/solidrust_plugins.list"
-    ${SCP_CMD}:/tmp/solidrust_plugins.list "${REPO_DIR}/servers/${SERVER}/"
-    for plugin in $(cat "${REPO_DIR}/servers/${SERVER}/solidrust_plugins.list"); do
+    ${SCP_CMD}:/tmp/solidrust_plugins.list "${SRT_REPO}/servers/${SERVER}/"
+    for plugin in $(cat "${SRT_REPO}/servers/${SERVER}/solidrust_plugins.list"); do
       echo "Doin the $plugin plugin"
-      ${SCP_CMD}:/game/oxide/config/${plugin}.json "${REPO_DIR}/defaults/oxide/config/"
+      ${SCP_CMD}:/game/oxide/config/${plugin}.json "${SRT_REPO}/defaults/oxide/config/"
     done
     ;;
   *)
+    echo "Configured destination: ${SRT_REPO}/defaults/oxide/config/"
     echo "Pulling ${PLUGIN} config from ${SERVER}"
-    ${SCP_CMD}:/game/oxide/config/${PLUGIN}.json "${REPO_DIR}/defaults/oxide/config/"
+    ${SCP_CMD}:/game/oxide/config/${PLUGIN}.json "${SRT_REPO}/defaults/oxide/config/"
     ;;
   esac
 fi

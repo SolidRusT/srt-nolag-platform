@@ -2,11 +2,25 @@
   "Automatic wipe on wipe": false,
   "Default Kit Color": "#F28633",
   "Work with Notify?": true,
-  "Use Spectating mode when editing kits?": true,
+  "Use NoEscape? (Raid/Combat block)": false,
+  "Whitelist for NoEscape": [
+    "kit name 1",
+    "kit name 2"
+  ],
   "Commands": [
     "kit",
     "kits"
   ],
+  "Economy": {
+    "Type (Plugin/Item)": "Plugin",
+    "Plugin name": "Economics",
+    "Balance add hook": "Deposit",
+    "Balance remove hook": "Withdraw",
+    "Balance show hook": "Balance",
+    "ShortName": "scrap",
+    "Display Name (empty - default)": "",
+    "Skin": 0
+  },
   "Rarity Settings": [
     {
       "Chance": 40,
@@ -132,6 +146,12 @@
       "OffsetMin": "-32.5 -125",
       "OffsetMax": "32.5 -105"
     },
+    "Kit Sale Settings": {
+      "AnchorMin": "0.5 1",
+      "AnchorMax": "0.5 1",
+      "OffsetMin": "-32.5 -115",
+      "OffsetMax": "32.5 -95"
+    },
     "Kit Cooldown Settings (with amount)": {
       "AnchorMin": "0 1",
       "AnchorMax": "1 1",
@@ -145,5 +165,10 @@
       "OffsetMax": "0 -75"
     }
   },
-  "Steampowered API key": "!!! You can get it HERE > https://steamcommunity.com/dev/apikey < and you need to insert HERE !!!"
+  "Steampowered API key": "!!! You can get it HERE > https://steamcommunity.com/dev/apikey < and you need to insert HERE !!!",
+  "Version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 28
+  }
 }

@@ -1,1 +1,0 @@
-egrep '(processor|model name|cpu MHz|physical id|siblings|core id|cpu cores)' /proc/cpuinfo
