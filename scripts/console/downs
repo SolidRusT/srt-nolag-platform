@@ -9,5 +9,6 @@ if [ -z "${DOWNLOADS}" ]; then
   export DOWNLOADS="${HOME}/Downloads"
 fi
 echo "Fetching plugin updates from: ${DOWNLOADS} ."
+ls -1 ${DOWNLOADS}/*.cs
 mv ${DOWNLOADS}/*.cs ${SRT_REPO}/defaults/oxide/plugins/
 echo "Done!"
