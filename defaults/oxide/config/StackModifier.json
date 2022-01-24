@@ -1377,7 +1377,7 @@
       "ammo.rocket.basic": {
         "ShortName": "ammo.rocket.basic",
         "DisplayName": "Rocket",
-        "Modified": 6
+        "Modified": 12
       },
       "ammo.rocket.fire": {
         "ShortName": "ammo.rocket.fire",
