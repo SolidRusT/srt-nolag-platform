@@ -53,15 +53,15 @@ function wipe_kits() {
 }
 
 function wipe_banks() {
-  echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
-  echo "oxide/data/banks/*.json"
-  rm -rf ${GAME_ROOT}/oxide/data/banks/*.json
-  # rcon "ecowipe"
-  # rcon "bank.wipe 0"
+  echo "Wipe out Banks and ATM related data" | tee -a ${LOGS}
+  echo "oxide/data/BankSystem"
+  ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "bank.wipe 0"
+  echo "/game/oxide/data/Economics.json"
+  ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "ecowipe"
 }
 
 function wipe_backpacks() {
-  echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
+  echo "Wipe out player-saved backpack items and related data" | tee -a ${LOGS}
   echo "oxide/data/Backpacks/*.json"
   rm -rf ${GAME_ROOT}/oxide/data/Backpacks/*.json
 }
