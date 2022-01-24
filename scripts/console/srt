@@ -1,0 +1,37 @@
+#!/bin/bash
+SRT=$1
+# Validate critical environment varibles
+echo "Checking for SERVER_KEYS in: ${SERVER_KEYS} ."
+if [ -z "${SERVER_KEYS}" ]; then
+  export SERVER_KEYS="/c/Users/shaun/repos"
+  echo "No SERVER_KEYS var defined, using default of ${SERVER_KEYS} ."
+else
+  echo "SERVER_KEYS successfully located in: ${SERVER_KEYS} ."
+fi
+# Associate each server name with their respective SSH key, user and host.
+case ${SRT} in
+  nine)
+    ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@nine.solidrust.net
+    ;;
+  demo)
+    ssh -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@demo.solidrust.net
+    ;;
+  eleven)
+    ssh shaun@10.42.69.45
+    ;;
+  data)
+    ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@data.solidrust.net
+    ;;
+  web)
+    ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@web.solidrust.net
+    ;;
+  *)
+    if [ -z ${SRT} ]; then
+      echo "Please specify a server name."
+    else
+      echo "Unsupported server name: ${SRT} ."
+    fi
+    exit 200
+    ;;
+esac
+echo "Done!"

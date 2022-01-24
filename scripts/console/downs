@@ -1,5 +1,13 @@
 #!/bin/bash
-SRT_REPO="/c/Users/shaun/repos/solidrust.net"
-DOWNLOADS="${HOME}/Downloads"
+if [ -z "${SRT_REPO}" ]; then
+  echo "SRT_REPO ver is not configured, using defaults."
+  export SRT_REPO="${HOME}/repos/solidrust.net"
+fi
+echo "Using repo from: ${SRT_REPO} ."
+if [ -z "${DOWNLOADS}" ]; then
+  echo "DOWNLOADS directory is not configured, using defaults."
+  export DOWNLOADS="${HOME}/Downloads"
+fi
+echo "Fetching plugin updates from: ${DOWNLOADS} ."
 mv ${DOWNLOADS}/*.cs ${SRT_REPO}/defaults/oxide/plugins/
-
+echo "Done!"

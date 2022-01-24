@@ -1,5 +1,2 @@
 #!/bin/bash
-if [ -z ${SERVER_KEYS} ]; then
-  SERVER_KEYS="/c/Users/shaun/repos/"
-fi
-ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@nine.solidrust.net
+srt nine

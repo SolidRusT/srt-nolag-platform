@@ -1,3 +1,2 @@
 #!/bin/bash
-SERVER_KEYS="/c/Users/shaun/repos/"
-ssh shaun@eleven
+srt eleven

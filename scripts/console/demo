@@ -1,3 +1,2 @@
 #!/bin/bash
-SERVER_KEYS="/c/Users/shaun/repos/"
-ssh -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@demo.solidrust.net
+srt demo
