@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -9,7 +8,7 @@ using Oxide.Core;
 
 namespace Oxide.Plugins
 {
-    [Info("Tea Modifiers", "MJSU", "2.1.1")]
+    [Info("Tea Modifiers", "MJSU", "2.1.2")]
     [Description("Allows the modification of tea buffs on items")]
     internal class TeaModifiers : RustPlugin
     {
@@ -75,7 +74,7 @@ namespace Oxide.Plugins
             foreach (ItemDefinition def in ItemManager.itemList)
             {
                 ItemModConsumable consume = def.GetComponent<ItemModConsumable>();
-                if (consume.IsUnityNull() || consume.modifiers.IsUnityNull() || consume.modifiers.Count == 0)
+                if (!consume || consume.modifiers == null|| consume.modifiers.Count == 0)
                 {
                     continue;
                 }
@@ -86,13 +85,24 @@ namespace Oxide.Plugins
                 //Currently no modifiers saved. Save them now.
                 if (modifiers == null)
                 {
-                    _pluginConfig.Modifiers[def.shortname] = consume.modifiers.Select(m => new ModifierData
+                    modifiers = consume.modifiers.Select(m => new ModifierData
                     {
                         Duration = new Hash<string, float> {[UsePermission] = m.duration},
                         Type = m.type,
                         Amount = new Hash<string, float> {[UsePermission] = m.value},
                     }).ToList();
+                    _pluginConfig.Modifiers[def.shortname] = modifiers;
                     changed = true;
+                }
+
+                foreach (ModifierData data in modifiers)
+                {
+                    ModifierDefintion existing = consume.modifiers.FirstOrDefault(m => m.type == data.Type);
+                    if (existing != null)
+                    {
+                        data.DefaultAmount = existing.value;
+                        data.DefaultDuration = existing.duration;
+                    }
                 }
             }
 
@@ -102,7 +112,12 @@ namespace Oxide.Plugins
                 Config.WriteObject(_pluginConfig);
             }
 
-            HashSet<string> perms = new HashSet<string> {UsePermission};
+            RegisterPermissions();
+        }
+
+        private void RegisterPermissions()
+        {
+            HashSet<string> perms = new HashSet<string> { UsePermission };
             foreach (List<ModifierData> item in _pluginConfig.Modifiers.Values)
             {
                 foreach (ModifierData modifier in item)
@@ -111,14 +126,14 @@ namespace Oxide.Plugins
                     {
                         perms.Add(key);
                     }
-                    
+
                     foreach (string key in modifier.Duration.Keys)
                     {
                         perms.Add(key);
                     }
                 }
             }
-            
+
             foreach (Hash<string, float> modifier in _pluginConfig.GlobalModifierMultiplier.Values)
             {
                 foreach (string key in modifier.Keys)
@@ -131,7 +146,7 @@ namespace Oxide.Plugins
             {
                 perms.Add(key);
             }
-            
+
             foreach (string key in _pluginConfig.GlobalDurationMultiplier.Keys)
             {
                 perms.Add(key);
@@ -140,33 +155,6 @@ namespace Oxide.Plugins
             foreach (string perm in perms)
             {
                 permission.RegisterPermission(perm, this);
-            }
-
-            foreach (BasePlayer player in BasePlayer.activePlayerList)
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine();
-            
-                foreach (ItemDefinition def in ItemManager.itemList)
-                {
-                    if (!def.shortname.Contains("maxhealthtea"))
-                    {
-                        continue;
-                    }
-            
-                    ItemModConsumable consume = def.GetComponent<ItemModConsumable>();
-                    if (consume == null || consume.modifiers == null || consume.modifiers.Count == 0)
-                    {
-                        continue;
-                    }
-                    
-                    foreach (ModifierDefintion mod in consume.modifiers)
-                    {
-                        sb.AppendLine($"{player.displayName} {def.shortname} - Duration: {GetTeaDuration(player, def.shortname, mod.type)} - Value: {GetTeaValue(player, def.shortname, mod.type)}");
-                    }
-                }
-            
-                Puts(sb.ToString());
             }
         }
         #endregion
@@ -318,7 +306,7 @@ namespace Oxide.Plugins
                 _playerDurationCache[shortName] = durationCache;
             }
             
-            float duration = GetPermissionValue(player, modifier.Duration, 1f, durationCache);
+            float duration = GetPermissionValue(player, modifier.Duration, modifier.DefaultDuration, durationCache);
             return globalDuration * duration;
         }
         
@@ -342,7 +330,7 @@ namespace Oxide.Plugins
                 _playerValueCache[shortName] = valueCache;
             }
 
-            float playerValue = GetPermissionValue(player, modifier.Amount, 1f, valueCache);
+            float playerValue = GetPermissionValue(player, modifier.Amount, modifier.DefaultAmount, valueCache);
             return globalValue * globalTypeValue * playerValue;
         }
         
@@ -422,6 +410,12 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Modifer Type")]
             [JsonConverter(typeof(StringEnumConverter))]
             public Modifier.ModifierType Type { get; set; }
+
+            [JsonIgnore]
+            public float DefaultDuration { get; set; } = 1f;
+            
+            [JsonIgnore]
+            public float DefaultAmount { get; set; } = 1f;
         }
         #endregion
     }
