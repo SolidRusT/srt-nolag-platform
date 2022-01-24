@@ -8,3 +8,5 @@ export SRT_REPO="${HOME}/Documents/repos/solidrust.net"
 # Where to find plugin downloads and updates.
 export DOWNLOADS="${HOME}/Downloads"
 ```
+
+Be sure to download all the custom maps into: `${SRT_REPO}/web/maps/`
