@@ -56,6 +56,8 @@ function wipe_banks() {
   echo "Wipe out old Procedural maps and related data" | tee -a ${LOGS}
   echo "oxide/data/banks/*.json"
   rm -rf ${GAME_ROOT}/oxide/data/banks/*.json
+  # rcon "ecowipe"
+  # rcon "bank.wipe 0"
 }
 
 function wipe_backpacks() {
