@@ -47,10 +47,10 @@ force | forcewipe | facepunch)
     change_seed
     wipe_kits
     wipe_backpacks
-    wipe_banks
     wipe_leaderboards
     #wipe_permissions
     start_rust
+    wipe_banks
     update_map_api
     update_permissions
     ;;
