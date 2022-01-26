@@ -7,7 +7,9 @@
       "outputs": [
         {
           "label": "responses",
-          "connections": []
+          "connections": [
+            "3851cb19-012e-49dc-a2ef-a6758658c377"
+          ]
         }
       ],
       "inputs": [],
@@ -36,8 +38,6 @@
       "guid": "5053a44d-4a5e-460a-974d-da0cc07aac7c",
       "reactionFields": [],
       "embedfields": [],
-      "saveToVariable": "",
-      "saveToVariableType": "temp",
       "outputs": [
         {
           "label": "next response",
@@ -72,7 +72,31 @@
       "type": "response",
       "name": "show help",
       "guid": "3851cb19-012e-49dc-a2ef-a6758658c377",
-      "embedfields": [],
+      "reactionFields": [],
+      "embedfields": [
+        {
+          "name": "!help",
+          "value": "Display this embedded message",
+          "inline": "true"
+        },
+        {
+          "name": "!info",
+          "value": "Show game server information",
+          "inline": "true"
+        },
+        {
+          "name": "!search",
+          "value": "solidplayer search (discord id/tag/steam id)",
+          "inline": "true"
+        },
+        {
+          "name": "!count",
+          "value": "Show the number of registered players",
+          "inline": "true"
+        }
+      ],
+      "saveToVariable": "",
+      "saveToVariableType": "temp",
       "outputs": [
         {
           "label": "next response",
@@ -82,14 +106,47 @@
       "inputs": [
         {
           "label": "trigger",
-          "id": []
+          "id": "7942fe4c-dffa-4146-8cab-d254b3d80d5d"
         }
       ],
-      "x": 250,
-      "y": 250,
+      "x": 396,
+      "y": 165,
       "rtype": "Message",
       "rsubtype": "Send Embed",
-      "messageActionRows": []
+      "formdata": [
+        "${dbsVars.CommandChannel.id}",
+        "1FFF57",
+        "Chat Bot command help",
+        "",
+        "SRT Chat Bot",
+        "https://solidrust.net/images/SolidRusT_Logo.png",
+        "https://github.com/suparious",
+        "Here are some of the commands we have enabled in SRT Discord:",
+        "",
+        "",
+        "solidrust.net",
+        "BOOL_TRUE@@",
+        "",
+        "temp"
+      ],
+      "formnames": [
+        "channelname",
+        "color",
+        "title",
+        "url",
+        "authorname",
+        "authorimageurl",
+        "authorlink",
+        "description",
+        "thumbnail",
+        "image",
+        "footer",
+        "timestamp",
+        "saveToVariable",
+        "saveToVariableType"
+      ],
+      "messageActionRows": [],
+      "valueFields": []
     }
   ]
 }

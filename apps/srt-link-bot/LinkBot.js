@@ -266,14 +266,10 @@ client.on("message", async function(message) {
                         }).catch(err => console.log(err));
                     break;
 
+                case "auth":
                 case "link":
                 case "verify":
-                case "auth":
-                    message.channel.send(verifyEmbed);
-                    break;
-
-                case "help":
-                    message.channel.send("Current Commands\n```search (discord id/tag/steam id) - searches for user information in linking database\nhelp - simple help document\ncount - lists number of verified\nlink/verify/auth - will display a helpful popup on how to verify```");
+                    message.channel.send("Please use the website to auth, link and verify your Steam and Discord accounts\n```https://solidrust.net```");
                     break;
             }
         }
