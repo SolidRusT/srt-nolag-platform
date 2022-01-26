@@ -1,8 +1,18 @@
 #!/bin/bash
 SERVER=$1
 PLUGIN=$2
-REPO_DIR="/c/Users/shaun/repos/solidrust.net/defaults"
-SERVER_KEYS="/c/Users/shaun/repos"
+if [ -z "${SRT_REPO}" ]; then
+  echo "SRT_REPO ver is not configured, using defaults."
+  export SRT_REPO="${HOME}/repos/solidrust.net"
+fi
+echo "Using repo from: ${SRT_REPO} ."
+echo "Checking for SERVER_KEYS in: ${SERVER_KEYS} ."
+if [ -z "${SERVER_KEYS}" ]; then
+  export SERVER_KEYS="/c/Users/shaun/repos"
+  echo "No SERVER_KEYS var defined, using default of ${SERVER_KEYS} ."
+else
+  echo "SERVER_KEYS successfully located in: ${SERVER_KEYS} ."
+fi
 
 case $SERVER in
 nine)
@@ -22,38 +32,30 @@ esac
 case $PLUGIN in
 kits|Kits)
   echo "Pulling Kits data from ${SERVER}"
-  $SCP_CMD:/game/oxide/data/Kits/Kits.json "${REPO_DIR}/oxide/data/Kits/"
-  ;;
-shop|Shop)
-  echo "Pulling Shop data from ${SERVER}"
-  $SCP_CMD:/game/oxide/data/Shop.json "${REPO_DIR}/oxide/data/"
+  $SCP_CMD:/game/oxide/data/Kits/Kits.json "${SRT_REPO}/defaults/oxide/data/Kits/"
   ;;
 copypaste|CopyPaste)
   echo "Pulling CopyPaste data from ${SERVER}"
-  $SCP_CMD:/game/oxide/data/copypaste/*.json "${REPO_DIR}/oxide/data/copypaste/"
+  $SCP_CMD:/game/oxide/data/copypaste/*.json "${SRT_REPO}/defaults/oxide/data/copypaste/"
   ;;
 security|Security|guardian|Guardian|serverarmour|ServerArmour)
   echo "Pulling Security data from ${SERVER}"
-  $SCP_CMD:/game/oxide/data/Guardian/* "${REPO_DIR}/oxide/data/Guardian/"
-  $SCP_CMD:/game/oxide/data/ServerArmour/* "${REPO_DIR}/oxide/data/ServerArmour/"
-  $SCP_CMD:/game/oxide/data/Arkan/* "${REPO_DIR}/oxide/data/Arkan/"
-  ;;
-performance|PerformanceMonitor)
-  echo "Pulling PerformanceMonitor data from ${SERVER}"
-  $SCP_CMD:/game/oxide/data/PerformanceMonitor/* "${REPO_DIR}/oxide/data/PerformanceMonitor/"
+  $SCP_CMD:/game/oxide/data/Guardian/* "${SRT_REPO}/defaults/oxide/data/Guardian/"
+  $SCP_CMD:/game/oxide/data/ServerArmour/* "${SRT_REPO}/defaults/oxide/data/ServerArmour/"
+  $SCP_CMD:/game/oxide/data/Arkan/* "${SRT_REPO}/defaults/oxide/data/Arkan/"
   ;;
 bank|Bank|backpacks|Backpacks)
   echo "Pulling PerformanceMonitor data from ${SERVER}"
-  $SCP_CMD:/game/oxide/data/banks/* "${REPO_DIR}/oxide/data/banks/"
-  $SCP_CMD:/game/oxide/data/Backpacks/* "${REPO_DIR}/oxide/data/Backpacks/"
+  $SCP_CMD:/game/oxide/data/banks/* "${SRT_REPO}/defaults/oxide/data/banks/"
+  $SCP_CMD:/game/oxide/data/Backpacks/* "${SRT_REPO}/defaults/oxide/data/Backpacks/"
   ;;
 craftsman|Craftsman)
   echo "/game/oxide/data/PlayerCrafting*"
-  $SCP_CMD:/game/oxide/data/PlayerCrafting* "${REPO_DIR}/oxide/data/"
+  $SCP_CMD:/game/oxide/data/PlayerCrafting* "${SRT_REPO}/defaults/oxide/data/"
   ;;
 raidablebases|RaidableBases)
   echo "/game/oxide/data/RaidableBases"
-  $SCP_CMD:/game/oxide/data/RaidableBases "${REPO_DIR}/oxide/data/"
+  $SCP_CMD:/game/oxide/data/RaidableBases "${SRT_REPO}/defaults/oxide/data/"
   ;;
 *)
   echo "pull_data: Invalid plugin selection"

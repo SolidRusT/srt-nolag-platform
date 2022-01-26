@@ -11,9 +11,9 @@
         "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 0,
         "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": false,
         "Колличевство нпс (Подмога) | Number of NPCs (Help)": 0,
-        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": false,
-        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 0,
-        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 0
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": true,
+        "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 30,
+        "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 75
       },
       {
         "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку) | Setting the height of the building (Required in the setting if you want to place your building)": 0,
@@ -25,7 +25,7 @@
         "Точность оружия ученого (1 - 100) | Scientist Weapon Accuracy (1 - 100)": 30,
         "Спавнить ли подмогу после взлома ящика ? (НПС) | Should I spawn help after breaking the box? (NPC)": false,
         "Колличевство нпс (Подмога) | Number of NPCs (Help)": 4,
-        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": false,
+        "Возможность вылета вертолета в качевстве подмоги | The possibility of a helicopter departure as an aid": true,
         "Шанс вылета вертолета(0% - 100%) | Helicopter departure chance (0% - 100%)": 50,
         "Шанс спавна коптера (Если присутствует в постройке) | Copter spawn chance (if present in a building)": 70
       },
@@ -308,7 +308,7 @@
   "Настройка ящика | Customizing the box": {
     "Настройка лута в ящике /cl.items | Loot setting in the box /cl.items": [
       {
-        "ShortName": "pistol.python",
+        "ShortName": "metal.facemask",
         "SkinID": 0,
         "Имя предмета | Item name": "",
         "Чертеж? | BluePrint?": false,
@@ -318,43 +318,43 @@
         "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
       },
       {
-        "ShortName": "multiplegrenadelauncher",
+        "ShortName": "metal.plate.torso",
         "SkinID": 0,
         "Имя предмета | Item name": "",
         "Чертеж? | BluePrint?": false,
         "Минимальное количество | Minimal amount": 1,
         "Максимальное количество | Maximum amount": 1,
-        "Шанс выпадения предмета | Item drop chance": 15,
+        "Шанс выпадения предмета | Item drop chance": 60,
         "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
       },
       {
-        "ShortName": "sulfur",
+        "ShortName": "metal.refined",
         "SkinID": 0,
         "Имя предмета | Item name": "",
         "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 500,
-        "Максимальное количество | Maximum amount": 800,
-        "Шанс выпадения предмета | Item drop chance": 40,
+        "Минимальное количество | Minimal amount": 150,
+        "Максимальное количество | Maximum amount": 200,
+        "Шанс выпадения предмета | Item drop chance": 100,
         "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": true
       },
       {
-        "ShortName": "gunpowder",
+        "ShortName": "metalpipe",
         "SkinID": 0,
         "Имя предмета | Item name": "",
         "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 300,
-        "Максимальное количество | Maximum amount": 400,
-        "Шанс выпадения предмета | Item drop chance": 10,
+        "Минимальное количество | Minimal amount": 20,
+        "Максимальное количество | Maximum amount": 20,
+        "Шанс выпадения предмета | Item drop chance": 100,
         "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": true
       },
       {
-        "ShortName": "door.hinged.toptier",
+        "ShortName": "rifle.ak",
         "SkinID": 0,
         "Имя предмета | Item name": "",
         "Чертеж? | BluePrint?": true,
         "Минимальное количество | Minimal amount": 1,
         "Максимальное количество | Maximum amount": 1,
-        "Шанс выпадения предмета | Item drop chance": 15,
+        "Шанс выпадения предмета | Item drop chance": 60,
         "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
       },
       {
@@ -368,147 +368,7 @@
         "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
       },
       {
-        "ShortName": "ammo.rocket.basic",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 1,
-        "Максимальное количество | Maximum amount": 3,
-        "Шанс выпадения предмета | Item drop chance": 25,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "ammo.grenadelauncher.smoke",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 3,
-        "Максимальное количество | Maximum amount": 10,
-        "Шанс выпадения предмета | Item drop chance": 70,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "ammo.grenadelauncher.he",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 2,
-        "Максимальное количество | Maximum amount": 5,
-        "Шанс выпадения предмета | Item drop chance": 10,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "metal.facemask",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": true,
-        "Минимальное количество | Minimal amount": 1,
-        "Максимальное количество | Maximum amount": 1,
-        "Шанс выпадения предмета | Item drop chance": 15,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "metal.plate.torso",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": true,
-        "Минимальное количество | Minimal amount": 1,
-        "Максимальное количество | Maximum amount": 1,
-        "Шанс выпадения предмета | Item drop chance": 10,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "clatter.helmet",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 1,
-        "Максимальное количество | Maximum amount": 1,
-        "Шанс выпадения предмета | Item drop chance": 70,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "carburetor3",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 1,
-        "Максимальное количество | Maximum amount": 1,
-        "Шанс выпадения предмета | Item drop chance": 20,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "crankshaft3",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 1,
-        "Максимальное количество | Maximum amount": 1,
-        "Шанс выпадения предмета | Item drop chance": 10,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "techparts",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 5,
-        "Максимальное количество | Maximum amount": 15,
-        "Шанс выпадения предмета | Item drop chance": 35,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "xmas.lightstring.advanced",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 30,
-        "Максимальное количество | Maximum amount": 70,
-        "Шанс выпадения предмета | Item drop chance": 45,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "largemedkit",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 3,
-        "Максимальное количество | Maximum amount": 5,
-        "Шанс выпадения предмета | Item drop chance": 70,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "largemedkit",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": true,
-        "Минимальное количество | Minimal amount": 3,
-        "Максимальное количество | Maximum amount": 5,
-        "Шанс выпадения предмета | Item drop chance": 70,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "metal.fragments",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 1000,
-        "Максимальное количество | Maximum amount": 2000,
-        "Шанс выпадения предмета | Item drop chance": 70,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": true
-      },
-      {
-        "ShortName": "explosives",
-        "SkinID": 0,
-        "Имя предмета | Item name": "",
-        "Чертеж? | BluePrint?": false,
-        "Минимальное количество | Minimal amount": 10,
-        "Максимальное количество | Maximum amount": 50,
-        "Шанс выпадения предмета | Item drop chance": 30,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
-      },
-      {
-        "ShortName": "autoturret",
+        "ShortName": "weapon.mod.small.scope",
         "SkinID": 0,
         "Имя предмета | Item name": "",
         "Чертеж? | BluePrint?": false,
@@ -522,15 +382,55 @@
         "SkinID": 0,
         "Имя предмета | Item name": "",
         "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 2,
+        "Максимальное количество | Maximum amount": 3,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "weapon.mod.8x.scope",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
         "Минимальное количество | Minimal amount": 1,
         "Максимальное количество | Maximum amount": 1,
-        "Шанс выпадения предмета | Item drop chance": 5,
-        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": true
+        "Шанс выпадения предмета | Item drop chance": 60,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "rifle.l96",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 50,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "lmg.m249",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 40,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "rifle.lr300",
+        "SkinID": 0,
+        "Имя предмета | Item name": "",
+        "Чертеж? | BluePrint?": false,
+        "Минимальное количество | Minimal amount": 1,
+        "Максимальное количество | Maximum amount": 1,
+        "Шанс выпадения предмета | Item drop chance": 70,
+        "Умножать этот предмета на день вайпа ? | Multiply this item by wipe day?": false
       }
     ],
     "Время разблокировки ящика (Сек) | Box unlocking time (Sec)": 900,
     "Макcимальное количество предметов в ящике | Maximum number of items in a drawer": 10,
-    "умножать количество лута на количество дней с начала вайпа (на 3й день - лута будет в 3 раза больше) | multiply the amount of loot by the number of days since the start of the wipe (on the 3rd day - there will be 3 times more loot)": false,
+    "умножать количество лута на количество дней с начала вайпа (на 3й день - лута будет в 3 раза больше) | multiply the amount of loot by the number of days since the start of the wipe (on the 3rd day - there will be 3 times more loot)": true,
     "Включить сигнализацию ? | Turn on the alarm?": true,
     "Использовать AlphaLoot для заполнения ящика ? | Use AlphaLoot to fill the box?": false,
     "Использовать EcoLootUI для заполнения ящика ? | Use EcoLootUI to fill the box?": false
