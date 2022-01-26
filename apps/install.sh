@@ -1,22 +1,22 @@
 #!/bin/bash
-# Default Debian 11 net-install ISO (from debian.org)
+# Default Debian 10 net-install ISO (from debian.org)
 # - No Desktop environment
 # - No Desktop Managers
 # - Yes Web server
 # - Yes print server
 # - Yes SSH server
 # - Yes Standard system utilities
-## Or latest Buster 11 Marketplace AMI (from Debian, not AWS)
+## Or latest Buster 10 Marketplace AMI (from Debian, not AWS)
 echo "This is not fully automated yet"
 exit 1
 
 # Update system
 sudo apt update && sudo apt dist-upgrade -y
-# Install web services
 sudo apt install -y net-tools apache2 php7.3 libapache2-mod-php7.3 php7.3-common php7.3-mbstring php7.3-xmlrpc php7.3-soap php7.3-gd php7.3-xml php7.3-intl php7.3-mysql php7.3-cli php7.3-ldap php7.3-zip php7.3-curl curl software-properties-common unzip imagemagick php-imagick snapd htop python3-pip
+
 # reboot  (recommended)
 
-## Install SRT Release manager
+## Install SRT
 # pip3 install awscli
 # export PATH="${PATH}:${HOME}/.local/bin"
 mkdir -p ${HOME}/solidrust.net
