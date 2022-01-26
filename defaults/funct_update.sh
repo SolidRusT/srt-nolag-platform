@@ -328,6 +328,8 @@ DEFAULT_PERMS=(
   vehicledeployedlocks.keylock.duosub
   vehicledeployedlocks.keylock.solosub
   vehiclevendoroptions.ownership.allvehicles
+  carradio.attachcarradio
+  carradio.detachcarradio
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}
