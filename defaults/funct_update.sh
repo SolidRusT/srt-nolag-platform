@@ -35,16 +35,21 @@ function update_repo() {
     ;;
   bots)
     echo "Sync repo for bots server"
-    mkdir -p ${HOME}/solidrust.net/apps ${HOME}/solidrust.net/defaults
-    export GAME_ROOT="${HOME}/solidrust.net/apps"
+    mkdir -p ${HOME}/solidrust.net
     aws s3 sync --size-only --delete \
       --exclude "web/maps/*" \
+      --include "servers/bots/*" \
+      --exclude "servers/*" \
       --exclude "defaults/oxide/*" \
-      --exclude "defaults/database/*"
+      --exclude "defaults/cfg/*" \
+      --exclude "defaults/console/*" \
+      --exclude "defaults/radio/*" \
+      --exclude "defaults/procedural-maps/*" \
+      --exclude "defaults/database/*" \
       ${S3_REPO} ${HOME}/solidrust.net | tee -a ${LOGS}
     echo "Setting execution bits" | tee -a ${LOGS}
     chmod +x ${HOME}/solidrust.net/defaults/*.sh
-    chmod +x ${HOME}/solidrust.net/defaults/web/*.sh
+    chmod +x ${HOME}/solidrust.net/defaults/bots/*.sh
     ;;
   data | database)
     echo "Sync repo for database server"

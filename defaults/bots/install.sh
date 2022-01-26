@@ -50,6 +50,13 @@ export LOGS="${HOME}/SolidRusT.log"
 # aws configure  # add Key, secret, region (us-west-2), and output (text)
 # aws s3 ls  # test permissions to s3
 aws s3 sync --delete ${S3_REPO}/servers/bots ${HOME}/solidrust.net | tee -a ${LOGS}
+aws s3 sync --delete ${S3_REPO}/defaults ${HOME}/solidrust.net/defaults \
+    --exclude "oxide/*" \
+    --exclude "cfg/*" \
+    --exclude "console/*" \
+    --exclude "procedural-maps/*" \
+    --exclude "radio/*" \
+    --exclude "database/*" | tee -a ${LOGS}
 
 
 # Instal RCON CLI
