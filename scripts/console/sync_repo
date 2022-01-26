@@ -15,9 +15,11 @@ cd ${CURRENT_DIR}
 export S3_COMMAND="sync --delete --exclude *DS_Store --exclude *.pem"
 echo "Pushing SRT Build marker"
 aws s3 cp ${SRT_REPO}/build.txt ${S3_REPO}/
-echo "Pushing SRT Defaults"
+echo "Pushing SRT global default server configs"
 aws s3 ${S3_COMMAND} ${SRT_REPO}/defaults/ ${S3_REPO}/defaults/
-echo "Pushing SRT Custom Servers"
+echo "Pushing SRT customized server configs"
 aws s3 ${S3_COMMAND} ${SRT_REPO}/servers/ ${S3_REPO}/servers/
 echo "Pushing SRT Web"
 aws s3 ${S3_COMMAND} ${SRT_REPO}/web/ ${S3_REPO}/web/
+echo "Pushing SRT Services"
+aws s3 ${S3_COMMAND} ${SRT_REPO}/apps/ ${S3_REPO}/apps/
