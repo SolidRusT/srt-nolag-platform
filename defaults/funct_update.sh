@@ -8,8 +8,10 @@ function update_repo() {
     mkdir -p ${HOME}/solidrust.net/servers ${HOME}/solidrust.net/defaults
     aws s3 sync --delete \
       --exclude "web/*" \
+      --exclude "apps/*" \
       --exclude "defaults/web/*" \
       --exclude "defaults/database/*" \
+      --exclude "servers/bots/*" \
       --exclude "servers/web/*" \
       --exclude "servers/data/*" \
       --exclude "servers/radio/*" \
@@ -24,10 +26,12 @@ function update_repo() {
     export GAME_ROOT="${HOME}/solidrust.net/web"
     aws s3 sync --size-only --delete \
       --exclude "web/maps/*" \
+      --exclude "apps/*" \
+      --exclude "defaults/bots/*" \
       --exclude "defaults/oxide/*" \
       --exclude "defaults/database/*" \
-      --exclude "servers/data/*" \
-      --exclude "servers/radio/*" \
+      --exclude "servers/*" \
+      --include "servers/web/*" \
       ${S3_REPO} ${HOME}/solidrust.net | tee -a ${LOGS}
     echo "Setting execution bits" | tee -a ${LOGS}
     chmod +x ${HOME}/solidrust.net/defaults/*.sh
@@ -38,14 +42,14 @@ function update_repo() {
     mkdir -p ${HOME}/solidrust.net
     aws s3 sync --size-only --delete \
       --exclude "web/maps/*" \
-      --include "servers/bots/*" \
-      --exclude "servers/*" \
       --exclude "defaults/oxide/*" \
       --exclude "defaults/cfg/*" \
       --exclude "defaults/console/*" \
       --exclude "defaults/radio/*" \
       --exclude "defaults/procedural-maps/*" \
       --exclude "defaults/database/*" \
+      --exclude "servers/*" \
+      --include "servers/bots/*" \
       ${S3_REPO} ${HOME}/solidrust.net | tee -a ${LOGS}
     echo "Setting execution bits" | tee -a ${LOGS}
     chmod +x ${HOME}/solidrust.net/defaults/*.sh
@@ -55,9 +59,10 @@ function update_repo() {
     echo "Sync repo for database server"
     mkdir -p ${HOME}/solidrust.net
     aws s3 sync --delete ${S3_REPO} ${HOME}/solidrust.net \
+    --exclude "apps/*" \
+    --exclude 'web/*' \
     --exclude 'defaults/oxide/*' \
     --exclude 'defaults/web/*' \
-    --exclude 'web/*' \
     --exclude 'servers/*' \
     --include 'servers/data/*' | grep -v ".git" | tee -a ${LOGS}
     echo "Setting execution bits" | tee -a ${LOGS}
