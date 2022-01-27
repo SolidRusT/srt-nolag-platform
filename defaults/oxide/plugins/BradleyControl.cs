@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-	[Info("Bradley Control", "Mattparks", "0.2.3")]
+	[Info("Bradley Control", "Suparious", "1.0.0")]
 	[Description("Controls Bradley APC properties")]
 	class BradleyControl : RustPlugin
 	{
