@@ -9,7 +9,9 @@ function update_repo() {
     aws s3 sync --delete \
       --exclude "web/*" \
       --exclude "apps/*" \
+      --exclude "defaults/bots/*" \
       --exclude "defaults/web/*" \
+      --exclude "defaults/radio/*" \
       --exclude "defaults/database/*" \
       --exclude "servers/bots/*" \
       --exclude "servers/web/*" \
