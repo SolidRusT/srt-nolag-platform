@@ -63,6 +63,7 @@ echo "Sync repo for bots server"
       --include "servers/bots/*" \
       ${S3_REPO} ${HOME}/solidrust.net | tee -a ${LOGS}
 
+cp -R ${HOME}/solidrust.net/apps/srt-link-bot ${HOME}/run/srt-link-bot
 
 # Instal RCON CLI
 # From: https://github.com/gorcon/rcon-cli/releases/latest
