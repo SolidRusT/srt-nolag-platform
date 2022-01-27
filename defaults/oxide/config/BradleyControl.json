@@ -21,150 +21,60 @@
   },
   "lootTables": {
     "bradleyCrate": {
-      "ammo.rocket.basic": [
-        "2",
+      "ammo.rifle.explosive": [
+        "100",
         "0",
-        "1"
+        "3"
       ],
       "ammo.rocket.fire": [
-        "2",
+        "3",
         "0",
         "2"
       ],
       "ammo.rocket.hv": [
-        "2",
+        "7",
+        "0",
+        "3"
+      ],
+      "ammo.rocket.mlrs": [
+        "3",
         "0",
         "2"
       ],
       "explosive.timed": [
-        "2",
+        "3",
         "0",
         "1"
-      ],
-      "explosive.satchel": [
-        "4",
-        "860423633",
-        "1"
-      ],
-      "grenade.f1": [
-        "6",
-        "1117908964",
-        "1"
-      ],
-      "ammo.rifle": [
-        "120",
-        "0",
-        "3"
-      ],
-      "ammo.pistol": [
-        "60",
-        "0",
-        "3"
-      ],
-      "ammo.rifle.incendiary": [
-        "80",
-        "0",
-        "3"
-      ],
-      "ammo.rifle.explosive": [
-        "50",
-        "0",
-        "3"
-      ],
-      "ammo.rifle.hv": [
-        "75",
-        "0",
-        "3"
-      ],
-      "ammo.pistol.fire": [
-        "100",
-        "0",
-        "3"
-      ],
-      "ammo.pistol.hv": [
-        "100",
-        "0",
-        "3"
       ],
       "lmg.m249": [
         "1",
-        "0",
+        "2655521139",
         "1"
-      ],
-      "pistol.m92": [
-        "1",
-        "0",
-        "2"
       ],
       "rifle.ak": [
         "1",
-        "1120754666",
-        "2"
+        "2382050205",
+        "3"
       ],
-      "rifle.bolt": [
+      "rifle.l96": [
         "1",
-        "1116940640",
+        "2473291137",
         "2"
       ],
-      "smg.2": [
+      "rifle.lr300": [
         "1",
-        "1115623613",
-        "2"
+        "1741459108",
+        "3"
       ],
-      "smg.mp5": [
-        "1",
-        "0",
-        "2"
-      ],
-      "smg.thompson": [
-        "1",
-        "928501490",
-        "2"
-      ],
-      "weapon.mod.holosight": [
-        "1",
-        "0",
-        "2"
-      ],
-      "weapon.mod.silencer": [
+      "weapon.mod.8x.scope": [
         "1",
         "0",
         "3"
       ],
-      "weapon.mod.flashlight": [
-        "1",
+      "ammo.rocket.basic": [
+        "3",
         "0",
         "3"
-      ],
-      "weapon.mod.lasersight": [
-        "1",
-        "0",
-        "2"
-      ],
-      "weapon.mod.small.scope": [
-        "1",
-        "0",
-        "3"
-      ],
-      "targeting.computer": [
-        "1",
-        "0",
-        "3"
-      ],
-      "cctv.camera": [
-        "1",
-        "0",
-        "3"
-      ],
-      "fun.guitar": [
-        "1",
-        "811725124",
-        "3"
-      ],
-      "door.hinged.toptier": [
-        "1",
-        "1120456417",
-        "2"
       ]
     }
   },
