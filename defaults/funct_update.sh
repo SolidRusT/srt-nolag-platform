@@ -256,6 +256,7 @@ DEFAULT_PERMS=(
   betterrootcombiners.use
   bgrade.all
   bloodtrail.allow
+  blueprintmanager.all
   blueprintshare.share
   blueprintshare.toggle
   blueprintshare.use
