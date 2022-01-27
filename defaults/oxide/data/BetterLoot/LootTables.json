@@ -154,13 +154,21 @@
     "assets/bundled/prefabs/radtown/crate_basic.prefab": {
       "Enabled": true,
       "ItemList": {
-        "scrap": {
-          "Max": 100,
-          "Min": 100
+        "ammo.rifle": {
+          "Max": 30,
+          "Min": 27
+        },
+        "ammo.pistol": {
+          "Max": 30,
+          "Min": 20
+        },
+        "glue": {
+          "Max": 3,
+          "Min": 1
         }
       },
-      "ItemsMax": 1,
-      "ItemsMin": 1,
+      "ItemsMax": 3,
+      "ItemsMin": 3,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -273,10 +281,6 @@
           "Max": 3,
           "Min": 3
         },
-        "grenade.smoke": {
-          "Max": 1,
-          "Min": 1
-        },
         "metal.refined": {
           "Max": 100,
           "Min": 100
@@ -284,10 +288,6 @@
         "metalpipe": {
           "Max": 15,
           "Min": 15
-        },
-        "pistol.python": {
-          "Max": 1,
-          "Min": 1
         },
         "rifle.semiauto": {
           "Max": 1,
@@ -298,10 +298,6 @@
           "Min": 1
         },
         "rocket.launcher": {
-          "Max": 1,
-          "Min": 1
-        },
-        "shotgun.pump": {
           "Max": 1,
           "Min": 1
         },
@@ -337,10 +333,6 @@
           "Max": 1,
           "Min": 1
         },
-        "pistol.m92": {
-          "Max": 1,
-          "Min": 1
-        },
         "bleach": {
           "Max": 1,
           "Min": 1
@@ -351,6 +343,14 @@
         },
         "ducttape": {
           "Max": 2,
+          "Min": 1
+        },
+        "bottle.vodka": {
+          "Max": 1,
+          "Min": 0
+        },
+        "ammo.rocket.smoke": {
+          "Max": 1,
           "Min": 1
         }
       },
@@ -2129,6 +2129,10 @@
         "rifle.lr300": {
           "Max": 1,
           "Min": 1
+        },
+        "ammo.rocket.mlrs": {
+          "Max": 3,
+          "Min": 2
         }
       },
       "ItemsMax": 10,
@@ -2186,6 +2190,10 @@
         "rifle.lr300": {
           "Max": 1,
           "Min": 1
+        },
+        "ammo.rocket.mlrs": {
+          "Max": 3,
+          "Min": 2
         }
       },
       "ItemsMax": 10,
@@ -2254,8 +2262,8 @@
           "Min": 3
         },
         "ammo.rocket.mlrs": {
-          "Max": 4,
-          "Min": 3
+          "Max": 3,
+          "Min": 2
         },
         "explosive.timed": {
           "Max": 3,
@@ -2311,8 +2319,8 @@
           "Min": 3
         },
         "ammo.rocket.mlrs": {
-          "Max": 6,
-          "Min": 4
+          "Max": 3,
+          "Min": 2
         },
         "explosive.timed": {
           "Max": 3,
