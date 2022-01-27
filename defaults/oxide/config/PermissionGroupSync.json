@@ -256,7 +256,8 @@
                 "respawnbradley.nocooldown",
                 "zombiehorde.admin",
                 "xperience.vip",
-                "discordmessages.ban"
+                "discordmessages.ban",
+                "bradleycontrol.allow"
             ],
             "AdditionalCommands": []
         },
@@ -403,7 +404,8 @@
                 "zombiehorde.admin",
                 "itemcleaner.use",
                 "vehicledeployedlocks.masterkey",
-                "xperience.admin"
+                "xperience.admin",
+                "bradleycontrol.allow"
             ],
             "AdditionalCommands": []
         }

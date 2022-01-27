@@ -1,9 +1,0 @@
-{
-  "Starting Player Slots": 125,
-  "Maximum Player Slots": 500,
-  "Increment Player Slots": 25,
-  "Increment Interval Minutes": 3,
-  "Increment When Slots Available": 5,
-  "Only increment when FPS above": 45,
-  "Auto decrease again": true
-}
