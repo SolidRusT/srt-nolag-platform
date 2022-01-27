@@ -21,8 +21,7 @@
       "type": "event",
       "name": "Any Message",
       "guid": "49ebbc23-2903-4f05-ab69-bc9ecb4f8888",
-      "variables": {
-      },
+      "variables": {},
       "outputs": [
         {
           "label": "responses",

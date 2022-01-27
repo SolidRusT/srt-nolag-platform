@@ -95,8 +95,6 @@
           "inline": "true"
         }
       ],
-      "saveToVariable": "",
-      "saveToVariableType": "temp",
       "outputs": [
         {
           "label": "next response",
@@ -147,6 +145,20 @@
       ],
       "messageActionRows": [],
       "valueFields": []
+    },
+    {
+      "type": "command",
+      "name": "pop",
+      "guid": "a56266f2-4900-49f2-ae6c-71b731d33eff",
+      "outputs": [
+        {
+          "label": "responses",
+          "connections": []
+        }
+      ],
+      "inputs": [],
+      "x": 250,
+      "y": 250
     }
   ]
 }
