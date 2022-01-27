@@ -25,47 +25,47 @@
     "SurveyCharges": "Survey Charges"
   },
   "Options": {
-    "ExcavatorBeltSpeedMax": 0.5,
+    "ExcavatorBeltSpeedMax": 1,
     "ExcavatorResourceModifiers": {},
-    "ExcavatorResourceTickRate": 6.0,
+    "ExcavatorResourceTickRate": 7.0,
     "ExcavatorTimeForFullResources": 60.0,
-    "MiningQuarryResourceTickRate": 50.0,
+    "MiningQuarryResourceTickRate": 10.0,
     "GatherDispenserModifiers": {
-      "Tree": 1000,
-      "Ore": 1000,
-      "Flesh": 1000
+      "Tree": 10,
+      "Ore": 10,
+      "Flesh": 10
     },
     "GatherResourceModifiers": {
-      "Wood": 1000,
-      "Stones": 1000,
-      "Cloth": 1000,
-      "Raw Wolf Meat": 1000,
-      "Raw Chicken Breast": 1000,
-      "Bone Fragments": 1000,
-      "Animal Fat": 1000,
-      "Metal Ore": 1000,
-      "Sulfur Ore": 1000,
-      "Water": 1000
+      "Wood": 10,
+      "Stones": 10,
+      "Cloth": 10,
+      "Raw Wolf Meat": 10,
+      "Raw Chicken Breast": 10,
+      "Bone Fragments": 10,
+      "Animal Fat": 10,
+      "Metal Ore": 10,
+      "Sulfur Ore": 10,
+      "Water": 10
     },
     "PickupResourceModifiers": {
-      "Cloth": 1000,
-      "Stones": 1000,
-      "Wood": 1000,
-      "Sulfur Ore": 1000,
-      "Metal Ore": 1000
+      "Cloth": 10,
+      "Stones": 10,
+      "Wood": 10,
+      "Sulfur Ore": 10,
+      "Metal Ore": 10
     },
     "QuarryResourceModifiers": {
-      "Stones": 1000,
-      "Wood": 1000,
-      "Sulfur Ore": 1000,
-      "Metal Ore": 1000,
-      "Ore": 1000
+      "Stones": 10,
+      "Wood": 10,
+      "Sulfur Ore": 10,
+      "Metal Ore": 10,
+      "Ore": 10
     },
     "SurveyResourceModifiers": {
-      "Stones": 1000,
-      "Metal Ore": 1000,
-      "Sulfur Ore": 1000,
-      "Ore": 1000
+      "Stones": 10,
+      "Metal Ore": 10,
+      "Sulfur Ore": 10,
+      "Ore": 10
     }
   },
   "Settings": {

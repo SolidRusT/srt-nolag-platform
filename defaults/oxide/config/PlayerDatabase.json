@@ -1,7 +1,7 @@
 {
     "Data Type : 0 (Files) or 1 (SQLite) or 2 (MySQL)": 2,
     "MySQL - Database Name": "RustPlayers",
-    "MySQL - Host": "data",
+    "MySQL - Host": "data.solidrust.net",
     "MySQL - Password": "lcy_402",
     "MySQL - Port": 3306,
     "MySQL - Username": "srt_sl_lcy",

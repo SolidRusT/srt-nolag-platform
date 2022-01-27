@@ -1,0 +1,12 @@
+{
+  "MountNeeded": true,
+  "SoundEnabled": true,
+  "RadioSpawnProbability": {
+    "MODULAR_CAR": 0.0,
+    "assets/rust.ai/nextai/testridablehorse.prefab": 0.0,
+    "assets/content/vehicles/minicopter/minicopter.entity.prefab": 0.0,
+    "assets/content/vehicles/sedan_a/sedantest.entity.prefab": 0.0,
+    "assets/content/vehicles/scrap heli carrier/scraptransporthelicopter.prefab": 0.0
+  },
+  "DefaultState": "OFF"
+}

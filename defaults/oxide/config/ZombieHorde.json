@@ -10,7 +10,6 @@
     "Spawn system (SpawnsDatabase, Random)": "Random",
     "Spawn file (only required when using SpawnsDatabase)": "",
     "Amount of time a player needs to be outside of a zombies vision before it forgets about them": 10.0,
-    "Default roam speed (Slowest, Slow, Normal, Fast)": "Slow",
     "Force all hordes to roam locally": false,
     "Local roam distance": 150.0,
     "Restrict chase distance for local hordes (1.5x the maximum roam distance for that horde)": false,
@@ -20,18 +19,15 @@
   "Horde Member Options": {
     "Can target animals": true,
     "Can be targeted by turrets": false,
-    "Can be targeted by peacekeeper turrets and NPC turrets": true,
+    "Can be targeted by turrets set to peacekeeper mode": false,
     "Can be targeted by Bradley APC": false,
-    "Can be targeted by other NPCs": true,
-    "Can be targeted by animals": true,
     "Can target other NPCs": false,
     "Can target NPCs from HumanNPC": false,
     "Ignore sleeping players": false,
     "Give all zombies glowing eyes": false,
     "Headshots instantly kill zombie": true,
-    "Kill NPCs that are under water": false,
-    "Can zombies swim across water": true,
-    "Enable NPC dormant system. This will put NPCs to sleep when no players are nearby to improve performance": true,
+    "Kill NPCs that are under water": true,
+    "Disable NPC dormant system. This will allow NPCs to move all the time, but at a cost to performance": true,
     "Loadouts": [
       {
         "LoadoutID": "loadout-0",
@@ -39,28 +35,16 @@
           "SRT Subject Zero"
         ],
         "Damage multiplier": 1.0,
-        "Aim cone scale (for projectile weapons)": 2.0,
         "Vitals": {
           "Health": 200.0
         },
         "Movement": {
-          "Speed": 6.2,
-          "Acceleration": 12.0,
-          "Turn speed": 120.0,
-          "Speed multiplier - Slowest": 0.16,
-          "Speed multiplier - Slow": 0.3,
-          "Speed multiplier - Normal": 0.5,
-          "Speed multiplier - Fast": 1.0,
-          "Speed multiplier - Low health": 0.5
+          "Movement speed (running)": 6.2,
+          "Movement speed (walking)": 3.1,
+          "Duck speed": 1.5
         },
         "Sensory": {
-          "Attack range multiplier": 1.5,
-          "Sense range": 30.0,
-          "Listen range": 20.0,
-          "Target lost range": 40.0,
-          "Ignore sneaking outside of vision range": true,
-          "Vision cone (0 - 180 degrees)": 135.0,
-          "Ignore players in safe zone": true
+          "Vision range": 30.0
         },
         "BeltItems": [
           {
@@ -94,28 +78,16 @@
           "SRT Subject One"
         ],
         "Damage multiplier": 1.0,
-        "Aim cone scale (for projectile weapons)": 2.0,
         "Vitals": {
           "Health": 200.0
         },
         "Movement": {
-          "Speed": 6.2,
-          "Acceleration": 12.0,
-          "Turn speed": 120.0,
-          "Speed multiplier - Slowest": 0.16,
-          "Speed multiplier - Slow": 0.3,
-          "Speed multiplier - Normal": 0.5,
-          "Speed multiplier - Fast": 1.0,
-          "Speed multiplier - Low health": 0.5
+          "Movement speed (running)": 6.2,
+          "Movement speed (walking)": 3.1,
+          "Duck speed": 1.5
         },
         "Sensory": {
-          "Attack range multiplier": 1.5,
-          "Sense range": 30.0,
-          "Listen range": 20.0,
-          "Target lost range": 40.0,
-          "Ignore sneaking outside of vision range": true,
-          "Vision cone (0 - 180 degrees)": 135.0,
-          "Ignore players in safe zone": true
+          "Vision range": 30.0
         },
         "BeltItems": [
           {
@@ -150,28 +122,16 @@
           "SRT Subject Two"
         ],
         "Damage multiplier": 1.0,
-        "Aim cone scale (for projectile weapons)": 2.0,
         "Vitals": {
           "Health": 200.0
         },
         "Movement": {
-          "Speed": 6.2,
-          "Acceleration": 12.0,
-          "Turn speed": 120.0,
-          "Speed multiplier - Slowest": 0.16,
-          "Speed multiplier - Slow": 0.3,
-          "Speed multiplier - Normal": 0.5,
-          "Speed multiplier - Fast": 1.0,
-          "Speed multiplier - Low health": 0.5
+          "Movement speed (running)": 6.2,
+          "Movement speed (walking)": 3.1,
+          "Duck speed": 1.5
         },
         "Sensory": {
-          "Attack range multiplier": 1.5,
-          "Sense range": 30.0,
-          "Listen range": 20.0,
-          "Target lost range": 40.0,
-          "Ignore sneaking outside of vision range": true,
-          "Vision cone (0 - 180 degrees)": 135.0,
-          "Ignore players in safe zone": true
+          "Vision range": 30.0
         },
         "BeltItems": [
           {
@@ -200,28 +160,16 @@
           "SRT Subject Three"
         ],
         "Damage multiplier": 1.0,
-        "Aim cone scale (for projectile weapons)": 2.0,
         "Vitals": {
           "Health": 200.0
         },
         "Movement": {
-          "Speed": 6.2,
-          "Acceleration": 12.0,
-          "Turn speed": 120.0,
-          "Speed multiplier - Slowest": 0.16,
-          "Speed multiplier - Slow": 0.3,
-          "Speed multiplier - Normal": 0.5,
-          "Speed multiplier - Fast": 1.0,
-          "Speed multiplier - Low health": 0.5
+          "Movement speed (running)": 6.2,
+          "Movement speed (walking)": 3.1,
+          "Duck speed": 1.5
         },
         "Sensory": {
-          "Attack range multiplier": 1.5,
-          "Sense range": 30.0,
-          "Listen range": 20.0,
-          "Target lost range": 40.0,
-          "Ignore sneaking outside of vision range": true,
-          "Vision cone (0 - 180 degrees)": 135.0,
-          "Ignore players in safe zone": true
+          "Vision range": 30.0
         },
         "BeltItems": [
           {
@@ -259,8 +207,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -270,8 +216,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 1.0,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -281,8 +225,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 1.0,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -292,8 +234,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 1.0,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -303,8 +243,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 1.0,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -314,8 +252,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 1.0,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -325,8 +261,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 1.0,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -336,8 +270,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 1.0,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -347,8 +279,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.25,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -358,8 +288,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.25,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -369,8 +297,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.25,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -380,8 +306,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -391,8 +315,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -402,8 +324,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -413,8 +333,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -424,8 +342,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -435,8 +351,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -446,8 +360,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -457,8 +369,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -468,8 +378,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         },
         {
@@ -479,8 +387,6 @@
           "SkinID": 0,
           "Spawn as blueprint": false,
           "Probability (0.0 - 1.0)": 0.5,
-          "Minimum condition (0.0 - 1.0)": 1.0,
-          "Maximum condition (0.0 - 1.0)": 1.0,
           "Spawn with": null
         }
       ]
@@ -598,31 +504,7 @@
       "Distance that this horde can roam from their initial spawn point": 120.0,
       "Maximum amount of members in this horde": 10,
       "Horde profile": "Profile1"
-    },
-    "Custom": [
-      {
-        "Location": {
-          "X": 0.0,
-          "Y": 0.0,
-          "Z": 0.0
-        },
-        "Enable spawns at this monument": false,
-        "Distance that this horde can roam from their initial spawn point": -1.0,
-        "Maximum amount of members in this horde": 3,
-        "Horde profile": ""
-      },
-      {
-        "Location": {
-          "X": 0.0,
-          "Y": 0.0,
-          "Z": 0.0
-        },
-        "Enable spawns at this monument": false,
-        "Distance that this horde can roam from their initial spawn point": -1.0,
-        "Maximum amount of members in this horde": 3,
-        "Horde profile": ""
-      }
-    ]
+    }
   },
   "Timed Spawn Options": {
     "Only allows spawns during the set time period": false,
@@ -640,7 +522,7 @@
   },
   "Version": {
     "Major": 0,
-    "Minor": 4,
-    "Patch": 8
+    "Minor": 3,
+    "Patch": 5
   }
 }

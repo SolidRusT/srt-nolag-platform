@@ -18,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("XPerience", "MACHIN3", "1.3.2")]
+    [Info("XPerience", "MACHIN3", "1.3.3")]
     [Description("Player level system with xp, stats, and skills")]
     public class XPerience : RustPlugin
     {
@@ -28,6 +28,21 @@ namespace Oxide.Plugins
 		【 𝓜𝓐𝓒𝓗𝓘𝓝𝓔 】
         Discord: discord.skilledsoldiers.net
         *****************************************************/
+        #region version 1.3.3
+        /*****************************************************
+         ----------------------
+         ✯ version 1.3.3
+         ----------------------
+         DELETE LANG FILE BEFORE UPLOADING UPDATE!
+
+        ✯ Additional TeaModifiers support implemented
+        ✯ Fixed issues with drop in player health when resetting stats
+        ✯ Fixed issues with wrong health values when player resets progress
+        ✯ Fixed issues with wrong health values when Admin resets player progress
+        ✯ Fixed issues with wrong health values when using FixData commands
+
+        *****************************************************/
+        #endregion
         #region version 1.3.2
         /*****************************************************
          ----------------------
@@ -3314,51 +3329,61 @@ namespace Oxide.Plugins
                     return;
                 }
             }
-            // Reset max health if needed before removing points
-            if (player._maxHealth > 100 || player._health > 100)
-            {    
-                // Get Stats
+            // Reset health if needed before removing points
+            if(xprecord.Might >= 1)
+            {
+                // Max Health
                 double armor = (xprecord.Might * config.might.armor) * 100;
-                double currenthealth = player._health;
-                // Remove Armor
                 double newmaxhealth = player._maxHealth - armor;
-                // Tea Effects
-                double teahealth = 0;
-                double newhealth = currenthealth - armor;
+                // Change Max Health
+                if (newmaxhealth < 100)
+                {
+                    player._maxHealth = 100;
+                }
+                else
+                {
+                    player._maxHealth = (float)newmaxhealth;
+                }
+                // Player Current Health
+                double defaulthealth = 100;
+                double teahealth = 100;
+                bool teamodified = false;
+                double healthdifference = 0;
                 if (GetTeaCooldown(player) != 0)
                 {
+                    // Check for Tea Modifier
+                    if (TeaModifiers != null && xprecord.teatype != "none")
+                    {
+                        teahealth = defaulthealth + TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
+                        teamodified = true;
+                    }
                     switch (GetTeaTypes(player))
                     {
-                        case "basic":
-                            teahealth = 105;
+                        case "maxhealthtea":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 5;
+                            }
                             break;
-                        case "advanced":
-                            teahealth = 113;
+                        case "maxhealthtea.advanced":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 12.5;
+                            }
                             break;
-                        case "pure":
-                            teahealth = 120;
+                        case "maxhealthtea.pure":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 20;
+                            }
                             break;
                     }
                 }
                 if (player._health > teahealth)
                 {
-                    newhealth = teahealth;
+                    healthdifference = player._health - teahealth;
                 }
-                else
-                {
-                    newhealth = player._health;
-                }
-                // Change Health
-                if (newmaxhealth < 100)
-                {
-                    player._maxHealth = 100;
-                    player._health = (float)newhealth;
-                }
-                else
-                {
-                    player._maxHealth = (float)newmaxhealth;
-                    player._health = (float)newhealth;
-                } 
+                player._health -= (float)healthdifference;
             }
             // Add all spent points
             int statpoints = xprecord.statpoint + xprecord.MentalityP + xprecord.DexterityP + xprecord.MightP + xprecord.CaptaincyP;
@@ -3583,27 +3608,61 @@ namespace Oxide.Plugins
             xprecord.requiredxp = config.xpLevel.levelstart;
             xprecord.statpoint = 0;
             xprecord.skillpoint = 0;
-            // Reset max health if needed before removing points
-            if (player._maxHealth > 100 || player._health > 100)
+            // Reset health if needed before removing points
+            if (xprecord.Might >= 1)
             {
-                // Get Stats
+                // Max Health
                 double armor = (xprecord.Might * config.might.armor) * 100;
-                double currentmaxhealth = player._maxHealth;
-                double currenthealth = Mathf.Ceil(player._health);
-                // Remove Armor
-                double newmaxhealth = currentmaxhealth - armor;
-                double newhealth = currenthealth - armor;
-                // Change Health
+                double newmaxhealth = player._maxHealth - armor;
+                // Change Max Health
                 if (newmaxhealth < 100)
                 {
                     player._maxHealth = 100;
-                    player._health = (float)newhealth;
                 }
                 else
                 {
                     player._maxHealth = (float)newmaxhealth;
-                    player._health = (float)newhealth;
                 }
+                // Player Current Health
+                double defaulthealth = 100;
+                double teahealth = 100;
+                bool teamodified = false;
+                double healthdifference = 0;
+                if (GetTeaCooldown(player) != 0)
+                {
+                    // Check for Tea Modifier
+                    if (TeaModifiers != null && xprecord.teatype != "none")
+                    {
+                        teahealth = defaulthealth + TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
+                        teamodified = true;
+                    }
+                    switch (GetTeaTypes(player))
+                    {
+                        case "maxhealthtea":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 5;
+                            }
+                            break;
+                        case "maxhealthtea.advanced":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 12.5;
+                            }
+                            break;
+                        case "maxhealthtea.pure":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 20;
+                            }
+                            break;
+                    }
+                }
+                if (player._health > teahealth)
+                {
+                    healthdifference = player._health - teahealth;
+                }
+                player._health -= (float)healthdifference;
             }
             // Reset Stat Levels
             xprecord.Mentality = 0;
@@ -3676,27 +3735,61 @@ namespace Oxide.Plugins
             xprecord.requiredxp = config.xpLevel.levelstart;
             xprecord.statpoint = 0;
             xprecord.skillpoint = 0;
-            // Reset max health if needed before removing points
-            if (player._maxHealth > 100 || player._health > 100)
+            // Reset health if needed before removing points
+            if (xprecord.Might >= 1)
             {
-                // Get Stats
+                // Max Health
                 double armor = (xprecord.Might * config.might.armor) * 100;
-                double currentmaxhealth = player._maxHealth;
-                double currenthealth = Mathf.Ceil(player._health);
-                // Remove Armor
-                double newmaxhealth = currentmaxhealth - armor;
-                double newhealth = currenthealth - armor;
-                // Change Health
+                double newmaxhealth = player._maxHealth - armor;
+                // Change Max Health
                 if (newmaxhealth < 100)
                 {
                     player._maxHealth = 100;
-                    player._health = (float)newhealth;
                 }
                 else
                 {
                     player._maxHealth = (float)newmaxhealth;
-                    player._health = (float)newhealth;
                 }
+                // Player Current Health
+                double defaulthealth = 100;
+                double teahealth = 100;
+                bool teamodified = false;
+                double healthdifference = 0;
+                if (GetTeaCooldown(player) != 0)
+                {
+                    // Check for Tea Modifier
+                    if (TeaModifiers != null && xprecord.teatype != "none")
+                    {
+                        teahealth = defaulthealth + TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
+                        teamodified = true;
+                    }
+                    switch (GetTeaTypes(player))
+                    {
+                        case "maxhealthtea":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 5;
+                            }
+                            break;
+                        case "maxhealthtea.advanced":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 12.5;
+                            }
+                            break;
+                        case "maxhealthtea.pure":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 20;
+                            }
+                            break;
+                    }
+                }
+                if (player._health > teahealth)
+                {
+                    healthdifference = player._health - teahealth;
+                }
+                player._health -= (float)healthdifference;
             }
             // Reset Stat Levels
             xprecord.Mentality = 0;
@@ -3762,27 +3855,61 @@ namespace Oxide.Plugins
             xprecord.requiredxp = config.xpLevel.levelstart;
             xprecord.statpoint = 0;
             xprecord.skillpoint = 0;
-            // Reset max health if needed before removing points
-            if (selectplayer._maxHealth > 100 || selectplayer._health > 100)
+            // Reset health if needed before removing points
+            if (xprecord.Might >= 1)
             {
-                // Get Stats
+                // Max Health
                 double armor = (xprecord.Might * config.might.armor) * 100;
-                double currentmaxhealth = selectplayer._maxHealth;
-                double currenthealth = Mathf.Ceil(selectplayer._health);
-                // Remove Armor
-                double newmaxhealth = currentmaxhealth - armor;
-                double newhealth = currenthealth - armor;
-                // Change Health
+                double newmaxhealth = selectplayer._maxHealth - armor;
+                // Change Max Health
                 if (newmaxhealth < 100)
                 {
                     selectplayer._maxHealth = 100;
-                    selectplayer._health = (float)newhealth;
                 }
                 else
                 {
                     selectplayer._maxHealth = (float)newmaxhealth;
-                    selectplayer._health = (float)newhealth;
                 }
+                // Player Current Health
+                double defaulthealth = 100;
+                double teahealth = 100;
+                bool teamodified = false;
+                double healthdifference = 0;
+                if (GetTeaCooldown(player) != 0)
+                {
+                    // Check for Tea Modifier
+                    if (TeaModifiers != null && xprecord.teatype != "none")
+                    {
+                        teahealth = defaulthealth + TeaModifiers.Call<float>("GetTeaValue", selectplayer, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
+                        teamodified = true;
+                    }
+                    switch (GetTeaTypes(player))
+                    {
+                        case "maxhealthtea":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 5;
+                            }
+                            break;
+                        case "maxhealthtea.advanced":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 12.5;
+                            }
+                            break;
+                        case "maxhealthtea.pure":
+                            if (!teamodified)
+                            {
+                                teahealth = defaulthealth + 20;
+                            }
+                            break;
+                    }
+                }
+                if (selectplayer._health > teahealth)
+                {
+                    healthdifference = selectplayer._health - teahealth;
+                }
+                selectplayer._health -= (float)healthdifference;
             }
             // Reset Stat Levels
             xprecord.Mentality = 0;

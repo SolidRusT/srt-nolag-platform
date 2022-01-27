@@ -1,5 +1,5 @@
 {
-  "Discord Webhook": "https://discord.com/api/webhooks/884239690616692766/eHM4KeNJSwsykVl8s_lq3_psa6JDWqBKYuK3bWXGbQOkA8l_00FPqSu_Y9IA0H2xbc0t",
+  "Discord Webhook": "https://discord.com/api/webhooks/847745138049679391/m6uvmkAgZOTsyy4g3gaZh7EVv1JatQmyCD4lxzNykwqYGd5GWe2TLtBU2OJFfwP5qcE8",
   "Message Update Interval (Minutes)": 1.0,
   "Stats Embed Message": {
     "Content": "",
@@ -12,7 +12,6 @@
         "Embed Color": "#de8732",
         "Image Url": "",
         "Thumbnail Url": "",
-        "Add Timestamp": false,
         "Fields": [
           {
             "Title": "Online / Max Players",
