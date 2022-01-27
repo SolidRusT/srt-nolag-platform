@@ -1,6 +1,6 @@
 {
   "Generic": {
-    "blueprintProbability": 0.11,
+    "blueprintProbability": 0,
     "listUpdatesOnLoaded": true,
     "removeStackedContainers": true,
     "WatchedPrefabs": [

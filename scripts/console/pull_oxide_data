@@ -57,6 +57,10 @@ raidablebases|RaidableBases)
   echo "/game/oxide/data/RaidableBases"
   $SCP_CMD:/game/oxide/data/RaidableBases "${SRT_REPO}/defaults/oxide/data/"
   ;;
+betterloot|BetterLoot)
+  echo "/game/oxide/data/BetterLoot"
+  $SCP_CMD:/game/oxide/data/BetterLoot "${SRT_REPO}/defaults/oxide/data/"
+  ;;
 *)
   echo "pull_data: Invalid plugin selection"
   echo ""
