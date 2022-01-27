@@ -1,0 +1,8 @@
+{
+  "Chat prefix": "[Entity Cleanup] ",
+  "No permission": "<color=red>You have no access to this command</color>",
+  "Invalid usage": "Invalid command usage",
+  "Cleanup started": "Cleaning up old server entities...",
+  "Cleanup finished": "Cleanup completed, purged <color=#34ebba>{0}</color> old entities",
+  "Cleanup running": "Cleanup is already running, wait until it completes"
+}

@@ -1,0 +1,8 @@
+{
+  "Error.Vehicle.NoPermission": "You don't have permission to buy that vehicle.",
+  "UI.ActualPrice": "Actual price: {0}",
+  "UI.Price.Free": "Free",
+  "UI.Currency.Economics": "{0:C}",
+  "UI.Currency.ServerRewards": "{0} reward points",
+  "Item.scrap": "Scrap"
+}

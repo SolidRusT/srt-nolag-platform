@@ -11,5 +11,6 @@
   "Deploy.Error.InsufficientResources": "Error: Not enough resources to craft a {0}.",
   "Deploy.Error.Mounted": "Error: That vehicle is currently occupied.",
   "Deploy.Error.ModularCar.NoCockpit": "Error: That car needs a cockpit module to receive a lock.",
-  "Deploy.Error.Distance": "Error: Too far away."
+  "Deploy.Error.Distance": "Error: Too far away.",
+  "Deploy.Error.NoOwner.NoBuildingPrivilege": "Error: Locking unowned vehicles requires building privilege."
 }

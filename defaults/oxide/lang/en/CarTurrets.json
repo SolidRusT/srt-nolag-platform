@@ -10,5 +10,6 @@
   "Deploy.Error.NoSuitableModule": "Error: No suitable module found.",
   "Deploy.Error.NoTurret": "Error: You need an auto turret to do that.",
   "Remove.Error.TurretHasItems": "Error: That module's turret must be empty.",
-  "RemoveAll.Success": "Removed all {0} car turrets."
+  "RemoveAll.Success": "Removed all {0} car turrets.",
+  "Info.PowerRequiresEngine": "The turret will power on when the car engine starts."
 }

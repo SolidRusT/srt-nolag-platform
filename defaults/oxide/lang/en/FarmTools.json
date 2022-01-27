@@ -2,12 +2,15 @@
   "ChatPrefix": "<color=#00a7fe>[Farm Tools]</color>",
   "NoPerms": "<size=12>You do not have permission to use <color=#00a7fe>{0}</color>!</size>",
   "HelpTitle": "<size=16><color=#00a7fe>Farm Tools</color> Help</size>\n",
-  "Help1": "<size=12>Bind a key to a FarmTools command and press the key while looking at a plant or planter</size>\n",
-  "Help2": "<size=12>Open the F1 console to bind keys</size>\n",
-  "Help3": "<size=12>Take clone from plant</size>",
-  "Help4": "<size=12><color=#00a7fe>bind <key> farmtools.clone</color></size>",
-  "Help5": "\n<size=12>Take all clones from planter</size>",
-  "Help6": "<size=12><color=#00a7fe>bind <key> farmtools.cloneall</color></size>",
-  "Help7": "\n<size=12>Harvest all plants or remove dying plants from planter</size>",
-  "Help8": "<size=12><color=#00a7fe>bind <key> farmtools.harvestall</color></size>"
+  "Help": "<size=12>Bind a key to a FarmTools command using the F1 console</size>\n",
+  "HelpClone": "<size=12>Take clone from a single plant\n<color=#00a7fe>bind <key> farmtools.clone</color>\nchat command: <color=#00a7fe>/clone</color></size>",
+  "HelpCloneAll": "\n<size=12>Take all clones from a planter\n<color=#00a7fe>bind <key> farmtools.cloneall</color>\nchat command: <color=#00a7fe>/cloneall</color></size>",
+  "HelpHarvestAll": "\n<size=12>Harvest all plants or remove dying plants from a planter\n<color=#00a7fe>bind <key> farmtools.harvestall</color>\nchat command: <color=#00a7fe>/harvestall</color></size>",
+  "HelpPlantAll": "\n<size=12>Plant all seeds in the target planter\n<color=#00a7fe>bind <key> farmtools.plantall</color>\nchat command: <color=#00a7fe>/plantall</color></size>",
+  "HelpGenes": "\n<size=12>Copy genes from a planter box or storage container\n<color=#00a7fe>bind <key> farmtools.genes</color>\nchat command: <color=#00a7fe>/genes</color></size>",
+  "PlanterGenes": "][ Planter Genes ][",
+  "ContainerGenes": "][ Container Genes ][",
+  "GeneNote": "A note with genes has been added to your inventory.\n\nGenes can also be copied from the F1 console with <color=#00a7fe>console.copy</color>.",
+  "InvalidGeneEntity": "Unable to find genes! Look at a <color=#00a7fe>Planter Box</color> or <color=#00a7fe>Storage Container</color> and try again.",
+  "CommandCooldown": "Please wait <color=#00a7fe>{0}s</color>!"
 }

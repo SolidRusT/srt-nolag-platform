@@ -30,5 +30,6 @@
   "msgSouth": "South",
   "msgSouthWest": "SouthWest",
   "msgWest": "West",
-  "msgNorthWest": "NorthWest"
+  "msgNorthWest": "NorthWest",
+  "msgDropDirectSpace": "A <color=#ffff00>Space Supply Drop</color> is being deployed to your <color=#ffff00>current</color> location"
 }

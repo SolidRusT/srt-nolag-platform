@@ -1,0 +1,12 @@
+{
+  "NoRadioForName": "No radio was found for the given name (using {0} instead)",
+  "CouldNotAttach": "Could not attach '{0}'",
+  "Attached": "Attached radio '{0}'",
+  "AttachedGlobal": "Attached radio '{0}' to all existing cars",
+  "Detached": "Detached radio",
+  "DetachedGlobal": "Detached all existing carradio",
+  "NotAVehicle": "This entity is not a (supported) vehicle",
+  "Radios": "Available carradio: {0}",
+  "PlayersOnly": "Command '{0}' can only be used by a player",
+  "NotSupported": "The radio '{0}' has no configuration for '{1}'"
+}

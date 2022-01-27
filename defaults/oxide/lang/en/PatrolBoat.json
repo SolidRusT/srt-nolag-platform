@@ -1,0 +1,11 @@
+{
+  "notauthorized": "You are not authorized to use that command !!",
+  "notowner": "You must be owner of boat to pilot it !!!",
+  "boatlocked": "Boat is currenlty locked. Unlock to access.",
+  "haspatrolboatalready": "You already have a patrolboat in the world !!!",
+  "captain": "You are now the Captain of this boat !!!",
+  "alreadyadded": "That part is already installed !!!",
+  "missingmaterials": "You are missing the required materials to uprade to that !! ",
+  "endofworld": "Movement blocked !!! You are at the end of the playable world !!!",
+  "notstandingwater": "You must be in deeper water but NOT swimming to build a patrolboat !!"
+}

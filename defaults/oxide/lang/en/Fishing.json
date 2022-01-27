@@ -1,0 +1,17 @@
+{
+  "missedfish": "You Missed the fish....",
+  "notlookingatwater": "You must be aiming at water !!!!",
+  "notstandinginwater": "You must be standing in water !!!!",
+  "alreadyfishing": "You are already fishing !!",
+  "toosoon": "Please wait to try that again !!",
+  "cantmove": "You must stay still while fishing !!!",
+  "wrongweapon": "You are not holding a fishing pole !!!",
+  "correctitem": "You must be holding a spear to make a fishing pole !! ",
+  "commonfish1": "You Got a Savis Island Swordfish",
+  "commonfish2": "You Got a Hapis Island RazorJaw",
+  "uncommonfish1": "You Got a Colon BlowFish",
+  "rarefish1": "You Got a Craggy Island Dorkfish",
+  "randomitem": "You found something in the water !!!",
+  "chancetext1": "Your chance to catch a fish is : ",
+  "chancetext2": "at Current time of : "
+}

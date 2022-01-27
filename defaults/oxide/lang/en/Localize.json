@@ -1,0 +1,11 @@
+{
+  "CommandLocalize": "localize",
+  "NotAllowed": "You are not allowed to use the '{0}' command",
+  "LocalizationExists": "Localization already exists for '{0}'",
+  "PluginNotFound": "Plugin '{0}' could not be found or is not loaded",
+  "SameLanguage": "Cannot localize to and from the same language ('{0}' and '{1}')",
+  "StringsToTranslate": "Translating {0} strings from '{1}'",
+  "StringsTranslated": "Translated {0} strings to '{1}'",
+  "TranslationFailed": "Translation failed else nothing to translate. Please try again later",
+  "UsageLocalize": "Usage: {0} <plugin name> <language code>"
+}

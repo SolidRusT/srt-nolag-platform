@@ -1,0 +1,15 @@
+{
+  "WarnDelayTime": "Please wait a moment before attempting to open the box again.",
+  "FloatingText": "<size=26>Global Storage Chest</size>",
+  "MorePlayersFound": "More than one player found: {0}",
+  "NoMatch": "No player was found that matched: {0}",
+  "GaveBoxes": "Gave {0} {1}x Global Storage Boxes",
+  "ReceiveBoxes": "You received {0}x Global Storage Boxes",
+  "AlreadySetup": "This box is already setup as a Global Storage Chest.",
+  "SetupBox": "Set {0} up as a Global Storage container. OwnerID: {1}",
+  "NoAccessPerms": "You do not have permissions to access global storage.",
+  "NoLock": "You cannot deploy a lock on a global storage chest.",
+  "BlackList": "This item has been black listed from global storage.",
+  "ValidUsage": "Valid usage: /giveglobalbox <name/id> <quantity>",
+  "ConsoleGave": "Gave {0} {1}x Global Storage Boxes"
+}

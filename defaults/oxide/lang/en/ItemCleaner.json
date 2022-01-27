@@ -1,0 +1,14 @@
+{
+  "CmdHelp1": "<color=orange>/itemcleaner remove <Item Display Name| Item Shortname | Item ID></color> <color=yellow>[optional: Entity Owner Name] [optional:\"priv\" To look in current privilege] </color> - Clear all containers and players of the specified item",
+  "CmdHelp2": "<color=orange>/itemcleaner find  <Item Display Name| Item Shortname | Item ID></color> <color=yellow>[optional: Entity Owner Name] [optional:\"priv\" To look in current privilege] </color>- Find all containers and players of the specified item",
+  "ItemNotFound": "Item Definition Not Found",
+  "NoPerm": "You don't have permission to use this command",
+  "RemovedFromStorage": "Removed {0} {1} item from {2} Storage Container",
+  "RemovedFromPlayer": "Removed {0} {1} item from Player {2}.",
+  "FoundFromStorage": "Found {0} {1} item from {2} Storage Container",
+  "FoundFromPlayer": "Found {0} {1} item from Player {2}.",
+  "TimeTaken": "Item Cleaner Command Took {0} ms",
+  "FoundStorage": "Checking {0} Storage Containers",
+  "StorageSearchFinish": "Storage Container Search Finished",
+  "PlayerSearchFinish": "Player Inventory Search Finished"
+}

@@ -50,5 +50,12 @@
   "SellCooldownMessage": "You cannot sell the '{0}' item! Wait {1}",
   "BtnBack": "▲",
   "BtnNext": "▼",
-  "SellNotify": "You have successfully sold {0} pcs of {1}"
+  "SellNotify": "You have successfully sold {0} pcs of {1}",
+  "BuyRaidBlocked": "You can't buy while blocked!",
+  "SellRaidBlocked": "You can't sell while blocked!",
+  "InfoTitle": "i",
+  "BuyLimitReached": "You cannot buy the '{0}'. You have reached the limit",
+  "SellLimitReached": "You cannot sell the '{0}'. You have reached the limit",
+  "NoUseDuel": "You are in a duel. The use of the shop is blocked.",
+  "SkinBlocked": "Skin is blocked for sale"
 }

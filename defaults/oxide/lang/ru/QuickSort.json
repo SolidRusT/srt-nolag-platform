@@ -4,6 +4,7 @@
   "DepositAmmo": "Патроны",
   "DepositAttire": "Одежда",
   "DepositConstruction": "Конструкции",
+  "DepositElectrical": "Электричество",
   "DepositExisting": "Существующие",
   "DepositFood": "Еда",
   "DepositItems": "Развертываемые",
@@ -18,11 +19,10 @@
   "NotAllowed": "У вас нет разрешения на использование этой команды",
   "Enabled": "<color=#228B22>Включена</color>",
   "Disabled": "<color=#B22222>Отключена</color>",
-  "SyntaxError": "Синтаксическая ошибка, напишите '<color=#FFFF00>/{0} <help | h></color>' чтобы отобразить подсказки",
   "QuickSort": "GUI быстрой сортировки теперь {0}",
   "Style": "Стиль GUI быстрой сортировки теперь {0}",
   "AutoLootAll": "Забирать всё автоматически теперь {0}",
   "ContainerType": "Быстрая сортировка для типа контейнера {0} теперь {1}",
-  "Prefix": "<color=#00FFFF>[Quick Sort]</color>: ",
-  "Help": "Список команд:\n<color=#FFFF00>/{0}</color> - Включить/Отключить GUI быстрой сортировки.\n<color=#FFFF00>/{0} auto</color> - Включить/Отключить забирать всё автоматически.\n<color=#FFFF00>/{0} style <center/lite/right/custom></color> - изменить стиль GUI быстрой сортировки.\n<color=#FFFF00>/{0} conatiner <main/wear/belt></color> - добавить/удалить тип контейнера для сортировки."
+  "Prefix": "<color=#00FF00>[Быстрая сортировка]</color>: ",
+  "SyntaxError": "Список команд:\n<color=#FFFF00>/{0} on</color> - Включить GUI\n<color=#FFFF00>/{0} off</color> - Отключить GUI\n<color=#FFFF00>/{0} auto</color> - Включить/Отключить забирать всё автоматически.\n<color=#FFFF00>/{0} <s | style> <center | lite | right | custom></color> - изменить стиль GUI быстрой сортировки.\n<color=#FFFF00>/{0} <c | conatiner> <main | wear | belt></color> - добавить/удалить тип контейнера для сортировки."
 }

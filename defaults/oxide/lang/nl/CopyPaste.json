@@ -17,5 +17,6 @@
   "SYNTAX_BLOCKCOLLISION": "Optie blockcollision accepteert alleen nummers, 0 schakelt deze functionaliteit uit",
   "SYNTAX_RADIUS": "Optie height accepteert alleen nummers",
   "BLOCKING_PASTE": "Iets blokkeert het plaatsen van dit gebouw",
-  "AVAILABLE_STRUCTURES": "Beschikbare bestanden om te plaatsen zijn:"
+  "AVAILABLE_STRUCTURES": "Beschikbare bestanden om te plaatsen zijn:",
+  "SYNTAX_FLOAT": "Optie {0} moet een decimal zijn"
 }

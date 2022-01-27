@@ -6,7 +6,7 @@
   "ToggleOff": "You have <color=#ff0000>disabled</color> sharing blueprints.",
   "NoPermission": "You don't have permission to use this command!",
   "CannotShare": "You cannot share blueprints with this player because they aren't a friend or in the same clan or team!",
-  "NoTarget": "You didn't specifiy a player to share with!",
+  "NoTarget": "You didn't specify a player to share with!",
   "TargetEqualsPlayer": "You cannot share blueprints with your self!",
   "PlayerNotFound": "Couldn't find a player with that name!",
   "MultiplePlayersFound": "Found multiple players with a similar name: {0}",
@@ -14,8 +14,8 @@
   "ShareReceieve": "<color=#ffff00>{0}</color> has shared <color=#ffff00>{1}</color> blueprints with you.",
   "NoBlueprintsToShare": "You don't have any new blueprints to share with {0}",
   "SharerLearntBlueprint": "You have learned the <color=#ffff00>{0}</color> blueprint and have shared it with <color=#ffff00>{1}</color> players!",
+  "TargetLearntBlueprint": "<color=#ffff00>{0}</color> has shared the <color=#ffff00>{1}</color> blueprint with you!",
   "BlueprintBlocked": "The server has blocked the <color=#ffff00>{0}</color> blueprint from being shared but you will still learn the blueprint.",
   "ManualSharingDisabled": "Manual sharing of blueprints has been disabled on this server.",
-  "TargetLearntBlueprint": "<color=#ffff00>{0}</color> has shared the <color=#ffff00>{1}</color> blueprint with you!",
   "TargetSharingDisabled": "Unable to share blueprints with <color=#ffff00>{0}</color> because they have disabled their sharing"
 }

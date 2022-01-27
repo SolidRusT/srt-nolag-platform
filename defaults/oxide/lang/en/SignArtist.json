@@ -28,5 +28,8 @@
   "minutes": "minutes",
   "second": "second",
   "seconds": "seconds",
-  "and": "and"
+  "and": "and",
+  "SyntaxSilCommandMulti": "Syntax error!\nSyntax: /sil <1-{0}> <url> [raw]",
+  "SyntaxSiltCommandMulti": "Syntax error!\nSyntax: /silt <1-{0}> <message> [<fontsize:number>] [<color:hex value>] [<bgcolor:hex value>] [raw]",
+  "SyntaxSiliCommandMulti": "Syntax error!\nSyntax: /sili <1-{0}>"
 }

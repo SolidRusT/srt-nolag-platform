@@ -195,5 +195,8 @@
   "Town": "Town",
   "Island": "Island",
   "Outpost": "Outpost",
-  "Bandit": "Bandit"
+  "Bandit": "Bandit",
+  "TPJunkpile": "You can't teleport from a junkpile!",
+  "CannotTeleportFromHome": "You must leave your base to be able to teleport!",
+  "WaitGlobalCooldown": "You must wait {0} on your global teleport cooldown!"
 }

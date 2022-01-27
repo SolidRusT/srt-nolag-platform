@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-	[Info("Bradley Control", "Suparious", "1.0.0")]
+	[Info("Bradley Control", "Suparious", "1.0.1")]
 	[Description("Controls Bradley APC properties")]
 	class BradleyControl : RustPlugin
 	{
@@ -152,7 +152,7 @@ namespace Oxide.Plugins
 			// English messages.
 			lang.RegisterMessages(new Dictionary<string, string>
 			{
-				["BRADLEY_ABOUT"] = "<color=#ff3b3b>Bradley Control {Version}</color>: by <color=green>mattparks</color>. Bradley Control is a plugin that controls Bradley properties. Use the /bradley command as follows: \n <color=#1586db>•</color> /bradley - Displays Bradley Control about and help. \n <color=#1586db>•</color> /bradley reset - Resets the Bradley in the area. \n <color=#1586db>•</color> /bradley clearGibs - Clears all Bradley gibs/parts. \n <color=#1586db>•</color> /bradley clearFire - Clears all Bradley fire. \n <color=#1586db>•</color> /bradley clearCrates - Clears all Bradley crates. \n <color=#1586db>•</color> /bradley unlockCrates - Unlocks all Bradley crates. \n <color=#1586db>•</color> /bradley clearAll - Clears all Bradley stuff.",
+				["BRADLEY_ABOUT"] = "<color=#ff3b3b>Bradley Control {Version}</color>: by <color=green>Suparious</color>. Bradley Control is a plugin that controls Bradley properties. Use the /bradley command as follows: \n <color=#1586db>•</color> /bradley - Displays Bradley Control about and help. \n <color=#1586db>•</color> /bradley reset - Resets the Bradley in the area. \n <color=#1586db>•</color> /bradley clearGibs - Clears all Bradley gibs/parts. \n <color=#1586db>•</color> /bradley clearFire - Clears all Bradley fire. \n <color=#1586db>•</color> /bradley clearCrates - Clears all Bradley crates. \n <color=#1586db>•</color> /bradley unlockCrates - Unlocks all Bradley crates. \n <color=#1586db>•</color> /bradley clearAll - Clears all Bradley stuff.",
 				["BRADLEY_RESET"] = "<color=#ff3b3b>Resetting the Bradley!</color>",
 				["BRADLEY_RESET_FAIL"] = "<color=#ff3b3b>Failed to reset the Bradley!</color>",
 				["BRADLEY_REMOVE_GIBS"] = "<color=#ff3b3b>Removing Bradley gibs from the world!</color>",

@@ -17,5 +17,6 @@
   "SYNTAX_BLOCKCOLLISION": "Option blockcollision must be a number, 0 will deactivate the option",
   "SYNTAX_RADIUS": "Option radius must be a number",
   "BLOCKING_PASTE": "Something is blocking the paste",
-  "AVAILABLE_STRUCTURES": "<color=orange>Available structures:</color>"
+  "AVAILABLE_STRUCTURES": "<color=orange>Available structures:</color>",
+  "SYNTAX_FLOAT": "Option {0} must be a decimal"
 }

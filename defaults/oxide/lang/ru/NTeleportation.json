@@ -195,5 +195,8 @@
   "Town": "Town",
   "Island": "Island",
   "Outpost": "Outpost",
-  "Bandit": "Bandit"
+  "Bandit": "Bandit",
+  "TPJunkpile": "Вы не можете телепортироваться с кучи мусора",
+  "CannotTeleportFromHome": "Вы должны выйти из вашей базы, прежде чем телепортироваться!",
+  "WaitGlobalCooldown": "Вы должны подождать {0}, пока ваш глобальный телепорт перезаряжается!"
 }

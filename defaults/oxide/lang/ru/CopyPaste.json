@@ -17,5 +17,6 @@
   "SYNTAX_BLOCKCOLLISION": "Опция blockcollision принимает только числовые значения, 0 позволяет отключить проверку",
   "SYNTAX_RADIUS": "Опция radius принимает только числовые значения",
   "BLOCKING_PASTE": "Что-то препятствует вставке",
-  "AVAILABLE_STRUCTURES": "<color=orange>Доступные постройки:</color>"
+  "AVAILABLE_STRUCTURES": "<color=orange>Доступные постройки:</color>",
+  "SYNTAX_FLOAT": "Опция {0} принимает только числовые значения с точкой"
 }
