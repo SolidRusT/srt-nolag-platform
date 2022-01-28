@@ -18,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("XPerience", "MACHIN3", "1.3.3")]
+    [Info("XPerience", "MACHIN3", "1.3.4")]
     [Description("Player level system with xp, stats, and skills")]
     public class XPerience : RustPlugin
     {
@@ -28,6 +28,24 @@ namespace Oxide.Plugins
 		【 𝓜𝓐𝓒𝓗𝓘𝓝𝓔 】
         Discord: discord.skilledsoldiers.net
         *****************************************************/
+        #region version 1.3.4
+        /*****************************************************
+         ----------------------
+         ✯ version 1.3.4
+         ----------------------
+         DELETE LANG FILE BEFORE UPLOADING UPDATE!
+
+        ✯ Organized code cache for XPerienceAddon mod
+
+        New Fisher Abilities
+        ✯ Reduced oxygen tank usage
+        ✯ Reduced oxygen usage without tanks before damage recieved
+
+        New XPerienceAddon mod available! Check our discord for details on how and where to get it.
+        Discord: discord.skilledsoldiers.net
+
+        *****************************************************/
+        #endregion
         #region version 1.3.3
         /*****************************************************
          ----------------------
@@ -1122,6 +1140,8 @@ namespace Oxide.Plugins
             public int costmultiplier = 2;
             public double fishamountincrease = 0.75;
             public double itemamountincrease = 0.25;
+            public double oxygenreduction = 0.04;
+            public double oxygentankreduction = 0.05;
         }
 
         public class Crafter
@@ -5348,45 +5368,11 @@ namespace Oxide.Plugins
             GainExp(player, addxp);
         }
 
-        private void OnFishCatch(Item fish, BaseFishingRod fishingRod, BasePlayer player)
-        {
-            if (player == null || fish == null) return;
-            XPRecord xprecord = GetXPRecord(player);
-            double addxp = config.xpGain.fishxp;
-            GainExp(player, addxp);
-            if (xprecord.Fisher > 0)
-            {
-                var fishname = fish.info.shortname;
-                if (fishname.Contains("anchovy") || fishname.Contains("catfish") || fishname.Contains("herring") || fishname.Contains("minnow") || fishname.Contains("roughy") || fishname.Contains("salmon") || fishname.Contains("sardine") || fishname.Contains("shark") || fishname.Contains("trout") || fishname.Contains("Perch"))
-                {
-                    double results = Math.Round(fish.amount + (xprecord.Fisher * config.fisher.fishamountincrease));
-                    // Captaincy
-                    if (player.Team != null && player.Team.members.Count > 1)
-                    {
-                        double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
-                        results += captaincyboost;
-                    }
-                    fish.amount = (int)results;
-                }
-                else
-                {
-                    double results = Math.Round(fish.amount + (xprecord.Fisher * config.fisher.itemamountincrease));
-                    // Captaincy
-                    if (player.Team != null && player.Team.members.Count > 1)
-                    {
-                        double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
-                        results += captaincyboost;
-                    }
-                    fish.amount = (int)results;
-                }
-            }
-        }
-        
         #endregion
 
         #region Stat & Skill Hooks/Helpers
-
         // Mentality
+        #region Mentality
         private Dictionary<Rarity, int> rarityValues = new Dictionary<Rarity, int>
         {
             {Rarity.None, 500},
@@ -5494,9 +5480,9 @@ namespace Oxide.Plugins
             double researchspeed = (config.mentality.researchspeed * xprecord.Mentality) * table.researchDuration;
             table.researchDuration -= (float)researchspeed;
         }
-
+        #endregion
         // Might
-
+        #region Might / Fisher
         private object OnPlayerAddModifiers(BasePlayer player, Item item, ItemModConsumable consumable)
         {
             if (item.info.shortname.Contains("maxhealthtea"))
@@ -5562,9 +5548,16 @@ namespace Oxide.Plugins
                     metabolism.temperature.value += (((float)config.might.coldtolerance * xprecord.Might) * 20);
                 }
             }
-        }
 
+            // Fisher
+            if (xprecord.Fisher > 0 && metabolism.oxygen.value < 1)
+            {
+                metabolism.oxygen.value += (((float)config.fisher.oxygenreduction * xprecord.Fisher) * 0.1f);
+            }
+        }
+        #endregion
         // Medic
+        #region Medic
         private void OnHealingItemUse(MedicalTool tool, BasePlayer player)
         {
             if (player == null || !player.userID.IsSteamId() || tool == null) return;
@@ -5618,8 +5611,9 @@ namespace Oxide.Plugins
                 });
             }
         }
-        
+        #endregion
         // Captaincy
+        #region Captaincy
         private double CaptaincyTeamSkillBoost(BasePlayer player)
         {
             if (!CaptaincyTeamDistance(player) || player == null || !player.userID.IsSteamId() || player.Team == null || player.Team.members.Count <= 1) return 0;
@@ -5666,8 +5660,9 @@ namespace Oxide.Plugins
             }
             return false;
         }
-
+        #endregion
         // Scavenger
+        #region Scavenger
         private void RandomScavengerItem(BasePlayer player)
         {
             if (player == null) return;
@@ -5796,8 +5791,61 @@ namespace Oxide.Plugins
                 }
             }
         }
+        #endregion
+        // Fisher
+        #region Fisher
+        private void OnFishCatch(Item fish, BaseFishingRod fishingRod, BasePlayer player)
+        {
+            if (player == null || fish == null) return;
+            XPRecord xprecord = GetXPRecord(player);
+            double addxp = config.xpGain.fishxp;
+            GainExp(player, addxp);
+            if (xprecord.Fisher > 0)
+            {
+                var fishname = fish.info.shortname;
+                if (fishname.Contains("anchovy") || fishname.Contains("catfish") || fishname.Contains("herring") || fishname.Contains("minnow") || fishname.Contains("roughy") || fishname.Contains("salmon") || fishname.Contains("sardine") || fishname.Contains("shark") || fishname.Contains("trout") || fishname.Contains("Perch"))
+                {
+                    double results = Math.Round(fish.amount + (xprecord.Fisher * config.fisher.fishamountincrease));
+                    // Captaincy
+                    if (player.Team != null && player.Team.members.Count > 1)
+                    {
+                        double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
+                        results += captaincyboost;
+                    }
+                    fish.amount = (int)results;
+                }
+                else
+                {
+                    double results = Math.Round(fish.amount + (xprecord.Fisher * config.fisher.itemamountincrease));
+                    // Captaincy
+                    if (player.Team != null && player.Team.members.Count > 1)
+                    {
+                        double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
+                        results += captaincyboost;
+                    }
+                    fish.amount = (int)results;
+                }
+            }
+        }
 
+        void OnLoseCondition(Item item, ref float amount)
+        {
+            if (item == null || !item.info.shortname.Equals("diving.tank")) return;
+            BasePlayer player = item.GetOwnerPlayer();
+            if (player == null) return;
+            XPRecord xprecord = GetXPRecord(player);
+            if(xprecord.Fisher >= 1)
+            {
+                double reducedair = amount * (xprecord.Fisher * config.fisher.oxygentankreduction);
+                amount -= (float)reducedair;
+                if(amount <= 0)
+                {
+                    amount = 0.25f;
+                }
+            }
+        }
 
+        #endregion
         #endregion
 
         #region Chat Commands
@@ -8348,6 +8396,20 @@ namespace Oxide.Plugins
                     FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", config.fisher.itemamountincrease)}>{ValueSymbol("perk", config.fisher.itemamountincrease, "pos")}{Math.Round(xprecord.Fisher * config.fisher.itemamountincrease)}</color>", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skillvalueleft, skillvalueright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
                     rowthree++;
                 }
+                if (config.fisher.oxygenreduction != 0)
+                {
+                    FullScreenelements.Add(XPUIImage(XPeriencePlayerControlFullInfo, XPeriencefisher, rowthree, skillheight, skilliconleft, skilliconright));
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={config.uitextColor.fisher}>{XPLang("fishoxygen", player.UserIDString)}</color>:", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skilllabelleft, skilllabelright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", config.fisher.oxygenreduction)}>{ValueSymbol("perk", config.fisher.oxygenreduction, "neg")}{Math.Round((xprecord.Fisher * config.fisher.oxygenreduction) * 100)}%</color>", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skillvalueleft, skillvalueright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowthree++;
+                }
+                if (config.fisher.oxygentankreduction != 0)
+                {
+                    FullScreenelements.Add(XPUIImage(XPeriencePlayerControlFullInfo, XPeriencefisher, rowthree, skillheight, skilliconleft, skilliconright));
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={config.uitextColor.fisher}>{XPLang("fishoxygentank", player.UserIDString)}</color>:", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skilllabelleft, skilllabelright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", config.fisher.oxygentankreduction)}>{ValueSymbol("perk", config.fisher.oxygentankreduction, "neg")}{Math.Round((xprecord.Fisher * config.fisher.oxygentankreduction) * 100)}%</color>", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skillvalueleft, skillvalueright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowthree++;
+                }
             }
             if (rowthree >= 29)
             {
@@ -8913,59 +8975,6 @@ namespace Oxide.Plugins
             {
                 if (config.might.armor != 0)
                 {
-                    /*
-                    double teaboost = 0;
-                    double teatime = 0;
-                    bool teamodified = false;
-                    // Check for TeaModifier Plugin and Values
-                    if (TeaModifiers != null)
-                    {
-                        if (xprecord.teatype == "maxhealthtea")
-                        {
-                            teatime = TeaModifiers.Call<float>("GetTeaDuration", player, xprecord.teatype, Modifier.ModifierType.Max_Health);
-                            teaboost = TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
-                        }
-                        if (xprecord.teatype == "maxhealthtea.advanced")
-                        {
-                            teatime = TeaModifiers.Call<float>("GetTeaDuration", player, xprecord.teatype, Modifier.ModifierType.Max_Health);
-                            teaboost = TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
-                        }
-                        if (xprecord.teatype == "maxhealthtea.pure")
-                        {
-                            teatime = TeaModifiers.Call<float>("GetTeaDuration", player, xprecord.teatype, Modifier.ModifierType.Max_Health);
-                            teaboost = TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
-                        }
-                        teamodified = true;
-                    }
-                    if (GetTeaCooldown(player) != 0)
-                    {
-                        switch (GetTeaTypes(player))
-                        {
-                            case "none":
-                                teaboost = 0;
-                                break;
-                            case "maxhealthtea":
-                                if (teamodified)
-                                    teaboost = Math.Ceiling((teaboost * config.might.armor) * xprecord.Might);
-                                if (!teamodified)
-                                    teaboost = Math.Ceiling((5 * config.might.armor) * xprecord.Might);
-                                break;
-                            case "maxhealthtea.advanced":
-                                if (teamodified)
-                                    teaboost = Math.Ceiling((teaboost * config.might.armor) * xprecord.Might);
-                                if (!teamodified)
-                                    teaboost = Math.Ceiling((12.5 * config.might.armor) * xprecord.Might);
-                                break;
-                            case "maxhealthtea.pure":
-                                if (teamodified)
-                                    teaboost = Math.Ceiling((teaboost * config.might.armor) * xprecord.Might);
-                                if (!teamodified)
-                                    teaboost = Math.Ceiling((20 * config.might.armor) * xprecord.Might);
-                                break;
-                        }
-                        teatime = Math.Ceiling(GetTeaCooldown(player) / 60);
-                    }
-                    */
                     FullScreenelements.Add(XPUIImage(XPeriencePlayerControlFullInfo, XPeriencemight, rowtwo, skillheight, "0.285", "0.295"));
                     FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={config.uitextColor.might}>{XPLang("armor", player.UserIDString)}</color>:", rowtwo, skillheight, TextAnchor.MiddleLeft, 10, "0.3", "0.34", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
                     FullScreenelements.Add(XPUILabel($" (<color=yellow>{XPLang("tea", player.UserIDString)}: {XPLang($"teatype{xprecord.teatype}", player.UserIDString)}</color>)", rowtwo, skillheight, TextAnchor.MiddleLeft, 8, "0.34", "0.45", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
@@ -9283,6 +9292,20 @@ namespace Oxide.Plugins
                     FullScreenelements.Add(XPUIImage(XPeriencePlayerControlFullInfo, XPeriencefisher, rowthree, skillheight, skilliconleft, skilliconright));
                     FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={config.uitextColor.fisher}>{XPLang("fishitems", player.UserIDString)}</color>:", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skilllabelleft, skilllabelright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
                     FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", config.fisher.itemamountincrease)}>{ValueSymbol("perk", config.fisher.itemamountincrease, "pos")}{Math.Round(xprecord.Fisher * config.fisher.itemamountincrease)}</color>", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skillvalueleft, skillvalueright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowthree++;
+                }
+                if (config.fisher.oxygenreduction != 0)
+                {
+                    FullScreenelements.Add(XPUIImage(XPeriencePlayerControlFullInfo, XPeriencefisher, rowthree, skillheight, skilliconleft, skilliconright));
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={config.uitextColor.fisher}>{XPLang("fishoxygen", player.UserIDString)}</color>:", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skilllabelleft, skilllabelright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", config.fisher.oxygenreduction)}>{ValueSymbol("perk", config.fisher.oxygenreduction, "neg")}{Math.Round((xprecord.Fisher * config.fisher.oxygenreduction) * 100)}%</color>", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skillvalueleft, skillvalueright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    rowthree++;
+                }
+                if (config.fisher.oxygentankreduction != 0)
+                {
+                    FullScreenelements.Add(XPUIImage(XPeriencePlayerControlFullInfo, XPeriencefisher, rowthree, skillheight, skilliconleft, skilliconright));
+                    FullScreenelements.Add(XPUILabel($"<color=red>▫ </color> <color={config.uitextColor.fisher}>{XPLang("fishoxygentank", player.UserIDString)}</color>:", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skilllabelleft, skilllabelright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUILabel($"<color={TextColor("perk", config.fisher.oxygentankreduction)}>{ValueSymbol("perk", config.fisher.oxygentankreduction, "neg")}{Math.Round((xprecord.Fisher * config.fisher.oxygentankreduction) * 100)}%</color>", rowthree, skillheight, TextAnchor.MiddleLeft, 10, skillvalueleft, skillvalueright, "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
                     rowthree++;
                 }
             }
@@ -11244,6 +11267,12 @@ namespace Oxide.Plugins
                         case "fisheritem":
                             config.fisher.itemamountincrease = (double)value;
                             break;
+                        case "fisheroxygen":
+                            config.fisher.oxygenreduction = (double)value;
+                            break;
+                        case "fisheroxygentank":
+                            config.fisher.oxygentankreduction = (double)value;
+                            break;
                         // Crafter
                         case "craftermaxlevel":
                             config.crafter.maxlvl = (int)value;
@@ -12681,6 +12710,18 @@ namespace Oxide.Plugins
             ControlPanelelements.Add(XPUILabel($"|       {config.fisher.itemamountincrease}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUIButton($"xp.config skills fisheritem {config.fisher.itemamountincrease + 0.05} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
             ControlPanelelements.Add(XPUIButton($"xp.config skills fisheritem {config.fisher.itemamountincrease - 0.05} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Oxygen Amount
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Oxygen Reduction:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.fisher.oxygenreduction}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheroxygen {config.fisher.oxygenreduction + 0.01} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheroxygen {config.fisher.oxygenreduction - 0.01} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            // Oxygen Tank Amount
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Oxygen Tank Reduction:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUILabel($"|       {config.fisher.oxygentankreduction}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheroxygentank {config.fisher.oxygentankreduction + 0.01} false", row, height, buttonsize, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelSkills);
+            ControlPanelelements.Add(XPUIButton($"xp.config skills fisheroxygentank {config.fisher.oxygentankreduction - 0.01} false", row, height, buttonsize, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelSkills);
             // Forager
             int rowtwo = 4;
             ControlPanelelements.Add(XPUILabel($"[Forager Settings]", rowtwo, height, TextAnchor.MiddleLeft, 15, "0.33", "0.66", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelSkills);
@@ -14075,6 +14116,8 @@ namespace Oxide.Plugins
                 ["dodgechance"] = "Dodge Chance",
                 ["fishamount"] = "Fish Amount",
                 ["fishitems"] = "Item Amount",
+                ["fishoxygen"] = "Oxygen Reduction",
+                ["fishoxygentank"] = "Oxygen Tank Reduction",
                 ["armor"] = "Armor",
                 ["tea"] = "Tea Boost",
                 ["teatypenone"] = "None",

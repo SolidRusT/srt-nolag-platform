@@ -180,7 +180,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.4.5")]
+    [Info("Stack Modifier", "Khan", "1.4.6")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
@@ -188,11 +188,12 @@ namespace Oxide.Plugins
 
         [PluginReference] Plugin ImageLibrary, LangAPI;
 
+        //private bool _isRestart = true;
         private bool _isEditorReady;
         private List<string> _open = new List<string>();
         private Hash<ulong, int> _editorPage = new Hash<ulong, int>();
-        private Dictionary<string, string> imageListStacks;
-        private List<KeyValuePair<string, ulong>> itemIconStacks;
+        private Dictionary<string, string> _stackModifierImageList;
+        private List<KeyValuePair<string, ulong>> _stackModifierIcons;
 
         private const string ByPass = "stackmodifier.bypass";
         private const string Admin = "stackmodifier.admin";
@@ -953,6 +954,12 @@ namespace Oxide.Plugins
             {"xmas.advent", 1},
             {"xmas.double.door.garland", 10},
             {"attire.snowman.helmet", 1},
+            {"skylantern", 20},
+            {"skylantern.skylantern.green", 20},
+            {"skylantern.skylantern.orange", 20},
+            {"skylantern.skylantern.purple", 20},
+            {"skylantern.skylantern.red", 20},
+            {"hat.tigermask", 1},
         };
 
         private readonly HashSet<string> _exclude = new HashSet<string>
@@ -962,7 +969,7 @@ namespace Oxide.Plugins
             "cardtable",
             "ammo.snowballgun"
         };
-        
+
         private readonly Dictionary<string, string> _corrections = new Dictionary<string, string>
         {
             {"sunglasses02black", "Sunglasses Style 2"},
@@ -984,12 +991,12 @@ namespace Oxide.Plugins
 
         private void CheckConfig()
         {
-            itemIconStacks = new List<KeyValuePair<string, ulong>>();
+            _stackModifierIcons = new List<KeyValuePair<string, ulong>>();
             foreach (ItemDefinition item in ItemManager.itemList)
             {
                 string categoryName = item.category.ToString();
                 Dictionary<string, _Items> stackCategory;
-                
+
                 if (_exclude.Contains(item.shortname)) continue;
 
                 if (!_itemMap.ContainsKey(item.shortname))
@@ -1045,7 +1052,7 @@ namespace Oxide.Plugins
                 if (!_config.StackCategories[categoryName].ContainsKey(item.shortname) ||
                     item.shortname.Equals("vehicle.chassis") ||
                     item.shortname.Equals("vehicle.module")) continue;
-                itemIconStacks.Add(new KeyValuePair<string, ulong>(item.shortname, 0));
+                _stackModifierIcons.Add(new KeyValuePair<string, ulong>(item.shortname, 0));
             }
 
             SaveConfig();
@@ -1284,8 +1291,8 @@ namespace Oxide.Plugins
                 }
 
                 _itemMap.Clear();
-                imageListStacks = null;
-                itemIconStacks = null;
+                _stackModifierImageList = null;
+                _stackModifierIcons = null;
                 _open = null;
                 _editorPage = null;
             }
@@ -1336,13 +1343,14 @@ namespace Oxide.Plugins
             }
         }
 
-        private void OnPluginLoaded(Plugin name)
+        /*private void OnPluginLoaded(Plugin name)
         {
-            if (ImageLibrary != null && name.Name == ImageLibrary.Name)
+            if (ImageLibrary != null && name.Name == ImageLibrary.Name && !_isRestart)
             {
+                _maxImageLibraryAttempts = 0;
                 LibraryCheck();
             }
-        }
+        }*/
 
         private object CanStackItem(Item item, Item targetItem)
         {
@@ -1688,7 +1696,7 @@ namespace Oxide.Plugins
             }
         }
         
-        private int maxImageLibraryAttempts = 0;
+        private int _maxImageLibraryAttempts = 0;
         private void LibraryCheck()
         {
             bool success = ImageLibrary != null && ImageLibrary.IsLoaded && ImageLibrary.Call<bool>("IsReady");
@@ -1696,40 +1704,41 @@ namespace Oxide.Plugins
             if (!_config.EnableEditor) return;
             if (!success)
             {
-                if (maxImageLibraryAttempts >= 5)
+                if (_maxImageLibraryAttempts >= 15)
                 {
+                   // _isRestart = false;
                     PrintWarning("Still unable to find ImageLibrary plugin. UI Editor will not be usable!");
                     return;
                 }
-                maxImageLibraryAttempts++;
+                _maxImageLibraryAttempts++;
                 PrintWarning("Unable to find ImageLibrary plugin. This may be caused by StackModifier loading before it. \n Will check again in 1 minute");
                 timer.In(60, LibraryCheck);
             }
             else
             {
-                imageListStacks = new Dictionary<string, string>();
+                _stackModifierImageList = new Dictionary<string, string>();
                 LoadImages();
             }
         }
 
         private void LoadImages()
         {
-            imageListStacks.Add(StackModifierEditorBackgroundImage, _config.BackgroundUrlSm);
-            imageListStacks.Add(_config.IconUrlSm, _config.IconUrlSm);
+            _stackModifierImageList.Add(StackModifierEditorBackgroundImage, _config.BackgroundUrlSm);
+            _stackModifierImageList.Add(_config.IconUrlSm, _config.IconUrlSm);
 
-            if (itemIconStacks.Count > 0)
+            if (_stackModifierIcons.Count > 0)
             {
-                ImageLibrary?.Call("LoadImageList", Name, itemIconStacks, null);
+                ImageLibrary?.Call("LoadImageList", Name, _stackModifierIcons, null);
             }
 
-            ImageLibrary?.Call("ImportImageList", Name, imageListStacks, 0UL, true, new Action(Ready));
+            ImageLibrary?.Call("ImportImageList", Name, _stackModifierImageList, 0UL, true, new Action(Ready));
         }
 
         private void Ready()
         {
             _isEditorReady = true;
-            imageListStacks.Clear();
-            itemIconStacks.Clear();
+            _stackModifierImageList.Clear();
+            _stackModifierIcons.Clear();
         }
 
         #endregion
@@ -2300,7 +2309,7 @@ namespace Oxide.Plugins
                 if (current >= from && current < from + 8)
                 {
                     float pos = 0.85f - 0.125f * (current - from);
-                    
+
                     CreateEditorItemIcon(ref container, data.ShortName, data.DisplayName, player.UserIDString, pos + 0.125f, pos);
 
                     container.AddRange(CreateEditorItemEntry(data, pos + 0.125f, pos, catid, ""));
@@ -2333,7 +2342,9 @@ namespace Oxide.Plugins
             ShowEditor(player, _config.DefaultCat);
             _open.Add(player.UserIDString);
             player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
-            player.gameObject.SetLayerRecursive(10);
+            player.CancelInvoke("ServerUpdate");
+            /*player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
+            player.gameObject.SetLayerRecursive(10);*/
             player.ChatMessage("Blocking Movement");
         }
 
@@ -2592,9 +2603,10 @@ namespace Oxide.Plugins
             SaveConfig();
             BasePlayer player = arg.Player();
             DestroyUi(player, true);
-            if (!player.IsSpectating()) return;
             player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-            player.gameObject.SetLayerRecursive(17);
+            /*if (!player.IsSpectating()) return;
+            player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
+            player.gameObject.SetLayerRecursive(17);*/
             player.ChatMessage("Movement Restored");
             _open.Remove(player.UserIDString);
         }

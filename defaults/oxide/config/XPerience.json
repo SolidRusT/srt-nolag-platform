@@ -208,7 +208,7 @@
     "srewardresetskillscost": 50
   },
   "Mentality Stat": {
-    "maxlvl": 10,
+    "maxlvl": 0,
     "pointcoststart": 2,
     "costmultiplier": 2,
     "researchcost": 0.1,
@@ -217,69 +217,69 @@
     "useotherresearchmod": false
   },
   "Dexterity Stat": {
-    "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
-    "blockchance": 0.05,
-    "blockamount": 0.1,
-    "dodgechance": 0.05,
+    "maxlvl": 20,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
+    "blockchance": 0.0,
+    "blockamount": 0.0,
+    "dodgechance": 0.0,
     "reducearmordmg": 0.05
   },
   "Might Stat": {
     "maxlvl": 10,
     "pointcoststart": 2,
     "costmultiplier": 2,
-    "armor": 0.1,
-    "meleedmg": 0.05,
-    "metabolism": 0.02,
-    "bleedreduction": 0.05,
-    "radreduction": 0.05,
-    "heattolerance": 0.05,
-    "coldtolerance": 0.05
+    "armor": 0.02,
+    "meleedmg": 0.0,
+    "metabolism": 0.0,
+    "bleedreduction": 0.0,
+    "radreduction": 0.2,
+    "heattolerance": 0.04,
+    "coldtolerance": 0.04
   },
   "Captaincy Stat": {
-    "maxlvl": 10,
-    "pointcoststart": 3,
-    "costmultiplier": 3,
-    "skillboost": 0.01,
+    "maxlvl": 0,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
+    "skillboost": 0.0,
     "enablexpboost": true,
-    "xpboost": 0.01,
-    "captaincydistance": 10.0
+    "xpboost": 0.1,
+    "captaincydistance": 25.0
   },
   "WoodCutter Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
     "gatherrate": 0.5,
     "bonusincrease": 0.1,
     "applechance": 0.1
   },
   "Smithy Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
-    "productionrate": 0.1,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
+    "productionrate": 0.2,
     "fuelconsumption": 0.1,
     "metalchance": 0.05,
-    "metalamount": 1
+    "metalamount": 10
   },
   "Miner Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
-    "gatherrate": 0.5,
-    "bonusincrease": 0.1,
-    "fuelconsumption": 0.1,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
+    "gatherrate": 0.2,
+    "bonusincrease": 0.2,
+    "fuelconsumption": 0.0,
     "metalchance": 0.1,
-    "metalamount": 1
+    "metalamount": 100
   },
   "Forager Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
     "gatherrate": 0.3,
-    "chanceincrease": 0.1,
-    "randomchance": 0.05,
+    "chanceincrease": 0.0,
+    "randomchance": 0.0,
     "randomChanceList": {
       "0": {
         "shortname": "apple",
@@ -305,57 +305,57 @@
   },
   "Hunter Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
     "gatherrate": 0.3,
     "bonusincrease": 0.1,
-    "damageincrease": 0.05,
-    "nightdmgincrease": 0.01
+    "damageincrease": 0.1,
+    "nightdmgincrease": 0.05
   },
   "Fisher Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
-    "fishamountincrease": 0.75,
-    "itemamountincrease": 0.25
+    "pointcoststart": 1,
+    "costmultiplier": 1,
+    "fishamountincrease": 1.5,
+    "itemamountincrease": 0.0
   },
   "Crafter Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
-    "craftspeed": 0.1,
-    "craftcost": 0.05,
-    "repairincrease": 0.07,
-    "repaircost": 0.05,
-    "conditionchance": 0.07,
-    "conditionamount": 0.1
+    "pointcoststart": 1,
+    "costmultiplier": 1,
+    "craftspeed": 0.0,
+    "craftcost": 0.03,
+    "repairincrease": 0.1,
+    "repaircost": 0.1,
+    "conditionchance": 0.1,
+    "conditionamount": 0.25
   },
   "Framer Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
     "upgradecost": 0.05,
     "repaircost": 0.05,
-    "repairtime": 0.1
+    "repairtime": 0.0
   },
   "Medic Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
+    "pointcoststart": 4,
     "costmultiplier": 2,
     "revivehp": 5.0,
     "recoverhp": 5.0,
-    "crafttime": 0.1,
+    "crafttime": 0.0,
     "tools": 2.0
   },
   "Scavenger Skill": {
     "maxlvl": 10,
-    "pointcoststart": 2,
-    "costmultiplier": 2,
+    "pointcoststart": 1,
+    "costmultiplier": 1,
     "scavlootchance": 0.1,
-    "scavchance": 0.05,
-    "scavmultiplier": 1.0,
-    "customscavmultiplier": 0.5,
-    "customscavrandom": true,
+    "scavchance": 0.0,
+    "scavmultiplier": 0.2,
+    "customscavmultiplier": 0.0,
+    "customscavrandom": false,
     "usecustomscavlist": false,
     "drops": true,
     "crates": true,
@@ -363,7 +363,7 @@
     "lockedcrates": true,
     "hackcrates": true,
     "scientists": true,
-    "componentsonly": true,
+    "componentsonly": false,
     "scavChanceList": {
       "0": {
         "shortname": "scrap",

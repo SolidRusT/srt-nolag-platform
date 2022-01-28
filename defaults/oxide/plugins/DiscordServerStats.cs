@@ -13,7 +13,7 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("Discord Server Stats", "MJSU", "2.0.3")]
+    [Info("Discord Server Stats", "MJSU", "2.1.0")]
     [Description("Displays stats about the server in discord")]
     public class DiscordServerStats : CovalencePlugin
     {
@@ -33,23 +33,29 @@ namespace Oxide.Plugins
             ["Content-Type"] = "application/json" 
         };
 
+        private readonly Hash<string, MessageHandler> _handlers = new Hash<string, MessageHandler>();
+
         private Action<IPlayer, StringBuilder, bool> _replacer;
         private readonly StringBuilder _parser = new StringBuilder();
 
-        private DateTime _lastUpdate = DateTime.UtcNow;
-
-        private Timer _updateTimer;
-
-        private bool _isOnline = false;
+        private bool _isOnline;
         
         public enum DebugEnum { Message, None, Error, Warning, Info }
+
+        private static DiscordServerStats _ins;
         #endregion
 
         #region Setup & Loading
         private void Init()
         {
+            _ins = this;
             _storedData = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(Name);
-            _pluginConfig.DiscordWebhook = _pluginConfig.DiscordWebhook.Replace("/api/webhooks", "/api/v9/webhooks");
+            if (_storedData.MessageId != null)
+            {
+                _storedData.WebhookMessages[_pluginConfig.MessageConfigs[0].DiscordWebhook] = new MessageData{MessageId = _storedData.MessageId};
+                _storedData.MessageId = null;
+                SaveData();
+            }
         }
 
         protected override void LoadDefaultMessages()
@@ -74,20 +80,27 @@ namespace Oxide.Plugins
             Config.WriteObject(_pluginConfig);
         }
 
-        private PluginConfig AdditionalConfig(PluginConfig config)
+        public PluginConfig AdditionalConfig(PluginConfig config)
         {
-            //Migrates data from Version 1.*.* -> 2.0.0
-            if (config.StatsEmbed?.Embed != null)
+            //Migrates data from Version 2.0.* -> 2.1.0
+            if (config.StatsEmbed != null)
             {
-                config.StatsEmbed.Embeds = new List<EmbedConfig>
+                config.MessageConfigs = new List<MessageConfig>
                 {
-                    config.StatsEmbed.Embed
+                    new MessageConfig(null)
+                    {
+                        DiscordWebhook = config.DiscordWebhook,
+                        UpdateInterval = config.UpdateInterval,
+                        StatsEmbed = config.StatsEmbed
+                    }
                 };
-                config.StatsEmbed.Embed = null;
+                config.DiscordWebhook = null;
+                config.UpdateInterval = 0;
+                config.StatsEmbed = null;
             }
-            //End Data Migration
+            //End Data Migration from Version 2.0.* -> 2.1.0
             
-            config.StatsEmbed = new DiscordMessageConfig
+            DiscordMessageConfig defaultEmbed = new DiscordMessageConfig
             {
                 Content = config.StatsEmbed?.Content ?? string.Empty,
                 Embeds = config.StatsEmbed?.Embeds ?? new List<EmbedConfig>{ new EmbedConfig
@@ -245,7 +258,15 @@ namespace Oxide.Plugins
                     }
                 }
             };
-            
+
+            config.MessageConfigs = config.MessageConfigs ?? new List<MessageConfig>
+            {
+                new MessageConfig(null)
+                {
+                    StatsEmbed = defaultEmbed
+                }
+            };
+
             return config;
         }
 
@@ -278,12 +299,16 @@ namespace Oxide.Plugins
         private void OnServerShutdown()
         {
             _isOnline = false;
-            SendUpdateMessage();
+            foreach (MessageHandler handler in _handlers.Values)
+            {
+                handler.SendUpdateMessage();
+            }
         }
         
         private void Unload()
         {
             SaveData();
+            _ins = null;
         }
         #endregion
 
@@ -294,83 +319,34 @@ namespace Oxide.Plugins
             _storedData.LastConnected = player.Name;
         }
 
-        private void OnUserDisconnected(IPlayer player, string reason)
+        private void OnUserDisconnected(IPlayer player)
         {
             _storedData.LastDisconnectedDuration = DateTime.Now - _joinedDate[player.Id];
             _storedData.LastDisconnected = player.Name;
         }
-
         #endregion
 
         #region Message Handling
-        private void SetupMessaging()
+        public void SetupMessaging()
         {
-            if (string.IsNullOrEmpty(_pluginConfig.DiscordWebhook) || _pluginConfig.DiscordWebhook == WebhookDefault)
+            for (int index = 0; index < _pluginConfig.MessageConfigs.Count; index++)
             {
-                PrintWarning("Webhook URL not specified. Please set webhook url in config.");
-                return;
-            }
+                MessageConfig config = _pluginConfig.MessageConfigs[index];
+                config.DiscordWebhook = config.DiscordWebhook.Replace("/api/webhooks", "/api/v9/webhooks");
 
-            if (string.IsNullOrEmpty(_storedData.MessageId))
-            {
-                SendCreateMessage();
-            }
-            else
-            {
-                SendUpdateMessage();
-            }
-
-            _updateTimer?.Destroy();
-            _updateTimer = timer.Every(_pluginConfig.UpdateInterval * 60, SendUpdateMessage);
-        }
-        
-        private void SendCreateMessage()
-        {
-            _lastUpdate = DateTime.UtcNow;
-            DiscordMessage create = ParseMessage(_pluginConfig.StatsEmbed);
-            CreateDiscordMessage(create, new Action<int, DiscordMessage>((code, response) =>
-            {
-                if (code == 404)
+                if (string.IsNullOrEmpty(config.DiscordWebhook) || config.DiscordWebhook == WebhookDefault)
                 {
-                    PrintWarning("Create message returned 404. Please confirm webhook url in config is correct.");
-                    return;
+                    PrintWarning($"Webhook URL not specified. Please set webhook url in config for message index {index}.");
+                    continue;
                 }
-                
-                if (response == null)
-                {
-                    PrintWarning($"Created message returned null. Code: {code}");
-                    return;
-                }
-                    
-                _storedData.MessageId = response.Id;
-                SaveData();
-            }));
-        }
 
-        private void SendUpdateMessage()
-        {
-            if (string.IsNullOrEmpty(_storedData.MessageId))
-            {
-                SendCreateMessage();
-                return;
+                _handlers[config.DiscordWebhook] = new MessageHandler(config);
             }
-
-            _lastUpdate = DateTime.UtcNow;
-            DiscordMessage update = ParseMessage(_pluginConfig.StatsEmbed);
-            update.Id = _storedData.MessageId;
-
-            UpdateDiscordMessage(update, new Action<int, DiscordMessage>( (code,response) =>
-            {
-                if (code == 404 && response == null)
-                {
-                    SendCreateMessage();
-                }
-            }));
         }
         #endregion
 
         #region PlaceholderAPI
-        private string ParseField(string field)
+        public string ParseField(string field)
         {
             _parser.Length = 0;
             _parser.Append(field);
@@ -391,12 +367,11 @@ namespace Oxide.Plugins
             RegisterPlaceholder("player.joined.last", (player, s) => _storedData.LastConnected, "Displays the name of the player who joined last");
             RegisterPlaceholder("player.disconnected.last", (player, s) => _storedData.LastDisconnected, "Displays the name of the player who disconnected last");
             RegisterPlaceholder("player.disconnected.last.duration", (player, s) => _storedData.LastDisconnectedDuration, "Displays duration of the last disconnected player");
-            RegisterPlaceholder("discordserverstats.last.update", (player, s) => _lastUpdate, "Displays the datetime the last update was sent.");
             RegisterPlaceholder("discordserverstats.status", (player, s) => _isOnline ? Lang(PluginLang.OnlineStatus) : Lang(PluginLang.OfflineStatus), "Displays if the server is online or offline.");
             SetupMessaging();
         }
 
-        private void RegisterPlaceholder(string key, Func<IPlayer, string, object> action, string description = null)
+        public void RegisterPlaceholder(string key, Func<IPlayer, string, object> action, string description = null)
         {
             if (IsPlaceholderApiLoaded())
             {
@@ -404,7 +379,7 @@ namespace Oxide.Plugins
             }
         }
 
-        private Action<IPlayer, StringBuilder, bool> GetReplacer()
+        public Action<IPlayer, StringBuilder, bool> GetReplacer()
         {
             if (!IsPlaceholderApiLoaded())
             {
@@ -414,7 +389,7 @@ namespace Oxide.Plugins
             return _replacer ?? (_replacer = PlaceholderAPI.Call<Action<IPlayer, StringBuilder, bool>>("GetProcessPlaceholders", 1));
         }
 
-        private bool IsPlaceholderApiLoaded() => PlaceholderAPI != null && PlaceholderAPI.IsLoaded;
+        public bool IsPlaceholderApiLoaded() => PlaceholderAPI != null && PlaceholderAPI.IsLoaded;
         #endregion
 
         #region Helper Methods
@@ -439,24 +414,56 @@ namespace Oxide.Plugins
             }
         }
         
-        public string Lang(string key, IPlayer player = null, params object[] args)
+        public string Lang(string key)
         {
-            try
-            {
-                return string.Format(lang.GetMessage(key, this, player?.Id), args);
-            }
-            catch(Exception ex)
-            {
-                PrintError($"Lang Key '{key}' threw exception\n:{ex}");
-                throw;
-            }
+            return lang.GetMessage(key, this);
         }
-        
-        private void SaveData() => Interface.Oxide.DataFileSystem.WriteObject(Name, _storedData);
+
+        public void SaveData() => Interface.Oxide.DataFileSystem.WriteObject(Name, _storedData);
         #endregion
 
         #region Classes
-        private class PluginConfig
+        public class PluginConfig
+        {
+            [JsonProperty(PropertyName = "Stats Messages")]
+            public List<MessageConfig> MessageConfigs { get; set; }
+            
+            [JsonConverter(typeof(StringEnumConverter))]
+            [DefaultValue(DebugEnum.Warning)]
+            [JsonProperty(PropertyName = "Debug Level (None, Error, Warning, Info)")]
+            public DebugEnum DebugLevel { get; set; }
+
+            #region Obsolete
+            [Obsolete("This was removed in version 2.1.0")]
+            [JsonProperty(PropertyName = "Discord Webhook")]
+            public string DiscordWebhook { get; set; }
+            
+            [Obsolete("This was removed in version 2.1.0")]
+            [JsonProperty(PropertyName = "Message Update Interval (Minutes)")]
+            public float UpdateInterval { get; set; }
+
+            [Obsolete("This was removed in version 2.1.0")]
+            [JsonProperty(PropertyName = "Stats Embed Message")]
+            public DiscordMessageConfig StatsEmbed { get; set; }
+            
+            public bool ShouldSerializeDiscordWebhook()
+            {
+                return DiscordWebhook != null;
+            }
+
+            public bool ShouldSerializeUpdateInterval()
+            {
+                return UpdateInterval != 0;
+            }
+            
+            public bool ShouldSerializeStatsEmbed()
+            {
+                return StatsEmbed != null;
+            }
+            #endregion
+        }
+
+        public class MessageConfig
         {
             [DefaultValue(WebhookDefault)]
             [JsonProperty(PropertyName = "Discord Webhook")]
@@ -465,28 +472,111 @@ namespace Oxide.Plugins
             [DefaultValue(1f)]
             [JsonProperty(PropertyName = "Message Update Interval (Minutes)")]
             public float UpdateInterval { get; set; }
-
-            [JsonProperty(PropertyName = "Stats Embed Message")]
-            public DiscordMessageConfig StatsEmbed { get; set; }
             
-            [JsonConverter(typeof(StringEnumConverter))]
-            [DefaultValue(DebugEnum.Warning)]
-            [JsonProperty(PropertyName = "Debug Level (None, Error, Warning, Info)")]
-            public DebugEnum DebugLevel { get; set; }
+            [JsonProperty(PropertyName = "Embed Message")]
+            public DiscordMessageConfig StatsEmbed { get; set; }
+
+            public MessageConfig(MessageConfig settings)
+            {
+                DiscordWebhook = settings?.DiscordWebhook ?? WebhookDefault;
+                UpdateInterval = settings?.UpdateInterval ?? 1;
+                StatsEmbed = settings?.StatsEmbed;
+            }
         }
 
         private class StoredData
         {
+            [Obsolete("This was removed in version 2.1.0")]
             public string MessageId { get; set; }
             public string LastConnected { get; set; } = "N/A";
             public string LastDisconnected { get; set; } = "N/A";
             public TimeSpan LastDisconnectedDuration = TimeSpan.Zero;
+            public Hash<string, MessageData> WebhookMessages = new Hash<string, MessageData>();
+            
+            public bool ShouldSerializeMessageId()
+            {
+                return MessageId != null;
+            }
+        }
+
+        public class MessageData
+        {
+            public string MessageId { get; set; }
         }
 
         private static class PluginLang
         {
             public const string OnlineStatus = nameof(OnlineStatus);
             public const string OfflineStatus = nameof(OfflineStatus);
+        }
+
+        public class MessageHandler
+        {
+            public MessageConfig Config { get; }
+            public MessageData Data { get; private set; }
+            public Timer Timer { get; }
+            public string MessageId { get; private set; }
+
+            public MessageHandler(MessageConfig config)
+            {
+                Config = config;
+                Data = _ins._storedData.WebhookMessages[config.DiscordWebhook];
+                if (Data == null)
+                {
+                    SendCreateMessage();
+                }
+                else
+                {
+                    MessageId = Data.MessageId;
+                    SendUpdateMessage();
+                }
+                
+                Timer = _ins.timer.Every(config.UpdateInterval * 60, SendUpdateMessage);
+            }
+            
+            public void SendCreateMessage()
+            {
+                DiscordMessage create = _ins.ParseMessage(Config.StatsEmbed);
+                _ins.CreateDiscordMessage(Config.DiscordWebhook, create, new Action<int, DiscordMessage>((code, response) =>
+                {
+                    if (code == 404)
+                    {
+                        _ins.PrintWarning("Create message returned 404. Please confirm webhook url in config is correct.");
+                        return;
+                    }
+                
+                    if (response == null)
+                    {
+                        _ins.PrintWarning($"Created message returned null. Code: {code}");
+                        return;
+                    }
+
+                    MessageId = response.Id;
+                    Data = new MessageData { MessageId = MessageId };
+                    _ins._storedData.WebhookMessages[Config.DiscordWebhook] = Data;
+                    _ins.SaveData();
+                }));
+            }
+
+            public void SendUpdateMessage()
+            {
+                if (string.IsNullOrEmpty(MessageId))
+                {
+                    SendCreateMessage();
+                    return;
+                }
+                
+                DiscordMessage update = _ins.ParseMessage(Config.StatsEmbed);
+                update.Id = MessageId;
+
+                _ins.UpdateDiscordMessage(Config.DiscordWebhook, update, new Action<int, DiscordMessage>((code,response) =>
+                {
+                    if (code == 404 && response == null)
+                    {
+                        SendCreateMessage();
+                    }
+                }));
+            }
         }
         #endregion
 
@@ -495,9 +585,10 @@ namespace Oxide.Plugins
         /// <summary>
         /// Sends the DiscordMessage
         /// </summary>
+        /// <param name="webhook"></param>
         /// <param name="message">Message being sent</param>
         /// <param name="callback"></param>
-        private void CreateDiscordMessage<T>(DiscordMessage message, Action<int, T> callback)
+        private void CreateDiscordMessage<T>(string webhook, DiscordMessage message, Action<int, T> callback)
         {
             StringBuilder json = message.ToJson();
             if (_pluginConfig.DebugLevel >= DebugEnum.Info)
@@ -505,15 +596,16 @@ namespace Oxide.Plugins
                 Debug(DebugEnum.Info, $"{nameof(UpdateDiscordMessage)} message.ToJson()\n{json}");
             }
             
-            webrequest.Enqueue(string.Format(WebhooksMessageCreate, _pluginConfig.DiscordWebhook), json.ToString(), (code, response) => SendDiscordMessageCallback(code, response, callback), null, RequestMethod.POST, _headers);
+            webrequest.Enqueue(string.Format(WebhooksMessageCreate, webhook), json.ToString(), (code, response) => SendDiscordMessageCallback(code, response, callback), null, RequestMethod.POST, _headers);
         }
 
         /// <summary>
         /// Sends the DiscordMessage
         /// </summary>
+        /// <param name="webhook"></param>
         /// <param name="message">Message being sent</param>
         /// <param name="callback"></param>
-        private void UpdateDiscordMessage<T>(DiscordMessage message, Action<int, T> callback)
+        private void UpdateDiscordMessage<T>(string webhook, DiscordMessage message, Action<int, T> callback)
         {
             StringBuilder json = message.ToJson();
             if (_pluginConfig.DebugLevel >= DebugEnum.Info)
@@ -521,7 +613,7 @@ namespace Oxide.Plugins
                 Debug(DebugEnum.Info, $"{nameof(UpdateDiscordMessage)} message.ToJson()\n{json}");
             }
 
-            webrequest.Enqueue(string.Format(WebhookMessageUpdate, _pluginConfig.DiscordWebhook, message.Id), json.ToString(), (code, response) => SendDiscordMessageCallback(code, response, callback), null, RequestMethod.PATCH, _headers);
+            webrequest.Enqueue(string.Format(WebhookMessageUpdate, webhook, message.Id), json.ToString(), (code, response) => SendDiscordMessageCallback(code, response, callback), null, RequestMethod.PATCH, _headers);
         }
 
         /// <summary>
@@ -1167,23 +1259,14 @@ namespace Oxide.Plugins
 
         #region Config Classes
 
-        private class DiscordMessageConfig
+        public class DiscordMessageConfig
         {
             public string Content { get; set; }
  
             public List<EmbedConfig> Embeds { get; set; }
-            
-            [Obsolete("This was replaced with Embeds in version 2.0.0")]
-            public EmbedConfig Embed { get; set; }
-            
-            //Used to Hide version 1.0.0 Embed field after upgrading config.
-            public bool ShouldSerializeEmbed()
-            {
-                return Embed != null;
-            }
         }
         
-        private class EmbedConfig
+        public class EmbedConfig
         {
             [JsonProperty("Enabled")]
             public bool Enabled { get; set; }
@@ -1216,7 +1299,7 @@ namespace Oxide.Plugins
             public FooterConfig Footer { get; set; }
         }
         
-        private class FieldConfig
+        public class FieldConfig
         {
             [JsonProperty("Title")]
             public string Title { get; set; }
@@ -1231,7 +1314,7 @@ namespace Oxide.Plugins
             public bool Enabled { get; set; }
         }
 
-        private class FooterConfig
+        public class FooterConfig
         {
             [JsonProperty("Icon Url")]
             public string IconUrl { get; set; }
