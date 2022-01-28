@@ -18,9 +18,9 @@ if (!isset($_SESSION['steamid'])) {
 <div class="col-sm-3">
   <div class="card">
 	<div class="card-body">
-    <img src="/images/SoldRust_Header_nine.png" class="card-img-top" alt="connect Nine.SolidRusT.net:28015">
+    <img src="/images/SoldRust_Header_nine.png" class="card-img-top" alt="connect us-west-10x.solidrust.net:28015">
 	  <h4 class="card-title">SolidRusT 10x NoLAG</h4>
-	  <a href="steam://connect/nine.solidrust.net:28015" class="btn btn-primary">connect nine.solidrust.net:28015</a>
+	  <a href="steam://connect/us-west-10x.solidrust.net:28015" class="btn btn-primary">connect us-west-10x.solidrust.net:28015</a>
 	  <p class="card-text"><h6>This server is a fast paced 10x with custom mods.</h6>
 		<ul>
 		  <li>Map Wipe every MONDAY 11AM-PST</li>
@@ -48,9 +48,9 @@ if (!isset($_SESSION['steamid'])) {
 <div class="col-sm-3">
   <div class="card">
 	<div class="card-body">
-    <img src="/images/SoldRust_Header_demo.png" class="card-img-top" alt="connect blaze.hq.SolidRusT.net:28015">
+    <img src="/images/SoldRust_Header_demo.png" class="card-img-top" alt="connect ca-west-100x.solidrust.net:28015">
 	  <h4 class="card-title">SolidRusT 100x NoLAG</h4>
-	  <a href="steam://connect/blaze.hq.solidrust.net:28015" class="btn btn-primary">connect blaze.hq.solidrust.net:28015</a>
+	  <a href="steam://connect/ca-west-100x.solidrust.net:28015" class="btn btn-primary">connect ca-west-100x.solidrust.net:28015</a>
 	  <p class="card-text"><h6>This server is a fast paced 100x with custom mods.</h6>
 		<ul>
 		  <li>Map Wipe every WEDNESDAY 11AM-PST</li>
@@ -78,9 +78,9 @@ if (!isset($_SESSION['steamid'])) {
 <div class="col-sm-3">
   <div class="card">
 	<div class="card-body">
-    <img src="/images/SoldRust_Header_demo.png" class="card-img-top" alt="connect demo.SolidRusT.net:28015">
+    <img src="/images/SoldRust_Header_demo.png" class="card-img-top" alt="connect us-east-1000x.solidrust.net:28015">
 	  <h4 class="card-title">SolidRusT 1000x NoLAG</h4>
-	  <a href="steam://connect/demo.solidrust.net:28015" class="btn btn-primary">connect demo.solidrust.net:28015</a>
+	  <a href="steam://connect/us-east-1000x.solidrust.net:28015" class="btn btn-primary">connect us-east-1000x.solidrust.net:28015</a>
 	  <p class="card-text"><h6>This server is a fast paced 1000x with custom mods.</h6>
 		<ul>
 		  <li>Map Wipe every WEDNESDAY 11AM-PST</li>
