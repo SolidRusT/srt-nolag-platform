@@ -14,7 +14,7 @@ if (!isset($_SESSION['steamid'])) {
 </div>
 
 <div class="container-fluid">
-<div class="row row-cols-auto">
+<div class="row row-cols-1 row-cols-md-3 g-4">
 <div class="col">
   <div class="card">
 	<div class="card-body">
