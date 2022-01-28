@@ -92,6 +92,8 @@ function update_mods() {
     oxide/data/CompoundOptions.json
     oxide/data/death.png
     oxide/data/BetterChat.json
+    oxide/data/HeliControlWeapons.json
+    oxide/data/HeliControlData.json
     oxide/data/hit.png
     oxide/data/GuardedCrate.json
     oxide/data/CustomChatCommands.json
