@@ -1,19 +1,15 @@
 {
   "Storage prefab to use": "assets/prefabs/deployable/large wood storage/box.wooden.large.prefab",
   "Amount of slots that the players can access? Max value is the maximum number of slots for the container type.": 30,
-  "Box skin": 1499104921,
+  "Box skin": 2710914222,
   "Display floating text above the containers indicating that it is a storage unit?": true,
   "If floating text is enabled, how often should it update?": 5.0,
   "Maximum distance away from the box that the player can see the text?": 30.0,
-  "Display floating text above manually deployed containers?": true,
-  "Make player deployed global storage chests invulnerable?": true,
+  "Display floating text above manually deployed containers?": false,
+  "Make player deployed global storage chests invulnerable?": false,
   "A list of item shortnames that cannot be placed into the chest": [
-    "cassette",
-    "cassette.medium",
-    "cassette.short",
-    "boombox",
-    "fun.boomboxportable",
-    "fun.casetterecorder"
+    "lmg.m249",
+    "explosives"
   ],
   "Monument modifiers": [
     {
