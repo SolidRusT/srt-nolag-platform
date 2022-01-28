@@ -5,7 +5,7 @@ require 'steamauth/steamauth.php';
 include 'steamauth/userInfo.php';
 include 'functions.php';
 ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous">
     </script>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
@@ -21,13 +21,13 @@ include 'functions.php';
 					<li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Connect</a>
 						<ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-            <li><a class="dropdown-item" href="steam://connect/two.solidrust.net:28015">Main - two.solidrust.net</a></li>
-            <li><a class="dropdown-item" href="steam://connect/nine.solidrust.net:28015">5x Practice - nine.solidrust.net</a></li>
-			<li><a class="dropdown-item" href="steam://connect/one.solidrust.net:28015">Demo Server - one.solidrust.net</a></li>
+            <li><a class="dropdown-item" href="steam://connect/us-west-10x.solidrust.net:28015">connect US-West-10x.solidrust.net:28015</a></li>
+            <li><a class="dropdown-item" href="steam://connect/ca-west-100x.solidrust.net:28015">connect CA-West-100x.solidrust.net:28015</a></li>
+			<li><a class="dropdown-item" href="steam://connect/us-east-1000x.solidrust.net:28015">connect US-East-1000x.solidrust.net:28015</a></li>
           </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Discord</a>
+                        <a class="nav-link" href="https://discord.solidrust.net">Discord</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Store</a>

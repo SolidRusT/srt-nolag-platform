@@ -11,7 +11,7 @@
                         <a class="nav-link active" aria-current="page" href="/index">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Discord</a>
+                        <a class="nav-link" href="https://discord.solidrust.net">Discord</a>
                     </li>
                     <li>
                         <a class="nav-link" href="#">Store</a>

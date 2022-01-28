@@ -16,7 +16,7 @@ require 'main.conf.php';
     <meta property="og:image" content="https://solidrust.net/images/SoldRust_Logo.png">
     <meta property="og:site_name" content="solidrust.net">
     <meta name="theme-color" content="#ff0000">
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">	
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">	
     <style type="text/css">
     body {
         background-image: url(images/SR-Demo-Loot-1.PNG);
