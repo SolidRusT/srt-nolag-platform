@@ -29,7 +29,7 @@ include 'functions.php';
         </li>
         <li class="nav-item"><a class="nav-link" href="https://discord.solidrust.net">Discord</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Store</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Apply</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://steamcommunity.com/id/solidrust">Community</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Learn</a></li>
 			  <li class="nav-item"><a class="nav-link" href="#">Gallery</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Help</a></li>
