@@ -294,6 +294,7 @@ DEFAULT_PERMS=(
   fishing.makepole
   fuelgauge.allow
   furnacesplitter.use
+  globalstorage.access
   heal.player
   heal.self
   instantcraft.use
