@@ -15,7 +15,7 @@ if (!isset($_SESSION['steamid'])) {
 
 <div class="container-fluid">
 <div class="row row-cols-auto">
-<div class="col-sm-3">
+<div class="col">
   <div class="card">
 	<div class="card-body">
     <img src="/images/SoldRust_Header_nine.png" class="card-img-top" alt="connect us-west-10x.solidrust.net:28015">
@@ -45,7 +45,7 @@ if (!isset($_SESSION['steamid'])) {
 	</div>
   </div>
 </div>
-<div class="col-sm-3">
+<div class="col">
   <div class="card">
 	<div class="card-body">
     <img src="/images/SoldRust_Header_demo.png" class="card-img-top" alt="connect ca-west-100x.solidrust.net:28015">
@@ -75,7 +75,7 @@ if (!isset($_SESSION['steamid'])) {
 	</div>
   </div>
 </div>
-<div class="col-sm-3">
+<div class="col">
   <div class="card">
 	<div class="card-body">
     <img src="/images/SoldRust_Header_demo.png" class="card-img-top" alt="connect us-east-1000x.solidrust.net:28015">
