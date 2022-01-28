@@ -25,16 +25,16 @@
     "Ammo": {
         "Amount to drop": {
             "Min": 10,
-            "Max": 55
+            "Max": 75
         },
-        "Drop chance": 0.8
+        "Drop chance": 0.7
     },
     "Meds": {
         "Amount to drop": {
             "Min": 1,
             "Max": 3
         },
-        "Drop chance": 0.4
+        "Drop chance": 0.9
     },
     "Put weapon into corpse": false,
     "Remove default loot from corpse": false,
