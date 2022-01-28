@@ -61,6 +61,11 @@ betterloot|BetterLoot)
   echo "/game/oxide/data/BetterLoot"
   $SCP_CMD:/game/oxide/data/BetterLoot "${SRT_REPO}/defaults/oxide/data/"
   ;;
+helicontrol|HeliControl)
+  echo "/game/oxide/data/HeliControl"
+  $SCP_CMD:/game/oxide/data/HeliControlWeapons.json "${SRT_REPO}/defaults/oxide/data/"
+  $SCP_CMD:/game/oxide/data/HeliControlData.json "${SRT_REPO}/defaults/oxide/data/"
+  ;;
 *)
   echo "pull_data: Invalid plugin selection"
   echo ""

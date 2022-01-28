@@ -1,0 +1,94 @@
+{
+  "HeliInventoryLists": [
+    {
+      "lootBoxContents": [
+        {
+          "name": "rifle.ak",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 1,
+          "skinID": 0
+        },
+        {
+          "name": "ammo.rifle.hv",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 128,
+          "skinID": 0
+        }
+      ]
+    },
+    {
+      "lootBoxContents": [
+        {
+          "name": "rifle.bolt",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 1,
+          "skinID": 0
+        },
+        {
+          "name": "ammo.rifle.hv",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 128,
+          "skinID": 0
+        }
+      ]
+    },
+    {
+      "lootBoxContents": [
+        {
+          "name": "explosive.timed",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 3,
+          "skinID": 0
+        },
+        {
+          "name": "ammo.rocket.hv",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 3,
+          "skinID": 0
+        }
+      ]
+    },
+    {
+      "lootBoxContents": [
+        {
+          "name": "lmg.m249",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 1,
+          "skinID": 0
+        },
+        {
+          "name": "ammo.rifle",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 100,
+          "skinID": 0
+        }
+      ]
+    },
+    {
+      "lootBoxContents": [
+        {
+          "name": "rifle.lr300",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 1,
+          "skinID": 0
+        },
+        {
+          "name": "ammo.rifle",
+          "amountMin": 0,
+          "amountMax": 0,
+          "amount": 100,
+          "skinID": 0
+        }
+      ]
+    }
+  ]
+}
