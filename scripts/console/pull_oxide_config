@@ -29,6 +29,10 @@ nine)
   SCP_CMD="scp -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@${SERVER}.solidrust.net"
   SSH_CMD="ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem -tq admin@${SERVER}.solidrust.net"
   ;;
+eleven)
+  SCP_CMD="scp shaun@${SERVER}"
+  SSH_CMD="ssh -tq shaun@${SERVER}"
+  ;;
 *)
   echo "pull_config: Invalid server selection"
   echo ""

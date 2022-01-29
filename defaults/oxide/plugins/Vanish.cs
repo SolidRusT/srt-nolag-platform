@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vanish", "Whispers88", "1.6.5")]
+    [Info("Vanish", "Whispers88", "1.6.6")]
     [Description("Allows players with permission to become invisible")]
     public class Vanish : CovalencePlugin
     {
@@ -336,15 +336,16 @@ namespace Oxide.Plugins
         private Dictionary<BasePlayer, MetabolismValues> _storedMetabolism = new Dictionary<BasePlayer, MetabolismValues>();
         private void Disappear(BasePlayer player)
         {
-            if (player._limitedNetworking)
-                return;
-
             if (!_hiddenPlayers.Contains(player))
                 _hiddenPlayers.Add(player);
 
             if (Interface.CallHook("OnVanishDisappear", player) != null) return;
             if (config.AntiHack)
                 player.PauseFlyHackDetection(float.MaxValue);
+
+            VanishPositionUpdate vanishPositionUpdate;
+            if (player.TryGetComponent<VanishPositionUpdate>(out vanishPositionUpdate))
+                UnityEngine.Object.Destroy(vanishPositionUpdate);
 
             player.gameObject.AddComponent<VanishPositionUpdate>();
 
@@ -360,7 +361,7 @@ namespace Oxide.Plugins
                 player.metabolism.isDirty = true;
                 player.metabolism.SendChangesToClient();
             }
-            if (config.MetabolismReset)
+            if (config.MetabolismReset && !player._limitedNetworking)
                 _storedMetabolism[player] = new MetabolismValues() { health = player.health, hydration = player.metabolism.hydration.value };
 
             var connections = Net.sv.connections.Where(con => con.connected && con.isAuthenticated && con.player is BasePlayer && con.player != player).ToList();

@@ -1,0 +1,621 @@
+{
+  "CargoShipPathHandling": "Warn",
+  "CraftingCostSquare": [
+    {
+      "Amount": 100,
+      "Shortname": "wood"
+    },
+    {
+      "Amount": 200,
+      "Shortname": "metal.fragments"
+    }
+  ],
+  "CraftingCostTriangle": [
+    {
+      "Amount": 50,
+      "Shortname": "wood"
+    },
+    {
+      "Amount": 100,
+      "Shortname": "metal.fragments"
+    }
+  ],
+  "EnableBarrelEntities": true,
+  "GuiAnchorALeft": 0.645833,
+  "GuiAnchorBBottom": 0.02592,
+  "GuiAnchorCRight": 0.83125,
+  "GuiAnchorDTop": 0.108333,
+  "GuiButtonAlpha": 1.0,
+  "GuiButtonColor": "4897ce",
+  "GuiTextAlpha": 1.0,
+  "GuiTextColor": "f6eae0",
+  "GuiTextSize": 14,
+  "MinDistanceFromCargoShipNode": 40.0,
+  "PermissionProfiles": {
+    "default": {
+      "AllowedTopologies": {
+        "Alt": true,
+        "Beach": true,
+        "Beachside": true,
+        "Building": false,
+        "Cliff": true,
+        "Cliffside": true,
+        "Clutter": true,
+        "Decor": true,
+        "Field": true,
+        "Forest": true,
+        "Forestside": true,
+        "Hilltop": true,
+        "Lake": true,
+        "Lakeside": true,
+        "Mainland": true,
+        "Monument": false,
+        "Mountain": true,
+        "Ocean": true,
+        "Oceanside": true,
+        "Offshore": true,
+        "Plain": true,
+        "Powerline": true,
+        "River": true,
+        "Riverside": true,
+        "Road": true,
+        "Roadside": true,
+        "Summit": true,
+        "Swamp": true,
+        "Tier0": true,
+        "Tier1": true,
+        "Tier2": true
+      },
+      "CanCraftWaterFoundations": true,
+      "CanDeployUnderwaterNets": true,
+      "CanDeployWaterFoundations": true,
+      "CanExpandReinforcedFoundations": true,
+      "CanExpandWaterFoundations": true,
+      "CanReinforceWaterFoundations": true,
+      "MaxBuildingGradeFrames": "Stone",
+      "MaxBuildingGradeGeneric": "Wood",
+      "MaxBuildingGradeWaterFoundations": "Metal",
+      "MaxDistanceFromShore": 20.0,
+      "MaxWaterFoundationsPerBuilding": 25,
+      "MinDistanceFromOilrig": 200.0,
+      "MinDistanceFromShore": 2.0,
+      "PermissionRequired": "default",
+      "RequireMaterialsForCrafting": true,
+      "WaterDepthMax": 100.0,
+      "WaterDepthMin": 2.0,
+      "WorkbenchLevelRequired": 2.0
+    },
+    "waterbases.admin": {
+      "AllowedTopologies": {
+        "Alt": true,
+        "Beach": true,
+        "Beachside": true,
+        "Building": false,
+        "Cliff": true,
+        "Cliffside": true,
+        "Clutter": true,
+        "Decor": true,
+        "Field": true,
+        "Forest": true,
+        "Forestside": true,
+        "Hilltop": true,
+        "Lake": true,
+        "Lakeside": true,
+        "Mainland": true,
+        "Monument": false,
+        "Mountain": true,
+        "Ocean": true,
+        "Oceanside": true,
+        "Offshore": true,
+        "Plain": true,
+        "Powerline": true,
+        "River": true,
+        "Riverside": true,
+        "Road": true,
+        "Roadside": true,
+        "Summit": true,
+        "Swamp": true,
+        "Tier0": true,
+        "Tier1": true,
+        "Tier2": true
+      },
+      "CanCraftWaterFoundations": true,
+      "CanDeployUnderwaterNets": true,
+      "CanDeployWaterFoundations": true,
+      "CanExpandReinforcedFoundations": true,
+      "CanExpandWaterFoundations": true,
+      "CanReinforceWaterFoundations": true,
+      "MaxBuildingGradeFrames": "TopTier",
+      "MaxBuildingGradeGeneric": "TopTier",
+      "MaxBuildingGradeWaterFoundations": "TopTier",
+      "MaxDistanceFromShore": "Infinity",
+      "MaxWaterFoundationsPerBuilding": 2147483647,
+      "MinDistanceFromOilrig": "-Infinity",
+      "MinDistanceFromShore": "-Infinity",
+      "PermissionRequired": "waterbases.admin",
+      "RequireMaterialsForCrafting": false,
+      "WaterDepthMax": "Infinity",
+      "WaterDepthMin": "-Infinity",
+      "WorkbenchLevelRequired": 0.0
+    },
+    "waterbases.vip1": {
+      "AllowedTopologies": {
+        "Alt": true,
+        "Beach": true,
+        "Beachside": true,
+        "Building": false,
+        "Cliff": true,
+        "Cliffside": true,
+        "Clutter": true,
+        "Decor": true,
+        "Field": true,
+        "Forest": true,
+        "Forestside": true,
+        "Hilltop": true,
+        "Lake": true,
+        "Lakeside": true,
+        "Mainland": true,
+        "Monument": false,
+        "Mountain": true,
+        "Ocean": true,
+        "Oceanside": true,
+        "Offshore": true,
+        "Plain": true,
+        "Powerline": true,
+        "River": true,
+        "Riverside": true,
+        "Road": true,
+        "Roadside": true,
+        "Summit": true,
+        "Swamp": true,
+        "Tier0": true,
+        "Tier1": true,
+        "Tier2": true
+      },
+      "CanCraftWaterFoundations": true,
+      "CanDeployUnderwaterNets": true,
+      "CanDeployWaterFoundations": true,
+      "CanExpandReinforcedFoundations": true,
+      "CanExpandWaterFoundations": true,
+      "CanReinforceWaterFoundations": true,
+      "MaxBuildingGradeFrames": "Metal",
+      "MaxBuildingGradeGeneric": "Stone",
+      "MaxBuildingGradeWaterFoundations": "TopTier",
+      "MaxDistanceFromShore": 30.0,
+      "MaxWaterFoundationsPerBuilding": 100,
+      "MinDistanceFromOilrig": 100.0,
+      "MinDistanceFromShore": 1.0,
+      "PermissionRequired": "waterbases.vip1",
+      "RequireMaterialsForCrafting": true,
+      "WaterDepthMax": 250.0,
+      "WaterDepthMin": 1.0,
+      "WorkbenchLevelRequired": 1.0
+    }
+  },
+  "RelyOnShoreDistance": true,
+  "RestrictBuildingToMapGrid": false,
+  "UnderwaterLoot": [
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 20,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "scrap",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "metalblade",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 2,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "rope",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "propanetank",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "tarp",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 4,
+      "MinRandomAmount": 3,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "sewingkit",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "fuse",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 3,
+      "MinRandomAmount": 2,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "roadsigns",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "sheetmetal",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "metalspring",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 2,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "gears",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 4,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "metalpipe",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "semibody",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "barricade.wood",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "planter.large",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "paddle",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "bucket.water",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "mailbox",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "hat.cap",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "fun.guitar",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "can.tuna.empty",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "fireplace.stone",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "mask.bandana",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "barricade.woodwire",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "sign.wooden.large",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "electric.igniter",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "hat.boonie",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "spinner.wheel",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "rug.bear",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "table",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "shelves",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "water.barrel",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "spikes.floor",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "shirt.tanktop",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "pants.shorts",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "shutter.wood.a",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "barricade.stone",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "tool.binoculars",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "burlap.gloves",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "mask.balaclava",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "sign.wooden.huge",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "hat.beenie",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "rug",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 32,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "fish.minnows",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 8,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "fish.troutsmall",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "innertube",
+      "SkinID": "2484982352"
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "innertube",
+      "SkinID": "2485021365"
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "diving.fins",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "diving.mask",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "diving.tank",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "diving.wetsuit",
+      "SkinID": 0
+    },
+    {
+      "CustomName": null,
+      "MaxRandomAmount": 1,
+      "MinRandomAmount": 1,
+      "RandomChanceWeight": 1.0,
+      "Shortname": "smallwaterbottle",
+      "SkinID": 0
+    }
+  ],
+  "UnderwaterNetsCollectJunk": true,
+  "UnderwaterNetsItemLimit": 10,
+  "UnderwaterNetsRandomTimerMax": 1200.0,
+  "UnderwaterNetsRandomTimerMin": 600.0,
+  "UpkeepMultiplier": 1.0,
+  "Version": "1.0.4"
+}

@@ -1,0 +1,531 @@
+{
+  "Version": "1.1.5",
+  "Prefix of chat messages": "[Convoy]",
+  "Use a chat? [true/false]": true,
+  "GUI Announcements setting": {
+    "Do you use the GUI Announcements? [true/false]": false,
+    "Banner color": "Grey",
+    "Text color": "White",
+    "Adjust Vertical Position": 0.03
+  },
+  "Notify setting": {
+    "Do you use the Notify? [true/false]": false,
+    "Type": "0"
+  },
+  "Discord setting (only for DiscordMessages)": {
+    "Do you use the Discord? [true/false]": false,
+    "Webhook URL": "https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks",
+    "Embed Color (DECIMAL)": 13516583,
+    "Keys of required messages": [
+      "PreStart",
+      "EventStart",
+      "PreFinish",
+      "Finish",
+      "StartHackCrate"
+    ]
+  },
+  "Custom route name": "",
+  "If there is a ring road on the map, then the event will be held on it": true,
+  "The minimum length of the road on which the event can be held (Recommended values: standard map - 100, custom - 300)": 100,
+  "The distance between the machines during spawn (Recommended values: standard map - 3, custom - 10)": 3,
+  "Minimum time between events [sec.]": 3600,
+  "Maximum time between events [sec.]": 3600,
+  "Time before the starting of the event after receiving a chat message [sec.]": 60,
+  "Notification time until the end of the event [sec.] ": 60,
+  "Duration of the event [sec.]": 1700,
+  "The time for which the convoy stops moving after receiving damage [sec.]": 120,
+  "The convoy will not attack first [true/false]": false,
+  "Remove obstacles in front of the convoy [true/false]": true,
+  "List of obstacles": [
+    "minicopter.entity",
+    "scraptransporthelicopter",
+    "rowboat",
+    "rhib",
+    "1module_passengers_armored",
+    "2module_car_spawned.entity",
+    "3module_car_spawned.entity",
+    "4module_car_spawned.entity",
+    "hotairballoon",
+    "saddletest",
+    "testridablehorse",
+    "servergibs_bradley",
+    "loot_barrel_1",
+    "loot_barrel_2",
+    "loot-barrel-2",
+    "loot-barrel-1",
+    "oil_barrel"
+  ],
+  "If an NPC has been killed, it will not spawn at the next stop of the convoy [true/false]": false,
+  "Blocked roads (command /convoyroadblock)": [],
+  "Convoy Presets": [
+    {
+      "Name": "standart",
+      "Automatic startup": true,
+      "Probability of a preset [0.0-100.0]": 100.0,
+      "Enable the helicopter": false,
+      "The number of Bradleys ahead the truck": 1,
+      "Number of Sedans ahead the truck": 1,
+      "Number of Sedans behind the truck": 1,
+      "The number of Bradleys behind the truck": 1,
+      "Bradley preset": "bradley_1",
+      "Sedan preset": "sedan_1",
+      "Truck preset": "truck_1",
+      "Heli preset": "heli_1"
+    }
+  ],
+  "Marker Setting": {
+    "Do you use the Marker? [true/false]": false,
+    "Radius": 0.2,
+    "Alpha": 0.6,
+    "Marker color": {
+      "r": 0.81,
+      "g": 0.25,
+      "b": 0.15
+    },
+    "Outline color": {
+      "r": 0.0,
+      "g": 0.0,
+      "b": 0.0
+    }
+  },
+  "Event zone": {
+    "Create a PVP zone in the convoy stop zone? (only for those who use the TruePVE plugin)[true/false]": false,
+    "Use the dome? [true/false]": false,
+    "Darkening the dome": 5
+  },
+  "GUI": {
+    "Use the Countdown GUI? [true/false]": true,
+    "AnchorMin": "0 0.9",
+    "AnchorMax": "1 0.95"
+  },
+  "Bradley Configurations": [
+    {
+      "Name": "bradley_1",
+      "HP": 1000.0,
+      "Scale damage": 1.0,
+      "The viewing distance": 100.0,
+      "Radius of search": 100.0,
+      "The multiplier of Machine-gun aim cone": 1.1,
+      "The multiplier of Machine-gun fire rate": 1.0,
+      "Amount of Machine-gun burst shots": 10,
+      "The time between shots of the main gun [sec.]": 10.0,
+      "The time between shots of the main gun in a fire rate [sec.]": 0.25,
+      "Numbers of crates": 3,
+      "Location of all NPCs": [
+        {
+          "Position": "(3, 0, 3)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(-3, 0, 3)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(3, 0, -3)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(3, 0, 0)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(-3, 0, 0)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(-3, 0, -3)",
+          "Rotation": "(0, 0, 0)"
+        }
+      ],
+      "Open crates after spawn [true/false]": false,
+      "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)": 0,
+      "Own loot table": {
+        "Minimum numbers of items": 1,
+        "Maximum numbers of items": 2,
+        "List of items": [
+          {
+            "ShortName": "scrap",
+            "Minimum": 100,
+            "Maximum": 200,
+            "Chance [0.0-100.0]": 50.0,
+            "Is this a blueprint? [true/false]": false,
+            "SkinID (0 - default)": 0,
+            "Name (empty - default)": ""
+          }
+        ]
+      }
+    }
+  ],
+  "Sedan Configurations": [
+    {
+      "Name": "sedan_1",
+      "HP": 500.0,
+      "Location of all NPCs": [
+        {
+          "Position": "(2, 0, 2)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(-2, 0, 2)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(2, 0, -2)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(-2, 0, -2)",
+          "Rotation": "(0, 0, 0)"
+        }
+      ]
+    }
+  ],
+  "Truck Configurations": [
+    {
+      "Name": "truck_1",
+      "HP": 0.0,
+      "Scale damage": 0.5,
+      "Modules": [
+        "vehicle.1mod.engine",
+        "vehicle.1mod.cockpit.armored",
+        "vehicle.1mod.passengers.armored",
+        "vehicle.1mod.flatbed"
+      ],
+      "Location of NPCs": [
+        {
+          "Position": "(2, 0, 2)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(-2, 0, 2)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(2, 0, -2)",
+          "Rotation": "(0, 0, 0)"
+        },
+        {
+          "Position": "(-2, 0, -2)",
+          "Rotation": "(0, 0, 0)"
+        }
+      ],
+      "The crate can be opened if other vehicles are not destroyed": false,
+      "Time to unlock the crates [sec.]": 10.0,
+      "Location of the locked crate": {
+        "Position": "(0, 0.65, -2.35)",
+        "Rotation": "(0, 180, 0)"
+      },
+      "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)": 0,
+      "Own loot table": {
+        "Minimum numbers of items": 1,
+        "Maximum numbers of items": 2,
+        "List of items": [
+          {
+            "ShortName": "scrap",
+            "Minimum": 100,
+            "Maximum": 200,
+            "Chance [0.0-100.0]": 50.0,
+            "Is this a blueprint? [true/false]": false,
+            "SkinID (0 - default)": 0,
+            "Name (empty - default)": ""
+          }
+        ]
+      }
+    }
+  ],
+  "Heli Configurations": [
+    {
+      "Name": "heli_1",
+      "HP": 10000.0,
+      "HP of the main rotor": 750.0,
+      "HP of tail rotor": 375.0,
+      "Numbers of crates": 3,
+      "Flying height": 50.0,
+      "Bullet speed": 250.0,
+      "Bullet Damage": 20.0,
+      "Speed": 25.0,
+      "Open crates after spawn [true/false]": false,
+      "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)": 0,
+      "Own loot table": {
+        "Minimum numbers of items": 1,
+        "Maximum numbers of items": 2,
+        "List of items": [
+          {
+            "ShortName": "scrap",
+            "Minimum": 100,
+            "Maximum": 200,
+            "Chance [0.0-100.0]": 50.0,
+            "Is this a blueprint? [true/false]": false,
+            "SkinID (0 - default)": 0,
+            "Name (empty - default)": ""
+          }
+        ]
+      }
+    }
+  ],
+  "NPC Configurations": {
+    "Name": "ConvoyNPC",
+    "Health": 200.0,
+    "Roam Range": 5.0,
+    "Chase Range": 110.0,
+    "Attack Range Multiplier": 1.0,
+    "Sense Range": 60.0,
+    "Memory duration [sec.]": 60.0,
+    "Scale damage": 1.0,
+    "Aim Cone Scale": 1.0,
+    "Detect the target only in the NPC's viewing vision cone?": false,
+    "Vision Cone": 135.0,
+    "Speed": 7.5,
+    "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot; 3 - CustomLoot)": 0,
+    "Wear items": [
+      {
+        "ShortName": "metal.plate.torso",
+        "skinID (0 - default)": 1988476232
+      },
+      {
+        "ShortName": "riot.helmet",
+        "skinID (0 - default)": 1988478091
+      },
+      {
+        "ShortName": "pants",
+        "skinID (0 - default)": 1582399729
+      },
+      {
+        "ShortName": "tshirt",
+        "skinID (0 - default)": 1582403431
+      },
+      {
+        "ShortName": "shoes.boots",
+        "skinID (0 - default)": 0
+      }
+    ],
+    "Belt items": [
+      {
+        "ShortName": "rifle.lr300",
+        "Amount": 1,
+        "skinID (0 - default)": 0,
+        "Mods": [
+          "weapon.mod.flashlight",
+          "weapon.mod.holosight"
+        ]
+      },
+      {
+        "ShortName": "syringe.medical",
+        "Amount": 10,
+        "skinID (0 - default)": 0,
+        "Mods": []
+      },
+      {
+        "ShortName": "grenade.f1",
+        "Amount": 10,
+        "skinID (0 - default)": 0,
+        "Mods": []
+      }
+    ],
+    "Kits": [],
+    "Own loot table": {
+      "Minimum numbers of items": 2,
+      "Maximum numbers of items": 4,
+      "List of items": [
+        {
+          "ShortName": "rifle.semiauto",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.09,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "shotgun.pump",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.09,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "pistol.semiauto",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.09,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "largemedkit",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.1,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "smg.2",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.1,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "pistol.python",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.1,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "smg.thompson",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.1,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "shotgun.waterpipe",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.2,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "shotgun.double",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.2,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.rifle.explosive",
+          "Minimum": 8,
+          "Maximum": 8,
+          "Chance [0.0-100.0]": 0.2,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "pistol.revolver",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 0.2,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.rifle.hv",
+          "Minimum": 10,
+          "Maximum": 10,
+          "Chance [0.0-100.0]": 0.2,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.rifle.incendiary",
+          "Minimum": 8,
+          "Maximum": 8,
+          "Chance [0.0-100.0]": 0.5,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.pistol.hv",
+          "Minimum": 10,
+          "Maximum": 10,
+          "Chance [0.0-100.0]": 0.5,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.pistol.fire",
+          "Minimum": 10,
+          "Maximum": 10,
+          "Chance [0.0-100.0]": 1.0,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.shotgun.slug",
+          "Minimum": 4,
+          "Maximum": 8,
+          "Chance [0.0-100.0]": 5.0,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.shotgun.fire",
+          "Minimum": 4,
+          "Maximum": 14,
+          "Chance [0.0-100.0]": 5.0,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.shotgun",
+          "Minimum": 6,
+          "Maximum": 12,
+          "Chance [0.0-100.0]": 8.0,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "bandage",
+          "Minimum": 1,
+          "Maximum": 1,
+          "Chance [0.0-100.0]": 17.0,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "syringe.medical",
+          "Minimum": 1,
+          "Maximum": 2,
+          "Chance [0.0-100.0]": 34.0,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.rifle",
+          "Minimum": 12,
+          "Maximum": 36,
+          "Chance [0.0-100.0]": 51.0,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        },
+        {
+          "ShortName": "ammo.pistol",
+          "Minimum": 15,
+          "Maximum": 45,
+          "Chance [0.0-100.0]": 52.0,
+          "Is this a blueprint? [true/false]": false,
+          "SkinID (0 - default)": 0,
+          "Name (empty - default)": ""
+        }
+      ]
+    }
+  }
+}

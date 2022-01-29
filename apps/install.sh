@@ -85,4 +85,4 @@ wget https://github.com/gorcon/rcon-cli/releases/download/v0.9.1/rcon-0.9.1-amd6
     mv rcon-0.9.1-amd64_linux/rcon ${HOME}/rcon
     rm -rf rcon-0.9.1-amd64_linux*
 
-sudo apt install npm nodejs
+sudo apt install npm nodejs mysql-client
