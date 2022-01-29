@@ -14,14 +14,14 @@ if (!isset($_SESSION['steamid'])) {
       $discordid = $_SESSION['user_id'];
       $steamid = $_SESSION['steamid'];
       echo "
-          <div class=\"card\" style=\"width: 18rem;\">
-      echo "<div class=\"card-body\">";
-      echo "<h5 class=\"card-title\">$profile_name&lsquo;s profile.</h5>";
-      echo "<p class=\"card-text\">DiscordID: $discordid<br>";
-      echo "<p class=\"card-text\">SteamID: $steamid</p>";
-      // echo "<a href=\"#\" class=\"btn btn-primary\">Go somewhere</a>";
-      echo "</div>";
-      echo "</div>";
+      <div class=\"card\" style=\"width: 18rem;\">
+        <div class=\"card-body\">
+          <h5 class=\"card-title\">$profile_name&lsquo;s profile.</h5>
+          <p class=\"card-text\">
+          DiscordID: $discordid<br>
+          SteamID: $steamid</p>
+        </div>
+      </div>";
     } else {
       echo "</p><p class=\"bg-danger\">Can't find Discord user</p>";
     }
