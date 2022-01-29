@@ -62,7 +62,7 @@ echo "Sync repo for bots server"
       --exclude "servers/*" \
       --include "servers/bots/*" \
       ${S3_REPO} ${HOME}/solidrust.net | tee -a ${LOGS}
-
+mkdir -p ${HOME}/run/srt-link-bot
 cp -R ${HOME}/solidrust.net/apps/srt-link-bot ${HOME}/run/srt-link-bot
 
 # Instal RCON CLI
