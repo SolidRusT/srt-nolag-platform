@@ -1,17 +1,19 @@
 <?php include 'nav_bar.php';?>
 <?php
 // Create connection to XPerience
-$db_name = "XPerience";
-$db_conn = "mysql:host=$db_host;dbname=$db_name";
-$xpstatsdb = new PDO($db_conn, $user, $pass);
+$dsn = "mysql:host=$db_host;dbname=XPerience";
+$xpstatsdb = new PDO($dsn, $user, $pass);
+$xpstatsdb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 // Check connection
-if ($xpstatsdb->connect_error) {
-  die("Connection failed: " . $database->connect_error);
+if(!empty($displayname)){
+  $query = "SELECT displayname, level, experience, status  FROM XPerience;";
+  $data = [$displayname,$level,$experience,$status];
+  $dbc->prepare($query)->execute($data);
+  echo "Thank you. The record has been sent successfully.<br><br>";}
+else{
+  echo '<h1>Please use the contact form or don\'t leave an empty field!</h1>';
 }
 // Get player list
-$sql = "SELECT displayname, level, experience, status  FROM XPerience";
-$result = $xpstatsdb->query($sql);
-
 if ($result->num_rows > 0) {
   // output data of each row
   while($row = $result->fetch_assoc()) {
