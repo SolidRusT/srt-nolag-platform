@@ -19,7 +19,7 @@ require 'main.conf.php';
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">	
     <style type="text/css">
     body {
-        background-image: url(images/SR-Demo-Loot-1.PNG);
+        background-image: url(images/SR-Demo-Vehicles-1.PNG);
     }
     </style>
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188473063-1"></script>
