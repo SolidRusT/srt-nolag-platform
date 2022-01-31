@@ -4,21 +4,28 @@
 $dsn = "mysql:host=$db_host;dbname=XPerience";
 $xpstatsdb = new PDO($dsn, $user, $pass);
 $xpstatsdb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-$query = "SELECT displayname, level, experience, status  FROM XPerience;";
-$data = [$displayname,$level,$experience,$status];
-//$xpstats->prepare($query)->execute($data);
-$xpstats = $xpstatsdb->query($query);
-// Get player list
-if ($xpstats->num_rows > 0) {
-  // output data of each row
-  while($row = $xpstats->fetch_assoc()) {
-    echo "Player: " . $row["displayname"]. " - Level: " . $row["level"]. " " . $row["experience"]. " - Status: " . $row["status"]. "<br>";
-  }
-} else {
-  echo "0 results";
+// Get player data
+$query = $xpstatsdb->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,100");
+// print a nice table
+echo "<table border = '2'>
+  <tr>
+  <th>Level</th>
+  <th>Player</th>
+  <th>XP</th>
+  <th>Status</th>
+  </tr>";
+while ($row = $query->fetch()) {
+  echo "<tr>";
+  echo "<td>" . $row['level'] . "</td>";
+  echo "<td>" . $row['displayname'] ."</td>";
+  echo "<td>" . $row['experience'] . "</td>";
+  echo "<td>" . $row['status'] . "</td>";
+  echo "</tr>";
 }
-// Close the DB
-$xpstatsdb->close();
+echo "</table>";
+// show sql version
+$sqlver = $xpstatsdb->query("SELECT VERSION()");
+$version = $sqlver->fetch();
+echo $version[0] . PHP_EOL;
 ?>
 <?php include 'footer.php';?>
