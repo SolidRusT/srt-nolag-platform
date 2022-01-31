@@ -1,2 +1,3 @@
 # SolidRusT defaults
-45 *    * * *   admin   /bin/sh -c /root/solidrust.net/defaults/bots/45_logrotate.sh
+45 *    * * *   ubuntu   /bin/sh -c /home/ubuntu/solidrust.net/defaults/bots/45_logrotate.sh
+*/2 *    * * *   ubuntu   /bin/sh -c /home/ubuntu/solidrust.net/defaults/bots/22_update_global_player_list.sh

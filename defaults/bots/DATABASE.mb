@@ -1,0 +1,13 @@
+```sql
+create database global_online;
+use global_online;
+CREATE TABLE global_online.NewTable (
+	id BIGINT auto_increment NOT NULL,
+	steamID BIGINT NOT NULL,
+	server varchar(100) NOT NULL,
+	ping INT NULL
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci;
+```

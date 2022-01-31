@@ -26,7 +26,7 @@ case ${SRT} in
     ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@web.solidrust.net
     ;;
   bots)
-    ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@bots.solidrust.net
+    ssh ubuntu@10.42.69.120
     ;;
   *)
     if [ -z ${SRT} ]; then

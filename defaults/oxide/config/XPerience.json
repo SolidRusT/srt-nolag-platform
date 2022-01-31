@@ -317,7 +317,9 @@
     "pointcoststart": 1,
     "costmultiplier": 1,
     "fishamountincrease": 1.5,
-    "itemamountincrease": 0.0
+    "itemamountincrease": 0.0,
+    "oxygenreduction": 0.05,
+    "oxygentankreduction": 0.05
   },
   "Crafter Skill": {
     "maxlvl": 10,
