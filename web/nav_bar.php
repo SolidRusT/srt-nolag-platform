@@ -30,7 +30,7 @@ include 'functions.php';
         <li class="nav-item"><a class="nav-link" href="https://discord.solidrust.net">Discord</a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Shop</a></li>
         <li class="nav-item"><a class="nav-link" href="https://steamcommunity.com/id/solidrust">Community</a></li>
-        <li class="nav-item"><a class="nav-link" href="/players">Scoreboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="/scoreboard">Scoreboard</a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Gallery</a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Help</a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Report</a></li>

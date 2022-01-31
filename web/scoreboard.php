@@ -1,26 +1,24 @@
+<?php include 'nav_bar.php';?>
 <?php
-$servername = "data";
-$username = "username";
-$password = "password";
-$dbname = "myDB";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+// Create connection to XPerience
+$db = "XPerience"
+$conn = new mysqli($db_host, $user, $pass, $db);
 // Check connection
 if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
-
-$sql = "SELECT id, firstname, lastname FROM MyGuests";
+// Get player list
+$sql = "SELECT displayname, level, experience, status  FROM XPerience";
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
   // output data of each row
   while($row = $result->fetch_assoc()) {
-    echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. "<br>";
+    echo "Player: " . $row["displayname"]. " - Level: " . $row["level"]. " " . $row["experience"]. " - Status: " . $row["status"]. "<br>";
   }
 } else {
   echo "0 results";
 }
 $conn->close();
 ?>
+<?php include 'footer.php';?>
