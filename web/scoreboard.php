@@ -7,8 +7,8 @@ $xpstatsdb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 // Get player data
 $query = $xpstatsdb->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,100");
 // print a nice table
-echo "<table border = '2'>
-  <tr>
+echo "<table style=\"background-color:#FFFFE0;\" border = '2'>
+  <tr style=\"background-color:#BDB76B;color:#ffffff;\">
   <th>Level</th>
   <th>Player</th>
   <th>XP</th>
@@ -18,12 +18,12 @@ echo "<table border = '2'>
   </tr>";
 while ($row = $query->fetch()) {
   echo "<tr>";
-  echo "<td>" . $row['level'] . "</td>";
-  echo "<td>" . $row['displayname'] ."</td>";
-  echo "<td>" . $row['experience'] . "</td>";
-  echo "<td>" . $row['statpoint'] . "</td>";
-  echo "<td>" . $row['skillpoint'] . "</td>";
-  echo "<td>" . $row['Status'] . "</td>";
+  echo "<td align=\"right\">" . $row['level'] . "</td>";
+  echo "<td align=\"left\">" . $row['displayname'] ."</td>";
+  echo "<td align=\"left\">" . $row['experience'] . "</td>";
+  echo "<td align=\"right\">" . $row['statpoint'] . "</td>";
+  echo "<td align=\"right\">" . $row['skillpoint'] . "</td>";
+  echo "<td align=\"center\">" . $row['Status'] . "</td>";
   echo "</tr>";
 }
 echo "</table>";
