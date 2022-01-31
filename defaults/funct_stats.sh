@@ -13,30 +13,35 @@ function global_online() {
       echo "$player $server" >> ${GLOBAL_ONLINE}
     done
   done
+  # Calculate total number of online players
   GLOBAL_ONLINE_PLAYER_COUNT=$(cat ${GLOBAL_ONLINE} | wc -l | tee ${GLOBAL_ONLINE}.count)
   echo "Total of: ${GLOBAL_ONLINE_PLAYER_COUNT} players online."
+  # Update list of player roles
+  echo " - Collecting player roles..."
   mysql -u ${SQL_USER} --password=${SQL_PASS} -h ${SQL_HOST} -D solidrust_lcy -ss -e  \
     'SELECT steamid, groupname FROM permissiongroupsync' > ${GLOBAL_ONLINE}.player_roles
-  cat ${GLOBAL_ONLINE}
+  # XPerience -> XPerience
+  echo " - Collecting player XP Stats..."
+  mysql -u ${SQL_USER} --password=${SQL_PASS} -h ${SQL_HOST} -D XPerience -ss -e  \
+    'SELECT steamid, level, experience, status  FROM XPerience' > ${GLOBAL_ONLINE}.player_xpstats
+  # RustPlayers -> west
+  echo " - Collecting player playtime statistics..."
+  mysql -u ${SQL_USER} --password=${SQL_PASS} -h ${SQL_HOST} -D RustPlayers -ss -e  \
+    'SELECT name, steamid, `Last Seen` FROM west' > ${GLOBAL_ONLINE}.player_playtime
+  # srt_web_auth -> users
+  echo " - Collecting player registration data..."
+  mysql -u ${SQL_USER} --password=${SQL_PASS} -h ${SQL_HOST} -D srt_web_auth -ss -e  \
+    'SELECT steam_id, nitro, timestamp FROM users' > ${GLOBAL_ONLINE}.player_registration
 }
+
+# epoch to human
+# date -d @1643253457
 
 echo "SRT Statistics Functions initialized" | tee -a ${LOGS}
 
 
-# last update
-# select * from west WHERE userid = "76561198024774727";
-# date -d @1643253457
 
-# The last time progress was made
-# RustPlayers -> west
-#SELECT name, steamid, `Last Seen` FROM west WHERE steamid = "76561198024774727";
-# srt_web_auth -> users
-#SELECT steam_id, nitro, timestamp FROM users WHERE steam_id = "76561198024774727";
-# XPerience -> XPerience
-#SELECT steamid, level, experience, status  FROM XPerience WHERE steamid = "76561198024774727";
-# solidrust_lcy -> permissiongroupsync
-#SELECT steamid, groupname FROM permissiongroupsync WHERE steamid = "76561198024774727";
 
-# one-liner
-#mysql -u ${SQL_USER} --password=${SQL_PASS} -h ${SQL_HOST} -D solidrust_lcy -ss -e \
-#  'SELECT steamid, groupname FROM permissiongroupsync WHERE steamid = "76561198024774727"'
+
+
+
