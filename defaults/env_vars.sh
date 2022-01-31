@@ -52,5 +52,9 @@ export LEVEL="Procedural Map"  # ignored if using custom maps
 export CUSTOM_MAP="disabled" # enabled / disabled
 export CUSTOM_MAP_URL="" #  only if CUSTOM_MAP is "enabled"
 
+# MySQL connection
+export SQL_HOST="data.solidrust.net"
+export SQL_USER="srt_sl_lcy"
+export SQL_PASS="lcy_402"
 # end of env_vars
 echo "++++++= Initialized SolidRusT =++++++" | tee -a ${LOGS}

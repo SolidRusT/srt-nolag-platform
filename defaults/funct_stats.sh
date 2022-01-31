@@ -15,6 +15,8 @@ function global_online() {
   done
   GLOBAL_ONLINE_PLAYER_COUNT=$(cat ${GLOBAL_ONLINE} | wc -l | tee ${GLOBAL_ONLINE}.count)
   echo "Total of: ${GLOBAL_ONLINE_PLAYER_COUNT} players online."
+  mysql -u ${SQL_USER} --password=${SQL_PASS} -h ${SQL_HOST} -D solidrust_lcy -ss -e  \
+    'SELECT steamid, groupname FROM permissiongroupsync' > ${GLOBAL_ONLINE}.player_roles
   cat ${GLOBAL_ONLINE}
 }
 
@@ -36,5 +38,5 @@ echo "SRT Statistics Functions initialized" | tee -a ${LOGS}
 #SELECT steamid, groupname FROM permissiongroupsync WHERE steamid = "76561198024774727";
 
 # one-liner
-#mysql -u srt_sl_lcy --password=lcy_402 -h data.solidrust.net -D solidrust_lcy -ss -e \
+#mysql -u ${SQL_USER} --password=${SQL_PASS} -h ${SQL_HOST} -D solidrust_lcy -ss -e \
 #  'SELECT steamid, groupname FROM permissiongroupsync WHERE steamid = "76561198024774727"'
