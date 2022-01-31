@@ -1,10 +1,7 @@
 <?php include 'nav_bar.php';?>
 <?php
 // Create connection to XPerience
-$db = "XPerience"
-$user = "srt_sl_lcy";
-$pass = "lcy_402";
-$db_host = "data.solidrust.net";
+$db = "XPerience";
 $details = "mysql:dbname=$db;host=$db_host";
 $database = new PDO($details, $user, $pass);
 // Check connection
