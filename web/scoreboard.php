@@ -9,7 +9,7 @@ $query = $xpstatsdb->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,
 // print a nice table
 echo "<table style=\"background-color:#FFFFE0;\" border = '2'>
   <tr style=\"background-color:#BDB76B;color:#ffffff;\">
-  <th>Level</th>
+  <th>Level &nbsp;&nbsp;</th>
   <th>Players(Top 100)</th>
   <th>XP</th>
   <th>Stats</th>
@@ -18,7 +18,7 @@ echo "<table style=\"background-color:#FFFFE0;\" border = '2'>
   </tr>";
 while ($row = $query->fetch()) {
   echo "<tr>";
-  echo "<td align=\"right\">" . $row['level'] . "&nbsp;&nbsp;</td>";
+  echo "<td align=\"right\">" . $row['level'] . "</td>";
   echo "<td align=\"left\">" . $row['displayname'] ."</td>";
   echo "<td align=\"left\">" . $row['experience'] . "</td>";
   echo "<td align=\"right\">" . $row['statpoint'] . "</td>";
