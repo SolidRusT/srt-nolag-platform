@@ -18,7 +18,7 @@ echo "<table style=\"background-color:#FFFFE0;\" border = '2'>
   </tr>";
 while ($row = $query->fetch()) {
   echo "<tr>";
-  echo "<td align=\"right\">" . $row['level'] . "</td>";
+  echo "<td align=\"center\">" . $row['level'] . "</td>";
   echo "<td align=\"left\">" . $row['displayname'] ."</td>";
   echo "<td align=\"left\">" . $row['experience'] . "</td>";
   echo "<td align=\"right\">" . $row['statpoint'] . "</td>";
