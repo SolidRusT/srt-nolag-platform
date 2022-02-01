@@ -35,7 +35,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               <th>XP</th>
               <th>Stats</th>
               <th>Skills</th>
-              <th>Status</th>
+              <th>Online</th>
             </tr>
           </thead>
           <tfoot>
@@ -45,7 +45,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               <th>XP</th>
               <th>Stats</th>
               <th>Skills</th>
-              <th>Status</th>
+              <th>Online</th>
             </tr>
           </tfoot>
           <tbody>
@@ -72,7 +72,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               <th>XP</th>
               <th>Stats</th>
               <th>Skills</th>
-              <th>Status</th>
+              <th>Online</th>
             </tr>
           </thead>
           <tfoot>
@@ -82,7 +82,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               <th>XP</th>
               <th>Stats</th>
               <th>Skills</th>
-              <th>Status</th>
+              <th>Online</th>
             </tr>
           </tfoot>
           <tbody>
@@ -109,7 +109,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               <th>XP</th>
               <th>Stats</th>
               <th>Skills</th>
-              <th>Status</th>
+              <th>Online</th>
             </tr>
           </thead>
           <tfoot>
@@ -119,7 +119,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               <th>XP</th>
               <th>Stats</th>
               <th>Skills</th>
-              <th>Status</th>
+              <th>Online</th>
             </tr>
           </tfoot>
           <tbody>
