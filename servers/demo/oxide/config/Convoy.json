@@ -1,7 +1,7 @@
 {
   "Version": "1.1.5",
   "Prefix of chat messages": "[Convoy]",
-  "Use a chat? [true/false]": true,
+  "Use a chat? [true/false]": false,
   "GUI Announcements setting": {
     "Do you use the GUI Announcements? [true/false]": false,
     "Banner color": "Grey",
@@ -32,9 +32,9 @@
   "Maximum time between events [sec.]": 3600,
   "Time before the starting of the event after receiving a chat message [sec.]": 60,
   "Notification time until the end of the event [sec.] ": 60,
-  "Duration of the event [sec.]": 1700,
+  "Duration of the event [sec.]": 1,
   "The time for which the convoy stops moving after receiving damage [sec.]": 120,
-  "The convoy will not attack first [true/false]": true,
+  "The convoy will not attack first [true/false]": false,
   "Remove obstacles in front of the convoy [true/false]": true,
   "List of obstacles": [
     "minicopter.entity",
@@ -55,14 +55,14 @@
     "loot-barrel-1",
     "oil_barrel"
   ],
-  "If an NPC has been killed, it will not spawn at the next stop of the convoy [true/false]": false,
+  "If an NPC has been killed, it will not spawn at the next stop of the convoy [true/false]": true,
   "Blocked roads (command /convoyroadblock)": [],
   "Convoy Presets": [
     {
       "Name": "standart",
-      "Automatic startup": true,
-      "Probability of a preset [0.0-100.0]": 100.0,
-      "Enable the helicopter": true,
+      "Automatic startup": false,
+      "Probability of a preset [0.0-100.0]": 0.0,
+      "Enable the helicopter": false,
       "The number of Bradleys ahead the truck": 1,
       "Number of Sedans ahead the truck": 1,
       "Number of Sedans behind the truck": 1,
@@ -74,7 +74,7 @@
     }
   ],
   "Marker Setting": {
-    "Do you use the Marker? [true/false]": true,
+    "Do you use the Marker? [true/false]": false,
     "Radius": 0.2,
     "Alpha": 0.6,
     "Marker color": {

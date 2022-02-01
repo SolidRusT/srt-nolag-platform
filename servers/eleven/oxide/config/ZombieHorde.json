@@ -1,20 +1,20 @@
 {
   "Horde Options": {
-    "Amount of zombies to spawn when a new horde is created": 1,
-    "Maximum amount of spawned zombies per horde": 6,
-    "Maximum amount of hordes at any given time": 5,
+    "Amount of zombies to spawn when a new horde is created": 0,
+    "Maximum amount of spawned zombies per horde": 0,
+    "Maximum amount of hordes at any given time": 0,
     "Amount of time from when a horde is destroyed until a new horde is created (seconds)": 900,
     "Amount of time before a horde grows in size": 300,
-    "Add a zombie to the horde when a horde member kills a player": true,
-    "Merge hordes together if they collide": true,
+    "Add a zombie to the horde when a horde member kills a player": false,
+    "Merge hordes together if they collide": false,
     "Spawn system (SpawnsDatabase, Random)": "Random",
     "Spawn file (only required when using SpawnsDatabase)": "",
     "Amount of time a player needs to be outside of a zombies vision before it forgets about them": 10.0,
-    "Force all hordes to roam locally": false,
+    "Force all hordes to roam locally": true,
     "Local roam distance": 150.0,
-    "Restrict chase distance for local hordes (1.5x the maximum roam distance for that horde)": false,
-    "Use horde profiles for randomly spawned hordes": true,
-    "Sense nearby gunshots and explosions": true
+    "Restrict chase distance for local hordes (1.5x the maximum roam distance for that horde)": true,
+    "Use horde profiles for randomly spawned hordes": false,
+    "Sense nearby gunshots and explosions": false
   },
   "Horde Member Options": {
     "Can target animals": true,
@@ -398,7 +398,7 @@
   },
   "Monument Spawn Options": {
     "Airfield": {
-      "Enable spawns at this monument": true,
+      "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 85.0,
       "Maximum amount of members in this horde": 10,
       "Horde profile": "Profile1"
@@ -428,7 +428,7 @@
       "Horde profile": "Profile1"
     },
     "Powerplant": {
-      "Enable spawns at this monument": true,
+      "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 120.0,
       "Maximum amount of members in this horde": 10,
       "Horde profile": "Profile1"
@@ -458,7 +458,7 @@
       "Horde profile": "Profile1"
     },
     "LaunchSite": {
-      "Enable spawns at this monument": true,
+      "Enable spawns at this monument": false,
       "Distance that this horde can roam from their initial spawn point": 140.0,
       "Maximum amount of members in this horde": 10,
       "Horde profile": "Profile1"
@@ -507,10 +507,10 @@
     }
   },
   "Timed Spawn Options": {
-    "Only allows spawns during the set time period": false,
-    "Despawn hordes outside of the set time period": false,
-    "Start time (0.0 - 24.0)": 18.0,
-    "End time (0.0 - 24.0)": 6.0
+    "Only allows spawns during the set time period": true,
+    "Despawn hordes outside of the set time period": true,
+    "Start time (0.0 - 24.0)": 0.0,
+    "End time (0.0 - 24.0)": 1.0
   },
   "Horde Profiles (profile name, list of applicable loadouts)": {
     "Profile1": [
