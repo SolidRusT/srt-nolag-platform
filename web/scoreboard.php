@@ -10,7 +10,7 @@ $xpstatsdb_eleven->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $xpstatsdb_demo = new PDO($demo_dsn, $user, $pass);
 $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 ?>
-<p>&nbsp;</p>
+<p>
 <table class="table table-dark">
   <thead>
     <tr>
@@ -28,7 +28,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   </tfoot>
   <tbody>
     <tr>
-      <td><table class="table table-dark table-striped">
+      <td><table class="table table-light table-striped">
           <thead>
             <tr>
               <th>Level &nbsp;&nbsp;</th>
@@ -65,7 +65,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             ?>
           </tbody>
         </table></td>
-      <td><table class="table table-dark table-striped">
+      <td><table class="table table-light table-striped">
           <thead>
             <tr>
               <th>Level &nbsp;&nbsp;</th>
@@ -102,7 +102,7 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             ?>
           </tbody>
         </table></td>
-      <td><table class="table table-dark table-striped">
+      <td><table class="table table-light table-striped">
           <thead>
             <tr>
               <th>Level &nbsp;&nbsp;</th>
@@ -143,4 +143,5 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     </tr>
   </tbody>
 </table>
+</p>
 <?php include 'footer.php';?>
