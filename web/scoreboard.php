@@ -10,6 +10,7 @@ $xpstatsdb_eleven->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $xpstatsdb_demo = new PDO($demo_dsn, $user, $pass);
 $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 ?>
+<p>&nbsp;</p>
 <table class="table table-dark">
   <thead>
     <tr>
