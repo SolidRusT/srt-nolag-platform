@@ -3,29 +3,34 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Facepunch;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
 using UnityEngine;
-using WebSocketSharp;
 using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Statistics", "Mevent", "1.0.11")]
+    [Info("Statistics", "Mevent", "1.0.12")]
     public class Statistics : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, PlayerDatabase;
+        [PluginReference] private Plugin ImageLibrary, PlayerDatabase, Notify, UINotify;
 
+        private static Statistics _instance;
+        
         private const string Layer = "UI.Statistics";
 
         private const string UsePermission = "statistics.use";
 
         private const string HidePermission = "statistics.hide";
+
+        private readonly Dictionary<int, AwardItem> _awardItems = new Dictionary<int, AwardItem>();
 
         #endregion
 
@@ -35,6 +40,9 @@ namespace Oxide.Plugins
 
         private class Configuration
         {
+            [JsonProperty(PropertyName = "Work with Notify?")]
+            public bool UseNotify = true;
+
             [JsonProperty(PropertyName = "Statistics Commands",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public string[] StatisticsCommands = { "stats", "statistics" };
@@ -49,6 +57,12 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Access by permission (statistics.use)")]
             public bool AccessByPerm;
 
+            [JsonProperty(PropertyName = "Open player profile by clicking on leaderboard?")]
+            public bool ProfileByBoard = true;
+
+            [JsonProperty(PropertyName = "Permission to open player profile when clicked on leaderboard? (ex: statistics.profile)")]
+            public string ProfileBoardPerm = string.Empty;
+            
             [JsonProperty(PropertyName = "Weapons",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> Weapons = new List<string>
@@ -105,6 +119,375 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "PlayerDatabase")]
             public PlayerDatabaseConf PlayerDatabase = new PlayerDatabaseConf(false, "Statistics");
+
+            [JsonProperty(PropertyName = "Use Awards?")]
+            public bool UseAwards = false;
+            
+            [JsonProperty(PropertyName = "Awards (top position - award)", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<int, AwardConf> Awards = new Dictionary<int, AwardConf>
+            {
+                [1] = new AwardConf()
+                {
+                    Amount = 1,
+                    Items = new List<AwardItem>
+                    {
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 1,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "wood",
+                            Skin = 0,
+                            Amount = 20000,
+                            Chance = 50
+                        },
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 2,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "stones",
+                            Skin = 0,
+                            Amount = 15000,
+                            Chance = 50
+                        },
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 3,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "leather",
+                            Skin = 0,
+                            Amount = 2400,
+                            Chance = 50
+                        }
+                    }
+                },
+                [2] = new AwardConf()
+                {
+                    Amount = 1,
+                    Items = new List<AwardItem>
+                    {
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 4,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "wood",
+                            Skin = 0,
+                            Amount = 15000,
+                            Chance = 50
+                        },
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 5,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "stones",
+                            Skin = 0,
+                            Amount = 10000,
+                            Chance = 50
+                        },
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 6,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "leather",
+                            Skin = 0,
+                            Amount = 2000,
+                            Chance = 50
+                        }
+                    }
+                },
+                [3] = new AwardConf()
+                {
+                    Amount = 1,
+                    Items = new List<AwardItem>
+                    {
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 7,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "wood",
+                            Skin = 0,
+                            Amount = 1000,
+                            Chance = 50
+                        },
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 8,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "stones",
+                            Skin = 0,
+                            Amount = 5000,
+                            Chance = 50
+                        },
+                        new AwardItem()
+                        {
+                            Type = ItemType.Item,
+                            ID = 9,
+                            Image = string.Empty,
+                            Title = string.Empty,
+                            Command = string.Empty,
+                            Plugin = new PluginItem(),
+                            DisplayName = string.Empty,
+                            ShortName = "leather",
+                            Skin = 0,
+                            Amount = 1500,
+                            Chance = 50
+                        }
+                    }
+                }
+            };
+        }
+
+        private class AwardConf
+        {
+            [JsonProperty(PropertyName = "Amount of items given out")]
+            public int Amount;
+            
+            [JsonProperty(PropertyName = "Items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<AwardItem> Items;
+
+            public List<AwardData> GetItems()
+            {
+                var items = new List<AwardItem>();
+                
+                for (var i = 0; i < Amount; i++)
+                {
+                    AwardItem item = null;
+                    var iteration = 0;
+                    do
+                    {
+                        iteration++;
+
+                        var randomItem = Items.GetRandom();
+                        if (items.Contains(randomItem))
+                            continue;
+
+                        if (randomItem.Chance < 1 || randomItem.Chance > 100)
+                            continue;
+
+                        if (Random.Range(0f, 100f) <= randomItem.Chance)
+                            item = randomItem;
+                    } while (item == null && iteration < 1000);
+
+                    if (item != null)
+                        items.Add(item);
+                }
+
+                return items.Select(x => new AwardData(x)).ToList();
+            }
+        }
+
+        private enum ItemType
+        {
+            Item,
+            Command,
+            Plugin
+        }
+
+        private class AwardItem
+        {
+            [JsonProperty(PropertyName = "Type")]
+            [JsonConverter(typeof(StringEnumConverter))]
+            public ItemType Type;
+
+            [JsonProperty(PropertyName = "ID")] public int ID;
+
+            [JsonProperty(PropertyName = "Image")] public string Image;
+
+            [JsonProperty(PropertyName = "Title")] public string Title;
+
+            [JsonProperty(PropertyName = "Command (%steamid%)")]
+            public string Command;
+
+            [JsonProperty(PropertyName = "Plugin")]
+            public PluginItem Plugin;
+
+            [JsonProperty(PropertyName = "Display Name (empty - default)")]
+            public string DisplayName;
+
+            [JsonProperty(PropertyName = "ShortName")]
+            public string ShortName;
+
+            [JsonProperty(PropertyName = "Skin")] public ulong Skin;
+
+            [JsonProperty(PropertyName = "Amount")]
+            public int Amount;
+            
+            [JsonProperty(PropertyName = "Chance")]
+            public float Chance;
+            
+            [JsonIgnore] private string _publicTitle;
+
+            [JsonIgnore]
+            public string PublicTitle
+            {
+                get
+                {
+                    if (string.IsNullOrEmpty(_publicTitle))
+                        _publicTitle = GetName();
+
+                    return _publicTitle;
+                }
+            }
+
+            private string GetName()
+            {
+                if (!string.IsNullOrEmpty(Title))
+                    return Title;
+
+                if (!string.IsNullOrEmpty(DisplayName))
+                    return DisplayName;
+
+                var def = ItemManager.FindItemDefinition(ShortName);
+                if (!string.IsNullOrEmpty(ShortName) && def != null)
+                    return def.displayName.translated;
+
+                return string.Empty;
+            }
+
+            public void Get(BasePlayer player, int count = 1)
+            {
+                switch (Type)
+                {
+                    case ItemType.Item:
+                        ToItem(player, count);
+                        break;
+                    case ItemType.Command:
+                        ToCommand(player, count);
+                        break;
+                    case ItemType.Plugin:
+                        Plugin.Get(player, count);
+                        break;
+                }
+            }
+
+            private void ToItem(BasePlayer player, int count)
+            {
+                var def = ItemManager.FindItemDefinition(ShortName);
+                if (def == null)
+                {
+                    Debug.LogError($"Error creating item with ShortName '{ShortName}'");
+                    return;
+                }
+
+                GetStacks(def, Amount * count)?.ForEach(stack =>
+                {
+                    var newItem = ItemManager.Create(def, stack, Skin);
+                    if (newItem == null)
+                    {
+                        _instance?.PrintError($"Error creating item with ShortName '{ShortName}'");
+                        return;
+                    }
+
+                    if (!string.IsNullOrEmpty(DisplayName)) newItem.name = DisplayName;
+
+                    player.GiveItem(newItem, BaseEntity.GiveItemReason.PickedUp);
+                });
+            }
+
+            private void ToCommand(BasePlayer player, int count)
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    var command = Command.Replace("\n", "|")
+                        .Replace("%steamid%", player.UserIDString, StringComparison.OrdinalIgnoreCase).Replace(
+                            "%username%",
+                            player.displayName, StringComparison.OrdinalIgnoreCase);
+
+                    foreach (var check in command.Split('|')) _instance?.Server.Command(check);
+                }
+            }
+
+            private static List<int> GetStacks(ItemDefinition item, int amount)
+            {
+                var list = Pool.GetList<int>();
+                var maxStack = item.stackable;
+
+                if (maxStack == 0) maxStack = 1;
+
+                while (amount > maxStack)
+                {
+                    amount -= maxStack;
+                    list.Add(maxStack);
+                }
+
+                list.Add(amount);
+
+                return list;
+            }
+        }
+        
+        private class PluginItem
+        {
+            [JsonProperty(PropertyName = "Hook")] public string Hook;
+
+            [JsonProperty(PropertyName = "Plugin name")]
+            public string Plugin;
+
+            [JsonProperty(PropertyName = "Amount")]
+            public int Amount;
+
+            public void Get(BasePlayer player, int count = 1)
+            {
+                var plug = _instance?.plugins.Find(Plugin);
+                if (plug == null)
+                {
+                    _instance?.PrintError($"Plugin '{Plugin}' not found !!! ");
+                    return;
+                }
+
+                switch (Plugin)
+                {
+                    case "Economics":
+                    {
+                        plug.Call(Hook, player.userID, (double)Amount * count);
+                        break;
+                    }
+                    default:
+                    {
+                        plug.Call(Hook, player.userID, Amount * count);
+                        break;
+                    }
+                }
+            }
         }
 
         private class PlayerDatabaseConf
@@ -200,6 +583,16 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Stats", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public Dictionary<string, float> Stats = new Dictionary<string, float>();
 
+            [JsonProperty(PropertyName = "Awards", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<AwardData> Awards = new List<AwardData>();
+
+            public void GiveAwards(BasePlayer player)
+            {
+                Awards.ForEach(award => award.GetItem().Get(player));
+                
+                Awards.Clear();
+            }
+            
             #region Stats
 
             [JsonIgnore]
@@ -258,6 +651,31 @@ namespace Oxide.Plugins
             #endregion
         }
 
+        private class AwardData
+        {
+            [JsonProperty(PropertyName = "ID")]
+            public int ID;
+
+            public AwardItem GetItem()
+            {
+                AwardItem item;
+                return _instance._awardItems.TryGetValue(ID, out item) ? item : null;
+            }
+            
+            #region Constructor
+
+            public AwardData()
+            {
+            }
+
+            public AwardData(AwardItem item)
+            {
+                ID = item.ID;
+            }
+
+            #endregion
+        }
+        
         private PlayerData GetPlayerData(BasePlayer player)
         {
             return GetPlayerData(player.userID);
@@ -353,7 +771,7 @@ namespace Oxide.Plugins
             var weapon = data.Stats.Where(x => _config.Weapons.Contains(x.Key))
                 .OrderByDescending(x => x.Value).FirstOrDefault().Key;
 
-            return weapon.IsNullOrEmpty() ? "NONE" : ItemManager.FindItemDefinition(weapon)?.displayName?.translated;
+            return string.IsNullOrEmpty(weapon) ? "NONE" : ItemManager.FindItemDefinition(weapon)?.displayName?.translated;
         }
 
         #endregion
@@ -364,11 +782,15 @@ namespace Oxide.Plugins
 
         private void Init()
         {
+            _instance = this;
+            
             LoadData();
         }
 
         private void OnServerInitialized()
         {
+            LoadItems();
+            
             LoadImages();
 
             if (_config.PlayerDatabase.Enabled && !PlayerDatabase)
@@ -377,11 +799,12 @@ namespace Oxide.Plugins
             foreach (var player in BasePlayer.activePlayerList)
                 OnPlayerConnected(player);
 
-            if (!permission.PermissionExists(UsePermission))
-                permission.RegisterPermission(UsePermission, this);
+            permission.RegisterPermission(UsePermission, this);
 
-            if (!permission.PermissionExists(HidePermission))
-                permission.RegisterPermission(HidePermission, this);
+            permission.RegisterPermission(HidePermission, this);
+
+            if (!string.IsNullOrEmpty(_config.ProfileBoardPerm) && !permission.PermissionExists(_config.ProfileBoardPerm))
+                permission.RegisterPermission(_config.ProfileBoardPerm, this);
 
             AddCovalenceCommand(_config.LeaderboardCommands, nameof(CmdStats));
             AddCovalenceCommand(_config.StatisticsCommands, nameof(CmdStats));
@@ -401,6 +824,7 @@ namespace Oxide.Plugins
             foreach (var player in BasePlayer.activePlayerList) CuiHelper.DestroyUi(player, Layer);
 
             _config = null;
+            _instance = null;
         }
 
         private void OnPlayerConnected(BasePlayer player)
@@ -411,10 +835,12 @@ namespace Oxide.Plugins
                 avatar => ImageLibrary?.Call("AddImage", avatar, $"avatar_{player.UserIDString}"));
 
             var data = GetPlayerData(player);
-            if (data == null || player.displayName.IsNullOrEmpty()) return;
+            if (data == null || string.IsNullOrEmpty(player.displayName)) return;
 
             data.DisplayName = player.displayName;
 
+            if (_config.UseAwards) data.GiveAwards(player);
+            
             if (_config.PlayerDatabase.Enabled) LoadStats(player);
         }
 
@@ -429,6 +855,10 @@ namespace Oxide.Plugins
 
             _playersData.Clear();
             _data.Players.Clear();
+            
+            if (_config.UseAwards) 
+                GiveAwards();
+            
             SaveData();
         }
 
@@ -577,7 +1007,7 @@ namespace Oxide.Plugins
 
             if (_config.AccessByPerm && !permission.UserHasPermission(player.UserIDString, UsePermission))
             {
-                SendReply(player, Msg(NoPermission, player.UserIDString));
+                SendNotify(player, NoPermission, 1);
                 return;
             }
 
@@ -599,6 +1029,13 @@ namespace Oxide.Plugins
                     ulong target;
                     if (!arg.HasArgs(2) || !ulong.TryParse(arg.Args[1], out target)) return;
 
+                    if (!string.IsNullOrEmpty(_config.ProfileBoardPerm) &&
+                        !player.IPlayer.HasPermission(_config.ProfileBoardPerm))
+                    {
+                        SendNotify(player, NoPermission, 1);
+                        return;
+                    }
+                    
                     ProfileUi(player, target);
                     break;
                 }
@@ -1647,7 +2084,7 @@ namespace Oxide.Plugins
                     AnchorMin = "0 0",
                     AnchorMax = "1 1"
                 },
-                Text = { Text = "" },
+                Text = {Text = ""},
                 Button =
                 {
                     Color = "0 0 0 0",
@@ -1852,20 +2289,21 @@ namespace Oxide.Plugins
                     }
                 }, Layer + $".Profile.{i}");
 
-                container.Add(new CuiButton
-                {
-                    RectTransform =
+                if (_config.ProfileByBoard)
+                    container.Add(new CuiButton
                     {
-                        AnchorMin = "0 0",
-                        AnchorMax = "1 1"
-                    },
-                    Text = { Text = "" },
-                    Button =
-                    {
-                        Color = "0 0 0 0",
-                        Command = $"UI_Stats show {check.Key}"
-                    }
-                }, Layer + $".Profile.{i}");
+                        RectTransform =
+                        {
+                            AnchorMin = "0 0",
+                            AnchorMax = "1 1"
+                        },
+                        Text = {Text = ""},
+                        Button =
+                        {
+                            Color = "0 0 0 0",
+                            Command = $"UI_Stats show {check.Key}"
+                        }
+                    }, Layer + $".Profile.{i}");
 
                 if (top > 3 && i != list.Count - 1)
                     container.Add(new CuiPanel
@@ -1876,7 +2314,7 @@ namespace Oxide.Plugins
                             OffsetMin = $"10 {ySwitch - 50f - Margin / 2f - 0.5f}",
                             OffsetMax = $"-10 {ySwitch - 50f - Margin / 2f + 0.5f}"
                         },
-                        Image = { Color = HexToCuiColor("#161617") }
+                        Image = {Color = HexToCuiColor("#161617")}
                     }, Layer + ".Main");
 
                 ySwitch = ySwitch - Margin - 50f;
@@ -1894,6 +2332,26 @@ namespace Oxide.Plugins
 
         #region Utils
 
+        private void LoadItems()
+        {
+            foreach (var item in _config.Awards.SelectMany(x => x.Value.Items)) _awardItems[item.ID] = item;
+        }
+        
+        private void GiveAwards()
+        {
+            var top = 1;
+            foreach (var check in _data.Players
+                         .Where(x => !permission.UserHasPermission(x.Key.ToString(), HidePermission))
+                         .OrderByDescending(x => x.Value.Score))
+            {
+                AwardConf award;
+                if (_config.Awards.TryGetValue(top, out award)) 
+                    check.Value.Awards.AddRange(award.GetItems());
+
+                top++;
+            }
+        }
+        
         #region Avatar
 
         private readonly Regex _regex = new Regex(@"<avatarFull><!\[CDATA\[(.*)\]\]></avatarFull>");
@@ -2123,6 +2581,24 @@ namespace Oxide.Plugins
         private string Msg(string key, string userid = null, params object[] obj)
         {
             return string.Format(lang.GetMessage(key, this, userid), obj);
+        }
+
+        private string Msg(BasePlayer player, string key, params object[] obj)
+        {
+            return string.Format(lang.GetMessage(key, this, player.UserIDString), obj);
+        }
+
+        private void SendNotify(BasePlayer player, string key, int type, params object[] obj)
+        {
+            if (_config.UseNotify && (Notify != null || UINotify != null))
+                Interface.Oxide.CallHook("SendNotify", player, type, Msg(player, key, obj));
+            else
+                Reply(player, key, obj);
+        }
+
+        private void Reply(BasePlayer player, string key, params object[] obj)
+        {
+            SendReply(player, Msg(key, player.UserIDString, obj));
         }
 
         #endregion
