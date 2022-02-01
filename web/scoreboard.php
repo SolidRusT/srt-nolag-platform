@@ -1,5 +1,4 @@
 <?php include 'nav_bar.php';
-//$nine_dsn = "mysql:host=$db_host;dbname=xpstats_nine";
 $nine_dsn = "mysql:host=$db_host;dbname=xpstats_nine";
 $eleven_dsn = "mysql:host=$db_host;dbname=xpstats_eleven";
 $demo_dsn = "mysql:host=$db_host;dbname=xpstats_demo";
