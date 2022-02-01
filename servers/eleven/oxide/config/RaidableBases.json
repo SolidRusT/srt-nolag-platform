@@ -22,8 +22,8 @@
         "Easy": 1,
         "Medium": 1,
         "Hard": 1,
-        "Expert": 1,
-        "Nightmare": 1
+        "Expert": 0,
+        "Nightmare": 0
       },
       "Chance To Automatically Spawn Each Difficulty (-1 = ignore)": {
         "Easy": -1.0,
@@ -44,17 +44,17 @@
         "Block Teams From Owning More Than One Raid": false
       },
       "Easy Raids Can Spawn On": {
-        "Monday": false,
-        "Tuesday": false,
+        "Monday": true,
+        "Tuesday": true,
         "Wednesday": true,
         "Thursday": true,
         "Friday": true,
-        "Saturday": false,
-        "Sunday": false
+        "Saturday": true,
+        "Sunday": true
       },
       "Medium Raids Can Spawn On": {
-        "Monday": false,
-        "Tuesday": false,
+        "Monday": true,
+        "Tuesday": true,
         "Wednesday": true,
         "Thursday": true,
         "Friday": true,
@@ -63,7 +63,7 @@
       },
       "Hard Raids Can Spawn On": {
         "Monday": true,
-        "Tuesday": false,
+        "Tuesday": true,
         "Wednesday": true,
         "Thursday": true,
         "Friday": true,
@@ -71,13 +71,13 @@
         "Sunday": true
       },
       "Expert Raids Can Spawn On": {
-        "Monday": true,
+        "Monday": false,
         "Tuesday": false,
         "Wednesday": false,
         "Thursday": false,
-        "Friday": true,
-        "Saturday": true,
-        "Sunday": true
+        "Friday": false,
+        "Saturday": false,
+        "Sunday": false
       },
       "Nightmare Raids Can Spawn On": {
         "Monday": false,
@@ -85,7 +85,7 @@
         "Wednesday": false,
         "Thursday": false,
         "Friday": false,
-        "Saturday": true,
+        "Saturday": false,
         "Sunday": false
       },
       "Additional Containers To Include As Boxes": [
