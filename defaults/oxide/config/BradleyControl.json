@@ -11,7 +11,7 @@
     "speed": 1.3,
     "targetsNakeds": false,
     "ammoDoesDamage": true,
-    "maxLootCrates": 3,
+    "maxLootCrates": 4,
     "customLootTables": true,
     "enableNapalm": true,
     "napamWaterRequired": 1,
