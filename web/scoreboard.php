@@ -53,11 +53,11 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               while ($row = $query->fetch()) {
                 echo "<tr>";
                 echo "<th scope=\"row\" align=\"center\">" . $row['level'] . "</th>";
-                echo "<td align=\"left\">" . $row['displayname'] ."</td>";
-                echo "<td align=\"left\">" . $row['experience'] . "</td>";
-                echo "<td align=\"right\">" . $row['statpoint'] . "</td>";
-                echo "<td align=\"right\">" . $row['skillpoint'] . "</td>";
-                echo "<td align=\"center\">" . $row['Status'] . "</td>";
+                echo "<td>" . $row['displayname'] ."</td>";
+                echo "<td>" . $row['experience'] . "</td>";
+                echo "<td>" . $row['statpoint'] . "</td>";
+                echo "<td>" . $row['skillpoint'] . "</td>";
+                echo "<td>" . $row['Status'] . "</td>";
                 echo "</tr>";
               }
             ?>
@@ -90,11 +90,11 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               while ($row = $query->fetch()) {
                 echo "<tr>";
                 echo "<th scope=\"row\" align=\"center\">" . $row['level'] . "</th>";
-                echo "<td align=\"left\">" . $row['displayname'] ."</td>";
-                echo "<td align=\"left\">" . $row['experience'] . "</td>";
-                echo "<td align=\"right\">" . $row['statpoint'] . "</td>";
-                echo "<td align=\"right\">" . $row['skillpoint'] . "</td>";
-                echo "<td align=\"center\">" . $row['Status'] . "</td>";
+                echo "<td>" . $row['displayname'] ."</td>";
+                echo "<td>" . $row['experience'] . "</td>";
+                echo "<td>" . $row['statpoint'] . "</td>";
+                echo "<td>" . $row['skillpoint'] . "</td>";
+                echo "<td>" . $row['Status'] . "</td>";
                 echo "</tr>";
               }
             ?>
@@ -127,11 +127,11 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               while ($row = $query->fetch()) {
                 echo "<tr>";
                 echo "<th scope=\"row\" align=\"center\">" . $row['level'] . "</th>";
-                echo "<td align=\"left\">" . $row['displayname'] ."</td>";
-                echo "<td align=\"left\">" . $row['experience'] . "</td>";
-                echo "<td align=\"right\">" . $row['statpoint'] . "</td>";
-                echo "<td align=\"right\">" . $row['skillpoint'] . "</td>";
-                echo "<td align=\"center\">" . $row['Status'] . "</td>";
+                echo "<td>" . $row['displayname'] ."</td>";
+                echo "<td>" . $row['experience'] . "</td>";
+                echo "<td>" . $row['statpoint'] . "</td>";
+                echo "<td>" . $row['skillpoint'] . "</td>";
+                echo "<td>" . $row['Status'] . "</td>";
                 echo "</tr>";
               }
             ?>
