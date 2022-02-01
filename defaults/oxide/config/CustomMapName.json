@@ -1,0 +1,10 @@
+{
+  "Map Name Displayed": "Your Map Name",
+  "Cycle Map Names": false,
+  "Map Names to Cycle": [
+    "Map Name 1",
+    "Welcome To Our Server",
+    "Map Name 2"
+  ],
+  "Name Refresh Interval": 5.0
+}
