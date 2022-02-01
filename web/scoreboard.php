@@ -10,7 +10,7 @@ $xpstatsdb_eleven->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $xpstatsdb_demo = new PDO($demo_dsn, $user, $pass);
 $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 ?>
-<table class="table table-striped">
+<table class="table table-sm">
 <thead>
 <tr>
   <th>US West 10x</th>
@@ -27,36 +27,72 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 </tfoot>
 <tbody>
 <tr>
-  <td>Level &nbsp;&nbsp;</td>
-  <td>Players(Top 100)</td>
-  <td>XP</td>
-  <td>Stats</td>
-  <td>Skills</td>
-  <td>Status</td>
+  <td>
+    <table class="table table-hover">
+    <thead>
+    <tr>
+    <th>Level &nbsp;&nbsp;</th>
+    <th>Players(Top 100)</th>
+    <th>XP</th>
+    <th>Stats</th>
+    <th>Skills</th>
+    <th>Status</th>
+    </tr>
+    </thead>
+    <tfoot>
+    <tr>
+    <th>Level &nbsp;&nbsp;</th>
+    <th>Players(Top 100)</th>
+    <th>XP</th>
+    <th>Stats</th>
+    <th>Skills</th>
+    <th>Status</th>
+    </tr>
+    </tfoot>
+    <tbody>
+    <tr>
+    <?php
+      $query = $xpstatsdb_nine->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,100");
+      while ($row = $query->fetch()) {
+      echo "<td align=\"center\">" . $row['level'] . "</td>";
+      echo "<td align=\"left\">" . $row['displayname'] ."</td>";
+      echo "<td align=\"left\">" . $row['experience'] . "</td>";
+      echo "<td align=\"right\">" . $row['statpoint'] . "</td>";
+      echo "<td align=\"right\">" . $row['skillpoint'] . "</td>";
+      echo "<td align=\"center\">" . $row['Status'] . "</td>";
+    }
+    ?>
+    </tr>
+    </tbody>
+    </table>
+  </td>
 </tr>
 <tr>
-<?php
-  $query = $xpstatsdb_nine->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,100");
-  while ($row = $query->fetch()) {
-  echo "<td align=\"center\">" . $row['level'] . "</td>";
-  echo "<td align=\"left\">" . $row['displayname'] ."</td>";
-  echo "<td align=\"left\">" . $row['experience'] . "</td>";
-  echo "<td align=\"right\">" . $row['statpoint'] . "</td>";
-  echo "<td align=\"right\">" . $row['skillpoint'] . "</td>";
-  echo "<td align=\"center\">" . $row['Status'] . "</td>";
-}
-?>
-</tr>
-<tr>
-<td>Level &nbsp;&nbsp;</td>
-<td>Players(Top 100)</td>
-<td>XP</td>
-<td>Stats</td>
-<td>Skills</td>
-<td>Status</td>
-</tr>
-<tr>
-<?php
+  <td>
+  <table class="table table-hover">
+    <thead>
+    <tr>
+    <th>Level &nbsp;&nbsp;</th>
+    <th>Players(Top 100)</th>
+    <th>XP</th>
+    <th>Stats</th>
+    <th>Skills</th>
+    <th>Status</th>
+    </tr>
+    </thead>
+    <tfoot>
+    <tr>
+    <th>Level &nbsp;&nbsp;</th>
+    <th>Players(Top 100)</th>
+    <th>XP</th>
+    <th>Stats</th>
+    <th>Skills</th>
+    <th>Status</th>
+    </tr>
+    </tfoot>
+    <tbody>
+    <tr>
+  <?php
   $query = $xpstatsdb_eleven->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,100");
   while ($row = $query->fetch()) {
   echo "<td align=\"center\">" . $row['level'] . "</td>";
@@ -68,15 +104,35 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 }
 ?>
 </tr>
-<tr>
-<td>Level &nbsp;&nbsp;</td>
-<td>Players(Top 100)</td>
-<td>XP</td>
-<td>Stats</td>
-<td>Skills</td>
-<td>Status</td>
+    </tbody>
+    </table>
+  </td>
 </tr>
 <tr>
+  <td>
+  <table class="table table-hover">
+    <thead>
+    <tr>
+    <th>Level &nbsp;&nbsp;</th>
+    <th>Players(Top 100)</th>
+    <th>XP</th>
+    <th>Stats</th>
+    <th>Skills</th>
+    <th>Status</th>
+    </tr>
+    </thead>
+    <tfoot>
+    <tr>
+    <th>Level &nbsp;&nbsp;</th>
+    <th>Players(Top 100)</th>
+    <th>XP</th>
+    <th>Stats</th>
+    <th>Skills</th>
+    <th>Status</th>
+    </tr>
+    </tfoot>
+    <tbody>
+    <tr>
 <?php
   $query = $xpstatsdb_demo->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,100");
   while ($row = $query->fetch()) {
@@ -88,6 +144,10 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   echo "<td align=\"center\">" . $row['Status'] . "</td>";
 }
 ?>
+</tr>
+    </tbody>
+    </table>
+</td>
 </tr>
 </tbody>
 </table>
