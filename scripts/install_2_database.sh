@@ -80,3 +80,21 @@ GRANT ALL PRIVILEGES ON *.* TO 'srt_xperience'@'%'
     IDENTIFIED BY 'lcy_407' 
     WITH GRANT OPTION;
 FLUSH PRIVILEGES;
+
+create database xpstats_nine;
+GRANT ALL PRIVILEGES ON *.* TO 'srt_xperience'@'%' 
+    IDENTIFIED BY 'lcy_407' 
+    WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+create database xpstats_demo;
+GRANT ALL PRIVILEGES ON *.* TO 'srt_xperience'@'%' 
+    IDENTIFIED BY 'lcy_407' 
+    WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+create database xpstats_eleven;
+GRANT ALL PRIVILEGES ON *.* TO 'srt_xperience'@'%' 
+    IDENTIFIED BY 'lcy_407' 
+    WITH GRANT OPTION;
+FLUSH PRIVILEGES;

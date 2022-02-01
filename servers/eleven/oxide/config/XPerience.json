@@ -407,7 +407,7 @@
     "enablesql": true,
     "SQLhost": "data",
     "SQLport": 3306,
-    "SQLdatabase": "xpstats_nine",
+    "SQLdatabase": "xpstats_eleven",
     "SQLusername": "srt_xperience",
     "SQLpassword": "lcy_407"
   }
