@@ -36,7 +36,17 @@ function notification_restart() {
 
   ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "restart $delay \"Scheduled map wipe is about to begin.\""
   sleep $delay
-  sleep 5
+  sleep 10
+  for n in {1..3}; do
+    RUST_PID=$(ps -ef | grep [R]ustDedicated | awk {' print $2 '})
+    if [ -z "${RUST_PID}" ]; then
+      echo "Clean shutdown...$n" | tee -a ${LOGS}
+    else
+      echo "Forcefully terminating Rust service...$n"
+      kill -9 ${RUST_PID}
+      echo "Terminated ${RUST_PID}...$n"
+    fi
+  done
 }
 
 function wipe_map() {
