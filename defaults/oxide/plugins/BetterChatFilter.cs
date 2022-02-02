@@ -13,7 +13,7 @@ using Oxide.Game.Rust.Libraries;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat Filter", "NooBlet", "1.6.4", ResourceId = 2403)]
+    [Info("Better Chat Filter", "NooBlet", "1.6.5", ResourceId = 2403)]
     [Description("Filter for Better Chat")]
     public class BetterChatFilter : CovalencePlugin
     {
@@ -303,7 +303,7 @@ namespace Oxide.Plugins
             CheckCfg<string>("Word Filter - Custom Replacement", ref WordFilter_CustomReplacement);
             CheckCfg<bool>("Advanced - Use REGEX", ref UseRegex);
             CheckCfg<string>("Advanced - Regex to use", ref regextouse);
-            CheckCfg<List<object>>("Word Filter - Phrases", ref WordFilter_Phrases);
+            CheckCfg<List<object>>("Word Filter List", ref WordFilter_Phrases);
             CheckCfg<List<object>>("Word To White List", ref WordWhiteList);
             CheckCfg<int>("Clear Offense After (0 - Disabled, 1 - All Kick/Mute/ban, 2 - Kick,  3 - Mute,  4 - Ban", ref clear);
             CheckCfg<bool>("Offenses - Broadcast kick", ref BroadcastKick);

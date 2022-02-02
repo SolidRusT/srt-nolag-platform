@@ -18,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("XPerience", "MACHIN3", "1.3.4")]
+    [Info("XPerience", "MACHIN3", "1.3.5")]
     [Description("Player level system with xp, stats, and skills")]
     public class XPerience : RustPlugin
     {
@@ -28,6 +28,40 @@ namespace Oxide.Plugins
 		【 𝓜𝓐𝓒𝓗𝓘𝓝𝓔 】
         Discord: discord.skilledsoldiers.net
         *****************************************************/
+        #region version 1.3.5
+        /*****************************************************
+         ----------------------
+         ✯ version 1.3.5
+         ----------------------
+         DELETE LANG FILE BEFORE UPLOADING UPDATE!
+
+        ✯ Fixed Tamer link not working in Top Players UI
+        ✯ Fixed online indicator not showing correctly for second column in top player UIs
+		✯ Added API needed for XPerienceAddon
+
+        New Player Info Box:
+        ✯ Can disable entire feature or each display option
+
+        Player Data Shown: (since last spawn)
+        ✯ Time Alive
+        ✯ Time Sleeping
+        ✯ Time Driving
+        ✯ Time Boating
+        ✯ Time Flying
+        ✯ Time in Base
+        ✯ Time in Monuments
+        ✯ Time Swimming
+        ✯ Meters Ran
+        ✯ Meters Walked
+        ✯ Last Damage Time
+        ✯ Last Damage Source
+        ✯ Last Attack Time
+        ✯ Last Attack Source
+
+        Don't forget to check out the New XPerienceAddon mod! Check our discord for details on how and where to get it.
+        Discord: discord.skilledsoldiers.net
+        *****************************************************/
+        #endregion
         #region version 1.3.4
         /*****************************************************
          ----------------------
@@ -606,6 +640,7 @@ namespace Oxide.Plugins
 
         #region Fields
 
+        public const string version = "1.3.5";
         private XPData _xpData;
         private LootData _lootData;
         private CorpseData _corpseData;
@@ -636,7 +671,7 @@ namespace Oxide.Plugins
         private const string PermTamer = "xperience.tamer";
         private readonly Hash<ulong, double> _notifyCooldowns = new Hash<ulong, double>();
         private readonly Hash<ulong, int> _TopUIPage = new Hash<ulong, int>();
-        private double CurrentTime => DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;    
+        private double CurrentTime => DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
         private bool _isXPReady;
         private bool _isRestart = true;
         private int _imageLibraryCheck = 0;
@@ -653,6 +688,9 @@ namespace Oxide.Plugins
 
             [JsonProperty("Admin Chat Commands")]
             public AdminChatCommands adminchatCommands = new AdminChatCommands();
+           
+            [JsonProperty("Player Info Box")]
+            public PlayerInfoBoxSettings playerinfoBoxsettings = new PlayerInfoBoxSettings();
 
             [JsonProperty("Default Options")]
             public DefaultOptions defaultOptions = new DefaultOptions();
@@ -765,7 +803,7 @@ namespace Oxide.Plugins
             public string playerliveuichange = "xpliveui";
             public string openhelp = "xphelp";
         }
-        
+
         public class AdminChatCommands
         {
             public string showadminhelp = "xpadminhelp";
@@ -777,7 +815,27 @@ namespace Oxide.Plugins
             public string adminfixdata = "xpfix";
             public string adminitemchange = "itemchange";
         }
-        
+
+        public class PlayerInfoBoxSettings
+        {
+            public bool showinfobox = true;
+            public bool alivetime = true;
+            public bool sleepingtime = true;
+            public bool swimingtime = true;
+            public bool drivingtime = true;
+            public bool flyingtime = true;
+            public bool boatingtime = true;
+            public bool basetime = true;
+            public bool monumenttime = true;
+            public bool wildernesstime = true;
+            public bool metersran = true;
+            public bool meterswalked = true;
+            public bool lastdmgrec = true;
+            public bool lastdmgrecby = true;
+            public bool lastdmgdelt = true;
+            public bool lastdmgdeltto = true;
+        }
+
         public class DefaultOptions
         {
             public bool userpermissions = false;
@@ -970,7 +1028,7 @@ namespace Oxide.Plugins
             public bool multibonus = true;
             public string multibonustype = "fixed";
         }
-         
+
         public class XpEcon
         {
             public bool econlevelup = false;
@@ -1166,7 +1224,7 @@ namespace Oxide.Plugins
             public double repaircost = 0.05;
             public double repairtime = 0.10;
         }
-        
+
         public class Medic
         {
             public int maxlvl = 10;
@@ -1398,7 +1456,7 @@ namespace Oxide.Plugins
                 _LootContainData.WriteObject(_lootData);
             }
         }
-        
+
         private void SaveCorpse()
         {
             if (_corpseData != null)
@@ -1575,15 +1633,15 @@ namespace Oxide.Plugins
                 {
                     foreach (var entry in list)
                     {
-                        if (!entry.ContainsKey("Status")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Status` VARCHAR(255) NOT NULL AFTER TamerP"), sqlConnection);}
-                        if (entry.ContainsKey("Chemist")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience DROP COLUMN `Chemist`"), sqlConnection);}
-                        if (entry.ContainsKey("ChemistP")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience DROP COLUMN `ChemistP`"), sqlConnection);}
-                        if (!entry.ContainsKey("Scavenger")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Scavenger` BIGINT(255) NOT NULL DEFAULT '0' AFTER MedicP"), sqlConnection);}
-                        if (!entry.ContainsKey("ScavengerP")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `ScavengerP` BIGINT(255) NOT NULL DEFAULT '0' AFTER Scavenger"), sqlConnection);}
-                        if (!entry.ContainsKey("Captaincy")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Captaincy` BIGINT(255) NOT NULL DEFAULT '0' AFTER MightP"), sqlConnection);}
-                        if (!entry.ContainsKey("CaptaincyP")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `CaptaincyP` BIGINT(255) NOT NULL DEFAULT '0' AFTER Captaincy"), sqlConnection);}
-                        if (!entry.ContainsKey("Medic")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Medic` BIGINT(255) NOT NULL DEFAULT '0' AFTER FramerP"), sqlConnection);}
-                        if (!entry.ContainsKey("MedicP")){sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `MedicP` BIGINT(255) NOT NULL DEFAULT '0' AFTER Medic"), sqlConnection);}
+                        if (!entry.ContainsKey("Status")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Status` VARCHAR(255) NOT NULL AFTER TamerP"), sqlConnection); }
+                        if (entry.ContainsKey("Chemist")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience DROP COLUMN `Chemist`"), sqlConnection); }
+                        if (entry.ContainsKey("ChemistP")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience DROP COLUMN `ChemistP`"), sqlConnection); }
+                        if (!entry.ContainsKey("Scavenger")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Scavenger` BIGINT(255) NOT NULL DEFAULT '0' AFTER MedicP"), sqlConnection); }
+                        if (!entry.ContainsKey("ScavengerP")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `ScavengerP` BIGINT(255) NOT NULL DEFAULT '0' AFTER Scavenger"), sqlConnection); }
+                        if (!entry.ContainsKey("Captaincy")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Captaincy` BIGINT(255) NOT NULL DEFAULT '0' AFTER MightP"), sqlConnection); }
+                        if (!entry.ContainsKey("CaptaincyP")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `CaptaincyP` BIGINT(255) NOT NULL DEFAULT '0' AFTER Captaincy"), sqlConnection); }
+                        if (!entry.ContainsKey("Medic")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `Medic` BIGINT(255) NOT NULL DEFAULT '0' AFTER FramerP"), sqlConnection); }
+                        if (!entry.ContainsKey("MedicP")) { sqlLibrary.Insert(Sql.Builder.Append($"ALTER TABLE XPerience ADD COLUMN `MedicP` BIGINT(255) NOT NULL DEFAULT '0' AFTER Medic"), sqlConnection); }
                         continue;
                     }
                 });
@@ -1768,7 +1826,7 @@ namespace Oxide.Plugins
             });
 
         }
-        
+
         private void DeleteSQL()
         {
             sqlLibrary.Delete(Sql.Builder.Append($"DELETE FROM XPerience;"), sqlConnection);
@@ -1866,7 +1924,7 @@ namespace Oxide.Plugins
             }
             LibraryCheck();
         }
-        
+
         private void OnPluginLoaded(Plugin name)
         {
             if (ImageLibrary != null && name.Name == ImageLibrary.Name && !_isRestart)
@@ -1892,6 +1950,7 @@ namespace Oxide.Plugins
                 DestroyUi(player, XPerienceTopMain);
                 DestroyUi(player, XPerienceAdminPanelMain);
                 DestroyUi(player, XPeriencePlayerControlFullMain);
+                DestroyUi(player, XPeriencePlayerInfoBox);
             }
             SaveData();
             SaveLoot();
@@ -1955,6 +2014,7 @@ namespace Oxide.Plugins
             DestroyUi(player, XPerienceTopMain);
             DestroyUi(player, XPerienceAdminPanelMain);
             DestroyUi(player, XPeriencePlayerControlFullMain);
+            DestroyUi(player, XPeriencePlayerInfoBox);
             if (config.sql.enablesql)
             {
                 CheckPlayerDataSQL(player);
@@ -1999,7 +2059,7 @@ namespace Oxide.Plugins
 
             LoadImages();
         }
-        
+
         private void LoadImages()
         {
             _isRestart = false;
@@ -2031,7 +2091,7 @@ namespace Oxide.Plugins
 
             ImageLibrary?.Call("ImportImageList", Name, _xperienceImageList, 0UL, true, new Action(Ready));
         }
-        
+
         private void Ready()
         {
             _isXPReady = true;
@@ -2165,7 +2225,7 @@ namespace Oxide.Plugins
                 if (sleepingPlayer.UserIDString == playerid)
                     return sleepingPlayer;
             }
-            return null;     
+            return null;
         }
 
         private double GetPlayerCooldown(ulong userID)
@@ -2183,7 +2243,7 @@ namespace Oxide.Plugins
             double currentTime = CurrentTime;
             return currentTime > xprecord.teacooldown ? 0 : xprecord.teacooldown - CurrentTime;
         }
-       
+
         private string GetTeaTypes(BasePlayer player)
         {
             XPRecord xprecord = GetXPRecord(player);
@@ -2246,7 +2306,7 @@ namespace Oxide.Plugins
         {
             if (player == null || !player.userID.IsSteamId()) return;
             XPRecord xprecord = GetXPRecord(player);
-             xprecord.experience = (int)xprecord.experience + e;
+            xprecord.experience = (int)xprecord.experience + e;
             if (xprecord.experience >= xprecord.requiredxp)
             {
                 LvlUp(player, 0, 0);
@@ -2486,7 +2546,7 @@ namespace Oxide.Plugins
                     xprecord.MightP -= statpoints;
                     xprecord.statpoint = pointadj;
                     MightAttributes(player);
-                }              
+                }
                 else if (dropcaptaincy == true)
                 {
                     stat = "Captaincy";
@@ -2955,15 +3015,15 @@ namespace Oxide.Plugins
             // Smithy
             else if (skill == "smithy" && config.smithy.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermSmithy)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Smithy < config.smithy.maxlvl)
-                { 
-                    if (xprecord.Smithy == 0)
+                if (xprecord.Smithy < config.smithy.maxlvl)
                 {
-                    nextlevel = 1;
-                    skillcost = config.smithy.pointcoststart;
-                    pointsremaining = xprecord.skillpoint - skillcost;
-                    pointsinskill = xprecord.SmithyP + skillcost;
-                }
+                    if (xprecord.Smithy == 0)
+                    {
+                        nextlevel = 1;
+                        skillcost = config.smithy.pointcoststart;
+                        pointsremaining = xprecord.skillpoint - skillcost;
+                        pointsinskill = xprecord.SmithyP + skillcost;
+                    }
                     else
                     {
                         nextlevel = xprecord.Smithy + 1;
@@ -2988,8 +3048,8 @@ namespace Oxide.Plugins
             // Miner
             else if (skill == "miner" && config.miner.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermMiner)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Miner < config.miner.maxlvl)
-                { 
+                if (xprecord.Miner < config.miner.maxlvl)
+                {
                     if (xprecord.Miner == 0)
                     {
                         nextlevel = 1;
@@ -3021,15 +3081,15 @@ namespace Oxide.Plugins
             // Forager
             else if (skill == "forager" && config.forager.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermForager)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Forager < config.forager.maxlvl)
-                { 
-                    if (xprecord.Forager == 0)
+                if (xprecord.Forager < config.forager.maxlvl)
                 {
-                    nextlevel = 1;
-                    skillcost = config.forager.pointcoststart;
-                    pointsremaining = xprecord.skillpoint - skillcost;
-                    pointsinskill = xprecord.ForagerP + skillcost;
-                }
+                    if (xprecord.Forager == 0)
+                    {
+                        nextlevel = 1;
+                        skillcost = config.forager.pointcoststart;
+                        pointsremaining = xprecord.skillpoint - skillcost;
+                        pointsinskill = xprecord.ForagerP + skillcost;
+                    }
                     else
                     {
                         nextlevel = xprecord.Forager + 1;
@@ -3054,8 +3114,8 @@ namespace Oxide.Plugins
             // Hunter
             else if (skill == "hunter" && config.hunter.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermHunter)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Hunter < config.hunter.maxlvl) 
-                { 
+                if (xprecord.Hunter < config.hunter.maxlvl)
+                {
                     if (xprecord.Hunter == 0)
                     {
                         nextlevel = 1;
@@ -3087,15 +3147,15 @@ namespace Oxide.Plugins
             // Fisher
             else if (skill == "fisher" && config.fisher.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermFisher)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Fisher < config.fisher.maxlvl)
-                { 
-                    if (xprecord.Fisher == 0)
+                if (xprecord.Fisher < config.fisher.maxlvl)
                 {
-                    nextlevel = 1;
-                    skillcost = config.fisher.pointcoststart;
-                    pointsremaining = xprecord.skillpoint - skillcost;
-                    pointsinskill = xprecord.FisherP + skillcost;
-                }
+                    if (xprecord.Fisher == 0)
+                    {
+                        nextlevel = 1;
+                        skillcost = config.fisher.pointcoststart;
+                        pointsremaining = xprecord.skillpoint - skillcost;
+                        pointsinskill = xprecord.FisherP + skillcost;
+                    }
                     else
                     {
                         nextlevel = xprecord.Fisher + 1;
@@ -3120,15 +3180,15 @@ namespace Oxide.Plugins
             // Crafter
             else if (skill == "crafter" && config.crafter.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermCrafter)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Crafter < config.crafter.maxlvl)
+                if (xprecord.Crafter < config.crafter.maxlvl)
                 {
                     if (xprecord.Crafter == 0)
-                {
-                    nextlevel = 1;
-                    skillcost = config.crafter.pointcoststart;
-                    pointsremaining = xprecord.skillpoint - skillcost;
-                    pointsinskill = xprecord.CrafterP + skillcost;
-                }
+                    {
+                        nextlevel = 1;
+                        skillcost = config.crafter.pointcoststart;
+                        pointsremaining = xprecord.skillpoint - skillcost;
+                        pointsinskill = xprecord.CrafterP + skillcost;
+                    }
                     else
                     {
                         nextlevel = xprecord.Crafter + 1;
@@ -3153,15 +3213,15 @@ namespace Oxide.Plugins
             // Framer
             else if (skill == "framer" && config.framer.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermFramer)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Framer < config.framer.maxlvl)
+                if (xprecord.Framer < config.framer.maxlvl)
                 {
                     if (xprecord.Framer == 0)
-                {
-                    nextlevel = 1;
-                    skillcost = config.framer.pointcoststart;
-                    pointsremaining = xprecord.skillpoint - skillcost;
-                    pointsinskill = xprecord.FramerP + skillcost;
-                }
+                    {
+                        nextlevel = 1;
+                        skillcost = config.framer.pointcoststart;
+                        pointsremaining = xprecord.skillpoint - skillcost;
+                        pointsinskill = xprecord.FramerP + skillcost;
+                    }
                     else
                     {
                         nextlevel = xprecord.Framer + 1;
@@ -3186,15 +3246,15 @@ namespace Oxide.Plugins
             // Medic
             else if (skill == "medic" && config.medic.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermMedic)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Medic < config.medic.maxlvl)
+                if (xprecord.Medic < config.medic.maxlvl)
                 {
                     if (xprecord.Medic == 0)
-                {
-                    nextlevel = 1;
-                    skillcost = config.medic.pointcoststart;
-                    pointsremaining = xprecord.skillpoint - skillcost;
-                    pointsinskill = xprecord.MedicP + skillcost;
-                }
+                    {
+                        nextlevel = 1;
+                        skillcost = config.medic.pointcoststart;
+                        pointsremaining = xprecord.skillpoint - skillcost;
+                        pointsinskill = xprecord.MedicP + skillcost;
+                    }
                     else
                     {
                         nextlevel = xprecord.Medic + 1;
@@ -3219,15 +3279,15 @@ namespace Oxide.Plugins
             // Scavenger
             else if (skill == "scavenger" && config.scavenger.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermScavenger)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Scavenger < config.scavenger.maxlvl)
+                if (xprecord.Scavenger < config.scavenger.maxlvl)
                 {
                     if (xprecord.Scavenger == 0)
-                {
-                    nextlevel = 1;
-                    skillcost = config.scavenger.pointcoststart;
-                    pointsremaining = xprecord.skillpoint - skillcost;
-                    pointsinskill = xprecord.ScavengerP + skillcost;
-                }
+                    {
+                        nextlevel = 1;
+                        skillcost = config.scavenger.pointcoststart;
+                        pointsremaining = xprecord.skillpoint - skillcost;
+                        pointsinskill = xprecord.ScavengerP + skillcost;
+                    }
                     else
                     {
                         nextlevel = xprecord.Scavenger + 1;
@@ -3252,15 +3312,15 @@ namespace Oxide.Plugins
             // Tamer
             else if (skill == "tamer" && config.tamer.maxlvl != 0 && ((config.defaultOptions.userpermissions && permission.UserHasPermission(player.UserIDString, PermTamer)) || !config.defaultOptions.userpermissions))
             {
-                if(xprecord.Tamer < config.tamer.maxlvl)
+                if (xprecord.Tamer < config.tamer.maxlvl)
                 {
                     if (xprecord.Tamer == 0)
-                {
-                    nextlevel = 1;
-                    skillcost = config.tamer.pointcoststart;
-                    pointsremaining = xprecord.skillpoint - skillcost;
-                    pointsinskill = xprecord.TamerP + skillcost;
-                }
+                    {
+                        nextlevel = 1;
+                        skillcost = config.tamer.pointcoststart;
+                        pointsremaining = xprecord.skillpoint - skillcost;
+                        pointsinskill = xprecord.TamerP + skillcost;
+                    }
                     else
                     {
                         nextlevel = xprecord.Tamer + 1;
@@ -3350,7 +3410,7 @@ namespace Oxide.Plugins
                 }
             }
             // Reset health if needed before removing points
-            if(xprecord.Might >= 1)
+            if (xprecord.Might >= 1)
             {
                 // Max Health
                 double armor = (xprecord.Might * config.might.armor) * 100;
@@ -3585,7 +3645,7 @@ namespace Oxide.Plugins
                 xprecord.ScavengerP = 0;
                 xprecord.TamerP = 0;
                 // Set LiveUI Location to Default
-                xprecord.UILocation = config.defaultOptions.liveuistatslocation;                
+                xprecord.UILocation = config.defaultOptions.liveuistatslocation;
                 // Take Pet Permission
                 permission.RevokeUserPermission(p.Key, TameChicken);
                 permission.RevokeUserPermission(p.Key, TameBoar);
@@ -3596,7 +3656,7 @@ namespace Oxide.Plugins
                 if (xprecord.experience > config.xpLevel.levelstart)
                 {
                     LvlUpFix(p.Key);
-                }                
+                }
             }
         }
 
@@ -3735,9 +3795,9 @@ namespace Oxide.Plugins
             xprecord.playerfixdata = DateTime.Now;
             // Run Level Up to Recalculate Players Data
             if (xprecord.experience > config.xpLevel.levelstart)
-            { 
+            {
                 LvlUp(player, 0, 0);
-            }        
+            }
             // Update Live UI
             LiveStats(player, true);
             // Notify Players
@@ -4040,7 +4100,7 @@ namespace Oxide.Plugins
             {
                 if (team == player.userID) continue;
                 BasePlayer teammember = RelationshipManager.FindByID(team);
-                if (teammember == null || !teammember.IsConnected || Vector3.Distance(player.transform.position, teammember.transform.position) >= config.xpTeams.teamdistance) continue;          
+                if (teammember == null || !teammember.IsConnected || Vector3.Distance(player.transform.position, teammember.transform.position) >= config.xpTeams.teamdistance) continue;
                 XPRecord xprecord = GetXPRecord(teammember);
                 if (type == "addxp")
                 {
@@ -4091,10 +4151,10 @@ namespace Oxide.Plugins
                     {
                         UINotify.Call("SendNotify", teammember, config.UiNotifier.xpgainlosstype, XPLang("uinotify_xploss", teammember.UserIDString, Math.Round(takexp)));
                     }
-                }             
-            }      
+                }
+            }
         }
-                
+
         private void XPClans(BasePlayer player, double e, string type)
         {
             foreach (var allplayer in BasePlayer.activePlayerList)
@@ -4154,7 +4214,7 @@ namespace Oxide.Plugins
                         }
                     }
                 }
-            }      
+            }
         }
 
         #endregion
@@ -4333,8 +4393,8 @@ namespace Oxide.Plugins
             // If Suicide Ingnore Death
             if (attacker == victim) return;
             // Update Player Data On deaths if enabled
-            if(config.xpReducer.deathreduce)
-            {            
+            if (config.xpReducer.deathreduce)
+            {
                 XPRecord xprecord = GetXPRecord(victim);
                 double currentlevelamount = xprecord.experience - (xprecord.requiredxp - (xprecord.level * config.xpLevel.levelmultiplier));
                 var reducexp = Math.Round(currentlevelamount * config.xpReducer.deathreduceamount);
@@ -4400,10 +4460,10 @@ namespace Oxide.Plugins
                 if (!_lootCache.ContainsKey(lootid))
                 {
                     IncreaseLootContainers(player, lootcontainer);
-                }        
+                }
             }
             // Add player and container ID to LootData
-            AddLootData(player, lootcontainer);        
+            AddLootData(player, lootcontainer);
         }
 
         private void OnEntityTakeDamage(BaseCombatEntity entity, HitInfo hitInfo)
@@ -4549,10 +4609,10 @@ namespace Oxide.Plugins
                     double crithit = Math.Ceiling((int)hitInfo.damageTypes.Total() * 0.10f);
                     // UINotify
                     if (GetPlayerCooldown(attacker.userID) != 0)
-                    {            
+                    {
                         if (UINotify != null && config.UiNotifier.useuinotify && config.UiNotifier.criticalhit)
                         {
-                               UINotify.Call("SendNotify", attacker, config.UiNotifier.criticalhittype, XPLang("crithit", attacker.UserIDString, crithit));
+                            UINotify.Call("SendNotify", attacker, config.UiNotifier.criticalhittype, XPLang("crithit", attacker.UserIDString, crithit));
                         }
                         // Disable Chats
                         if (!config.UiNotifier.disablechats)
@@ -4593,7 +4653,7 @@ namespace Oxide.Plugins
             }
             // Increase Container Loot
             if (!config.scavenger.drops && config.scavenger.scavmultiplier == 0) return;
-            IncreaseLootContainerDrops(lootcontainer);         
+            IncreaseLootContainerDrops(lootcontainer);
         }
 
         private void CanLootEntity(BasePlayer player, LootableCorpse corpse)
@@ -4896,10 +4956,10 @@ namespace Oxide.Plugins
                     TakeItems(player, list);
                     return;
                 }
-            } 
+            }
             //TakeItems(player, list);
         }
-        
+
         private void OnEntityBuilt(Planner plan, GameObject gameObject)
         {
             var player = plan.GetOwnerPlayer();
@@ -4939,16 +4999,16 @@ namespace Oxide.Plugins
                 addxp = config.xpBuilding.armoredstructure;
             }
             if (CanAffordUpgrade(buildingBlock, player, grade))
-            {                    
+            {
                 if (config.xpBuilding.buildxpdelay && (GetPlayerCooldown(player.userID) != 0))
                 {
                     _notifyCooldowns[player.userID] = CurrentTime + config.xpBuilding.buildxpdelayseconds;
                     allowxp = false;
                 }
                 _notifyCooldowns[player.userID] = CurrentTime + config.xpBuilding.buildxpdelayseconds;
-                if (allowxp)GainExp(player, addxp);
+                if (allowxp) GainExp(player, addxp);
                 RefundMaterials(buildingBlock, player, grade);
-            }  
+            }
         }
 
         public bool CanAffordUpgrade(BuildingBlock buildingBlock, BasePlayer player, BuildingGrade.Enum grade)
@@ -4986,7 +5046,7 @@ namespace Oxide.Plugins
                 {
                     double captaincyboost = CaptaincyTeamSkillBoost(player) * reducedcost;
                     reducedcost += captaincyboost;
-                }         
+                }
                 if (reducedcost < 1)
                 {
                     reducedcost = 1;
@@ -5027,10 +5087,10 @@ namespace Oxide.Plugins
                 entity.OnRepairFinished();
                 return;
             }
-            
+
             foreach (ItemAmount amount in itemAmounts)
-            { 
-                if (amount.amount > 40f) 
+            {
+                if (amount.amount > 40f)
                 {
                     amount.amount = 40f;
                 }
@@ -5191,7 +5251,7 @@ namespace Oxide.Plugins
             }
             double results = item.amount + (item.amount * (gatherincrease * skilllevel));
             // Captaincy
-            if(player.Team != null && player.Team.members.Count > 1)
+            if (player.Team != null && player.Team.members.Count > 1)
             {
                 double captaincyboost = CaptaincyTeamSkillBoost(player) * results;
                 results += captaincyboost;
@@ -5385,7 +5445,7 @@ namespace Oxide.Plugins
         private object OnResearchCostDetermine(Item item, ResearchTable researchTable)
         {
             int rarityvalue = rarityValues[item.info.rarity];
-            if(config.mentality.researchcost == 0) return rarityvalue;
+            if (config.mentality.researchcost == 0) return rarityvalue;
             if (item == null || researchTable == null) return rarityvalue;
             XPRecord xprecord = GetXPRecord(researchTable.user);
             if (xprecord.Mentality == 0 || xprecord == null) return rarityvalue;
@@ -5487,11 +5547,11 @@ namespace Oxide.Plugins
         {
             if (item.info.shortname.Contains("maxhealthtea"))
             {
-                LiveStats(player, true, item.info.shortname); 
+                LiveStats(player, true, item.info.shortname);
             }
             return null;
         }
-        
+
         private void PlayerArmor(BasePlayer player)
         {
             XPRecord xprecord = GetXPRecord(player);
@@ -5569,7 +5629,7 @@ namespace Oxide.Plugins
             player.ChatMessage(XPLang("medictooluse", player.UserIDString, addhealth, toolused));
             return;
         }
-        
+
         private void OnPlayerRevive(BasePlayer reviver, BasePlayer player)
         {
             if (reviver == null || !reviver.userID.IsSteamId() || player == null || !player.userID.IsSteamId()) return;
@@ -5654,7 +5714,7 @@ namespace Oxide.Plugins
                 if (teammember == null || !teammember.IsConnected) continue;
                 XPRecord teamxprecord = GetXPRecord(teammember);
                 if (teamxprecord.Captaincy <= 0) continue;
-                float teamdistance = teamxprecord.Captaincy * config.captaincy.captaincydistance;           
+                float teamdistance = teamxprecord.Captaincy * config.captaincy.captaincydistance;
                 if (Vector3.Distance(player.transform.position, teammember.transform.position) >= teamdistance) continue;
                 return true;
             }
@@ -5677,7 +5737,7 @@ namespace Oxide.Plugins
                     scavChanceLists.Add(number, item.Value);
                     number++;
                 }
-            }      
+            }
             double scavchance = (config.scavenger.scavchance * xprecord.Scavenger) * 100;
             if ((Random.Range(0, 101) <= scavchance) == true)
             {
@@ -5699,7 +5759,7 @@ namespace Oxide.Plugins
                 }
                 ItemManager.CreateByName(scavitem.shortname, (int)scavmultiplier)?.DropAndTossUpwards(player.GetDropPosition());
             }
-        } 
+        }
 
         private void IncreaseLootContainers(BasePlayer player, LootContainer lootcontainer)
         {
@@ -5834,11 +5894,11 @@ namespace Oxide.Plugins
             BasePlayer player = item.GetOwnerPlayer();
             if (player == null) return;
             XPRecord xprecord = GetXPRecord(player);
-            if(xprecord.Fisher >= 1)
+            if (xprecord.Fisher >= 1)
             {
                 double reducedair = amount * (xprecord.Fisher * config.fisher.oxygentankreduction);
                 amount -= (float)reducedair;
-                if(amount <= 0)
+                if (amount <= 0)
                 {
                     amount = 0.25f;
                 }
@@ -5949,7 +6009,7 @@ namespace Oxide.Plugins
             }
             SkillsReset(player);
         }
-        
+
         private void Playerresetall(BasePlayer player, string command, string[] args)
         {
             if (!config.defaultOptions.allowplayerreset)
@@ -6030,7 +6090,7 @@ namespace Oxide.Plugins
             if (!player.IsAdmin && !permission.UserHasPermission(player.UserIDString, Admin)) return;
             player.ChatMessage(XPLang("xphelpadmin", player.UserIDString, config.adminchatCommands.openadminpanel, config.adminchatCommands.adminresetxperience, config.adminchatCommands.adminresetplayer, config.adminchatCommands.adminxpgive, config.adminchatCommands.adminxptake, config.adminchatCommands.adminitemchange));
         }
-        
+
         private void Openadminpanel(BasePlayer player, string command, string[] args)
         {
             if (!player.IsAdmin && !permission.UserHasPermission(player.UserIDString, Admin)) return;
@@ -6086,7 +6146,7 @@ namespace Oxide.Plugins
             var selectplayer = FindPlayer(user.Value.id.ToString());
             XPRecord xprecord = GetXPRecord(selectplayer);
             GainExpAdmin(selectplayer, amount);
-            player.ChatMessage(XPLang("xpgiveplayer", player.UserIDString, user.Value.displayname, amount, xprecord.experience));     
+            player.ChatMessage(XPLang("xpgiveplayer", player.UserIDString, user.Value.displayname, amount, xprecord.experience));
         }
 
         private void Adminxptake(BasePlayer player, string command, string[] args)
@@ -6338,11 +6398,11 @@ namespace Oxide.Plugins
             if (option == "missionsucceed")
             {
                 value = config.xpMissions.missionsucceededxp.ToString();
-            }            
+            }
             if (option == "missionfailed")
             {
                 value = config.xpMissions.missionfailed.ToString();
-            }            
+            }
             if (option == "missionfailedxp")
             {
                 value = config.xpMissions.missionsucceededxp.ToString();
@@ -6826,6 +6886,8 @@ namespace Oxide.Plugins
 
         #region UI Constants
 
+        // Player Info
+        private const string XPeriencePlayerInfoBox = "XPeriencePlayerInfoBox";
         // Live Stats
         private const string XPerienceLivePrimary = "XPerienceLivePrimary";
         private const string XPerienceLiveArmorIcon = "XPerienceLiveArmorIcon";
@@ -6866,6 +6928,7 @@ namespace Oxide.Plugins
         private const string XPerienceAdminPanelOtherMods = "XPerienceAdminPanelOtherMods";
         private const string XPerienceAdminPanelSQL = "XPerienceAdminPanelSQL";
         private const string XPerienceAdminPanelReset = "XPerienceAdminPanelReset";
+        private const string XPerienceAdminPanelInfoBox = "XPerienceAdminPanelInfoBox";
         // Images
         private const string XPerienceicon = "XPerienceicon";
         private const string XPeriencelogo = "XPeriencelogo";
@@ -6901,6 +6964,9 @@ namespace Oxide.Plugins
             if (value > 0)
                 switch (type)
                 {
+                    case "default":
+                        color = config.uitextColor.defaultcolor;
+                        break;
                     case "mainlevel":
                         color = config.uitextColor.level;
                         break;
@@ -6931,7 +6997,7 @@ namespace Oxide.Plugins
                 }
 
             if (value < 0)
-                  color = "red";
+                color = "red";
 
             return color;
         }
@@ -6941,7 +7007,7 @@ namespace Oxide.Plugins
             if (type == "perk" && value > 0 && symbol == "neg")
             {
                 symbol = "-";
-            }            
+            }
             if (type == "perk" && value > 0 && symbol == "pos")
             {
                 symbol = "+";
@@ -7072,7 +7138,7 @@ namespace Oxide.Plugins
                 }
             };
         }
-        
+
         private void DestroyUi(BasePlayer player, string name)
         {
             CuiHelper.DestroyUi(player, name);
@@ -7081,7 +7147,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Player Panels
-        
+
         // Handlers
         [ConsoleCommand("xp.playercontrol")]
         private void Cmdplayercontrolnew(ConsoleSystem.Arg arg)
@@ -7095,6 +7161,7 @@ namespace Oxide.Plugins
                 case "main":
                     DestroyUi(player, XPeriencePlayerControlFullMain);
                     DestroyUi(player, XPerienceTopMain);
+                    DestroyUi(player, XPeriencePlayerInfoBox);
                     PlayerControlPanelFullMain(player);
                     PlayerInfoPage(player);
                     break;
@@ -7102,11 +7169,13 @@ namespace Oxide.Plugins
                     string selectedplayer = arg.GetString(1);
                     DestroyUi(player, XPeriencePlayerControlFullMain);
                     DestroyUi(player, XPerienceTopMain);
+                    DestroyUi(player, XPeriencePlayerInfoBox);
                     SelectedPlayerPanelFullMain(player, selectedplayer);
                     SelectedPlayerInfoPage(player, selectedplayer);
                     break;
                 case "topplayers":
                     DestroyUi(player, XPeriencePlayerControlFullMain);
+                    DestroyUi(player, XPeriencePlayerInfoBox);
                     TopPlayerPanelFullMain(player, "level");
                     TopLevels(player, 1, "level", 0);
                     break;
@@ -7146,11 +7215,21 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPeriencePlayerControlFullHelp);
                     DestroyUi(player, XPeriencePlayerControlFullHelpNav);
                     DestroyUi(player, XPeriencePlayerControlFullTamerBox);
+                    DestroyUi(player, XPeriencePlayerInfoBox);
                     DestroyUi(player, XPerienceTopMain);
                     PlayerKillRecordsPage(player, selectedplayerkr);
                     break;
                 case "close":
                     DestroyUi(player, XPeriencePlayerControlFullMain);
+                    DestroyUi(player, XPeriencePlayerInfoBox);
+                    break;
+                case "openbox":
+                    DestroyUi(player, XPeriencePlayerInfoBox);
+                    string selectedplayerbox = arg.GetString(1);
+                    PlayerInfoBox(player, selectedplayerbox);
+                    break;
+                case "closebox":
+                    DestroyUi(player, XPeriencePlayerInfoBox);
                     break;
                 case "help":
                     DestroyUi(player, XPeriencePlayerControlFullInfo);
@@ -7161,11 +7240,13 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPeriencePlayerControlFullHelpNav);
                     DestroyUi(player, XPeriencePlayerControlFullTamerBox);
                     DestroyUi(player, XPerienceTopMain);
+                    DestroyUi(player, XPeriencePlayerInfoBox);
                     PlayerHelpPage(player, 0);
                     break;
                 case "fix":
                     PlayerFixData(player);
                     DestroyUi(player, XPeriencePlayerControlFullMain);
+                    DestroyUi(player, XPeriencePlayerInfoBox);
                     PlayerControlPanelFullMain(player);
                     PlayerInfoPage(player);
                     break;
@@ -7174,6 +7255,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPeriencePlayerControlFullMain);
                     DestroyUi(player, XPerienceAdminPanelMain);
                     DestroyUi(player, XPerienceTopMain);
+                    DestroyUi(player, XPeriencePlayerInfoBox);
                     AdminControlPanel(player);
                     AdminInfoPage(player);
                     break;
@@ -7185,8 +7267,8 @@ namespace Oxide.Plugins
         {
             var player = arg.Player();
             if (player == null) return;
-            string type = arg.GetString(0);  
-            switch(type)
+            string type = arg.GetString(0);
+            switch (type)
             {
                 case "liveui":
                     int location = arg.GetInt(1);
@@ -7255,7 +7337,7 @@ namespace Oxide.Plugins
                 levelpercent = reqxpperc * 100;
             }
             // Armor Bar Calculations
-            if(GetTeaCooldown(player) == 0)
+            if (GetTeaCooldown(player) == 0)
             {
                 xprecord.teacooldown = 0;
                 xprecord.teatype = consumable;
@@ -7292,7 +7374,7 @@ namespace Oxide.Plugins
                 if (teamodified)
                 {
                     teaboost = TeaModifiers.Call<float>("GetTeaValue", player, xprecord.teatype, Modifier.ModifierType.Max_Health) * 100;
-                }         
+                }
                 switch (GetTeaTypes(player))
                 {
                     case "none":
@@ -7340,7 +7422,7 @@ namespace Oxide.Plugins
             var armorperc = currentarmor / armor;
             // Live Stats Display
             var LIVEelements = new CuiElementContainer();
-            switch(xprecord.UILocation)
+            switch (xprecord.UILocation)
             {
                 case 1:
                     // Live UI Box
@@ -7457,17 +7539,193 @@ namespace Oxide.Plugins
                     // Live UI Level Bar
                     LIVEelements.Add(XPUIPanel("0 0", "0.06 0.17", "0.6 0.6 0.6 0.25"), XPerienceLivePrimary, XPerienceLiveArmorIcon);
                     LIVEelements.Add(XPUILabel("♛", 1, 1, TextAnchor.MiddleCenter, 12, "0", "1", "0.65 0.65 0.65 0.50"), XPerienceLiveArmorIcon);
-                    LIVEelements.Add(XPUIPanel("0.062 0", "0.495 0.17", "0.6 0.6 0.6 0.25"), XPerienceLivePrimary, XPerienceLiveLevelIcon); 
+                    LIVEelements.Add(XPUIPanel("0.062 0", "0.495 0.17", "0.6 0.6 0.6 0.25"), XPerienceLivePrimary, XPerienceLiveLevelIcon);
                     LIVEelements.Add(XPUILabel($"{XPLang("level", player.UserIDString)}: {xprecord.level} ({(int)levelpercent}%)", 1, 1, TextAnchor.MiddleCenter, 12, "0", "1", "1.0 1.0 1.0 0.70"), XPerienceLiveLevelIcon);
                     // Live UI XP Bar
                     LIVEelements.Add(XPUIPanel("0.505 0", "0.56 0.17", "0.6 0.6 0.6 0.25"), XPerienceLivePrimary, XPerienceLiveArmorIcon);
                     LIVEelements.Add(XPUILabel("XP", 1, 1, TextAnchor.MiddleCenter, 12, "0", "1", "0.65 0.65 0.65 0.50"), XPerienceLiveArmorIcon);
                     LIVEelements.Add(XPUIPanel("0.562 0", "0.999 0.17", "0.6 0.6 0.6 0.25"), XPerienceLivePrimary, XPerienceLiveLevelBar);
                     LIVEelements.Add(XPUIPanel("0.015 0.1", $"{reqxpperc - 0.001} 0.9", "0.05 1.05 0.05 0.80"), XPerienceLiveLevelBar);
-                    LIVEelements.Add(XPUILabel($"{(int)remainingxp}", 1, 1, TextAnchor.MiddleCenter, 12, "0", "0.9", "1.0 1.0 1.0 0.70"), XPerienceLiveLevelBar);          
+                    LIVEelements.Add(XPUILabel($"{(int)remainingxp}", 1, 1, TextAnchor.MiddleCenter, 12, "0", "0.9", "1.0 1.0 1.0 0.70"), XPerienceLiveLevelBar);
                     break;
-            }         
+            }
             CuiHelper.AddUi(player, LIVEelements);
+        }
+
+        private object PlayerTimeValues(BasePlayer player, string type, double value)
+        {
+            if(type == "lifespan"){value = CurrentTime - value;}
+            double minutes = (int)(value % 3600) / 60;
+            double hours = (int)(value % 86400) / 3600;
+            double days = (int)(value % (86400 * 30)) / 86400;
+            string showdays = "";
+            string showhours = "";
+            string showmins = "";
+            if(days > 0)
+            {
+                showdays = $"Days: <color={TextColor("level", days)}>{days}</color> ";
+            }
+            if(hours > 0)
+            {
+                showhours = $"Hours: <color={TextColor("level", hours)}>{hours}</color> ";
+            }
+            if(minutes > 0)
+            {
+                showmins = $"Mins: <color={TextColor("level", minutes)}>{minutes}</color> ";
+            }
+            if(days == 0 && hours == 0 && minutes == 0)
+            {
+                return 0;
+            }
+            string playertime = $"{showdays}{showhours}{showmins}";
+            return playertime;     
+        }
+
+        private object PlayerInfoValues(BasePlayer player, BaseEntity entity, string type)
+        {
+            string DMGType = entity?.GetType().Name;
+            switch (type)
+            {
+                case "dmgrecieved":
+                    if (DMGType == "BasePlayer")
+                    {
+                        var playername = entity as BasePlayer;
+                        DMGType = playername.displayName; 
+                    }
+                    return DMGType;
+                case "dmgdelt":
+                    if (DMGType == "BasePlayer") 
+                    {
+                        var playername = entity as BasePlayer;
+                        DMGType = playername.displayName; 
+                    }
+                    return DMGType;
+            }
+            return DMGType;
+        }
+
+        private void PlayerInfoBox(BasePlayer player, string selectedplayer)
+        {
+            DestroyUi(player, XPeriencePlayerInfoBox);
+            if (player == null || selectedplayer == null) return;
+            var playerinfo = FindPlayer(selectedplayer);
+            if (playerinfo == null) return;
+            float height = 0.05f;
+            int row = 1;
+
+            // Create Box
+            var FullScreenelements = new CuiElementContainer();
+            FullScreenelements.Add(new CuiPanel
+            {
+                Image =
+                {
+                    Color = "0 0 0 1"
+                },
+                RectTransform =
+                {
+                    AnchorMin = "0.16 0.50",
+                    AnchorMax = "0.39 0.95"
+                },
+                CursorEnabled = true
+            }, "Overlay", XPeriencePlayerInfoBox);
+            // Box Content
+            FullScreenelements.Add(XPUILabel($"{XPLang("playerinfoalive", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+            row++;
+            if (config.playerinfoBoxsettings.alivetime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timealive", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsAlive)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.sleepingtime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timesleeping", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsSleeping)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.swimingtime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timeswimming", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsSwimming)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.drivingtime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timedriving", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsDriving)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.flyingtime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timeflying", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsFlying)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.boatingtime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timeboating", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsBoating)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.basetime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timeinbase", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsInBase)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.monumenttime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timeinmonument", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsInMonument)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.wildernesstime)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timeinwild", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.lifeStory.secondsWilderness)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.metersran)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("metersran", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{Math.Round(playerinfo.lifeStory.metersRun, 2)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.meterswalked)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("meterswalk", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{Math.Round(playerinfo.lifeStory.metersWalked, 2)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.lastdmgrec)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timedmgrec", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "dmgrecieved", playerinfo.SecondsSinceAttacked)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.lastdmgrecby)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timedmgrecfrom", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerInfoValues(player, playerinfo.lastAttacker, "dmgrecieved")}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.lastdmgdelt)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timedmgdelt", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerTimeValues(player, "", playerinfo.SecondsSinceDealtDamage)}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            if (config.playerinfoBoxsettings.lastdmgdeltto)
+            {
+                FullScreenelements.Add(XPUILabel($"{XPLang("timedeltto", player.UserIDString)}: ", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.40", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                FullScreenelements.Add(XPUILabel($"{PlayerInfoValues(player, playerinfo.lastDealtDamageTo, "dmgdelt")}", row, height, TextAnchor.MiddleLeft, 12, "0.40", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerInfoBox);
+                row++;
+            }
+            row++;
+            row++;
+            row++;
+            FullScreenelements.Add(XPUIButton("xp.playercontrol closebox", row, height, 12, "1 0 0 1", "〘Close Info Box〙", "0.25", "0.75", TextAnchor.MiddleCenter, "1 1 1 1"), XPeriencePlayerInfoBox);
+            CuiHelper.AddUi(player, FullScreenelements);
         }
 
         // Current Player Panels
@@ -7572,6 +7830,10 @@ namespace Oxide.Plugins
             FullScreenelements.Add(XPUIPanel("0.16 0.0", "1 1", "0 0 0 0.75"), XPeriencePlayerControlFullMain, XPeriencePlayerControlFullInfo);
             // Player Name & Status
             FullScreenelements.Add(XPUILabel($"{player.displayName}", row, 0.060f, TextAnchor.MiddleLeft, 20, "0.01", "0.20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            if (config.playerinfoBoxsettings.showinfobox)
+            {
+                FullScreenelements.Add(XPUIButton($"xp.playercontrol openbox {player.UserIDString}", row + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘Info Box〙", "0.20", "0.27", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
+            }
             row++;
             // Main - Player Info
             int statpoints = xprecord.MentalityP + xprecord.DexterityP + xprecord.MightP + xprecord.CaptaincyP;
@@ -7956,17 +8218,17 @@ namespace Oxide.Plugins
             }
             // Column Two Stat Effects
             int rowtwo = 1;
-            FullScreenelements.Add(XPUILabel($"Stat Effects:", rowtwo, 0.055f, TextAnchor.MiddleLeft, 18, "0.285", "0.4", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUILabel($"Stat Effects:", rowtwo, 0.055f, TextAnchor.MiddleLeft, 18, "0.285", "0.38", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
             // Reset Stats Button
             if (!config.defaultOptions.hardcorenoreset || (config.defaultOptions.hardcorenoreset && config.defaultOptions.bypassadminreset && player.IsAdmin && permission.UserHasPermission(player.UserIDString, XPerience.Admin)))
             {
                 if (statstimer > 0)
                 {
-                    FullScreenelements.Add(XPUIButton("", rowtwo + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘{XPLang("canresetstats", player.UserIDString, statstimer)}〙", "0.4", "0.48", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUIButton("", rowtwo + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘{XPLang("canresetstats", player.UserIDString, statstimer)}〙", "0.38", "0.48", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
                 }
                 else
                 {
-                    FullScreenelements.Add(XPUIButton("xp.playercontrol reset stats", rowtwo + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘{XPLang("resetstatsbutton", player.UserIDString)}〙", "0.4", "0.48", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUIButton("xp.playercontrol reset stats", rowtwo + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘{XPLang("resetstatsbutton", player.UserIDString)}〙", "0.38", "0.48", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
                 }
             }
             // Stat List
@@ -8145,17 +8407,17 @@ namespace Oxide.Plugins
             }
             // Colum Three Skill Effects
             int rowthree = 1;
-            FullScreenelements.Add(XPUILabel($"Skill Effects:", rowthree, 0.055f, TextAnchor.MiddleLeft, 18, "0.55", "0.7", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUILabel($"Skill Effects:", rowthree, 0.055f, TextAnchor.MiddleLeft, 18, "0.55", "0.65", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
             // Reset Skills Button
             if (!config.defaultOptions.hardcorenoreset || (config.defaultOptions.hardcorenoreset && config.defaultOptions.bypassadminreset && player.IsAdmin && permission.UserHasPermission(player.UserIDString, XPerience.Admin)))
             {
                 if (skilltimer > 0)
                 {
-                    FullScreenelements.Add(XPUIButton("", rowthree + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘{XPLang("canresetskills", player.UserIDString, skilltimer)}〙", "0.7", "0.78", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUIButton("", rowthree + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘{XPLang("canresetskills", player.UserIDString, skilltimer)}〙", "0.65", "0.78", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
                 }
                 else
                 {
-                    FullScreenelements.Add(XPUIButton("xp.playercontrol reset skills", rowthree + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘{XPLang("resetskillsbutton", player.UserIDString)}〙", "0.7", "0.78", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
+                    FullScreenelements.Add(XPUIButton("xp.playercontrol reset skills", rowthree + 1, resetheight, 13, "1.0 0.0 0.0 0.7", $"〘{XPLang("resetskillsbutton", player.UserIDString)}〙", "0.65", "0.78", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
                 }
             }
             // Skill List
@@ -8615,6 +8877,7 @@ namespace Oxide.Plugins
             if (xprecord == null) return;
             float height = 0.036f;
             float skillheight = 0.031f;
+            float infoheight = 0.020f;
             int row = 1;
             var FullScreenelements = new CuiElementContainer();
             // No Display if player search disabled
@@ -8634,6 +8897,7 @@ namespace Oxide.Plugins
             FullScreenelements.Add(XPUIPanel("0.16 0.0", "1 1", "0 0 0 0.75"), XPeriencePlayerControlFullMain, XPeriencePlayerControlFullInfo);
             // Player Name
             FullScreenelements.Add(XPUILabel($"{xprecord.displayname}", row, 0.060f, TextAnchor.MiddleLeft, 20, "0.01", "0.99", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullInfo);
+            FullScreenelements.Add(XPUIButton($"xp.playercontrol openbox {xprecord.id}", row + 1, infoheight, 13, "1.0 0.0 0.0 0.7", $"〘Info Box〙", "0.20", "0.27", TextAnchor.MiddleCenter), XPeriencePlayerControlFullInfo);
             row++;
             // Main - Player Info
             int statpoints = xprecord.MentalityP + xprecord.DexterityP + xprecord.MightP + xprecord.CaptaincyP;
@@ -10445,7 +10709,7 @@ namespace Oxide.Plugins
             {
                 pagerow++;
                 spacing += 0.2;
-                FullScreenelements.Add(XPUIButton("xp.topplayers 1 tamer 0", pagerow + spacing, buttonheight, 15, "0.0 0.0 0.0 0.7", $"{XPLang("tamer", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceTopSelection);
+                FullScreenelements.Add(XPUIButton("xp.topplayers 1 stats tamer 0", pagerow + spacing, buttonheight, 15, "0.0 0.0 0.0 0.7", $"{XPLang("tamer", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceTopSelection);
             }
             // Close Button
             
@@ -10535,11 +10799,11 @@ namespace Oxide.Plugins
                             {
                                 if (playerdata.Status)
                                 {
-                                    FullScreenelements.Add(XPUIImage(XPerienceTopInner, XPerienceonline, row, height, "0.50", "0.51"));
+                                    FullScreenelements.Add(XPUIImage(XPerienceTopInner, XPerienceonline, rowtwo, height, "0.50", "0.51"));
                                 }
                                 else
                                 {
-                                    FullScreenelements.Add(XPUIImage(XPerienceTopInner, XPerienceoffline, row, height, "0.50", "0.51"));
+                                    FullScreenelements.Add(XPUIImage(XPerienceTopInner, XPerienceoffline, rowtwo, height, "0.50", "0.51"));
                                 }
                             }
                         }
@@ -10690,11 +10954,11 @@ namespace Oxide.Plugins
                             {
                                 if (playerdata.Status)
                                 {
-                                    FullScreenelements.Add(XPUIImage(XPerienceTopInner, XPerienceonline, row, height, "0.50", "0.51"));
+                                    FullScreenelements.Add(XPUIImage(XPerienceTopInner, XPerienceonline, rowtwo, height, "0.50", "0.51"));
                                 }
                                 else
                                 {
-                                    FullScreenelements.Add(XPUIImage(XPerienceTopInner, XPerienceoffline, row, height, "0.50", "0.51"));
+                                    FullScreenelements.Add(XPUIImage(XPerienceTopInner, XPerienceoffline, rowtwo, height, "0.50", "0.51"));
                                 }
                             }
                         }
@@ -10741,6 +11005,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     DestroyUi(player, XPerienceAdminPanelSQL);
                     DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
                     AdminInfoPage(player);
                     break;
                 case "levelxp":
@@ -10752,6 +11017,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     DestroyUi(player, XPerienceAdminPanelSQL);
                     DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
                     AdminLevelPage(player);
                     break;
                 case "stats":
@@ -10763,6 +11029,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     DestroyUi(player, XPerienceAdminPanelSQL);
                     DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
                     AdminStatsPage(player);
                     break;
                 case "skills":
@@ -10774,7 +11041,20 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     DestroyUi(player, XPerienceAdminPanelSQL);
                     DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
                     AdminSkillsPage(player);
+                    break;
+                case "playerdata":
+                    DestroyUi(player, XPerienceAdminPanelInfo);
+                    DestroyUi(player, XPerienceAdminPanelLevelXP);
+                    DestroyUi(player, XPerienceAdminPanelStats);
+                    DestroyUi(player, XPerienceAdminPanelSkills);
+                    DestroyUi(player, XPerienceAdminPanelTimerColor);
+                    DestroyUi(player, XPerienceAdminPanelOtherMods);
+                    DestroyUi(player, XPerienceAdminPanelSQL);
+                    DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
+                    AdminPlayerInfoPage(player);
                     break;
                 case "timercolor":
                     DestroyUi(player, XPerienceAdminPanelInfo);
@@ -10785,6 +11065,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     DestroyUi(player, XPerienceAdminPanelSQL);
                     DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
                     AdminTimerColorPage(player);
                     break;
                 case "othermods":
@@ -10796,6 +11077,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     DestroyUi(player, XPerienceAdminPanelSQL);
                     DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
                     AdminOtherModsPage(player);
                     break;
                 case "sql":
@@ -10807,6 +11089,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     DestroyUi(player, XPerienceAdminPanelSQL);
                     DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
                     AdminSQLPage(player);
                     break;
                 case "save":
@@ -10831,6 +11114,7 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelOtherMods);
                     DestroyUi(player, XPerienceAdminPanelSQL);
                     DestroyUi(player, XPerienceAdminPanelReset);
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
                     AdminResetPage(player);
                     break;              
                 case "fix":
@@ -11395,6 +11679,61 @@ namespace Oxide.Plugins
                     DestroyUi(player, XPerienceAdminPanelSkills);
                     AdminSkillsPage(player);
                     break;
+                case "playerdata":
+                    switch(option)
+                    {
+                        case "showinfobox":
+                            config.playerinfoBoxsettings.showinfobox = setting;
+                            break;
+                        case "alivetime":
+                            config.playerinfoBoxsettings.alivetime = setting;
+                            break;
+                        case "sleepingtime":
+                            config.playerinfoBoxsettings.sleepingtime = setting;
+                            break;
+                        case "swimmingtime":
+                            config.playerinfoBoxsettings.swimingtime = setting;
+                            break;
+                        case "drivingtime":
+                            config.playerinfoBoxsettings.drivingtime = setting;
+                            break;
+                        case "flyingtime":
+                            config.playerinfoBoxsettings.flyingtime = setting;
+                            break;
+                        case "boatingtime":
+                            config.playerinfoBoxsettings.boatingtime = setting;
+                            break;
+                        case "basetime":
+                            config.playerinfoBoxsettings.basetime = setting;
+                            break;
+                        case "monumentime":
+                            config.playerinfoBoxsettings.monumenttime = setting;
+                            break;
+                        case "wildernesstime":
+                            config.playerinfoBoxsettings.wildernesstime = setting;
+                            break;
+                        case "metersran":
+                            config.playerinfoBoxsettings.metersran = setting;
+                            break;
+                        case "meterswalked":
+                            config.playerinfoBoxsettings.meterswalked = setting;
+                            break;
+                        case "lastdmgrec":
+                            config.playerinfoBoxsettings.lastdmgrec = setting;
+                            break;
+                        case "lastdmgrecby":
+                            config.playerinfoBoxsettings.lastdmgrecby = setting;
+                            break;
+                        case "lastdmgdelt":
+                            config.playerinfoBoxsettings.lastdmgdelt = setting;
+                            break;
+                        case "lastdmgdeltto":
+                            config.playerinfoBoxsettings.lastdmgdeltto = setting;
+                            break;
+                    }
+                    DestroyUi(player, XPerienceAdminPanelInfoBox);
+                    AdminPlayerInfoPage(player);
+                    break;
                 case "timercolor":
                     switch (option)
                     {
@@ -11826,6 +12165,8 @@ namespace Oxide.Plugins
             row++;
             ControlPanelelements.Add(XPUIButton("xp.admin skills", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_004", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
             row++;
+            ControlPanelelements.Add(XPUIButton("xp.admin playerdata", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_016", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
+            row++;
             ControlPanelelements.Add(XPUIButton("xp.admin timercolor", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_005", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
             row++;
             ControlPanelelements.Add(XPUIButton("xp.admin othermods", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_012", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
@@ -11835,14 +12176,13 @@ namespace Oxide.Plugins
             row++;
             ControlPanelelements.Add(XPUIButton("xp.admin reload", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_008", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
             row++;
-            row++;
             ControlPanelelements.Add(XPUIButton("xp.admin close", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_009", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
+            row++;
+            ControlPanelelements.Add(XPUIButton("xp.admin reset", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_013", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
             row++;
             row++;
             ControlPanelelements.Add(XPUIButton("xp.admin fix", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_011", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
-            row++;
-            row++;
-            ControlPanelelements.Add(XPUIButton("xp.admin reset", row, height, 18, "0.0 0.0 0.0 0.7", $"{XPLang("adminmenu_013", player.UserIDString)}", "0.03", "1", TextAnchor.MiddleCenter), XPerienceAdminPanelMenu);
+
             // UI End
             CuiHelper.AddUi(player, ControlPanelelements);
             return;
@@ -13097,6 +13437,111 @@ namespace Oxide.Plugins
             return;
         }
 
+        private void AdminPlayerInfoPage(BasePlayer player)
+        {
+            var ControlPanelelements = new CuiElementContainer();
+            var height = 0.028f;
+            int row = 4;
+            string lableL = "0.01";
+            string lableR = "0.20";
+            string valueL = "0.20";
+            string valueR = "0.25";
+            string setting1L = "0.26";
+            string setting1R = "0.27";
+            string setting2L = "0.28";
+            string setting2R = "0.29";
+
+            ControlPanelelements.Add(XPUIPanel("0.16 0.0", "1.0 1.0", "0.0 0.0 0.0 0.7"), XPerienceAdminPanelMain, XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"Player Info Settings", 1, 0.090f, TextAnchor.MiddleLeft, 18, "0.01", "1", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            // Main UI Settings
+            ControlPanelelements.Add(XPUILabel($"[Info Box Settings]", row, height, TextAnchor.MiddleLeft, 15, "0.01", "0.30", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            // Allow LiveStats Location
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Player Info Box:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.showinfobox}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata showinfobox 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata showinfobox 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Alive Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.alivetime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata alivetime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata alivetime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Sleeping Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.sleepingtime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata sleepingtime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata sleepingtime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Swimming Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.swimingtime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata swimmingtime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata swimmingtime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Driving Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.drivingtime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata drivingtime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata drivingtime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Flying Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.flyingtime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata flyingtime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata flyingtime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Boating Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.boatingtime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata boatingtime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata boatingtime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Base Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.basetime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata basetime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata basetime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Monument Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.monumenttime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata monumentime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata monumentime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Wilderness Time:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.wildernesstime}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata wildernesstime 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata wildernesstime 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Meters Ran:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.metersran}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata metersran 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata metersran 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Meters Walked:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.meterswalked}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata meterswalked 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata meterswalked 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Last DMG Recieved:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.lastdmgrec}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata lastdmgrec 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata lastdmgrec 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Last DMG Recieved By:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.lastdmgrecby}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata lastdmgrecby 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata lastdmgrecby 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Last DMG Delt:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.lastdmgdelt}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata lastdmgdelt 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata lastdmgdelt 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            ControlPanelelements.Add(XPUILabel($"Show Last DMG Delt To:", row, height, TextAnchor.MiddleLeft, 12, lableL, lableR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUILabel($"|       {config.playerinfoBoxsettings.lastdmgdeltto}", row, height, TextAnchor.MiddleLeft, 12, valueL, valueR, "1.0 1.0 1.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata lastdmgdeltto 0 true", row, height, 12, "0.0 1.0 0.0 0", "T", setting1L, setting1R, TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            ControlPanelelements.Add(XPUIButton($"xp.config playerdata lastdmgdeltto 0 false", row, height, 12, "1.0 0.0 0.0 0", "F", setting2L, setting2R, TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelInfoBox);
+            row++;
+            // End
+            CuiHelper.AddUi(player, ControlPanelelements);
+            return;
+        }
+
         private void AdminTimerColorPage(BasePlayer player)
         {
             var ControlPanelelements = new CuiElementContainer();
@@ -13996,6 +14441,7 @@ namespace Oxide.Plugins
                 ["adminmenu_013"] = "Reset Options",
                 ["adminmenu_014"] = "My Stats",
                 ["adminmenu_015"] = "Player's Stats",
+                ["adminmenu_016"] = "Player Info",
                 ["adminitemchange"] = "{0} condition is now {1} and max condition is now {2}",
                 ["adminitemchangerequirement"] = "{0} current condition is {1} and max condition is {2}\nTo change this use /{3} (condition value) (maxcondition value)",
                 ["adminfixplayers"] = "All player data has been reset except experience.\nLevels, points and requirements recalculated.",
@@ -14086,9 +14532,25 @@ namespace Oxide.Plugins
                 ["captaincyxpboost"] = "Team XP Boost",
                 ["captaincydistance"] = "Effective Distance",
                 ["captaincyteamrequired"] = "Must be part of a team!",
+                ["playerinfoalive"] = "Player Info Since Last Spawn:",
+                ["timealive"] = "Alive",
+                ["timeflying"] = "Flying Time",
+                ["timedriving"] = "Driving Time",
+                ["timeboating"] = "Boating Time",
+                ["timesleeping"] = "Sleeping Time",
+                ["timeswimming"] = "Swimming Time",
+                ["timeinbase"] = "Time In Base",
+                ["timedmgrec"] = "Last Dmg Recieved",
+                ["timedmgrecfrom"] = "Last Dmg From",
+                ["timedmgdelt"] = "Last Dmg Delt",
+                ["timedeltto"] = "Last Dmg To",
+                ["timeinmonument"] = "Time In Monuments",
+                ["timeinwild"] = "Time In Wilderness",
                 ["status"] = "Status",
                 ["online"] = "Online",
                 ["offline"] = "Offline",
+                ["metersran"] = "Meters Ran",
+                ["meterswalk"] = "Meters Walked",
                 ["level"] = "Level",
                 ["experience"] = "Experience",
                 ["xp"] = "XP",
@@ -14491,6 +14953,10 @@ namespace Oxide.Plugins
             return info;
         }
 
+        private string GetVersion()
+        {
+            return version;
+        }
         #endregion
 
     }

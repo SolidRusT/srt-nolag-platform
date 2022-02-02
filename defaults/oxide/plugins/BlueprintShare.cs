@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Blueprint Share", "c_creep", "1.2.7")]
+    [Info("Blueprint Share", "c_creep", "1.2.8")]
     [Description("Allows players to share researched blueprints with their friends, clan or team")]
 
     class BlueprintShare : RustPlugin
@@ -21,43 +21,10 @@ namespace Oxide.Plugins
         [PluginReference] private Plugin Clans, Friends;
 
         private StoredData storedData;
-
-        #endregion
-
-        #region Localization
-
-        protected override void LoadDefaultMessages()
-        {
-            lang.RegisterMessages(new Dictionary<string, string>
-            {
-                ["Prefix"] = "<color=#D85540>[Blueprint Share] </color>",
-                ["ArgumentsError"] = "Error, incorrect arguments. Try /bs help.",
-                ["Help"] = "<color=#D85540>Blueprint Share Help:</color>\n\n<color=#D85540>/bs toggle</color> - Toggles the sharing of blueprints.\n<color=#D85540>/bs share <player></color> - Shares your blueprints with other player.",
-                ["ToggleOn"] = "You have <color=#00ff00>enabled</color> sharing blueprints.",
-                ["ToggleOff"] = "You have <color=#ff0000>disabled</color> sharing blueprints.",
-                ["NoPermission"] = "You don't have permission to use this command!",
-                ["CannotShare"] = "You cannot share blueprints with this player because they aren't a friend or in the same clan or team!",
-                ["NoTarget"] = "You didn't specify a player to share with!",
-                ["TargetEqualsPlayer"] = "You cannot share blueprints with your self!",
-                ["PlayerNotFound"] = "Couldn't find a player with that name!",
-                ["MultiplePlayersFound"] = "Found multiple players with a similar name: {0}",
-                ["SharerSuccess"] = "You shared <color=#ffff00>{0}</color> blueprints with <color=#ffff00>{1}</color>.",
-                ["ShareReceieve"] = "<color=#ffff00>{0}</color> has shared <color=#ffff00>{1}</color> blueprints with you.",
-                ["NoBlueprintsToShare"] = "You don't have any new blueprints to share with {0}",
-                ["SharerLearntBlueprint"] = "You have learned the <color=#ffff00>{0}</color> blueprint and have shared it with <color=#ffff00>{1}</color> players!",
-                ["TargetLearntBlueprint"] = "<color=#ffff00>{0}</color> has shared the <color=#ffff00>{1}</color> blueprint with you!",
-                ["BlueprintBlocked"] = "The server has blocked the <color=#ffff00>{0}</color> blueprint from being shared but you will still learn the blueprint.",
-                ["ManualSharingDisabled"] = "Manual sharing of blueprints has been disabled on this server.",
-                ["TargetSharingDisabled"] = "Unable to share blueprints with <color=#ffff00>{0}</color> because they have disabled their sharing"
-            }, this);
-        }
-
-        private string GetLangValue(string key, string id = null, params object[] args)
-        {
-            var msg = lang.GetMessage(key, this, id);
-
-            return args.Length > 0 ? string.Format(msg, args) : msg;
-        }
+        
+        private const string UsePermission = "blueprintshare.use";
+        private const string TogglePermission = "blueprintshare.toggle";
+        private const string SharePermission = "blueprintshare.share";
 
         #endregion
 
@@ -67,9 +34,9 @@ namespace Oxide.Plugins
         {
             LoadData();
 
-            permission.RegisterPermission("blueprintshare.use", this);
-            permission.RegisterPermission("blueprintshare.toggle", this);
-            permission.RegisterPermission("blueprintshare.share", this);
+            permission.RegisterPermission(UsePermission, this);
+            permission.RegisterPermission(TogglePermission, this);
+            permission.RegisterPermission(SharePermission, this);
         }
 
         private void OnNewSave(string filename)
@@ -82,79 +49,193 @@ namespace Oxide.Plugins
 
         private void OnPlayerConnected(BasePlayer player)
         {
-            var playerUID = player.UserIDString;
+            var playerID = player.UserIDString;
 
-            if (!PlayerDataExists(playerUID))
+            if (!PlayerDataExists(playerID))
             {
-                CreateNewPlayerData(playerUID);
+                CreatePlayerData(playerID);
             }
         }
 
         private void OnItemAction(Item item, string action, BasePlayer player)
         {
-            if (config.PhysicalSharingEnabled)
+            if (!config.PhysicalSharingEnabled) return;
+            if (player == null || item == null) return;
+            if (action != "study") return;
+            
+            if (CanShareBlueprint(item.blueprintTargetDef, player))
             {
-                if (player != null)
-                {
-                    if (action == "study")
-                    {
-                        if (CanShareBlueprint(item.blueprintTargetDef, player))
-                        {
-                            item.Remove();
-                        }
-                    }
-                }
+                item.Remove();
             }
         }
 
         private void OnTechTreeNodeUnlocked(Workbench workbench, TechTreeData.NodeInstance node, BasePlayer player)
         {
-            if (config.TechTreeSharingEnabled)
-            {
-                if (workbench != null)
-                {
-                    if (node != null)
-                    {
-                        if (player != null)
-                        {
-                            CanShareBlueprint(node.itemDef, player);
-                        }
-                    }
-                }
-            }
+            if (!config.TechTreeSharingEnabled) return;
+            if (workbench == null || node == null || player == null) return;
+
+            CanShareBlueprint(node.itemDef, player);
         }
 
         private void OnTeamAcceptInvite(RelationshipManager.PlayerTeam team, BasePlayer player)
         {
-            if (config.ShareBlueprintsOnJoin)
+            if (!config.ShareBlueprintsOnJoin) return;
+            
+            NextTick(() =>
             {
-                NextTick(() =>
+                if (team == null || player == null) return;
+
+                if (team.members.Contains(player.userID))
                 {
-                    if (team != null && player != null)
-                    {
-                        if (team.members.Contains(player.userID))
-                        {
-                            ShareWithPlayer(team.GetLeader(), player);
-                        }
-                    }
-                });
-            }
+                    ShareWithPlayer(team.GetLeader(), player);
+                }
+            });
         }
 
         #endregion
 
-        #region Plugin Hooks
+        #region External Plugins
+
+        #region Friends
+
+        private bool HasFriends(ulong playerID)
+        {
+            if (Friends == null) return false;
+
+            var friendsList = Friends?.Call<ulong[]>("GetFriends", playerID);
+
+            return friendsList != null && friendsList.Length != 0;
+        }
+
+        private List<ulong> GetFriends(ulong playerID)
+        {
+            var friends = Friends?.Call<ulong[]>("GetFriends", playerID);
+
+            return friends.ToList();
+        }
+
+        private bool AreFriends(string playerID, string targetID) => Friends != null && Friends.Call<bool>("AreFriends", playerID, targetID);
+
+        #endregion
+
+        #region Clan
+
+        private bool InClan(ulong playerID)
+        {
+            if (Clans == null) return false;
+
+            var clanName = Clans?.Call<string>("GetClanOf", playerID);
+
+            return clanName != null;
+        }
+
+        private List<ulong> GetClanMembers(ulong playerID)
+        {
+            // Clans and Clans Reborn
+            var clanMembers = Clans?.Call<List<string>>("GetClanMembers", playerID);
+
+            if (clanMembers != null)
+            {
+                return clanMembers.Select(x => ulong.Parse(x)).ToList();
+            }
+
+            // Rust:IO Clans
+            var clanName = Clans?.Call<string>("GetClanOf", playerID);
+
+            return !string.IsNullOrEmpty(clanName) ? GetClanMembers(clanName) : null;
+        }
+
+        private List<ulong> GetClanMembers(string clanName)
+        {
+            var clan = Clans?.Call<JObject>("GetClan", clanName);
+
+            var members = clan?.GetValue("members") as JArray;
+
+            return members?.Select(Convert.ToUInt64).ToList();
+        }
+
+        private bool SameClan(string playerID, string targetID)
+        {
+            if (Clans == null) return false;
+
+            // Clans and Clans Reborn
+            var isClanMember = Clans?.Call("IsClanMember", playerID, targetID);
+
+            if (isClanMember != null)
+            {
+                return (bool)isClanMember;
+            }
+
+            // Rust:IO Clans
+            var playerClan = Clans?.Call("GetClanOf", playerID);
+
+            if (playerClan == null) return false;
+
+            var targetClan = Clans?.Call("GetClanOf", targetID);
+
+            if (targetClan == null) return false;
+
+            return (string)playerClan == (string)targetClan;
+        }
+
+        #endregion
+
+        #region Team
+
+        private bool InTeam(ulong playerID)
+        {
+            var player = RustCore.FindPlayerById(playerID);
+
+            return player.currentTeam != 0;
+        }
+
+        private List<ulong> GetTeamMembers(ulong playerID)
+        {
+            var player = RustCore.FindPlayerById(playerID);
+
+            return player?.Team.members;
+        }
+
+        private bool SameTeam(BasePlayer player, BasePlayer target) => player.currentTeam == target.currentTeam;
+
+        #endregion
+
+        #endregion
+
+        #region External Plugin Hooks
 
         private void OnFriendAdded(string playerID, string friendID)
         {
-            if (config.ShareBlueprintsOnJoin)
-            {
-                var player = RustCore.FindPlayerByIdString(playerID);
-                var friend = RustCore.FindPlayerByIdString(friendID);
+            if (!config.ShareBlueprintsOnJoin) return;
 
-                if (player != null && friend != null)
+            var player = RustCore.FindPlayerByIdString(playerID);
+
+            if (player == null) return;
+
+            var friend = RustCore.FindPlayerByIdString(friendID);
+
+            if (friend == null) return;
+
+            ShareWithPlayer(player, friend);
+        }
+
+        private void OnClanMemberJoined(string playerID, List<string> memberIDs)
+        {
+            if (!config.ShareBlueprintsOnJoin) return;
+
+            var player = RustCore.FindPlayerByIdString(playerID);
+
+            var ids = memberIDs.Select(x => ulong.Parse(x)).ToList();
+
+            var clanMembers = FindPlayers(ids, player.userID);
+
+            if (clanMembers.Count > 0)
+            {
+                foreach (var clanMember in clanMembers)
                 {
-                    ShareWithPlayer(player, friend);
+                    if (player == null || clanMember == null) continue;
+                            
+                    ShareWithPlayer(clanMember, player);
                 }
             }
         }
@@ -166,18 +247,18 @@ namespace Oxide.Plugins
         private bool CanShareBlueprint(ItemDefinition item, BasePlayer player)
         {
             if (item == null || player == null) return false;
-            if (!permission.UserHasPermission(player.UserIDString, "blueprintshare.use")) return false;
+            if (!permission.UserHasPermission(player.UserIDString, UsePermission)) return false;
 
-            var playerUID = player.UserIDString;
+            var playerID = player.UserIDString;
 
             if (config.BlockedItems.Contains(item.shortname))
             {
-                player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("BlueprintBlocked", playerUID, item.displayName.translated));
+                player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("BlueprintBlocked", playerID, item.displayName.translated));
 
                 return false;
             }
 
-            if (SharingEnabled(playerUID))
+            if (SharingEnabled(playerID))
             {
                 if (InTeam(player.userID) || InClan(player.userID) || HasFriends(player.userID))
                 {
@@ -267,34 +348,34 @@ namespace Oxide.Plugins
         {
             if (player == null || target == null) return;
 
-            var playerUID = player.UserIDString;
-            var targetUID = target.UserIDString;
+            var playerID = player.UserIDString;
+            var targetID = target.UserIDString;
 
-            if (SharingEnabled(targetUID))
+            if (!SharingEnabled(targetID))
             {
-                if (SameTeam(player, target) || SameClan(playerUID, targetUID) || AreFriends(playerUID, targetUID))
-                {
-                    var learnedBlueprints = UnlockBlueprints(target, player.PersistantPlayerInfo.unlockedItems);
+                player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("TargetSharingDisabled", playerID, target.displayName));
 
-                    if (learnedBlueprints > 0)
-                    {
-                        player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("SharerSuccess", playerUID, learnedBlueprints, target.displayName));
+                return;
+            }
 
-                        target.ChatMessage(GetLangValue("Prefix", targetUID) + GetLangValue("ShareReceieve", targetUID, player.displayName, learnedBlueprints));
-                    }
-                    else
-                    {
-                        player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("NoBlueprintsToShare", playerUID, target.displayName));
-                    }
-                }
-                else
-                {
-                    player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("CannotShare", playerUID));
-                }
+            if (!SameTeam(player, target) && !SameClan(playerID, targetID) && !AreFriends(playerID, targetID))
+            {
+                player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("CannotShare", playerID));
+
+                return;
+            }
+
+            var learnedBlueprints = UnlockBlueprints(target, player.PersistantPlayerInfo.unlockedItems);
+
+            if (learnedBlueprints > 0)
+            {
+                player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("SharerSuccess", playerID, learnedBlueprints, target.displayName));
+
+                target.ChatMessage(GetLangValue("Prefix", targetID) + GetLangValue("ShareReceieve", targetID, player.displayName, learnedBlueprints));
             }
             else
             {
-                player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("TargetSharingDisabled", playerUID, target.displayName));
+                player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("NoBlueprintsToShare", playerID, target.displayName));
             }
         }
 
@@ -359,31 +440,187 @@ namespace Oxide.Plugins
 
         private List<BasePlayer> SelectSharePlayers(BasePlayer player)
         {
-            var playersToShareWith = new List<BasePlayer>();
+            var ids = new List<ulong>();
 
-            var playerUID = player.userID;
+            var playerID = player.userID;
 
-            if (config.ClansEnabled && Clans != null && InClan(playerUID))
+            if (config.ClansEnabled && Clans != null && InClan(playerID))
             {
-                playersToShareWith.AddRange(GetClanMembers(playerUID));
+                ids.AddRange(GetClanMembers(playerID));
             }
 
-            if (config.FriendsEnabled && Friends != null && HasFriends(playerUID))
+            if (config.FriendsEnabled && Friends != null && HasFriends(playerID))
             {
-                playersToShareWith.AddRange(GetFriends(playerUID));
+                ids.AddRange(GetFriends(playerID));
             }
 
-            if (config.TeamsEnabled && InTeam(playerUID))
+            if (config.TeamsEnabled && InTeam(playerID))
             {
-                playersToShareWith.AddRange(GetTeamMembers(playerUID));
+                ids.AddRange(GetTeamMembers(playerID));
             }
 
-            return playersToShareWith;
+            return FindPlayers(ids, playerID);
         }
 
         #endregion
 
-        #region Configuration
+        #region Utility
+
+        private BasePlayer FindPlayer(string playerName, BasePlayer player, string playerID)
+        {
+            var targets = FindPlayers(playerName);
+
+            if (targets.Count <= 0)
+            {
+                player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("PlayerNotFound", playerID));
+
+                return null;
+            }
+
+            if (targets.Count > 1)
+            {
+                player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("MultiplePlayersFound", playerID));
+
+                return null;
+            }
+
+            return targets.First();
+        }
+
+        private List<BasePlayer> FindPlayers(string playerName)
+        {
+            if (string.IsNullOrEmpty(playerName)) return null;
+
+            return BasePlayer.allPlayerList.Where(p => p && p.UserIDString == playerName || p.displayName.Contains(playerName, CompareOptions.OrdinalIgnoreCase)).ToList();
+        }
+
+        private void PlaySoundEffect(BasePlayer player)
+        {
+            if (player == null) return;
+
+            var soundEffect = new Effect("assets/prefabs/deployable/research table/effects/research-success.prefab", player.transform.position, Vector3.zero);
+
+            if (soundEffect == null) return;
+
+            EffectNetwork.Send(soundEffect, player.net.connection);
+        }
+
+        private List<BasePlayer> FindPlayers(List<ulong> ids, ulong playerId)
+        {
+            var targets = new List<BasePlayer>();
+
+            foreach (var id in ids)
+            {
+                var target = RustCore.FindPlayerById(id);
+
+                if (target != null && id != playerId && !targets.Contains(target))
+                {
+                    targets.Add(target);
+                }
+            }
+
+            return targets;
+        }
+
+        #endregion
+
+        #region Chat Commands
+
+        [ChatCommand("bs")]
+        private void ToggleCommand(BasePlayer player, string command, string[] args)
+        {
+            var playerID = player.UserIDString;
+
+            if (args.Length < 1)
+            {
+                player.ChatMessage(GetLangValue("Help", playerID));
+
+                return;
+            }
+
+            switch (args[0].ToLower())
+            {
+                case "help":
+                {
+                    player.ChatMessage(GetLangValue("Help", playerID));
+
+                    break;
+                }
+
+                case "toggle":
+                {
+                    if (!permission.UserHasPermission(playerID, TogglePermission))
+                    {
+                        player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("NoPermission", playerID));
+
+                        return;
+                    }
+
+                    if (!PlayerDataExists(playerID))
+                    {
+                        CreatePlayerData(playerID);
+                    }
+
+                    player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue(SharingEnabled(playerID) ? "ToggleOff" : "ToggleOn", playerID));
+
+                    storedData.Players[playerID].SharingEnabled = !storedData.Players[playerID].SharingEnabled;
+
+                    SaveData();
+
+                    break;
+                }
+
+                case "share":
+                {
+                    if (!config.ManualSharingEnabled)
+                    {
+                        player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("ManualSharingDisabled", playerID));
+
+                        return;
+                    }
+
+                    if (!permission.UserHasPermission(playerID, SharePermission))
+                    {
+                        player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("NoPermission", playerID));
+
+                        return;
+                    }
+
+                    if (args.Length != 2)
+                    {
+                        player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("NoTarget", playerID));
+
+                        return;
+                    }
+
+                    var target = FindPlayer(args[1], player, playerID);
+
+                    if (target == null) return;
+
+                    if (target == player)
+                    {
+                        player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("TargetEqualsPlayer", playerID));
+
+                        return;
+                    }
+
+                    ShareWithPlayer(player, target);
+
+                    break;
+                }
+
+                default:
+                {
+                    player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("ArgumentsError", playerID));
+
+                    break;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Configuration File
 
         private Configuration config;
 
@@ -405,15 +642,15 @@ namespace Oxide.Plugins
             public bool TechTreeSharingEnabled = true;
 
             [JsonProperty("Allow Manual Sharing of Blueprints")]
-            public bool ManualSharingEnable = true;
+            public bool ManualSharingEnabled = true;
 
-            [JsonProperty("Share Blueprints On Join")]
+            [JsonProperty("Share Blueprints on Join")]
             public bool ShareBlueprintsOnJoin = false;
 
             [JsonProperty("Clear Data File on Wipe")]
             public bool ClearDataOnWipe = true;
 
-            [JsonProperty("Items Blocked From Sharing")]
+            [JsonProperty("Items Blocked from Sharing")]
             public List<string> BlockedItems = new List<string>();
         }
 
@@ -454,223 +691,7 @@ namespace Oxide.Plugins
 
         #endregion
 
-        #region Friends
-
-        private bool HasFriends(ulong playerUID)
-        {
-            if (Friends == null) return false;
-
-            var friendsList = Friends?.Call<ulong[]>("GetFriends", playerUID);
-
-            return friendsList != null && friendsList.Length != 0;
-        }
-
-        private List<BasePlayer> GetFriends(ulong playerUID)
-        {
-            var friendsList = new List<BasePlayer>();
-
-            var friends = Friends?.Call<ulong[]>("GetFriends", playerUID);
-
-            foreach (var friendUID in friends)
-            {
-                var friend = RustCore.FindPlayerById(friendUID);
-
-                if (friend != null && friendUID != playerUID)
-                {
-                    friendsList.Add(friend);
-                }
-            }
-
-            return friendsList;
-        }
-
-        private bool AreFriends(string playerUID, string targetUID) => Friends == null ? false : Friends.Call<bool>("AreFriends", playerUID, targetUID);
-
-        #endregion
-
-        #region Clan
-
-        private bool InClan(ulong playerUID)
-        {
-            if (Clans == null) return false;
-
-            var clanName = Clans?.Call<string>("GetClanOf", playerUID);
-
-            return clanName != null;
-        }
-
-        private List<BasePlayer> GetClanMembers(ulong playerUID)
-        {
-            var membersList = new List<BasePlayer>();
-
-            // Clans and Clans Reborn
-            var clanMembers = Clans?.Call<List<string>>("GetClanMembers", playerUID);
-
-            if (clanMembers != null)
-            {
-                return GetMemberObjects(clanMembers, playerUID);
-            }
-
-            // Rust:IO Clans
-            var clanName = Clans?.Call<string>("GetClanOf", playerUID);
-
-            if (!string.IsNullOrEmpty(clanName))
-            {
-                var clan = Clans?.Call<JObject>("GetClan", clanName);
-
-                if (clan != null && clan is JObject)
-                {
-                    var members = clan.GetValue("members") as JArray;
-
-                    if (members != null)
-                    {
-                        foreach (var member in members)
-                        {
-                            ulong clanMemberUID;
-
-                            if (!ulong.TryParse(member.ToString(), out clanMemberUID)) continue;
-
-                            var clanMember = RustCore.FindPlayerById(clanMemberUID);
-
-                            if (clanMember != null && clanMemberUID != playerUID)
-                            {
-                                membersList.Add(clanMember);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return membersList;
-        }
-
-        private List<BasePlayer> GetMemberObjects(List<string> members, ulong playerUID)
-        {
-            var membersList = new List<BasePlayer>();
-
-            foreach (var member in members)
-            {
-                ulong clanMemberUID;
-
-                if (!ulong.TryParse(member, out clanMemberUID)) continue;
-
-                var clanMember = RustCore.FindPlayerById(clanMemberUID);
-
-                if (clanMember != null && clanMemberUID != playerUID)
-                {
-                    membersList.Add(clanMember);
-                }
-            }
-
-            return membersList;
-        }
-
-        private bool SameClan(string playerUID, string targetUID)
-        {
-            if (Clans == null) return false;
-
-            // Clans and Clans Reborn
-            var isClanMember = Clans?.Call("IsClanMember", playerUID, targetUID);
-
-            if (isClanMember != null)
-            {
-                return (bool)isClanMember;
-            }
-
-            // Rust:IO Clans
-            var playerClan = Clans?.Call("GetClanOf", playerUID);
-
-            if (playerClan == null) return false;
-
-            var targetClan = Clans?.Call("GetClanOf", targetUID);
-
-            if (targetClan == null) return false;
-
-            return (string)targetClan == (string)playerClan;
-        }
-
-        #endregion
-
-        #region Team
-
-        private bool InTeam(ulong playerUID)
-        {
-            var player = RustCore.FindPlayerById(playerUID);
-
-            return player.currentTeam != 0;
-        }
-
-        private List<BasePlayer> GetTeamMembers(ulong playerUID)
-        {
-            var membersList = new List<BasePlayer>();
-
-            var player = RustCore.FindPlayerById(playerUID);
-
-            var teamMembers = player.Team.members;
-
-            foreach (var teamMemberUID in teamMembers)
-            {
-                var teamMember = RustCore.FindPlayerById(teamMemberUID);
-
-                if (teamMember != null && teamMemberUID != playerUID)
-                {
-                    membersList.Add(teamMember);
-                }
-            }
-
-            return membersList;
-        }
-
-        private bool SameTeam(BasePlayer player, BasePlayer target) => player.currentTeam == target.currentTeam;
-
-        #endregion
-
-        #region Utility
-
-        private BasePlayer FindPlayer(string playerName, BasePlayer player, string playerUID)
-        {
-            var targets = FindPlayers(playerName);
-
-            if (targets.Count <= 0)
-            {
-                player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("PlayerNotFound", playerUID));
-
-                return null;
-            }
-
-            if (targets.Count > 1)
-            {
-                player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("MultiplePlayersFound", playerUID));
-
-                return null;
-            }
-
-            return targets.First();
-        }
-
-        private List<BasePlayer> FindPlayers(string playerName)
-        {
-            if (string.IsNullOrEmpty(playerName)) return null;
-
-            return BasePlayer.allPlayerList.Where(p => p && p.UserIDString == playerName || p.displayName.Contains(playerName, CompareOptions.OrdinalIgnoreCase)).ToList();
-        }
-
-        private void PlaySoundEffect(BasePlayer player)
-        {
-            if (player != null)
-            {
-                var soundEffect = new Effect("assets/prefabs/deployable/research table/effects/research-success.prefab", player.transform.position, Vector3.zero);
-
-                if (soundEffect != null)
-                {
-                    EffectNetwork.Send(soundEffect, player.net.connection);
-                }
-            }
-        }
-
-        #endregion
-
-        #region Data
+        #region Data File
 
         private class StoredData
         {
@@ -703,11 +724,11 @@ namespace Oxide.Plugins
 
         private void SaveData() => Interface.Oxide.DataFileSystem.WriteObject(Name, storedData);
 
-        private bool PlayerDataExists(string playerUID) => storedData.Players.ContainsKey(playerUID);
+        private bool PlayerDataExists(string playerID) => storedData.Players.ContainsKey(playerID);
 
-        private void CreateNewPlayerData(string playerUID)
+        private void CreatePlayerData(string playerID)
         {
-            storedData.Players.Add(playerUID, new PlayerData
+            storedData.Players.Add(playerID, new PlayerData
             {
                 SharingEnabled = true
             });
@@ -717,106 +738,46 @@ namespace Oxide.Plugins
 
         #endregion
 
-        #region Chat Commands
+        #region Localization File
 
-        [ChatCommand("bs")]
-        private void ToggleCommand(BasePlayer player, string command, string[] args)
+        protected override void LoadDefaultMessages()
         {
-            var playerUID = player.UserIDString;
-
-            if (args.Length < 1)
+            lang.RegisterMessages(new Dictionary<string, string>
             {
-                player.ChatMessage(GetLangValue("Help", playerUID));
+                ["Prefix"] = "<color=#D85540>[Blueprint Share] </color>",
+                ["ArgumentsError"] = "Error, incorrect arguments. Try /bs help.",
+                ["Help"] = "<color=#D85540>Blueprint Share Help:</color>\n\n<color=#D85540>/bs toggle</color> - Toggles the sharing of blueprints.\n<color=#D85540>/bs share <player></color> - Shares your blueprints with other player.",
+                ["ToggleOn"] = "You have <color=#00ff00>enabled</color> sharing blueprints.",
+                ["ToggleOff"] = "You have <color=#ff0000>disabled</color> sharing blueprints.",
+                ["NoPermission"] = "You don't have permission to use this command!",
+                ["CannotShare"] = "You cannot share blueprints with this player because they aren't a friend or in the same clan or team!",
+                ["NoTarget"] = "You didn't specify a player to share with!",
+                ["TargetEqualsPlayer"] = "You cannot share blueprints with yourself!",
+                ["PlayerNotFound"] = "Could not find a player with that name!",
+                ["MultiplePlayersFound"] = "Found multiple players with a similar name: {0}",
+                ["SharerSuccess"] = "You shared <color=#ffff00>{0}</color> blueprint(s) with <color=#ffff00>{1}</color>.",
+                ["ShareReceieve"] = "<color=#ffff00>{0}</color> has shared <color=#ffff00>{1}</color> blueprint(s) with you.",
+                ["NoBlueprintsToShare"] = "You don't have any new blueprints to share with <color=#ffff00>{0}</color>.",
+                ["SharerLearntBlueprint"] = "You have learned the <color=#ffff00>{0}</color> blueprint and have shared it with <color=#ffff00>{1}</color> player(s)!",
+                ["TargetLearntBlueprint"] = "<color=#ffff00>{0}</color> has shared the <color=#ffff00>{1}</color> blueprint with you!",
+                ["BlueprintBlocked"] = "The server has blocked the <color=#ffff00>{0}</color> blueprint from being shared but you will still learn the blueprint.",
+                ["ManualSharingDisabled"] = "Manual sharing of blueprints is disabled on this server.",
+                ["TargetSharingDisabled"] = "Unable to share blueprints with <color=#ffff00>{0}</color> because they have disabled their sharing."
+            }, this);
+        }
 
-                return;
-            }
+        private string GetLangValue(string key, string id = null, params object[] args)
+        {
+            var msg = lang.GetMessage(key, this, id);
 
-            switch (args[0].ToLower())
-            {
-                case "help":
-                {
-                    player.ChatMessage(GetLangValue("Help", playerUID));
-
-                    break;
-                }
-                case "toggle":
-                {
-                    if (permission.UserHasPermission(playerUID, "blueprintshare.toggle"))
-                    {
-                        player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue(SharingEnabled(playerUID) ? "ToggleOff" : "ToggleOn", playerUID));
-
-                        if (PlayerDataExists(playerUID))
-                        {
-                            storedData.Players[playerUID].SharingEnabled = !storedData.Players[playerUID].SharingEnabled;
-
-                            SaveData();
-                        }
-                    }
-                    else
-                    {
-                        player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("NoPermission", playerUID));
-                    }
-
-                    break;
-                }
-                case "share":
-                {
-                    if (config.ManualSharingEnable)
-                    {
-                        if (permission.UserHasPermission(playerUID, "blueprintshare.share"))
-                        {
-                            if (args.Length == 2)
-                            {
-                                var target = FindPlayer(args[1], player, playerUID);
-
-                                if (target == null) return;
-
-                                if (target == player)
-                                {
-                                    player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("TargetEqualsPlayer", playerUID));
-
-                                    return;
-                                }
-
-                                ShareWithPlayer(player, target);
-                            }
-                            else
-                            {
-                                player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("NoTarget", playerUID));
-
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("NoPermission", playerUID));
-
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("ManualSharingDisabled", playerUID));
-
-                        return;
-                    }
-
-                    break;
-                }
-                default:
-                {
-                    player.ChatMessage(GetLangValue("Prefix", playerUID) + GetLangValue("ArgumentsError", playerUID));
-
-                    break;
-                }
-            }
+            return args.Length > 0 ? string.Format(msg, args) : msg;
         }
 
         #endregion
 
         #region API
 
-        private bool SharingEnabled(string playerUID) => storedData.Players.ContainsKey(playerUID) ? storedData.Players[playerUID].SharingEnabled : true;
+        private bool SharingEnabled(string playerID) => !storedData.Players.ContainsKey(playerID) || storedData.Players[playerID].SharingEnabled;
 
         #endregion
     }
