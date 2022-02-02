@@ -42,3 +42,4 @@ references
  - [Bare Metal LoadBalancer](https://metallb.universe.tf/installation/)
  - [Bare Metal ingress-nginx](https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters)
  - [Ingress TLS Termination](https://kubernetes.github.io/ingress-nginx/examples/tls-termination/)
+ - [k8s Dashboard](https://upcloud.com/community/tutorials/deploy-kubernetes-dashboard/)
