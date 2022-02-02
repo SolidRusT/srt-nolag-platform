@@ -37,6 +37,9 @@ sudo apt update -y
 sudo apt install kubelet kubeadm kubectl -y
 ```
 
+sudo kubeadm init --apiserver-advertise-address=100.0.0.1 --pod-network-cidr=10.244.0.0/16
+
+
 references
  - [Debian 11 Kubernetes Install](https://snapshooter.com/learn/linux/install-kubernetes)
  - [Bare Metal LoadBalancer](https://metallb.universe.tf/installation/)
