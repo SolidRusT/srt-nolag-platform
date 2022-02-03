@@ -2,7 +2,7 @@
   "Settings": {
     "Chat Command Color": "#FFFF00",
     "Chat Command Argument Color": "#FFA500",
-    "Enable Popup Support": true,
+    "Enable Popup Support": false,
     "Block All Teleporting From Inside Authorized Base": false,
     "TPB Available After X Seconds": 0.0,
     "Global Teleport Cooldown": 0.0,
@@ -58,8 +58,8 @@
     "Use Economics": false,
     "Use Server Rewards": false,
     "Wipe On Upgrade Or Change": true,
-    "Auto Generate Outpost Location": false,
-    "Auto Generate Bandit Location": false,
+    "Auto Generate Outpost Location": true,
+    "Auto Generate Bandit Location": true,
     "Show Time As Seconds Instead": false
   },
   "Admin": {
@@ -187,7 +187,7 @@
   },
   "Dynamic Commands": {
     "Town": {
-      "Command Enabled": true,
+      "Command Enabled": false,
       "Allow TPB": true,
       "Allow Cave": false,
       "Cooldown": 600,
@@ -229,7 +229,7 @@
       "Bypass": 10
     },
     "Island": {
-      "Command Enabled": true,
+      "Command Enabled": false,
       "Allow TPB": false,
       "Allow Cave": false,
       "Cooldown": 600,
@@ -304,18 +304,8 @@
         "nteleportation.gm": 5,
         "nteleportation.admin": 5
       },
-      "Location": "-383.4693 32.53944 379.6236",
-      "Locations": [
-        "-380.0458 32.54002 428.2394",
-        "-383.292 32.54002 429.7619",
-        "-381.3115 32.54002 429.5849",
-        "-383.0076 32.54002 426.9157",
-        "-380.0826 32.54002 425.8046",
-        "-381.7014 32.54002 425.617",
-        "-388.9088 33.355 439.0906",
-        "-388.8957 32.53944 386.7985",
-        "-383.4693 32.53944 379.6236"
-      ],
+      "Location": "0 0 0",
+      "Locations": [],
       "Teleport To Random Location": true,
       "Usable Out Of Building Blocked": false,
       "Allow Crafting": false,
@@ -356,17 +346,8 @@
         "nteleportation.gm": 5,
         "nteleportation.admin": 5
       },
-      "Location": "-679.2739 15.21173 -422.1194",
-      "Locations": [
-        "-615.5574 10.43852 -367.1556",
-        "-679.2196 9.936964 -330.5465",
-        "-678.3706 15.21173 -417.8724",
-        "-678.8347 15.21173 -423.1605",
-        "-678.558 15.21096 -423.9495",
-        "-679.3124 15.21096 -420.9774",
-        "-679.1822 15.21096 -420.1684",
-        "-679.2739 15.21173 -422.1194"
-      ],
+      "Location": "0 0 0",
+      "Locations": [],
       "Teleport To Random Location": true,
       "Usable Out Of Building Blocked": false,
       "Allow Crafting": false,
