@@ -80,52 +80,11 @@ kubectl apply -f - -n kube-system
 
 ### Generate SSL certs for ingress-nginx
 
-`/etc/letsencrypt/dnscloudflare.ini`
-
-```
-# CloudFlare API key information
-dns_cloudflare_api_key = some_long_key
-dns_cloudflare_email = shaun@techfusion.ca
-```
- - /etc/letsencrypt/cli.ini
-```
-# Because we are using logrotate for greater flexibility, disable the
-# internal certbot logrotation.
-max-log-backups = 0
-# Let's Encrypt site-wide configuration
-dns-cloudflare-credentials = /etc/letsencrypt/dnscloudflare.ini
-# Use the ACME v2 staging URI for testing things
-server = https://acme-staging-v02.api.letsencrypt.org/directory
-# Production ACME v2 API endpoint
-#server = https://acme-v02.api.letsencrypt.org/directory
-```
-
 ```bash
-sudo chmod 600 /etc/letsencrypt/dnscloudflare.ini
-sudo chmod g+r /etc/letsencrypt/dnscloudflare.ini
-sudo usermod -aG root shaun
-```
-
-```bash
-kubectl delete namespace ingress-nginx
-kubectl create namespace ingress-nginx
-CERT_DIR="${HOME}/letsencrypt"
-CERTWILD_DIR="${HOME}/letsencrypt-wild"
-rm -rf ${CERTWILD_DIR} && mkdir -p ${CERTWILD_DIR}
-rm -rf ${CERT_DIR} && mkdir -p ${CERT_DIR}
-
-certbot certonly -d lab.hq.solidrust.net --dns-cloudflare --logs-dir ${CERT_DIR}/log/ --config-dir ${CERT_DIR}/config/ --work-dir ${CERT_DIR}/work/ -m shaun@solidrust.net --agree-tos --server https://acme-v02.api.letsencrypt.org/directory
-
-certbot certonly -d *.lab.hq.solidrust.net --dns-cloudflare --logs-dir ${CERTWILD_DIR}/log/ --config-dir ${CERTWILD_DIR}/config/ --work-dir ${CERTWILD_DIR}/work/ -m shaun@solidrust.net --agree-tos --server https://acme-v02.api.letsencrypt.org/directory
-
-kubectl delete secret lab.hq.solidrust.net-tls star.lab.hq.solidrust.net-tls -n default
-kubectl delete secret lab.hq.solidrust.net-tls star.lab.hq.solidrust.net-tls -n ingress-nginx
-
-kubectl create secret tls lab.hq.solidrust.net-tls --cert=${CERT_DIR}/config/live/lab.hq.solidrust.net/fullchain.pem --key=${CERT_DIR}/config/live/lab.hq.solidrust.net/privkey.pem -n default
-kubectl create secret tls star.lab.hq.solidrust.net-tls --cert=${CERTWILD_DIR}/config/live/lab.hq.solidrust.net/fullchain.pem --key=${CERTWILD_DIR}/config/live/lab.hq.solidrust.net/privkey.pem -n default
-
-kubectl create secret tls lab.hq.solidrust.net-tls --cert=${CERT_DIR}/config/live/lab.hq.solidrust.net/fullchain.pem --key=${CERT_DIR}/config/live/lab.hq.solidrust.net/privkey.pem -n ingress-nginx
-kubectl create secret tls star.lab.hq.solidrust.net-tls --cert=${CERTWILD_DIR}/config/live/lab.hq.solidrust.net/fullchain.pem --key=${CERTWILD_DIR}/config/live/lab.hq.solidrust.net/privkey.pem -n ingress-nginx
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.7.0/cert-manager.yaml
+kubectl apply -f cloudflare-token.yaml -n cert-manager
+kubectl apply -f cert-manager-config.yaml -n cert-manager
+kubectl apply -f ingress-tls-fix.yaml -n ingress-nginx
 ```
 
 ### install ingress-nginx
@@ -220,7 +179,17 @@ docker tag nginx:latest srt-lab-repo:5000/nginx:latest
 docker tag nginx:latest repo.lab.hq.solidrust.net:5000/nginx:latest
 # docker push srt-lab-repo:5000/nginx:latest
 docker push repo.lab.hq.solidrust.net:5000/nginx:latest
+docker image rm repo.lab.hq.solidrust.net:5000/nginx:latest
 ```
+
+### Cert Manager
+```bash
+
+
+```
+
+
+
 
 ## References
  - [Debian 11 Kubernetes Install](https://snapshooter.com/learn/linux/install-kubernetes)

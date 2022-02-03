@@ -196,22 +196,19 @@ function update_server() {
   rm -rf rcon-${LATEST_RCON}-amd64_linux*
   # Update uMod (Oxide) libraries
   echo "=> Updating uMod..." | tee -a ${LOGS}
-  cd ${GAME_ROOT}
-  wget https://umod.org/games/rust/download/develop -O \
-    Oxide.Rust.zip &&
-    unzip -o Oxide.Rust.zip &&
-    rm Oxide.Rust.zip | tee -a ${LOGS}
+  # https://github.com/OxideMod/Oxide.Rust/releases
+  # https://umod.org/games/rust/
+  aws s3 cp ${S3_REPO}/Oxide.Rust-linux.zip ${GAME_ROOT}
+  cd ${GAME_ROOT} && unzip -o Oxide.Rust-linux.zip | tee -a ${LOGS}
+  rm Oxide.Rust-linux.zip | tee -a ${LOGS}
   # Update Discord integrations
   echo "=> Downloading discord binary..." | tee -a ${LOGS}
-  wget https://umod.org/extensions/discord/download -O \
-    ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.Discord.dll | tee -a ${LOGS}
+  # https://umod.org/extensions/discord/download
+  aws s3 cp ${S3_REPO}/Oxide.Ext.Discord.dll ${GAME_ROOT}/RustDedicated_Data/Managed/
   # Update RustEdit libraries
   echo "=> Downloading RustEdit.io binary..." | tee -a ${LOGS}
   wget https://github.com/k1lly0u/Oxide.Ext.RustEdit/raw/master/Oxide.Ext.RustEdit.dll -O \
     ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.RustEdit.dll | tee -a ${LOGS}
-  #echo "=> Downloading Rust:IO binary..." | tee -a ${LOGS}
-  #wget http://playrust.io/latest -O \
-  #    ${GAME_ROOT}/RustDedicated_Data/Managed/Oxide.Ext.RustIO.dll | tee -a ${LOGS}
 }
 
 function update_permissions() {

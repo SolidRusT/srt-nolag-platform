@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: lab.hq.solidrust.net-issuer
+  namespace: ingress-nginx
+spec:
+  acme:
+    email: shaun@solidrust.net
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: lab.hq.solidrust.net-tls
+    solvers:
+    - dns01:
+        cloudflare:
+          email: shaun@techfusion.ca
+          apiTokenSecretRef:
+            name: cloudflare-api-token-secret
+            key: api-token
