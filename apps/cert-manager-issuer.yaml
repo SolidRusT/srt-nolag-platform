@@ -11,7 +11,7 @@ spec:
       name: lab.hq.solidrust.net-tls
     solvers:
     - dns01:
-        cloudflare:S
+        cloudflare:
           email: shaun@techfusion.ca
           apiTokenSecretRef:
             name: cloudflare-api-token-secret
