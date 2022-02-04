@@ -13,6 +13,7 @@
   "Time to Clear Offense in minutes": 60,
   "Use Offenses clear timer": false,
   "Warn Players with offense amount": false,
+  "Whole Message Filter - Enabled": false,
   "Word Filter - Custom Replacement": "rusthole",
   "Word Filter - Enabled": true,
   "Word Filter - Phrases": [
@@ -22,6 +23,14 @@
   ],
   "Word Filter - Replacement": "*",
   "Word Filter - Use Custom Replacement": true,
+  "Word Filter List": [
+    "bitch",
+    "cunt",
+    "nigger",
+    "nig",
+    "faggot",
+    "fuck"
+  ],
   "Word To White List": [
     "night"
   ]
