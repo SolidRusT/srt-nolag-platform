@@ -7,4 +7,4 @@ COPY index.js ./
 
 RUN npm install
 
-CMD [ "npm", "/usr/src/app/index.js" ]
+CMD [ "node", "index.js" ]
