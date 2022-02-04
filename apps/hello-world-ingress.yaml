@@ -1,7 +1,9 @@
+# https://www.bsmithio.com/post/baremetal-k8s/
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: hello-world
+  namespace: ingress-nginx
   annotations:
 spec:
   ingressClassName: nginx
@@ -10,7 +12,7 @@ spec:
       - lab.hq.solidrust.net
       # secretName refers to the secret containing the tls certificate
       # if it does not exist, ingress-nginx will use a self-signed certificate
-      secretName: tls-secret
+      secretName: lab.hq.solidrust.net-tls
   rules:
   - host: lab.hq.solidrust.net
     http:
