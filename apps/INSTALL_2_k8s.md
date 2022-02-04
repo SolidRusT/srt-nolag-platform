@@ -105,6 +105,17 @@ rm cmctl-linux-amd64.tar.gz LICENSES
 cmctl version
 ```
 
+## Configure egress
+
+```bash
+helm repo add istio https://istio-release.storage.googleapis.com/charts
+helm repo update
+kubectl create namespace istio-system
+helm install istio-base istio/base -n istio-system
+helm install istiod istio/istiod -n istio-system --wait
+helm status istiod -n istio-system
+```
+
 ## Uninstall k8s cluster (on all servers)
 
 ```bash

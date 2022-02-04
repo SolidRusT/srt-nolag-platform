@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: private-repository-k8s
+  namespace: srt-lab-repo
   labels:
     app: private-repository-k8s
 spec:
