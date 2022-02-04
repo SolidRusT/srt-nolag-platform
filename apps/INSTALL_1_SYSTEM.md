@@ -1,0 +1,84 @@
+## Install
+### Bootstrap Debian 11 (root)
+
+```bash
+apt install sudo net-tools python3 certbot python3-certbot-dns-cloudflare
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    software-properties-common \
+    apt-transport-https
+usermod -aG sudo shaun
+```
+
+### Update distribution (user)
+
+```bash
+sudo apt update && sudo apt dist-upgrade -y
+```
+
+### Remove swap
+
+```bash
+sudo nano /etc/fstab
+sudo swapoff -a
+```
+may need to add `noauto` to the swap entry in fstab, because automount
+
+### Enable network routing
+
+```bash
+sudo nano /etc/sysctl.conf
+net.ipv4.ip_forward=1
+vm.swappiness = 0
+```
+
+### Install Docker backend
+
+```bash
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt update -y
+sudo apt install docker-ce docker-ce-cli containerd.io -y
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+sudo apt update -y
+sudo apt install kubelet kubeadm kubectl -y
+```
+
+
+```bash
+sudo apt install unzip
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws configure
+```
+
+.bashrc:
+```bash
+export KUBE_EDITOR="nano"
+
+# SRT Shell commands
+source ${HOME}/solidrust.net/defaults/funct_common.sh
+source ${HOME}/solidrust.net/defaults/funct_update.sh
+initialize_srt
+```
+
+```bash
+export S3_REPO="s3://solidrust.net-repository"
+aws s3 sync --delete ${S3_REPO} ${HOME}/solidrust.net | grep -v ".git" 
+```
+
+logout + login then run `update_repo`
+
+```bash
+update_repo
+```
+
+logout + login again
+
+Your machine is now bootstrapped.
