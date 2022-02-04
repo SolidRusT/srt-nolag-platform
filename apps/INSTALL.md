@@ -221,5 +221,17 @@ source ${HOME}/solidrust.net/defaults/funct_update.sh
 initialize_srt
 ```
 
+```bash
 export S3_REPO="s3://solidrust.net-repository"
 aws s3 sync --delete ${S3_REPO} ${HOME}/solidrust.net | grep -v ".git" 
+```
+
+logout + login then run `update_repo`
+
+```bash
+update_repo
+```
+
+logout + login again
+
+Your machine is now bootstrapped.
