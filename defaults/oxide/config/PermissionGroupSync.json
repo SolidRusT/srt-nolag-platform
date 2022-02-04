@@ -38,7 +38,8 @@
                 "recycle.bypass",
                 "carturrets.limit.3",
                 "playtimesupplysignal.bonus",
-                "spawnmini.survivor"
+                "spawnmini.survivor",
+                "waterbases.vip1"
             ],
             "AdditionalCommands": []
         },
@@ -93,7 +94,8 @@
                 "vehicledeployedlocks.codelock.free",
                 "carturrets.limit.4",
                 "spawnmini.supporter",
-                "xperience.vip"
+                "xperience.vip",
+                "waterbases.vip2"
             ],
             "AdditionalCommands": []
         },
@@ -179,7 +181,8 @@
                 "patrolboat.admin",
                 "build.perm",
                 "zombiehorde.admin",
-                "xperience.vip"
+                "xperience.vip",
+                "waterbases.vip3"
             ],
             "AdditionalCommands": []
         },
@@ -257,7 +260,8 @@
                 "zombiehorde.admin",
                 "xperience.vip",
                 "discordmessages.ban",
-                "bradleycontrol.allow"
+                "bradleycontrol.allow",
+                "waterbases.admin"
             ],
             "AdditionalCommands": []
         },
@@ -405,7 +409,8 @@
                 "itemcleaner.use",
                 "vehicledeployedlocks.masterkey",
                 "xperience.admin",
-                "bradleycontrol.allow"
+                "bradleycontrol.allow",
+                "waterbases.admin"
             ],
             "AdditionalCommands": []
         }
