@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: simple-api
+  labels:
+    name: simple-api
+spec:
+  containers:
+  - name: simple-api
+    image: serverlab/simple-api:1.0.0
+    ports:
+    - containerPort: 3000
