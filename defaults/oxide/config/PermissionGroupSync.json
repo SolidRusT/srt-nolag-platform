@@ -61,7 +61,8 @@
                 "nteleportation.solidplayer",
                 "Kits.Survivor",
                 "Kits.Solid",
-                "spawnmini.solidplayer"
+                "spawnmini.solidplayer",
+                "waterbases.vip2"
             ],
             "AdditionalCommands": []
         },
@@ -95,7 +96,7 @@
                 "carturrets.limit.4",
                 "spawnmini.supporter",
                 "xperience.vip",
-                "waterbases.vip2"
+                "waterbases.vip3"
             ],
             "AdditionalCommands": []
         },
