@@ -1,11 +1,11 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: lab.hq.solidrust.net-cert
+  name: default.hq.solidrust.net-cert
   namespace: cert-manager
 spec:
-  secretName: lab.hq.solidrust.net-tls
+  secretName: default.hq.solidrust.net-tls
   issuerRef:
-    name: lab.hq.solidrust.net-issuer
+    name: default.hq.solidrust.net-issuer
   dnsNames:
-  - lab.hq.solidrust.net
+  - default.hq.solidrust.net

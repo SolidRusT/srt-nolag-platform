@@ -68,3 +68,34 @@ kubectl apply -f solidrust.net/apps/hello-world-ingress.yaml
     tls.key: <base64 encoded key>
   type: kubernetes.io/tls
 ```
+
+### Certificate manager
+```bash
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.7.0 \
+  --set installCRDs=true
+```
+
+#### CLI interface
+
+```bash
+wget https://github.com/cert-manager/cert-manager/releases/download/v1.7.0/cmctl-linux-amd64.tar.gz
+tar xzvf cmctl-linux-amd64.tar.gz
+sudo mv cmctl /usr/local/bin/
+chmod +x /usr/local/bin/cmctl
+rm cmctl-linux-amd64.tar.gz LICENSES
+cmctl version
+```
+
+#### Deploy TLS configuration
+
+```bash
+kubectl apply -f solidrust.net/apps/cert-manager-cloudflare.yaml
+kubectl apply -f solidrust.net/apps/cert-manager-issuer.yaml
+kubectl apply -f solidrust.net/apps/cert-manager-certificate.yaml
+```
