@@ -6,12 +6,12 @@ metadata:
 spec:
   acme:
     email: shaun@solidrust.net
-    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: lab.hq.solidrust.net-tls
     solvers:
     - dns01:
-        cloudflare:
+        cloudflare:S
           email: shaun@techfusion.ca
           apiTokenSecretRef:
             name: cloudflare-api-token-secret
