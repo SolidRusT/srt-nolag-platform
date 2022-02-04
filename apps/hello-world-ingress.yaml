@@ -5,6 +5,12 @@ metadata:
   annotations:
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+      - lab.hq.solidrust.net
+      # secretName refers to the secret containing the tls certificate
+      # if it does not exist, ingress-nginx will use a self-signed certificate
+      secretName: tls-secret
   rules:
   - host: lab.hq.solidrust.net
     http:

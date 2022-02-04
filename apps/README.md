@@ -5,3 +5,6 @@
  - [Ingress TLS Termination](https://kubernetes.github.io/ingress-nginx/examples/tls-termination/)
  - [k8s Dashboard](https://upcloud.com/community/tutorials/deploy-kubernetes-dashboard/)
  - [Private Docker Repo](https://www.linuxtechi.com/setup-private-docker-registry-kubernetes/)
+https://cert-manager.io/docs/installation/helm/
+https://www.bsmithio.com/post/baremetal-k8s/
+https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
