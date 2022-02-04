@@ -9,15 +9,10 @@ spec:
   containers:
   - name: srt-link-bot
     image: repo.lab.hq.solidrust.net:5000/srt-link-bot:1.0.0
-# Egress config
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  namespace: srt-link-bot
-  name: srt-link-bot-egress
-spec:
-  podSelector: {}
-  egress:
-  - {}
-  policyTypes:
-  - Egress
+      resources:
+        requests:
+          cpu: 50m
+          memory: 50Mi
+        limits:
+          cpu: 100m
+          memory: 256Mi
