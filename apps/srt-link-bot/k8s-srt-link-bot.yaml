@@ -8,3 +8,13 @@ spec:
   containers:
   - name: srt-link-bot
     image: repo.lab.hq.solidrust.net:5000/srt-link-bot:1.0.0
+# Egress config
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: internet-egress
+spec:
+  egress:
+  - {}
+  policyTypes:
+  - Egress

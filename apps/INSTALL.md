@@ -236,3 +236,9 @@ update_repo
 logout + login again
 
 Your machine is now bootstrapped.
+
+
+
+
+
+kubectl label namespace kube-system networking/namespace=kube-system
