@@ -198,3 +198,28 @@ docker image rm repo.lab.hq.solidrust.net:5000/nginx:latest
  - [Ingress TLS Termination](https://kubernetes.github.io/ingress-nginx/examples/tls-termination/)
  - [k8s Dashboard](https://upcloud.com/community/tutorials/deploy-kubernetes-dashboard/)
  - [Private Docker Repo](https://www.linuxtechi.com/setup-private-docker-registry-kubernetes/)
+
+
+
+
+
+```bash
+sudo apt install unzip
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws configure
+```
+
+.bashrc:
+```bash
+export KUBE_EDITOR="nano"
+
+# SRT Shell commands
+source ${HOME}/solidrust.net/defaults/funct_common.sh
+source ${HOME}/solidrust.net/defaults/funct_update.sh
+initialize_srt
+```
+
+export S3_REPO="s3://solidrust.net-repository"
+aws s3 sync --delete ${S3_REPO} ${HOME}/solidrust.net | grep -v ".git" 

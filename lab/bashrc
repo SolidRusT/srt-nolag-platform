@@ -1,0 +1,6 @@
+export KUBE_EDITOR="nano"
+
+# SRT Shell commands
+source ${HOME}/solidrust.net/defaults/funct_common.sh
+source ${HOME}/solidrust.net/defaults/funct_update.sh
+initialize_srt
