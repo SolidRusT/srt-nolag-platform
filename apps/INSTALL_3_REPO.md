@@ -21,7 +21,10 @@ sudo usermod -aG docker shaun
 
 ```bash
 sudo systemctl restart nfs-kernel-server
+kubectl create namespace srt-lab-repo
 kubectl apply -f private-registry.yaml
+kubectl apply -f private-registry-svc.yaml
+kubectl -n srt-lab-repo get svc
 ```
 
 #### Slaves
