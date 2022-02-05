@@ -1,18 +1,18 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  namespace: srt-link-bot
   name: srt-link-bot
+  namespace: srt-link-bot
   labels:
     name: srt-link-bot
 spec:
   containers:
     - name: srt-link-bot
       image: repo.lab.hq.solidrust.net:5000/srt-link-bot:1.0.0
-        resources:
-          requests:
-            cpu: 50m
-            memory: 50Mi
-          limits:
-            cpu: 100m
-            memory: 256Mi
+      resources:
+        requests:
+          cpu: 50m
+          memory: 50Mi
+        limits:
+          cpu: 100m
+          memory: 256Mi
