@@ -9,12 +9,12 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-      - lab.hq.solidrust.net
+      - default.hq.solidrust.net
       # secretName refers to the secret containing the tls certificate
       # if it does not exist, ingress-nginx will use a self-signed certificate
-      secretName: lab.hq.solidrust.net-tls
+      secretName: default.hq.solidrust.net-tls
   rules:
-  - host: lab.hq.solidrust.net
+  - host: default.hq.solidrust.net
     http:
       paths:
       - pathType: Prefix
