@@ -13,8 +13,8 @@
         }
       ],
       "inputs": [],
-      "x": 148,
-      "y": 188
+      "x": 9,
+      "y": 70
     },
     {
       "type": "command",
@@ -29,8 +29,8 @@
         }
       ],
       "inputs": [],
-      "x": 149,
-      "y": 325
+      "x": 7,
+      "y": 384
     },
     {
       "type": "response",
@@ -50,8 +50,8 @@
           "id": "2224944a-561a-4fa1-824b-2f31ea37c836"
         }
       ],
-      "x": 360,
-      "y": 324,
+      "x": 194,
+      "y": 372,
       "rtype": "Message",
       "rsubtype": "Send Message",
       "formdata": [
@@ -107,8 +107,8 @@
           "id": "7942fe4c-dffa-4146-8cab-d254b3d80d5d"
         }
       ],
-      "x": 396,
-      "y": 165,
+      "x": 192,
+      "y": 56,
       "rtype": "Message",
       "rsubtype": "Send Embed",
       "formdata": [
@@ -153,12 +153,53 @@
       "outputs": [
         {
           "label": "responses",
-          "connections": []
+          "connections": [
+            "9d40507f-fab2-49b8-9a29-e41c2e3f9ad0"
+          ]
         }
       ],
       "inputs": [],
-      "x": 250,
-      "y": 250
+      "x": 8,
+      "y": 213
+    },
+    {
+      "type": "response",
+      "name": "show population",
+      "guid": "9d40507f-fab2-49b8-9a29-e41c2e3f9ad0",
+      "reactionFields": [],
+      "embedfields": [],
+      "saveToVariable": "",
+      "saveToVariableType": "temp",
+      "outputs": [
+        {
+          "label": "next response",
+          "connections": []
+        }
+      ],
+      "inputs": [
+        {
+          "label": "trigger",
+          "id": "a56266f2-4900-49f2-ae6c-71b731d33eff"
+        }
+      ],
+      "x": 200,
+      "y": 191,
+      "rtype": "Message",
+      "rsubtype": "Send Message",
+      "formdata": [
+        "${dbsVars.CommandChannel.id}",
+        "SolidRusT Online Players",
+        "",
+        "temp"
+      ],
+      "formnames": [
+        "channelName",
+        "messageText",
+        "saveToVariable",
+        "saveToVariableType"
+      ],
+      "messageActionRows": [],
+      "valueFields": []
     }
   ]
 }

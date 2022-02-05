@@ -8,6 +8,7 @@ const Papa = require("papaparse");
 const path = require("path");
 const flatted = require("flatted");
 const { time } = require("console");
+const { parse } = require("path");
 var breakFailure = true;
 vars = {};
 var serverVars = {};
@@ -194,13 +195,60 @@ module.exports.RunAction = async function (client, msg, action) {
         case "Check If Array Contains Value":
             this.CheckIfArrayContainsValue_Handle(msg, client, parsedAction);
             break;
+        case "Check If User Has Role":
+            this.CheckIfUserHasRole_Handle(msg, client, parsedAction);
+            break;
+        case "Check If String Contains":
+            this.CheckIfStringContains_Handle(msg, client, parsedAction);
+            break;
+        case "Edit Message":
+            await this.EditMessage_Handle(msg, client, parsedAction);
+            break;
     }
 };
+
+module.exports.EditMessage_Handle = async function(msg, client, action) {
+    let chan = FindChannel(msg, action);
+    console.log(chan);
+    let message = await chan.messages.fetch(action.messageid);
+    message.edit({ content: action.messagetext });
+}
 
 module.exports.GetMentionedUser_Handle = function (msg, client, action) {
     console.log("getting mentioned user");
     console.log(msg.mentions.members.first());
 };
+
+module.exports.CheckIfStringContains_Handle = function(msg, client, action) {
+    let passActions = {};
+    if (action.stringtocheck.includes(action.valuetocheck)) {
+        passActions.actions = action.trueActions;
+        DBS.callNextAction(passActions, msg, msg.args, 0);
+    }
+    else {
+        passActions.actions = action.falseActions;
+        DBS.callNextAction(passActions, msg, msg.args, 0);
+    }
+}
+
+module.exports.CheckIfUserHasRole_Handle = function (msg, client, action) {
+    let role = msg.guild.roles.cache.find(
+        role => role.name == action.role || role.id == action.role
+    );
+    let mem = msg.guild.members.cache.find(
+        gm => gm.user.tag == action.user || gm.user.id == action.user
+    );
+    let passActions = {};
+
+    if (role && mem.roles.cache.has(role.id)) {
+        passActions.actions = action.trueActions;
+        DBS.callNextAction(passActions, msg, msg.args, 0);
+    }
+    else {
+        passActions.actions = action.falseActions;
+        DBS.callNextAction(passActions, msg, msg.args, 0);
+    }
+}
 
 module.exports.CheckIfArrayContainsValue_Handle = function (msg, client, action) {
     let passActions = {};
@@ -748,9 +796,10 @@ function StoreValeinVariable_Handle(msg, client, action) {
 module.exports.CreateChannel_Handle = async function (msg, client, action) {
     var server = msg.guild;
     let chan;
+    let channeltype = action.channeltype.toLowerCase() === "text" ? "GUILD_TEXT" : "GUILD_VOICE";
     if (action.chancategory) {
         chan = await server.channels.create(action.channelname, {
-            type: action.channeltype.toLowerCase(),
+            type: channeltype,
             reason: action.reason,
             parent: server.channels.cache.find(
                 ct =>
@@ -760,7 +809,7 @@ module.exports.CreateChannel_Handle = async function (msg, client, action) {
         });
     } else {
         chan = await server.channels.create(action.channelname, {
-            type: action.channeltype.toLowerCase(),
+            type: channeltype,
             reason: action.reason
         });
     }

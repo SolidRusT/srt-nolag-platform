@@ -64,7 +64,18 @@
     },
     {
       "name": "pop",
-      "actions": []
+      "actions": [
+        {
+          "name": "show population",
+          "category": "Message",
+          "type": "Send Message",
+          "messageActionRows": [],
+          "channelname": "${dbsVars.CommandChannel.id}",
+          "messagetext": "SolidRusT Online Players",
+          "savetovariable": "",
+          "savetovariabletype": "temp"
+        }
+      ]
     }
   ]
 }

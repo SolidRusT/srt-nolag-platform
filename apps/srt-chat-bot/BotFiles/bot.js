@@ -67,6 +67,10 @@ DBS.antiSpam.options.muteEnabled = false;
 DBS.antiSpam.options.errorMessages = false;
 DBS.antiSpam.options.verbose = false;
 
+DBS.slashCommands = [];
+DBS.buttons = [];
+DBS.selects = [];
+
 DBS.Mods = new Map();
 
 DBS.loadMods = async function () {
@@ -208,8 +212,31 @@ DBS.startBot = async function () {
         });
 
     DBS.registerSlashCommands();
+    DBS.registerButtonsAndSelects();
     DBS.CheckIfLoaded();
 };
+
+DBS.registerButtonsAndSelects = async function () {
+    let buttonsAndSelects = deepSearchItems(DBS.CommandsFile.command, "rowtype", (k, v) => k === "rowtype");
+    let eventButtonsAndSelects = deepSearchItems(DBS.EventsFile.command, "rowtype", (k, v) => k === "rowtype");
+    setEphemeralStatus(buttonsAndSelects);
+    setEphemeralStatus(eventButtonsAndSelects);
+};
+
+function setEphemeralStatus(buttonsAndSelects) {
+    buttonsAndSelects.forEach(item => {
+        if (item.rowtype === "select") { 
+            let ephem = item.ephemeral ? true : false;
+            DBS.selects[item.customid] = { ephemeral: ephem };
+        }
+        else if (item.rowtype === "button") { // this is a button
+            item.buttons.forEach(button => {
+                let ephem = button.ephemeral ? true : false;
+                DBS.buttons[button.customid] = { ephemeral: ephem };
+            });
+        }
+    });
+}
 
 DBS.registerSlashCommands = async function() {
     let data = [];
@@ -217,6 +244,8 @@ DBS.registerSlashCommands = async function() {
         // If this is a slash command
         if (command.description) {
             data.push(command);
+            let ephem = command.ephemeral ? true : false;
+            DBS.slashCommands[command.name] = { ephemeral: ephem};
         }
     });
     if (data.length > 0) {
@@ -549,11 +578,11 @@ DBS.Bot.on("roleUpdate", (oldrole, newrole) => {
         });
     }
 });
-DBS.Bot.on("typingStart", (channel, user) => {
+DBS.Bot.on("typingStart", (typing) => {
     let guildVars = {};
-    guildVars.guild = channel.guild;
-    guildVars.channel = channel;
-    guildVars.user = user;
+    guildVars.guild = typing.channel.guild;
+    guildVars.channel = typing.channel;
+    guildVars.user = typing.user;
     try {
         DBS.EventHandler.Event_Handle(DBS, DBS.EventsFile, 0, "Typing Start", guildVars);
     } catch (error) {
@@ -578,19 +607,22 @@ DBS.Bot.on("userUpdate", (olduser, newuser) => {
     }
 });
 DBS.Bot.on("interactionCreate", async interaction => {
-    await interaction.deferReply();
     let guildVars = {};
     guildVars.guild = interaction.guild;
     try {
         if (interaction.isButton()) {
+            await interaction.deferReply({ephemeral: DBS.buttons[interaction.customId]["ephemeral"]});
             guildVars.buttoninteraction = interaction;
             DBS.EventHandler.Event_Handle(DBS, DBS.EventsFile, 0, "Button Interaction", guildVars);
         } else if (interaction.isSelectMenu()) {
+            console.log(DBS.selects);
+            await interaction.deferReply({ephemeral: DBS.selects[interaction.customId]["ephemeral"]});
             guildVars.selectinteraction = interaction;
             DBS.EventHandler.Event_Handle(DBS, DBS.EventsFile, 0, "Select Interaction", guildVars);
         }
         else {
             //interaction.followUp({ content: "hello" });
+            await interaction.deferReply({ephemeral: DBS.slashCommands[interaction.commandName]["ephemeral"]});
             guildVars.commandinteraction = interaction;
             DBS.EventHandler.Event_Handle(DBS, DBS.EventsFile, 0, "Command Interaction", guildVars);
         }
@@ -656,3 +688,22 @@ DBS.logError = async function (error) {
     process.send(error.message);
     console.log(error.message);
 };
+
+function deepSearchItems(object, key, predicate) {
+    let ret = [];
+    if (object.hasOwnProperty(key) && predicate(key, object[key]) === true) {
+        ret = [...ret, object];
+    }
+    if (Object.keys(object).length) {
+        for (let i = 0; i < Object.keys(object).length; i++) {
+            let value = object[Object.keys(object)[i]];
+            if (typeof value === "object" && value != null) {
+                let o = deepSearchItems(object[Object.keys(object)[i]], key, predicate);
+                if (o != null && o instanceof Array) {
+                    ret = [...ret, ...o];
+                }
+            }
+        }
+    }
+    return ret;
+}

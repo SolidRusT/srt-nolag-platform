@@ -250,8 +250,120 @@ module.exports.RunAction = async function (client, action) {
             break;
         case "Get Interaction Option":
             StoreValueinVariable_Handle(client, parsedAction);
+            break;
+        case "Check If User Has Role":
+            this.CheckIfUserHasRole_Handle(client, parsedAction);
+            break;
+        case "Check If String Contains":
+            this.CheckIfStringContains_Handle(client, parsedAction);
+            break;
+        case "Delete Interaction Reply":
+            await this.DeleteInteractionReply_Handle(client, parsedAction);
+            break;
+        case "Kick User":
+            this.KickUser_Handle(client, parsedAction);
+            break;
+        case "Ban User":
+            this.BanUser_Handle(client, parsedAction);
+            break;
+        case "Edit Message":
+            this.EditMessage_Handle(client, parsedAction);
+            break;
     }
 };
+
+module.exports.EditMessage_Handle = async function(client, action) {
+    let chan = FindChannel(action.guild, action.channelname);
+    console.log(chan);
+    let message = await chan.messages.fetch(action.messageid);
+    message.edit({ content: action.messagetext });
+}
+
+module.exports.KickUser_Handle = function (client, action) {
+    let guild = action.guild;
+    let mem = guild.members.cache.find(
+        gm => gm.user.tag == action.user || gm.user.id == action.user
+    );
+    console.log(guild);
+    console.log(mem);
+
+    let reason = action.reason;
+
+    if (mem) {
+        mem
+            .kick(reason)
+            .then(m => {
+                console.log("Kicked member");
+            })
+            .catch(e => {
+                console.log(e);
+            });
+    } else {
+        console.log("ERROR: Member to be kicked not found");
+    }
+};
+
+module.exports.BanUser_Handle = function (client, action) {
+    let guild = action.guild;
+    var member = guild.members.cache.find(
+        gm => gm.user.tag == action.user || gm.user.id == action.user
+    );
+
+    var options = {};
+    options.reason = action.reason;
+    action.days ? (options.days = action.days) : (options.days = 0);
+
+    if (member) {
+        member
+            .ban(options)
+            .then(member => {
+                console.log("Banned member");
+            })
+            .catch(e => {
+                console.log(e);
+            });
+    } else {
+        console.log("ERROR: Member to be banned not found");
+    }
+};
+
+module.exports.DeleteInteractionReply_Handle = async function(client, action) {
+    if (action.interactionobject) {
+        await action.interactionobject.deleteReply();
+    }
+}
+
+module.exports.CheckIfStringContains_Handle = function(client, action) {
+    let passActions = {};
+    if (action.stringtocheck.includes(action.valuetocheck)) {
+        passActions.actions = action.trueActions;
+        this.Event_Handle(DBS, "", 0, "", varsEToPass, passActions);
+    }
+    else {
+        passActions.actions = action.falseActions;
+        this.Event_Handle(DBS, "", 0, "", varsEToPass, passActions);
+    }
+}
+
+module.exports.CheckIfUserHasRole_Handle = function (client, action) {
+    let guild = action.guild;
+    let role = guild.roles.cache.find(
+        role => role.name == action.role || role.id == action.role
+    );
+    let mem = guild.members.cache.find(
+        gm => gm.user.tag == action.user || gm.user.id == action.user
+    );
+    let passActions = {};
+
+    if (role && mem.roles.cache.has(role.id)) {
+        passActions.actions = action.trueActions;
+        this.Event_Handle(DBS, "", 0, "", varsEToPass, passActions);
+    }
+    else {
+        passActions.actions = action.falseActions;
+        this.Event_Handle(DBS, "", 0, "", varsEToPass, passActions);
+    }
+}
 
 module.exports.Wait_Handle = async function (client, action) {
     const timer = ms => new Promise(res => setTimeout(res, ms));
@@ -1051,9 +1163,10 @@ module.exports.CreateCategory_Handle = async function (client, action) {
 module.exports.CreateChannel_Handle = async function (client, action) {
     let server = action.guild;
     let chan;
+    let channeltype = action.channeltype.toLowerCase() === "text" ? "GUILD_TEXT" : "GUILD_VOICE";
     if (action.chancategory) {
         chan = await server.channels.create(action.channelname, {
-            type: action.channeltype.toLowerCase(),
+            type: channeltype,
             reason: action.reason,
             parent: server.channels.cache.find(
                 ct =>
@@ -1063,7 +1176,7 @@ module.exports.CreateChannel_Handle = async function (client, action) {
         });
     } else {
         chan = await server.channels.create(action.channelname, {
-            type: action.channeltype.toLowerCase(),
+            type: channeltype,
             reason: action.reason
         });
     }
