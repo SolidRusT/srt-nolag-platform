@@ -1,3 +1,4 @@
+# does exactly what the name implies
 apiVersion: v1
 kind: Pod
 metadata:
