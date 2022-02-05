@@ -154,21 +154,13 @@
     "assets/bundled/prefabs/radtown/crate_basic.prefab": {
       "Enabled": true,
       "ItemList": {
-        "ammo.rifle": {
-          "Max": 30,
-          "Min": 27
-        },
-        "ammo.pistol": {
-          "Max": 30,
-          "Min": 20
-        },
-        "glue": {
-          "Max": 3,
-          "Min": 1
+        "scrap": {
+          "Max": 100,
+          "Min": 100
         }
       },
-      "ItemsMax": 3,
-      "ItemsMin": 3,
+      "ItemsMax": 1,
+      "ItemsMin": 1,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -281,6 +273,10 @@
           "Max": 3,
           "Min": 3
         },
+        "grenade.smoke": {
+          "Max": 1,
+          "Min": 1
+        },
         "metal.refined": {
           "Max": 100,
           "Min": 100
@@ -288,6 +284,10 @@
         "metalpipe": {
           "Max": 15,
           "Min": 15
+        },
+        "pistol.python": {
+          "Max": 1,
+          "Min": 1
         },
         "rifle.semiauto": {
           "Max": 1,
@@ -298,6 +298,10 @@
           "Min": 1
         },
         "rocket.launcher": {
+          "Max": 1,
+          "Min": 1
+        },
+        "shotgun.pump": {
           "Max": 1,
           "Min": 1
         },
@@ -333,6 +337,10 @@
           "Max": 1,
           "Min": 1
         },
+        "pistol.m92": {
+          "Max": 1,
+          "Min": 1
+        },
         "bleach": {
           "Max": 1,
           "Min": 1
@@ -343,14 +351,6 @@
         },
         "ducttape": {
           "Max": 2,
-          "Min": 1
-        },
-        "bottle.vodka": {
-          "Max": 1,
-          "Min": 0
-        },
-        "ammo.rocket.smoke": {
-          "Max": 1,
           "Min": 1
         }
       },
@@ -2129,10 +2129,6 @@
         "rifle.lr300": {
           "Max": 1,
           "Min": 1
-        },
-        "ammo.rocket.mlrs": {
-          "Max": 3,
-          "Min": 2
         }
       },
       "ItemsMax": 10,
@@ -2190,10 +2186,6 @@
         "rifle.lr300": {
           "Max": 1,
           "Min": 1
-        },
-        "ammo.rocket.mlrs": {
-          "Max": 3,
-          "Min": 2
         }
       },
       "ItemsMax": 10,
@@ -2217,16 +2209,8 @@
           "Min": 1
         },
         "ammo.pistol": {
-          "Max": 100,
-          "Min": 100
-        },
-        "gears": {
-          "Max": 20,
-          "Min": 20
-        },
-        "metalblade": {
-          "Max": 10,
-          "Min": 10
+          "Max": 128,
+          "Min": 128
         },
         "ammo.rifle.explosive": {
           "Max": 100,
@@ -2239,6 +2223,110 @@
         "explosive.satchel": {
           "Max": 5,
           "Min": 5
+        },
+        "wall.external.high.ice": {
+          "Max": 2,
+          "Min": 2
+        },
+        "rifle.lr300": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.m39": {
+          "Max": 1,
+          "Min": 1
+        },
+        "hoodie": {
+          "Max": 1,
+          "Min": 1
+        },
+        "coffeecan.helmet": {
+          "Max": 1,
+          "Min": 1
+        },
+        "roadsign.jacket": {
+          "Max": 1,
+          "Min": 1
+        },
+        "roadsign.kilt": {
+          "Max": 1,
+          "Min": 1
+        },
+        "roadsign.gloves": {
+          "Max": 1,
+          "Min": 1
+        },
+        "rifle.semiauto": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smg.mp5": {
+          "Max": 1,
+          "Min": 1
+        },
+        "smg.thompson": {
+          "Max": 1,
+          "Min": 1
+        },
+        "ammo.rifle": {
+          "Max": 128,
+          "Min": 128
+        },
+        "jackhammer": {
+          "Max": 1,
+          "Min": 1
+        },
+        "chainsaw": {
+          "Max": 1,
+          "Min": 1
+        },
+        "metalpipe": {
+          "Max": 15,
+          "Min": 15
+        },
+        "shotgun.double": {
+          "Max": 1,
+          "Min": 1
+        },
+        "ammo.shotgun": {
+          "Max": 6,
+          "Min": 6
+        },
+        "pants": {
+          "Max": 1,
+          "Min": 1
+        },
+        "shotgun.spas12": {
+          "Max": 1,
+          "Min": 1
+        },
+        "gears": {
+          "Max": 15,
+          "Min": 15
+        },
+        "sheetmetal": {
+          "Max": 20,
+          "Min": 20
+        },
+        "metalblade": {
+          "Max": 10,
+          "Min": 10
+        },
+        "roadsigns": {
+          "Max": 15,
+          "Min": 15
+        },
+        "scrap": {
+          "Max": 500,
+          "Min": 500
+        },
+        "techparts": {
+          "Max": 10,
+          "Min": 7
+        },
+        "riot.helmet": {
+          "Max": 1,
+          "Min": 1
         }
       },
       "ItemsMax": 9,
@@ -2262,8 +2350,8 @@
           "Min": 3
         },
         "ammo.rocket.mlrs": {
-          "Max": 3,
-          "Min": 2
+          "Max": 4,
+          "Min": 3
         },
         "explosive.timed": {
           "Max": 3,
@@ -2319,8 +2407,8 @@
           "Min": 3
         },
         "ammo.rocket.mlrs": {
-          "Max": 3,
-          "Min": 2
+          "Max": 6,
+          "Min": 4
         },
         "explosive.timed": {
           "Max": 3,
