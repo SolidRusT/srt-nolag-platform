@@ -19,12 +19,12 @@ kubectl run -n postgres-stolon -i -t stolonctl --image=sorintlab/stolon:master-p
 
 ### Create a Role for the Service
 
-```yaml
-
+```bash
+kubectl apply -n postgres-stolon -f postgres-stolon-role.yaml
 ```
 
 ### Bind the Role to a ServiceAccount
 
-```yaml
-
+```bash
+kubectl apply -n postgres-stolon -f postgres-stolon-rolebind.yaml
 ```
