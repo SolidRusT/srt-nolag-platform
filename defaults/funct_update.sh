@@ -354,6 +354,10 @@ DEFAULT_PERMS=(
   vehicledeployedlocks.keylock.allvehicles
   vehicledeployedlocks.keylock.duosub
   vehicledeployedlocks.keylock.solosub
+  vehicledeployedlocks.codelock.snowmobile
+  vehicledeployedlocks.codelock.tomaha
+  vehicledeployedlocks.keylock.snowmobile
+  vehicledeployedlocks.keylock.tomaha
   vehiclevendoroptions.ownership.allvehicles
   carradio.attachcarradio
   carradio.detachcarradio

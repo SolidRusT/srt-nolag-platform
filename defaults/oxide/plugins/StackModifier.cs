@@ -176,11 +176,23 @@ using UnityEngine;
  * Optional Update
  * Re-designed UI System
  * Added All Category
+ *
+ * update 1.4.7
+ * Updated for rust update
+ * Added the following new items
+ * rhib
+ * rowboat
+ * snowmobile
+ * snowmobiletomaha
+ * hazmatsuit.arcticsuit
+ * hazmatsuit_scientist_arctic
+ * spraycan
+ * rifle.ak.ice
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.4.6")]
+    [Info("Stack Modifier", "Khan", "1.4.7")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
@@ -188,10 +200,10 @@ namespace Oxide.Plugins
 
         [PluginReference] Plugin ImageLibrary, LangAPI;
 
-        //private bool _isRestart = true;
+        private bool _isRestartSM = true;
         private bool _isEditorReady;
-        private List<string> _open = new List<string>();
-        private Hash<ulong, int> _editorPage = new Hash<ulong, int>();
+        private List<string> _opensm = new List<string>();
+        private Hash<ulong, int> _editorPageSM = new Hash<ulong, int>();
         private Dictionary<string, string> _stackModifierImageList;
         private List<KeyValuePair<string, ulong>> _stackModifierIcons;
 
@@ -960,6 +972,14 @@ namespace Oxide.Plugins
             {"skylantern.skylantern.purple", 20},
             {"skylantern.skylantern.red", 20},
             {"hat.tigermask", 1},
+            {"rhib", 1},
+            {"rowboat", 1},
+            {"snowmobile", 1},
+            {"snowmobiletomaha", 1},
+            {"hazmatsuit.arcticsuit", 1},
+            {"hazmatsuit_scientist_arctic", 1},
+            {"spraycan", 1},
+            {"rifle.ak.ice", 1},
         };
 
         private readonly HashSet<string> _exclude = new HashSet<string>
@@ -1293,8 +1313,8 @@ namespace Oxide.Plugins
                 _itemMap.Clear();
                 _stackModifierImageList = null;
                 _stackModifierIcons = null;
-                _open = null;
-                _editorPage = null;
+                _opensm = null;
+                _editorPageSM = null;
             }
         }
 
@@ -1343,14 +1363,14 @@ namespace Oxide.Plugins
             }
         }
 
-        /*private void OnPluginLoaded(Plugin name)
+        private void OnPluginLoaded(Plugin name)
         {
-            if (ImageLibrary != null && name.Name == ImageLibrary.Name && !_isRestart)
+            if (ImageLibrary != null && name.Name == ImageLibrary.Name && !_isRestartSM)
             {
                 _maxImageLibraryAttempts = 0;
                 LibraryCheck();
             }
-        }*/
+        }
 
         private object CanStackItem(Item item, Item targetItem)
         {
@@ -1654,7 +1674,7 @@ namespace Oxide.Plugins
 
         private object CanSpectateTarget(BasePlayer player, string filter)
         {
-            if (permission.UserHasPermission(player.UserIDString, Admin) && _open.Contains(player.UserIDString))
+            if (permission.UserHasPermission(player.UserIDString, Admin) && _opensm.Contains(player.UserIDString))
             {
                 return false;
             }
@@ -1704,14 +1724,14 @@ namespace Oxide.Plugins
             if (!_config.EnableEditor) return;
             if (!success)
             {
-                if (_maxImageLibraryAttempts >= 15)
+                if (_maxImageLibraryAttempts >= 20)
                 {
-                   // _isRestart = false;
-                    PrintWarning("Still unable to find ImageLibrary plugin. UI Editor will not be usable!");
+                    _isRestartSM = false;
+                    PrintWarning("StackModifier was still unable to find ImageLibrary plugin. UI Editor will not be usable!");
                     return;
                 }
                 _maxImageLibraryAttempts++;
-                PrintWarning("Unable to find ImageLibrary plugin. This may be caused by StackModifier loading before it. \n Will check again in 1 minute");
+                PrintWarning("Unable to find ImageLibrary plugin. This may be caused by StackModifier loading before it. Will check again in 1 minute");
                 timer.In(60, LibraryCheck);
             }
             else
@@ -1723,6 +1743,7 @@ namespace Oxide.Plugins
 
         private void LoadImages()
         {
+            _isRestartSM = false;
             _stackModifierImageList.Add(StackModifierEditorBackgroundImage, _config.BackgroundUrlSm);
             _stackModifierImageList.Add(_config.IconUrlSm, _config.IconUrlSm);
 
@@ -2166,7 +2187,7 @@ namespace Oxide.Plugins
 
         private void ShowEditor(BasePlayer player, string catid, int from = 0, bool fullPaint = true, bool refreshMultipler = false, bool filter = false, string input = "")
         {
-            _editorPage[player.userID] = from;
+            _editorPageSM[player.userID] = from;
             Dictionary<string, _Items> item = null;
             if (catid == "All")
             {
@@ -2340,7 +2361,7 @@ namespace Oxide.Plugins
             }
             
             ShowEditor(player, _config.DefaultCat);
-            _open.Add(player.UserIDString);
+            _opensm.Add(player.UserIDString);
             player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
             player.CancelInvoke("ServerUpdate");
             /*player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
@@ -2492,7 +2513,7 @@ namespace Oxide.Plugins
                 SaveConfig();
             }
 
-            ShowEditor(player, catName, _editorPage[player.userID], false);
+            ShowEditor(player, catName, _editorPageSM[player.userID], false);
         }
 
         [ConsoleCommand("editorsm.search")]
@@ -2608,7 +2629,7 @@ namespace Oxide.Plugins
             player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
             player.gameObject.SetLayerRecursive(17);*/
             player.ChatMessage("Movement Restored");
-            _open.Remove(player.UserIDString);
+            _opensm.Remove(player.UserIDString);
         }
 
         #endregion
