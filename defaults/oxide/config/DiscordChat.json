@@ -37,8 +37,8 @@
     },
     "AntiSpam Settings": {
       "Use AntiSpam On Player Names": false,
-      "Use AntiSpam On Server Messages": true,
-      "Use AntiSpam On Chat Messages": true,
+      "Use AntiSpam On Server Messages": false,
+      "Use AntiSpam On Chat Messages": false,
       "Use AntiSpam On Team Messages": false,
       "Use AntiSpam On Card Messages": false
     },
