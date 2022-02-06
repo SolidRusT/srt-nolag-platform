@@ -282,6 +282,7 @@ DEFAULT_PERMS=(
   craftsman.leveling.ranged
   customgenetics.use
   dance.use
+  discordcore.use
   discordmessages.report
   discordmessages.message
   farmtools.clone
