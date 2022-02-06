@@ -9,6 +9,8 @@ kubectl apply -n rook-ceph -f rook-storage.yaml
 kubectl patch storageclass default-local-storage -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 
+
+
 kubectl get sc -A
 
 
