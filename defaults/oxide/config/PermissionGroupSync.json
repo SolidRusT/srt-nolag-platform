@@ -119,7 +119,8 @@
                 "Kits.Supporter",
                 "Kits.Legend",
                 "spawnmini.legend",
-                "xperience.vip"
+                "xperience.vip",
+                "waterbases.vip3"
             ],
             "AdditionalCommands": []
         },
