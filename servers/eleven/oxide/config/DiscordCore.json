@@ -1,5 +1,5 @@
 {
-  "Discord Bot Token": "OTQwMDI4OTgzNzMzNTQzMDEy.YgBcNg.hlpJcz41webiGAPzu1DSZYa9OcE",
+  "Discord Bot Token": "OTQwMDMyNDA1ODIwMDM5MjE4.YgBfZg.O5EDamtwbypTcyFTY-80WOQVchE",
   "Discord Server ID (Optional if bot only in 1 guild)": "846525505083670580",
   "Discord Server Name Override": "SolidRust Networks",
   "Discord Server Join Code": "PpAvPcD46q",
@@ -16,7 +16,7 @@
     "Link / Unlink Announcement Channel Id": "",
     "Guild Link Message Settings": {
       "Enable Guild Link Message": false,
-      "Message Channel ID": "846525505083670580"
+      "Message Channel ID": "930536507658354698"
     },
     "Link Ban Settings": {
       "Enable Link Ban": true,
