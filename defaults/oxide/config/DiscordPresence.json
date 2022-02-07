@@ -1,0 +1,55 @@
+{
+  "Discord Application Bot Token": "OTQwMDI4OTgzNzMzNTQzMDEy.YgBcNg.hlpJcz41webiGAPzu1DSZYa9OcE",
+  "Update Rate (Seconds)": 15.0,
+  "Presence Messages": [
+    {
+      "Message": "on {server.name}",
+      "Type": "Game"
+    },
+    {
+      "Message": "{server.players}/{server.players.max} Players",
+      "Type": "Game"
+    },
+    {
+      "Message": "{server.players.sleepers} Sleepers",
+      "Type": "Game"
+    },
+    {
+      "Message": "{server.players.stored} Total Players",
+      "Type": "Game"
+    },
+    {
+      "Message": "Server FPS {server.fps}",
+      "Type": "Game"
+    },
+    {
+      "Message": "{server.entities} Entities",
+      "Type": "Game"
+    },
+    {
+      "Message": "{server.players.total} Lifetime Players",
+      "Type": "Game"
+    },
+    {
+      "Message": "{server.entities} Entities",
+      "Type": "Game"
+    },
+    {
+      "Message": "{server.players.queued} Queued",
+      "Type": "Game"
+    },
+    {
+      "Message": "{server.players.loading} Joining",
+      "Type": "Game"
+    },
+    {
+      "Message": "Wiped: {server.map.wipe.last!local}",
+      "Type": "Game"
+    },
+    {
+      "Message": "Size: {world.size} Seed: {world.seed}",
+      "Type": "Game"
+    }
+  ],
+  "Discord Extension Log Level (Verbose, Debug, Info, Warning, Error, Exception, Off)": "Info"
+}
