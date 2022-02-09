@@ -12,7 +12,7 @@ using Oxide.Plugins.NpcSpawnExtensionMethods;
 
 namespace Oxide.Plugins
 {
-    [Info("NpcSpawn", "KpucTaJl", "2.1.1")]
+    [Info("NpcSpawn", "KpucTaJl", "2.1.7")]
     internal class NpcSpawn : RustPlugin
     {
         #region Config
@@ -36,6 +36,8 @@ namespace Oxide.Plugins
             public bool CanUseWeaponMounted { get; set; }
             public bool CanRunAwayWater { get; set; }
             public float Speed { get; set; }
+            public int AreaMask { get; set; }
+            public int AgentTypeID { get; set; }
             public SensoryStats Sensory { get; set; }
         }
 
@@ -160,8 +162,16 @@ namespace Oxide.Plugins
                 if (NavAgent == null) NavAgent = GetComponent<NavMeshAgent>();
                 if (NavAgent != null)
                 {
-                    NavAgent.areaMask = 1;
-                    NavAgent.agentTypeID = -1372625422;
+                    if (Config.AreaMask == 0)
+                    {
+                        NavAgent.areaMask = 1;
+                        NavAgent.agentTypeID = -1372625422;
+                    }
+                    else
+                    {
+                        NavAgent.areaMask = Config.AreaMask;
+                        NavAgent.agentTypeID = Config.AgentTypeID;
+                    }
                 }
                 startHealth = Config.Health;
                 damageScale = Config.DamageScale;
@@ -172,6 +182,8 @@ namespace Oxide.Plugins
                     RadioChatterEffects = Array.Empty<GameObjectRef>();
                     DeathEffects = Array.Empty<GameObjectRef>();
                 }
+                ClearContainer(inventory.containerWear);
+                ClearContainer(inventory.containerBelt);
                 if (!string.IsNullOrEmpty(Config.Kit) && _ins.Kits != null) _ins.Kits.Call("GiveKit", this, Config.Kit);
                 else UpdateInventory();
                 Invoke(SetDisplayName, 1f);
@@ -183,7 +195,6 @@ namespace Oxide.Plugins
             {
                 if (Config.WearItems.Count > 0)
                 {
-                    ClearContainer(inventory.containerWear);
                     foreach (Item item in Config.WearItems.Select(x => ItemManager.CreateByName(x.ShortName, 1, x.SkinID)))
                     {
                         if (item == null) continue;
@@ -192,7 +203,6 @@ namespace Oxide.Plugins
                 }
                 if (Config.BeltItems.Count > 0)
                 {
-                    ClearContainer(inventory.containerBelt);
                     foreach (NpcBelt npcItem in Config.BeltItems)
                     {
                         Item item = ItemManager.CreateByName(npcItem.ShortName, npcItem.Amount, npcItem.SkinID);
@@ -468,7 +478,12 @@ namespace Oxide.Plugins
 
             private bool CanRunAwayWater()
             {
-                if (!Config.CanRunAwayWater || IsRunAwayWater || CurrentTarget == null) return false;
+                if (!Config.CanRunAwayWater || IsRunAwayWater) return false;
+                if (CurrentTarget == null)
+                {
+                    if (Transform.position.y < -0.25f) return true;
+                    else return false;
+                }
                 if (Transform.position.y > -0.25f || TerrainMeta.HeightMap.GetHeight(CurrentTarget.transform.position) > -0.25f) return false;
                 if (CurrentWeapon is BaseProjectile && DistanceToTarget < EngagementRange()) return false;
                 if (CurrentWeapon is BaseMelee && DistanceToTarget < CurrentWeapon.effectiveRange) return false;
@@ -904,7 +919,6 @@ namespace Oxide.Plugins
                 {
                     Vector2 random = UnityEngine.Random.insideUnitCircle * (_npc.Config.RoamRange - 5f);
                     Vector3 result = _npc.HomePosition + new Vector3(random.x, 0f, random.y);
-                    result.y = TerrainMeta.HeightMap.GetHeight(result);
                     NavMeshHit navMeshHit;
                     if (NavMesh.SamplePosition(result, out navMeshHit, 5f, _npc.NavAgent.areaMask))
                     {
@@ -948,7 +962,6 @@ namespace Oxide.Plugins
                 {
                     Vector2 random = UnityEngine.Random.insideUnitCircle * 2f;
                     Vector3 result = _npc.CurrentTarget.transform.position + new Vector3(random.x, 0f, random.y);
-                    result.y = TerrainMeta.HeightMap.GetHeight(result);
                     NavMeshHit navMeshHit;
                     if (NavMesh.SamplePosition(result, out navMeshHit, 2f, _npc.NavAgent.areaMask))
                     {
@@ -1282,6 +1295,8 @@ namespace Oxide.Plugins
 
         private void Init() => _ins = this;
 
+        private void OnServerInitialized() => GenerateSpawnpoints();
+
         private void Unload()
         {
             foreach (CustomScientistNpc npc in _scientists.Values.Where(x => x.IsExists())) npc.Kill();
@@ -1294,12 +1309,12 @@ namespace Oxide.Plugins
         {
             if (!entity.IsExists() || info == null) return null;
             BaseEntity attacker = info.Initiator;
-            if (!attacker.IsExists()) return null;
             if (entity is CustomScientistNpc)
             {
                 CustomScientistNpc victimNpc;
                 if (_scientists.TryGetValue(entity.net.ID, out victimNpc))
                 {
+                    if (!attacker.IsExists()) return true;
                     if (victimNpc.CurrentTarget == null && victimNpc.CanTargetBasePlayer(attacker as BasePlayer)) victimNpc.CurrentTarget = attacker as BasePlayer;
                     if (attacker is AutoTurret || attacker is GunTrap || attacker is FlameTurret)
                     {
@@ -1311,7 +1326,7 @@ namespace Oxide.Plugins
                     else return true;
                 }
             }
-            if (attacker is CustomScientistNpc && _scientists.ContainsKey(attacker.net.ID))
+            if (attacker.IsExists() && attacker is CustomScientistNpc && _scientists.ContainsKey(attacker.net.ID))
             {
                 if (entity is BasePlayer)
                 {
@@ -1370,9 +1385,12 @@ namespace Oxide.Plugins
         {
             if (!entity.IsExists() || info == null) return null;
             BaseEntity attacker = info.Initiator;
-            if (!attacker.IsExists()) return null;
-            if (entity is CustomScientistNpc && _scientists.ContainsKey(entity.net.ID)) return ((attacker is AutoTurret || attacker is GunTrap || attacker is FlameTurret) && attacker.OwnerID.IsSteamId()) || (attacker is BasePlayer && (attacker as BasePlayer).userID.IsSteamId());
-            if (attacker is CustomScientistNpc && _scientists.ContainsKey(attacker.net.ID)) return entity.OwnerID.IsSteamId() || (entity is BasePlayer && (entity as BasePlayer).userID.IsSteamId());
+            if (entity is CustomScientistNpc && _scientists.ContainsKey(entity.net.ID))
+            {
+                if (!attacker.IsExists()) return false;
+                return ((attacker is AutoTurret || attacker is GunTrap || attacker is FlameTurret) && attacker.OwnerID.IsSteamId()) || (attacker is BasePlayer && (attacker as BasePlayer).userID.IsSteamId());
+            }
+            if (attacker.IsExists() && attacker is CustomScientistNpc && _scientists.ContainsKey(attacker.net.ID)) return entity.OwnerID.IsSteamId() || (entity is BasePlayer && (entity as BasePlayer).userID.IsSteamId());
             return null;
         }
 
@@ -1384,6 +1402,69 @@ namespace Oxide.Plugins
             return null;
         }
         #endregion Other plugins hooks
+
+        #region Find Random Points
+        private readonly Dictionary<TerrainBiome.Enum, List<Vector3>> _points = new Dictionary<TerrainBiome.Enum, List<Vector3>>();
+        private const int VIS_RAYCAST_LAYERS = 1 << 8 | 1 << 17 | 1 << 21;
+        private const int POINT_RAYCAST_LAYERS = 1 << 4 | 1 << 8 | 1 << 10 | 1 << 15 | 1 << 16 | 1 << 21 | 1 << 23 | 1 << 27 | 1 << 28 | 1 << 29;
+        private const int BLOCKED_TOPOLOGY = (int)(TerrainTopology.Enum.Cliff | TerrainTopology.Enum.Cliffside | TerrainTopology.Enum.Lake | TerrainTopology.Enum.Ocean | TerrainTopology.Enum.Monument | TerrainTopology.Enum.Offshore | TerrainTopology.Enum.River | TerrainTopology.Enum.Swamp);
+
+        private void GenerateSpawnpoints()
+        {
+            for (int i = 0; i < 3000; i++)
+            {
+                Vector2 random = World.Size * 0.475f * UnityEngine.Random.insideUnitCircle;
+                Vector3 position = new Vector3(random.x, 500f, random.y);
+                if ((TerrainMeta.TopologyMap.GetTopology(position) & BLOCKED_TOPOLOGY) != 0) continue;
+                float heightAtPoint;
+                if (!IsPointOnTerrain(position, out heightAtPoint)) continue;
+                position.y = heightAtPoint;
+                TerrainBiome.Enum majorityBiome = (TerrainBiome.Enum)TerrainMeta.BiomeMap.GetBiomeMaxType(position);
+                List<Vector3> list;
+                if (!_points.TryGetValue(majorityBiome, out list)) _points[majorityBiome] = list = new List<Vector3>();
+                list.Add(position);
+            }
+        }
+
+        private object GetSpawnPoint(string biomeName)
+        {
+            TerrainBiome.Enum biome = (TerrainBiome.Enum)Enum.Parse(typeof(TerrainBiome.Enum), biomeName, true);
+            if (!_points.ContainsKey(biome)) return null;
+            List<Vector3> spawnpoints = _points[biome];
+            if (spawnpoints.Count == 0) return null;
+            Vector3 position = spawnpoints.GetRandom();
+            List<BaseEntity> list = Facepunch.Pool.GetList<BaseEntity>();
+            Vis.Entities(position, 15f, list, VIS_RAYCAST_LAYERS);
+            int count = list.Count;
+            Facepunch.Pool.FreeList(ref list);
+            if (count > 0)
+            {
+                spawnpoints.Remove(position);
+                if (spawnpoints.Count == 0)
+                {
+                    GenerateSpawnpoints();
+                    return null;
+                }
+                return GetSpawnPoint(biomeName);
+            }
+            return position;
+        }
+
+        private static bool IsPointOnTerrain(Vector3 position, out float heightAtPoint)
+        {
+            RaycastHit raycastHit;
+            if (Physics.Raycast(position, Vector3.down, out raycastHit, 500f, POINT_RAYCAST_LAYERS))
+            {
+                if (raycastHit.collider is TerrainCollider)
+                {
+                    heightAtPoint = raycastHit.point.y;
+                    return true;
+                }
+            }
+            heightAtPoint = 500f;
+            return false;
+        }
+        #endregion Find Random Points
     }
 }
 
@@ -1417,13 +1498,6 @@ namespace Oxide.Plugins.NpcSpawnExtensionMethods
         #endregion FirstOrDefault
 
         #region Select
-        public static HashSet<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> predicate)
-        {
-            HashSet<TResult> result = new HashSet<TResult>();
-            using (var enumerator = source.GetEnumerator()) while (enumerator.MoveNext()) result.Add(predicate(enumerator.Current));
-            return result;
-        }
-
         public static List<TResult> Select<TSource, TResult>(this IList<TSource> source, Func<TSource, TResult> predicate)
         {
             List<TResult> result = new List<TResult>();

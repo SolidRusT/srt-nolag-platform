@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Bank System", "Mevent", "1.0.15")]
+    [Info("Bank System", "Mevent", "1.0.16")]
     public class BankSystem : RustPlugin
     {
         #region Fields
@@ -62,37 +62,37 @@ namespace Oxide.Plugins
         private class Configuration
         {
             [JsonProperty(PropertyName = "Work with Notify?")]
-            public bool UseNotify = true;
+            public readonly bool UseNotify = true;
 
             [JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public string[] Commands = { "bank" };
+            public readonly string[] Commands = {"bank"};
 
             [JsonProperty(PropertyName = "Permission (example: banksystem.use)")]
-            public string Permission = string.Empty;
+            public readonly string Permission = string.Empty;
 
             [JsonProperty(PropertyName = "Starting balance")]
-            public int StartingBalance = 100;
+            public readonly int StartingBalance = 100;
 
             [JsonProperty(PropertyName = "Card Image")]
-            public string CardImage = "https://i.imgur.com/Br9z7Ou.png";
+            public readonly string CardImage = "https://i.imgur.com/Br9z7Ou.png";
 
             [JsonProperty(PropertyName = "Transit Image")]
-            public string DepositImage = "https://i.imgur.com/h2bqMu4.png";
+            public readonly string DepositImage = "https://i.imgur.com/h2bqMu4.png";
 
             [JsonProperty(PropertyName = "Withdraw Image")]
-            public string WithdrawImage = "https://i.imgur.com/lwVwxm3.png";
+            public readonly string WithdrawImage = "https://i.imgur.com/lwVwxm3.png";
 
             [JsonProperty(PropertyName = "Transfer Image")]
-            public string TransferImage = "https://i.imgur.com/TBIxUnz.png";
+            public readonly string TransferImage = "https://i.imgur.com/TBIxUnz.png";
 
             [JsonProperty(PropertyName = "Exit Image")]
-            public string ExitImage = "https://i.imgur.com/OGoMu9N.png";
+            public readonly string ExitImage = "https://i.imgur.com/OGoMu9N.png";
 
             [JsonProperty(PropertyName = "Disable the close button in the ATM header")]
             public bool AtmDisbaleCloser;
 
             [JsonProperty(PropertyName = "Currency Settings")]
-            public CurrencySettings Currency = new CurrencySettings
+            public readonly CurrencySettings Currency = new CurrencySettings
             {
                 DisplayName = "RUSTNote",
                 ShortName = "sticks",
@@ -100,10 +100,10 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Card expiry date (in days)")]
-            public int CardExpiryDate = 7;
+            public readonly int CardExpiryDate = 7;
 
             [JsonProperty(PropertyName = "ATM Settings")]
-            public ATMSettings Atm = new ATMSettings
+            public readonly ATMSettings Atm = new ATMSettings
             {
                 MinDepositFee = 0,
                 MaxDepositFee = 10,
@@ -176,7 +176,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Tracking Settings")]
-            public TrackingSettings Tracking = new TrackingSettings
+            public readonly TrackingSettings Tracking = new TrackingSettings
             {
                 CostTable = new Dictionary<string, float>
                 {
@@ -191,7 +191,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Wipe Settings")]
-            public WipeSettings Wipe = new WipeSettings
+            public readonly WipeSettings Wipe = new WipeSettings
             {
                 Players = false,
                 Logs = true,
@@ -199,7 +199,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "NPC Settings")]
-            public NPCSettings NPC = new NPCSettings
+            public readonly NPCSettings NPC = new NPCSettings
             {
                 NPCs = new List<string>
                 {
@@ -210,7 +210,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Economy Settings")]
-            public EconomySettings Economy = new EconomySettings
+            public readonly EconomySettings Economy = new EconomySettings
             {
                 Self = true,
                 AddHook = "Deposit",
@@ -220,7 +220,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Drop Settings", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<DropInfo> Drop = new List<DropInfo>
+            public readonly List<DropInfo> Drop = new List<DropInfo>
             {
                 new DropInfo
                 {
@@ -249,7 +249,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Colors")]
-            public Colors Colors = new Colors
+            public readonly Colors Colors = new Colors
             {
                 Color1 = "#0E0E10",
                 Color2 = "#161617",
@@ -368,7 +368,7 @@ namespace Oxide.Plugins
                 switch (PluginName)
                 {
                     case "Economics":
-                        plugin.Call(AddHook, player, (double)amount);
+                        plugin.Call(AddHook, player, (double) amount);
                         break;
                     default:
                         plugin.Call(AddHook, player, amount);
@@ -398,7 +398,7 @@ namespace Oxide.Plugins
                 switch (PluginName)
                 {
                     case "Economics":
-                        plugin.Call(RemoveHook, player, (double)amount);
+                        plugin.Call(RemoveHook, player, (double) amount);
                         break;
                     default:
                         plugin.Call(RemoveHook, player, amount);
@@ -755,7 +755,7 @@ namespace Oxide.Plugins
         private class PluginData
         {
             [JsonProperty(PropertyName = "Players", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<ulong, PlayerData> Players = new Dictionary<ulong, PlayerData>();
+            public readonly Dictionary<ulong, PlayerData> Players = new Dictionary<ulong, PlayerData>();
         }
 
         private class PlayerData
@@ -792,16 +792,16 @@ namespace Oxide.Plugins
         private class LogsData
         {
             [JsonProperty(PropertyName = "Players", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<ulong, PlayerLogs> Players = new Dictionary<ulong, PlayerLogs>();
+            public readonly Dictionary<ulong, PlayerLogs> Players = new Dictionary<ulong, PlayerLogs>();
         }
 
         private class PlayerLogs
         {
             [JsonProperty(PropertyName = "Transfers", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<TransferData> Transfers = new List<TransferData>();
+            public readonly List<TransferData> Transfers = new List<TransferData>();
 
             [JsonProperty(PropertyName = "Gather Logs", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<GatherLogData> GatherLogs = new List<GatherLogData>();
+            public readonly List<GatherLogData> GatherLogs = new List<GatherLogData>();
         }
 
         private class TransferData
@@ -1007,7 +1007,7 @@ namespace Oxide.Plugins
             public int LastATMID;
 
             [JsonProperty(PropertyName = "ATMs", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<ATMData> ATMs = new List<ATMData>();
+            public readonly List<ATMData> ATMs = new List<ATMData>();
         }
 
         private class ATMData
@@ -1102,7 +1102,7 @@ namespace Oxide.Plugins
             AddCovalenceCommand(_config.Commands, nameof(CmdOpenBank));
             AddCovalenceCommand("bank.givenote", nameof(CmdGiveNotes));
             AddCovalenceCommand("bank.giveatm", nameof(CmdGiveATM));
-            AddCovalenceCommand(new[] { "bank.setbalance", "bank.deposit", "bank.withdraw", "bank.transfer" },
+            AddCovalenceCommand(new[] {"bank.setbalance", "bank.deposit", "bank.withdraw", "bank.transfer"},
                 nameof(AdminCommands));
             AddCovalenceCommand("bank.wipe", nameof(WipeCommands));
 
@@ -1318,7 +1318,7 @@ namespace Oxide.Plugins
             return item.info.shortname == targetItem.info.shortname &&
                    (item.skin == _config.Currency.Skin || targetItem.skin == _config.Currency.Skin) &&
                    item.skin == targetItem.skin
-                ? (object)(item.amount + targetItem.amount < item.info.stackable)
+                ? (object) (item.amount + targetItem.amount < item.info.stackable)
                 : null;
         }
 
@@ -1377,7 +1377,7 @@ namespace Oxide.Plugins
             }
             else
             {
-                LootedContainers.Add(netID, new List<ulong> { player.userID });
+                LootedContainers.Add(netID, new List<ulong> {player.userID});
             }
 
             AddPlayerTracking(GatherLogType.Loot, player, container.ShortPrefabName);
@@ -1478,7 +1478,7 @@ namespace Oxide.Plugins
                 {
                     int amount;
                     ulong target;
-                    if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out amount) || amount < 0
+                    if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out amount) || amount <= 0
                         || !ulong.TryParse(arg.Args[2], out target)) return;
 
                     MainUi(player, amount, target);
@@ -1489,7 +1489,7 @@ namespace Oxide.Plugins
                 {
                     int amount;
                     ulong target;
-                    if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out amount) ||
+                    if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out amount) || amount <= 0 ||
                         !ulong.TryParse(arg.Args[2], out target)) return;
 
                     if (_config.Economy.ShowBalance(player) < amount)
@@ -1622,7 +1622,7 @@ namespace Oxide.Plugins
                     var allItems = player.inventory.AllItems();
 
                     if (_config.Atm.Repair.Items.Any(x =>
-                        !HasAmount(allItems, x.ShortName, x.Skin, Mathf.CeilToInt(x.Amount * needPercent))))
+                            !HasAmount(allItems, x.ShortName, x.Skin, Mathf.CeilToInt(x.Amount * needPercent))))
                     {
                         SendNotify(player, NotEnoughItems, 1);
                         return;
@@ -1735,7 +1735,7 @@ namespace Oxide.Plugins
                 {
                     int amount;
                     ulong target;
-                    if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out amount) ||
+                    if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out amount) || amount <= 0 ||
                         !ulong.TryParse(arg.Args[2], out target)) return;
 
                     ATMData ATM;
@@ -1990,7 +1990,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Image =
                     {
                         Color = "0 0 0 0.9",
@@ -2001,8 +2001,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -2052,7 +2052,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = _color2 }
+                Image = {Color = _color2}
             }, Layer + ".Main", Layer + ".Header");
 
 
@@ -2166,7 +2166,7 @@ namespace Oxide.Plugins
                 Components =
                 {
                     new CuiRawImageComponent
-                        { Png = ImageLibrary.Call<string>("GetImage", $"avatar_{player.userID}") },
+                        {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{player.userID}")},
                     new CuiRectTransformComponent
                     {
                         AnchorMin = "1 1", AnchorMax = "1 1",
@@ -2239,7 +2239,7 @@ namespace Oxide.Plugins
                     Parent = Layer + ".Main",
                     Components =
                     {
-                        new CuiRawImageComponent { Png = ImageLibrary.Call<string>("GetImage", _config.CardImage) },
+                        new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", _config.CardImage)},
                         new CuiRectTransformComponent
                         {
                             AnchorMin = "0.5 1", AnchorMax = "0.5 1",
@@ -2405,7 +2405,7 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiLabel
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                         Text =
                         {
                             Text = Msg(player, HaventTransactions),
@@ -2442,7 +2442,7 @@ namespace Oxide.Plugins
                             Components =
                             {
                                 new CuiRawImageComponent
-                                    { Png = ImageLibrary.Call<string>("GetImage", $"avatar_{member}") },
+                                    {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{member}")},
                                 new CuiRectTransformComponent
                                 {
                                     AnchorMin = "0 0", AnchorMax = "0 0",
@@ -3032,8 +3032,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -3082,7 +3082,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiPanel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Image =
                 {
                     Color = "0.19 0.19 0.18 0.65",
@@ -3093,8 +3093,8 @@ namespace Oxide.Plugins
 
             container.Add(new CuiButton
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                Text = { Text = "" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
                 Button =
                 {
                     Color = "0 0 0 0",
@@ -3151,7 +3151,7 @@ namespace Oxide.Plugins
                     Components =
                     {
                         new CuiRawImageComponent
-                            { Png = ImageLibrary.Call<string>("GetImage", $"avatar_{member.userID}") },
+                            {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{member.userID}")},
                         new CuiRectTransformComponent
                         {
                             AnchorMin = "0 0", AnchorMax = "0 0",
@@ -3196,8 +3196,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -3226,7 +3226,7 @@ namespace Oxide.Plugins
             var selPageSize = 40f;
             xMargin = 5f;
 
-            var pages = (int)Math.Ceiling((double)players.Count / totalAmount);
+            var pages = (int) Math.Ceiling((double) players.Count / totalAmount);
             if (pages > 1)
             {
                 xSwitch = -((pages - 1) * pageSize + (pages - 1) * xMargin + selPageSize) / 2f;
@@ -3286,7 +3286,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Image =
                     {
                         Color = "0 0 0 0.9",
@@ -3297,8 +3297,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -3348,7 +3348,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = _color2 }
+                Image = {Color = _color2}
             }, Layer + ".Main", Layer + ".Header");
 
             container.Add(new CuiLabel
@@ -3462,7 +3462,7 @@ namespace Oxide.Plugins
                 Components =
                 {
                     new CuiRawImageComponent
-                        { Png = ImageLibrary.Call<string>("GetImage", $"avatar_{player.userID}") },
+                        {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{player.userID}")},
                     new CuiRectTransformComponent
                     {
                         AnchorMin = "1 1", AnchorMax = "1 1",
@@ -3543,7 +3543,7 @@ namespace Oxide.Plugins
                         Components =
                         {
                             new CuiRawImageComponent
-                                { Png = ImageLibrary.Call<string>("GetImage", _config.DepositImage) },
+                                {Png = ImageLibrary.Call<string>("GetImage", _config.DepositImage)},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "0 0",
@@ -3588,8 +3588,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -3621,7 +3621,7 @@ namespace Oxide.Plugins
                         Components =
                         {
                             new CuiRawImageComponent
-                                { Png = ImageLibrary.Call<string>("GetImage", _config.WithdrawImage) },
+                                {Png = ImageLibrary.Call<string>("GetImage", _config.WithdrawImage)},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "0 0",
@@ -3666,8 +3666,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -3699,7 +3699,7 @@ namespace Oxide.Plugins
                         Components =
                         {
                             new CuiRawImageComponent
-                                { Png = ImageLibrary.Call<string>("GetImage", _config.TransferImage) },
+                                {Png = ImageLibrary.Call<string>("GetImage", _config.TransferImage)},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "0 0",
@@ -3744,8 +3744,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -3777,7 +3777,7 @@ namespace Oxide.Plugins
                         Components =
                         {
                             new CuiRawImageComponent
-                                { Png = ImageLibrary.Call<string>("GetImage", _config.ExitImage) },
+                                {Png = ImageLibrary.Call<string>("GetImage", _config.ExitImage)},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "0 0",
@@ -3822,8 +3822,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -4095,7 +4095,7 @@ namespace Oxide.Plugins
                     {
                         container.Add(new CuiPanel
                         {
-                            RectTransform = { AnchorMin = "0 0", AnchorMax = $"{progress} 0.95" },
+                            RectTransform = {AnchorMin = "0 0", AnchorMax = $"{progress} 0.95"},
                             Image =
                             {
                                 Color = _color3
@@ -4256,7 +4256,7 @@ namespace Oxide.Plugins
                     {
                         container.Add(new CuiPanel
                         {
-                            RectTransform = { AnchorMin = "0 0", AnchorMax = $"{progress} 0.95" },
+                            RectTransform = {AnchorMin = "0 0", AnchorMax = $"{progress} 0.95"},
                             Image =
                             {
                                 Color = _color3
@@ -4477,7 +4477,7 @@ namespace Oxide.Plugins
                         Components =
                         {
                             new CuiRawImageComponent
-                                { Png = ImageLibrary.Call<string>("GetImage", _config.ExitImage) },
+                                {Png = ImageLibrary.Call<string>("GetImage", _config.ExitImage)},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "0 0",
@@ -4522,8 +4522,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -4698,7 +4698,7 @@ namespace Oxide.Plugins
                         Components =
                         {
                             new CuiRawImageComponent
-                                { Png = ImageLibrary.Call<string>("GetImage", _config.ExitImage) },
+                                {Png = ImageLibrary.Call<string>("GetImage", _config.ExitImage)},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "0 0",
@@ -4743,8 +4743,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -4920,7 +4920,7 @@ namespace Oxide.Plugins
                             Components =
                             {
                                 new CuiRawImageComponent
-                                    { Png = ImageLibrary.Call<string>("GetImage", $"avatar_{targetId}") },
+                                    {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{targetId}")},
                                 new CuiRectTransformComponent
                                 {
                                     AnchorMin = "0 0", AnchorMax = "0 0",
@@ -4984,8 +4984,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -5017,7 +5017,7 @@ namespace Oxide.Plugins
                         Components =
                         {
                             new CuiRawImageComponent
-                                { Png = ImageLibrary.Call<string>("GetImage", _config.ExitImage) },
+                                {Png = ImageLibrary.Call<string>("GetImage", _config.ExitImage)},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "0 0",
@@ -5062,8 +5062,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -5317,7 +5317,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiPanel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Image =
                 {
                     Color = "0.19 0.19 0.18 0.3",
@@ -5328,8 +5328,8 @@ namespace Oxide.Plugins
 
             container.Add(new CuiButton
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                Text = { Text = "" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
                 Button =
                 {
                     Color = "0 0 0 0",
@@ -5409,7 +5409,7 @@ namespace Oxide.Plugins
                     Components =
                     {
                         new CuiRawImageComponent
-                            { Png = ImageLibrary.Call<string>("GetImage", item.ShortName, item.Skin) },
+                            {Png = ImageLibrary.Call<string>("GetImage", item.ShortName, item.Skin)},
                         new CuiRectTransformComponent
                         {
                             AnchorMin = "0.5 1", AnchorMax = "0.5 1",
@@ -5532,7 +5532,7 @@ namespace Oxide.Plugins
             var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
             var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
 
-            return $"{(double)r / 255} {(double)g / 255} {(double)b / 255} {alpha / 100f}";
+            return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {alpha / 100f}";
         }
 
         private string GetCardNumber()
@@ -5603,7 +5603,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{size} 0",
                         OffsetMax = $"-{size} {size}"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -5615,7 +5615,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{size} -{size}",
                         OffsetMax = $"-{size} 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -5626,7 +5626,7 @@ namespace Oxide.Plugins
                         OffsetMin = "0 0",
                         OffsetMax = $"{size} 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -5638,7 +5638,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"-{size} 0",
                         OffsetMax = "0 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
         }
@@ -5917,7 +5917,7 @@ namespace Oxide.Plugins
         private void RenameATMs()
         {
             foreach (var entity in BaseNetworkable.serverEntities.OfType<VendingMachine>()
-                .Where(x => x.skinID == _config.Atm.Skin))
+                         .Where(x => x.skinID == _config.Atm.Skin))
             {
                 if (entity == null) continue;
 
@@ -6268,7 +6268,7 @@ namespace Oxide.Plugins
                 ulong member;
                 if (!ulong.TryParse(check.Key, out member)) continue;
 
-                var newBalance = Mathf.CeilToInt((float)check.Value);
+                var newBalance = Mathf.CeilToInt((float) check.Value);
 
                 if (_data.Players.ContainsKey(member))
                 {

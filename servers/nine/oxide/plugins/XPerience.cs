@@ -18,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("XPerience", "MACHIN3", "1.3.5")]
+    [Info("XPerience", "MACHIN3", "1.3.7")]
     [Description("Player level system with xp, stats, and skills")]
     public class XPerience : RustPlugin
     {
@@ -28,6 +28,36 @@ namespace Oxide.Plugins
 		【 𝓜𝓐𝓒𝓗𝓘𝓝𝓔 】
         Discord: discord.skilledsoldiers.net
         *****************************************************/
+        #region version 1.3.7
+        /*****************************************************
+         ----------------------
+         ✯ version 1.3.7
+         ----------------------
+         DELETE LANG FILE BEFORE UPLOADING UPDATE!
+
+        ✯ Added PolarBear to KillRecords page if plugin is installed
+        ✯ Added building upgrade xp cooldown to building start
+        ✯ Possible fix for rare OnResearchCostDetermine error
+        ✯ Fix for ImageLibrary URLs
+
+        Don't forget to check out the New XPerienceAddon mod! Check our discord for details on how and where to get it.
+        Discord: discord.skilledsoldiers.net
+        *****************************************************/
+        #endregion
+        #region version 1.3.6
+        /*****************************************************
+         ----------------------
+         ✯ version 1.3.6
+         ----------------------
+         DELETE LANG FILE BEFORE UPLOADING UPDATE!
+
+        ✯ Fixed not changing online status if player was kicked or disconnected randomly
+        ✯ Added support for new polar bear (xp amount, hunter skills, etc..)
+
+        Don't forget to check out the New XPerienceAddon mod! Check our discord for details on how and where to get it.
+        Discord: discord.skilledsoldiers.net
+        *****************************************************/
+        #endregion
         #region version 1.3.5
         /*****************************************************
          ----------------------
@@ -640,7 +670,7 @@ namespace Oxide.Plugins
 
         #region Fields
 
-        public const string version = "1.3.5";
+        public const string version = "1.3.7";
         private XPData _xpData;
         private LootData _lootData;
         private CorpseData _corpseData;
@@ -892,29 +922,29 @@ namespace Oxide.Plugins
 
         public class ImageIcons
         {
-            public string mainicon = "https://imgur.com/JUwd2a8.png";
-            public string mentality = "https://imgur.com/dR7Hcif.png";
-            public string dexterity = "https://imgur.com/u9BSoMI.png";
-            public string might = "https://imgur.com/BXCVcKb.png";
-            public string captaincy = "https://imgur.com/6y5Yha1.png";
-            public string woodcutter = "https://imgur.com/3teb5s2.png";
-            public string smithy = "https://imgur.com/uz8szzL.png";
-            public string miner = "https://imgur.com/lFkLUv0.png";
-            public string forager = "https://imgur.com/SSdZZ8O.png";
-            public string hunter = "https://imgur.com/UwASeQs.png";
-            public string fisher = "https://imgur.com/QU76hi1.png";
-            public string crafter = "https://imgur.com/IiywcbI.png";
-            public string framer = "https://imgur.com/M3VgQic.png";
-            public string medic = "https://imgur.com/mXp3Mrh.png";
-            public string scavenger = "https://imgur.com/g3S4XKW.png";
-            public string tamer = "https://imgur.com/DatpWzL.png";
-            public string chicken = "https://imgur.com/qJYzAZ6.png";
-            public string boar = "https://imgur.com/ou1DgxE.png";
-            public string stag = "https://imgur.com/CwACyuG.png";
-            public string wolf = "https://imgur.com/J18C2Je.png";
-            public string bear = "https://imgur.com/kTbD3B1.png";
-            public string online = "https://imgur.com/WafMLkk.png";
-            public string offline = "https://imgur.com/QtbFqQz.png";
+            public string mainicon = "https://i.imgur.com/JUwd2a8.png";
+            public string mentality = "https://i.imgur.com/dR7Hcif.png";
+            public string dexterity = "https://i.imgur.com/u9BSoMI.png";
+            public string might = "https://i.imgur.com/BXCVcKb.png";
+            public string captaincy = "https://i.imgur.com/6y5Yha1.png";
+            public string woodcutter = "https://i.imgur.com/3teb5s2.png";
+            public string smithy = "https://i.imgur.com/uz8szzL.png";
+            public string miner = "https://i.imgur.com/lFkLUv0.png";
+            public string forager = "https://i.imgur.com/SSdZZ8O.png";
+            public string hunter = "https://i.imgur.com/UwASeQs.png";
+            public string fisher = "https://i.imgur.com/QU76hi1.png";
+            public string crafter = "https://i.imgur.com/IiywcbI.png";
+            public string framer = "https://i.imgur.com/M3VgQic.png";
+            public string medic = "https://i.imgur.com/mXp3Mrh.png";
+            public string scavenger = "https://i.imgur.com/g3S4XKW.png";
+            public string tamer = "https://i.imgur.com/DatpWzL.png";
+            public string chicken = "https://i.imgur.com/qJYzAZ6.png";
+            public string boar = "https://i.imgur.com/ou1DgxE.png";
+            public string stag = "https://i.imgur.com/CwACyuG.png";
+            public string wolf = "https://i.imgur.com/J18C2Je.png";
+            public string bear = "https://i.imgur.com/kTbD3B1.png";
+            public string online = "https://i.imgur.com/WafMLkk.png";
+            public string offline = "https://i.imgur.com/QtbFqQz.png";
         }
 
         public class UINotifier
@@ -958,6 +988,7 @@ namespace Oxide.Plugins
             public double stagxp = 15;
             public double wolfxp = 20;
             public double bearxp = 25;
+            public double polarbearxp = 25;
             public double sharkxp = 30;
             public double horsexp = 20;
             public double scientistxp = 25;
@@ -1922,6 +1953,7 @@ namespace Oxide.Plugins
                 Subscribe(nameof(OnTechTreeNodeUnlock));
                 Subscribe(nameof(OnItemResearch));
             }
+            ChangeImageURLs();
             LibraryCheck();
         }
 
@@ -1981,13 +2013,22 @@ namespace Oxide.Plugins
 
         private void OnServerSave()
         {
+
             SaveData();
             SaveLoot();
             SaveCorpse();
             if (config.sql.enablesql)
             {
-                foreach (var player in BasePlayer.activePlayerList)
+                foreach (var player in BasePlayer.allPlayerList)
                 {
+                    if (player.IsConnected) 
+                    { 
+                        _xperienceCache[player.UserIDString].Status = true; 
+                    }
+                    else
+                    {
+                        _xperienceCache[player.UserIDString].Status = false;
+                    }
                     CheckPlayerDataSQL(player);
                 }
                 UpdatePlayersDataSQL();
@@ -2048,12 +2089,12 @@ namespace Oxide.Plugins
                 if (_imageLibraryCheck >= 20)
                 {
                     _isRestart = false;
-                    PrintWarning($"ImageLibrary appears to be missing or occupied by other plugins load orders. XPerience is unusable.");
+                    PrintWarning($"ImageLibrary appears to be missing. XPerience is unusable.");
                     return;
                 }
 
                 timer.In(60, LibraryCheck);
-                PrintWarning("ImageLibrary appears to be occupied will check again in 1 minute");
+                PrintWarning("if ImageLibrary is installed, then it appears to be occupied will check again in 1 minute");
                 return;
             }
 
@@ -2087,7 +2128,7 @@ namespace Oxide.Plugins
             _xperienceImageList.Add(XPeriencebear, config.imageicons.bear);
             _xperienceImageList.Add(XPerienceonline, config.imageicons.online);
             _xperienceImageList.Add(XPerienceoffline, config.imageicons.offline);
-            _xperienceImageList.Add(XPeriencelogo, "https://imgur.com/d16zkJk.png");
+            _xperienceImageList.Add(XPeriencelogo, "https://i.imgur.com/d16zkJk.png");
 
             ImageLibrary?.Call("ImportImageList", Name, _xperienceImageList, 0UL, true, new Action(Ready));
         }
@@ -2098,7 +2139,36 @@ namespace Oxide.Plugins
             _xperienceImageList.Clear();
         }
 
-        #endregion
+        private void ChangeImageURLs()
+        {
+            if (config.imageicons.mainicon == "https://imgur.com/JUwd2a8.png") { config.imageicons.mainicon = "https://i.imgur.com/JUwd2a8.png"; }
+            if (config.imageicons.mentality == "https://imgur.com/dR7Hcif.png") { config.imageicons.mentality = "https://i.imgur.com/dR7Hcif.png"; }
+            if (config.imageicons.dexterity == "https://imgur.com/u9BSoMI.png") { config.imageicons.dexterity = "https://i.imgur.com/u9BSoMI.png"; }
+            if (config.imageicons.might == "https://imgur.com/BXCVcKb.png") { config.imageicons.might = "https://i.imgur.com/BXCVcKb.png"; }
+            if (config.imageicons.captaincy == "https://imgur.com/6y5Yha1.png") { config.imageicons.captaincy = "https://i.imgur.com/6y5Yha1.png"; }
+            if (config.imageicons.woodcutter == "https://imgur.com/3teb5s2.png") { config.imageicons.woodcutter = "https://i.imgur.com/3teb5s2.png"; }
+            if (config.imageicons.smithy == "https://imgur.com/uz8szzL.png") { config.imageicons.smithy = "https://i.imgur.com/uz8szzL.png"; }
+            if (config.imageicons.miner == "https://imgur.com/lFkLUv0.png") { config.imageicons.miner = "https://i.imgur.com/lFkLUv0.png"; }
+            if (config.imageicons.forager == "https://imgur.com/SSdZZ8O.png") { config.imageicons.forager = "https://i.imgur.com/SSdZZ8O.png"; }
+            if (config.imageicons.hunter == "https://imgur.com/UwASeQs.png") { config.imageicons.hunter = "https://i.imgur.com/UwASeQs.png"; }
+            if (config.imageicons.fisher == "https://imgur.com/QU76hi1.png") { config.imageicons.fisher = "https://i.imgur.com/QU76hi1.png"; }
+            if (config.imageicons.crafter == "https://imgur.com/IiywcbI.png") { config.imageicons.crafter = "https://i.imgur.com/IiywcbI.png"; }
+            if (config.imageicons.framer == "https://imgur.com/M3VgQic.png") { config.imageicons.framer = "https://i.imgur.com/M3VgQic.png"; }
+            if (config.imageicons.medic == "https://imgur.com/g3S4XKW.png") { config.imageicons.medic = "https://i.imgur.com/g3S4XKW.png"; }
+            if (config.imageicons.scavenger == "https://imgur.com/g3S4XKW.png") { config.imageicons.scavenger = "https://i.imgur.com/g3S4XKW.png"; }
+            if (config.imageicons.tamer == "https://imgur.com/DatpWzL.png") { config.imageicons.tamer = "https://i.imgur.com/DatpWzL.png"; }
+            if (config.imageicons.chicken == "https://imgur.com/qJYzAZ6.png") { config.imageicons.chicken = "https://i.imgur.com/qJYzAZ6.png"; }
+            if (config.imageicons.boar == "https://imgur.com/ou1DgxE.png") { config.imageicons.boar = "https://i.imgur.com/ou1DgxE.png"; }
+            if (config.imageicons.stag == "https://imgur.com/CwACyuG.png") { config.imageicons.stag = "https://i.imgur.com/CwACyuG.png"; }
+            if (config.imageicons.wolf == "https://imgur.com/J18C2Je.png") { config.imageicons.wolf = "https://i.imgur.com/J18C2Je.png"; }
+            if (config.imageicons.bear == "https://imgur.com/kTbD3B1.png") { config.imageicons.bear = "https://i.imgur.com/kTbD3B1.png"; }
+            if (config.imageicons.online == "https://imgur.com/WafMLkk.png") { config.imageicons.online = "https://i.imgur.com/WafMLkk.png"; }
+            if (config.imageicons.offline == "https://imgur.com/QtbFqQz.png") { config.imageicons.offline = "https://i.imgur.com/QtbFqQz.png"; }
+            SaveConfig();
+            Interface.Oxide.ReloadPlugin("XPerience");
+        }
+
+    #endregion
 
         #region PlayerData
 
@@ -4343,6 +4413,9 @@ namespace Oxide.Plugins
                 case "bear":
                     addxp = config.xpGain.bearxp;
                     break;
+                case "polarbear":
+                    addxp = config.xpGain.polarbearxp;
+                    break;
                 case "simpleshark":
                     addxp = config.xpGain.sharkxp;
                     break;
@@ -4588,7 +4661,7 @@ namespace Oxide.Plugins
                 }
             }
             // Hunter Wildlife Increase
-            if (KillType == "chicken" || KillType == "boar" || KillType == "stag" || KillType == "wolf" || KillType == "bear" || KillType == "horse" || KillType == "simpleshark")
+            if (KillType == "chicken" || KillType == "boar" || KillType == "stag" || KillType == "wolf" || KillType == "bear" || KillType == "polarbear" || KillType == "horse" || KillType == "ridablehorse" || KillType == "simpleshark")
             {
                 double hunterdmg = xprecord.Hunter * config.hunter.damageincrease;
                 hitInfo.damageTypes?.ScaleAll(1 + (float)hunterdmg);
@@ -4966,8 +5039,15 @@ namespace Oxide.Plugins
             if (player == null) return;
             XPRecord xprecord = GetXPRecord(player);
             if (xprecord == null) return;
+            bool allowxp = true;
             double addxp = config.xpBuilding.woodstructure;
-            GainExp(player, addxp);
+            if (config.xpBuilding.buildxpdelay && (GetPlayerCooldown(player.userID) != 0))
+            {
+                _notifyCooldowns[player.userID] = CurrentTime + config.xpBuilding.buildxpdelayseconds;
+                allowxp = false;
+            }
+            _notifyCooldowns[player.userID] = CurrentTime + config.xpBuilding.buildxpdelayseconds;
+            if (allowxp) GainExp(player, addxp);
         }
 
         private void OnStructureUpgrade(BuildingBlock buildingBlock, BasePlayer player, BuildingGrade.Enum grade)
@@ -5444,9 +5524,9 @@ namespace Oxide.Plugins
 
         private object OnResearchCostDetermine(Item item, ResearchTable researchTable)
         {
-            int rarityvalue = rarityValues[item.info.rarity];
+            int rarityvalue = item.info != null ? rarityValues[item.info.rarity] : 500;
             if (config.mentality.researchcost == 0) return rarityvalue;
-            if (item == null || researchTable == null) return rarityvalue;
+            if (researchTable == null || researchTable.user == null) return rarityvalue;
             XPRecord xprecord = GetXPRecord(researchTable.user);
             if (xprecord.Mentality == 0 || xprecord == null) return rarityvalue;
             double reducecost = (config.mentality.researchcost * xprecord.Mentality) * rarityvalue;
@@ -9745,6 +9825,9 @@ namespace Oxide.Plugins
             FullScreenelements.Add(XPUILabel($"Bears:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
             FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(getplayer, "bear"))}>{GetKillRecords(getplayer, "bear")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
             row++;
+            FullScreenelements.Add(XPUILabel($"Polar Bears:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(getplayer, "polarbear"))}>{GetKillRecords(getplayer, "polarbear")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
+            row++;
             FullScreenelements.Add(XPUILabel($"Sharks:", row, height, TextAnchor.MiddleLeft, 13, "0.01", "15", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
             FullScreenelements.Add(XPUILabel($"|  <color={TextColor("level", (int)GetKillRecords(getplayer, "shark"))}>{GetKillRecords(getplayer, "shark")}</color>", row, height, TextAnchor.MiddleLeft, 13, "0.15", "20", "1.0 1.0 1.0 1.0"), XPeriencePlayerControlFullKR);
             row++;
@@ -11201,6 +11284,9 @@ namespace Oxide.Plugins
                         case "bear":
                             config.xpGain.bearxp = (double)value;
                             break;
+                        case "polarbear":
+                            config.xpGain.polarbearxp = (double)value;
+                            break;
                         case "shark":
                             config.xpGain.sharkxp = (double)value;
                             break;
@@ -12346,6 +12432,12 @@ namespace Oxide.Plugins
             ControlPanelelements.Add(XPUILabel($"|       {config.xpGain.bearxp}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
             ControlPanelelements.Add(XPUIButton($"xp.config levelxp bear {config.xpGain.bearxp + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
             ControlPanelelements.Add(XPUIButton($"xp.config levelxp bear {config.xpGain.bearxp - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            // PolarBear
+            row++;
+            ControlPanelelements.Add(XPUILabel($"PolarBear:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUILabel($"|       {config.xpGain.polarbearxp}", row, height, TextAnchor.MiddleLeft, 12, "0.15", "0.20", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp polarbear {config.xpGain.polarbearxp + 1} false", row, height, 18, "0.0 1.0 0.0 0", "⇧", "0.21", "0.22", TextAnchor.MiddleCenter, "0.0 1.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
+            ControlPanelelements.Add(XPUIButton($"xp.config levelxp polarbear {config.xpGain.polarbearxp - 1} false", row, height, 18, "1.0 0.0 0.0 0", "⇩", "0.23", "0.24", TextAnchor.MiddleCenter, "1.0 0.0 0.0 1.0"), XPerienceAdminPanelLevelXP);
             // Shark
             row++;
             ControlPanelelements.Add(XPUILabel($"Shark:", row, height, TextAnchor.MiddleLeft, 12, "0.01", "0.15", "1.0 1.0 1.0 1.0"), XPerienceAdminPanelLevelXP);

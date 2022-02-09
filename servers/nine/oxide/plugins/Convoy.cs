@@ -14,7 +14,7 @@ using Oxide.Core;
 
 namespace Oxide.Plugins
 {
-    [Info("Convoy", "Adem", "1.1.5")]
+    [Info("Convoy", "Adem", "1.1.6")]
     class Convoy : RustPlugin
     {
         [PluginReference] Plugin NpcSpawn, GUIAnnouncements, DiscordMessages;
@@ -48,6 +48,7 @@ namespace Oxide.Plugins
         HeliConfig heliConfig;
         BradleyConfig bradleyConfig;
         ModularConfig modularConfig;
+        SupportModularConfig supportModularConfig;
         SedanConfig sedanConfig;
 
         Vector3 deathBradleyCoord = Vector3.zero;
@@ -58,6 +59,27 @@ namespace Oxide.Plugins
         Coroutine eventCoroutine;
         Coroutine destroyCoroutine;
         #endregion Variables
+
+        #region API
+        private bool IsConvoyVehicle(BaseEntity entity)
+        {
+            if (entity == null) return false;
+            return convoyVehicles.Any(x => x.baseEntity.net.ID == entity.net.ID);
+        }
+
+        private bool IsConvoyCrate(HackableLockedCrate crate)
+        {
+            if (crate == null) return false;
+            if (convoyModular != null && convoyModular.crate.net.ID == crate.net.ID) return true;
+            return false;
+        }
+
+        private bool IsConvoyHeli(BaseHelicopter baseHelicopter)
+        {
+            if (baseHelicopter == null) return false;
+            return convoyHeli != null && convoyHeli.baseHelicopter.net.ID == baseHelicopter.net.ID;
+        }
+        #endregion API
 
         #region Hooks
         void Init()
@@ -73,13 +95,12 @@ namespace Oxide.Plugins
             Subscribe("OnLootSpawn");
             LoadDefaultMessages();
             int vehicleCount = 0;
-
+            
             foreach (ConvoySetting convoySetting in _config.convoys)
             {
-                int count = convoySetting.firstBradleyCount + convoySetting.firstBradleyCount + 1 + convoySetting.endSedanCount + convoySetting.endSedanCount;
+                int count = convoySetting.firstBradleyCount + convoySetting.firstModularCount + convoySetting.firstSedanCount + 1 + convoySetting.endSedanCount +convoySetting.endModularCount + convoySetting.endBradleyCount;
                 if (count > vehicleCount) vehicleCount = count;
             }
-
             int rootCount = vehicleCount * _config.carDistance * 2 + vehicleCount + 20;
 
             int roadCount = _config.roadCount <= rootCount ? rootCount : _config.roadCount;
@@ -95,13 +116,11 @@ namespace Oxide.Plugins
                     foreach (string vectorString in currentpathString) currentPath.Add(vectorString.ToVector3());
                 }
             }
-
             if (_config.rounRoadPriority && currentPath.Count == 0)
             {
                 PathList pathList = TerrainMeta.Path.Roads.Where(x => x.Path.Points.Count() > roadCount && Vector3.Distance(x.Path.Points[0], x.Path.Points[x.Path.Points.Count() - 1]) < 10f && Vector3.Distance(x.Path.Points[0], x.Path.Points[x.Path.Points.Count() / 2]) > 50f).FirstOrDefault();
                 if (pathList != null && pathList.Path != null && pathList.Path.Points != null) currentPath = pathList.Path.Points.ToList();
             }
-
             if (currentPath.Count == 0)
             {
                 List<PathList> goodRoads = TerrainMeta.Path.Roads.Where(x => !_config.blockRoads.Contains(TerrainMeta.Path.Roads.IndexOf(x)) && x.Path.Points.Count() > roadCount && Vector3.Distance(x.Path.Points[0], x.Path.Points[x.Path.Points.Count() - 1]) > 100 && UnityEngine.Physics.RaycastAll(new Ray(x.Path.Points[10] + new Vector3(0, 1, 0), Vector3.down), 4f).Any(y => y.collider.name.Contains("Road Mesh")) && UnityEngine.Physics.RaycastAll(new Ray(x.Path.Points[x.Path.Points.Length / 2] + new Vector3(0, 1, 0), Vector3.down), 4f).Any(y => y.collider.name.Contains("Road Mesh"))).ToList();
@@ -112,12 +131,18 @@ namespace Oxide.Plugins
                     pathCount = currentPath.Count();
                 }
             }
-
             pathCount = currentPath.Count();
 
             if (pathCount == 0)
             {
                 PrintError("No road detected");
+                NextTick(() => Server.Command($"o.unload {Name}"));
+                return;
+            }
+
+            if (_config.version != Version.ToString())
+            {
+                PrintError("Delete the configuration file!");
                 NextTick(() => Server.Command($"o.unload {Name}"));
                 return;
             }
@@ -133,7 +158,7 @@ namespace Oxide.Plugins
 
         void Unload()
         {
-            if(active) DeleteConvoy(false);
+            if (active) DeleteConvoy(false);
             RootStop();
             if (rootCar != null) rootCar.basicCar.Kill();
             ins = null;
@@ -143,12 +168,13 @@ namespace Oxide.Plugins
         {
             if (baseVehicleModule == null || info == null) return null;
             BaseModularVehicle modularVehicle = baseVehicleModule.Vehicle;
-            if (modularVehicle != null && convoyModular != null && !convoyModular.baseEntity.IsDestroyed && convoyModular.baseEntity == modularVehicle)
+            if (modularVehicle != null && convoyVehicles.Any(x => x.baseEntity != null && x.baseEntity == modularVehicle))
             {
                 if (info.InitiatorPlayer != null)
                 {
-                    if (info.damageTypes.Has(DamageType.Explosion)) modularVehicle.health -= modularConfig.damageMultiplier * info.damageTypes.Total() / 10;
-                    else modularVehicle.health -= modularConfig.damageMultiplier * info.damageTypes.Total() / 5;
+                    float damageScale = convoyModular.baseEntity == modularVehicle ? modularConfig.damageMultiplier : supportModularConfig.damageMultiplier;
+                    if (info.damageTypes.Has(DamageType.Explosion)) modularVehicle.health -= damageScale * info.damageTypes.Total() / 10;
+                    else modularVehicle.health -= damageScale * info.damageTypes.Total() / 5;
                     if (!modularVehicle.IsDestroyed && modularVehicle.health <= 0) modularVehicle.Kill();
                     else ConvoyTakeDamage(modularVehicle, info);
                 }
@@ -159,7 +185,11 @@ namespace Oxide.Plugins
 
         object OnEntityTakeDamage(ModularCar entity, HitInfo info)
         {
-            if (convoyModular != null && entity == convoyModular.baseEntity) info.damageTypes.ScaleAll(modularConfig.damageMultiplier);
+            if (convoyModular != null && convoyVehicles.Any(x => x.baseEntity == entity))
+            {
+                if (entity == convoyModular.baseEntity) info.damageTypes.ScaleAll(modularConfig.damageMultiplier);
+                else info.damageTypes.ScaleAll(supportModularConfig.damageMultiplier);
+            }
             return ConvoyTakeDamage(entity, info);
         }
 
@@ -205,17 +235,23 @@ namespace Oxide.Plugins
 
         void OnEntityKill(ModularCar entity)
         {
-            if (convoyModular == null || entity != convoyModular.baseEntity) return;
-            failed = true;
-            if (convoyVehicles.Contains(convoyModular)) convoyVehicles.Remove(convoyModular);
-            StopConvoy();
-            deathModularCoord = entity.transform.position;
-            if (!destroying && destroyCoroutine == null)
+            if (entity != null && convoyVehicles.Any(x => x.baseEntity == entity))
             {
-                destroying = true;
-                AlertToAllPlayers("Failed", _config.prefics);
-                AlertToAllPlayers("PreFinish", _config.prefics, _config.preFinishTime);
-                destroyCoroutine = ServerMgr.Instance.StartCoroutine(DestroyCounter());
+                if (convoyModular != null && entity == convoyModular.baseEntity)
+                {
+                    failed = true;
+                    if (convoyVehicles.Contains(convoyModular)) convoyVehicles.Remove(convoyModular);
+                    StopConvoy();
+                    deathModularCoord = entity.transform.position;
+                    if (!destroying && destroyCoroutine == null)
+                    {
+                        destroying = true;
+                        AlertToAllPlayers("Failed", _config.prefics);
+                        AlertToAllPlayers("PreFinish", _config.prefics, _config.preFinishTime);
+                        destroyCoroutine = ServerMgr.Instance.StartCoroutine(DestroyCounter());
+                    }
+                }
+                else ConvoyVehicleDie(entity);
             }
         }
 
@@ -247,20 +283,14 @@ namespace Oxide.Plugins
             }
         }
 
-        object OnVehicleModulesAssign(ModularCar car)
-        {
-            if (car.GetComponent<ConvoyModular>() == null) return null;
-            return false;
-        }
-
         object CanHackCrate(BasePlayer player, HackableLockedCrate crate)
         {
             if (crate == null || convoyModular == null || crate != convoyModular.crate) return null;
-            else if (convoySummons.Count == 0 || modularConfig.innidiatlyOpen)
+            else if ((!_config.needStopConvoy || stopTime > 0) && (!_config.needKillCars || (convoySummons.Count == 0 && !convoySummons.Any(x => x != null && !x.IsDestroyed))) && (!_config.needKillNpc || (!freeConvoyNpc.Any(x => x != null && !x.IsDestroyed) && !convoyVehicles.Any(x => x.roamNpc.Any(y => x != null && !y.IsDestroyed)))))
             {
                 Unsubscribe("CanHackCrate");
                 AlertToAllPlayers("StartHackCrate", _config.prefics, player.displayName);
-                if (destroying) destroyTime += (int)modularConfig.crateUnlockTime + 10;
+                if (destroying) destroyTime += (int)modularConfig.crateUnlockTime + 30;
                 hackedCrate = true;
                 timer.In(modularConfig.crateUnlockTime, () =>
                 {
@@ -271,7 +301,8 @@ namespace Oxide.Plugins
                         AlertToAllPlayers("PreFinish", _config.prefics, _config.preFinishTime);
                     }
                 });
-
+                if (stopTime <= 0) StopConvoy();
+                timer.In(0.5f, () => crate.hackSeconds = HackableLockedCrate.requiredHackSeconds - ins.modularConfig.crateUnlockTime);
                 return null;
             }
             else
@@ -308,7 +339,7 @@ namespace Oxide.Plugins
 
         object CanHelicopterTarget(PatrolHelicopterAI heli, BasePlayer player)
         {
-            if (convoyHeli != null && heli != null && heli == convoyHeli.patrolHelicopterAI && ((_config.blockFirstAttack && stopTime == 0 && !failed && !hackedCrate) || player == null || !player.userID.IsSteamId())) return false;
+            if (convoyHeli != null && heli != null && heli == convoyHeli.patrolHelicopterAI && ((_config.blockFirstAttack && stopTime == 0 && !failed && !hackedCrate) || player == null || !player.userID.IsSteamId() ||  player.IsSleeping())) return false;
             return null;
         }
 
@@ -318,8 +349,14 @@ namespace Oxide.Plugins
             {
                 if (_config.blockFirstAttack && stopTime == 0 && !failed && !hackedCrate) return false;
                 BasePlayer player = entity as BasePlayer;
-                if (player == null || !player.userID.IsSteamId()) return false;
+                if (player == null || !player.userID.IsSteamId() || player.IsSleeping()) return false;
             }
+            return null;
+        }
+
+        object OnBotReSpawnCrateDropped(HackableLockedCrate crate)
+        {
+            if (active && convoyModular != null && convoyModular.crate != null && convoyModular.crate == crate) return true;
             return null;
         }
         #endregion Hooks
@@ -403,7 +440,7 @@ namespace Oxide.Plugins
             if (!player.IsAdmin || player.isInAir) return;
 
             PathList blockRoad = TerrainMeta.Path.Roads.FirstOrDefault(x => x.Path.Points.Any(y => Vector3.Distance(player.transform.position, y) < 10));
-            if (blockRoad == null) Alert(player, $"{_config.prefics} Road not found <color=#ce3f27>not found</color>"); 
+            if (blockRoad == null) Alert(player, $"{_config.prefics} Road not found <color=#ce3f27>not found</color>");
             int index = TerrainMeta.Path.Roads.IndexOf(blockRoad);
             if (_config.blockRoads.Contains(index)) Alert(player, $"{_config.prefics} The road is already <color=#ce3f27>blocked</color>");
             else if (blockRoad != null)
@@ -445,7 +482,7 @@ namespace Oxide.Plugins
                     }
                 }
             }
-            
+
             if (convoySetting == null)
             {
                 PrintError("Event configuration not found!");
@@ -466,6 +503,7 @@ namespace Oxide.Plugins
                 sedanConfig = _config.sedanConfiguration.Where(x => x.presetName == convoySetting.sedanConfigurationName).FirstOrDefault();
                 modularConfig = _config.modularConfiguration.Where(x => x.presetName == convoySetting.modularConfigurationName).FirstOrDefault();
                 heliConfig = _config.heliesConfiguration.Where(x => x.presetName == convoySetting.heliConfigurationName).FirstOrDefault();
+                supportModularConfig = _config.supportModularConfiguration.Where(x => x.presetName == convoySetting.supportodularConfigurationName).FirstOrDefault();
 
                 int totalVehicleCount = convoySetting.firstBradleyCount + convoySetting.firstSedanCount + convoySetting.endSedanCount + convoySetting.endBradleyCount;
 
@@ -488,6 +526,16 @@ namespace Oxide.Plugins
                     int firstpoint = 0, secondpoint = 0;
                     DefineNextPathPoint(startPoint, pathCount, out firstpoint, out secondpoint);
                     CreateBradley(firstpoint, secondpoint);
+                    startPoint += delataPoint;
+                }
+
+                totalCount += convoySetting.endModularCount;
+
+                for (; count < totalCount; count++)
+                {
+                    int firstpoint = 0, secondpoint = 0;
+                    DefineNextPathPoint(startPoint, pathCount, out firstpoint, out secondpoint);
+                    CreateModular(firstpoint, secondpoint, false);
                     startPoint += delataPoint;
                 }
 
@@ -521,6 +569,16 @@ namespace Oxide.Plugins
                     startPoint += delataPoint;
                 }
 
+                totalCount += convoySetting.firstModularCount;
+
+                for (; count < totalCount; count++)
+                {
+                    int firstpoint = 0, secondpoint = 0;
+                    DefineNextPathPoint(startPoint, pathCount, out firstpoint, out secondpoint);
+                    CreateModular(firstpoint, secondpoint, false);
+                    startPoint += delataPoint;
+                }
+
                 totalCount += convoySetting.firstBradleyCount;
 
                 for (; count < totalCount; count++)
@@ -531,7 +589,7 @@ namespace Oxide.Plugins
                     startPoint += delataPoint;
                 }
 
-                if (convoySetting.heliOn && convoyVehicles.Count > 0) CreateHelicopter();
+                if (convoySetting.heliOn && convoyModular != null) CreateHelicopter();
 
                 convoyVehicles.Reverse();
                 AlertToAllPlayers("EventStart", _config.prefics);
@@ -547,7 +605,7 @@ namespace Oxide.Plugins
         {
             if (point > pathCount - 1)
             {
-                if(round) firstPoint = point - pathCount;
+                if (round) firstPoint = point - pathCount;
                 else
                 {
                     PrintError("Insufficient route length!");
@@ -560,7 +618,7 @@ namespace Oxide.Plugins
             int endpointClone = firstPoint++;
             if (endpointClone > pathCount - 1)
             {
-                if(round) endPoint = endpointClone - pathCount;
+                if (round) endPoint = endpointClone - pathCount;
                 else
                 {
                     PrintError("Insufficient route length!");
@@ -596,12 +654,16 @@ namespace Oxide.Plugins
             players.Clear();
             if (active) AlertToAllPlayers("Finish", _config.prefics);
             destroying = false;
-            foreach (ScientistNPC scientist in freeConvoyNpc)
-            {
-                if (scientist != null && !scientist.IsDestroyed) scientist.Kill();
+            foreach (ScientistNPC scientist in freeConvoyNpc) { if (scientist != null && !scientist.IsDestroyed) scientist.Kill(); }
+
+            foreach (ConvoyVehicle convoyVehicle in convoyVehicles)
+            { 
+                if (convoyVehicle != null && convoyVehicle.baseEntity != null && !convoyVehicle.baseEntity.IsDestroyed)
+                {
+                    convoyVehicle.destroyAll = true;
+                    convoyVehicle.baseEntity.Kill();
+                }
             }
-            
-            if (convoyVehicles.Count > 0) foreach (ConvoyVehicle convoyVehicle in convoyVehicles) { if (convoyVehicle != null && convoyVehicle.baseEntity != null && !convoyVehicle.baseEntity.IsDestroyed && convoyVehicle is ConvoyModular == false) convoyVehicle.baseEntity.Kill(); }
             if (convoyHeli != null && convoyHeli.baseHelicopter != null && !convoyHeli.baseHelicopter.IsDestroyed) convoyHeli.baseHelicopter.Kill();
             convoyVehicles.Clear();
             convoySummons.Clear();
@@ -629,6 +691,7 @@ namespace Oxide.Plugins
                 convoySummons.Remove(entity);
                 if (convoySummons.Count == 0 && convoyModular != null)
                 {
+                    StopConvoy();
                     convoyModular.StopMoving(false, true);
                     AlertToAllPlayers("SecurityKill", _config.prefics);
                 }
@@ -664,6 +727,7 @@ namespace Oxide.Plugins
             stopTime = 0;
             foreach (ConvoyVehicle convoyVehicle in convoyVehicles) convoyVehicle.StartMoving();
             if (doorCloser != null && !doorCloser.IsDestroyed) doorCloser.Kill();
+            players.Clear();
         }
 
         void CreateEventZone(Vector3 position)
@@ -703,18 +767,21 @@ namespace Oxide.Plugins
             convoySummons.Add(car);
         }
 
-        void CreateModular(int firstPoint, int secondPoint)
+        void CreateModular(int firstPoint, int secondPoint, bool main = true)
         {
             Vector3 vector3 = currentPath[firstPoint];
             ChechTrash(vector3);
             ModularCar car = GameManager.server.CreateEntity("assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab", vector3, Quaternion.LookRotation(currentPath[firstPoint] - currentPath[secondPoint])) as ModularCar;
             car.enableSaving = false;
-            ConvoyModular modular = car.gameObject.AddComponent<ConvoyModular>();
+            car.spawnSettings.useSpawnSettings = false;
             car.Spawn();
+            ConvoyModular modular = car.gameObject.AddComponent<ConvoyModular>();
+            modular.baseEntity = car;
             modular.currentPoint = firstPoint;
-            modular.InitModular();
             convoyVehicles.Add(modular);
-            convoyModular = modular;
+            modular.InitModular(main);
+            if (main) convoyModular = modular;
+            else convoySummons.Add(car);
         }
 
         void CreateHelicopter()
@@ -794,7 +861,7 @@ namespace Oxide.Plugins
                 yield return CoroutineEx.waitForSeconds(1f);
             }
             stopTime = 0;
-            if(active) StartConvoy();
+            if (active) StartConvoy();
         }
 
         IEnumerator DestroyCounter()
@@ -805,7 +872,7 @@ namespace Oxide.Plugins
                 yield return CoroutineEx.waitForSeconds(1f);
             }
             destroyTime = 0;
-            if(active) DeleteConvoy(true);
+            if (active) DeleteConvoy(true);
         }
         #endregion Method
 
@@ -821,7 +888,7 @@ namespace Oxide.Plugins
                 gameObject.layer = (int)Layer.Reserved1;
                 sphereCollider = gameObject.AddComponent<SphereCollider>();
                 sphereCollider.isTrigger = true;
-                sphereCollider.radius = 70f;
+                sphereCollider.radius = ins._config.eventZone.radius;
                 mainCloser = GetComponent<DoorCloser>();
                 if (ins._config.GUI.IsGUI) InvokeRepeating(UpdateGui, 1f, 1f);
                 if (ins._config.eventZone.isDome) CreateSphere();
@@ -833,7 +900,7 @@ namespace Oxide.Plugins
                 {
                     BaseEntity sphere = GameManager.server.CreateEntity("assets/prefabs/visualization/sphere.prefab", mainCloser.transform.position);
                     SphereEntity entity = sphere.GetComponent<SphereEntity>();
-                    entity.currentRadius = 70f * 2;
+                    entity.currentRadius = ins._config.eventZone.radius * 2;
                     entity.lerpSpeed = 0f;
                     sphere.enableSaving = false;
                     sphere.Spawn();
@@ -873,12 +940,8 @@ namespace Oxide.Plugins
             void OnDestroy()
             {
                 foreach (BaseEntity sphere in spheres) if (sphere != null && !sphere.IsDestroyed) sphere.Kill();
-                if (ins._config.GUI.IsGUI)
-                {
-                    CancelInvoke(UpdateGui);
-                    foreach (BasePlayer player in ins.players) CuiHelper.DestroyUi(player, "TextMain");
-                }
-                ins.players.Clear();
+                CancelInvoke(UpdateGui);
+                foreach (BasePlayer player in BasePlayer.activePlayerList) CuiHelper.DestroyUi(player, "TextMain");
             }
         }
 
@@ -891,22 +954,48 @@ namespace Oxide.Plugins
             internal Rigidbody rigidbody;
             internal BaseEntity baseEntity;
             internal ScientistNPC driver;
+            internal bool destroyAll = false;
             internal bool stop = true;
             internal bool allConvoyStop = true;
             int countDieNpc = 0;
             internal List<ScientistNPC> scientists = new List<ScientistNPC>();
             internal List<ScientistNPC> roamNpc = new List<ScientistNPC>();
+
+            NpcConfig npcConfig;
+
             void Awake()
             {
-                baseEntity = GetComponent<BaseEntity>();
-                if (baseEntity is BradleyAPC) coordNPC = ins.bradleyConfig.coordinates;
-                else if (baseEntity is ModularCar) coordNPC = ins.modularConfig.coordinates;
-                else if (baseEntity is BasicCar) coordNPC = ins.sedanConfig.coordinates;
                 Invoke(InitVehicle, 0.5f);
             }
 
             void InitVehicle()
             {
+                baseEntity = GetComponent<BaseEntity>();
+
+                if (baseEntity is BradleyAPC)
+                {
+                    npcConfig = ins._config.NPC.FirstOrDefault(x => x.name == ins.bradleyConfig.npcName);
+                    coordNPC = ins.bradleyConfig.coordinates;
+                }
+                else if (baseEntity is ModularCar)
+                {
+                    if (ins.convoyModular != null && ins.convoyModular.baseEntity != null && baseEntity.net.ID == ins.convoyModular.baseEntity.net.ID)
+                    {
+                        npcConfig = ins._config.NPC.FirstOrDefault(x => x.name == ins.modularConfig.npcName);
+                        coordNPC = ins.modularConfig.coordinates;
+                    }
+                    else
+                    {
+                        npcConfig = ins._config.NPC.FirstOrDefault(x => x.name == ins.supportModularConfig.npcName);
+                        coordNPC = ins.supportModularConfig.coordinates;
+                    }
+                }
+                else if (baseEntity is BasicCar)
+                {
+                    npcConfig = ins._config.NPC.FirstOrDefault(x => x.name == ins.sedanConfig.npcName);
+                    coordNPC = ins.sedanConfig.coordinates;
+                }
+
                 rigidbody = baseEntity.gameObject.GetComponent<Rigidbody>();
                 rigidbody.mass = 3500;
                 rigidbody.centerOfMass = new Vector3(0, -0.2f, 0);
@@ -946,8 +1035,8 @@ namespace Oxide.Plugins
             internal virtual void OnDestroy()
             {
                 CancelInvoke(CheckRotate);
-                KillScientists(true);
-                Destroy(this);
+                CancelInvoke(CheckBarriers);
+                KillScientists(!destroyAll);
             }
 
             #region Moving
@@ -1044,7 +1133,7 @@ namespace Oxide.Plugins
             {
                 Vector3 pos; Vector3 rot;
                 ins.GetGlobal(baseEntity, position, rotation, out pos, out rot);
-                return (ScientistNPC)ins.NpcSpawn.Call("SpawnNpc", pos, ins.GetNpcConfig(!driver, ins._config.NPC.health, passenger));
+                return (ScientistNPC)ins.NpcSpawn.Call("SpawnNpc", pos, ins.GetNpcConfig(!driver, passenger, npcConfig));
             }
 
             internal void KillScientists(bool die = false)
@@ -1053,7 +1142,7 @@ namespace Oxide.Plugins
                 {
                     if (scientist != null && !scientist.IsDestroyed) scientist.Kill();
                 }
-                if (die && ins.active)
+                if (die)
                 {
                     foreach (ScientistNPC freeScientist in roamNpc) if (freeScientist != null && !freeScientist.IsDestroyed) ins.freeConvoyNpc.Add(freeScientist);
                 }
@@ -1215,21 +1304,20 @@ namespace Oxide.Plugins
             internal ModularCar modularCar;
             internal HackableLockedCrate crate;
             float lastDistance = 0;
+            internal bool main;
 
             internal override void OnDestroy()
             {
-                CancelInvoke(CheckRotate);
-                if (ins._config.marker != null && ins._config.marker.IsMarker)
+                base.OnDestroy();
+
+                if(main)
                 {
                     CancelInvoke(UpdateMapMarker);
                     if (mapmarker != null && !mapmarker.IsDestroyed) mapmarker.Kill();
                     if (vendingMarker != null && !vendingMarker.IsDestroyed) vendingMarker.Kill();
+                    CancelInvoke(UpdateCrate);
+                    CancelInvoke(UpdateCrateMarker);
                 }
-                else CancelInvoke(UpdateCrateMarker);
-                CancelInvoke(CheckRotate);
-                CancelInvoke(UpdateCrate);
-                KillScientists(true);
-                Destroy(this);
             }
 
             internal override int GetCurrentPointIndex()
@@ -1274,10 +1362,11 @@ namespace Oxide.Plugins
 
             internal override void Rotate() => currentPoint = ins.pathCount - currentPoint;
 
-            internal void InitModular()
+            internal void InitModular(bool main)
             {
                 modularCar = GetComponent<ModularCar>();
                 Invoke(Build, 0.1f);
+                this.main = main;
             }
 
             #region Builder
@@ -1285,12 +1374,13 @@ namespace Oxide.Plugins
             {
                 AddCarModules();
                 AddFuel();
-                modularCar.SetMaxHealth(ins.modularConfig.hp);
-                modularCar.health = ins.modularConfig.hp;
-                SpawnCrate();
-                InvokeRepeating(UpdateCrate, 10f, 10f);
-                if (ins._config.marker != null && ins._config.marker.IsMarker) SpawnMapMarker();
-                else InvokeRepeating(UpdateCrateMarker, 10f, 2f);
+                if (main)
+                {
+                    SpawnCrate();
+                    InvokeRepeating(UpdateCrate, 10f, 10f);
+                    if (ins._config.marker != null && ins._config.marker.IsMarker) SpawnMapMarker();
+                    else InvokeRepeating(UpdateCrateMarker, 10f, 2f);
+                }
             }
 
             void AddFuel()
@@ -1302,7 +1392,7 @@ namespace Oxide.Plugins
 
             void AddCarModules()
             {
-                List<string> modules = ins.modularConfig.modules;
+                List<string> modules = main? ins.modularConfig.modules : ins.supportModularConfig.modules;
                 for (int socketIndex = 0; socketIndex < modularCar.TotalSockets && socketIndex < modules.Count; socketIndex++)
                 {
                     string shortName = modules[socketIndex];
@@ -1367,11 +1457,12 @@ namespace Oxide.Plugins
                 Rigidbody crateRigidbody = crate.GetComponent<Rigidbody>();
                 Destroy(crateRigidbody);
 
-                crate.hackSeconds = HackableLockedCrate.requiredHackSeconds - ins.modularConfig.crateUnlockTime;
                 if (ins.modularConfig.typeLootTable == 1)
                 {
                     Invoke(() =>
                     {
+                        crate.inventory.capacity = ins.modularConfig.lootTable.Max;
+                        crate.hackSeconds = HackableLockedCrate.requiredHackSeconds - ins.modularConfig.crateUnlockTime;
                         for (int i = crate.inventory.itemList.Count - 1; i >= 0; i--)
                         {
                             Item item = crate.inventory.itemList[i];
@@ -1379,7 +1470,7 @@ namespace Oxide.Plugins
                             item.Remove();
                         }
                         ins.AddToContainer(crate.inventory, ins.modularConfig.lootTable.Items, UnityEngine.Random.Range(ins.modularConfig.lootTable.Min, ins.modularConfig.lootTable.Max + 1));
-                    }, 0.01f);
+                    }, 0.1f);
                 }
                 crate.EnableGlobalBroadcast(true);
                 crate.syncPosition = true;
@@ -1611,10 +1702,10 @@ namespace Oxide.Plugins
                 if (targetEntity == null || targetEntity.IsDestroyed) return;
                 if (ins.stopTime <= 0)
                 {
-                    patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0), 0, 0);
+                    patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0));
                     patrolHelicopterAI.SetIdealRotation(targetEntity.transform.rotation, 100);
                 }
-                else if (targetEntity.Distance(baseHelicopter.transform.position) > 350f) patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0));
+                else if (targetEntity.Distance(baseHelicopter.transform.position) > ins.heliConfig.distance) patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0));
             }
 
             public void OnDestroy()
@@ -1650,16 +1741,18 @@ namespace Oxide.Plugins
             if (entity == null || corpse == null) return;
             if (entity is ScientistNPC && (convoyVehicles.Any(x => x.scientists.Contains(entity) || x.roamNpc.Contains(entity) || freeConvoyNpc.Contains(entity))))
             {
+                NpcConfig npcConfig = _config.NPC.FirstOrDefault(x => x.name == entity.displayName);
+                if (npcConfig == null) return;
                 NextTick(() =>
                 {
-                    if (_config.NPC.typeLootTable == 2 || _config.NPC.typeLootTable == 3)
+                    if (npcConfig.typeLootTable == 2 || npcConfig.typeLootTable == 3)
                     {
                         if (corpse != null && !corpse.IsDestroyed) corpse.Kill();
                         return;
                     }
-                    List<ItemConfig> items = _config.NPC.typeLootTable == 0 ? new List<ItemConfig>() : _config.NPC.lootTable.Items;
+                    List<ItemConfig> items = npcConfig.typeLootTable == 0 ? new List<ItemConfig>() : npcConfig.lootTable.Items;
 
-                    if (_config.NPC.typeLootTable == 0) foreach (Item item in corpse.containers[0].itemList) if (!_config.NPC.wearItems.Any(x => x.shortName == item.info.shortname)) items.Add(new ItemConfig { shortName = item.info.shortname, minAmount = item.amount, maxAmount = item.amount, chance = 100f, isBluePrint = false, skinID = item.skin, name = "" });
+                    if (npcConfig.typeLootTable == 0) foreach (Item item in corpse.containers[0].itemList) if (!npcConfig.wearItems.Any(x => x.shortName == item.info.shortname)) items.Add(new ItemConfig { shortName = item.info.shortname, minAmount = item.amount, maxAmount = item.amount, chance = 100f, isBluePrint = false, skinID = item.skin, name = "" });
                     ItemContainer contaier = corpse.containers[0];
                     for (int i = corpse.containers[0].itemList.Count - 1; i >= 0; i--)
                     {
@@ -1668,9 +1761,9 @@ namespace Oxide.Plugins
                         item.Remove();
                     }
 
-                    AddToContainer(contaier, items, _config.NPC.typeLootTable == 0 ? items.Count : UnityEngine.Random.Range(_config.NPC.lootTable.Min, _config.NPC.lootTable.Max + 1));
+                    AddToContainer(contaier, items, npcConfig.typeLootTable == 0 ? items.Count : UnityEngine.Random.Range(npcConfig.lootTable.Min, npcConfig.lootTable.Max + 1));
 
-                    if (_config.NPC.lootTable.Max == 0 && _config.NPC.typeLootTable == 1)
+                    if (npcConfig.lootTable.Max == 0 && npcConfig.typeLootTable == 1)
                     {
                         for (int i = contaier.itemList.Count - 1; i >= 0; i--)
                         {
@@ -1714,7 +1807,9 @@ namespace Oxide.Plugins
             if (entity == null || corpse == null || convoyVehicles.Count == 0) return null;
             if (entity is ScientistNPC && convoyVehicles.Any(x => x.scientists.Contains(entity)))
             {
-                if (_config.NPC.typeLootTable == 2) return null;
+                NpcConfig npcConfig = _config.NPC.FirstOrDefault(x => x.name == entity.name);
+                if (npcConfig == null) return null;
+                if (npcConfig.typeLootTable == 2) return null;
                 else return true;
             }
             return null;
@@ -1902,34 +1997,34 @@ namespace Oxide.Plugins
             globalRotation = parrent.transform.rotation.eulerAngles + localRotation;
         }
 
-        JObject GetNpcConfig(bool driver, float hp, bool passenger)
+        JObject GetNpcConfig(bool driver, bool passenger, NpcConfig npcConfig)
         {
             bool passive = !driver || (passenger && _config.blockFirstAttack);
 
             JObject sensory = new JObject()
             {
-                ["AttackRangeMultiplier"] = _config.NPC.attackRangeMultiplier,
-                ["SenseRange"] = _config.NPC.senseRange,
-                ["MemoryDuration"] = _config.NPC.memoryDuration,
-                ["CheckVisionCone"] = _config.NPC.checkVisionCone,
-                ["VisionCone"] = _config.NPC.visionCone
+                ["AttackRangeMultiplier"] = npcConfig.attackRangeMultiplier,
+                ["SenseRange"] = npcConfig.senseRange,
+                ["MemoryDuration"] = npcConfig.memoryDuration,
+                ["CheckVisionCone"] = npcConfig.checkVisionCone,
+                ["VisionCone"] = npcConfig.visionCone
             };
             JObject config = new JObject()
             {
-                ["Name"] = _config.NPC.name,
-                ["WearItems"] = new JArray { _config.NPC.wearItems.Select(x => new JObject { ["ShortName"] = x.shortName, ["SkinID"] = x.skinID }) },
-                ["BeltItems"] = new JArray { _config.NPC.beltItems.Select(x => new JObject { ["ShortName"] = x.shortName, ["Amount"] = x.amount, ["SkinID"] = x.skinID, ["Mods"] = new JArray { x.Mods.Select(y => y) } }) },
-                ["Kit"] = _config.NPC.Kits.GetRandom(),
-                ["Health"] = _config.NPC.health,
-                ["RoamRange"] = _config.NPC.roamRange,
-                ["ChaseRange"] = _config.NPC.chaseRange,
-                ["DamageScale"] = _config.NPC.damageScale,
-                ["AimConeScale"] = _config.NPC.aimConeScale,
+                ["Name"] = npcConfig.name,
+                ["WearItems"] = new JArray { npcConfig.wearItems.Select(x => new JObject { ["ShortName"] = x.shortName, ["SkinID"] = x.skinID }) },
+                ["BeltItems"] = new JArray { npcConfig.beltItems.Select(x => new JObject { ["ShortName"] = x.shortName, ["Amount"] = x.amount, ["SkinID"] = x.skinID, ["Mods"] = new JArray { x.Mods.Select(y => y) } }) },
+                ["Kit"] = npcConfig.Kits.GetRandom(),
+                ["Health"] = npcConfig.health,
+                ["RoamRange"] = npcConfig.roamRange,
+                ["ChaseRange"] = npcConfig.chaseRange,
+                ["DamageScale"] = npcConfig.damageScale,
+                ["AimConeScale"] = npcConfig.aimConeScale,
                 ["DisableRadio"] = true,
                 ["Stationary"] = false,
                 ["CanUseWeaponMounted"] = !passive,
                 ["CanRunAwayWater"] = Name != "Underwater Lab" && Name != "Train Tunnel",
-                ["Speed"] = _config.NPC.speed,
+                ["Speed"] = npcConfig.speed,
                 ["Sensory"] = sensory
             };
 
@@ -2058,185 +2153,195 @@ namespace Oxide.Plugins
 
         public class ConvoySetting
         {
-            [JsonProperty(en ? "Name" : "Название пресета")] public string name;
-            [JsonProperty(en ? "Automatic startup" : "Автоматический запуск")] public bool on;
-            [JsonProperty(en ? "Probability of a preset [0.0-100.0]" : "Вероятность пресета [0.0-100.0]")] public float chance;
-            [JsonProperty(en ? "Enable the helicopter" : "Включить вертолет")] public bool heliOn;
-            [JsonProperty(en ? "The number of Bradleys ahead the truck" : "Количество бредли впереди грузовика")] public int firstBradleyCount;
-            [JsonProperty(en ? "Number of Sedans ahead the truck" : "Количество седанов впереди грузовика")] public int firstSedanCount;
-            [JsonProperty(en ? "Number of Sedans behind the truck" : "Количество седанов позади грузовика")] public int endSedanCount;
-            [JsonProperty(en ? "The number of Bradleys behind the truck" : "Количество бредли позади грузовика")] public int endBradleyCount;
-            [JsonProperty(en ? "Bradley preset" : "Пресет бредли")] public string bradleyConfigurationName;
-            [JsonProperty(en ? "Sedan preset" : "Пресет седана")] public string sedanConfigurationName;
-            [JsonProperty(en ? "Truck preset" : "Пресет грузовика")] public string modularConfigurationName;
-            [JsonProperty(en ? "Heli preset" : "Пресет вертолета")] public string heliConfigurationName;
+            [JsonProperty(en ? "Name" : "Название пресета")] public string name { get; set; }
+            [JsonProperty(en ? "Automatic startup" : "Автоматический запуск")] public bool on { get; set; }
+            [JsonProperty(en ? "Probability of a preset [0.0-100.0]" : "Вероятность пресета [0.0-100.0]")] public float chance { get; set; }
+            [JsonProperty(en ? "Enable the helicopter" : "Включить вертолет")] public bool heliOn { get; set; }
+            [JsonProperty(en ? "The number of Bradleys ahead the truck" : "Количество бредли впереди грузовика")] public int firstBradleyCount { get; set; }
+            [JsonProperty(en ? "Number of Modular cars ahead the truck" : "Количество модульных впереди позади грузовика")] public int firstModularCount { get; set; }
+            [JsonProperty(en ? "Number of Sedans ahead the truck" : "Количество седанов впереди грузовика")] public int firstSedanCount { get; set; }
+            [JsonProperty(en ? "Number of Sedans behind the truck" : "Количество седанов позади грузовика")] public int endSedanCount { get; set; }
+            [JsonProperty(en ? "Number of Modular cars behind the truck" : "Количество модульных машин позади грузовика")] public int endModularCount { get; set; }
+            [JsonProperty(en ? "The number of Bradleys behind the truck" : "Количество бредли позади грузовика")] public int endBradleyCount { get; set; }
+            [JsonProperty(en ? "Bradley preset" : "Пресет бредли")] public string bradleyConfigurationName { get; set; }
+            [JsonProperty(en ? "Sedan preset" : "Пресет седана")] public string sedanConfigurationName { get; set; }
+            [JsonProperty(en ? "Truck preset" : "Пресет грузовика")] public string modularConfigurationName { get; set; }
+            [JsonProperty(en ? "Modular preset" : "Пресет модульных машин")] public string supportodularConfigurationName { get; set; }
+            [JsonProperty(en ? "Heli preset" : "Пресет вертолета")] public string heliConfigurationName { get; set; }
         }
 
-        public class ModularConfig
+        public class ModularConfig : SupportModularConfig
         {
-            [JsonProperty(en ? "Name" : "Название пресета")] public string presetName;
-            [JsonProperty("HP")] public float hp;
-            [JsonProperty(en ? "Scale damage" : "Множитель урона")] public float damageMultiplier;
-            [JsonProperty(en ? "Modules" : "Модули")] public List<string> modules;
-            [JsonProperty(en ? "Location of NPCs" : "Расположение NPC")] public List<CoordConfig> coordinates;
-            [JsonProperty(en ? "The crate can be opened if other vehicles are not destroyed" : "Ящик можно открыть, если другие транспортные средства не разрушены")] public bool innidiatlyOpen;
-            [JsonProperty(en ? "Time to unlock the crates [sec.]" : "Время до открытия заблокированного ящика [sec.]")] public float crateUnlockTime;
-            [JsonProperty(en ? "Location of the locked crate" : "Расположение заблокированного ящика")] public CoordConfig crateLocation;
-            [JsonProperty(en ? "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)" : "Какую таблицу лута необходимо использовать? (0 - стандартную, BetterLoot, MagicLoot; 1 - собственную; 2 - AlphaLoot)")] public int typeLootTable;
-            [JsonProperty(en ? "Own loot table" : "Собственная таблица лута")] public LootTableConfig lootTable;
+            [JsonProperty(en ? "Time to unlock the crates [sec.]" : "Время до открытия заблокированного ящика [sec.]")] public float crateUnlockTime { get; set; }
+            [JsonProperty(en ? "Location of the locked crate" : "Расположение заблокированного ящика")] public CoordConfig crateLocation { get; set; }
+            [JsonProperty(en ? "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)" : "Какую таблицу лута необходимо использовать? (0 - стандартную, BetterLoot, MagicLoot; 1 - собственную; 2 - AlphaLoot)")] public int typeLootTable { get; set; }
+            [JsonProperty(en ? "Own loot table" : "Собственная таблица лута")] public LootTableConfig lootTable { get; set; }
+        }
+
+        public class SupportModularConfig
+        {
+            [JsonProperty(en ? "Name" : "Название пресета")] public string presetName { get; set; }
+            [JsonProperty(en ? "Scale damage" : "Множитель урона")] public float damageMultiplier { get; set; }
+            [JsonProperty(en ? "Modules" : "Модули")] public List<string> modules { get; set; }
+            [JsonProperty(en ? "NPC preset" : "Пресет НПС")] public string npcName { get; set; }
+            [JsonProperty(en ? "Location of NPCs" : "Расположение NPC")] public List<CoordConfig> coordinates { get; set; }
         }
 
         public class SedanConfig
         {
-            [JsonProperty(en ? "Name" : "Название пресета")] public string presetName;
-            [JsonProperty("HP")] public float hp;
-            [JsonProperty(en ? "Location of all NPCs" : "Расположение NPC")] public List<CoordConfig> coordinates;
+            [JsonProperty(en ? "Name" : "Название пресета")] public string presetName { get; set; }
+            [JsonProperty("HP")] public float hp { get; set; }
+            [JsonProperty(en ? "NPC preset" : "Пресет НПС")] public string npcName { get; set; }
+            [JsonProperty(en ? "Location of all NPCs" : "Расположение NPC")] public List<CoordConfig> coordinates { get; set; }
         }
 
         public class BradleyConfig
         {
-            [JsonProperty(en ? "Name" : "Название пресета")] public string presetName;
-            [JsonProperty("HP")] public float hp;
-            [JsonProperty(en ? "Scale damage" : "Множитель урона")] public float scaleDamage;
-            [JsonProperty(en ? "The viewing distance" : "Дальность обзора")] public float viewDistance;
-            [JsonProperty(en ? "Radius of search" : "Радиус поиска")] public float searchDistance;
-            [JsonProperty(en ? "The multiplier of Machine-gun aim cone" : "Множитель разброса пулемёта")] public float coaxAimCone;
-            [JsonProperty(en ? "The multiplier of Machine-gun fire rate" : "Множитель скорострельности пулемёта")] public float coaxFireRate;
-            [JsonProperty(en ? "Amount of Machine-gun burst shots" : "Кол-во выстрелов очереди пулемёта")] public int coaxBurstLength;
-            [JsonProperty(en ? "The time between shots of the main gun [sec.]" : "Время между залпами основного орудия [sec.]")] public float nextFireTime;
-            [JsonProperty(en ? "The time between shots of the main gun in a fire rate [sec.]" : "Время между выстрелами основного орудия в залпе [sec.]")] public float topTurretFireRate;
-            [JsonProperty(en ? "Numbers of crates" : "Кол-во ящиков после уничтожения")] public int countCrates;
-            [JsonProperty(en ? "Location of all NPCs" : "Расположение NPC")] public List<CoordConfig> coordinates;
-            [JsonProperty(en ? "Open crates after spawn [true/false]" : "Open crates after spawn [true/false]")] public bool offDelay;
-            [JsonProperty(en ? "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)" : "Какую таблицу лута необходимо использовать? (0 - стандартную, BetterLoot, MagicLoot; 1 - собственную; 2 - AlphaLoot)")] public int typeLootTable;
-            [JsonProperty(en ? "Own loot table" : "Собственная таблица лута")] public LootTableConfig lootTable;
+            [JsonProperty(en ? "Name" : "Название пресета")] public string presetName { get; set; }
+            [JsonProperty("HP")] public float hp { get; set; }
+            [JsonProperty(en ? "Scale damage" : "Множитель урона")] public float scaleDamage { get; set; }
+            [JsonProperty(en ? "The viewing distance" : "Дальность обзора")] public float viewDistance { get; set; }
+            [JsonProperty(en ? "Radius of search" : "Радиус поиска")] public float searchDistance { get; set; }
+            [JsonProperty(en ? "The multiplier of Machine-gun aim cone" : "Множитель разброса пулемёта")] public float coaxAimCone { get; set; }
+            [JsonProperty(en ? "The multiplier of Machine-gun fire rate" : "Множитель скорострельности пулемёта")] public float coaxFireRate { get; set; }
+            [JsonProperty(en ? "Amount of Machine-gun burst shots" : "Кол-во выстрелов очереди пулемёта")] public int coaxBurstLength { get; set; }
+            [JsonProperty(en ? "The time between shots of the main gun [sec.]" : "Время между залпами основного орудия [sec.]")] public float nextFireTime { get; set; }
+            [JsonProperty(en ? "The time between shots of the main gun in a fire rate [sec.]" : "Время между выстрелами основного орудия в залпе [sec.]")] public float topTurretFireRate { get; set; }
+            [JsonProperty(en ? "Numbers of crates" : "Кол-во ящиков после уничтожения")] public int countCrates { get; set; }
+            [JsonProperty(en ? "NPC preset" : "Пресет НПС")] public string npcName { get; set; }
+            [JsonProperty(en ? "Location of all NPCs" : "Расположение NPC")] public List<CoordConfig> coordinates { get; set; }
+            [JsonProperty(en ? "Open crates after spawn [true/false]" : "Открывать ящики сразу после спавна [true/false]")] public bool offDelay { get; set; }
+            [JsonProperty(en ? "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)" : "Какую таблицу лута необходимо использовать? (0 - стандартную, BetterLoot, MagicLoot; 1 - собственную; 2 - AlphaLoot)")] public int typeLootTable { get; set; }
+            [JsonProperty(en ? "Own loot table" : "Собственная таблица лута")] public LootTableConfig lootTable { get; set; }
         }
 
         public class HeliConfig
         {
-            [JsonProperty(en ? "Name" : "Название пресета")] public string presetName;
-            [JsonProperty("HP")] public float hp;
-            [JsonProperty(en ? "HP of the main rotor" : "HP главного винта")] public float mainRotorHealth;
-            [JsonProperty(en ? "HP of tail rotor" : "HP хвостового винта")] public float rearRotorHealth;
-            [JsonProperty(en ? "Numbers of crates" : "Количество ящиков")] public int cratesAmount;
-            [JsonProperty(en ? "Flying height" : "Высота полета")] public float height;
-            [JsonProperty(en ? "Bullet speed" : "Скорость пуль")] public float bulletSpeed;
-            [JsonProperty(en ? "Bullet Damage" : "Урон пуль")] public float bulletDamage;
-            [JsonProperty(en ? "Speed" : "Скорость")] public float speed;
-            [JsonProperty(en ? "Open crates after spawn [true/false]" : "Открывать ящики после спавна [true/false]")] public bool offDelay;
-            [JsonProperty(en ? "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)" : "Какую таблицу лута необходимо использовать? (0 - стандартную, BetterLoot, MagicLoot; 1 - собственную; 2 - AlphaLoot)")] public int typeLootTable;
-            [JsonProperty(en ? "Own loot table" : "Собственная таблица лута")] public LootTableConfig lootTable;
+            [JsonProperty(en ? "Name" : "Название пресета")] public string presetName { get; set; }
+            [JsonProperty("HP")] public float hp { get; set; }
+            [JsonProperty(en ? "HP of the main rotor" : "HP главного винта")] public float mainRotorHealth { get; set; }
+            [JsonProperty(en ? "HP of tail rotor" : "HP хвостового винта")] public float rearRotorHealth { get; set; }
+            [JsonProperty(en ? "Numbers of crates" : "Количество ящиков")] public int cratesAmount { get; set; }
+            [JsonProperty(en ? "Flying height" : "Высота полета")] public float height { get; set; }
+            [JsonProperty(en ? "Bullet speed" : "Скорость пуль")] public float bulletSpeed { get; set; }
+            [JsonProperty(en ? "Bullet Damage" : "Урон пуль")] public float bulletDamage { get; set; }
+            [JsonProperty(en ? "The distance to which the helicopter can move away from the convoy" : "Дистанция, на которую вертолет может отдаляться от конвоя")] public float distance { get; set; }
+            [JsonProperty(en ? "Speed" : "Скорость")] public float speed { get; set; }
+            [JsonProperty(en ? "Open crates after spawn [true/false]" : "Открывать ящики после спавна [true/false]")] public bool offDelay { get; set; }
+            [JsonProperty(en ? "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot)" : "Какую таблицу лута необходимо использовать? (0 - стандартную, BetterLoot, MagicLoot; 1 - собственную; 2 - AlphaLoot)")] public int typeLootTable { get; set; }
+            [JsonProperty(en ? "Own loot table" : "Собственная таблица лута")] public LootTableConfig lootTable { get; set; }
         }
 
         public class NpcConfig
         {
-            [JsonProperty(en ? "Name" : "Название")] public string name;
-            [JsonProperty(en ? "Health" : "Кол-во ХП")] public float health;
-            [JsonProperty(en ? "Roam Range" : "Дальность патрулирования местности")] public float roamRange;
-            [JsonProperty(en ? "Chase Range" : "Дальность погони за целью")] public float chaseRange;
-            [JsonProperty(en ? "Attack Range Multiplier" : "Множитель радиуса атаки")] public float attackRangeMultiplier;
-            [JsonProperty(en ? "Sense Range" : "Радиус обнаружения цели")] public float senseRange;
-            [JsonProperty(en ? "Memory duration [sec.]" : "Длительность памяти цели [sec.]")] public float memoryDuration;
-            [JsonProperty(en ? "Scale damage" : "Множитель урона")] public float damageScale;
-            [JsonProperty(en ? "Aim Cone Scale" : "Множитель разброса")] public float aimConeScale;
-            [JsonProperty(en ? "Detect the target only in the NPC's viewing vision cone?" : "Обнаруживать цель только в углу обзора NPC? [true/false]")] public bool checkVisionCone;
-            [JsonProperty(en ? "Vision Cone" : "Угол обзора")] public float visionCone;
-            [JsonProperty(en ? "Speed" : "Скорость")] public float speed;
-            [JsonProperty(en ? "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own; 2 - AlphaLoot; 3 - CustomLoot)" : "Какую таблицу лута необходимо использовать? (0 - стандартную, BetterLoot, MagicLoot; 1 - собственную; 2 - AlphaLoot; 3 - CustomLoot)")] public int typeLootTable;
-            [JsonProperty(en ? "Wear items" : "Одежда")] public List<NpcWear> wearItems;
-            [JsonProperty(en ? "Belt items" : "Быстрые слоты")] public List<NpcBelt> beltItems;
-            [JsonProperty(en ? "Kits" : "Kits")] public List<string> Kits;
-            [JsonProperty(en ? "Own loot table" : "Собственная таблица лута")] public LootTableConfig lootTable;
+            [JsonProperty(en ? "Name" : "Название")] public string name { get; set; }
+            [JsonProperty(en ? "Health" : "Кол-во ХП")] public float health { get; set; }
+            [JsonProperty(en ? "Roam Range" : "Дальность патрулирования местности")] public float roamRange { get; set; }
+            [JsonProperty(en ? "Chase Range" : "Дальность погони за целью")] public float chaseRange { get; set; }
+            [JsonProperty(en ? "Attack Range Multiplier" : "Множитель радиуса атаки")] public float attackRangeMultiplier { get; set; }
+            [JsonProperty(en ? "Sense Range" : "Радиус обнаружения цели")] public float senseRange { get; set; }
+            [JsonProperty(en ? "Memory duration [sec.]" : "Длительность памяти цели [sec.]")] public float memoryDuration { get; set; }
+            [JsonProperty(en ? "Scale damage" : "Множитель урона")] public float damageScale { get; set; }
+            [JsonProperty(en ? "Aim Cone Scale" : "Множитель разброса")] public float aimConeScale { get; set; }
+            [JsonProperty(en ? "Detect the target only in the NPC's viewing vision cone?" : "Обнаруживать цель только в углу обзора NPC? [true/false]")] public bool checkVisionCone { get; set; }
+            [JsonProperty(en ? "Vision Cone" : "Угол обзора")] public float visionCone { get; set; }
+            [JsonProperty(en ? "Speed" : "Скорость")] public float speed { get; set; }
+            [JsonProperty(en ? "Wear items" : "Одежда")] public List<NpcWear> wearItems { get; set; }
+            [JsonProperty(en ? "Belt items" : "Быстрые слоты")] public List<NpcBelt> beltItems { get; set; }
+            [JsonProperty(en ? "Which loot table should the plugin use? (0 - default, BetterLoot, MagicLoot; 1 - own)" : "Какую таблицу лута необходимо использовать? (0 - стандартную, BetterLoot, MagicLoot; 1 - собственную)")] public int typeLootTable { get; set; }
+            [JsonProperty(en ? "Kits" : "Kits")] public List<string> Kits { get; set; }
+            [JsonProperty(en ? "Own loot table" : "Собственная таблица лута")] public LootTableConfig lootTable { get; set; }
         }
 
         public class CoordConfig
         {
-            [JsonProperty(en ? "Position" : "Позиция")] public string position;
-            [JsonProperty(en ? "Rotation" : "Вращение")] public string rotation;
+            [JsonProperty(en ? "Position" : "Позиция")] public string position { get; set; }
+            [JsonProperty(en ? "Rotation" : "Вращение")] public string rotation { get; set; }
         }
 
         public class NpcWear
         {
-            [JsonProperty(en ? "ShortName" : "ShortName")] public string shortName;
-            [JsonProperty(en ? "skinID (0 - default)" : "SkinID (0 - default)")] public ulong skinID;
+            [JsonProperty(en ? "ShortName" : "ShortName")] public string shortName { get; set; }
+            [JsonProperty(en ? "skinID (0 - default)" : "SkinID (0 - default)")] public ulong skinID { get; set; }
         }
 
         public class NpcBelt
         {
-            [JsonProperty(en ? "ShortName" : "ShortName")] public string shortName;
-            [JsonProperty(en ? "Amount" : "Кол-во")] public int amount;
-            [JsonProperty(en ? "skinID (0 - default)" : "SkinID (0 - default)")] public ulong skinID;
-            [JsonProperty(en ? "Mods" : "Модификации на оружие")] public List<string> Mods;
+            [JsonProperty(en ? "ShortName" : "ShortName")] public string shortName { get; set; }
+            [JsonProperty(en ? "Amount" : "Кол-во")] public int amount { get; set; }
+            [JsonProperty(en ? "skinID (0 - default)" : "SkinID (0 - default)")] public ulong skinID { get; set; }
+            [JsonProperty(en ? "Mods" : "Модификации на оружие")] public List<string> Mods { get; set; }
         }
 
         public class ItemConfig
         {
-            [JsonProperty("ShortName")] public string shortName;
-            [JsonProperty(en ? "Minimum" : "Минимальное кол-во")] public int minAmount;
-            [JsonProperty(en ? "Maximum" : "Максимальное кол-во")] public int maxAmount;
-            [JsonProperty(en ? "Chance [0.0-100.0]" : "Шанс выпадения предмета [0.0-100.0]")] public float chance;
-            [JsonProperty(en ? "Is this a blueprint? [true/false]" : "Это чертеж? [true/false]")] public bool isBluePrint;
-            [JsonProperty(en ? "SkinID (0 - default)" : "SkinID (0 - default)")] public ulong skinID;
-            [JsonProperty(en ? "Name (empty - default)" : "Название (empty - default)")] public string name;
+            [JsonProperty("ShortName")] public string shortName { get; set; }
+            [JsonProperty(en ? "Minimum" : "Минимальное кол-во")] public int minAmount { get; set; }
+            [JsonProperty(en ? "Maximum" : "Максимальное кол-во")] public int maxAmount { get; set; }
+            [JsonProperty(en ? "Chance [0.0-100.0]" : "Шанс выпадения предмета [0.0-100.0]")] public float chance { get; set; }
+            [JsonProperty(en ? "Is this a blueprint? [true/false]" : "Это чертеж? [true/false]")] public bool isBluePrint { get; set; }
+            [JsonProperty(en ? "SkinID (0 - default)" : "SkinID (0 - default)")] public ulong skinID { get; set; }
+            [JsonProperty(en ? "Name (empty - default)" : "Название (empty - default)")] public string name { get; set; }
         }
 
         public class LootTableConfig
         {
-            [JsonProperty(en ? "Minimum numbers of items" : "Минимальное кол-во элементов")] public int Min;
-            [JsonProperty(en ? "Maximum numbers of items" : "Максимальное кол-во элементов")] public int Max;
-            [JsonProperty(en ? "List of items" : "Список предметов")] public List<ItemConfig> Items;
+            [JsonProperty(en ? "Minimum numbers of items" : "Минимальное кол-во элементов")] public int Min { get; set; }
+            [JsonProperty(en ? "Maximum numbers of items" : "Максимальное кол-во элементов")] public int Max { get; set; }
+            [JsonProperty(en ? "List of items" : "Список предметов")] public List<ItemConfig> Items { get; set; }
         }
 
         public class DomeConfig
         {
-            [JsonProperty(en ? "Create a PVP zone in the convoy stop zone? (only for those who use the TruePVE plugin)[true/false]" : "Создавать зону PVP в зоне проведения ивента? (только для тех, кто использует плагин TruePVE) [true/false]")] public bool isCreateZonePVP;
-            [JsonProperty(en ? "Use the dome? [true/false]" : "Использовать ли купол? [true/false]")] public bool isDome;
-            [JsonProperty(en ? "Darkening the dome" : "Затемнение купола")] public int darkening;
+            [JsonProperty(en ? "Create a PVP zone in the convoy stop zone? (only for those who use the TruePVE plugin)[true/false]" : "Создавать зону PVP в зоне проведения ивента? (только для тех, кто использует плагин TruePVE) [true/false]")] public bool isCreateZonePVP { get; set; }
+            [JsonProperty(en ? "Use the dome? [true/false]" : "Использовать ли купол? [true/false]")] public bool isDome { get; set; }
+            [JsonProperty(en ? "Darkening the dome" : "Затемнение купола")] public int darkening { get; set; }
+            [JsonProperty(en ? "Radius" : "Радиус")] public float radius { get; set; }
         }
 
         public class GUIConfig
         {
-            [JsonProperty(en ? "Use the Countdown GUI? [true/false]" : "Использовать ли GUI обратного отсчета? [true/false]")] public bool IsGUI;
-            [JsonProperty("AnchorMin")] public string AnchorMin;
-            [JsonProperty("AnchorMax")] public string AnchorMax;
+            [JsonProperty(en ? "Use the Countdown GUI? [true/false]" : "Использовать ли GUI обратного отсчета? [true/false]")] public bool IsGUI { get; set; }
+            [JsonProperty("AnchorMin")] public string AnchorMin { get; set; }
+            [JsonProperty("AnchorMax")] public string AnchorMax { get; set; }
         }
 
         public class ColorConfig
         {
-            [JsonProperty("r")] public float r;
-            [JsonProperty("g")] public float g;
-            [JsonProperty("b")] public float b;
+            [JsonProperty("r")] public float r { get; set; }
+            [JsonProperty("g")] public float g { get; set; }
+            [JsonProperty("b")] public float b { get; set; }
         }
 
         public class MarkerConfig
         {
-            [JsonProperty(en ? "Do you use the Marker? [true/false]" : "Использовать ли маркер? [true/false]")] public bool IsMarker;
-            [JsonProperty(en ? "Radius" : "Радиус")] public float Radius;
-            [JsonProperty(en ? "Alpha" : "Прозрачность")] public float Alpha;
-            [JsonProperty(en ? "Marker color" : "Цвет маркера")] public ColorConfig Color1;
-            [JsonProperty(en ? "Outline color" : "Цвет контура")] public ColorConfig Color2;
+            [JsonProperty(en ? "Do you use the Marker? [true/false]" : "Использовать ли маркер? [true/false]")] public bool IsMarker { get; set; }
+            [JsonProperty(en ? "Radius" : "Радиус")] public float Radius { get; set; }
+            [JsonProperty(en ? "Alpha" : "Прозрачность")] public float Alpha { get; set; }
+            [JsonProperty(en ? "Marker color" : "Цвет маркера")] public ColorConfig Color1 { get; set; }
+            [JsonProperty(en ? "Outline color" : "Цвет контура")] public ColorConfig Color2 { get; set; }
         }
 
         public class GUIAnnouncementsConfig
         {
-            [JsonProperty(en ? "Do you use the GUI Announcements? [true/false]" : "Использовать ли GUI Announcements? [true/false]")] public bool isGUIAnnouncements;
-            [JsonProperty(en ? "Banner color" : "Цвет баннера")] public string bannerColor;
-            [JsonProperty(en ? "Text color" : "Цвет текста")] public string textColor;
-            [JsonProperty(en ? "Adjust Vertical Position" : "Отступ от верхнего края")] public float apiAdjustVPosition;
+            [JsonProperty(en ? "Do you use the GUI Announcements? [true/false]" : "Использовать ли GUI Announcements? [true/false]")] public bool isGUIAnnouncements { get; set; }
+            [JsonProperty(en ? "Banner color" : "Цвет баннера")] public string bannerColor { get; set; }
+            [JsonProperty(en ? "Text color" : "Цвет текста")] public string textColor { get; set; }
+            [JsonProperty(en ? "Adjust Vertical Position" : "Отступ от верхнего края")] public float apiAdjustVPosition { get; set; }
         }
 
         public class NotifyConfig
         {
-            [JsonProperty(en ? "Do you use the Notify? [true/false]" : "Использовать ли Notify? [true/false]")] public bool IsNotify;
-            [JsonProperty(en ? "Type" : "Тип")] public string Type;
+            [JsonProperty(en ? "Do you use the Notify? [true/false]" : "Использовать ли Notify? [true/false]")] public bool IsNotify { get; set; }
+            [JsonProperty(en ? "Type" : "Тип")] public string Type { get; set; }
         }
 
         public class DiscordConfig
         {
-            [JsonProperty(en ? "Do you use the Discord? [true/false]" : "Использовать ли Discord? [true/false]")] public bool isDiscord;
+            [JsonProperty(en ? "Do you use the Discord? [true/false]" : "Использовать ли Discord? [true/false]")] public bool isDiscord { get; set; }
             [JsonProperty("Webhook URL")] public string webhookUrl;
-            [JsonProperty(en ? "Embed Color (DECIMAL)" : "Цвет полосы (DECIMAL)")] public int embedColor;
-            [JsonProperty(en ? "Keys of required messages" : "Ключи необходимых сообщений")] public HashSet<string> keys;
+            [JsonProperty(en ? "Embed Color (DECIMAL)" : "Цвет полосы (DECIMAL)")] public int embedColor { get; set; }
+            [JsonProperty(en ? "Keys of required messages" : "Ключи необходимых сообщений")] public HashSet<string> keys { get; set; }
         }
 
         protected override void LoadConfig()
@@ -2250,42 +2355,46 @@ namespace Oxide.Plugins
 
         class PluginConfig
         {
-            [JsonProperty(en ? "Version" : "Версия плагина")] public string version;
-            [JsonProperty(en ? "Prefix of chat messages" : "Префикс в чате")] public string prefics;
-            [JsonProperty(en ? "Use a chat? [true/false]" : "Использовать ли чат? [true/false]")] public bool IsChat;
-            [JsonProperty(en ? "GUI Announcements setting" : "Настройка GUI Announcements")] public GUIAnnouncementsConfig GUIAnnouncements;
-            [JsonProperty(en ? "Notify setting" : "Настройка Notify")] public NotifyConfig Notify;
-            [JsonProperty(en ? "Discord setting (only for DiscordMessages)" : "Настройка оповещений в Discord (только для DiscordMessages)")] public DiscordConfig discord;
-            [JsonProperty(en ? "Custom route name" : "Пресет кастомного маршрута")] public string customRootName;
-            [JsonProperty(en ? "If there is a ring road on the map, then the event will be held on it" : "Если на карте есть кольцевая дорога, то ивент будет проводиться на ней")] public bool rounRoadPriority;
-            [JsonProperty(en ? "The minimum length of the road on which the event can be held (Recommended values: standard map - 100, custom - 300)" : "Минимальное длина дороги, на которой может проводиться ивент (Рекомендуемые значения: стандартная карта - 100, кастомная - 300)")] public int roadCount;
-            [JsonProperty(en ? "The distance between the machines during spawn (Recommended values: standard map - 3, custom - 10)" : "Расстояние между машинами при спавне (Рекомендуемые значения: стандартная карта - 3, кастомная - 10)")] public int carDistance;
-            [JsonProperty(en ? "Minimum time between events [sec.]" : "Минимальное время между ивентами [sec.]")] public int minStartTime;
-            [JsonProperty(en ? "Maximum time between events [sec.]" : "Максимальное время между ивентами [sec.]")] public int maxStartTime;
-            [JsonProperty(en ? "Time before the starting of the event after receiving a chat message [sec.]" : "Время до начала ивента после сообщения в чате [sec.]")] public int preStartTime;
-            [JsonProperty(en ? "Notification time until the end of the event [sec.] " : "Время оповещения до окончания ивента [sec.]")] public int preFinishTime;
-            [JsonProperty(en ? "Duration of the event [sec.]" : "Длительность ивента [sec.]")] public int eventTime;
-            [JsonProperty(en ? "The time for which the convoy stops moving after receiving damage [sec.]" : "Время, на которое останавливается конвой, после получения урона [sec.]")] public int damamageStopTime;
-            [JsonProperty(en ? "The convoy will not attack first [true/false]" : "Бредли и вертолет не будут атаковать первыми [true/false]")] public bool blockFirstAttack;
-            [JsonProperty(en ? "Remove obstacles in front of the convoy [true/false]" : "Удалять преграды перед конвоем [true/false]")] public bool deleteBarriers;
-            [JsonProperty(en ? "List of obstacles" : "Список преград")] public List<string> barriers;
-            [JsonProperty(en ? "If an NPC has been killed, it will not spawn at the next stop of the convoy [true/false]" : "Если NPC был убит, то он не будет поялвляться при следующей остановке конвоя [true/false]")] public bool blockSpawnDieNpc;
-            [JsonProperty(en ? "Blocked roads (command /convoyroadblock)" : "Заблокированные дороги (команда /convoyroadblock)")] public List<int> blockRoads;
-            [JsonProperty(en ? "Convoy Presets" : "Пресеты конвоя")] public List<ConvoySetting> convoys;
-            [JsonProperty(en ? "Marker Setting" : "Настройки маркера")] public MarkerConfig marker;
-            [JsonProperty(en ? "Event zone" : "Настройка зоны ивента")] public DomeConfig eventZone;
-            [JsonProperty("GUI")] public GUIConfig GUI;
-            [JsonProperty(en ? "Bradley Configurations" : "Кофигурации бредли")] public List<BradleyConfig> bradleyConfiguration;
-            [JsonProperty(en ? "Sedan Configurations" : "Кофигурации седанов")] public List<SedanConfig> sedanConfiguration;
-            [JsonProperty(en ? "Truck Configurations" : "Кофигурации грузовиков")] public List<ModularConfig> modularConfiguration;
-            [JsonProperty(en ? "Heli Configurations" : "Кофигурации вертолетов")] public List<HeliConfig> heliesConfiguration;
-            [JsonProperty(en ? "NPC Configurations" : "Кофигурации NPC")] public NpcConfig NPC;
+            [JsonProperty(en ? "Version" : "Версия плагина")] public string version { get; set; }
+            [JsonProperty(en ? "Prefix of chat messages" : "Префикс в чате")] public string prefics { get; set; }
+            [JsonProperty(en ? "Use a chat? [true/false]" : "Использовать ли чат? [true/false]")] public bool IsChat { get; set; }
+            [JsonProperty(en ? "GUI Announcements setting" : "Настройка GUI Announcements")] public GUIAnnouncementsConfig GUIAnnouncements { get; set; }
+            [JsonProperty(en ? "Notify setting" : "Настройка Notify")] public NotifyConfig Notify { get; set; }
+            [JsonProperty(en ? "Discord setting (only for DiscordMessages)" : "Настройка оповещений в Discord (только для DiscordMessages)")] public DiscordConfig discord { get; set; }
+            [JsonProperty(en ? "Custom route name" : "Пресет кастомного маршрута")] public string customRootName { get; set; }
+            [JsonProperty(en ? "If there is a ring road on the map, then the event will be held on it" : "Если на карте есть кольцевая дорога, то ивент будет проводиться на ней")] public bool rounRoadPriority { get; set; }
+            [JsonProperty(en ? "The minimum length of the road on which the event can be held (Recommended values: standard map - 100, custom - 300)" : "Минимальное длина дороги, на которой может проводиться ивент (Рекомендуемые значения: стандартная карта - 100, кастомная - 300)")] public int roadCount { get; set; }
+            [JsonProperty(en ? "The distance between the machines during spawn (Recommended values: standard map - 3, custom - 10)" : "Расстояние между машинами при спавне (Рекомендуемые значения: стандартная карта - 3, кастомная - 10)")] public int carDistance { get; set; }
+            [JsonProperty(en ? "Minimum time between events [sec.]" : "Минимальное время между ивентами [sec.]")] public int minStartTime { get; set; }
+            [JsonProperty(en ? "Maximum time between events [sec.]" : "Максимальное время между ивентами [sec.]")] public int maxStartTime { get; set; }
+            [JsonProperty(en ? "Time before the starting of the event after receiving a chat message [sec.]" : "Время до начала ивента после сообщения в чате [sec.]")] public int preStartTime { get; set; }
+            [JsonProperty(en ? "Notification time until the end of the event [sec.] " : "Время оповещения до окончания ивента [sec.]")] public int preFinishTime { get; set; }
+            [JsonProperty(en ? "Duration of the event [sec.]" : "Длительность ивента [sec.]")] public int eventTime { get; set; }
+            [JsonProperty(en ? "The time for which the convoy stops moving after receiving damage [sec.]" : "Время, на которое останавливается конвой, после получения урона [sec.]")] public int damamageStopTime { get; set; }
+            [JsonProperty(en ? "The convoy will not attack first [true/false]" : "Бредли и вертолет не будут атаковать первыми [true/false]")] public bool blockFirstAttack { get; set; }
+            [JsonProperty(en ? "Remove obstacles in front of the convoy [true/false]" : "Удалять преграды перед конвоем [true/false]")] public bool deleteBarriers { get; set; }
+            [JsonProperty(en ? "It is necessary to stop the convoy to open the crate" : "Необходимо остановить конвой, чтобы открыть ящик")] public bool needStopConvoy { get; set; }
+            [JsonProperty(en ? "It is necessary to kill all vehicles to open the crate" : "Необходимо убить все машины, чтобы открыть ящик")] public bool needKillCars { get; set; }
+            [JsonProperty(en ? "It is necessary to kill all NPC to open the crate" : "Необходимо убить всех NPC, чтобы открыть ящик")] public bool needKillNpc { get; set; }
+            [JsonProperty(en ? "List of obstacles" : "Список преград")] public List<string> barriers { get; set; }
+            [JsonProperty(en ? "If an NPC has been killed, it will not spawn at the next stop of the convoy [true/false]" : "Если NPC был убит, то он не будет поялвляться при следующей остановке конвоя [true/false]")] public bool blockSpawnDieNpc { get; set; }
+            [JsonProperty(en ? "Blocked roads (command /convoyroadblock)" : "Заблокированные дороги (команда /convoyroadblock)")] public List<int> blockRoads { get; set; }
+            [JsonProperty(en ? "Convoy Presets" : "Пресеты конвоя")] public List<ConvoySetting> convoys { get; set; }
+            [JsonProperty(en ? "Marker Setting" : "Настройки маркера")] public MarkerConfig marker { get; set; }
+            [JsonProperty(en ? "Event zone" : "Настройка зоны ивента")] public DomeConfig eventZone { get; set; }
+            [JsonProperty("GUI")] public GUIConfig GUI { get; set; }
+            [JsonProperty(en ? "Bradley Configurations" : "Кофигурации бредли")] public List<BradleyConfig> bradleyConfiguration { get; set; }
+            [JsonProperty(en ? "Sedan Configurations" : "Кофигурации седанов")] public List<SedanConfig> sedanConfiguration { get; set; }
+            [JsonProperty(en ? "Truck Configurations" : "Кофигурации грузовиков")] public List<ModularConfig> modularConfiguration { get; set; }
+            [JsonProperty(en ? "Modular Configurations" : "Кофигурации модульных машин")] public List<SupportModularConfig> supportModularConfiguration { get; set; }
+            [JsonProperty(en ? "Heli Configurations" : "Кофигурации вертолетов")] public List<HeliConfig> heliesConfiguration { get; set; }
+            [JsonProperty(en ? "NPC Configurations" : "Кофигурации NPC")] public List<NpcConfig> NPC { get; set; }
 
             public static PluginConfig DefaultConfig()
             {
                 return new PluginConfig()
                 {
-                    version = "1.1.5",
+                    version = "1.1.6",
                     prefics = "[Convoy]",
                     IsChat = true,
                     GUIAnnouncements = new GUIAnnouncementsConfig
@@ -2320,9 +2429,10 @@ namespace Oxide.Plugins
                     carDistance = 3,
                     minStartTime = 3600,
                     maxStartTime = 3600,
-                    preStartTime = 60,
+                    preStartTime = 300,
+                    preFinishTime = 900,
                     eventTime = 1700,
-                    damamageStopTime = 120,
+                    damamageStopTime = 180,
                     blockFirstAttack = false,
                     blockSpawnDieNpc = false,
                     deleteBarriers = true,
@@ -2346,22 +2456,45 @@ namespace Oxide.Plugins
                         "loot-barrel-1",
                         "oil_barrel"
                     },
-                    preFinishTime = 60,
+                    needStopConvoy  = true,
+                    needKillCars = true,
+                    needKillNpc = false,
                     blockRoads = new List<int>(),
                     convoys = new List<ConvoySetting>
                     {
                         new ConvoySetting
                         {
-                            name = "standart",
-                            chance = 100,
+                            name = "hard",
+                            chance = 25,
                             on = true,
                             firstBradleyCount = 1,
+                            firstModularCount = 1,
                             firstSedanCount = 1,
                             endSedanCount = 1,
+                            endModularCount = 1,
                             endBradleyCount = 1,
                             bradleyConfigurationName = "bradley_1",
                             modularConfigurationName = "truck_1",
                             sedanConfigurationName = "sedan_1",
+                            supportodularConfigurationName = "modular_1",
+                            heliOn = false,
+                            heliConfigurationName = "heli_1"
+                        },
+                        new ConvoySetting
+                        {
+                            name = "standart",
+                            chance = 75,
+                            on = true,
+                            firstBradleyCount = 1,
+                            firstModularCount = 0,
+                            firstSedanCount = 1,
+                            endSedanCount = 1,
+                            endModularCount = 0,
+                            endBradleyCount = 1,
+                            bradleyConfigurationName = "bradley_1",
+                            modularConfigurationName = "truck_1",
+                            sedanConfigurationName = "sedan_1",
+                            supportodularConfigurationName = "modular_1",
                             heliOn = false,
                             heliConfigurationName = "heli_1"
                         }
@@ -2378,7 +2511,8 @@ namespace Oxide.Plugins
                     {
                         isCreateZonePVP = false,
                         isDome = false,
-                        darkening = 5
+                        darkening = 5,
+                        radius = 70f
                     },
                     GUI = new GUIConfig
                     {
@@ -2401,6 +2535,7 @@ namespace Oxide.Plugins
                             nextFireTime = 10f,
                             topTurretFireRate = 0.25f,
                             countCrates = 3,
+                            npcName = "ConvoyNPC",
                             coordinates = new List<CoordConfig>
                             {
                                 new CoordConfig { position = "(3, 0, 3)", rotation = "(0, 0, 0)" },
@@ -2439,6 +2574,7 @@ namespace Oxide.Plugins
                         {
                             presetName = "sedan_1",
                             hp = 500f,
+                            npcName = "ConvoyNPC",
                             coordinates = new List<CoordConfig>
                             {
                                 new CoordConfig { position = "(2, 0, 2)", rotation = "(0, 0, 0)" },
@@ -2456,7 +2592,7 @@ namespace Oxide.Plugins
                             presetName = "truck_1",
                             damageMultiplier = 0.5f,
                             modules = new List<string> { "vehicle.1mod.engine", "vehicle.1mod.cockpit.armored", "vehicle.1mod.passengers.armored", "vehicle.1mod.flatbed" },
-                            crateLocation = new CoordConfig { position = "(0, 0.65, -2.35)", rotation = "(0, 180, 0)" },
+                            npcName = "ConvoyNPC",
                             coordinates = new List<CoordConfig>
                             {
                                 new CoordConfig { position = "(2, 0, 2)", rotation = "(0, 0, 0)" },
@@ -2464,7 +2600,7 @@ namespace Oxide.Plugins
                                 new CoordConfig { position = "(2, 0, -2)", rotation = "(0, 0, 0)" },
                                 new CoordConfig { position = "(-2, 0, -2)", rotation = "(0, 0, 0)" }
                             },
-                            innidiatlyOpen = false,
+                            crateLocation = new CoordConfig { position = "(0, 0.65, -2.35)", rotation = "(0, 180, 0)" },
                             crateUnlockTime = 10,
                             typeLootTable = 0,
                             lootTable = new LootTableConfig
@@ -2488,6 +2624,24 @@ namespace Oxide.Plugins
                         }
                     },
 
+                    supportModularConfiguration = new List<SupportModularConfig>
+                    {
+                        new SupportModularConfig
+                        {
+                            presetName = "modular_1",
+                            damageMultiplier = 0.5f,
+                            modules = new List<string> { "vehicle.1mod.engine", "vehicle.1mod.cockpit.armored", "vehicle.1mod.passengers.armored", "vehicle.1mod.passengers.armored" },
+                            npcName = "ConvoyNPC",
+                            coordinates = new List<CoordConfig>
+                            {
+                                new CoordConfig { position = "(2, 0, 2)", rotation = "(0, 0, 0)" },
+                                new CoordConfig { position = "(-2, 0, 2)", rotation = "(0, 0, 0)" },
+                                new CoordConfig { position = "(2, 0, -2)", rotation = "(0, 0, 0)" },
+                                new CoordConfig { position = "(-2, 0, -2)", rotation = "(0, 0, 0)" }
+                            }
+                        }
+                    },
+
                     heliesConfiguration = new List<HeliConfig>
                     {
                         new HeliConfig
@@ -2500,6 +2654,7 @@ namespace Oxide.Plugins
                             height = 50f,
                             bulletDamage = 20f,
                             bulletSpeed = 250f,
+                            distance = 350f,
                             speed = 25f,
                             offDelay = false,
                             typeLootTable = 0,
@@ -2524,299 +2679,573 @@ namespace Oxide.Plugins
                         }
                     },
 
-                    NPC = new NpcConfig
+                    NPC = new List<NpcConfig>
                     {
-                        wearItems = new List<NpcWear>
+                        new NpcConfig
                         {
-                            new NpcWear
+                            name = "ConvoyNPC",
+                            health = 200f,
+                            wearItems = new List<NpcWear>
                             {
-                                shortName = "metal.plate.torso",
-                                skinID = 1988476232
+                                new NpcWear
+                                {
+                                    shortName = "metal.plate.torso",
+                                    skinID = 1988476232
+                                },
+                                new NpcWear
+                                {
+                                    shortName = "riot.helmet",
+                                    skinID = 1988478091
+                                },
+                                new NpcWear
+                                {
+                                    shortName = "pants",
+                                    skinID = 1582399729
+                                },
+                                new NpcWear
+                                {
+                                    shortName = "tshirt",
+                                    skinID = 1582403431
+                                },
+                                new NpcWear
+                                {
+                                    shortName = "shoes.boots",
+                                    skinID = 0
+                                }
                             },
-                            new NpcWear
+                            beltItems = new List<NpcBelt>
                             {
-                                shortName = "riot.helmet",
-                                skinID = 1988478091
-                            },
-                            new NpcWear
-                            {
-                                shortName = "pants",
-                                skinID = 1582399729
-                            },
-                            new NpcWear
-                            {
-                                shortName = "tshirt",
-                                skinID = 1582403431
-                            },
-                            new NpcWear
-                            {
-                                shortName = "shoes.boots",
-                                skinID = 0
-                            }
-                        },
-                        beltItems = new List<NpcBelt>
-                        {
-                            new NpcBelt
-                            {
-                                shortName = "rifle.lr300",
-                                amount = 1,
-                                skinID = 0,
-                                Mods = new List<string> { "weapon.mod.flashlight", "weapon.mod.holosight" }
-                            },
-                            new NpcBelt
-                            {
-                                shortName = "syringe.medical",
-                                amount = 10,
-                                skinID = 0,
-                                Mods = new List<string> ()
-                            },
-                            new NpcBelt
-                            {
-                                shortName = "grenade.f1",
-                                amount = 10,
-                                skinID = 0,
-                                Mods = new List<string> ()
-                            }
-                        },
-                        Kits = new List<string>(),
-                        name = "ConvoyNPC",
-                        health = 200f,
-                        roamRange = 5f,
-                        chaseRange = 110f,
-                        attackRangeMultiplier = 1f,
-                        senseRange = 60f,
-                        memoryDuration = 60f,
-                        damageScale = 1f,
-                        aimConeScale = 1f,
-                        checkVisionCone = false,
-                        visionCone = 135f,
-                        speed = 7.5f,
-
-                        lootTable = new LootTableConfig
-                        {
-                            Min = 2,
-                            Max = 4,
-                            Items = new List<ItemConfig>
-                            {
-                                new ItemConfig
+                                new NpcBelt
                                 {
-                                    shortName = "rifle.semiauto",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.09f,
-                                    isBluePrint = false,
+                                    shortName = "rifle.lr300",
+                                    amount = 1,
                                     skinID = 0,
-                                    name = ""
+                                    Mods = new List<string> { "weapon.mod.flashlight", "weapon.mod.holosight" }
                                 },
-                                new ItemConfig
-                                {
-                                    shortName = "shotgun.pump",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.09f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "pistol.semiauto",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.09f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "largemedkit",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.1f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "smg.2",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.1f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "pistol.python",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.1f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "smg.thompson",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.1f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "shotgun.waterpipe",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.2f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "shotgun.double",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.2f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "ammo.rifle.explosive",
-                                    minAmount = 8,
-                                    maxAmount = 8,
-                                    chance = 0.2f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "pistol.revolver",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 0.2f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "ammo.rifle.hv",
-                                    minAmount = 10,
-                                    maxAmount = 10,
-                                    chance = 0.2f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "ammo.rifle.incendiary",
-                                    minAmount = 8,
-                                    maxAmount = 8,
-                                    chance = 0.5f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "ammo.pistol.hv",
-                                    minAmount = 10,
-                                    maxAmount = 10,
-                                    chance = 0.5f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "ammo.pistol.fire",
-                                    minAmount = 10,
-                                    maxAmount = 10,
-                                    chance = 1f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "ammo.shotgun.slug",
-                                    minAmount = 4,
-                                    maxAmount = 8,
-                                    chance = 5f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "ammo.shotgun.fire",
-                                    minAmount = 4,
-                                    maxAmount = 14,
-                                    chance = 5f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "ammo.shotgun",
-                                    minAmount = 6,
-                                    maxAmount = 12,
-                                    chance = 8f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
-                                {
-                                    shortName = "bandage",
-                                    minAmount = 1,
-                                    maxAmount = 1,
-                                    chance = 17f,
-                                    isBluePrint = false,
-                                    skinID = 0,
-                                    name = ""
-                                },
-                                new ItemConfig
+                                new NpcBelt
                                 {
                                     shortName = "syringe.medical",
-                                    minAmount = 1,
-                                    maxAmount = 2,
-                                    chance = 34f,
-                                    isBluePrint = false,
+                                    amount = 10,
                                     skinID = 0,
-                                    name = ""
+                                    Mods = new List<string> ()
                                 },
-                                new ItemConfig
+                                new NpcBelt
                                 {
-                                    shortName = "ammo.rifle",
-                                    minAmount = 12,
-                                    maxAmount = 36,
-                                    chance = 51f,
-                                    isBluePrint = false,
+                                    shortName = "grenade.f1",
+                                    amount = 10,
                                     skinID = 0,
-                                    name = ""
+                                    Mods = new List<string> ()
+                                }
+                            },
+                            Kits = new List<string>(),
+                            roamRange = 5f,
+                            chaseRange = 110f,
+                            attackRangeMultiplier = 1f,
+                            senseRange = 60f,
+                            memoryDuration = 60f,
+                            damageScale = 1f,
+                            aimConeScale = 1f,
+                            checkVisionCone = false,
+                            visionCone = 135f,
+                            speed = 7.5f,
+                            lootTable = new LootTableConfig
+                            {
+                                Min = 2,
+                                Max = 4,
+                                Items = new List<ItemConfig>
+                                {
+                                    new ItemConfig
+                                    {
+                                        shortName = "rifle.semiauto",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.09f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "shotgun.pump",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.09f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "pistol.semiauto",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.09f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "largemedkit",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "smg.2",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "pistol.python",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "smg.thompson",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "shotgun.waterpipe",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "shotgun.double",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.rifle.explosive",
+                                        minAmount = 8,
+                                        maxAmount = 8,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "pistol.revolver",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.rifle.hv",
+                                        minAmount = 10,
+                                        maxAmount = 10,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.rifle.incendiary",
+                                        minAmount = 8,
+                                        maxAmount = 8,
+                                        chance = 0.5f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.pistol.hv",
+                                        minAmount = 10,
+                                        maxAmount = 10,
+                                        chance = 0.5f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.pistol.fire",
+                                        minAmount = 10,
+                                        maxAmount = 10,
+                                        chance = 1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.shotgun.slug",
+                                        minAmount = 4,
+                                        maxAmount = 8,
+                                        chance = 5f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.shotgun.fire",
+                                        minAmount = 4,
+                                        maxAmount = 14,
+                                        chance = 5f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.shotgun",
+                                        minAmount = 6,
+                                        maxAmount = 12,
+                                        chance = 8f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "bandage",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 17f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "syringe.medical",
+                                        minAmount = 1,
+                                        maxAmount = 2,
+                                        chance = 34f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.rifle",
+                                        minAmount = 12,
+                                        maxAmount = 36,
+                                        chance = 51f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.pistol",
+                                        minAmount = 15,
+                                        maxAmount = 45,
+                                        chance = 52f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    }
+                                }
+                            }
+                        },
+                        new NpcConfig
+                        {
+                            name = "Tankman",
+                            health = 500f,
+                            wearItems = new List<NpcWear>
+                            {
+                                
+                            },
+                            beltItems = new List<NpcBelt>
+                            {
+                                new NpcBelt
+                                {
+                                    shortName = "rifle.lr300",
+                                    amount = 1,
+                                    skinID = 0,
+                                    Mods = new List<string> { "weapon.mod.flashlight", "weapon.mod.holosight" }
                                 },
-                                new ItemConfig
+                                new NpcBelt
                                 {
-                                    shortName = "ammo.pistol",
-                                    minAmount = 15,
-                                    maxAmount = 45,
-                                    chance = 52f,
-                                    isBluePrint = false,
+                                    shortName = "syringe.medical",
+                                    amount = 10,
                                     skinID = 0,
-                                    name = ""
+                                    Mods = new List<string> ()
+                                },
+                                new NpcBelt
+                                {
+                                    shortName = "rocket.launcher",
+                                    amount = 1,
+                                    skinID = 0,
+                                    Mods = new List<string> ()
+                                }
+                            },
+                            Kits = new List<string>(),
+                            roamRange = 5f,
+                            chaseRange = 110f,
+                            attackRangeMultiplier = 1f,
+                            senseRange = 60f,
+                            memoryDuration = 60f,
+                            damageScale = 1f,
+                            aimConeScale = 1f,
+                            checkVisionCone = false,
+                            visionCone = 135f,
+                            speed = 7.5f,
+                            lootTable = new LootTableConfig
+                            {
+                                Min = 2,
+                                Max = 4,
+                                Items = new List<ItemConfig>
+                                {
+                                    new ItemConfig
+                                    {
+                                        shortName = "rifle.semiauto",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.09f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "shotgun.pump",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.09f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "pistol.semiauto",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.09f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "largemedkit",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "smg.2",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "pistol.python",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "smg.thompson",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "shotgun.waterpipe",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "shotgun.double",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.rifle.explosive",
+                                        minAmount = 8,
+                                        maxAmount = 8,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "pistol.revolver",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.rifle.hv",
+                                        minAmount = 10,
+                                        maxAmount = 10,
+                                        chance = 0.2f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.rifle.incendiary",
+                                        minAmount = 8,
+                                        maxAmount = 8,
+                                        chance = 0.5f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.pistol.hv",
+                                        minAmount = 10,
+                                        maxAmount = 10,
+                                        chance = 0.5f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.pistol.fire",
+                                        minAmount = 10,
+                                        maxAmount = 10,
+                                        chance = 1f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.shotgun.slug",
+                                        minAmount = 4,
+                                        maxAmount = 8,
+                                        chance = 5f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.shotgun.fire",
+                                        minAmount = 4,
+                                        maxAmount = 14,
+                                        chance = 5f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.shotgun",
+                                        minAmount = 6,
+                                        maxAmount = 12,
+                                        chance = 8f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "bandage",
+                                        minAmount = 1,
+                                        maxAmount = 1,
+                                        chance = 17f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "syringe.medical",
+                                        minAmount = 1,
+                                        maxAmount = 2,
+                                        chance = 34f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.rifle",
+                                        minAmount = 12,
+                                        maxAmount = 36,
+                                        chance = 51f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    },
+                                    new ItemConfig
+                                    {
+                                        shortName = "ammo.pistol",
+                                        minAmount = 15,
+                                        maxAmount = 45,
+                                        chance = 52f,
+                                        isBluePrint = false,
+                                        skinID = 0,
+                                        name = ""
+                                    }
                                 }
                             }
                         }
