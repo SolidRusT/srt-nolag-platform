@@ -1,7 +1,0 @@
-{
-  "Price per watt (hourly)": 0.1,
-  "Min power": 10.0,
-  "Max power": 1000.0,
-  "Power increments": 10.0,
-  "Use economics balance (requires plugin)": false
-}

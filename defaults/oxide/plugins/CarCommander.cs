@@ -14,7 +14,7 @@ using System.Globalization;
 
 namespace Oxide.Plugins
 {
-    [Info("CarCommander", "k1lly0u", "0.2.70")]
+    [Info("CarCommander", "k1lly0u", "0.2.71")]
     [Description("A custom car controller with many options including persistence")]
     class CarCommander : RustPlugin
     {
@@ -1661,24 +1661,24 @@ namespace Oxide.Plugins
             }
 
             // Temporary solution for dismounting players until death on fail is fixed
-            public void DismountPlayer(BasePlayer player, BaseMountable mountable)
+            public void DismountPlayer(BasePlayer player, BaseMountable baseMountable)
             {
                 if (player == null)
                     return;
 
-                Vector3 dismountPosition = GetDismountPosition(mountable);
+                Vector3 dismountPosition = GetDismountPosition(baseMountable);
 
-                player.DismountObject();
+                baseMountable._mounted.DismountObject();
+                baseMountable._mounted.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+                baseMountable._mounted.MovePosition(dismountPosition);
+                baseMountable._mounted.SendNetworkUpdateImmediate(false);
+                baseMountable._mounted = null;
+                baseMountable.SetFlag(BaseEntity.Flags.Busy, false, false, true);
 
-                player.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                player.MovePosition(dismountPosition);
-                player.SendNetworkUpdateImmediate(false);
-                player.ClientRPCPlayer(null, player, "ForcePositionTo", dismountPosition);
-                mountable._mounted = null;
-                entity.SetFlag(BaseEntity.Flags.Busy, false, false);
-                player.EnsureDismounted();
+                player.ForceUpdateTriggers(true, true, true);
+                player.ClientRPCPlayer<Vector3>(null, player, "ForcePositionTo", dismountPosition);
 
-                ins.OnEntityDismounted(mountable, player);
+                ins.OnEntityDismounted(baseMountable, player);
                 //OnEntityDismounted(player, mountable);
             }
 

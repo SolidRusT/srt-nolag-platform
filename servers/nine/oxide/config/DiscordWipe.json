@@ -2,7 +2,7 @@
   "Debug Level (None, Error, Warning, Info)": "Warning",
   "Command": "dw",
   "Rust Map Image Settings": {
-    "Map Image Source (None, RustMaps, RustMapApi)": "none",
+    "Map Image Source (None, RustMaps, RustMapApi)": "RustMapApi",
     "RustMaps.com Settings": {
       "RustMap.com API Key": "9f581a87-3ba8-4f9e-90b6-1485f969dbf0",
       "Generate Staging Map": false
@@ -14,13 +14,13 @@
     }
   },
   "Send wipe message when server wipes": true,
-  "Wipe Webhook url": "https://discord.com/api/webhooks/884239961480646716/EktmshU3GgFRztcmmNS-g8sFGDPVMJSuDqYILULJMI8JN4UA0ebILKqxPe_CmDhNCTot",
+  "Wipe Webhook url": "https://discord.com/api/webhooks/940820616246878238/ireYj19t3x0S7jHglgciHOMSbO4ZUl9dsPD8JdGfFpVUGP9pKzjUVV2YyQTvhHWUaWjT",
   "Send protocol message when server protocol changes": true,
-  "Protocol Webhook url": "https://discord.com/api/webhooks/884239961480646716/EktmshU3GgFRztcmmNS-g8sFGDPVMJSuDqYILULJMI8JN4UA0ebILKqxPe_CmDhNCTot",
+  "Protocol Webhook url": "https://discord.com/api/webhooks/940820616246878238/ireYj19t3x0S7jHglgciHOMSbO4ZUl9dsPD8JdGfFpVUGP9pKzjUVV2YyQTvhHWUaWjT",
   "Wipe messages": [
     {
       "Content": "@everyone",
-      "Webhook Override (Overrides the default webhook for this message)": "https://discord.com/api/webhooks/884239961480646716/EktmshU3GgFRztcmmNS-g8sFGDPVMJSuDqYILULJMI8JN4UA0ebILKqxPe_CmDhNCTot",
+      "Webhook Override (Overrides the default webhook for this message)": "https://discord.com/api/webhooks/940820616246878238/ireYj19t3x0S7jHglgciHOMSbO4ZUl9dsPD8JdGfFpVUGP9pKzjUVV2YyQTvhHWUaWjT",
       "Send Mode (Always, Random)": "Always",
       "Embed": {
         "Enabled": true,
@@ -67,7 +67,7 @@
   "Protocol messages": [
     {
       "Content": "@everyone",
-      "Webhook Override (Overrides the default webhook for this message)": "https://discord.com/api/webhooks/884239961480646716/EktmshU3GgFRztcmmNS-g8sFGDPVMJSuDqYILULJMI8JN4UA0ebILKqxPe_CmDhNCTot",
+      "Webhook Override (Overrides the default webhook for this message)": "https://discord.com/api/webhooks/940820616246878238/ireYj19t3x0S7jHglgciHOMSbO4ZUl9dsPD8JdGfFpVUGP9pKzjUVV2YyQTvhHWUaWjT",
       "Send Mode (Always, Random)": "Always",
       "Embed": {
         "Enabled": true,
