@@ -7,16 +7,16 @@ metadata:
     application: postgres-operator-ui
 spec:
   rules:
-    - host: psql.lab.hq.solidrust.net
-      http:
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: postgres-operator-ui
-                port:
-                  number: 80
+  - host: psql.lab.hq.solidrust.net
+    http:
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: postgres-operator-ui
+              port:
+                number: 80
   tls: 
     - hosts: 
         - psql.lab.hq.solidrust.net
