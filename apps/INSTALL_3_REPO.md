@@ -57,9 +57,10 @@ repeat this on slave nodes
 sudo cp /opt/certs/fullchain.crt /usr/local/share/ca-certificates
 sudo update-ca-certificates
 sudo systemctl restart docker
+sudo mount -a
 ```
 
- `get svc private-repository-k8s` and put external IP into DNS
+ `kubectl get svc private-repository-k8s -n srt-lab-repo` and put external IP into DNS
 
 ```bash
 docker pull nginx
