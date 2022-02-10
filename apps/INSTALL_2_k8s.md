@@ -1,7 +1,8 @@
 ### Create k8s cluster
 
 ```bash
-sudo kubeadm init --apiserver-advertise-address=10.42.69.124 --pod-network-cidr=10.42.0.0/16 --service-dns-domain lab.hq.srt.internal
+#sudo kubeadm init --apiserver-advertise-address=10.42.69.124 --pod-network-cidr=10.142.0.0/16
+sudo kubeadm init --pod-network-cidr=10.142.0.0/16
 ```
 
 ```bash
@@ -64,9 +65,10 @@ helm install metallb metallb/metallb -f solidrust.net/apps/metallb-values.yaml -
 ### Install Ingress controller
 
 ```bash
-helm install ingress-nginx ingress-nginx \
---repo https://kubernetes.github.io/ingress-nginx \
---namespace ingress-nginx --create-namespace
+kubectl apply -n ingress-nginx -f ${HOME}/solidrust.net/apps/ingress-nginx.yaml
+#helm install ingress-nginx ingress-nginx \
+#--repo https://kubernetes.github.io/ingress-nginx \
+#--namespace ingress-nginx --create-namespace
 ```
 
 ## Uninstall k8s cluster (on all servers)
