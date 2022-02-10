@@ -1,0 +1,17 @@
+{
+  "removeHostility": true,
+  "teleportLocations": [
+    {
+      "name": "Outpost",
+      "timer": 150,
+      "monumentPrefab": "assets/bundled/prefabs/autospawn/monument/medium/compound.prefab",
+      "enabled": true
+    },
+    {
+      "name": "Bandit Camp",
+      "timer": 150,
+      "monumentPrefab": "assets/bundled/prefabs/autospawn/monument/medium/bandit_town.prefab",
+      "enabled": true
+    }
+  ]
+}
