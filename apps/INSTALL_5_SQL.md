@@ -18,6 +18,7 @@ kubectl logs "$(kubectl get pod -l name=postgres-operator --output='name')"
 ```bash
 CERTWILD_DIR="${HOME}/letsencrypt-wild"
 kubectl create secret tls star.lab.hq.solidrust.net-tls --cert=${CERTWILD_DIR}/config/live/lab.hq.solidrust.net/fullchain.pem --key=${CERTWILD_DIR}/config/live/lab.hq.solidrust.net/privkey.pem -n default
+kubectl create secret tls star.lab.hq.solidrust.net-tls --cert=${CERTWILD_DIR}/config/live/lab.hq.solidrust.net/fullchain.pem --key=${CERTWILD_DIR}/config/live/lab.hq.solidrust.net/privkey.pem -n ingress-nginx
 kubectl apply -f postgres-ui/
 
 kubectl get pod -l name=postgres-operator-ui
