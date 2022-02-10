@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: postgres-operator-ui
   namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
   labels:
     application: postgres-operator-ui
 spec:
