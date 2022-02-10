@@ -71,6 +71,12 @@ kubectl apply -n ingress-nginx -f ${HOME}/solidrust.net/apps/ingress-nginx.yaml
 #--namespace ingress-nginx --create-namespace
 ```
 
+### Restart all pods
+
+```bash
+kubectl get pods --all-namespaces -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,HOSTNETWORK:.spec.hostNetwork --no-headers=true | grep '<none>' | awk '{print "-n "$1" "$2}' | xargs -L 1 -r kubectl delete pod
+```
+
 ## Uninstall k8s cluster (on all servers)
 
 ```bash
