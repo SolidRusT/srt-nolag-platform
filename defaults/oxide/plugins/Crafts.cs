@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.5.0")]
+    [Info("Crafts", "Mevent", "2.5.2")]
     public class Crafts : RustPlugin
     {
         #region Fields
@@ -58,16 +58,16 @@ namespace Oxide.Plugins
         private class Configuration
         {
             [JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public string[] Commands = { "craft", "crafts" };
+            public readonly string[] Commands = {"craft", "crafts"};
 
             [JsonProperty(PropertyName = "Work with Notify?")]
-            public bool UseNotify = true;
+            public readonly bool UseNotify = true;
 
             [JsonProperty(PropertyName = "Permission (ex: crafts.use)")]
-            public string Permission = string.Empty;
+            public readonly string Permission = string.Empty;
 
             [JsonProperty(PropertyName = "Categories", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<Category> Categories = new List<Category>
+            public readonly List<Category> Categories = new List<Category>
             {
                 new Category
                 {
@@ -205,6 +205,33 @@ namespace Oxide.Plugins
                             Distance = 1.5f,
                             Ground = true,
                             Structure = true,
+                            Items = new List<ItemForCraft>
+                            {
+                                new ItemForCraft(string.Empty, "gears", 5, 0),
+                                new ItemForCraft(string.Empty, "roadsigns", 5, 0),
+                                new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
+                            }
+                        },
+                        new CraftConf
+                        {
+                            Enabled = true,
+                            Image = "https://i.imgur.com/xj0N3lI.png",
+                            Title = "Snowmobile",
+                            Description = "Conquers snow biomes",
+                            CmdToGive = "givesnowmobile",
+                            Permission = "crafts.all",
+                            DisplayName = "Snowmobile",
+                            ShortName = "electric.flasherlight",
+                            Amount = 1,
+                            SkinID = 2747934628,
+                            Type = CraftType.Vehicle,
+                            GiveCommand = string.Empty,
+                            Prefab = "assets/content/vehicles/snowmobiles/snowmobile.prefab",
+                            Level = WorkbenchLevel.Two,
+                            UseDistance = true,
+                            Distance = 1.5f,
+                            Ground = true,
+                            Structure = false,
                             Items = new List<ItemForCraft>
                             {
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
@@ -360,7 +387,7 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Workbenches Setting",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<WorkbenchLevel, IColor> Workbenches =
+            public readonly Dictionary<WorkbenchLevel, IColor> Workbenches =
                 new Dictionary<WorkbenchLevel, IColor>
                 {
                     [WorkbenchLevel.None] = new IColor("#FFFFFF", 00),
@@ -370,7 +397,7 @@ namespace Oxide.Plugins
                 };
 
             [JsonProperty(PropertyName = "Recycler Settings")]
-            public RecyclerConfig Recycler = new RecyclerConfig
+            public readonly RecyclerConfig Recycler = new RecyclerConfig
             {
                 Speed = 5f,
                 Radius = 7.5f,
@@ -380,14 +407,14 @@ namespace Oxide.Plugins
                 Available = true,
                 Owner = true,
                 Amounts = new[]
-                    { 0.9f, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.9f, 0.5f, 0.5f, 0, 1, 1, 0.5f, 0, 0, 0, 0, 0, 1, 1 },
+                    {0.9f, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.9f, 0.5f, 0.5f, 0, 1, 1, 0.5f, 0, 0, 0, 0, 0, 1, 1},
                 Scale = 0.5f,
                 DDraw = true,
                 Building = true
             };
 
             [JsonProperty(PropertyName = "Car Settings")]
-            public CarConfig Car = new CarConfig
+            public readonly CarConfig Car = new CarConfig
             {
                 ActiveItems = new ActiveItemOptions
                 {
@@ -404,7 +431,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "UI Settings")]
-            public UserInterface UI = new UserInterface
+            public readonly UserInterface UI = new UserInterface
             {
                 CatWidth = 90,
                 CatMargin = 5,
@@ -686,7 +713,7 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "HEX")] public string Hex;
 
             [JsonProperty(PropertyName = "Opacity (0 - 100)")]
-            public float Alpha;
+            public readonly float Alpha;
 
             public string Get()
             {
@@ -698,7 +725,7 @@ namespace Oxide.Plugins
                 var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
                 var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
 
-                return $"{(double)r / 255} {(double)g / 255} {(double)b / 255} {Alpha / 100}";
+                return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {Alpha / 100}";
             }
 
             public IColor(string hex, float alpha)
@@ -710,15 +737,15 @@ namespace Oxide.Plugins
 
         private class ItemForCraft
         {
-            [JsonProperty(PropertyName = "Image")] public string Image;
+            [JsonProperty(PropertyName = "Image")] public readonly string Image;
 
             [JsonProperty(PropertyName = "Shortname")]
-            public string ShortName;
+            public readonly string ShortName;
 
             [JsonProperty(PropertyName = "Amount")]
-            public int Amount;
+            public readonly int Amount;
 
-            [JsonProperty(PropertyName = "Skin")] public ulong SkinID;
+            [JsonProperty(PropertyName = "Skin")] public readonly ulong SkinID;
 
             [JsonProperty(PropertyName = "Title (empty - default)")]
             public string Title;
@@ -963,7 +990,7 @@ namespace Oxide.Plugins
 
             RaycastHit rHit;
             if (Physics.Raycast(transform.position + new Vector3(0, 0.1f, 0), Vector3.down, out rHit, 4f,
-                LayerMask.GetMask("Construction")) && rHit.GetEntity() != null)
+                    LayerMask.GetMask("Construction")) && rHit.GetEntity() != null)
             {
                 if (!craft.Structure)
                 {
@@ -1211,7 +1238,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Image =
                     {
                         Color = "0 0 0 0.9",
@@ -1220,10 +1247,25 @@ namespace Oxide.Plugins
                     CursorEnabled = true
                 }, "Overlay", Layer);
 
+                if (!string.IsNullOrEmpty(_config.UI.BackgroundImage))
+                    container.Add(new CuiElement
+                    {
+                        Parent = Layer,
+                        Components =
+                        {
+                            new CuiRawImageComponent
+                                {Png = ImageLibrary.Call<string>("GetImage", _config.UI.BackgroundImage)},
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0 0", AnchorMax = "1 1"
+                            }
+                        }
+                    });
+
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -1264,7 +1306,7 @@ namespace Oxide.Plugins
                         },
                         Image =
                         {
-                            Color = _config.Workbenches[(WorkbenchLevel)wb].Get()
+                            Color = _config.Workbenches[(WorkbenchLevel) wb].Get()
                         }
                     }, Layer + $".Workbench.{wb}");
 
@@ -1306,21 +1348,6 @@ namespace Oxide.Plugins
                         Color = "1 1 1 0.5"
                     }
                 }, Layer);
-
-                if (!string.IsNullOrEmpty(_config.UI.BackgroundImage))
-                    container.Add(new CuiElement
-                    {
-                        Parent = Layer,
-                        Components =
-                        {
-                            new CuiRawImageComponent
-                                { Png = ImageLibrary.Call<string>("GetImage", _config.UI.BackgroundImage) },
-                            new CuiRectTransformComponent
-                            {
-                                AnchorMin = "0 0", AnchorMax = "1 1"
-                            }
-                        }
-                    });
             }
 
             #endregion
@@ -1351,7 +1378,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = _config.UI.Color2.Get() }
+                Image = {Color = _config.UI.Color2.Get()}
             }, Layer + ".Main", Layer + ".Header");
 
             container.Add(new CuiLabel
@@ -1542,8 +1569,8 @@ namespace Oxide.Plugins
 
                     container.Add(new CuiButton
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Text = { Text = "" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
                         Button =
                         {
                             Color = "0 0 0 0",
@@ -1570,7 +1597,7 @@ namespace Oxide.Plugins
             var selPageSize = _config.UI.PageSelectedSize;
             margin = _config.UI.PagesMargin;
 
-            var pages = Mathf.CeilToInt((float)playerCrafts.Count / totalAmount);
+            var pages = Mathf.CeilToInt((float) playerCrafts.Count / totalAmount);
             if (pages > 1)
             {
                 xSwitch = -((pages - 1) * pageSize + (pages - 1) * margin + selPageSize) / 2f;
@@ -1628,7 +1655,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiPanel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Image =
                 {
                     Color = "0.19 0.19 0.18 0.3",
@@ -1639,8 +1666,8 @@ namespace Oxide.Plugins
 
             container.Add(new CuiButton
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                Text = { Text = "" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
                 Button =
                 {
                     Color = "0 0 0 0",
@@ -1656,7 +1683,7 @@ namespace Oxide.Plugins
                     Components =
                     {
                         new CuiRawImageComponent
-                            { Png = ImageLibrary.Call<string>("GetImage", _config.UI.BackgroundImage) },
+                            {Png = ImageLibrary.Call<string>("GetImage", _config.UI.BackgroundImage)},
                         new CuiRectTransformComponent
                         {
                             AnchorMin = "0 0", AnchorMax = "1 1"
@@ -2188,7 +2215,7 @@ namespace Oxide.Plugins
                                         if (num3 <= 1.0)
                                         {
                                             for (var index = 0; index < num2; ++index)
-                                                if (Core.Random.Range(0.0f, 1f) <= num3 * (double)num1)
+                                                if (Core.Random.Range(0.0f, 1f) <= num3 * (double) num1)
                                                     ++num4;
                                         }
                                         else
@@ -2201,14 +2228,14 @@ namespace Oxide.Plugins
 
                                         if (num4 > 0)
                                         {
-                                            var num5 = Mathf.CeilToInt(num4 / (float)current.itemDef.stackable);
+                                            var num5 = Mathf.CeilToInt(num4 / (float) current.itemDef.stackable);
                                             for (var index = 0; index < num5; ++index)
                                             {
                                                 var iAmount = num4 > current.itemDef.stackable
                                                     ? current.itemDef.stackable
                                                     : num4;
                                                 if (!_recycler.MoveItemToOutput(ItemManager.Create(current.itemDef,
-                                                    iAmount)))
+                                                        iAmount)))
                                                     flag = true;
                                                 num4 -= iAmount;
                                                 if (num4 <= 0)
@@ -2238,7 +2265,7 @@ namespace Oxide.Plugins
                     {
                         var can = Interface.CallHook("CanRecycle", _recycler, slot2);
                         if (can is bool)
-                            return (bool)can;
+                            return (bool) can;
 
                         if (slot2.info.Blueprint != null)
                             return true;
