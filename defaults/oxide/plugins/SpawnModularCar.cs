@@ -1,6 +1,4 @@
-﻿using System;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Oxide.Core;
@@ -8,6 +6,7 @@ using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
 using Rust;
 using Rust.Modular;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,7 +14,7 @@ using System.Text;
 
 namespace Oxide.Plugins
 {
-    [Info("Spawn Modular Car", "WhiteThunder", "5.0.4")]
+    [Info("Spawn Modular Car", "WhiteThunder", "5.1.0")]
     [Description("Allows players to spawn modular cars.")]
     internal class SpawnModularCar : CovalencePlugin
     {
@@ -191,45 +190,7 @@ namespace Oxide.Plugins
 
         #region API
 
-        private ModularCar API_SpawnPresetCar(BasePlayer player, Dictionary<string, object> options, Action<ModularCar> onReady = null)
-        {
-            var apiOptions = new APIOptions(options);
-            if (apiOptions.ModuleIDs == null)
-            {
-                LogError("[API_SpawnPresetCar] '{0}' field is missing or unrecognizable.", APIOptions.ModulesField);
-                return null;
-            }
-
-            if (apiOptions.ModuleIDs.Length < 2 || apiOptions.ModuleIDs.Length > 4)
-            {
-                LogError("[API_SpawnPresetCar] Requested a car with {0} sockets, but only 2-4 sockets is supported.", apiOptions.ModuleIDs.Length);
-                return null;
-            }
-
-            if (SpawnWasBlocked(player))
-                return null;
-
-            var presetOptions = apiOptions.ToPresetOptions();
-
-            Vector3 spawnPosition;
-            Quaternion rotation;
-            if (!TryGetIdealCarPositionAndRotation(player, presetOptions.Length, out spawnPosition, out rotation))
-            {
-                spawnPosition = GetFixedCarPosition(player);
-                rotation = GetRelativeCarRotation(player);
-            }
-
-            var car = SpawnCarForPlayer(player, presetOptions, spawnPosition, rotation, shouldTrackCar: false);
-            if (car != null)
-            {
-                // Note: Consumers no longer need to use this callback since this plugin now forces synchronous module registration.
-                onReady?.Invoke(car);
-            }
-
-            return car;
-        }
-
-        internal class APIOptions
+        private static class ApiParser
         {
             public static string CodeLockField = "CodeLock";
             public static string KeyLockField = "KeyLock";
@@ -238,30 +199,58 @@ namespace Oxide.Plugins
             public static string FuelAmountField = "FuelAmount";
             public static string ModulesField = "Modules";
 
-            public readonly bool CodeLock;
-            public readonly bool KeyLock;
-            public readonly int EnginePartsTier;
-            public readonly int FreshWaterAmount;
-            public readonly int FuelAmount;
-            public readonly int[] ModuleIDs;
-
-            public APIOptions(Dictionary<string, object> options)
+            public static bool TryParseOptions(Dictionary<string, object> options, out PresetCarOptions presetOptions)
             {
-                CodeLock = BoolOption(options, CodeLockField);
-                KeyLock = BoolOption(options, KeyLockField);
-                EnginePartsTier = IntOption(options, EnginePartsTierField);
-                FreshWaterAmount = IntOption(options, FreshWaterAmountField);
-                FuelAmount = IntOption(options, FuelAmountField);
-                ModuleIDs = ParseModulesOption(options);
+                var codeLock = BoolOption(options, CodeLockField);
+                var keyLock = BoolOption(options, KeyLockField);
+                var enginePartsTier = IntOption(options, EnginePartsTierField);
+                var freshWaterAmount = IntOption(options, FreshWaterAmountField);
+                var fuelAmount = IntOption(options, FuelAmountField);
+                var moduleIDs = ParseModulesOption(options);
+
+                presetOptions = null;
+
+                if (moduleIDs == null)
+                {
+                    _pluginInstance.LogError($"[API] '{ApiParser.ModulesField}' field is missing or unrecognizable.");
+                    return false;
+                }
+
+                if (moduleIDs.Length < 2 || moduleIDs.Length > 4)
+                {
+                    _pluginInstance.LogError($"[API] Requested a car with {moduleIDs.Length} sockets, but only 2-4 sockets is supported.");
+                    return false;
+                }
+
+                presetOptions = new PresetCarOptions
+                {
+                    CodeLock = codeLock,
+                    KeyLock = keyLock,
+                    EnginePartsTier = enginePartsTier,
+                    FreshWaterAmount = freshWaterAmount,
+                    FuelAmount = fuelAmount,
+                    NormalizedModuleIDs = moduleIDs
+                };
+                return true;
             }
 
-            private bool BoolOption(Dictionary<string, object> options, string name) =>
-                options.ContainsKey(name) && options[name] is bool ? (bool)options[name] : false;
+            private static bool BoolOption(Dictionary<string, object> options, string name)
+            {
+                object value;
+                return options.TryGetValue(name, out value) && value is bool
+                    ? (bool)value
+                    : false;
+            }
 
-            private int IntOption(Dictionary<string, object> options, string name) =>
-                options.ContainsKey(name) && options[name] is int ? (int)options[name] : 0;
+            private static int IntOption(Dictionary<string, object> options, string name)
+            {
+                object value;
+                return options.TryGetValue(name, out value) && value is int
+                    ? (int)value
+                    : 0;
+            }
 
-            public int[] ParseModulesOption(Dictionary<string, object> options)
+            public static int[] ParseModulesOption(Dictionary<string, object> options)
             {
                 if (!options.ContainsKey(ModulesField))
                     return null;
@@ -272,19 +261,72 @@ namespace Oxide.Plugins
 
                 return _pluginInstance.ValidateModules(moduleArray);
             }
+        }
 
-            public PresetCarOptions ToPresetOptions()
+        private ModularCar API_SpawnPreset(Dictionary<string, object> options, BasePlayer player, Vector3 position, Quaternion rotation)
+        {
+            PresetCarOptions presetOptions;
+            if (!ApiParser.TryParseOptions(options, out presetOptions))
+                return null;
+
+            if (SpawnWasBlocked(player))
+                return null;
+
+            if (position == Vector3.zero && player != null)
+                DetermineCarPositionAndRotation(player, presetOptions.Length, out position, out rotation);
+
+            return SpawnCar(presetOptions, position, rotation, player, shouldTrackCar: false);
+        }
+
+        private ModularCar API_SpawnNamedPreset(string presetName, BasePlayer player, Vector3 position, Quaternion rotation)
+        {
+            var presetOptions = _pluginConfig.FindPreset(presetName)?.Options;
+            if (presetOptions == null)
             {
-                return new PresetCarOptions
-                {
-                    CodeLock = CodeLock,
-                    KeyLock = KeyLock,
-                    EnginePartsTier = EnginePartsTier,
-                    FreshWaterAmount = FreshWaterAmount,
-                    FuelAmount = FuelAmount,
-                    NormalizedModuleIDs = ModuleIDs
-                };
+                LogError($"[API] Server preset '{presetName}' not found.");
+                return null;
             }
+
+            if (presetOptions.Length < 2 || presetOptions.Length > 4)
+            {
+                LogError($"[API] Requested a car with {presetOptions.Length} sockets, but only 2-4 sockets is supported.");
+                return null;
+            }
+
+            if (SpawnWasBlocked(player))
+                return null;
+
+            if (position == Vector3.zero && player != null)
+                DetermineCarPositionAndRotation(player, presetOptions.Length, out position, out rotation);
+
+            return SpawnCar(presetOptions, position, rotation, player, shouldTrackCar: false);
+        }
+
+        private ModularCar API_SpawnPresetCar(BasePlayer player, Dictionary<string, object> options, Action<ModularCar> onReady = null)
+        {
+            PresetCarOptions presetOptions;
+            if (!ApiParser.TryParseOptions(options, out presetOptions))
+                return null;
+
+            if (SpawnWasBlocked(player))
+                return null;
+
+            Vector3 spawnPosition;
+            Quaternion rotation;
+            if (!TryGetIdealCarPositionAndRotation(player, presetOptions.Length, out spawnPosition, out rotation))
+            {
+                spawnPosition = GetFixedCarPosition(player);
+                rotation = GetRelativeCarRotation(player);
+            }
+
+            var car = SpawnCar(presetOptions, spawnPosition, rotation, player, shouldTrackCar: false);
+            if (car != null)
+            {
+                // Note: Consumers no longer need to use this callback since this plugin now forces synchronous module registration.
+                onReady?.Invoke(car);
+            }
+
+            return car;
         }
 
         #endregion
@@ -313,39 +355,38 @@ namespace Oxide.Plugins
                 return;
             }
 
-            foreach (var preset in _pluginConfig.Presets)
+            var preset = _pluginConfig.FindPreset(presetNameArg);
+            if (preset == null)
             {
-                if (preset.Name.ToLower() == presetNameArg.ToLower())
-                {
-                    var carOptions = preset.Options;
-                    if (carOptions.Length < 2)
-                    {
-                        ReplyToPlayer(player, "Command.Give.Error.PresetTooFewModules", preset.Name, carOptions.Length);
-                        return;
-                    }
-                    if (carOptions.Length > 4)
-                    {
-                        ReplyToPlayer(player, "Command.Give.Error.PresetTooManyModules", preset.Name, carOptions.Length);
-                        return;
-                    }
-
-                    Vector3 spawnPosition;
-                    Quaternion rotation;
-                    if (!TryGetIdealCarPositionAndRotation(targetPlayer, preset.Options.Length, out spawnPosition, out rotation))
-                    {
-                        spawnPosition = GetFixedCarPosition(targetPlayer);
-                        rotation = GetRelativeCarRotation(targetPlayer);
-                    }
-
-                    var car = SpawnCarForPlayer(targetPlayer, carOptions, spawnPosition, rotation, shouldTrackCar: false);
-                    if (car != null)
-                        ReplyToPlayer(player, "Command.Give.Success", targetPlayer.displayName, preset.Name);
-
-                    return;
-                }
+                ReplyToPlayer(player, "Generic.Error.PresetNotFound", presetNameArg);
+                return;
             }
 
-            ReplyToPlayer(player, "Generic.Error.PresetNotFound", presetNameArg);
+            var carOptions = preset.Options;
+            if (carOptions.Length < 2)
+            {
+                ReplyToPlayer(player, "Command.Give.Error.PresetTooFewModules", preset.Name, carOptions.Length);
+                return;
+            }
+            if (carOptions.Length > 4)
+            {
+                ReplyToPlayer(player, "Command.Give.Error.PresetTooManyModules", preset.Name, carOptions.Length);
+                return;
+            }
+
+            Vector3 spawnPosition;
+            Quaternion rotation;
+            if (!TryGetIdealCarPositionAndRotation(targetPlayer, preset.Options.Length, out spawnPosition, out rotation))
+            {
+                spawnPosition = GetFixedCarPosition(targetPlayer);
+                rotation = GetRelativeCarRotation(targetPlayer);
+            }
+
+            var car = SpawnCar(carOptions, spawnPosition, rotation, targetPlayer, shouldTrackCar: false);
+            if (car != null)
+            {
+                ReplyToPlayer(player, "Command.Give.Success", targetPlayer.displayName, preset.Name);
+            }
         }
 
         [Command("mycar")]
@@ -1403,6 +1444,15 @@ namespace Oxide.Plugins
             return true;
         }
 
+        private static void DetermineCarPositionAndRotation(BasePlayer player, int numSockets, out Vector3 position, out Quaternion rotation)
+        {
+            if (!TryGetIdealCarPositionAndRotation(player, numSockets, out position, out rotation))
+            {
+                position = GetFixedCarPosition(player);
+                rotation = GetRelativeCarRotation(player);
+            }
+        }
+
         private static Quaternion GetRelativeCarRotation(BasePlayer player) =>
             Quaternion.Euler(0, player.GetNetworkRotation().eulerAngles.y - 90, 0);
 
@@ -1871,7 +1921,7 @@ namespace Oxide.Plugins
                 return;
 
             var carOptions = new RandomCarOptions(player.Id, desiredSockets);
-            var car = SpawnCarForPlayer(basePlayer, carOptions, spawnPosition, rotation, shouldTrackCar: true);
+            var car = SpawnCar(carOptions, spawnPosition, rotation, basePlayer, shouldTrackCar: true);
             if (car == null)
                 return;
 
@@ -1898,7 +1948,7 @@ namespace Oxide.Plugins
                 return;
 
             var carOptions = new PresetCarOptions(player.Id, preset.ModuleIDs);
-            var car = SpawnCarForPlayer(basePlayer, carOptions, spawnPosition, rotation, shouldTrackCar: true);
+            var car = SpawnCar(carOptions, spawnPosition, rotation, basePlayer, shouldTrackCar: true);
             if (car == null)
                 return;
 
@@ -1912,7 +1962,7 @@ namespace Oxide.Plugins
                 MaybePlayCarRepairEffects(car);
         }
 
-        private ModularCar SpawnCarForPlayer(BasePlayer player, BaseCarOptions options, Vector3 position, Quaternion rotation, bool shouldTrackCar = false)
+        private ModularCar SpawnCar(BaseCarOptions options, Vector3 position, Quaternion rotation, BasePlayer player = null, bool shouldTrackCar = false)
         {
             var numSockets = options.Length;
 
@@ -1934,13 +1984,15 @@ namespace Oxide.Plugins
             if (presetOptions != null)
                 car.spawnSettings.useSpawnSettings = false;
 
-            car.OwnerID = player.userID;
+            if (player != null)
+                car.OwnerID = player.userID;
+
             car.Spawn();
 
             if (presetOptions != null)
                 AddInitialModules(car, presetOptions.NormalizedModuleIDs);
 
-            if (shouldTrackCar)
+            if (shouldTrackCar && player != null)
             {
                 _pluginData.StartCooldown(player.UserIDString, CooldownType.Spawn, save: false);
                 _pluginData.RegisterCar(player.UserIDString, car);
@@ -1948,7 +2000,6 @@ namespace Oxide.Plugins
 
             // Force all modules to be processed and registered in AttachedModuleEntities.
             // This allows plugins to easily interact with the module entities such as to add engine parts.
-            // Tested the performance cost of this, and it was negligible compared to creating entities above.
             foreach (KeyValuePair<BaseVehicleModule, Action> entry in car.moduleAddActions.ToList())
             {
                 entry.Key.CancelInvoke(entry.Value);
@@ -1961,7 +2012,7 @@ namespace Oxide.Plugins
             if (options.CodeLock && VehicleDeployedLocks != null)
                 VehicleDeployedLocks.Call("API_DeployCodeLock", car, player);
 
-            if (options.KeyLock)
+            if (options.KeyLock && player != null)
                 TryAddKeyLockForPlayer(car, player);
 
             return car;
@@ -2041,7 +2092,7 @@ namespace Oxide.Plugins
 
         #region Data Management
 
-        internal class PluginData : SimplePresetManager
+        private class PluginData : SimplePresetManager
         {
             [JsonProperty("playerCars")]
             public Dictionary<string, uint> PlayerCars = new Dictionary<string, uint>();
@@ -2094,7 +2145,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal class CommonPresets : SimplePresetManager
+        private class CommonPresets : SimplePresetManager
         {
             private static string Filename =>
                 $"{_pluginInstance.Name}_CommonPresets";
@@ -2139,9 +2190,9 @@ namespace Oxide.Plugins
             return config;
         }
 
-        internal enum CooldownType { Spawn, Fetch, Load, Fix }
+        private enum CooldownType { Spawn, Fetch, Load, Fix }
 
-        internal class CooldownManager
+        private class CooldownManager
         {
             [JsonProperty("Spawn")]
             private Dictionary<string, long> Spawn = new Dictionary<string, long>();
@@ -2182,7 +2233,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal abstract class SimplePresetManager
+        private abstract class SimplePresetManager
         {
             public static Func<SimplePreset, bool> MatchPresetName(string presetName) =>
                 new Func<SimplePreset, bool>(preset => preset.Name.Equals(presetName, StringComparison.CurrentCultureIgnoreCase));
@@ -2230,7 +2281,7 @@ namespace Oxide.Plugins
             public abstract void SaveData();
         }
 
-        internal class PlayerConfig : SimplePresetManager
+        private class PlayerConfig : SimplePresetManager
         {
             public static PlayerConfig Get(string dirPath, string ownerID)
             {
@@ -2262,7 +2313,7 @@ namespace Oxide.Plugins
                 Interface.Oxide.DataFileSystem.WriteObject(Filepath, this);
         }
 
-        internal class SimplePreset
+        private class SimplePreset
         {
             public static SimplePreset FromCar(ModularCar car, string presetName)
             {
@@ -2286,7 +2337,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal class PlayerSettings
+        private class PlayerSettings
         {
             [JsonProperty("AutoCodeLock")]
             public bool AutoCodeLock = false;
@@ -2311,7 +2362,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal class Configuration : SerializableConfiguration
+        private class Configuration : SerializableConfiguration
         {
             [JsonProperty("CanSpawnWhileBuildingBlocked")]
             public bool CanSpawnBuildingBlocked = false;
@@ -2349,6 +2400,21 @@ namespace Oxide.Plugins
             [JsonProperty("Presets")]
             public ServerPreset[] Presets = new ServerPreset[0];
 
+            public ServerPreset FindPreset(string name)
+            {
+                var nameLower = name.ToLower();
+
+                foreach (var preset in Presets)
+                {
+                    if (preset.Name.ToLower() == nameLower)
+                    {
+                        return preset;
+                    }
+                }
+
+                return null;
+            }
+
             public bool ValidateServerPresets()
             {
                 var changed = false;
@@ -2361,7 +2427,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal class ServerPreset
+        private class ServerPreset
         {
             [JsonProperty("Name")]
             public string Name;
@@ -2370,7 +2436,7 @@ namespace Oxide.Plugins
             public ServerPresetOptions Options;
         }
 
-        internal abstract class BaseCarOptions
+        private abstract class BaseCarOptions
         {
             private int _enginePartsTier = 0;
 
@@ -2408,7 +2474,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal class PresetCarOptions : BaseCarOptions
+        private class PresetCarOptions : BaseCarOptions
         {
             [JsonProperty("ModuleIDs")]
             public virtual int[] NormalizedModuleIDs { get; set; } = new int[0];
@@ -2428,7 +2494,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal class RandomCarOptions : BaseCarOptions
+        private class RandomCarOptions : BaseCarOptions
         {
             public int NumSockets;
 
@@ -2443,7 +2509,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal class ServerPresetOptions : PresetCarOptions
+        private class ServerPresetOptions : PresetCarOptions
         {
             // Override so we can avoid serializing it.
             public override int[] NormalizedModuleIDs { get; set; }
@@ -2497,7 +2563,7 @@ namespace Oxide.Plugins
             }
         }
 
-        internal class CooldownConfig
+        private class CooldownConfig
         {
             [JsonProperty("SpawnCarSeconds")]
             public long SpawnSeconds = 3600;
@@ -2536,14 +2602,14 @@ namespace Oxide.Plugins
 
         #region Configuration Boilerplate
 
-        internal class SerializableConfiguration
+        private class SerializableConfiguration
         {
             public string ToJson() => JsonConvert.SerializeObject(this);
 
             public Dictionary<string, object> ToDictionary() => JsonHelper.Deserialize(ToJson()) as Dictionary<string, object>;
         }
 
-        internal static class JsonHelper
+        private static class JsonHelper
         {
             public static object Deserialize(string json) => ToObject(JToken.Parse(json));
 
@@ -2624,8 +2690,9 @@ namespace Oxide.Plugins
                     SaveConfig();
                 }
             }
-            catch
+            catch (Exception e)
             {
+                LogError(e.Message);
                 LogWarning($"Configuration file {Name}.json is invalid; using defaults");
                 LoadDefaultConfig();
             }

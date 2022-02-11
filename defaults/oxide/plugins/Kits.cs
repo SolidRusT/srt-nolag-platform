@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Kits", "Mevent", "1.0.28")]
+    [Info("Kits", "Mevent", "1.0.29")]
     public class Kits : RustPlugin
     {
         #region Fields
@@ -68,26 +68,26 @@ namespace Oxide.Plugins
             public bool AutoWipe;
 
             [JsonProperty(PropertyName = "Default Kit Color")]
-            public string KitColor = "#A0A935";
+            public readonly string KitColor = "#A0A935";
 
             [JsonProperty(PropertyName = "Work with Notify?")]
-            public bool UseNotify = true;
+            public readonly bool UseNotify = true;
 
             [JsonProperty(PropertyName = "Use NoEscape? (Raid/Combat block)")]
             public bool UseNoEscape;
 
             [JsonProperty(PropertyName = "Whitelist for NoEscape")]
-            public List<string> NoEscapeWhiteList = new List<string>
+            public readonly List<string> NoEscapeWhiteList = new List<string>
             {
                 "kit name 1",
                 "kit name 2"
             };
 
             [JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public string[] Commands = { "kit", "kits" };
+            public readonly string[] Commands = {"kit", "kits"};
 
             [JsonProperty(PropertyName = "Economy")]
-            public EconomyConf Economy = new EconomyConf
+            public readonly EconomyConf Economy = new EconomyConf
             {
                 Type = EconomyType.Plugin,
                 AddHook = "Deposit",
@@ -100,13 +100,13 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Rarity Settings", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<RarityColor> RarityColors = new List<RarityColor>
+            public readonly List<RarityColor> RarityColors = new List<RarityColor>
             {
                 new RarityColor(40, "#A0A935")
             };
 
             [JsonProperty(PropertyName = "Auto Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<string> AutoKits = new List<string>
+            public readonly List<string> AutoKits = new List<string>
             {
                 "autokit", "autokit_vip", "autokit_premium"
             };
@@ -114,42 +114,48 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Getting an auto kit 1 time?")]
             public bool OnceAutoKit;
 
-            [JsonProperty(PropertyName = "Logs")] public LogInfo Logs = new LogInfo
+            [JsonProperty(PropertyName = "Allow to enable/disable autokit?")]
+            public readonly bool UseChangeAutoKit = false;
+
+            [JsonProperty(PropertyName = "Permission to enable/disable autokit")]
+            public readonly string ChangeAutoKitPermission = "kits.changeautokit";
+
+            [JsonProperty(PropertyName = "Logs")] public readonly LogInfo Logs = new LogInfo
             {
                 Console = true,
                 File = true
             };
 
             [JsonProperty(PropertyName = "Color 1")]
-            public string ColorOne = "#161617";
+            public readonly string ColorOne = "#161617";
 
             [JsonProperty(PropertyName = "Color 2")]
-            public string ColorTwo = "#0E0E10";
+            public readonly string ColorTwo = "#0E0E10";
 
             [JsonProperty(PropertyName = "Color 3")]
-            public string ColorThree = "#4B68FF";
+            public readonly string ColorThree = "#4B68FF";
 
             [JsonProperty(PropertyName = "Color 4")]
-            public string ColorFour = "#303030";
+            public readonly string ColorFour = "#303030";
 
             [JsonProperty(PropertyName = "Color Red")]
-            public string ColorRed = "#FF4B4B";
+            public readonly string ColorRed = "#FF4B4B";
 
             [JsonProperty(PropertyName = "Color White")]
-            public string ColorWhite = "#FFFFFF";
+            public readonly string ColorWhite = "#FFFFFF";
 
             [JsonProperty(PropertyName = "Show Number?")]
-            public bool ShowNumber = true;
+            public readonly bool ShowNumber = true;
 
             [JsonProperty(PropertyName = "Show No Permission Description?")]
-            public bool ShowNoPermDescription = true;
+            public readonly bool ShowNoPermDescription = true;
 
             [JsonProperty(PropertyName = "Show All Kits?")]
             public bool ShowAllKits;
 
             [JsonProperty(PropertyName = "CopyPaste Parameters",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<string> CopyPasteParameters = new List<string>
+            public readonly List<string> CopyPasteParameters = new List<string>
             {
                 "deployables", "true", "inventories", "true"
             };
@@ -158,7 +164,7 @@ namespace Oxide.Plugins
             public bool BlockBuilding;
 
             [JsonProperty(PropertyName = "NPC Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public Dictionary<string, NpcKitsData> NpcKits = new Dictionary<string, NpcKitsData>
+            public readonly Dictionary<string, NpcKitsData> NpcKits = new Dictionary<string, NpcKitsData>
             {
                 ["1234567"] = new NpcKitsData
                 {
@@ -181,7 +187,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Description")]
-            public MenuDescription Description = new MenuDescription
+            public readonly MenuDescription Description = new MenuDescription
             {
                 AnchorMin = "0 0", AnchorMax = "1 0",
                 OffsetMin = "0 -55", OffsetMax = "0 -5",
@@ -195,7 +201,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Info Kit Description")]
-            public DescriptionSettings InfoKitDescription = new DescriptionSettings
+            public readonly DescriptionSettings InfoKitDescription = new DescriptionSettings
             {
                 AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                 OffsetMin = "-125 -55", OffsetMax = "125 -5",
@@ -208,7 +214,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Interface")]
-            public UserInterface UI = new UserInterface
+            public readonly UserInterface UI = new UserInterface
             {
                 Height = 455,
                 Width = 640,
@@ -267,7 +273,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Steampowered API key")]
-            public string SteamWebApiKey =
+            public readonly string SteamWebApiKey =
                 "!!! You can get it HERE > https://steamcommunity.com/dev/apikey < and you need to insert HERE !!!";
 
             public VersionNumber Version;
@@ -337,7 +343,7 @@ namespace Oxide.Plugins
                         {
                             case "BankSystem":
                             case "ServerRewards":
-                                plugin.Call(AddHook, player.userID, (int)amount);
+                                plugin.Call(AddHook, player.userID, (int) amount);
                                 break;
                             default:
                                 plugin.Call(AddHook, player.userID, amount);
@@ -348,7 +354,7 @@ namespace Oxide.Plugins
                     }
                     case EconomyType.Item:
                     {
-                        var am = (int)amount;
+                        var am = (int) amount;
 
                         var item = ToItem(am);
                         if (item == null) return;
@@ -374,7 +380,7 @@ namespace Oxide.Plugins
                         {
                             case "BankSystem":
                             case "ServerRewards":
-                                plugin.Call(RemoveHook, player.userID, (int)amount);
+                                plugin.Call(RemoveHook, player.userID, (int) amount);
                                 break;
                             default:
                                 plugin.Call(RemoveHook, player.userID, amount);
@@ -386,7 +392,7 @@ namespace Oxide.Plugins
                     case EconomyType.Item:
                     {
                         var playerItems = player.inventory.AllItems();
-                        var am = (int)amount;
+                        var am = (int) amount;
 
                         if (ItemCount(playerItems, ShortName, Skin) < am) return false;
 
@@ -576,12 +582,12 @@ namespace Oxide.Plugins
                         AnchorMin = AnchorMin, AnchorMax = AnchorMax,
                         OffsetMin = OffsetMin, OffsetMax = OffsetMax
                     },
-                    Image = { Color = Color.Get() }
+                    Image = {Color = Color.Get()}
                 }, parent, name);
 
                 container.Add(new CuiLabel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Text =
                     {
                         Text = $"{description}",
@@ -605,7 +611,7 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "HEX")] public string HEX;
 
             [JsonProperty(PropertyName = "Opacity (0 - 100)")]
-            public float Alpha;
+            public readonly float Alpha;
 
             public string Get()
             {
@@ -617,7 +623,7 @@ namespace Oxide.Plugins
                 var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
                 var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
 
-                return $"{(double)r / 255} {(double)g / 255} {(double)b / 255} {Alpha / 100}";
+                return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {Alpha / 100}";
             }
 
             public IColor(string hex, float alpha)
@@ -639,9 +645,9 @@ namespace Oxide.Plugins
         private class RarityColor
         {
             [JsonProperty(PropertyName = "Chance")]
-            public int Chance;
+            public readonly int Chance;
 
-            [JsonProperty(PropertyName = "Color")] public string Color;
+            [JsonProperty(PropertyName = "Color")] public readonly string Color;
 
             public RarityColor(int chance, string color)
             {
@@ -700,11 +706,15 @@ namespace Oxide.Plugins
         private PluginData _data;
         private Dictionary<ulong, Dictionary<string, KitData>> _playerData;
 
+        private List<ulong> _disablesAutoKits = new List<ulong>();
+
         private void SaveData()
         {
             SaveKits();
 
             SaveUsers();
+
+            SaveDisabledAutoKits();
         }
 
         private void SaveKits()
@@ -717,6 +727,13 @@ namespace Oxide.Plugins
             Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Data", _playerData);
         }
 
+        private void SaveDisabledAutoKits()
+        {
+            if (!_config.UseChangeAutoKit) return;
+
+            Interface.Oxide.DataFileSystem.WriteObject($"{Name}/DisabledAutoKits", _disablesAutoKits);
+        }
+
         private void LoadData()
         {
             try
@@ -726,6 +743,11 @@ namespace Oxide.Plugins
                 _playerData =
                     Interface.Oxide.DataFileSystem.ReadObject<Dictionary<ulong, Dictionary<string, KitData>>>(
                         $"{Name}/Data");
+
+                if (_config.UseChangeAutoKit)
+                    _disablesAutoKits =
+                        Interface.Oxide.DataFileSystem.ReadObject<List<ulong>>(
+                            $"{Name}/DisabledAutoKits");
             }
             catch (Exception e)
             {
@@ -734,13 +756,14 @@ namespace Oxide.Plugins
 
             if (_data == null) _data = new PluginData();
             if (_playerData == null) _playerData = new Dictionary<ulong, Dictionary<string, KitData>>();
+            if (_disablesAutoKits == null) _disablesAutoKits = new List<ulong>();
         }
 
 
         private class PluginData
         {
             [JsonProperty(PropertyName = "Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public List<Kit> Kits = new List<Kit>();
+            public readonly List<Kit> Kits = new List<Kit>();
         }
 
         private KitData GetPlayerData(ulong userID, string name)
@@ -944,9 +967,9 @@ namespace Oxide.Plugins
                 {
                     Content =
                         item.Contents?.Select(x =>
-                                new ItemContent { ShortName = x.Shortname, Condition = x.Condition, Amount = x.Amount })
+                                new ItemContent {ShortName = x.Shortname, Condition = x.Condition, Amount = x.Amount})
                             .ToList() ?? new List<ItemContent>(),
-                    Weapon = new Weapon { ammoAmount = item.Ammo, ammoType = item.Ammotype },
+                    Weapon = new Weapon {ammoAmount = item.Ammo, ammoType = item.Ammotype},
                     Container = container,
                     SkinID = item.Skin,
                     Command = string.Empty,
@@ -1025,8 +1048,10 @@ namespace Oxide.Plugins
 
             #endregion
 
-            if (!permission.PermissionExists(PermAdmin))
-                permission.RegisterPermission(PermAdmin, this);
+            permission.RegisterPermission(PermAdmin, this);
+
+            if (!permission.PermissionExists(_config.ChangeAutoKitPermission))
+                permission.RegisterPermission(_config.ChangeAutoKitPermission, this);
 
             FixItemsPositions();
 
@@ -1070,7 +1095,7 @@ namespace Oxide.Plugins
 
         private void OnPlayerRespawned(BasePlayer player)
         {
-            if (player == null) return;
+            if (player == null || _config.UseChangeAutoKit && _disablesAutoKits.Contains(player.userID)) return;
 
             var kits = GetAutoKits(player);
             if (kits.Count == 0)
@@ -1089,6 +1114,15 @@ namespace Oxide.Plugins
             _openGUI.Remove(player);
             _kitEditing.Remove(player);
             _itemEditing.Remove(player);
+        }
+
+        private void OnPlayerDeath(BasePlayer player, HitInfo info)
+        {
+            if (player == null) return;
+
+            CuiHelper.DestroyUi(player, Layer);
+
+            OnPlayerDisconnected(player);
         }
 
         private void OnUseNPC(BasePlayer npc, BasePlayer player)
@@ -1150,6 +1184,39 @@ namespace Oxide.Plugins
                     SendNotify(player, KitRemoved, 0, name);
                     break;
                 }
+
+                case "autokit":
+                {
+                    if (!_config.UseChangeAutoKit) return;
+
+                    if (!string.IsNullOrEmpty(_config.ChangeAutoKitPermission) &&
+                        !cov.HasPermission(_config.ChangeAutoKitPermission))
+                    {
+                        ErrorUi(player, Msg(player, NoPermission));
+                        return;
+                    }
+
+                    bool enabled;
+                    if (_disablesAutoKits.Contains(player.userID))
+                    {
+                        _disablesAutoKits.Remove(player.userID);
+
+                        enabled = true;
+                    }
+                    else
+                    {
+                        _disablesAutoKits.Add(player.userID);
+
+                        enabled = false;
+                    }
+
+                    if (enabled)
+                        SendNotify(player, ChangeAutoKitOn, 0);
+                    else
+                        SendNotify(player, ChangeAutoKitOff, 1);
+                    break;
+                }
+
                 default:
                 {
                     var name = string.Join(" ", args);
@@ -1479,15 +1546,15 @@ namespace Oxide.Plugins
                     if (item == null)
                         item = new KitItem();
 
-                    item.Type = (KitItemType)editing["Type"];
+                    item.Type = (KitItemType) editing["Type"];
                     item.Command = editing["Command"].ToString();
                     item.Container = editing["Container"].ToString();
                     item.ShortName = editing["ShortName"].ToString();
-                    item.Amount = (int)editing["Amount"];
-                    item.Blueprint = (int)editing["Blueprint"];
-                    item.Chance = (int)editing["Chance"];
-                    item.SkinID = (ulong)editing["SkinID"];
-                    item.Position = (int)editing["Position"];
+                    item.Amount = (int) editing["Amount"];
+                    item.Blueprint = (int) editing["Blueprint"];
+                    item.Chance = (int) editing["Chance"];
+                    item.SkinID = (ulong) editing["SkinID"];
+                    item.Position = (int) editing["Position"];
 
                     if (newItem)
                     {
@@ -1552,13 +1619,13 @@ namespace Oxide.Plugins
                         kit = new Kit
                         {
                             ID = ++_lastKitID,
-                            Name = (string)editing["Name"],
-                            DisplayName = (string)editing["DisplayName"],
-                            Color = (string)editing["Color"],
-                            Permission = (string)editing["Permission"],
+                            Name = (string) editing["Name"],
+                            DisplayName = (string) editing["DisplayName"],
+                            Color = (string) editing["Color"],
+                            Permission = (string) editing["Permission"],
                             Hide = editing["Hide"] as bool? ?? true,
-                            Amount = (int)editing["Amount"],
-                            Cooldown = (double)editing["Cooldown"],
+                            Amount = (int) editing["Amount"],
+                            Cooldown = (double) editing["Cooldown"],
                             Items = new List<KitItem>()
                         };
                         _data.Kits.Add(kit);
@@ -1568,13 +1635,13 @@ namespace Oxide.Plugins
                         kit = _data.Kits.Find(x => x.ID == kitId);
                         if (kit == null) return;
 
-                        kit.Name = (string)editing["Name"];
-                        kit.DisplayName = (string)editing["DisplayName"];
-                        kit.Color = (string)editing["Color"];
-                        kit.Permission = (string)editing["Permission"];
+                        kit.Name = (string) editing["Name"];
+                        kit.DisplayName = (string) editing["DisplayName"];
+                        kit.Color = (string) editing["Color"];
+                        kit.Permission = (string) editing["Permission"];
                         kit.Hide = editing["Hide"] as bool? ?? true;
-                        kit.Amount = (int)editing["Amount"];
-                        kit.Cooldown = (double)editing["Cooldown"];
+                        kit.Amount = (int) editing["Amount"];
+                        kit.Cooldown = (double) editing["Cooldown"];
                     }
 
                     var autoKit = editing["AutoKit"] as bool? ?? false;
@@ -1734,7 +1801,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Image =
                     {
                         Color = "0 0 0 0.9",
@@ -1745,8 +1812,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -1784,7 +1851,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = _colorOne }
+                Image = {Color = _colorOne}
             }, Layer + ".Main", Layer + ".Header");
 
             container.Add(new CuiLabel
@@ -2049,7 +2116,7 @@ namespace Oxide.Plugins
                             Parent = Layer + $".Kit.{kit.ID}.Main",
                             Components =
                             {
-                                new CuiRawImageComponent { Png = ImageLibrary.Call<string>("GetImage", kit.Image) },
+                                new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", kit.Image)},
                                 new CuiRectTransformComponent
                                 {
                                     AnchorMin = _config.UI.Image.AnchorMin,
@@ -2071,7 +2138,7 @@ namespace Oxide.Plugins
                             AnchorMin = "0 0", AnchorMax = "1 0",
                             OffsetMin = "0 0", OffsetMax = "0 2"
                         },
-                        Image = { Color = HexToCuiColor(kit.Color) }
+                        Image = {Color = HexToCuiColor(kit.Color)}
                     }, Layer + $".Kit.{kit.ID}.Main.Background");
 
                     #endregion
@@ -2185,7 +2252,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiPanel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Image =
                 {
                     Color = HexToCuiColor(_config.ColorTwo, 98)
@@ -2230,14 +2297,14 @@ namespace Oxide.Plugins
                         AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                         OffsetMin = "-12.5 -140", OffsetMax = "102.5 -115"
                     },
-                    Image = { Color = "0 0 0 0" }
+                    Image = {Color = "0 0 0 0"}
                 }, InfoLayer, InfoLayer + ".Btn.Change");
 
                 CreateOutLine(ref container, InfoLayer + ".Btn.Change", _colorThree, 1);
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Text =
                     {
                         Text = Msg(player, Edit),
@@ -2493,7 +2560,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiPanel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Image =
                 {
                     Color = HexToCuiColor(_config.ColorTwo, 98)
@@ -2524,7 +2591,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = _colorOne }
+                Image = {Color = _colorOne}
             }, EditingLayer + ".Main", EditingLayer + ".Header");
 
             container.Add(new CuiLabel
@@ -2622,7 +2689,7 @@ namespace Oxide.Plugins
 
             #region Hide
 
-            var hide = !(_kitEditing[player]["Hide"] is bool && (bool)_kitEditing[player]["Hide"]);
+            var hide = !(_kitEditing[player]["Hide"] is bool && (bool) _kitEditing[player]["Hide"]);
 
             CheckBoxUi(ref container, EditingLayer + ".Main", EditingLayer + ".Editing.Hide", "0.5 1", "0.5 1",
                 $"{-Width - xMargin / 2f} {ySwitch - 10}",
@@ -2636,7 +2703,7 @@ namespace Oxide.Plugins
 
             #region Auto Kit
 
-            var autoKit = _kitEditing[player]["AutoKit"] is bool && (bool)_kitEditing[player]["AutoKit"];
+            var autoKit = _kitEditing[player]["AutoKit"] is bool && (bool) _kitEditing[player]["AutoKit"];
 
             CheckBoxUi(ref container, EditingLayer + ".Main", EditingLayer + ".Editing.AutoKit", "0.5 1", "0.5 1",
                 $"{-Width - xMargin / 2f + 80} {ySwitch - 10}",
@@ -2800,8 +2867,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Image = { Color = HexToCuiColor(_config.ColorOne, 80) },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Image = {Color = HexToCuiColor(_config.ColorOne, 80)},
                     CursorEnabled = true
                 }, "Overlay", EditingLayer);
             }
@@ -2834,7 +2901,7 @@ namespace Oxide.Plugins
                     OffsetMin = "0 -50",
                     OffsetMax = "0 0"
                 },
-                Image = { Color = _colorOne }
+                Image = {Color = _colorOne}
             }, EditingLayer + ".Main", EditingLayer + ".Header");
 
             container.Add(new CuiLabel
@@ -2945,7 +3012,7 @@ namespace Oxide.Plugins
 
             #region Item
 
-            var shortName = (string)edit["ShortName"];
+            var shortName = (string) edit["ShortName"];
 
             #region Image
 
@@ -2956,7 +3023,7 @@ namespace Oxide.Plugins
                     AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                     OffsetMin = "-240 -265", OffsetMax = "-105 -130"
                 },
-                Image = { Color = _colorOne }
+                Image = {Color = _colorOne}
             }, EditingLayer + ".Main", EditingLayer + ".Image");
 
             if (!string.IsNullOrEmpty(shortName) && ImageLibrary)
@@ -2967,7 +3034,7 @@ namespace Oxide.Plugins
                     {
                         new CuiRawImageComponent
                         {
-                            Png = GetItemImage(shortName, (ulong)edit["SkinID"])
+                            Png = GetItemImage(shortName, (ulong) edit["SkinID"])
                         },
                         new CuiRectTransformComponent
                         {
@@ -3137,8 +3204,8 @@ namespace Oxide.Plugins
 
             container.Add(new CuiButton
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                Text = { Text = "" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
                 Button =
                 {
                     Close = ModalLayer,
@@ -3259,7 +3326,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{xSwitch} {ySwitch - Height}",
                         OffsetMax = $"{xSwitch + Width} {ySwitch}"
                     },
-                    Image = { Color = _colorOne }
+                    Image = {Color = _colorOne}
                 }, ModalLayer + ".Main", ModalLayer + $".Item.{item}");
 
                 if (ImageLibrary)
@@ -3268,7 +3335,7 @@ namespace Oxide.Plugins
                         Parent = ModalLayer + $".Item.{item}",
                         Components =
                         {
-                            new CuiRawImageComponent { Png = ImageLibrary.Call<string>("GetImage", item) },
+                            new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", item)},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0 0", AnchorMax = "1 1",
@@ -3279,8 +3346,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -3313,7 +3380,7 @@ namespace Oxide.Plugins
                     AnchorMin = "0.5 0", AnchorMax = "0.5 0",
                     OffsetMin = "-90 10", OffsetMax = "90 35"
                 },
-                Image = { Color = _colorThree }
+                Image = {Color = _colorThree}
             }, ModalLayer + ".Main", ModalLayer + ".Search");
 
             container.Add(new CuiLabel
@@ -3423,8 +3490,8 @@ namespace Oxide.Plugins
                 {
                     new CuiPanel
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                        Image = { Color = HexToCuiColor(_config.ColorTwo, 98) },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Image = {Color = HexToCuiColor(_config.ColorTwo, 98)},
                         CursorEnabled = true
                     },
                     "Overlay", ModalLayer
@@ -3439,7 +3506,7 @@ namespace Oxide.Plugins
                             OffsetMin = "-127.5 -75",
                             OffsetMax = "127.5 140"
                         },
-                        Image = { Color = _colorRed }
+                        Image = {Color = _colorRed}
                     },
                     ModalLayer, ModalLayer + ".Main"
                 },
@@ -3494,7 +3561,7 @@ namespace Oxide.Plugins
                             FontSize = 12,
                             Color = _colorWhite
                         },
-                        Button = { Color = HexToCuiColor("#CD3838"), Close = ModalLayer }
+                        Button = {Color = HexToCuiColor("#CD3838"), Close = ModalLayer}
                     },
                     ModalLayer + ".Main"
                 }
@@ -3550,7 +3617,7 @@ namespace Oxide.Plugins
                     AnchorMin = "0 0", AnchorMax = "1 1",
                     OffsetMin = "0 0", OffsetMax = "0 -20"
                 },
-                Image = { Color = "0 0 0 0" }
+                Image = {Color = "0 0 0 0"}
             }, name, $"{name}.Value");
 
             container.Add(new CuiLabel
@@ -3606,7 +3673,7 @@ namespace Oxide.Plugins
                     OffsetMin = oMin,
                     OffsetMax = oMax
                 },
-                Image = { Color = "0 0 0 0" }
+                Image = {Color = "0 0 0 0"}
             }, parent, name);
 
             CreateOutLine(ref container, name, _colorThree, 1);
@@ -3618,14 +3685,14 @@ namespace Oxide.Plugins
                     {
                         AnchorMin = "0 0", AnchorMax = "1 1"
                     },
-                    Image = { Color = _colorThree }
+                    Image = {Color = _colorThree}
                 }, name);
 
 
             container.Add(new CuiButton
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                Text = { Text = "" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
                 Button =
                 {
                     Color = "0 0 0 0",
@@ -3747,8 +3814,8 @@ namespace Oxide.Plugins
             if (IsAdmin(player))
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -3768,8 +3835,8 @@ namespace Oxide.Plugins
 
             container.Add(new CuiPanel
             {
-                RectTransform = { AnchorMin = "0 1", AnchorMax = "1 1" },
-                Image = { Color = "0 0 0 0" }
+                RectTransform = {AnchorMin = "0 1", AnchorMax = "1 1"},
+                Image = {Color = "0 0 0 0"}
             }, Layer + $".Kit.{kit.ID}.Main", Layer + $".Kit.{kit.ID}");
 
             if (_config.ShowAllKits && _config.ShowNoPermDescription && !string.IsNullOrEmpty(kit.Permission) &&
@@ -3805,12 +3872,12 @@ namespace Oxide.Plugins
                             AnchorMin = _config.UI.KitSale.AnchorMin, AnchorMax = _config.UI.KitSale.AnchorMax,
                             OffsetMin = _config.UI.KitSale.OffsetMin, OffsetMax = _config.UI.KitSale.OffsetMax
                         },
-                        Image = { Color = HexToCuiColor(kit.Color) }
+                        Image = {Color = HexToCuiColor(kit.Color)}
                     }, Layer + $".Kit.{kit.ID}", Layer + $".Kit.{kit.ID}.Sale");
 
                     container.Add(new CuiLabel
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                         Text =
                         {
                             Text = Msg(player, PriceFormat, kit.Price),
@@ -3877,12 +3944,12 @@ namespace Oxide.Plugins
                             AnchorMin = _config.UI.KitCooldown.AnchorMin, AnchorMax = _config.UI.KitCooldown.AnchorMax,
                             OffsetMin = _config.UI.KitCooldown.OffsetMin, OffsetMax = _config.UI.KitCooldown.OffsetMax
                         },
-                        Image = { Color = HexToCuiColor(kit.Color) }
+                        Image = {Color = HexToCuiColor(kit.Color)}
                     }, Layer + $".Kit.{kit.ID}", Layer + $".Kit.{kit.ID}.Cooldown");
 
                     container.Add(new CuiLabel
                     {
-                        RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                         Text =
                         {
                             Text = $"{FormatShortTime(time)}",
@@ -4054,7 +4121,7 @@ namespace Oxide.Plugins
         private double GetCooldown(double cooldown, BasePlayer player)
         {
             var cd = Interface.Oxide.CallHook("OnKitCooldown", player, cooldown) as double?;
-            if (cd != null) return (double)cd;
+            if (cd != null) return (double) cd;
 
             return cooldown;
         }
@@ -4156,7 +4223,7 @@ namespace Oxide.Plugins
                 }
                 else
                 {
-                    _itemsCategories.Add(itemCategory, new List<string> { item.shortname });
+                    _itemsCategories.Add(itemCategory, new List<string> {item.shortname});
                 }
             });
         }
@@ -4256,7 +4323,7 @@ namespace Oxide.Plugins
             var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
             var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
 
-            return $"{(double)r / 255} {(double)g / 255} {(double)b / 255} {alpha / 100f}";
+            return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {alpha / 100f}";
         }
 
         private static string FormatShortTime(TimeSpan time)
@@ -4276,7 +4343,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{size} 0",
                         OffsetMax = $"-{size} {size}"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -4288,7 +4355,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{size} -{size}",
                         OffsetMax = $"-{size} 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -4299,7 +4366,7 @@ namespace Oxide.Plugins
                         OffsetMin = "0 0",
                         OffsetMax = $"{size} 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -4311,7 +4378,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"-{size} 0",
                         OffsetMax = "0 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
         }
@@ -4493,6 +4560,8 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            ChangeAutoKitOn = "ChangeAutoKitOn",
+            ChangeAutoKitOff = "ChangeAutoKitOff",
             NoEscapeCombatBlocked = "NoEscapeCombatBlocked",
             NoEscapeRaidBlocked = "NoEscapeRaidBlocked",
             NotMoney = "NotMoney",
@@ -4604,7 +4673,9 @@ namespace Oxide.Plugins
                 [PriceFormat] = "{0}$",
                 [NotMoney] = "You don't have enough money!",
                 [NoEscapeRaidBlocked] = "You cannot take this kit when you are raid blocked",
-                [NoEscapeCombatBlocked] = "You cannot take this kit when you are combat blocked"
+                [NoEscapeCombatBlocked] = "You cannot take this kit when you are combat blocked",
+                [ChangeAutoKitOn] = "You have enabled autokits",
+                [ChangeAutoKitOff] = "You have disabled autokits"
             }, this);
         }
 
@@ -4732,7 +4803,7 @@ namespace Oxide.Plugins
             var data = GetPlayerData(userId, name);
             if (data == null) return 0;
 
-            return Mathf.Max((float)(data.Cooldown - GetCurrentTime()), 0f);
+            return Mathf.Max((float) (data.Cooldown - GetCurrentTime()), 0f);
         }
 
         private void SetPlayerCooldown(ulong userId, string name, int amount)
@@ -4852,7 +4923,7 @@ namespace Oxide.Plugins
 
         private class OldData
         {
-            [JsonProperty] public Dictionary<string, OldKitsData> _kits =
+            [JsonProperty] public readonly Dictionary<string, OldKitsData> _kits =
                 new Dictionary<string, OldKitsData>(StringComparer.OrdinalIgnoreCase);
         }
 

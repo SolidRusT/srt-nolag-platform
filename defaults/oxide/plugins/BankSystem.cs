@@ -15,12 +15,12 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Bank System", "Mevent", "1.0.16")]
+    [Info("Bank System", "Mevent", "1.1.0")]
     public class BankSystem : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, Notify, StackSizeController, StackModifier, Economics;
+        [PluginReference] private Plugin ImageLibrary, Notify, UINotify, StackSizeController, StackModifier, Economics;
 
         private const string Layer = "UI.BankSystem";
 
@@ -98,6 +98,12 @@ namespace Oxide.Plugins
                 ShortName = "sticks",
                 Skin = 2536195910
             };
+
+            [JsonProperty(PropertyName = "Card auto-creation")]
+            public readonly bool CardAutoCreation = false;
+
+            [JsonProperty(PropertyName = "Use card expiration date?")]
+            public readonly bool UseCardExpiry = true;
 
             [JsonProperty(PropertyName = "Card expiry date (in days)")]
             public readonly int CardExpiryDate = 7;
@@ -1111,10 +1117,7 @@ namespace Oxide.Plugins
 
             RenameATMs();
 
-            if (initial)
-                timer.In(20, SpawnATMs);
-            else
-                SpawnATMs();
+            timer.In(20, SpawnATMs);
         }
 
         private void OnPlayerConnected(BasePlayer player)
@@ -1129,7 +1132,11 @@ namespace Oxide.Plugins
 
             data.DisplayName = player.displayName;
 
-            CheckCard(player.userID);
+            if (_config.UseCardExpiry)
+                CheckCard(player.userID);
+
+            if (_config.CardAutoCreation && !HasCard(player))
+                CreateCard(player);
         }
 
         private void OnServerSave()
@@ -1359,26 +1366,17 @@ namespace Oxide.Plugins
 
         #region Loot
 
-        private readonly Dictionary<uint, List<ulong>> LootedContainers = new Dictionary<uint, List<ulong>>();
+        private readonly Dictionary<uint, ulong> _lootedContainers = new Dictionary<uint, ulong>();
 
         private void OnLootEntity(BasePlayer player, LootContainer container)
         {
             if (player == null || container == null) return;
 
             var netID = container.net.ID;
-            if (LootedContainers.ContainsKey(netID)) return;
 
-            if (LootedContainers.ContainsKey(netID))
-            {
-                if (LootedContainers[netID].Contains(player.userID))
-                    return;
+            if (_lootedContainers.ContainsKey(netID)) return;
 
-                LootedContainers[netID].Add(player.userID);
-            }
-            else
-            {
-                LootedContainers.Add(netID, new List<ulong> {player.userID});
-            }
+            _lootedContainers.Add(netID, player.userID);
 
             AddPlayerTracking(GatherLogType.Loot, player, container.ShortPrefabName);
         }
@@ -2322,7 +2320,9 @@ namespace Oxide.Plugins
                     },
                     Text =
                     {
-                        Text = $"{CardDateFormating(player.userID)}",
+                        Text = _config.UseCardExpiry
+                            ? $"{CardDateFormating(player.userID)}"
+                            : Msg(player, CardExpiryDate),
                         Align = TextAnchor.MiddleLeft,
                         Font = "robotocondensed-bold.ttf",
                         FontSize = 12,
@@ -6030,6 +6030,7 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            CardExpiryDate = "CardExpiryDate",
             BtnNext = "BtnNext",
             BtnBack = "BtnBack",
             NoPermissions = "NoPermissions",
@@ -6205,6 +6206,7 @@ namespace Oxide.Plugins
                 [AtmOwnWithdrawnMoney] = "You have successfully withdrawn money from your ATM!",
                 [BtnBack] = "▲",
                 [BtnNext] = "▼",
+                [CardExpiryDate] = "**/**",
                 ["crate_elite"] = "Crate Elite",
                 ["crate_normal"] = "Crate Normal"
             }, this);
@@ -6222,8 +6224,8 @@ namespace Oxide.Plugins
 
         private void SendNotify(BasePlayer player, string key, int type, params object[] obj)
         {
-            if (Notify && _config.UseNotify)
-                Notify?.Call("SendNotify", player, type, Msg(player, key, obj));
+            if (_config.UseNotify && (Notify != null || UINotify != null))
+                Interface.Oxide.CallHook("SendNotify", player, type, Msg(player, key, obj));
             else
                 Reply(player, key, obj);
         }
