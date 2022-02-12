@@ -220,6 +220,88 @@
             }
           ],
           "For Modular Car": null
+        },
+        {
+          "Enabled": true,
+          "Image": "https://solidrust.net/images/snowmobile.png",
+          "Title": "Snowmobile",
+          "Description": "Fast snow and sand transport",
+          "Command (to give an item)": "givesnowmobile",
+          "Permission (ex: crafts.vip)": null,
+          "Display Name": "Snowmobile",
+          "Shortname": "snowmobile",
+          "Amount": 1,
+          "Skin": 2080154394,
+          "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
+          "Prefab": "assets/content/vehicles/snowmobiles/snowmobile.prefab",
+          "Command on give": "",
+          "Workbench Level": 3,
+          "Distance Check": true,
+          "Distance": 1.5,
+          "Place the ground": true,
+          "Place the structure": true,
+          "Items For Craft": [
+            {
+              "Shortname": "gears",
+              "Amount": 20,
+              "Skin": 0,
+              "Title (empty - default)": null
+            },
+            {
+              "Shortname": "sheetmetal",
+              "Amount": 10,
+              "Skin": 0,
+              "Title (empty - default)": null
+            },
+            {
+              "Shortname": "metal.fragments",
+              "Amount": 7000,
+              "Skin": 0,
+              "Title (empty - default)": null
+            }
+          ],
+          "For Modular Car": null
+        },
+        {
+          "Enabled": true,
+          "Image": "https://solidrust.net/images/tomahasnowmobile.png",
+          "Title": "Tomaha Snowmobile",
+          "Description": "An old snowmobile from around 1980.",
+          "Command (to give an item)": "givetomaha",
+          "Permission (ex: crafts.vip)": null,
+          "Display Name": "Old Snowmobile",
+          "Shortname": "snowmobiletomaha",
+          "Amount": 1,
+          "Skin": 0,
+          "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
+          "Prefab": "assets/content/properties/lootspawn/generated/items/misc/snowmobiletomaha.asset",
+          "Command on give": "",
+          "Workbench Level": 3,
+          "Distance Check": true,
+          "Distance": 1.5,
+          "Place the ground": true,
+          "Place the structure": true,
+          "Items For Craft": [
+            {
+              "Shortname": "gears",
+              "Amount": 20,
+              "Skin": 0,
+              "Title (empty - default)": null
+            },
+            {
+              "Shortname": "sheetmetal",
+              "Amount": 15,
+              "Skin": 0,
+              "Title (empty - default)": null
+            },
+            {
+              "Shortname": "metal.fragments",
+              "Amount": 9000,
+              "Skin": 0,
+              "Title (empty - default)": null
+            }
+          ],
+          "For Modular Car": null
         }
       ]
     },
