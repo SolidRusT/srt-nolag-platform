@@ -14,7 +14,7 @@ using Oxide.Core;
 
 namespace Oxide.Plugins
 {
-    [Info("Convoy", "Adem", "1.1.6")]
+    [Info("Convoy", "Adem", "1.1.7")]
     class Convoy : RustPlugin
     {
         [PluginReference] Plugin NpcSpawn, GUIAnnouncements, DiscordMessages;
@@ -95,10 +95,10 @@ namespace Oxide.Plugins
             Subscribe("OnLootSpawn");
             LoadDefaultMessages();
             int vehicleCount = 0;
-            
+
             foreach (ConvoySetting convoySetting in _config.convoys)
             {
-                int count = convoySetting.firstBradleyCount + convoySetting.firstModularCount + convoySetting.firstSedanCount + 1 + convoySetting.endSedanCount +convoySetting.endModularCount + convoySetting.endBradleyCount;
+                int count = convoySetting.firstBradleyCount + convoySetting.firstModularCount + convoySetting.firstSedanCount + 1 + convoySetting.endSedanCount + convoySetting.endModularCount + convoySetting.endBradleyCount;
                 if (count > vehicleCount) vehicleCount = count;
             }
             int rootCount = vehicleCount * _config.carDistance * 2 + vehicleCount + 20;
@@ -142,9 +142,17 @@ namespace Oxide.Plugins
 
             if (_config.version != Version.ToString())
             {
-                PrintError("Delete the configuration file!");
-                NextTick(() => Server.Command($"o.unload {Name}"));
-                return;
+                if (_config.version == "1.1.6")
+                {
+                    _config.version = "1.1.7";
+                    SaveConfig();
+                }
+                else
+                {
+                    PrintError("Delete the configuration file!");
+                    NextTick(() => Server.Command($"o.unload {Name}"));
+                    return;
+                }
             }
 
             if (Vector3.Distance(currentPath[0], currentPath[currentPath.Count() - 1]) > 10f) round = false;
@@ -339,7 +347,7 @@ namespace Oxide.Plugins
 
         object CanHelicopterTarget(PatrolHelicopterAI heli, BasePlayer player)
         {
-            if (convoyHeli != null && heli != null && heli == convoyHeli.patrolHelicopterAI && ((_config.blockFirstAttack && stopTime == 0 && !failed && !hackedCrate) || player == null || !player.userID.IsSteamId() ||  player.IsSleeping())) return false;
+            if (convoyHeli != null && heli != null && heli == convoyHeli.patrolHelicopterAI && ((_config.blockFirstAttack && stopTime == 0 && !failed && !hackedCrate) || player == null || !player.userID.IsSteamId() || player.IsSleeping())) return false;
             return null;
         }
 
@@ -657,7 +665,7 @@ namespace Oxide.Plugins
             foreach (ScientistNPC scientist in freeConvoyNpc) { if (scientist != null && !scientist.IsDestroyed) scientist.Kill(); }
 
             foreach (ConvoyVehicle convoyVehicle in convoyVehicles)
-            { 
+            {
                 if (convoyVehicle != null && convoyVehicle.baseEntity != null && !convoyVehicle.baseEntity.IsDestroyed)
                 {
                     convoyVehicle.destroyAll = true;
@@ -743,6 +751,8 @@ namespace Oxide.Plugins
             Vector3 vector3 = currentPath[firstPoint];
             ChechTrash(vector3);
             BradleyAPC bradley = GameManager.server.CreateEntity("assets/prefabs/npc/m2bradley/bradleyapc.prefab", vector3, Quaternion.LookRotation(currentPath[firstPoint] - currentPath[secondPoint])) as BradleyAPC;
+            bradley.OwnerID = 755446;
+            bradley.skinID = 755446;
             bradley.Spawn();
             bradley.ClearPath();
             bradley.currentPath = currentPath;
@@ -759,6 +769,8 @@ namespace Oxide.Plugins
             ChechTrash(vector3);
             BasicCar car = GameManager.server.CreateEntity("assets/content/vehicles/sedan_a/sedantest.entity.prefab", vector3, Quaternion.LookRotation(currentPath[firstPoint] - currentPath[secondPoint])) as BasicCar;
             car.enableSaving = false;
+            car.OwnerID = 755446;
+            car.skinID = 755446;
             car.Spawn();
             ConvoyCar convoyCar = car.gameObject.AddComponent<ConvoyCar>();
             convoyCar.currentPoint = firstPoint;
@@ -774,6 +786,8 @@ namespace Oxide.Plugins
             ModularCar car = GameManager.server.CreateEntity("assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab", vector3, Quaternion.LookRotation(currentPath[firstPoint] - currentPath[secondPoint])) as ModularCar;
             car.enableSaving = false;
             car.spawnSettings.useSpawnSettings = false;
+            car.OwnerID = 755446;
+            car.skinID = 755446;
             car.Spawn();
             ConvoyModular modular = car.gameObject.AddComponent<ConvoyModular>();
             modular.baseEntity = car;
@@ -790,6 +804,8 @@ namespace Oxide.Plugins
             Quaternion rotation = convoyModular.baseEntity.transform.rotation;
             BaseHelicopter heli = GameManager.server.CreateEntity("assets/prefabs/npc/patrol helicopter/patrolhelicopter.prefab", position, rotation) as BaseHelicopter;
             heli.enableSaving = false;
+            heli.OwnerID = 755446;
+            heli.skinID = 755446;
             heli.Spawn();
             heli.transform.position = position;
             convoyHeli = heli.gameObject.AddComponent<ConvoyHeli>();
@@ -1310,7 +1326,7 @@ namespace Oxide.Plugins
             {
                 base.OnDestroy();
 
-                if(main)
+                if (main)
                 {
                     CancelInvoke(UpdateMapMarker);
                     if (mapmarker != null && !mapmarker.IsDestroyed) mapmarker.Kill();
@@ -1392,7 +1408,7 @@ namespace Oxide.Plugins
 
             void AddCarModules()
             {
-                List<string> modules = main? ins.modularConfig.modules : ins.supportModularConfig.modules;
+                List<string> modules = main ? ins.modularConfig.modules : ins.supportModularConfig.modules;
                 for (int socketIndex = 0; socketIndex < modularCar.TotalSockets && socketIndex < modules.Count; socketIndex++)
                 {
                     string shortName = modules[socketIndex];
@@ -1623,7 +1639,7 @@ namespace Oxide.Plugins
             #region Moving
             void FixedUpdate()
             {
-                if (ins.round && bradley.currentPathIndex >= ins.pathCount - 3) bradley.currentPathIndex = 0;
+                if (ins.round && bradley.currentPathIndex >= ins.pathCount - 3) bradley.currentPathIndex = 1;
 
                 if (!init && rigidbody != null && !rigidbody.isKinematic)
                 {
@@ -2456,7 +2472,7 @@ namespace Oxide.Plugins
                         "loot-barrel-1",
                         "oil_barrel"
                     },
-                    needStopConvoy  = true,
+                    needStopConvoy = true,
                     needKillCars = true,
                     needKillNpc = false,
                     blockRoads = new List<int>(),
@@ -2983,7 +2999,7 @@ namespace Oxide.Plugins
                             health = 500f,
                             wearItems = new List<NpcWear>
                             {
-                                
+
                             },
                             beltItems = new List<NpcBelt>
                             {
