@@ -1,10 +1,15 @@
 {
   "Commands": [
     "craft",
-    "crafts"
+    "crafts",
+    "mymini",
+    "spawncar",
+    "recycler.craft",
+    "recycle",
+    "recycler"
   ],
   "Work with Notify?": true,
-  "Permission (ex: crafts.use)": "",
+  "Permission (ex: crafts.use)": "crafts.use",
   "Categories": [
     {
       "Enabled": true,
@@ -21,7 +26,7 @@
           "Title": "Minicopter",
           "Description": "Fast air transport",
           "Command (to give an item)": "givecopter",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "Minicopter",
           "Shortname": "electric.flasherlight",
           "Amount": 1,
@@ -38,21 +43,21 @@
             {
               "Image": "",
               "Shortname": "gears",
-              "Amount": 5,
+              "Amount": 20,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
-              "Amount": 5,
+              "Shortname": "metalblade",
+              "Amount": 10,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Shortname": "metal.refined",
+              "Amount": 100,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -65,7 +70,7 @@
           "Title": "Row Boat",
           "Description": "Slow water transport",
           "Command (to give an item)": "giverowboat",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "Row Boat",
           "Shortname": "coffin.storage",
           "Amount": 1,
@@ -88,15 +93,15 @@
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
-              "Amount": 5,
+              "Shortname": "carburetor3",
+              "Amount": 1,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Shortname": "wood",
+              "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -109,7 +114,7 @@
           "Title": "RHIB",
           "Description": "Slow water transport",
           "Command (to give an item)": "giverhibboat",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "RHIB",
           "Shortname": "electric.sirenlight",
           "Amount": 1,
@@ -153,7 +158,7 @@
           "Title": "Hot Air Balloon",
           "Description": "Slow air transport",
           "Command (to give an item)": "givehotair",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "Hot Air Balloon",
           "Shortname": "box.repair.bench",
           "Amount": 1,
@@ -161,7 +166,7 @@
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
           "Prefab": "assets/prefabs/deployable/hot air balloon/hotairballoon.prefab",
           "Command on give": "",
-          "Workbench Level": 3,
+          "Workbench Level": 2,
           "Distance Check": true,
           "Distance": 1.5,
           "Place the ground": true,
@@ -197,7 +202,7 @@
           "Title": "Transport Helicopter",
           "Description": "Fast air transport",
           "Command (to give an item)": "givescrapheli",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "Transport Helicopter",
           "Shortname": "electric.flasherlight",
           "Amount": 1,
@@ -214,21 +219,21 @@
             {
               "Image": "",
               "Shortname": "gears",
-              "Amount": 5,
+              "Amount": 30,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
-              "Amount": 5,
+              "Shortname": "sheetmetal",
+              "Amount": 20,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 10000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -241,7 +246,7 @@
           "Title": "Snowmobile",
           "Description": "Conquers snow biomes",
           "Command (to give an item)": "givesnowmobile",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "Snowmobile",
           "Shortname": "electric.flasherlight",
           "Amount": 1,
@@ -258,21 +263,21 @@
             {
               "Image": "",
               "Shortname": "gears",
-              "Amount": 5,
+              "Amount": 20,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
-              "Amount": 5,
+              "Shortname": "sheetmetal",
+              "Amount": 10,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -296,7 +301,7 @@
           "Title": "Sedan",
           "Description": "5KM/H",
           "Command (to give an item)": "givesedan",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "Car",
           "Shortname": "woodcross",
           "Amount": 1,
@@ -327,7 +332,7 @@
             {
               "Image": "",
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 4000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -340,7 +345,7 @@
           "Title": "Ferrari",
           "Description": "25KM/H",
           "Command (to give an item)": "givemod1",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "Car",
           "Shortname": "electric.flasherlight",
           "Amount": 1,
@@ -371,7 +376,7 @@
             {
               "Image": "",
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 10000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -406,7 +411,7 @@
           "Title": "Home Recycler",
           "Description": "",
           "Command (to give an item)": "giverecycler",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "Home Recycler",
           "Shortname": "research.table",
           "Amount": 1,
@@ -437,7 +442,7 @@
             {
               "Image": "",
               "Shortname": "metal.fragments",
-              "Amount": 2000,
+              "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -450,7 +455,7 @@
           "Title": "",
           "Description": "",
           "Command (to give an item)": "givelr300",
-          "Permission (ex: crafts.vip)": "crafts.all",
+          "Permission (ex: crafts.vip)": "",
           "Display Name": "",
           "Shortname": "rifle.lr300",
           "Amount": 1,
