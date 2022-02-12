@@ -13,14 +13,12 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   <thead>
     <tr>
       <th>US West 10x</th>
-      <th>CA West 100x</th>
       <th>US East 1000x</th>
     </tr>
   </thead>
   <tfoot>
     <tr>
       <th>US West 10x</th>
-      <th>CA West 100x</th>
       <th>US East 1000x</th>
     </tr>
   </tfoot>
@@ -50,43 +48,6 @@ $xpstatsdb_demo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
           <tbody>
             <?php
               $query = $xpstatsdb_nine->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,100");
-              while ($row = $query->fetch()) {
-                echo "<tr>";
-                echo "<th scope=\"row\" align=\"center\">" . $row['level'] . "</th>";
-                echo "<td>" . $row['displayname'] ."</td>";
-                echo "<td>" . $row['experience'] . "</td>";
-                echo "<td>" . $row['statpoint'] . "</td>";
-                echo "<td>" . $row['skillpoint'] . "</td>";
-                echo "<td>" . $row['Status'] . "</td>";
-                echo "</tr>";
-              }
-            ?>
-          </tbody>
-        </table></td>
-      <td><table class="table table-light table-striped">
-          <thead>
-            <tr>
-              <th>Level &nbsp;&nbsp;</th>
-              <th>Players(Top 100)</th>
-              <th>XP</th>
-              <th>Stats</th>
-              <th>Skills</th>
-              <th>Online</th>
-            </tr>
-          </thead>
-          <tfoot>
-            <tr>
-              <th>Level &nbsp;&nbsp;</th>
-              <th>Players(Top 100)</th>
-              <th>XP</th>
-              <th>Stats</th>
-              <th>Skills</th>
-              <th>Online</th>
-            </tr>
-          </tfoot>
-          <tbody>
-            <?php
-              $query = $xpstatsdb_eleven->query("SELECT * FROM XPerience ORDER BY level DESC limit 0,100");
               while ($row = $query->fetch()) {
                 echo "<tr>";
                 echo "<th scope=\"row\" align=\"center\">" . $row['level'] . "</th>";

@@ -23,7 +23,6 @@ include 'functions.php';
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">Connect</a>
 				  <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
             <li><a class="dropdown-item" href="steam://connect/us-west-10x.solidrust.net:28015">US West 10x</a></li>
-            <li><a class="dropdown-item" href="steam://connect/ca-west-100x.solidrust.net:28015">CA West 100x</a></li>
 	          <li><a class="dropdown-item" href="steam://connect/us-east-1000x.solidrust.net:28015">US East 1000x</a></li>
           </ul>
         </li>
