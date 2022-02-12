@@ -153,7 +153,7 @@
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
           "Prefab": "assets/prefabs/deployable/hot air balloon/hotairballoon.prefab",
           "Command on give": "",
-          "Workbench Level": 3,
+          "Workbench Level": 2,
           "Distance Check": true,
           "Distance": 1.5,
           "Place the ground": true,
@@ -229,13 +229,13 @@
           "Command (to give an item)": "givesnowmobile",
           "Permission (ex: crafts.vip)": null,
           "Display Name": "Snowmobile",
-          "Shortname": "sled",
+          "Shortname": "chineselantern",
           "Amount": 1,
           "Skin": 0,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
           "Prefab": "assets/content/vehicles/snowmobiles/snowmobile.prefab",
           "Command on give": "",
-          "Workbench Level": 3,
+          "Workbench Level": 1,
           "Distance Check": true,
           "Distance": 1.5,
           "Place the ground": true,
@@ -255,7 +255,7 @@
             },
             {
               "Shortname": "metal.fragments",
-              "Amount": 7000,
+              "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
             }
@@ -270,7 +270,7 @@
           "Command (to give an item)": "givetomaha",
           "Permission (ex: crafts.vip)": null,
           "Display Name": "Old Snowmobile",
-          "Shortname": "sled",
+          "Shortname": "skylantern",
           "Amount": 1,
           "Skin": 0,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
@@ -296,7 +296,7 @@
             },
             {
               "Shortname": "metal.fragments",
-              "Amount": 9000,
+              "Amount": 7000,
               "Skin": 0,
               "Title (empty - default)": null
             }
