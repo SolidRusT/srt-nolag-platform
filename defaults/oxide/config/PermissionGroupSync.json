@@ -132,8 +132,7 @@
             "ProtectedGroup": false,
             "OverrideServerIdCheck": true,
             "GroupsRemove": [
-                "admin",
-                "gm"
+                "legend"
             ],
             "PermissionsOxide": [
                 "nteleportation.developer",
@@ -196,12 +195,7 @@
             "ProtectedGroup": false,
             "OverrideServerIdCheck": true,
             "GroupsRemove": [
-                "admin",
-                "developer",
-                "legend",
-                "supporter",
-                "solidplayer",
-                "survivor"
+                "legend"
             ],
             "PermissionsRust": 1,
             "PermissionsOxide": [
@@ -276,12 +270,7 @@
             "OverrideServerIdCheck": true,
             "PermissionsRust": 2,
             "GroupsRemove": [
-                "gm",
-                "developer",
-                "legend",
-                "supporter",
-                "solidplayer",
-                "survivor"
+                "legend"
             ],
             "PermissionsOxide": [
                 "adminchat.use",
