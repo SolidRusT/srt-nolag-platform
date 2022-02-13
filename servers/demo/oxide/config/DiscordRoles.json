@@ -27,8 +27,8 @@
     "Events To Sync Discord Nickname": {
       "Sync On Plugin Load": false,
       "Sync On Player Connected": true,
-      "Sync On Server Group Changed": false,
-      "Sync On Discord Role Changed": false,
+      "Sync On Server Group Changed": true,
+      "Sync On Discord Role Changed": true,
       "Sync On Discord Nickname Changed": false,
       "Sync On Player Linked / Unlinked": true,
       "Sync On User Join / Leave Discord Server": true
@@ -86,6 +86,134 @@
     {
       "Server Group": "legend",
       "Discord Role ID": "847518858093002812",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "developer",
+      "Discord Role ID": "847515954002788352",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "gm",
+      "Discord Role ID": "847519198615568425",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "raideasy",
+      "Discord Role ID": "942522011270389810",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "raidmedium",
+      "Discord Role ID": "942522163917893663",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "raidhard",
+      "Discord Role ID": "942522252623233074",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "raidexpert",
+      "Discord Role ID": "942522318943580211",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "raidnightmare",
+      "Discord Role ID": "942522567871307807",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "raidhunter",
+      "Discord Role ID": "942522422702276658",
       "Sync Source (Server or Discord)": "Server",
       "Sync Notification Settings": {
         "Send message to Server": true,
