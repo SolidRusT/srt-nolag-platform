@@ -16,12 +16,8 @@
             "ProtectedGroup": false,
             "OverrideServerIdCheck": true,
             "GroupsRemove": [
-                "admin",
-                "gm",
-                "developer",
-                "legend",
-                "supporter",
-                "solidplayer"
+                "legend"
+
             ],
             "PermissionsOxide": [
                 "nteleportation.survivor",
@@ -51,11 +47,7 @@
             "ProtectedGroup": false,
             "OverrideServerIdCheck": true,
             "GroupsRemove": [
-                "admin",
-                "gm",
-                "developer",
-                "legend",
-                "supporter"
+                "legend"
             ],
             "PermissionsOxide": [
                 "nteleportation.solidplayer",
@@ -74,9 +66,6 @@
             "ProtectedGroup": false,
             "OverrideServerIdCheck": true,
             "GroupsRemove": [
-                "admin",
-                "gm",
-                "developer",
                 "legend"
             ],
             "PermissionsOxide": [
@@ -108,8 +97,6 @@
             "ProtectedGroup": false,
             "OverrideServerIdCheck": true,
             "GroupsRemove": [
-                "admin",
-                "gm",
                 "developer"
             ],
             "PermissionsOxide": [
