@@ -1,14 +1,23 @@
 {
   "Settings": {
-    "chance": 100,
-    "totalExplosives": 2,
-    "totalRockets": 2,
-    "explosive": "explosive.timed",
-    "targetPlayerOnly": false
+    "Chance of making group raiders": 50,
+    "Total raiders in the group": 3,
+    "Total Explosives each raider has": 5,
+    "Target only bases of players he has seen": true,
+    "How long to forget a target he has seen": 640.0,
+    "How far the Leader will scan for a base to raid": 40.0,
+    "How mutch scale damage explosives will do": 10.0,
+    "Item shortname of Throwable item he can use": [
+      "explosive.timed",
+      "explosive.satchel"
+    ],
+    "Rocket Prefab shortnames of rockets he can use": [
+      "rocket_basic"
+    ]
   },
   "Version": {
-    "Major": 1,
+    "Major": 3,
     "Minor": 0,
-    "Patch": 9
+    "Patch": 4
   }
 }
