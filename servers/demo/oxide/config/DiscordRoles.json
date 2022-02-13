@@ -7,7 +7,7 @@
   "Use AntiSpam On Discord Nickname": false,
   "Action To Perform By Event": {
     "Events To Sync Server Groups -> Discord Roles": {
-      "Sync On Plugin Load": false,
+      "Sync On Plugin Load": true,
       "Sync On Player Connected": true,
       "Sync On Server Group Changed": true,
       "Sync On Discord Role Changed": true,
@@ -25,7 +25,7 @@
       "Sync On User Join / Leave Discord Server": false
     },
     "Events To Sync Discord Nickname": {
-      "Sync On Plugin Load": false,
+      "Sync On Plugin Load": true,
       "Sync On Player Connected": true,
       "Sync On Server Group Changed": true,
       "Sync On Discord Role Changed": true,
