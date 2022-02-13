@@ -1,13 +1,13 @@
 {
   "Discord Bot Token": "OTQwMDI4OTgzNzMzNTQzMDEy.YgBcNg.hlpJcz41webiGAPzu1DSZYa9OcE",
   "Discord Server ID (Optional if bot only in 1 guild)": "846525505083670580",
-  "Sync Nicknames": true,
-  "Sync Clan Tag": true,
+  "Sync Nicknames": false,
+  "Sync Clan Tag": false,
   "Update Rate (Seconds)": 2.0,
   "Use AntiSpam On Discord Nickname": false,
   "Action To Perform By Event": {
     "Events To Sync Server Groups -> Discord Roles": {
-      "Sync On Plugin Load": true,
+      "Sync On Plugin Load": false,
       "Sync On Player Connected": true,
       "Sync On Server Group Changed": true,
       "Sync On Discord Role Changed": true,
@@ -25,7 +25,7 @@
       "Sync On User Join / Leave Discord Server": false
     },
     "Events To Sync Discord Nickname": {
-      "Sync On Plugin Load": true,
+      "Sync On Plugin Load": false,
       "Sync On Player Connected": true,
       "Sync On Server Group Changed": true,
       "Sync On Discord Role Changed": true,
