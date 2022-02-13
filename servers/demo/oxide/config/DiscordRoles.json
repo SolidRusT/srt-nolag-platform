@@ -116,22 +116,6 @@
       }
     },
     {
-      "Server Group": "gm",
-      "Discord Role ID": "847519198615568425",
-      "Sync Source (Server or Discord)": "Server",
-      "Sync Notification Settings": {
-        "Send message to Server": true,
-        "Send Message To Discord": true,
-        "Discord Message Channel ID": "",
-        "Send Message When Added": true,
-        "Send Message When Removed": true,
-        "Server Message Added Override Message": "",
-        "Server Message Removed Override Message": "",
-        "Discord Message Added Override Message": "",
-        "Discord Message Removed Override Message": ""
-      }
-    },
-    {
       "Server Group": "raideasy",
       "Discord Role ID": "942522011270389810",
       "Sync Source (Server or Discord)": "Server",
