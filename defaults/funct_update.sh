@@ -250,7 +250,7 @@ function update_linked_players() {
   SQL_DB="srt_web_auth"
   SQL_QUERY="SELECT discord_id, steam_id FROM users"
   SQL_OUTPUT="/dev/shm/sql-out-${DATE_STAMP}"
-  JSON_OUT="DiscordRoles.json"
+  JSON_OUT="DiscordCore.json"
   # Fetch records from database
   mysql -N -u${SQL_USER} -p${SQL_PASS} -h${SQL_HOST} -D${SQL_DB} <<< ${SQL_QUERY} | awk -F " " {' print $2","$1 '} | sort | uniq > $SQL_OUTPUT
   # Apply JSON header to the output
@@ -279,6 +279,8 @@ function update_linked_players() {
     # Move formatted player link data to oxide dir
     mv ${JSON_OUT} ${GAME_ROOT}/oxide/data/
     # RCON reload DiscordRoles
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload DiscordCore"
+    sleep 5
     ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload DiscordRoles"
   else
     echo "failed JSON syntax check, not pushing results"
