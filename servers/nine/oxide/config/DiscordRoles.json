@@ -10,7 +10,7 @@
       "Sync On Plugin Load": true,
       "Sync On Player Connected": true,
       "Sync On Server Group Changed": true,
-      "Sync On Discord Role Changed": true,
+      "Sync On Discord Role Changed": false,
       "Sync On Discord Nickname Changed": false,
       "Sync On Player Linked / Unlinked": true,
       "Sync On User Join / Leave Discord Server": true
