@@ -276,12 +276,15 @@ function update_linked_players() {
   jsonlint-php ${JSON_OUT}
   if [ $? -eq 0 ];then
     echo "Passed JSON syntax check"
+    # Shutdown the plugins
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.unload DiscordCore"
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.unload DiscordRoles"
     # Move formatted player link data to oxide dir
     mv ${JSON_OUT} ${GAME_ROOT}/oxide/data/
     # RCON reload DiscordRoles
-    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload DiscordCore"
-    sleep 5
-    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.reload DiscordRoles"
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load DiscordCore"
+    sleep 3
+    ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "o.load *"
   else
     echo "failed JSON syntax check, not pushing results"
   fi
