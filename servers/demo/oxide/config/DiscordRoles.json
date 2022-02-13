@@ -1,0 +1,73 @@
+{
+  "Discord Bot Token": "OTQwMDMxNTY3NzA1ODI5NDE2.YgBeng.1QSV9iRwMzWfW1Kb2rdsX1i0fi8",
+  "Discord Server ID (Optional if bot only in 1 guild)": "846525505083670580",
+  "Sync Nicknames": true,
+  "Sync Clan Tag": true,
+  "Update Rate (Seconds)": 2.0,
+  "Use AntiSpam On Discord Nickname": false,
+  "Action To Perform By Event": {
+    "Events To Sync Server Groups -> Discord Roles": {
+      "Sync On Plugin Load": true,
+      "Sync On Player Connected": true,
+      "Sync On Server Group Changed": true,
+      "Sync On Discord Role Changed": true,
+      "Sync On Discord Nickname Changed": true,
+      "Sync On Player Linked / Unlinked": true,
+      "Sync On User Join / Leave Discord Server": true
+    },
+    "Events To Sync Discord Roles -> Server Groups": {
+      "Sync On Plugin Load": false,
+      "Sync On Player Connected": false,
+      "Sync On Server Group Changed": false,
+      "Sync On Discord Role Changed": false,
+      "Sync On Discord Nickname Changed": false,
+      "Sync On Player Linked / Unlinked": false,
+      "Sync On User Join / Leave Discord Server": false
+    },
+    "Events To Sync Discord Nickname": {
+      "Sync On Plugin Load": true,
+      "Sync On Player Connected": true,
+      "Sync On Server Group Changed": false,
+      "Sync On Discord Role Changed": false,
+      "Sync On Discord Nickname Changed": true,
+      "Sync On Player Linked / Unlinked": true,
+      "Sync On User Join / Leave Discord Server": false
+    }
+  },
+  "Sync Data": [
+    {
+      "Server Group": "Survivor",
+      "Discord Role ID": "847515430737674310",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    },
+    {
+      "Server Group": "SolidPlayeR",
+      "Discord Role ID": "847515654989807666",
+      "Sync Source (Server or Discord)": "Server",
+      "Sync Notification Settings": {
+        "Send message to Server": true,
+        "Send Message To Discord": true,
+        "Discord Message Channel ID": "",
+        "Send Message When Added": true,
+        "Send Message When Removed": true,
+        "Server Message Added Override Message": "",
+        "Server Message Removed Override Message": "",
+        "Discord Message Added Override Message": "",
+        "Discord Message Removed Override Message": ""
+      }
+    }
+  ],
+  "Plugin Log Level (None, Error, Warning, Info)": "Warning",
+  "Discord Extension Log Level (Verbose, Debug, Info, Warning, Error, Exception, Off)": "Info"
+}
