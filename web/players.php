@@ -25,7 +25,7 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
           </tfoot>
           <tbody>
             <?php
-              $query = $RustPlayers_nine->query("SELECT * FROM west ORDER BY 'Time Played' DESC limit 0,100");
+              $query = $RustPlayers_nine->query("SELECT * FROM west ORDER BY `Time Played` DESC limit 0,100");
               while ($row = $query->fetch()) {
                 echo "<tr>";
                 echo "<th scope=\"row\" align=\"center\">" . $row['name'] . "</th>";
