@@ -9,22 +9,18 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       <td><table class="table table-light table-striped">
           <thead>
             <tr>
-              <th>Level &nbsp;&nbsp;</th>
-              <th>Players(Top 100)</th>
-              <th>XP</th>
-              <th>Stats</th>
-              <th>Skills</th>
-              <th>Online</th>
+              <th>Player</th>
+              <th>Last Seen</th>
+              <th>Time Played</th>
+              <th>First Seen</th>
             </tr>
           </thead>
           <tfoot>
             <tr>
-              <th>Level &nbsp;&nbsp;</th>
-              <th>Players(Top 100)</th>
-              <th>XP</th>
-              <th>Stats</th>
-              <th>Skills</th>
-              <th>Online</th>
+              <th>Player</th>
+              <th>Last Seen</th>
+              <th>Time Played</th>
+              <th>First Seen</th>
             </tr>
           </tfoot>
           <tbody>
