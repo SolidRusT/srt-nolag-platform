@@ -28,8 +28,7 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               $query = $RustPlayers_nine->query("SELECT * FROM west ORDER BY 'Time Played' DESC limit 0,100");
               while ($row = $query->fetch()) {
                 echo "<tr>";
-                echo "<th scope=\"row\" align=\"center\">" . $row['level'] . "</th>";
-                echo "<td>" . $row['name'] ."</td>";
+                echo "<th scope=\"row\" align=\"center\">" . $row['name'] . "</th>";
                 echo "<td>" . $row['Time Played'] . "</td>";
                 echo "<td>" . $row['Last Seen'] . "</td>";
                 echo "<td>" . $row['First Connection'] . "</td>";
