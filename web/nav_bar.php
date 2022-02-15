@@ -26,10 +26,10 @@ include 'functions.php';
 	          <li><a class="dropdown-item" href="steam://connect/us-east-1000x.solidrust.net:28015">US East 1000x</a></li>
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="https://discord.solidrust.net">Discord</a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Shop</a></li>
-        <li class="nav-item"><a class="nav-link" href="https://steamcommunity.com/id/solidrust">Community</a></li>
-        <li class="nav-item"><a class="nav-link" href="/scoreboard">Scoreboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://discord.solidrust.net">Discord</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://steamcommunity.com/groups/solidrust-networks">Community</a></li>
+        <li class="nav-item"><a class="nav-link" href="/players">Players</a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Gallery</a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Help</a></li>
         <li class="nav-item"><a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Report</a></li>
