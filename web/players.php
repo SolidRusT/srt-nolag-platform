@@ -25,13 +25,15 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
           </tfoot>
           <tbody>
             <?php
-              $query = $RustPlayers_nine->query("SELECT * FROM west ORDER BY `Time Played` DESC limit 0,100");
+              $query = $RustPlayers_nine->query("SELECT *,SEC_TO_TIME(`Time Played`),FROM_UNIXTIME(`Last Seen`),FROM_UNIXTIME(`First Connection`)
+              FROM west
+              ORDER BY SEC_TO_TIME(`Time Played`) DESC; limit 0,100");
               while ($row = $query->fetch()) {
                 echo "<tr>";
                 echo "<th scope=\"row\" align=\"center\">" . $row['name'] . "</th>";
-                echo "<td>" . $row['Time Played'] . "</td>";
-                echo "<td>" . $row['Last Seen'] . "</td>";
-                echo "<td>" . $row['First Connection'] . "</td>";
+                echo "<td>" . $row['SEC_TO_TIME(`Time Played`)'] . "</td>";
+                echo "<td>" . $row['FROM_UNIXTIME(`Last Seen`)'] . "</td>";
+                echo "<td>" . $row['FROM_UNIXTIME(`First Connection`)'] . "</td>";
                 echo "</tr>";
               }
             ?>
