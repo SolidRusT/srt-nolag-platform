@@ -1,17 +1,19 @@
 #!/bin/bash
 ## Global default environments
-export SRT_TYPE="game"
+export SRT_TYPE="lab"
 # root of where the game server is installed
 export GAME_ROOT="/game"
+# Update default editor
+export KUBE_EDITOR="nano"
 # construct server logging endpoint
-export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
+#export SERVER_LOGS="${GAME_ROOT}/RustDedicated.log"
 # Map stuff
-export WORLD_SIZE="2700"
+#export WORLD_SIZE="3700"
 # toggle custom maps
-export CUSTOM_MAP="enabled" # enabled / disabled
-export CUSTOM_MAP_URL="https://solidrust.net/maps/SRT-NoLAG-20211104.map" #  only if CUSTOM_MAP is "enabled"
+#export CUSTOM_MAP="disabled" # enabled / disabled
+#export CUSTOM_MAP_URL="" #  only if CUSTOM_MAP is "enabled"
 # Current Map seed
-export SEED=$(cat ${GAME_ROOT}/server.seed)
+#export SEED=$(cat ${GAME_ROOT}/server.seed)
 # Discord Settings
-export WEBHOOK=https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp
-export CORDNAME="Eleven Watchdog"
+#export WEBHOOK=https://discordapp.com/api/webhooks/869389187667877898/7ufiQxBLWqs2FTXJT2y3AcGAqstL129Lg6WPbuRBB3WRrPHJwbIdxYyHqosSgT-NNqtp
+#export CORDNAME="Nine Watchdog"
