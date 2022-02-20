@@ -2,7 +2,7 @@
 
 ```bash
 #sudo kubeadm init --apiserver-advertise-address=10.42.69.124 --pod-network-cidr=10.142.0.0/16
-sudo kubeadm init --pod-network-cidr=10.142.0.0/16
+sudo kubeadm init --pod-network-cidr=10.140.0.0/16
 ```
 
 ```bash
@@ -20,6 +20,9 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 #sudo iptables -P OUTPUT ACCEPT
 #sudo iptables -F
 
+kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+
+#curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm repo add cilium https://helm.cilium.io/
 helm repo update
 helm install cilium cilium/cilium \
