@@ -11,7 +11,7 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             <tr>
               <th>Rank</th>
               <th>Player</th>
-              <th>Time Played</th>
+              <th>Days:Hours:Minutes</th>
               <th>Last Seen</th>
               <th>First Seen</th>
             </tr>
@@ -20,7 +20,7 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             <tr>
               <th>Rank</th>
               <th>Player</th>
-              <th>Time Played</th>
+              <th>Days:Hours:Minutes</th>
               <th>Last Seen</th>
               <th>First Seen</th>
             </tr>
