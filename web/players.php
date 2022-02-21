@@ -9,6 +9,7 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       <td><table class="table table-light table-striped">
           <thead>
             <tr>
+              <th>Rank</th>
               <th>Player</th>
               <th>Time Played</th>
               <th>Last Seen</th>
@@ -17,6 +18,7 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
           </thead>
           <tfoot>
             <tr>
+              <th>Rank</th>
               <th>Player</th>
               <th>Time Played</th>
               <th>Last Seen</th>
@@ -25,15 +27,16 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
           </tfoot>
           <tbody>
             <?php
-              $query = $RustPlayers_nine->query("SELECT *,SEC_TO_TIME(`Time Played`),FROM_UNIXTIME(`Last Seen`),FROM_UNIXTIME(`First Connection`)
-              FROM RustPlayers.west
+              $query = $RustPlayers_nine->query("SELECT *,@a := @a + 1 serial,SEC_TO_TIME(`Time Played`),FROM_UNIXTIME(`Last Seen`),FROM_UNIXTIME(`First Connection`)
+              FROM RustPlayers.west, (SELECT @a :=0) AS dummy
               WHERE `Time Played` IS NOT NULL
               AND name NOT IN ('Suparious','joe_3451','ParmyJack','SolidRusT')
               ORDER BY SEC_TO_TIME(`Time Played`)
-              DESC limit 0,100;)");
+              DESC limit 0,100;");
               while ($row = $query->fetch()) {
                 echo "<tr>";
-                echo "<th scope=\"row\" align=\"center\">" . $row['name'] . "</th>";
+                echo "<th scope=\"row\" align=\"center\">" . $row['serial'] . "</th>";
+                echo "<td>" . $row['name'] . "</td>";
                 echo "<td>" . $row['SEC_TO_TIME(`Time Played`)'] . "</td>";
                 echo "<td>" . $row['FROM_UNIXTIME(`Last Seen`)'] . "</td>";
                 echo "<td>" . $row['FROM_UNIXTIME(`First Connection`)'] . "</td>";
