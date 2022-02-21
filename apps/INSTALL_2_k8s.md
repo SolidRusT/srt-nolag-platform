@@ -14,6 +14,9 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 ## Configure virtual networks
 
+/etc/default/kubelet:
+  `KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs`
+
 ```bash
 #sudo iptables -P INPUT ACCEPT
 #sudo iptables -P FORWARD ACCEPT
@@ -84,5 +87,8 @@ kubectl get pods --all-namespaces -o custom-columns=NAMESPACE:.metadata.namespac
 
 ```bash
 sudo kubeadm reset
+sudo rm -rf /etc/cni/net.d
+sudo rm -f $HOME/.kube/config
+sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
 sudo reboot
 ```

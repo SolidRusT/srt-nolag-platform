@@ -1,19 +1,21 @@
 ## Install
-### Bootstrap Debian 11 (root)
+### Bootstrap Ubuntu 20.04
 
 ```bash
-apt install sudo net-tools python3 certbot python3-certbot-dns-cloudflare
-sudo apt-get install \
+sudo apt install -y net-tools python3 certbot python3-certbot-dns-cloudflare
+```
+
+```bash
+sudo apt install -y \
     ca-certificates \
     curl \
     gnupg \
     lsb-release \
     software-properties-common \
     apt-transport-https
-usermod -aG sudo shaun
 ```
 
-### Update distribution (user)
+### Update distribution
 
 ```bash
 sudo apt update && sudo apt dist-upgrade -y
@@ -40,7 +42,7 @@ vm.swappiness = 0
 ```bash
 sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
 # apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 7EA0A9C3F273FCD8
 sudo apt update -y
 sudo apt install docker-ce docker-ce-cli containerd.io -y
