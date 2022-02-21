@@ -26,8 +26,11 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
           <tbody>
             <?php
               $query = $RustPlayers_nine->query("SELECT *,SEC_TO_TIME(`Time Played`),FROM_UNIXTIME(`Last Seen`),FROM_UNIXTIME(`First Connection`)
-              FROM west
-              ORDER BY SEC_TO_TIME(`Time Played`) DESC; limit 0,100");
+              FROM RustPlayers.west
+              WHERE `Time Played` IS NOT NULL
+              AND name NOT IN ('Suparious','joe_3451','ParmyJack','SolidRusT')
+              ORDER BY SEC_TO_TIME(`Time Played`)
+              DESC limit 0,100;)");
               while ($row = $query->fetch()) {
                 echo "<tr>";
                 echo "<th scope=\"row\" align=\"center\">" . $row['name'] . "</th>";
