@@ -36,7 +36,7 @@ $RustPlayers_nine->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
               while ($row = $query->fetch()) {
                 echo "<tr>";
                 echo "<th scope=\"row\" align=\"center\">" . $row['serial'] . "</th>";
-                echo "<td>" . $row['name'] . "</td>";
+                echo "<td><a href=\"https://steamcommunity.com/profiles/\"" . $row['steamid'] . ">" . $row['name'] . "</a></td>";
                 echo "<td>" . $row['SEC_TO_TIME(`Time Played`)'] . "</td>";
                 echo "<td>" . $row['FROM_UNIXTIME(`Last Seen`)'] . "</td>";
                 echo "<td>" . $row['FROM_UNIXTIME(`First Connection`)'] . "</td>";
