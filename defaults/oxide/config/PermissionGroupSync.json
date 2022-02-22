@@ -170,7 +170,8 @@
                 "build.perm",
                 "zombiehorde.admin",
                 "xperience.vip",
-                "waterbases.vip3"
+                "waterbases.vip3",
+                "waterbikes.free"
             ],
             "AdditionalCommands": []
         },
@@ -244,7 +245,8 @@
                 "xperience.vip",
                 "discordmessages.ban",
                 "bradleycontrol.allow",
-                "waterbases.admin"
+                "waterbases.admin",
+                "waterbikes.free"
             ],
             "AdditionalCommands": []
         },
@@ -389,7 +391,8 @@
                 "vehicledeployedlocks.masterkey",
                 "xperience.admin",
                 "bradleycontrol.allow",
-                "waterbases.admin"
+                "waterbases.admin",
+                "waterbikes.free"
             ],
             "AdditionalCommands": []
         }
