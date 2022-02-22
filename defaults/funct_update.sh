@@ -411,6 +411,8 @@ DEFAULT_PERMS=(
   vehiclevendoroptions.ownership.allvehicles
   carradio.attachcarradio
   carradio.detachcarradio
+  waterbikes.spawn
+  skinbox.use
 )
 
 echo "SRT Update Functions initialized" | tee -a ${LOGS}

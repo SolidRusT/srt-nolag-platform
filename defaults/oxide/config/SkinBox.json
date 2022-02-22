@@ -1,0 +1,75 @@
+{
+  "Skin Options": {
+    "Maximum number of approved skins allowed for each item (-1 is unlimited)": -1,
+    "Maximum number of pages viewable": 3,
+    "Include approved skins": true,
+    "Include manually imported workshop skins": true,
+    "Remove approved skin ID's from config workshop skin list": false,
+    "Include redirected skins": true,
+    "Show skin ID's in the name for admins": true,
+    "Skin list order (Config, ConfigReversed, Alphabetical)": "Config",
+    "Steam API key for workshop skins (https://steamcommunity.com/dev/apikey)": "40AE3EA263F455A1DBD87A19A1AE0BEF"
+  },
+  "Cooldown Options": {
+    "Enable cooldowns": false,
+    "Cooldown time start's when a item is removed from the box": true,
+    "Length of cooldown time (seconds)": 60
+  },
+  "Command Options": {
+    "Commands to open the SkinBox": [
+      "skinbox",
+      "sb"
+    ],
+    "Commands to open the deployed item SkinBox": [
+      "skindeployed",
+      "sd"
+    ]
+  },
+  "Permission Options": {
+    "Permission required to use SkinBox": "skinbox.use",
+    "Permission required to reskin deployed items": "skinbox.use",
+    "Permission required to use admin functions": "skinbox.admin",
+    "Permission that bypasses usage costs": "skinbox.ignorecost",
+    "Permission that bypasses usage cooldown": "skinbox.ignorecooldown",
+    "Permission required to skin weapons": "skinbox.use",
+    "Permission required to skin deployables": "skinbox.use",
+    "Permission required to skin attire": "skinbox.use",
+    "Permission required to view approved skins": "skinbox.use",
+    "Custom permissions per skin": {
+      "skinbox.example1": [
+        9990,
+        9991,
+        9992
+      ],
+      "skinbox.example2": [
+        9993,
+        9994,
+        9995
+      ],
+      "skinbox.example3": [
+        9996,
+        9997,
+        9998
+      ]
+    }
+  },
+  "Usage Cost Options": {
+    "Enable usage costs": false,
+    "Currency used for usage costs (Scrap, Economics, ServerRewards)": "Scrap",
+    "Cost to open the SkinBox": 5,
+    "Cost to skin deployables": 10,
+    "Cost to skin attire": 20,
+    "Cost to skin weapons": 30
+  },
+  "Other Options": {
+    "Allow stacked items": false,
+    "Auth-level required to view blacklisted skins": 2
+  },
+  "Imported Workshop Skins": {},
+  "Blacklisted Skin ID's": [],
+  "Version": {
+    "Major": 2,
+    "Minor": 1,
+    "Patch": 2
+  }
+}

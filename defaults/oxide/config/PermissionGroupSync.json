@@ -35,7 +35,8 @@
                 "carturrets.limit.3",
                 "playtimesupplysignal.bonus",
                 "spawnmini.survivor",
-                "waterbases.vip1"
+                "waterbases.vip1",
+                "skinbox.ignorecost"
             ],
             "AdditionalCommands": []
         },
@@ -54,7 +55,9 @@
                 "Kits.Survivor",
                 "Kits.Solid",
                 "spawnmini.solidplayer",
-                "waterbases.vip2"
+                "waterbases.vip2",
+                "skinbox.ignorecost",
+                "skinbox.ignorecooldown"
             ],
             "AdditionalCommands": []
         },
@@ -85,7 +88,9 @@
                 "carturrets.limit.4",
                 "spawnmini.supporter",
                 "xperience.vip",
-                "waterbases.vip3"
+                "waterbases.vip3",
+                "skinbox.ignorecost",
+                "skinbox.ignorecooldown"
             ],
             "AdditionalCommands": []
         },
@@ -107,7 +112,9 @@
                 "Kits.Legend",
                 "spawnmini.legend",
                 "xperience.vip",
-                "waterbases.vip3"
+                "waterbases.vip3",
+                "skinbox.ignorecost",
+                "skinbox.ignorecooldown"
             ],
             "AdditionalCommands": []
         },
@@ -171,7 +178,9 @@
                 "zombiehorde.admin",
                 "xperience.vip",
                 "waterbases.vip3",
-                "waterbikes.free"
+                "waterbikes.free",
+                "skinbox.ignorecost",
+                "skinbox.ignorecooldown"
             ],
             "AdditionalCommands": []
         },
@@ -392,7 +401,8 @@
                 "xperience.admin",
                 "bradleycontrol.allow",
                 "waterbases.admin",
-                "waterbikes.free"
+                "waterbikes.free",
+                "skinbox.admin"
             ],
             "AdditionalCommands": []
         }
