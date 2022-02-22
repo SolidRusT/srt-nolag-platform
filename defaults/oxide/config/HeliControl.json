@@ -24,8 +24,8 @@
   "Damage - Global damage multiplier": 1.0,
   "Gibs - Health of gibs": 500.0,
   "Gibs - Time until gibs can be harvested in seconds": 480.0,
-  "Health - Base CH47 health": 4000.0,
-  "Health - Base Helicopter health": 10000.0,
+  "Health - Base CH47 health": 2000.0,
+  "Health - Base Helicopter health": 5000.0,
   "Health - Main rotor health": 750.0,
   "Health - Tail rotor health": 375.0,
   "Limits": {

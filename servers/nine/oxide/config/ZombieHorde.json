@@ -29,8 +29,8 @@
     "Ignore sleeping players": false,
     "Give all zombies glowing eyes": false,
     "Headshots instantly kill zombie": true,
-    "Kill NPCs that are under water": false,
-    "Can zombies swim across water": true,
+    "Kill NPCs that are under water": true,
+    "Can zombies swim across water": false,
     "Enable NPC dormant system. This will put NPCs to sleep when no players are nearby to improve performance": true,
     "Loadouts": [
       {
