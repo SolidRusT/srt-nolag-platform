@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Deployed Locks", "WhiteThunder", "1.7.0")]
+    [Info("Vehicle Deployed Locks", "WhiteThunder", "1.7.2")]
     [Description("Allows players to deploy code locks and key locks to vehicles.")]
     internal class VehicleDeployedLocks : CovalencePlugin
     {
@@ -35,11 +35,22 @@ namespace Oxide.Plugins
         private CooldownManager _craftCodeLockCooldowns;
         private CooldownManager _craftKeyLockCooldowns;
 
-        private readonly VehicleInfoManager _vehicleInfoManager = new VehicleInfoManager();
-        private readonly LockedVehicleTracker _lockedVehicleTracker = new LockedVehicleTracker();
-        private readonly AutoUnlockManager _lockExpirationManager = new AutoUnlockManager();
+        private readonly VehicleInfoManager _vehicleInfoManager;
+        private readonly LockedVehicleTracker _lockedVehicleTracker;
+        private readonly AutoUnlockManager _autoUnlockManager;
+        private readonly ReskinManager _reskinManager;
+
+        private object _boxedFalse = false;
 
         private enum PayType { Item, Resources, Free }
+
+        public VehicleDeployedLocks()
+        {
+            _vehicleInfoManager = new VehicleInfoManager(this);
+            _lockedVehicleTracker = new LockedVehicleTracker(_vehicleInfoManager);
+            _autoUnlockManager = new AutoUnlockManager(this, _lockedVehicleTracker);
+            _reskinManager = new ReskinManager(_vehicleInfoManager, _lockedVehicleTracker);
+        }
 
         #endregion
 
@@ -64,14 +75,14 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
-            _vehicleInfoManager.OnServerInitialized(this);
-            _lockedVehicleTracker.OnServerInitialized(_vehicleInfoManager);
-            _lockExpirationManager.OnServerInitialized(this, _lockedVehicleTracker, _pluginConfig.AutoUnlockSettings);
+            _vehicleInfoManager.OnServerInitialized();
+            _lockedVehicleTracker.OnServerInitialized();
+            _autoUnlockManager.OnServerInitialized(_pluginConfig.AutoUnlockSettings);
 
             Subscribe(nameof(OnEntityKill));
         }
 
-        private bool? CanMountEntity(BasePlayer player, BaseMountable entity)
+        private object CanMountEntity(BasePlayer player, BaseMountable entity)
         {
             // Don't lock taxi modules
             var carSeat = entity as ModularCarSeat;
@@ -81,7 +92,7 @@ namespace Oxide.Plugins
             return CanPlayerInteractWithParentVehicle(player, entity);
         }
 
-        private bool? CanLootEntity(BasePlayer player, StorageContainer container)
+        private object CanLootEntity(BasePlayer player, StorageContainer container)
         {
             // Don't lock taxi module shop fronts
             if (container is ModularVehicleShopFront)
@@ -90,13 +101,13 @@ namespace Oxide.Plugins
             return CanPlayerInteractWithParentVehicle(player, container);
         }
 
-        private bool? CanLootEntity(BasePlayer player, ContainerIOEntity container) =>
+        private object CanLootEntity(BasePlayer player, ContainerIOEntity container) =>
             CanPlayerInteractWithParentVehicle(player, container);
 
-        private bool? CanLootEntity(BasePlayer player, RidableHorse horse) =>
+        private object CanLootEntity(BasePlayer player, RidableHorse horse) =>
             CanPlayerInteractWithVehicle(player, horse);
 
-        private bool? CanLootEntity(BasePlayer player, ModularCarGarage carLift)
+        private object CanLootEntity(BasePlayer player, ModularCarGarage carLift)
         {
             if (carLift == null
                 || _pluginConfig.ModularCarSettings.AllowEditingWhileLockedOut
@@ -106,13 +117,13 @@ namespace Oxide.Plugins
             return CanPlayerInteractWithVehicle(player, carLift.carOccupant);
         }
 
-        private bool? OnHorseLead(RidableHorse horse, BasePlayer player) =>
+        private object OnHorseLead(RidableHorse horse, BasePlayer player) =>
             CanPlayerInteractWithVehicle(player, horse);
 
-        private bool? OnHotAirBalloonToggle(HotAirBalloon hab, BasePlayer player) =>
+        private object OnHotAirBalloonToggle(HotAirBalloon hab, BasePlayer player) =>
             CanPlayerInteractWithVehicle(player, hab);
 
-        private bool? OnSwitchToggle(ElectricSwitch electricSwitch, BasePlayer player)
+        private object OnSwitchToggle(ElectricSwitch electricSwitch, BasePlayer player)
         {
             if (electricSwitch == null)
                 return null;
@@ -124,10 +135,10 @@ namespace Oxide.Plugins
             return null;
         }
 
-        private bool? OnTurretAuthorize(AutoTurret entity, BasePlayer player) =>
+        private object OnTurretAuthorize(AutoTurret entity, BasePlayer player) =>
             CanPlayerInteractWithParentVehicle(player, entity);
 
-        private bool? OnTurretTarget(AutoTurret autoTurret, BasePlayer player)
+        private object OnTurretTarget(AutoTurret autoTurret, BasePlayer player)
         {
             if (autoTurret == null || player == null)
                 return null;
@@ -141,13 +152,13 @@ namespace Oxide.Plugins
             if (baseLock == null)
                 return null;
 
-            if (CanPlayerBypassLock(player, baseLock))
-                return false;
+            if (CanPlayerBypassLock(player, baseLock, provideFeedback: false))
+                return _boxedFalse;
 
             return null;
         }
 
-        private bool? CanSwapToSeat(BasePlayer player, ModularCarSeat carSeat)
+        private object CanSwapToSeat(BasePlayer player, ModularCarSeat carSeat)
         {
             // Don't lock taxi modules
             if (!carSeat.associatedSeatingModule.DoorsAreLockable)
@@ -156,7 +167,7 @@ namespace Oxide.Plugins
             return CanPlayerInteractWithParentVehicle(player, carSeat, provideFeedback: false);
         }
 
-        private bool? OnVehiclePush(BaseVehicle vehicle, BasePlayer player) =>
+        private object OnVehiclePush(BaseVehicle vehicle, BasePlayer player) =>
             CanPlayerInteractWithVehicle(player, vehicle);
 
         private void OnEntityKill(BaseLock baseLock)
@@ -209,7 +220,7 @@ namespace Oxide.Plugins
         }
 
         // Allow players to deploy locks directly without any commands.
-        private bool? CanDeployItem(BasePlayer basePlayer, Deployer deployer, uint entityId)
+        private object CanDeployItem(BasePlayer basePlayer, Deployer deployer, uint entityId)
         {
             if (basePlayer == null || deployer == null)
                 return null;
@@ -248,10 +259,35 @@ namespace Oxide.Plugins
             PayType payType;
             if (!VerifyCanDeploy(player, vehicle, vehicleInfo, lockInfo, out payType)
                 || !VerifyDeployDistance(player, vehicle))
-                return false;
+                return _boxedFalse;
 
             DeployLockForPlayer(vehicle, vehicleInfo, lockInfo, basePlayer, payType);
-            return false;
+            return _boxedFalse;
+        }
+
+        private object OnEntityReskin(Snowmobile snowmobile, ItemSkinDirectory.Skin skin, BasePlayer player)
+        {
+            var baseLock = GetVehicleLock(snowmobile);
+            if (baseLock == null)
+                return null;
+
+            if (_vehicleInfoManager.GetVehicleInfo(snowmobile) == null)
+                return null;
+
+            if (baseLock.IsLocked() && !CanPlayerBypassLock(player, baseLock, provideFeedback: true))
+                return _boxedFalse;
+
+            _reskinManager.HandleReskinPre(snowmobile, baseLock);
+
+            // In case another plugin blocks the pre-hook, add back or destroy the lock.
+            NextTick(_reskinManager.CleanupAction);
+
+            return null;
+        }
+
+        private void OnEntityReskinned(Snowmobile snowmobile, ItemSkinDirectory.Skin skin, BasePlayer player)
+        {
+            _reskinManager.HandleReskinPost(snowmobile);
         }
 
         #endregion
@@ -393,18 +429,36 @@ namespace Oxide.Plugins
             return false;
         }
 
-        private bool CanPlayerBypassLock(BasePlayer player, BaseLock baseLock)
+        private bool CanPlayerBypassLock(BasePlayer player, BaseLock baseLock, bool provideFeedback)
         {
             object hookResult = Interface.CallHook("CanUseLockedEntity", player, baseLock);
             if (hookResult is bool)
                 return (bool)hookResult;
 
-            return IsPlayerAuthorizedToLock(player, baseLock)
+            var canAccessLock = IsPlayerAuthorizedToLock(player, baseLock)
                 || IsLockSharedWithPlayer(player, baseLock)
                 || PlayerHasMasterKeyForLock(player, baseLock);
+
+            if (canAccessLock)
+            {
+                if (provideFeedback && !(baseLock is KeyLock))
+                {
+                    Effect.server.Run(Prefab_CodeLock_UnlockEffect, baseLock, 0, Vector3.zero, Vector3.forward);
+                }
+
+                return true;
+            }
+
+            if (provideFeedback)
+            {
+                Effect.server.Run(Prefab_CodeLock_DeniedEffect, baseLock, 0, Vector3.zero, Vector3.forward);
+                ChatMessage(player, Lang.GenericErrorVehicleLocked);
+            }
+
+            return false;
         }
 
-        private bool? CanPlayerInteractWithVehicle(BasePlayer player, BaseEntity vehicle, bool provideFeedback = true)
+        private object CanPlayerInteractWithVehicle(BasePlayer player, BaseEntity vehicle, bool provideFeedback = true)
         {
             if (player == null || vehicle == null)
                 return null;
@@ -413,21 +467,10 @@ namespace Oxide.Plugins
             if (baseLock == null || !baseLock.IsLocked())
                 return null;
 
-            if (!CanPlayerBypassLock(player, baseLock))
-            {
-                if (provideFeedback)
-                {
-                    Effect.server.Run(Prefab_CodeLock_DeniedEffect, baseLock, 0, Vector3.zero, Vector3.forward);
-                    ChatMessage(player, Lang.GenericErrorVehicleLocked);
-                }
+            if (CanPlayerBypassLock(player, baseLock, provideFeedback))
+                return null;
 
-                return false;
-            }
-
-            if (provideFeedback && baseLock.IsLocked())
-                Effect.server.Run(Prefab_CodeLock_UnlockEffect, baseLock, 0, Vector3.zero, Vector3.forward);
-
-            return null;
+            return _boxedFalse;
         }
 
         private BaseEntity GetParentVehicle(BaseEntity entity)
@@ -447,7 +490,7 @@ namespace Oxide.Plugins
             return _vehicleInfoManager.GetCustomVehicleParent(entity);
         }
 
-        private bool? CanPlayerInteractWithParentVehicle(BasePlayer player, BaseEntity entity, bool provideFeedback = true) =>
+        private object CanPlayerInteractWithParentVehicle(BasePlayer player, BaseEntity entity, bool provideFeedback = true) =>
             CanPlayerInteractWithVehicle(player, GetParentVehicle(entity), provideFeedback);
 
         #endregion
@@ -744,6 +787,16 @@ namespace Oxide.Plugins
             return false;
         }
 
+        private bool VerifyNotForSale(IPlayer player, BaseEntity vehicle)
+        {
+            var ridableAnimal = vehicle as BaseRidableAnimal;
+            if (ridableAnimal == null || !ridableAnimal.IsForSale())
+                return true;
+
+            ReplyToPlayer(player, Lang.DeployErrorOther);
+            return false;
+        }
+
         private bool VerifyNoOwnershipRestriction(IPlayer player, BaseEntity vehicle)
         {
             if (!AllowNoOwner(vehicle))
@@ -841,6 +894,7 @@ namespace Oxide.Plugins
 
             return VerifyPermissionToVehicleAndLockType(player, vehicleInfo, lockInfo)
                 && VerifyVehicleIsNotDead(player, vehicle)
+                && VerifyNotForSale(player, vehicle)
                 && VerifyNoOwnershipRestriction(player, vehicle)
                 && VerifyCanBuild(player, vehicle)
                 && VerifyVehicleHasNoLock(player, vehicle)
@@ -913,10 +967,17 @@ namespace Oxide.Plugins
 
         private class VehicleInfoManager
         {
+            VehicleDeployedLocks _pluginInstance;
+
             private readonly Dictionary<uint, VehicleInfo> _prefabIdToVehicleInfo = new Dictionary<uint, VehicleInfo>();
             private readonly Dictionary<string, VehicleInfo> _customVehicleTypes = new Dictionary<string, VehicleInfo>();
 
-            public void OnServerInitialized(VehicleDeployedLocks pluginInstance)
+            public VehicleInfoManager(VehicleDeployedLocks pluginInstance)
+            {
+                _pluginInstance = pluginInstance;
+            }
+
+            public void OnServerInitialized()
             {
                 var allVehicles = new VehicleInfo[]
                 {
@@ -957,7 +1018,7 @@ namespace Oxide.Plugins
                         LockPosition = new Vector3(-1.735f, -1.445f, 0.79f),
                         LockRotation = Quaternion.Euler(0, 0, 90),
                         ParentBone = "Top",
-                        TimeSinceLastUsed = (vehicle) => Time.realtimeSinceStartup - (vehicle as BaseCrane)?.lastDrivenTime ?? Time.realtimeSinceStartup,
+                        TimeSinceLastUsed = (vehicle) => Time.realtimeSinceStartup - (vehicle as MagnetCrane)?.lastDrivenTime ?? Time.realtimeSinceStartup,
                     },
                     new VehicleInfo
                     {
@@ -1023,6 +1084,7 @@ namespace Oxide.Plugins
                         VehicleType = "snowmobile",
                         PrefabPaths = new string[] { "assets/content/vehicles/snowmobiles/snowmobile.prefab" },
                         LockPosition = new Vector3(-0.205f, 0.59f, 0.4f),
+                        TimeSinceLastUsed = (vehicle) => (vehicle as Snowmobile)?.timeSinceLastUsed ?? 0,
                     },
                     new VehicleInfo
                     {
@@ -1037,6 +1099,7 @@ namespace Oxide.Plugins
                         VehicleType = "tomaha",
                         PrefabPaths = new string[] { "assets/content/vehicles/snowmobiles/tomahasnowmobile.prefab" },
                         LockPosition = new Vector3(-0.37f, 0.4f, 0.125f),
+                        TimeSinceLastUsed = (vehicle) => (vehicle as Snowmobile)?.timeSinceLastUsed ?? 0,
                     },
                     new VehicleInfo
                     {
@@ -1049,7 +1112,7 @@ namespace Oxide.Plugins
 
                 foreach (var vehicleInfo in allVehicles)
                 {
-                    vehicleInfo.OnServerInitialized(pluginInstance);
+                    vehicleInfo.OnServerInitialized(_pluginInstance);
                     foreach (var prefabId in vehicleInfo.PrefabIds)
                     {
                         _prefabIdToVehicleInfo[prefabId] = vehicleInfo;
@@ -1130,17 +1193,20 @@ namespace Oxide.Plugins
 
         #endregion
 
-        #region Lock Vehicle Tracker
+        #region Locked Vehicle Tracker
 
         private class LockedVehicleTracker
         {
             private VehicleInfoManager _vehicleInfoManager;
             public Dictionary<VehicleInfo, HashSet<BaseEntity>> VehiclesWithLocksByType { get; private set; } = new Dictionary<VehicleInfo, HashSet<BaseEntity>>();
 
-            public void OnServerInitialized(VehicleInfoManager vehicleInfoManager)
+            public LockedVehicleTracker(VehicleInfoManager vehicleInfoManager)
             {
                 _vehicleInfoManager = vehicleInfoManager;
+            }
 
+            public void OnServerInitialized()
+            {
                 foreach (var entity in BaseNetworkable.serverEntities)
                 {
                     var baseEntity = entity as BaseEntity;
@@ -1204,16 +1270,20 @@ namespace Oxide.Plugins
             private LockedVehicleTracker _lockedVehicleTracker;
             private AutoUnlockSettings _autoUnlockSettings;
 
-            public void OnServerInitialized(VehicleDeployedLocks pluginInstance, LockedVehicleTracker lockedVehicleTracker, AutoUnlockSettings settings)
+            public AutoUnlockManager(VehicleDeployedLocks pluginInstance, LockedVehicleTracker lockedVehicleTracker)
             {
                 _pluginInstance = pluginInstance;
                 _lockedVehicleTracker = lockedVehicleTracker;
+            }
+
+            public void OnServerInitialized(AutoUnlockSettings settings)
+            {
                 _autoUnlockSettings = settings;
 
                 if (!settings.Enabled)
                     return;
 
-                pluginInstance.timer.Every(settings.CheckIntervalSeconds, CheckVehicles);
+                _pluginInstance.timer.Every(settings.CheckIntervalSeconds, CheckVehicles);
             }
 
             private void CheckVehicles()
@@ -1281,6 +1351,140 @@ namespace Oxide.Plugins
             {
                 baseLock.SetFlag(BaseEntity.Flags.Locked, false);
                 Effect.server.Run(Prefab_CodeLock_UnlockEffect, baseLock, 0, Vector3.zero, Vector3.forward);
+            }
+        }
+
+        #endregion
+
+        #region Reskin Management
+
+        private class ReskinEvent
+        {
+            public BaseEntity Entity;
+            public BaseLock BaseLock;
+            public Vector3 Position;
+
+            public bool IsAvailable() => Entity != null;
+
+            public void Assign(BaseEntity entity, BaseLock baseLock)
+            {
+                Entity = entity;
+                BaseLock = baseLock;
+                Position = entity?.transform.position ?? Vector3.zero;
+            }
+
+            public void Reset()
+            {
+                Assign(null, null);
+            }
+        }
+
+        private class ReskinManager
+        {
+            private VehicleInfoManager _vehicleInfoManager;
+            private LockedVehicleTracker _lockedVehicleTracker;
+
+            // Pool only a single reskin event since usually there will be at most a single event per frame.
+            private ReskinEvent _pooledReskinEvent;
+
+            // Keep track of all reskin events happening in a frame, in case there are multiple.
+            private List<ReskinEvent> _reskinEvents = new List<ReskinEvent>();
+
+            public readonly Action CleanupAction;
+
+            public ReskinManager(VehicleInfoManager vehicleInfoManager, LockedVehicleTracker lockedVehicleTracker)
+            {
+                _vehicleInfoManager = vehicleInfoManager;
+                _lockedVehicleTracker = lockedVehicleTracker;
+                CleanupAction = CleanupEvents;
+            }
+
+            public void HandleReskinPre(BaseEntity entity, BaseLock baseLock)
+            {
+                if (_pooledReskinEvent == null)
+                {
+                    _pooledReskinEvent = new ReskinEvent();
+                }
+
+                var reskinEvent = _pooledReskinEvent.Entity == null
+                    ? _pooledReskinEvent
+                    : new ReskinEvent();
+
+                // Unparent the lock to prevent it from being destroyed.
+                // It will later be parented to the newly spawned entity.
+                baseLock.SetParent(null);
+
+                reskinEvent.Assign(entity, baseLock);
+                _reskinEvents.Add(reskinEvent);
+            }
+
+            public void HandleReskinPost(BaseEntity entity)
+            {
+                var reskinEvent = FindReskinEventForPosition(entity.transform.position);
+                if (reskinEvent == null)
+                    return;
+
+                var baseLock = reskinEvent.BaseLock;
+                if (baseLock == null || baseLock.IsDestroyed)
+                    return;
+
+                var vehicleInfo = _vehicleInfoManager.GetVehicleInfo(entity);
+                if (vehicleInfo == null)
+                    return;
+
+                _reskinEvents.Remove(reskinEvent);
+
+                baseLock.SetParent(entity, vehicleInfo.ParentBone);
+                entity.SetSlot(BaseEntity.Slot.Lock, baseLock);
+                _lockedVehicleTracker.OnLockAdded(entity);
+
+                var lockTransform = baseLock.transform;
+                lockTransform.localPosition = vehicleInfo.LockPosition;
+                lockTransform.localRotation = vehicleInfo.LockRotation;
+                baseLock.SendNetworkUpdateImmediate();
+
+                if (reskinEvent == _pooledReskinEvent)
+                {
+                    reskinEvent.Reset();
+                }
+            }
+
+            private ReskinEvent FindReskinEventForPosition(Vector3 position)
+            {
+                foreach (var reskinEvent in _reskinEvents)
+                {
+                    if (reskinEvent.Position == position)
+                        return reskinEvent;
+                }
+
+                return null;
+            }
+
+            private void CleanupEvents()
+            {
+                if (_reskinEvents.Count == 0)
+                    return;
+
+                foreach (var reskinEvent in _reskinEvents)
+                {
+                    var baseLock = reskinEvent.BaseLock;
+                    if (baseLock == null || baseLock.IsDestroyed || baseLock.HasParent())
+                        continue;
+
+                    var entity = reskinEvent.Entity;
+                    if (entity != null && !entity.IsDestroyed)
+                    {
+                        // The reskin event must have been blocked, so reparent the lock to it.
+                        baseLock.SetParent(reskinEvent.Entity);
+                        continue;
+                    }
+
+                    // The post event wasn't called, and the original entity is gone, so destroy the lock.
+                    baseLock.Kill();
+                }
+
+                _pooledReskinEvent.Reset();
+                _reskinEvents.Clear();
             }
         }
 
@@ -1520,6 +1724,7 @@ namespace Oxide.Plugins
             public const string GenericErrorVehicleLocked = "Generic.Error.VehicleLocked";
             public const string DeployErrorNoVehicleFound = "Deploy.Error.NoVehicleFound";
             public const string DeployErrorVehicleDead = "Deploy.Error.VehicleDead";
+            public const string DeployErrorOther = "Deploy.Error.Other";
             public const string DeployErrorDifferentOwner = "Deploy.Error.DifferentOwner";
             public const string DeployErrorNoOwner = "Deploy.Error.NoOwner";
             public const string DeployErrorNoOwnerRequiresTC = "Deploy.Error.NoOwner.NoBuildingPrivilege";
@@ -1540,6 +1745,7 @@ namespace Oxide.Plugins
                 [Lang.GenericErrorVehicleLocked] = "That vehicle is locked.",
                 [Lang.DeployErrorNoVehicleFound] = "Error: No vehicle found.",
                 [Lang.DeployErrorVehicleDead] = "Error: That vehicle is dead.",
+                [Lang.DeployErrorOther] = "Error: You cannot do that.",
                 [Lang.DeployErrorDifferentOwner] = "Error: Someone else owns that vehicle.",
                 [Lang.DeployErrorNoOwner] = "Error: You do not own that vehicle.",
                 [Lang.DeployErrorNoOwnerRequiresTC] = "Error: Locking unowned vehicles requires building privilege.",
@@ -1549,7 +1755,7 @@ namespace Oxide.Plugins
                 [Lang.DeployErrorModularCarNoCockpit] = "Error: That car needs a cockpit module to receive a lock.",
                 [Lang.DeployErrorDistance] = "Error: Too far away."
             }, this, "en");
-            // Adding Brazilian Portuguese translation
+
             lang.RegisterMessages(new Dictionary<string, string>
             {
                 [Lang.GenericErrorNoPermission] = "Você não tem permissão para fazer isso.",
@@ -1558,6 +1764,7 @@ namespace Oxide.Plugins
                 [Lang.GenericErrorVehicleLocked] = "Esse veículo está trancado.",
                 [Lang.DeployErrorNoVehicleFound] = "Erro: Nenhum veículo encontrado.",
                 [Lang.DeployErrorVehicleDead] = "Erro: esse veículo está destruido.",
+                [Lang.DeployErrorOther] = "Erro: Você não pode fazer isso.",
                 [Lang.DeployErrorDifferentOwner] = "Erro: outra pessoa é proprietária desse veículo.",
                 [Lang.DeployErrorNoOwner] = "Erro: você não possui esse veículo.",
                 [Lang.DeployErrorNoOwnerRequiresTC] = "Erro: o bloqueio de veículos sem proprietário requer privilégio de construção.",
