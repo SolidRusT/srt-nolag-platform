@@ -7,7 +7,7 @@ using Rust;
 
 namespace Oxide.Plugins
 {
-    [Info("Monuments Recycler", "Dana", "0.2.5")]
+    [Info("Monuments Recycler", "Dana", "0.2.6")]
     [Description("Adds recyclers to monuments including the cargo ship.")]
     internal class MonumentsRecycler : RustPlugin
     {
@@ -286,6 +286,7 @@ namespace Oxide.Plugins
             var entity = GameManager.server.CreateEntity(RecyclerPrefab, finalPos, rotation);
             if (entity != null)
             {
+                entity.EnableSaving(false);
                 entity.Spawn();
                 _recyclers.Add(entity);
             }
@@ -301,6 +302,7 @@ namespace Oxide.Plugins
                 var entity = GameManager.server.CreateEntity(RecyclerPrefab, finalPos, oilRot);
                 if (entity != null)
                 {
+                    entity.EnableSaving(false);
                     entity.Spawn();
                     _recyclers.Add(entity);
                 }
@@ -311,7 +313,7 @@ namespace Oxide.Plugins
             BaseEntity rec = GameManager.server.CreateEntity(RecyclerPrefab, selectedTransform.Item1, selectedTransform.Item2, true);
             if (rec != null)
             {
-                rec.enableSaving = true;
+                rec.EnableSaving(false);
                 rec.Spawn();
                 rec.SetParent(ship, true, true);
                 Rigidbody comp = rec.GetComponent<Rigidbody>();

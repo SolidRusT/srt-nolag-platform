@@ -15,14 +15,18 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.5.2")]
+    [Info("Crafts", "Mevent", "2.6.1")]
     public class Crafts : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, SpawnModularCar, Notify;
+        [PluginReference] private Plugin ImageLibrary, SpawnModularCar, Notify, UINotify, LangAPI;
 
         private const string Layer = "UI.Crafts";
+
+        private const string EditLayer = "UI.Crafts.Edit";
+
+        private const string PermEdit = "crafts.edit";
 
         private static Crafts _instance;
 
@@ -31,6 +35,9 @@ namespace Oxide.Plugins
         private readonly List<RecyclerComponent> _recyclers = new List<RecyclerComponent>();
 
         private readonly List<CarController> _cars = new List<CarController>();
+
+        private readonly Dictionary<string, List<string>> _itemsCategories =
+            new Dictionary<string, List<string>>();
 
         private enum WorkbenchLevel
         {
@@ -49,6 +56,16 @@ namespace Oxide.Plugins
             ModularCar
         }
 
+        private readonly Dictionary<int, ItemForCraft> _itemsById = new Dictionary<int, ItemForCraft>();
+
+        private readonly Dictionary<int, CraftConf> _craftsById = new Dictionary<int, CraftConf>();
+
+        private readonly Dictionary<BasePlayer, Dictionary<string, object>> _craftEditing =
+            new Dictionary<BasePlayer, Dictionary<string, object>>();
+
+        private readonly Dictionary<BasePlayer, Dictionary<string, object>> _itemEditing =
+            new Dictionary<BasePlayer, Dictionary<string, object>>();
+
         #endregion
 
         #region Config
@@ -62,6 +79,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Work with Notify?")]
             public readonly bool UseNotify = true;
+
+            [JsonProperty(PropertyName = "Work with LangAPI?")]
+            public readonly bool UseLangAPI = true;
 
             [JsonProperty(PropertyName = "Permission (ex: crafts.use)")]
             public readonly string Permission = string.Empty;
@@ -454,6 +474,10 @@ namespace Oxide.Plugins
                 Color5 = new IColor("#74884A", 100),
                 Color6 = new IColor("#CD4632", 100),
                 Color7 = new IColor("#595651", 100),
+                Color8 = new IColor("#4B68FF", 70),
+                Color9 = new IColor("#0E0E10", 98),
+                Color10 = new IColor("#4B68FF", 50),
+                Color11 = new IColor("#FF4B4B", 100),
                 BackgroundImage = string.Empty
             };
 
@@ -525,6 +549,18 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Color 7")]
             public IColor Color7;
 
+            [JsonProperty(PropertyName = "Color 8")]
+            public IColor Color8;
+
+            [JsonProperty(PropertyName = "Color 9")]
+            public IColor Color9;
+
+            [JsonProperty(PropertyName = "Color 10")]
+            public IColor Color10;
+
+            [JsonProperty(PropertyName = "Color 11")]
+            public IColor Color11;
+
             [JsonProperty(PropertyName = "Background Image")]
             public string BackgroundImage;
         }
@@ -567,7 +603,7 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Display Name")]
             public string DisplayName;
 
-            [JsonProperty(PropertyName = "Shortname")]
+            [JsonProperty(PropertyName = "ShortName")]
             public string ShortName;
 
             [JsonProperty(PropertyName = "Amount")]
@@ -607,6 +643,8 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "For Modular Car")]
             public ModularCarConf Modular;
 
+            [JsonIgnore] public bool Active = false;
+
             [JsonIgnore] private int _id = -1;
 
             [JsonIgnore]
@@ -614,8 +652,14 @@ namespace Oxide.Plugins
             {
                 get
                 {
-                    if (_id == -1)
-                        _id = Random.Range(int.MinValue, int.MaxValue);
+                    while (_id == -1)
+                    {
+                        var val = Random.Range(int.MinValue, int.MaxValue);
+                        if (_instance._craftsById.ContainsKey(val)) continue;
+
+                        _id = val;
+                        _instance._craftsById[_id] = this;
+                    }
 
                     return _id;
                 }
@@ -706,6 +750,33 @@ namespace Oxide.Plugins
                     }
                 }
             }
+
+            public Dictionary<string, object> ToDictionary()
+            {
+                return new Dictionary<string, object>
+                {
+                    ["Generated"] = false,
+                    ["Enabled"] = Enabled,
+                    ["Image"] = Image,
+                    ["Title"] = Title,
+                    ["Description"] = Description,
+                    ["CmdToGive"] = CmdToGive,
+                    ["Permission"] = Permission,
+                    ["DisplayName"] = DisplayName,
+                    ["ShortName"] = ShortName,
+                    ["Amount"] = Amount,
+                    ["SkinID"] = SkinID,
+                    ["Type"] = Type,
+                    ["Prefab"] = Prefab,
+                    ["GiveCommand"] = GiveCommand,
+                    ["Level"] = Level,
+                    ["UseDistance"] = UseDistance,
+                    ["Distance"] = Distance,
+                    ["Ground"] = Ground,
+                    ["Structure"] = Structure,
+                    ["Items"] = Items
+                };
+            }
         }
 
         private class IColor
@@ -737,15 +808,15 @@ namespace Oxide.Plugins
 
         private class ItemForCraft
         {
-            [JsonProperty(PropertyName = "Image")] public readonly string Image;
+            [JsonProperty(PropertyName = "Image")] public string Image;
 
-            [JsonProperty(PropertyName = "Shortname")]
-            public readonly string ShortName;
+            [JsonProperty(PropertyName = "ShortName")]
+            public string ShortName;
 
             [JsonProperty(PropertyName = "Amount")]
-            public readonly int Amount;
+            public int Amount;
 
-            [JsonProperty(PropertyName = "Skin")] public readonly ulong SkinID;
+            [JsonProperty(PropertyName = "Skin")] public ulong SkinID;
 
             [JsonProperty(PropertyName = "Title (empty - default)")]
             public string Title;
@@ -770,6 +841,55 @@ namespace Oxide.Plugins
                 }
             }
 
+            [JsonIgnore] private int _id = -1;
+
+            [JsonIgnore]
+            public int ID
+            {
+                get
+                {
+                    while (_id == -1)
+                    {
+                        var val = Random.Range(int.MinValue, int.MaxValue);
+                        if (_instance._itemsById.ContainsKey(val)) continue;
+
+                        _id = val;
+                        _instance._itemsById[_id] = this;
+                    }
+
+                    return _id;
+                }
+            }
+
+            public Dictionary<string, object> ToDictionary()
+            {
+                return new Dictionary<string, object>
+                {
+                    ["Generated"] = false,
+                    ["ID"] = ID,
+                    ["Image"] = Image,
+                    ["ShortName"] = ShortName,
+                    ["Amount"] = Amount,
+                    ["SkinID"] = SkinID,
+                    ["Title"] = Title
+                };
+            }
+
+            public string GetItemDisplayName(BasePlayer player)
+            {
+                return _config.UseLangAPI && _instance.LangAPI != null &&
+                       _instance.LangAPI.Call<bool>("IsDefaultDisplayName", PublicTitle)
+                    ? _instance.LangAPI.Call<string>("GetItemDisplayName", ShortName, PublicTitle,
+                        player.UserIDString) ?? PublicTitle
+                    : PublicTitle;
+            }
+
+            #region Constructor
+
+            public ItemForCraft()
+            {
+            }
+
             public ItemForCraft(string image, string shortname, int amount, ulong skin)
             {
                 Image = image;
@@ -777,6 +897,8 @@ namespace Oxide.Plugins
                 Amount = amount;
                 SkinID = skin;
             }
+
+            #endregion
         }
 
         private class ModularCarConf
@@ -923,17 +1045,20 @@ namespace Oxide.Plugins
 
         #region Hooks
 
-        private void OnServerInitialized(bool initial)
+        private void Init()
         {
             _instance = this;
 
             _crafts = _config.Categories.SelectMany(x => x.Crafts).ToList();
 
-            LoadImages();
-
             RegisterPermissions();
+        }
 
-            RegisterCommands();
+        private void OnServerInitialized(bool initial)
+        {
+            LoadItems();
+            
+            LoadImages();
 
             if (!SpawnModularCar && _crafts.Exists(x => x.Enabled && x.Type == CraftType.ModularCar))
                 PrintError("SpawnModularCar IS NOT INSTALLED.");
@@ -941,11 +1066,17 @@ namespace Oxide.Plugins
             if (!initial)
                 foreach (var ent in BaseNetworkable.serverEntities.OfType<BaseCombatEntity>())
                     OnEntitySpawned(ent);
+
+            RegisterCommands();
         }
 
         private void Unload()
         {
-            foreach (var player in BasePlayer.activePlayerList) CuiHelper.DestroyUi(player, Layer);
+            foreach (var player in BasePlayer.activePlayerList)
+            {
+                CuiHelper.DestroyUi(player, Layer);
+                CuiHelper.DestroyUi(player, EditLayer + ".Background");
+            }
 
             Array.ForEach(_recyclers.ToArray(), recycler =>
             {
@@ -1083,7 +1214,7 @@ namespace Oxide.Plugins
             if (player == null || info == null) return;
 
             var entity = info.HitEntity;
-            if (entity == null) return;
+            if (entity == null || entity.OwnerID == 0) return;
 
             var component = entity.GetComponent<RecyclerComponent>();
             if (component == null) return;
@@ -1166,6 +1297,9 @@ namespace Oxide.Plugins
                     if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page)) return;
 
+                    _craftEditing.Remove(player);
+                    _itemEditing.Remove(player);
+
                     MainUi(player, category, page, true);
                     break;
                 }
@@ -1209,6 +1343,384 @@ namespace Oxide.Plugins
 
                     GiveCraft(player, craft);
                     SendNotify(player, SuccessfulCraft, 0, craft.PublicTitle);
+                    break;
+                }
+
+                case "start_edit":
+                {
+                    int category, page, craftId;
+                    if (!arg.HasArgs(4) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId))
+                        return;
+
+                    EditUi(player, category, page, craftId);
+                    break;
+                }
+
+                case "edit":
+                {
+                    int category, page, craftId, itemsPage;
+                    if (!arg.HasArgs(7) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId) ||
+                        !int.TryParse(arg.Args[4], out itemsPage) ||
+                        string.IsNullOrEmpty(arg.Args[5]) || string.IsNullOrEmpty(arg.Args[6])) return;
+
+                    var key = arg.Args[5];
+                    var value = arg.Args[6];
+
+                    if (_craftEditing.ContainsKey(player) && _craftEditing[player].ContainsKey(key))
+                    {
+                        object newValue;
+
+                        switch (key)
+                        {
+                            case "Amount":
+                            {
+                                int result;
+                                if (int.TryParse(value, out result))
+                                    newValue = result;
+                                else
+                                    return;
+                                break;
+                            }
+
+                            case "SkinID":
+                            {
+                                ulong result;
+                                if (ulong.TryParse(value, out result))
+                                    newValue = result;
+                                else
+                                    return;
+                                break;
+                            }
+
+                            case "Type":
+                            {
+                                CraftType result;
+                                if (Enum.TryParse(value, out result))
+                                    newValue = result;
+                                else
+                                    return;
+                                break;
+                            }
+
+                            case "Level":
+                            {
+                                WorkbenchLevel result;
+                                if (Enum.TryParse(value, out result))
+                                    newValue = result;
+                                else
+                                    return;
+                                break;
+                            }
+
+                            case "Enabled":
+                            case "UseDistance":
+                            case "Ground":
+                            case "Structure":
+                            {
+                                bool result;
+                                if (bool.TryParse(value, out result))
+                                    newValue = result;
+                                else
+                                    return;
+                                break;
+                            }
+
+                            case "Description":
+                            {
+                                newValue = string.Join(" ", arg.Args.Skip(6));
+                                break;
+                            }
+
+                            default:
+                            {
+                                newValue = value;
+                                break;
+                            }
+                        }
+
+                        _craftEditing[player][key] = newValue;
+                    }
+
+                    EditUi(player, category, page, craftId);
+                    break;
+                }
+
+                case "save_edit":
+                {
+                    int category, page, craftId;
+                    if (!arg.HasArgs(4) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId))
+                        return;
+
+                    Dictionary<string, object> values;
+                    if (!_craftEditing.TryGetValue(player, out values) || values == null) return;
+
+                    var generated = Convert.ToBoolean(values["Generated"]);
+                    var craft = generated ? new CraftConf() : FindCraftById(craftId);
+                    if (craft == null) return;
+
+                    craft.Enabled = Convert.ToBoolean(values["Enabled"]);
+                    craft.Image = (string) values["Image"];
+                    craft.Title = (string) values["Title"];
+                    craft.Description = (string) values["Description"];
+                    craft.CmdToGive = (string) values["CmdToGive"];
+                    craft.Permission = (string) values["Permission"];
+                    craft.DisplayName = (string) values["DisplayName"];
+                    craft.ShortName = (string) values["ShortName"];
+                    craft.Prefab = (string) values["Prefab"];
+                    craft.GiveCommand = (string) values["GiveCommand"];
+                    craft.Amount = Convert.ToInt32(values["Amount"]);
+                    craft.SkinID = Convert.ToUInt64(values["SkinID"]);
+                    craft.Type = (CraftType) values["Type"];
+                    craft.Level = (WorkbenchLevel) values["Level"];
+                    craft.UseDistance = Convert.ToBoolean(values["UseDistance"]);
+                    craft.Distance = Convert.ToSingle(values["Distance"]);
+                    craft.Structure = Convert.ToBoolean(values["Structure"]);
+                    craft.Items = values["Items"] as List<ItemForCraft>;
+
+                    if (generated)
+                        GetPlayerCategories(player)[category].Crafts.Add(craft);
+
+                    _craftEditing.Remove(player);
+                    _itemEditing.Remove(player);
+
+                    SaveConfig();
+
+                    MainUi(player, category, page, true);
+                    break;
+                }
+
+                case "delete_edit":
+                {
+                    int category, page, craftId;
+                    if (!arg.HasArgs(4) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId))
+                        return;
+
+                    var craft = FindCraftById(craftId);
+                    if (craft == null) return;
+
+                    GetPlayerCategories(player)[category].Crafts.Remove(craft);
+
+                    _craftEditing.Remove(player);
+                    _itemEditing.Remove(player);
+
+                    SaveConfig();
+
+                    MainUi(player, category, page, true);
+                    break;
+                }
+
+                case "edit_page":
+                {
+                    int category, page, craftId, itemsPage;
+                    if (!arg.HasArgs(5) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId) ||
+                        !int.TryParse(arg.Args[4], out itemsPage))
+                        return;
+
+                    EditUi(player, category, page, craftId, itemsPage);
+                    break;
+                }
+
+                case "stopedit":
+                {
+                    _craftEditing.Remove(player);
+                    _itemEditing.Remove(player);
+                    break;
+                }
+
+                case "start_edititem":
+                {
+                    int category, page, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(6) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId) ||
+                        !int.TryParse(arg.Args[4], out itemsPage) ||
+                        !int.TryParse(arg.Args[5], out itemId))
+                        return;
+
+                    _itemEditing.Remove(player);
+
+                    EditItemUi(player, category, page, craftId, itemsPage, itemId);
+                    break;
+                }
+
+                case "edititem":
+                {
+                    int category, page, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(8) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId) ||
+                        !int.TryParse(arg.Args[4], out itemsPage) ||
+                        !int.TryParse(arg.Args[5], out itemId) ||
+                        string.IsNullOrEmpty(arg.Args[6]) || string.IsNullOrEmpty(arg.Args[7]))
+                        return;
+
+                    var key = arg.Args[6];
+                    var value = arg.Args[7];
+
+                    if (_itemEditing.ContainsKey(player) && _itemEditing[player].ContainsKey(key))
+                    {
+                        object newValue = null;
+
+                        switch (key)
+                        {
+                            case "Amount":
+                            {
+                                int result;
+                                if (value == "delete")
+                                    newValue = 1;
+                                else if (int.TryParse(value, out result))
+                                    newValue = result;
+                                break;
+                            }
+                            case "SkinID":
+                            {
+                                ulong result;
+                                if (value == "delete")
+                                    newValue = 0UL;
+                                else if (ulong.TryParse(value, out result))
+                                    newValue = result;
+                                break;
+                            }
+                            default:
+                            {
+                                newValue = value == "delete" ? string.Empty : value;
+                                break;
+                            }
+                        }
+
+                        _itemEditing[player][key] = newValue;
+                    }
+
+                    EditItemUi(player, category, page, craftId, itemsPage, itemId);
+                    break;
+                }
+
+                case "saveitem":
+                {
+                    int category, page, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(6) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId) ||
+                        !int.TryParse(arg.Args[4], out itemsPage) ||
+                        !int.TryParse(arg.Args[5], out itemId))
+                        return;
+
+                    Dictionary<string, object> values;
+                    if (!_itemEditing.TryGetValue(player, out values) || values == null) return;
+
+                    var generated = Convert.ToBoolean(values["Generated"]);
+                    var item = generated ? new ItemForCraft() : FindItemById(itemId);
+                    if (item == null) return;
+
+                    item.Image = values["Image"].ToString();
+                    item.ShortName = values["ShortName"].ToString();
+                    item.Amount = Convert.ToInt32(values["Amount"]);
+                    item.SkinID = Convert.ToUInt64(values["SkinID"]);
+
+                    if (generated)
+                        ((List<ItemForCraft>) _craftEditing[player]["Items"]).Add(item);
+                    else
+                        _craftEditing.Remove(player);
+
+                    _itemEditing.Remove(player);
+
+                    SaveConfig();
+
+                    EditUi(player, category, page, craftId, itemsPage);
+                    break;
+                }
+
+                case "removeitem":
+                {
+                    int category, page, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(6) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId) ||
+                        !int.TryParse(arg.Args[4], out itemsPage) ||
+                        !int.TryParse(arg.Args[5], out itemId))
+                        return;
+
+                    var craft = FindCraftById(craftId);
+                    if (craft == null) return;
+
+                    var item = FindItemById(itemId);
+                    if (item == null) return;
+
+                    craft.Items.Remove(item);
+
+                    _craftEditing.Remove(player);
+                    _itemEditing.Remove(player);
+
+                    SaveConfig();
+
+                    EditUi(player, category, page, craftId, itemsPage);
+                    break;
+                }
+
+                case "selectitem":
+                {
+                    int category, page, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(6) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId) ||
+                        !int.TryParse(arg.Args[4], out itemsPage) ||
+                        !int.TryParse(arg.Args[5], out itemId))
+                        return;
+
+                    var selectedCategory = string.Empty;
+                    if (arg.HasArgs(7))
+                        selectedCategory = arg.Args[6];
+
+                    var localPage = 0;
+                    if (arg.HasArgs(8))
+                        int.TryParse(arg.Args[7], out localPage);
+
+                    var input = string.Empty;
+                    if (arg.HasArgs(9))
+                        input = string.Join(" ", arg.Args.Skip(8));
+
+                    SelectItemUi(player, category, page, craftId, itemsPage, itemId, selectedCategory, localPage,
+                        input);
+                    break;
+                }
+
+                case "takeitem":
+                {
+                    int category, page, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(7) ||
+                        !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out craftId) ||
+                        !int.TryParse(arg.Args[4], out itemsPage) ||
+                        !int.TryParse(arg.Args[5], out itemId))
+                        return;
+
+                    var shortName = arg.Args[6];
+                    if (string.IsNullOrEmpty(shortName)) return;
+
+                    _itemEditing[player]["ShortName"] = shortName;
+
+                    EditItemUi(player, category, page, craftId, itemsPage, itemId);
                     break;
                 }
             }
@@ -1399,6 +1911,30 @@ namespace Oxide.Plugins
                 }
             }, Layer + ".Header");
 
+            if (CanEdit(player))
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "1 1", AnchorMax = "1 1",
+                        OffsetMin = "-145 -37.5",
+                        OffsetMax = "-55 -12.5"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, CraftCreate),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 10,
+                        Color = _config.UI.Color3.Get()
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color1.Get(),
+                        Command = $"UI_Crafts start_edit {category} {page} -1"
+                    }
+                }, Layer + ".Header");
+
             container.Add(new CuiButton
             {
                 RectTransform =
@@ -1577,6 +2113,42 @@ namespace Oxide.Plugins
                             Command = $"UI_Crafts trycraft {category} {page} {craft.ID}"
                         }
                     }, Layer + $".Craft.{i}");
+
+                    if (CanEdit(player))
+                    {
+                        if (!craft.Enabled)
+                            container.Add(new CuiPanel
+                            {
+                                RectTransform =
+                                {
+                                    AnchorMin = "0 1", AnchorMax = "0 1",
+                                    OffsetMin = "5 -15", OffsetMax = "15 -5"
+                                },
+                                Image =
+                                {
+                                    Color = _config.UI.Color4.Get()
+                                }
+                            }, Layer + $".Craft.{i}");
+
+                        container.Add(new CuiButton
+                        {
+                            RectTransform =
+                            {
+                                AnchorMin = "1 1", AnchorMax = "1 1",
+                                OffsetMin = "-15 -15", OffsetMax = "-5 -5"
+                            },
+                            Text =
+                            {
+                                Text = ""
+                            },
+                            Button =
+                            {
+                                Color = "1 1 1 1",
+                                Sprite = "assets/icons/gear.png",
+                                Command = $"UI_Crafts start_edit {category} {page} {craft.ID}"
+                            }
+                        }, Layer + $".Craft.{i}");
+                    }
 
                     if ((i + 1) % amountOnString == 0)
                     {
@@ -1768,7 +2340,24 @@ namespace Oxide.Plugins
                     },
                     Text =
                     {
-                        Text = Msg(player, CraftItemFormat, item.PublicTitle, item.Amount),
+                        Text = item.GetItemDisplayName(player),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 16,
+                        Color = "1 1 1 0.5"
+                    }
+                }, Layer + $".Item.{xSwitch}");
+
+                container.Add(new CuiLabel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 0",
+                        OffsetMin = "-100 -25", OffsetMax = "100 0"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, CraftItemAmount, item.Amount),
                         Align = TextAnchor.MiddleCenter,
                         Font = "robotocondensed-regular.ttf",
                         FontSize = 16,
@@ -1858,9 +2447,1643 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
+        private void EditUi(BasePlayer player, int category, int page, int craftId, int itemsPage = 0)
+        {
+            #region Dictionary
+
+            if (!_craftEditing.ContainsKey(player))
+            {
+                var craft = FindCraftById(craftId);
+                if (craft != null)
+                    _craftEditing[player] = craft.ToDictionary();
+                else
+                    _craftEditing[player] = new Dictionary<string, object>
+                    {
+                        ["Generated"] = true,
+                        ["Enabled"] = false,
+                        ["Image"] = string.Empty,
+                        ["Title"] = string.Empty,
+                        ["Description"] = string.Empty,
+                        ["CmdToGive"] = string.Empty,
+                        ["Permission"] = string.Empty,
+                        ["DisplayName"] = string.Empty,
+                        ["ShortName"] = string.Empty,
+                        ["Amount"] = 1,
+                        ["SkinID"] = 0UL,
+                        ["Type"] = CraftType.Command,
+                        ["Prefab"] = string.Empty,
+                        ["GiveCommand"] = string.Empty,
+                        ["Level"] = WorkbenchLevel.None,
+                        ["UseDistance"] = false,
+                        ["Distance"] = 0f,
+                        ["Ground"] = false,
+                        ["Structure"] = false,
+                        ["Items"] = new List<ItemForCraft>()
+                    };
+            }
+
+            #endregion
+
+            var edit = _craftEditing[player];
+
+            var container = new CuiElementContainer();
+
+            #region Background
+
+            container.Add(new CuiPanel
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Image =
+                {
+                    Color = _config.UI.Color9.Get()
+                }
+            }, Layer, EditLayer + ".Background");
+
+            container.Add(new CuiButton
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
+                Button =
+                {
+                    Color = "0 0 0 0",
+                    Close = EditLayer + ".Background",
+                    Command = "UI_Crafts stopedit"
+                }
+            }, EditLayer + ".Background");
+
+            #endregion
+
+            #region Main
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+                    OffsetMin = "-240 -275",
+                    OffsetMax = "240 275"
+                },
+                Image =
+                {
+                    Color = _config.UI.Color1.Get()
+                }
+            }, EditLayer + ".Background", EditLayer);
+
+            #region Header
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "1 1",
+                    OffsetMin = "0 -50",
+                    OffsetMax = "0 0"
+                },
+                Image = {Color = _config.UI.Color2.Get()}
+            }, EditLayer, Layer + ".Header");
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 1",
+                    OffsetMin = "30 0",
+                    OffsetMax = "0 0"
+                },
+                Text =
+                {
+                    Text = Msg(player, CraftEditingTitle),
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 14,
+                    Color = _config.UI.Color3.Get()
+                }
+            }, Layer + ".Header");
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "1 1", AnchorMax = "1 1",
+                    OffsetMin = "-50 -37.5",
+                    OffsetMax = "-25 -12.5"
+                },
+                Text =
+                {
+                    Text = Msg(player, CloseButton),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 10,
+                    Color = _config.UI.Color3.Get()
+                },
+                Button =
+                {
+                    Close = EditLayer + ".Background",
+                    Color = _config.UI.Color4.Get(),
+                    Command = "UI_Crafts stopedit"
+                }
+            }, Layer + ".Header");
+
+            #endregion
+
+            #region Image
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "0 1",
+                    OffsetMin = "10 -200",
+                    OffsetMax = "145 -65"
+                },
+                Image = {Color = _config.UI.Color2.Get()}
+            }, EditLayer, Layer + ".Image");
+
+            if (!string.IsNullOrEmpty(edit["Image"].ToString()) || !string.IsNullOrEmpty(edit["ShortName"].ToString()))
+                container.Add(new CuiElement
+                {
+                    Parent = Layer + ".Image",
+                    Components =
+                    {
+                        new CuiRawImageComponent
+                        {
+                            Png = !string.IsNullOrEmpty(edit["Image"].ToString())
+                                ? ImageLibrary.Call<string>("GetImage", edit["Image"].ToString())
+                                : ImageLibrary.Call<string>("GetImage", edit["ShortName"].ToString(),
+                                    Convert.ToUInt64(edit["SkinID"]))
+                        },
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = "0 0", AnchorMax = "1 1",
+                            OffsetMin = "5 5", OffsetMax = "-5 -5"
+                        }
+                    }
+                });
+
+            #region Input
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 0",
+                    OffsetMin = "0 -20", OffsetMax = "0 0"
+                },
+                Image =
+                {
+                    Color = _config.UI.Color8.Get()
+                }
+            }, Layer + ".Image", Layer + ".Image.Input");
+
+            if (!string.IsNullOrEmpty(edit["Image"].ToString()))
+                container.Add(new CuiLabel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1",
+                        OffsetMin = "5 0", OffsetMax = "-5 0"
+                    },
+                    Text =
+                    {
+                        Text = $"{edit["Image"]}",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 0.45"
+                    }
+                }, Layer + ".Image.Input");
+
+            container.Add(new CuiElement
+            {
+                Parent = Layer + ".Image.Input",
+                Components =
+                {
+                    new CuiInputFieldComponent
+                    {
+                        FontSize = 10,
+                        Align = TextAnchor.MiddleLeft,
+                        Font = "robotocondensed-bold.ttf",
+                        Command = $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Image ",
+                        Color = "1 1 1 0.95",
+                        CharsLimit = 9
+                    },
+                    new CuiRectTransformComponent
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1", OffsetMin = "5 5", OffsetMax = "-5 -5"
+                    }
+                }
+            });
+
+            #endregion
+
+            #endregion
+
+            #region Types
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "0 1",
+                    OffsetMin = "155 -85",
+                    OffsetMax = "205 -65"
+                },
+                Text =
+                {
+                    Text = Msg(player, CraftTypeTitle),
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 12,
+                    Color = "1 1 1 1"
+                }
+            }, EditLayer);
+
+            var xSwitch = 155f;
+            var width = 60f;
+            var margin = 5f;
+
+            var type = edit["Type"] as CraftType? ?? CraftType.Item;
+            foreach (var craftType in Enum.GetValues(typeof(CraftType)).Cast<CraftType>())
+            {
+                var nowStatus = type == craftType;
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 1", AnchorMax = "0 1",
+                        OffsetMin = $"{xSwitch} -105",
+                        OffsetMax = $"{xSwitch + width} -85"
+                    },
+                    Text =
+                    {
+                        Text = $"{craftType}",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = nowStatus ? _config.UI.Color10.Get() : _config.UI.Color4.Get(),
+                        Command = $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Type {craftType}"
+                    }
+                }, EditLayer);
+
+                xSwitch += width + margin;
+            }
+
+            #endregion
+
+            #region Work Bench
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "0 1",
+                    OffsetMin = "155 -135",
+                    OffsetMax = "300 -115"
+                },
+                Text =
+                {
+                    Text = Msg(player, CraftWorkbenchTitle),
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 12,
+                    Color = "1 1 1 1"
+                }
+            }, EditLayer);
+
+            xSwitch = 155f;
+            width = 76.25f;
+            margin = 5f;
+
+            foreach (var wbLevel in Enum.GetValues(typeof(WorkbenchLevel)).Cast<WorkbenchLevel>())
+            {
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 1", AnchorMax = "0 1",
+                        OffsetMin = $"{xSwitch} -155",
+                        OffsetMax = $"{xSwitch + width} -135"
+                    },
+                    Text =
+                    {
+                        Text = $"{wbLevel}",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = _config.Workbenches[wbLevel].Get(),
+                        Command = $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Level {wbLevel}"
+                    }
+                }, EditLayer, Layer + $".WorkBench.{wbLevel}");
+
+                var lvl = (WorkbenchLevel) edit["Level"];
+                if (lvl == wbLevel)
+                    CreateOutLine(ref container, Layer + $".WorkBench.{wbLevel}", _config.UI.Color2.Get());
+
+                xSwitch += width + margin;
+            }
+
+            #endregion
+
+            #region Prefab
+
+            EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
+                "-85 -215",
+                "235 -165",
+                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Prefab ",
+                new KeyValuePair<string, object>("Prefab", edit["Prefab"]));
+
+            #endregion
+
+            #region Fields
+
+            width = 150f;
+            margin = 5;
+            var yMargin = 5f;
+            var height = 45f;
+            var ySwitch = -225f;
+            var fieldsOnString = 3;
+
+            var constSwitch = -(fieldsOnString * width + (fieldsOnString - 1) * margin) / 2f;
+            xSwitch = constSwitch;
+
+            var i = 1;
+            foreach (var obj in _craftEditing[player]
+                         .Where(x => x.Key != "Generated"
+                                     && x.Key != "ID"
+                                     && x.Key != "Prefab"
+                                     && x.Key != "Enabled"
+                                     && x.Key != "Type"
+                                     && x.Key != "Level"
+                                     && x.Key != "UseDistance"
+                                     && x.Key != "Ground"
+                                     && x.Key != "Structure"
+                                     && x.Key != "Items"))
+            {
+                EditFieldUi(player, ref container, EditLayer, Layer + $".Editing.{i}",
+                    $"{xSwitch} {ySwitch - height}",
+                    $"{xSwitch + width} {ySwitch}",
+                    $"UI_Crafts edit {category} {page} {craftId} {itemsPage} {obj.Key} ",
+                    obj);
+
+                if (i % fieldsOnString == 0)
+                {
+                    ySwitch = ySwitch - height - yMargin;
+                    xSwitch = constSwitch;
+                }
+                else
+                {
+                    xSwitch += width + margin;
+                }
+
+                i++;
+            }
+
+            #endregion
+
+            #region Items
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "0 1",
+                    OffsetMin = "10 -445",
+                    OffsetMax = "100 -425"
+                },
+                Text =
+                {
+                    Text = Msg(player, CraftItemsTitle),
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 12,
+                    Color = "1 1 1 1"
+                }
+            }, EditLayer);
+
+            var amountOnString = 7;
+            width = 60f;
+            height = 60f;
+            margin = 5f;
+
+            ySwitch = -450f;
+
+            xSwitch = 10f;
+
+            var items = (List<ItemForCraft>) edit["Items"];
+            if (items != null)
+            {
+                foreach (var craftItem in items.Skip(amountOnString * itemsPage).Take(amountOnString))
+                {
+                    container.Add(new CuiPanel
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0 1", AnchorMax = "0 1",
+                            OffsetMin = $"{xSwitch} {ySwitch - height}",
+                            OffsetMax = $"{xSwitch + width} {ySwitch}"
+                        },
+                        Image =
+                        {
+                            Color = _config.UI.Color2.Get()
+                        }
+                    }, EditLayer, Layer + $".Craft.Item.{xSwitch}");
+
+                    container.Add(new CuiElement
+                    {
+                        Parent = Layer + $".Craft.Item.{xSwitch}",
+                        Components =
+                        {
+                            new CuiRawImageComponent
+                            {
+                                Png = !string.IsNullOrEmpty(craftItem.Image)
+                                    ? ImageLibrary.Call<string>("GetImage", craftItem.Image)
+                                    : ImageLibrary.Call<string>("GetImage", craftItem.ShortName, craftItem.SkinID)
+                            },
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0 0", AnchorMax = "1 1",
+                                OffsetMin = "5 5", OffsetMax = "-5 -5"
+                            }
+                        }
+                    });
+
+                    container.Add(new CuiLabel
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0 0", AnchorMax = "1 1",
+                            OffsetMin = "0 2",
+                            OffsetMax = "-2 0"
+                        },
+                        Text =
+                        {
+                            Text = $"{craftItem.Amount}",
+                            Align = TextAnchor.LowerRight,
+                            Font = "robotocondensed-regular.ttf",
+                            FontSize = 10,
+                            Color = "1 1 1 0.9"
+                        }
+                    }, Layer + $".Craft.Item.{xSwitch}");
+
+                    container.Add(new CuiButton
+                    {
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
+                        Button =
+                        {
+                            Color = "0 0 0 0",
+                            Command = $"UI_Crafts start_edititem {category} {page} {craftId} {itemsPage} {craftItem.ID}"
+                        }
+                    }, Layer + $".Craft.Item.{xSwitch}");
+
+                    xSwitch += margin + width;
+                }
+
+                #region Buttons
+
+                #region Add
+
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 1", AnchorMax = "0 1",
+                        OffsetMin = "45 -445",
+                        OffsetMax = "65 -425"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, CraftItemsAddTitle),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color4.Get(),
+                        Command = $"UI_Crafts start_edititem {category} {page} {craftId} {itemsPage} -1"
+                    }
+                }, EditLayer);
+
+                #endregion
+
+                #region Back
+
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 1", AnchorMax = "0 1",
+                        OffsetMin = "70 -445",
+                        OffsetMax = "90 -425"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, BtnBack),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color4.Get(),
+                        Command = itemsPage != 0
+                            ? $"UI_Crafts edit_page {category} {page} {craftId} {itemsPage - 1}"
+                            : ""
+                    }
+                }, EditLayer);
+
+                #endregion
+
+                #region Next
+
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 1", AnchorMax = "0 1",
+                        OffsetMin = "95 -445",
+                        OffsetMax = "115 -425"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, BtnNext),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color4.Get(),
+                        Command = items.Count > (itemsPage + 1) * amountOnString
+                            ? $"UI_Crafts edit_page {category} {page} {craftId} {itemsPage + 1}"
+                            : ""
+                    }
+                }, EditLayer);
+
+                #endregion
+
+                #endregion
+            }
+
+            #endregion
+
+            #endregion
+
+            #region Params
+
+            xSwitch = constSwitch;
+
+            ySwitch = ySwitch - height - 10f;
+
+            #region Enabled
+
+            var enabled = Convert.ToBoolean(_craftEditing[player]["Enabled"]);
+
+            var text = Msg(player, EnableCraft);
+
+            CheckBoxUi(ref container, EditLayer, Layer + ".Editing.Enabled", "0.5 1", "0.5 1",
+                $"{xSwitch} {ySwitch - 10}",
+                $"{xSwitch + 10} {ySwitch}",
+                enabled,
+                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Enabled {!enabled}",
+                text
+            );
+
+            xSwitch += (text.Length + 1) * 10 * 0.5f + 10;
+
+            #endregion
+
+            #region UseDistance
+
+            var useDistance = Convert.ToBoolean(_craftEditing[player]["UseDistance"]);
+
+            text = Msg(player, EditUseDistance);
+
+            CheckBoxUi(ref container, EditLayer, Layer + ".Editing.UseDistance", "0.5 1", "0.5 1",
+                $"{xSwitch} {ySwitch - 10}",
+                $"{xSwitch + 10} {ySwitch}",
+                useDistance,
+                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} UseDistance {!useDistance}",
+                text
+            );
+
+            xSwitch += (text.Length + 1) * 10 * 0.5f + 10;
+
+            #endregion
+
+            #region Ground
+
+            var ground = Convert.ToBoolean(_craftEditing[player]["Ground"]);
+
+            text = Msg(player, EditGround);
+
+            CheckBoxUi(ref container, EditLayer, Layer + ".Editing.Ground", "0.5 1", "0.5 1",
+                $"{xSwitch} {ySwitch - 10}",
+                $"{xSwitch + 10} {ySwitch}",
+                ground,
+                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Ground {!ground}",
+                text
+            );
+
+            xSwitch += (text.Length + 1) * 10 * 0.5f + 10;
+
+            #endregion
+
+            #region Structure
+
+            var structure = Convert.ToBoolean(_craftEditing[player]["Structure"]);
+
+            text = Msg(player, EnableStructure);
+
+            CheckBoxUi(ref container, EditLayer, Layer + ".Editing.Structure", "0.5 1", "0.5 1",
+                $"{xSwitch} {ySwitch - 10}",
+                $"{xSwitch + 10} {ySwitch}",
+                structure,
+                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Structure {!structure}",
+                text
+            );
+
+            #endregion
+
+            #endregion
+
+            #region Buttons
+
+            var generated = Convert.ToBoolean(_craftEditing[player]["Generated"]);
+
+            #region Save
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                    OffsetMin = $"{(generated ? -90 : -105)} -12",
+                    OffsetMax = $"{(generated ? 90 : 75)} 12"
+                },
+                Text =
+                {
+                    Text = Msg(player, CraftSaveTitle),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 14,
+                    Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Color = _config.UI.Color4.Get(),
+                    Command = $"UI_Crafts save_edit {category} {page} {craftId}"
+                }
+            }, EditLayer);
+
+            #endregion
+
+            #region Delete
+
+            if (!generated)
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                        OffsetMin = "80 -12",
+                        OffsetMax = "110 12"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, CraftRemoveTitle),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 14,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color11.Get(),
+                        Command = $"UI_Crafts delete_edit {category} {page} {craftId}"
+                    }
+                }, EditLayer);
+
+            #endregion
+
+            #endregion
+
+            CuiHelper.DestroyUi(player, EditLayer + ".Background");
+            CuiHelper.AddUi(player, container);
+        }
+
+        private void EditFieldUi(BasePlayer player, ref CuiElementContainer container,
+            string parent,
+            string name,
+            string oMin,
+            string oMax,
+            string command,
+            KeyValuePair<string, object> obj)
+        {
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = $"{oMin}",
+                    OffsetMax = $"{oMax}"
+                },
+                Image =
+                {
+                    Color = "0 0 0 0"
+                }
+            }, parent, name);
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "1 1",
+                    OffsetMin = "0 -15", OffsetMax = "0 0"
+                },
+                Text =
+                {
+                    Text = $"{Msg(player, obj.Key)}".Replace("_", " "),
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 10,
+                    Color = "1 1 1 1"
+                }
+            }, name);
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 1",
+                    OffsetMin = "0 0", OffsetMax = "0 -20"
+                },
+                Image = {Color = "0 0 0 0"}
+            }, name, $"{name}.Value");
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 1",
+                    OffsetMin = "10 0", OffsetMax = "0 0"
+                },
+                Text =
+                {
+                    Text = $"{obj.Value}",
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 10,
+                    Color = "1 1 1 0.15"
+                }
+            }, $"{name}.Value");
+
+            CreateOutLine(ref container, $"{name}.Value", _config.UI.Color2.Get());
+
+            container.Add(new CuiElement
+            {
+                Parent = $"{name}.Value",
+                Components =
+                {
+                    new CuiInputFieldComponent
+                    {
+                        FontSize = 12,
+                        Align = TextAnchor.MiddleLeft,
+                        Command = $"{command}",
+                        Color = "1 1 1 0.99",
+                        CharsLimit = 150
+                    },
+                    new CuiRectTransformComponent
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1",
+                        OffsetMin = "10 0", OffsetMax = "0 0"
+                    }
+                }
+            });
+        }
+
+        private void CheckBoxUi(ref CuiElementContainer container, string parent, string name, string aMin, string aMax,
+            string oMin, string oMax, bool enabled,
+            string command, string text)
+        {
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = aMin, AnchorMax = aMax,
+                    OffsetMin = oMin,
+                    OffsetMax = oMax
+                },
+                Image = {Color = "0 0 0 0"}
+            }, parent, name);
+
+            CreateOutLine(ref container, name, _config.UI.Color4.Get(), 1);
+
+            if (enabled)
+                container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1"
+                    },
+                    Image = {Color = _config.UI.Color4.Get()}
+                }, name);
+
+
+            container.Add(new CuiButton
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
+                Button =
+                {
+                    Color = "0 0 0 0",
+                    Command = $"{command}"
+                }
+            }, name);
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "1 0.5", AnchorMax = "1 0.5",
+                    OffsetMin = "5 -10",
+                    OffsetMax = "100 10"
+                },
+                Text =
+                {
+                    Text = $"{text}",
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 10,
+                    Color = "1 1 1 1"
+                }
+            }, name);
+        }
+
+        private void EditItemUi(BasePlayer player, int category, int page, int craftId, int itemsPage, int itemId)
+        {
+            #region Dictionary
+
+            if (!_itemEditing.ContainsKey(player))
+            {
+                var itemById = FindItemById(itemId);
+                if (itemById != null)
+                    _itemEditing[player] = itemById.ToDictionary();
+                else
+                    _itemEditing[player] = new Dictionary<string, object>
+                    {
+                        ["Generated"] = true,
+                        ["ID"] = 0,
+                        ["Image"] = string.Empty,
+                        ["ShortName"] = string.Empty,
+                        ["Amount"] = 1,
+                        ["SkinID"] = 0UL,
+                        ["Title"] = string.Empty
+                    };
+            }
+
+            #endregion
+
+            var edit = _itemEditing[player];
+
+            var container = new CuiElementContainer();
+
+            #region Background
+
+            container.Add(new CuiPanel
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Image =
+                {
+                    Color = _config.UI.Color9.Get()
+                }
+            }, Layer, EditLayer + ".Background");
+
+            container.Add(new CuiButton
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
+                Button =
+                {
+                    Color = "0 0 0 0",
+                    Command = $"UI_Crafts edit_page {category} {page} {craftId} {itemsPage}"
+                }
+            }, EditLayer + ".Background");
+
+            #endregion
+
+            #region Main
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+                    OffsetMin = "-240 -120",
+                    OffsetMax = "240 120"
+                },
+                Image =
+                {
+                    Color = _config.UI.Color1.Get()
+                }
+            }, EditLayer + ".Background", EditLayer);
+
+            #region Header
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "1 1",
+                    OffsetMin = "0 -50",
+                    OffsetMax = "0 0"
+                },
+                Image = {Color = _config.UI.Color2.Get()}
+            }, EditLayer, Layer + ".Header");
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 1",
+                    OffsetMin = "30 0",
+                    OffsetMax = "0 0"
+                },
+                Text =
+                {
+                    Text = Msg(player, ItemEditingTitle),
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 14,
+                    Color = _config.UI.Color3.Get()
+                }
+            }, Layer + ".Header");
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "1 1", AnchorMax = "1 1",
+                    OffsetMin = "-50 -37.5",
+                    OffsetMax = "-25 -12.5"
+                },
+                Text =
+                {
+                    Text = Msg(player, CloseButton),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 10,
+                    Color = _config.UI.Color3.Get()
+                },
+                Button =
+                {
+                    Color = _config.UI.Color4.Get(),
+                    Command = $"UI_Crafts edit_page {category} {page} {craftId} {itemsPage}"
+                }
+            }, Layer + ".Header");
+
+            #endregion
+
+            #region Image
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "0 1",
+                    OffsetMin = "10 -200",
+                    OffsetMax = "145 -65"
+                },
+                Image = {Color = _config.UI.Color2.Get()}
+            }, EditLayer, Layer + ".Image");
+
+            if (!string.IsNullOrEmpty(edit["Image"].ToString()) || !string.IsNullOrEmpty(edit["ShortName"].ToString()))
+                container.Add(new CuiElement
+                {
+                    Parent = Layer + ".Image",
+                    Components =
+                    {
+                        new CuiRawImageComponent
+                        {
+                            Png = !string.IsNullOrEmpty(edit["Image"].ToString())
+                                ? ImageLibrary.Call<string>("GetImage", edit["Image"].ToString())
+                                : ImageLibrary.Call<string>("GetImage", edit["ShortName"].ToString(),
+                                    Convert.ToUInt64(edit["SkinID"]))
+                        },
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = "0 0", AnchorMax = "1 1",
+                            OffsetMin = "5 5", OffsetMax = "-5 -5"
+                        }
+                    }
+                });
+
+            #region Input
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 0",
+                    OffsetMin = "0 -20", OffsetMax = "0 0"
+                },
+                Image =
+                {
+                    Color = _config.UI.Color8.Get()
+                }
+            }, Layer + ".Image", Layer + ".Image.Input");
+
+            if (!string.IsNullOrEmpty(edit["Image"].ToString()))
+                container.Add(new CuiLabel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1",
+                        OffsetMin = "5 0", OffsetMax = "-5 0"
+                    },
+                    Text =
+                    {
+                        Text = $"{edit["Image"]}",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 0.45"
+                    }
+                }, Layer + ".Image.Input");
+
+            container.Add(new CuiElement
+            {
+                Parent = Layer + ".Image.Input",
+                Components =
+                {
+                    new CuiInputFieldComponent
+                    {
+                        FontSize = 10,
+                        Align = TextAnchor.MiddleLeft,
+                        Font = "robotocondensed-bold.ttf",
+                        Command = $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Image ",
+                        Color = "1 1 1 0.95",
+                        CharsLimit = 9
+                    },
+                    new CuiRectTransformComponent
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1", OffsetMin = "5 5", OffsetMax = "-5 -5"
+                    }
+                }
+            });
+
+            #endregion
+
+            #endregion
+
+            #region Title
+
+            EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
+                "-85 -105",
+                "235 -65",
+                $"UI_Crafts edititem {category} {page} {craftId} {itemsPage} {itemId} Title ",
+                new KeyValuePair<string, object>("Title", edit["Title"]));
+
+            #endregion
+
+            #region Amount
+
+            EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
+                "-85 -155",
+                "70 -115",
+                $"UI_Crafts edititem {category} {page} {craftId} {itemsPage} {itemId} Amount ",
+                new KeyValuePair<string, object>("Amount", edit["Amount"]));
+
+            #endregion
+
+            #region Skin
+
+            EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
+                "80 -155",
+                "235 -115",
+                $"UI_Crafts edititem {category} {page} {craftId} {itemsPage} {itemId} SkinID ",
+                new KeyValuePair<string, object>("SkinID", edit["SkinID"]));
+
+            #endregion
+
+            #region ShortName
+
+            EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
+                "-85 -205",
+                "70 -165",
+                $"UI_Crafts edititem {category} {page} {craftId} {itemsPage} {itemId} Shortname ",
+                new KeyValuePair<string, object>("ShortName", edit["ShortName"]));
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = "80 -205", OffsetMax = "180 -185"
+                },
+                Text =
+                {
+                    Text = Msg(player, CraftSelect),
+                    Align = TextAnchor.MiddleCenter,
+                    FontSize = 10,
+                    Font = "robotocondensed-regular.ttf",
+                    Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Color = _config.UI.Color4.Get(),
+                    Command = $"UI_Crafts selectitem {category} {page} {craftId} {itemsPage} {itemId}"
+                }
+            }, EditLayer);
+
+            #endregion
+
+            #region Buttons
+
+            var creating = Convert.ToBoolean(_itemEditing[player]["Generated"]);
+
+            #region Save
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                    OffsetMin = $"{(creating ? -90 : -105)} -12",
+                    OffsetMax = $"{(creating ? 90 : 75)} 12"
+                },
+                Text =
+                {
+                    Text = Msg(player, CraftSaveTitle),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 14,
+                    Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Color = _config.UI.Color4.Get(),
+                    Command = $"UI_Crafts saveitem {category} {page} {craftId} {itemsPage} {itemId}"
+                }
+            }, EditLayer);
+
+            #endregion
+
+            #region Delete
+
+            if (!creating)
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                        OffsetMin = "80 -12",
+                        OffsetMax = "110 12"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, CraftRemoveTitle),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 14,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color11.Get(),
+                        Command = $"UI_Crafts removeitem {category} {page} {craftId} {itemsPage} {itemId}"
+                    }
+                }, EditLayer);
+
+            #endregion
+
+            #endregion
+
+            #endregion
+
+            CuiHelper.DestroyUi(player, EditLayer + ".Background");
+            CuiHelper.AddUi(player, container);
+        }
+
+        private void SelectItemUi(BasePlayer player, int category, int page, int craftId, int itemsPage, int itemId,
+            string selectedCategory = "",
+            int localPage = 0,
+            string input = "")
+        {
+            if (string.IsNullOrEmpty(selectedCategory)) selectedCategory = _itemsCategories.FirstOrDefault().Key;
+
+            var container = new CuiElementContainer();
+
+            #region Background
+
+            container.Add(new CuiPanel
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Image =
+                {
+                    Color = _config.UI.Color9.Get()
+                }
+            }, Layer, EditLayer + ".Background");
+
+            container.Add(new CuiButton
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
+                Button =
+                {
+                    Color = "0 0 0 0",
+                    Command = $"UI_Crafts start_edititem {category} {page} {craftId} {itemsPage} {itemId}"
+                }
+            }, EditLayer + ".Background");
+
+            #endregion
+
+            #region Main
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+                    OffsetMin = "-260 -270",
+                    OffsetMax = "260 280"
+                },
+                Image =
+                {
+                    Color = _config.UI.Color1.Get()
+                }
+            }, EditLayer + ".Background", EditLayer);
+
+            #region Categories
+
+            var amountOnString = 4;
+            var Width = 120f;
+            var Height = 25f;
+            var xMargin = 5f;
+            var yMargin = 5f;
+
+            var constSwitch = -(amountOnString * Width + (amountOnString - 1) * xMargin) / 2f;
+            var xSwitch = constSwitch;
+            var ySwitch = -15f;
+
+            var i = 1;
+            foreach (var cat in _itemsCategories)
+            {
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                        OffsetMin = $"{xSwitch} {ySwitch - Height}",
+                        OffsetMax = $"{xSwitch + Width} {ySwitch}"
+                    },
+                    Text =
+                    {
+                        Text = $"{cat.Key}",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = selectedCategory == cat.Key
+                            ? _config.UI.Color4.Get()
+                            : _config.UI.Color2.Get(),
+                        Command = $"UI_Crafts selectitem {category} {page} {craftId} {itemsPage} {itemId} {cat.Key}"
+                    }
+                }, EditLayer);
+
+                if (i % amountOnString == 0)
+                {
+                    ySwitch = ySwitch - Height - yMargin;
+                    xSwitch = constSwitch;
+                }
+                else
+                {
+                    xSwitch += xMargin + Width;
+                }
+
+                i++;
+            }
+
+            #endregion
+
+            #region Items
+
+            amountOnString = 5;
+
+            var strings = 4;
+            var totalAmount = amountOnString * strings;
+
+            ySwitch = ySwitch - yMargin - Height - 10f;
+
+            Width = 85f;
+            Height = 85f;
+            xMargin = 15f;
+            yMargin = 5f;
+
+            constSwitch = -(amountOnString * Width + (amountOnString - 1) * xMargin) / 2f;
+            xSwitch = constSwitch;
+
+            i = 1;
+
+            var canSearch = !string.IsNullOrEmpty(input) && input.Length > 2;
+
+            var temp = canSearch
+                ? _itemsCategories
+                    .SelectMany(x => x.Value)
+                    .Where(x => x.StartsWith(input) || x.Contains(input) || x.EndsWith(input)).ToList()
+                : _itemsCategories[selectedCategory];
+
+            var itemsAmount = temp.Count;
+            var Items = temp.Skip(localPage * totalAmount).Take(totalAmount).ToList();
+
+            Items.ForEach(item =>
+            {
+                container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                        OffsetMin = $"{xSwitch} {ySwitch - Height}",
+                        OffsetMax = $"{xSwitch + Width} {ySwitch}"
+                    },
+                    Image = {Color = _config.UI.Color2.Get()}
+                }, EditLayer, EditLayer + $".Item.{item}");
+
+                if (ImageLibrary)
+                    container.Add(new CuiElement
+                    {
+                        Parent = EditLayer + $".Item.{item}",
+                        Components =
+                        {
+                            new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", item)},
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0 0", AnchorMax = "1 1",
+                                OffsetMin = "5 5", OffsetMax = "-5 -5"
+                            }
+                        }
+                    });
+
+                container.Add(new CuiButton
+                {
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
+                    Button =
+                    {
+                        Color = "0 0 0 0",
+                        Command =
+                            $"UI_Crafts takeitem {category} {page} {craftId} {itemsPage} {itemId} {item}"
+                    }
+                }, EditLayer + $".Item.{item}");
+
+                if (i % amountOnString == 0)
+                {
+                    xSwitch = constSwitch;
+                    ySwitch = ySwitch - yMargin - Height;
+                }
+                else
+                {
+                    xSwitch += xMargin + Width;
+                }
+
+                i++;
+            });
+
+            #endregion
+
+            #region Search
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                    OffsetMin = "-90 10", OffsetMax = "90 35"
+                },
+                Image = {Color = _config.UI.Color4.Get()}
+            }, EditLayer, EditLayer + ".Search");
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 1",
+                    OffsetMin = "10 0", OffsetMax = "0 0"
+                },
+                Text =
+                {
+                    Text = canSearch ? $"{input}" : Msg(player, ItemSearch),
+                    Align = canSearch ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 10,
+                    Color = canSearch ? "1 1 1 0.8" : "1 1 1 1"
+                }
+            }, EditLayer + ".Search");
+
+            container.Add(new CuiElement
+            {
+                Parent = EditLayer + ".Search",
+                Components =
+                {
+                    new CuiInputFieldComponent
+                    {
+                        FontSize = 10,
+                        Align = TextAnchor.MiddleLeft,
+                        Command =
+                            $"UI_Crafts selectitem selectitem {category} {page} {craftId} {itemsPage} {itemId} {selectedCategory} 0 ",
+                        Color = "1 1 1 0.95",
+                        CharsLimit = 150
+                    },
+                    new CuiRectTransformComponent
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1",
+                        OffsetMin = "10 0", OffsetMax = "0 0"
+                    }
+                }
+            });
+
+            #endregion
+
+            #region Pages
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "0 0",
+                    OffsetMin = "10 10",
+                    OffsetMax = "80 35"
+                },
+                Text =
+                {
+                    Text = Msg(player, Back),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 10,
+                    Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Color = _config.UI.Color2.Get(),
+                    Command = localPage != 0
+                        ? $"UI_Crafts selectitem {category} {page} {craftId} {itemsPage} {itemId} {selectedCategory} {localPage - 1} {input}"
+                        : ""
+                }
+            }, EditLayer);
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "1 0", AnchorMax = "1 0",
+                    OffsetMin = "-80 10",
+                    OffsetMax = "-10 35"
+                },
+                Text =
+                {
+                    Text = Msg(player, Next),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 10,
+                    Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Color = _config.UI.Color4.Get(),
+                    Command = itemsAmount > (localPage + 1) * totalAmount
+                        ? $"UI_Crafts selectitem {category} {page} {craftId} {itemsPage} {itemId} {selectedCategory} {localPage + 1} {input}"
+                        : ""
+                }
+            }, EditLayer);
+
+            #endregion
+
+            #endregion
+
+            CuiHelper.DestroyUi(player, EditLayer + ".Background");
+            CuiHelper.AddUi(player, container);
+        }
+
         #endregion
 
         #region Utils
+
+        private bool CanEdit(BasePlayer player)
+        {
+            return permission.UserHasPermission(player.UserIDString, PermEdit);
+        }
+
+        private void LoadItems()
+        {
+            ItemManager.itemList.ForEach(item =>
+            {
+                var itemCategory = item.category.ToString();
+
+                if (_itemsCategories.ContainsKey(itemCategory))
+                {
+                    if (!_itemsCategories[itemCategory].Contains(item.shortname))
+                        _itemsCategories[itemCategory].Add(item.shortname);
+                }
+                else
+                {
+                    _itemsCategories.Add(itemCategory, new List<string> {item.shortname});
+                }
+            });
+        }
+
+        private ItemForCraft FindItemById(int id)
+        {
+            ItemForCraft item;
+            return _itemsById.TryGetValue(id, out item) ? item : null;
+        }
+
+        private CraftConf FindCraftById(int id)
+        {
+            CraftConf craft;
+            return _craftsById.TryGetValue(id, out craft) ? craft : null;
+        }
+
+        private int GetId()
+        {
+            var result = -1;
+
+            do
+            {
+                var val = Random.Range(int.MinValue, int.MaxValue);
+
+                if (!_crafts.Exists(craft => craft.ID == val))
+                    result = val;
+            } while (result == -1);
+
+            return result;
+        }
+
+        private static void CreateOutLine(ref CuiElementContainer container, string parent, string color,
+            float size = 2)
+        {
+            container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0",
+                        AnchorMax = "1 0",
+                        OffsetMin = $"{size} 0",
+                        OffsetMax = $"-{size} {size}"
+                    },
+                    Image = {Color = color}
+                },
+                parent);
+            container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 1",
+                        AnchorMax = "1 1",
+                        OffsetMin = $"{size} -{size}",
+                        OffsetMax = $"-{size} 0"
+                    },
+                    Image = {Color = color}
+                },
+                parent);
+            container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0", AnchorMax = "0 1",
+                        OffsetMin = "0 0",
+                        OffsetMax = $"{size} 0"
+                    },
+                    Image = {Color = color}
+                },
+                parent);
+            container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "1 0",
+                        AnchorMax = "1 1",
+                        OffsetMin = $"-{size} 0",
+                        OffsetMax = "0 0"
+                    },
+                    Image = {Color = color}
+                },
+                parent);
+        }
 
         private void LoadImages()
         {
@@ -1904,6 +4127,8 @@ namespace Oxide.Plugins
 
         private void RegisterPermissions()
         {
+            permission.RegisterPermission(PermEdit, this);
+
             if (!string.IsNullOrEmpty(_config.Permission) && !permission.PermissionExists(_config.Permission))
                 permission.RegisterPermission(_config.Permission, this);
 
@@ -1938,9 +4163,10 @@ namespace Oxide.Plugins
 
         private List<CraftConf> GetPlayerCrafts(BasePlayer player, Category category)
         {
-            return category.Crafts.FindAll(craft => craft.Enabled && (string.IsNullOrEmpty(craft.Permission) ||
-                                                                      permission.UserHasPermission(player.UserIDString,
-                                                                          craft.Permission)));
+            return category.Crafts.FindAll(craft => (craft.Enabled || CanEdit(player)) &&
+                                                    (string.IsNullOrEmpty(craft.Permission) ||
+                                                     permission.UserHasPermission(player.UserIDString,
+                                                         craft.Permission)));
         }
 
         private static Color HexToUnityColor(string hex)
@@ -2085,10 +4311,10 @@ namespace Oxide.Plugins
                 {
                     _recycler.baseProtection = ScriptableObject.CreateInstance<ProtectionProperties>();
                     _recycler.baseProtection.amounts = _config.Recycler.Amounts;
-                }
 
-                _recycler.gameObject.AddComponent<GroundWatch>();
-                _recycler.gameObject.AddComponent<DestroyOnGroundMissing>();
+                    _recycler.gameObject.AddComponent<GroundWatch>();
+                    _recycler.gameObject.AddComponent<DestroyOnGroundMissing>();
+                }
             }
 
             public void DDraw()
@@ -2511,6 +4737,26 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            CraftItemAmount = "CraftItemAmount",
+            CraftSelect = "CraftSelect",
+            CraftCreate = "CraftCreate",
+            Back = "Back",
+            Next = "Next",
+            ItemSearch = "ItemSearch",
+            CraftRemoveTitle = "CraftRemoveTitle",
+            BtnNext = "BtnNext",
+            BtnBack = "BtnBack",
+            CraftItemsAddTitle = "CraftItemsAddTitle",
+            CraftSaveTitle = "CraftSaveTitle",
+            CraftItemsTitle = "CraftItemsTitle",
+            CraftWorkbenchTitle = "CraftWorkbenchTitle",
+            CraftTypeTitle = "CraftTypeTitle",
+            ItemEditingTitle = "ItemEditingTitle",
+            CraftEditingTitle = "CraftEditingTitle",
+            EnableStructure = "EnableStructure",
+            EditGround = "EditGround",
+            EditUseDistance = "EditUseDistance",
+            EnableCraft = "EnableCraft",
             NotWorkbench = "NotWorkbench",
             CraftsDescription = "CraftsDescription",
             WorkbenchLvl = "WorkbenchLvl",
@@ -2520,7 +4766,6 @@ namespace Oxide.Plugins
             NotEnoughResources = "NotEnoughResources",
             CraftCancelButton = "CraftCancelButton",
             CraftButton = "CraftButton",
-            CraftItemFormat = "CraftItemFormat",
             CraftTitle = "CraftTitle",
             TitleMenu = "TitleMenu",
             CloseButton = "CloseButton",
@@ -2542,7 +4787,6 @@ namespace Oxide.Plugins
                 [TitleMenu] = "Crafts Menu",
                 [CloseButton] = "✕",
                 [CraftTitle] = "TO CRAFT {0} YOU NEED",
-                [CraftItemFormat] = "{0} ({1} pcs)",
                 [CraftButton] = "CRAFT",
                 [CraftCancelButton] = "CANCEL",
                 [NotEnoughResources] = "Not enough resources",
@@ -2560,7 +4804,40 @@ namespace Oxide.Plugins
                 [WorkbenchLvl] = "Workbench LVL {0}",
                 [CraftsDescription] =
                     "Select the desired item from the list of all items, sort them by category, after which you can find out the cost of manufacturing and the most efficient way to create an item.",
-                [NotWorkbench] = "Not enough workbench level for craft!"
+                [NotWorkbench] = "Not enough workbench level for craft!",
+                [EnableCraft] = "Enabled",
+                [EditUseDistance] = "Distance Check",
+                [EditGround] = "Place the ground",
+                [EnableStructure] = "Place the structure",
+                [CraftEditingTitle] = "Creating/editing craft",
+                [ItemEditingTitle] = "Creating/editing item",
+                [CraftTypeTitle] = "Type",
+                [CraftWorkbenchTitle] = "WorkBench",
+                [CraftItemsTitle] = "Items",
+                [CraftSaveTitle] = "Save",
+                [CraftItemsAddTitle] = "+",
+                [BtnBack] = "◀",
+                [BtnNext] = "▶",
+                [CraftRemoveTitle] = "✕",
+                [ItemSearch] = "Item search",
+                [Back] = "Back",
+                [Next] = "Next",
+                [CraftCreate] = "Create Craft",
+                [CraftSelect] = "Select",
+                [CraftItemAmount] = "{0} pcs",
+                ["Enabled"] = "Enabled",
+                ["Image"] = "Image",
+                ["Title"] = "Title",
+                ["Description"] = "Description",
+                ["CmdToGive"] = "Command (to give an item)",
+                ["Permission"] = "Permission (ex: crafts.vip)",
+                ["DisplayName"] = "Display Name",
+                ["ShortName"] = "ShortName",
+                ["Amount"] = "Amount",
+                ["SkinID"] = "Skin",
+                ["Prefab"] = "Prefab",
+                ["GiveCommand"] = "Command on give",
+                ["Distance"] = "Distance"
             }, this);
         }
 
@@ -2581,8 +4858,8 @@ namespace Oxide.Plugins
 
         private void SendNotify(BasePlayer player, string key, int type, params object[] obj)
         {
-            if (Notify && _config.UseNotify)
-                Notify?.Call("SendNotify", player, type, Msg(player, key, obj));
+            if (_config.UseNotify && (Notify != null || UINotify != null))
+                Interface.Oxide.CallHook("SendNotify", player, type, Msg(player, key, obj));
             else
                 Reply(player, key, obj);
         }

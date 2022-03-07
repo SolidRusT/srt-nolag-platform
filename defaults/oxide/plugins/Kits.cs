@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Kits", "Mevent", "1.0.29")]
+    [Info("Kits", "Mevent", "1.0.32")]
     public class Kits : RustPlugin
     {
         #region Fields
@@ -231,9 +231,8 @@ namespace Oxide.Plugins
                     OffsetMax = "45 0",
                     Enabled = true
                 },
-                Image = new ImageSettings
+                Image = new InterfacePosition
                 {
-                    Enabled = false,
                     AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                     OffsetMin = "-32 -75", OffsetMax = "32 -11"
                 },
@@ -493,7 +492,7 @@ namespace Oxide.Plugins
             public DisplayNameSettings DisplayName;
 
             [JsonProperty(PropertyName = "Image Settings")]
-            public ImageSettings Image;
+            public InterfacePosition Image;
 
             [JsonProperty(PropertyName = "Kit Available Settings")]
             public InterfacePosition KitAvailable;
@@ -545,14 +544,11 @@ namespace Oxide.Plugins
             public string OffsetMax;
         }
 
-        private class ImageSettings : InterfacePosition
+        private class DescriptionSettings : InterfacePosition
         {
             [JsonProperty(PropertyName = "Enabled")]
             public bool Enabled;
-        }
 
-        private class DescriptionSettings : ImageSettings
-        {
             [JsonProperty(PropertyName = "Background Color")]
             public IColor Color;
 
@@ -1332,42 +1328,46 @@ namespace Oxide.Plugins
 
                             switch (key)
                             {
-                                case "Name":
-                                    newValue = value;
+                                case "Hide":
+                                case "AutoKit":
+                                case "Sale":
+                                {
+                                    bool result;
+                                    if (value == "delete")
+                                        newValue = default(bool);
+                                    else if (bool.TryParse(value, out result)) newValue = result;
                                     break;
+                                }
+                                case "Amount":
+                                case "Price":
+                                {
+                                    int result;
+                                    if (value == "delete")
+                                        newValue = default(int);
+                                    else if (int.TryParse(value, out result))
+                                        newValue = result;
+                                    break;
+                                }
+                                case "Cooldown":
+                                case "CooldownAfterWipe":
+                                {
+                                    double result;
+                                    if (value == "delete")
+                                        newValue = default(double);
+                                    else if (double.TryParse(value, out result))
+                                        newValue = result;
+                                    break;
+                                }
                                 case "DisplayName":
+                                {
                                     newValue = string.Join(" ", arg.Args.Skip(4));
                                     break;
-                                case "Color":
-                                    newValue = value;
+                                }
+                                default:
+                                {
+                                    newValue = value == "delete" ? string.Empty : value;
                                     break;
-                                case "Permission":
-                                    newValue = value;
-                                    break;
-                                case "Hide":
-                                    bool hide;
-                                    bool.TryParse(value, out hide);
-
-                                    newValue = hide;
-                                    break;
-                                case "AutoKit":
-                                    bool autoKit;
-                                    bool.TryParse(value, out autoKit);
-
-                                    newValue = autoKit;
-                                    break;
-                                case "Amount":
-                                    int amount;
-                                    int.TryParse(value, out amount);
-
-                                    newValue = amount;
-                                    break;
-                                case "Cooldown":
-                                    double cooldown;
-                                    double.TryParse(value, out cooldown);
-
-                                    newValue = cooldown;
-                                    break;
+                                }
                             }
 
                             _kitEditing[player][key] = newValue;
@@ -1465,50 +1465,51 @@ namespace Oxide.Plugins
                             case "Type":
                             {
                                 KitItemType type;
-                                if (Enum.TryParse(value, out type))
+                                if (value == "delete")
+                                    newValue = default(KitItemType);
+                                else if (Enum.TryParse(value, out type))
                                     newValue = type;
                                 break;
                             }
                             case "Command":
                             {
-                                newValue = string.Join(" ", arg.Args.Skip(5));
+                                if (value == "delete")
+                                    newValue = string.Empty;
+                                else
+                                    newValue = string.Join(" ", arg.Args.Skip(5));
                                 break;
                             }
                             case "ShortName":
                             {
-                                newValue = value;
-                                _itemEditing[player]["SkinID"] = 0;
-                                break;
-                            }
-                            case "Amount":
-                            {
-                                int result;
+                                if (value == "delete")
+                                {
+                                    newValue = string.Empty;
+                                }
+                                else
+                                {
+                                    newValue = value;
+                                    _itemEditing[player]["SkinID"] = 0;
+                                }
 
-                                if (int.TryParse(value, out result))
-                                    newValue = result;
-                                break;
-                            }
-                            case "Blueprint":
-                            {
-                                int result;
-
-                                if (int.TryParse(value, out result))
-                                    newValue = result;
                                 break;
                             }
                             case "SkinID":
                             {
                                 ulong result;
-
-                                if (ulong.TryParse(value, out result))
+                                if (value == "delete")
+                                    newValue = default(ulong);
+                                else if (ulong.TryParse(value, out result))
                                     newValue = result;
                                 break;
                             }
+                            case "Amount":
+                            case "Blueprint":
                             case "Chance":
                             {
                                 int result;
-
-                                if (int.TryParse(value, out result))
+                                if (value == "delete")
+                                    newValue = default(int);
+                                else if (int.TryParse(value, out result))
                                     newValue = result;
                                 break;
                             }
@@ -1623,9 +1624,13 @@ namespace Oxide.Plugins
                             DisplayName = (string) editing["DisplayName"],
                             Color = (string) editing["Color"],
                             Permission = (string) editing["Permission"],
-                            Hide = editing["Hide"] as bool? ?? true,
-                            Amount = (int) editing["Amount"],
-                            Cooldown = (double) editing["Cooldown"],
+                            Image = (string) editing["Image"],
+                            Hide = Convert.ToBoolean(editing["Hide"]),
+                            Amount = Convert.ToInt32(editing["Amount"]),
+                            Cooldown = Convert.ToDouble(editing["Cooldown"]),
+                            CooldownAfterWipe = Convert.ToDouble(editing["CooldownAfterWipe"]),
+                            Sale = Convert.ToBoolean(editing["Sale"]),
+                            Price = Convert.ToInt32(editing["Price"]),
                             Items = new List<KitItem>()
                         };
                         _data.Kits.Add(kit);
@@ -1639,12 +1644,16 @@ namespace Oxide.Plugins
                         kit.DisplayName = (string) editing["DisplayName"];
                         kit.Color = (string) editing["Color"];
                         kit.Permission = (string) editing["Permission"];
-                        kit.Hide = editing["Hide"] as bool? ?? true;
-                        kit.Amount = (int) editing["Amount"];
-                        kit.Cooldown = (double) editing["Cooldown"];
+                        kit.Image = (string) editing["Image"];
+                        kit.Hide = Convert.ToBoolean(editing["Hide"]);
+                        kit.Amount = Convert.ToInt32(editing["Amount"]);
+                        kit.Cooldown = Convert.ToDouble(editing["Cooldown"]);
+                        kit.CooldownAfterWipe = Convert.ToDouble(editing["CooldownAfterWipe"]);
+                        kit.Sale = Convert.ToBoolean(editing["Sale"]);
+                        kit.Price = Convert.ToInt32(editing["Price"]);
                     }
 
-                    var autoKit = editing["AutoKit"] as bool? ?? false;
+                    var autoKit = Convert.ToBoolean(editing["AutoKit"]);
                     if (autoKit)
                     {
                         if (!_config.AutoKits.Contains(kit.Name))
@@ -1663,6 +1672,9 @@ namespace Oxide.Plugins
 
                     if (!string.IsNullOrEmpty(kit.Permission) && !permission.PermissionExists(kit.Permission))
                         permission.RegisterPermission(kit.Permission, this);
+
+                    if (!string.IsNullOrEmpty(kit.Image))
+                        ImageLibrary?.Call("AddImage", kit.Image, kit.Image);
 
                     SaveKits();
 
@@ -2065,6 +2077,27 @@ namespace Oxide.Plugins
                         }
                     }, Layer + $".Kit.{kit.ID}.Main", Layer + $".Kit.{kit.ID}.Main.Background");
 
+                    #region Image
+
+                    if (!string.IsNullOrEmpty(kit.Image))
+                        container.Add(new CuiElement
+                        {
+                            Parent = Layer + $".Kit.{kit.ID}.Main",
+                            Components =
+                            {
+                                new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", kit.Image)},
+                                new CuiRectTransformComponent
+                                {
+                                    AnchorMin = _config.UI.Image.AnchorMin,
+                                    AnchorMax = _config.UI.Image.AnchorMax,
+                                    OffsetMin = _config.UI.Image.OffsetMin,
+                                    OffsetMax = _config.UI.Image.OffsetMax
+                                }
+                            }
+                        });
+
+                    #endregion
+
                     #region Name
 
                     if (_config.ShowNumber)
@@ -2105,27 +2138,6 @@ namespace Oxide.Plugins
                                 Color = "1 1 1 1"
                             }
                         }, Layer + $".Kit.{kit.ID}.Main");
-
-                    #endregion
-
-                    #region Image
-
-                    if (_config.UI.Image.Enabled && !string.IsNullOrEmpty(kit.Image))
-                        container.Add(new CuiElement
-                        {
-                            Parent = Layer + $".Kit.{kit.ID}.Main",
-                            Components =
-                            {
-                                new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", kit.Image)},
-                                new CuiRectTransformComponent
-                                {
-                                    AnchorMin = _config.UI.Image.AnchorMin,
-                                    AnchorMax = _config.UI.Image.AnchorMax,
-                                    OffsetMin = _config.UI.Image.OffsetMin,
-                                    OffsetMax = _config.UI.Image.OffsetMax
-                                }
-                            }
-                        });
 
                     #endregion
 
@@ -2530,9 +2542,14 @@ namespace Oxide.Plugins
                         ["DisplayName"] = kit.DisplayName,
                         ["Color"] = kit.Color,
                         ["Permission"] = kit.Permission,
+                        ["Description"] = kit.Description,
+                        ["Image"] = kit.Image,
                         ["Hide"] = kit.Hide,
                         ["Amount"] = kit.Amount,
                         ["Cooldown"] = kit.Cooldown,
+                        ["CooldownAfterWipe"] = kit.CooldownAfterWipe,
+                        ["Sale"] = kit.Sale,
+                        ["Price"] = kit.Price,
                         ["AutoKit"] = _config.AutoKits.Contains(kit.Name)
                     });
                 }
@@ -2544,9 +2561,14 @@ namespace Oxide.Plugins
                         ["DisplayName"] = "My Kit",
                         ["Color"] = _config.KitColor,
                         ["Permission"] = $"{Name}.default",
+                        ["Description"] = string.Empty,
+                        ["Image"] = string.Empty,
                         ["Hide"] = true,
                         ["Amount"] = 0,
                         ["Cooldown"] = 0.0,
+                        ["CooldownAfterWipe"] = 0.0,
+                        ["Sale"] = false,
+                        ["Price"] = 0,
                         ["AutoKit"] = false
                     });
                 }
@@ -2572,8 +2594,8 @@ namespace Oxide.Plugins
                 RectTransform =
                 {
                     AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
-                    OffsetMin = "-260 -150",
-                    OffsetMax = "260 185"
+                    OffsetMin = "-260 -230",
+                    OffsetMax = "260 255"
                 },
                 Image =
                 {
@@ -2672,11 +2694,12 @@ namespace Oxide.Plugins
             var yMargin = 10f;
 
             var i = 1;
-            foreach (var obj in _kitEditing[player].Where(x => x.Key != "Hide" && x.Key != "AutoKit"))
+            foreach (var obj in _kitEditing[player]
+                         .Where(x => x.Key != "Hide" && x.Key != "AutoKit" && x.Key != "Sale"))
             {
                 var xSwitch = i % 2 == 0 ? xMargin / 2f : -Width - xMargin / 2f;
 
-                EditFieldUi(ref container, EditingLayer + ".Main", EditingLayer + $".Editing.{i}",
+                EditFieldUi(player, ref container, EditingLayer + ".Main", EditingLayer + $".Editing.{i}",
                     $"{xSwitch} {ySwitch - Height}",
                     $"{xSwitch + Width} {ySwitch}",
                     $"UI_Kits editkit {creating} {kitId} {obj.Key} ",
@@ -2711,6 +2734,20 @@ namespace Oxide.Plugins
                 autoKit,
                 $"UI_Kits editkit {creating} {kitId} AutoKit {!autoKit}",
                 Msg(player, AutoKit)
+            );
+
+            #endregion
+
+            #region Sale
+
+            var sale = _kitEditing[player]["Sale"] is bool && (bool) _kitEditing[player]["Sale"];
+
+            CheckBoxUi(ref container, EditingLayer + ".Main", EditingLayer + ".Editing.Sale", "0.5 1", "0.5 1",
+                $"{-Width - xMargin / 2f + 160} {ySwitch - 10}",
+                $"{-Width - xMargin / 2f + 170} {ySwitch}",
+                sale,
+                $"UI_Kits editkit {creating} {kitId} Sale {!sale}",
+                Msg(player, EnabledSale)
             );
 
             #endregion
@@ -3002,7 +3039,7 @@ namespace Oxide.Plugins
 
             #region Command
 
-            EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+            EditFieldUi(player, ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
                 "-240 -110",
                 "0 -60",
                 $"UI_Kits edititem {itemContainer} {kitId} {slot} Command ",
@@ -3048,7 +3085,7 @@ namespace Oxide.Plugins
 
             #region ShortName
 
-            EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+            EditFieldUi(player, ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
                 "-85 -190",
                 "140 -130",
                 $"UI_Kits edititem {itemContainer} {kitId} {slot} ShortName ",
@@ -3101,7 +3138,7 @@ namespace Oxide.Plugins
 
             #region Amount
 
-            EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+            EditFieldUi(player, ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
                 "-240 -345",
                 "-7.5 -285",
                 $"UI_Kits edititem {itemContainer} {kitId} {slot} Amount ",
@@ -3111,7 +3148,7 @@ namespace Oxide.Plugins
 
             #region Chance
 
-            EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+            EditFieldUi(player, ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
                 "7.5 -345",
                 "240 -285",
                 $"UI_Kits edititem {itemContainer} {kitId} {slot} Chance ",
@@ -3121,7 +3158,7 @@ namespace Oxide.Plugins
 
             #region Skin
 
-            EditFieldUi(ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
+            EditFieldUi(player, ref container, EditingLayer + ".Main", CuiHelper.GetGuid(),
                 "-240 -425",
                 "240 -365",
                 $"UI_Kits edititem {itemContainer} {kitId} {slot} SkinID ",
@@ -3571,7 +3608,7 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
-        private void EditFieldUi(ref CuiElementContainer container,
+        private void EditFieldUi(BasePlayer player, ref CuiElementContainer container,
             string parent,
             string name,
             string oMin,
@@ -3659,6 +3696,28 @@ namespace Oxide.Plugins
                     }
                 }
             });
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "1 1", AnchorMax = "1 1",
+                    OffsetMin = "-30 -40", OffsetMax = "0 0"
+                },
+                Text =
+                {
+                    Text = Msg(player, EditRemoveField),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 14,
+                    Color = _colorOne
+                },
+                Button =
+                {
+                    Color = "0 0 0 0",
+                    Command = $"{command}delete"
+                }
+            }, $"{name}.Value");
         }
 
         private void CheckBoxUi(ref CuiElementContainer container, string parent, string name, string aMin, string aMax,
@@ -4291,8 +4350,8 @@ namespace Oxide.Plugins
 
                 _data.Kits.ForEach(kit =>
                 {
-                    if (_config.UI.Image.Enabled && !string.IsNullOrEmpty(kit.Image)
-                                                 && !imagesList.ContainsKey(kit.Image))
+                    if (!string.IsNullOrEmpty(kit.Image)
+                        && !imagesList.ContainsKey(kit.Image))
                         imagesList.Add(kit.Image, kit.Image);
 
                     kit.Items.ForEach(item =>
@@ -4560,6 +4619,7 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            EditRemoveField = "EditRemoveField",
             ChangeAutoKitOn = "ChangeAutoKitOn",
             ChangeAutoKitOff = "ChangeAutoKitOff",
             NoEscapeCombatBlocked = "NoEscapeCombatBlocked",
@@ -4595,6 +4655,7 @@ namespace Oxide.Plugins
             MainMenu = "MainMenu",
             EnableKit = "EnableKit",
             AutoKit = "AutoKit",
+            EnabledSale = "EnabledSale",
             SaveKit = "SaveKit",
             CopyItems = "CopyItems",
             RemoveKit = "RemoveKit",
@@ -4649,6 +4710,7 @@ namespace Oxide.Plugins
                 [MainMenu] = "Main menu",
                 [EnableKit] = "Enable kit",
                 [AutoKit] = "Auto kit",
+                [EnabledSale] = "Enable sale",
                 [SaveKit] = "Save kit",
                 [CopyItems] = "Copy items from inventory",
                 [RemoveKit] = "Remove kit",
@@ -4675,7 +4737,8 @@ namespace Oxide.Plugins
                 [NoEscapeRaidBlocked] = "You cannot take this kit when you are raid blocked",
                 [NoEscapeCombatBlocked] = "You cannot take this kit when you are combat blocked",
                 [ChangeAutoKitOn] = "You have enabled autokits",
-                [ChangeAutoKitOff] = "You have disabled autokits"
+                [ChangeAutoKitOff] = "You have disabled autokits",
+                [EditRemoveField] = "✕"
             }, this);
         }
 

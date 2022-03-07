@@ -9,14 +9,12 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Simple Time", "MadKingCraig", "1.0.1")]
+    [Info("Simple Time", "MadKingCraig", "1.1.2")]
     [Description("Provides a chat command for the current game time")]
     public class SimpleTime : RustPlugin
     {
         private bool _initialized;
         private int _componentSearchAttempts;
-
-        private PluginConfiguration _configuration;
 
         private const string CanUsePermission = "simpletime.use";
 
@@ -48,9 +46,6 @@ namespace Oxide.Plugins
                 return;
             }
 
-            _configuration = Config.ReadObject<PluginConfiguration>();
-            Config.WriteObject(_configuration);
-
             _initialized = true;
         }
 
@@ -58,9 +53,17 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["Time"] = "<size={0}>Current Time: <color={1}>{2}</color></size>",
+                ["Time"] = "Current Time: {0}",
                 ["NoPermission"] = "You do not have permission to use this command."
             }, this);
+        }
+        #endregion
+
+        #region Hooks
+        [HookMethod("GetSimpleTime")]
+        public string GetSimpleTime()
+        {
+            return TOD_Sky.Instance.Cycle.DateTime.ToString("HH:mm");
         }
         #endregion
 
@@ -79,21 +82,8 @@ namespace Oxide.Plugins
                 return;
             }
 
-            string currentTime = TOD_Sky.Instance.Cycle.DateTime.ToString("HH:mm:ss");
-            SendReply(player, String.Format(lang.GetMessage("Time", this, PlayerID), _configuration.TextSize, _configuration.TimeColor, currentTime));
-        }
-        #endregion
-
-        #region Config
-        protected override void LoadDefaultConfig() => _configuration = new PluginConfiguration();
-
-        private sealed class PluginConfiguration
-        {
-            [JsonProperty(PropertyName = "Text Size")]
-            public int TextSize = 14;
-
-            [JsonProperty(PropertyName = "Time Color (HEX)")]
-            public string TimeColor = "#f1c40f";
+            string currentTime = TOD_Sky.Instance.Cycle.DateTime.ToString("HH:mm");
+            SendReply(player, string.Format(lang.GetMessage("Time", this, PlayerID), currentTime));
         }
         #endregion
     }
