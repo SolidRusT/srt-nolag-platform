@@ -11,10 +11,11 @@ using System.Collections;
 using Newtonsoft.Json.Linq;
 using Oxide.Game.Rust.Cui;
 using Oxide.Core;
+using System;
 
 namespace Oxide.Plugins
 {
-    [Info("Convoy", "Adem", "1.1.7")]
+    [Info("Convoy", "Adem", "1.1.8")]
     class Convoy : RustPlugin
     {
         [PluginReference] Plugin NpcSpawn, GUIAnnouncements, DiscordMessages;
@@ -53,7 +54,6 @@ namespace Oxide.Plugins
 
         Vector3 deathBradleyCoord = Vector3.zero;
         Vector3 deathHeliCoord = Vector3.zero;
-        Vector3 deathModularCoord = Vector3.zero;
 
         Coroutine stopCoroutine;
         Coroutine eventCoroutine;
@@ -142,9 +142,13 @@ namespace Oxide.Plugins
 
             if (_config.version != Version.ToString())
             {
-                if (_config.version == "1.1.6")
+                if (_config.version == "1.1.6" || _config.version == "1.1.7")
                 {
-                    _config.version = "1.1.7";
+                    foreach (var a in _config.supportModularConfiguration) if (a.prefabName == null) a.prefabName = "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab";
+                    foreach (var a in _config.modularConfiguration) if (a.prefabName == null) a.prefabName = "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab";
+                    foreach (var a in _config.NPC) a.deleteCorpse = true;
+
+                    _config.version = "1.1.8";
                     SaveConfig();
                 }
                 else
@@ -250,12 +254,11 @@ namespace Oxide.Plugins
                     failed = true;
                     if (convoyVehicles.Contains(convoyModular)) convoyVehicles.Remove(convoyModular);
                     StopConvoy();
-                    deathModularCoord = entity.transform.position;
                     if (!destroying && destroyCoroutine == null)
                     {
                         destroying = true;
                         AlertToAllPlayers("Failed", _config.prefics);
-                        AlertToAllPlayers("PreFinish", _config.prefics, _config.preFinishTime);
+                        AlertToAllPlayers("PreFinish", _config.prefics, GetTimeFromSecond(_config.preFinishTime));
                         destroyCoroutine = ServerMgr.Instance.StartCoroutine(DestroyCounter());
                     }
                 }
@@ -321,16 +324,6 @@ namespace Oxide.Plugins
         }
 
         void OnEntitySpawned(HelicopterDebris entity) => NextTick(() => { if (entity != null && !entity.IsDestroyed && deathBradleyCoord != null && (Vector3.Distance(entity.transform.position, deathBradleyCoord) < 20f || Vector3.Distance(entity.transform.position, deathHeliCoord) < 20f)) entity.Kill(); });
-
-        void OnEntitySpawned(DroppedItemContainer entity)
-        {
-            if (entity != null && entity.PrefabName == "assets/prefabs/misc/item drop/item_drop.prefab" && deathModularCoord != Vector3.zero) NextTick(() => { if (entity.Distance(deathModularCoord) < 5f) entity.Kill(); });
-        }
-
-        void OnLootSpawn(LootContainer entity)
-        {
-            if (entity != null && barrels.Contains(entity.ShortPrefabName) && !entity.IsDestroyed && UnityEngine.Physics.RaycastAll(new Ray(entity.transform.position + new Vector3(0, 1, 0), Vector3.down), 4f).Any(x => x.collider.name.Contains("Road Mesh"))) entity.Kill();
-        }
 
         object CanMountEntity(BasePlayer player, BaseMountable entity)
         {
@@ -498,7 +491,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            AlertToAllPlayers("PreStart", _config.prefics, _config.preStartTime);
+            AlertToAllPlayers("PreStart", _config.prefics, GetTimeFromSecond(_config.preStartTime));
 
             active = true;
 
@@ -515,7 +508,8 @@ namespace Oxide.Plugins
 
                 int totalVehicleCount = convoySetting.firstBradleyCount + convoySetting.firstSedanCount + convoySetting.endSedanCount + convoySetting.endBradleyCount;
 
-                int startPoint = round ? UnityEngine.Random.Range(0, pathCount) : 10;
+                int startPoint = round ? UnityEngine.Random.Range(0, pathCount / 2) : 1;
+                //int startPoint = round ? (int)(pathCount * 0.98f) : 1;
 
                 int count = 0;
                 int totalCount = convoySetting.endBradleyCount;
@@ -606,6 +600,8 @@ namespace Oxide.Plugins
                 eventCoroutine = ServerMgr.Instance.StartCoroutine(EventCounter());
 
                 Puts("The event has begun");
+
+                Interface.CallHook("OnConvoyStart");
             });
         }
 
@@ -639,7 +635,6 @@ namespace Oxide.Plugins
 
         void ReverseConvoy()
         {
-            StopConvoy(null, 10);
             currentPath.Reverse();
             convoyVehicles.Reverse();
             foreach (ConvoyVehicle convoyVehicle in convoyVehicles)
@@ -650,12 +645,12 @@ namespace Oxide.Plugins
                 convoyVehicle.Rotate();
                 convoyVehicle.DefineFollowEntity();
             }
-
         }
 
         void DeleteConvoy(bool unload = false)
         {
             Unsubscribes();
+            if (active) Interface.CallHook("OnConvoyStop");
             active = false;
             if (doorCloser != null && !doorCloser.IsDestroyed) doorCloser.Kill();
             foreach (BasePlayer player in ins.players) CuiHelper.DestroyUi(player, "TextMain");
@@ -723,6 +718,7 @@ namespace Oxide.Plugins
             foreach (ConvoyVehicle convoyVehicle in convoyVehicles) if (convoyVehicle != null) convoyVehicle.StopMoving(true, true);
             if (initiator != null && convoyHeli != null) convoyHeli.SetTarget(initiator);
             if (convoyModular != null) CreateEventZone(convoyModular.baseEntity.transform.position - new Vector3(0f, 0.5f, 0f));
+            if (initiator != null) AlertToAllPlayers("ConvoyAttacked", _config.prefics, initiator.displayName);
         }
 
         void StartConvoy()
@@ -783,7 +779,7 @@ namespace Oxide.Plugins
         {
             Vector3 vector3 = currentPath[firstPoint];
             ChechTrash(vector3);
-            ModularCar car = GameManager.server.CreateEntity("assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab", vector3, Quaternion.LookRotation(currentPath[firstPoint] - currentPath[secondPoint])) as ModularCar;
+            ModularCar car = GameManager.server.CreateEntity(main ? modularConfig.prefabName : supportModularConfig.prefabName, vector3, Quaternion.LookRotation(currentPath[firstPoint] - currentPath[secondPoint])) as ModularCar;
             car.enableSaving = false;
             car.spawnSettings.useSpawnSettings = false;
             car.OwnerID = 755446;
@@ -926,9 +922,9 @@ namespace Oxide.Plugins
 
             void UpdateGui()
             {
-                float time = ins._config.eventTime - ins.eventTime;
+                int time = ins._config.eventTime - ins.eventTime;
                 if (ins.destroying) time = ins.destroyTime;
-                foreach (BasePlayer player in ins.players) ins.MessageGUI(player, ins.GetMessage("GUI", player.UserIDString, time));
+                foreach (BasePlayer player in ins.players) ins.MessageGUI(player, ins.GetMessage("GUI", player.UserIDString, ins.GetTimeFromSecond(time)));
             }
 
             void OnTriggerEnter(Collider other)
@@ -937,7 +933,7 @@ namespace Oxide.Plugins
                 if (player != null && player.userID.IsSteamId())
                 {
                     ins.players.Add(player);
-                    if (ins._config.GUI.IsGUI) ins.MessageGUI(player, ins.GetMessage("GUI", player.UserIDString, ins._config.eventTime - ins.eventTime + ins.destroyTime));
+                    if (ins._config.GUI.IsGUI) ins.MessageGUI(player, ins.GetMessage("GUI", player.UserIDString, ins.GetTimeFromSecond(ins._config.eventTime - ins.eventTime + ins.destroyTime)));
                     if (ins._config.eventZone.isCreateZonePVP) ins.Alert(player, ins.GetMessage("EnterPVP", player.UserIDString, ins._config.prefics));
                 }
             }
@@ -1761,33 +1757,38 @@ namespace Oxide.Plugins
                 if (npcConfig == null) return;
                 NextTick(() =>
                 {
-                    if (npcConfig.typeLootTable == 2 || npcConfig.typeLootTable == 3)
+                    if (corpse == null) return;
+                    ItemContainer container = corpse.containers[0];
+
+                    if (npcConfig.typeLootTable == 0)
                     {
-                        if (corpse != null && !corpse.IsDestroyed) corpse.Kill();
+                        for (int i = container.itemList.Count - 1; i >= 0; i--)
+                        {
+                            Item item = container.itemList[i];
+                            if (npcConfig.wearItems.Any(x => x.shortName == item.info.shortname))
+                            {
+                                item.RemoveFromContainer();
+                                item.Remove();
+                            }
+                        }
                         return;
                     }
-                    List<ItemConfig> items = npcConfig.typeLootTable == 0 ? new List<ItemConfig>() : npcConfig.lootTable.Items;
 
-                    if (npcConfig.typeLootTable == 0) foreach (Item item in corpse.containers[0].itemList) if (!npcConfig.wearItems.Any(x => x.shortName == item.info.shortname)) items.Add(new ItemConfig { shortName = item.info.shortname, minAmount = item.amount, maxAmount = item.amount, chance = 100f, isBluePrint = false, skinID = item.skin, name = "" });
-                    ItemContainer contaier = corpse.containers[0];
-                    for (int i = corpse.containers[0].itemList.Count - 1; i >= 0; i--)
+                    if (npcConfig.typeLootTable == 2 || npcConfig.typeLootTable == 3)
+                    {
+                        if (npcConfig.deleteCorpse && !corpse.IsDestroyed) corpse.Kill();
+                        return;
+                    }
+
+                    for (int i = container.itemList.Count - 1; i >= 0; i--)
                     {
                         Item item = corpse.containers[0].itemList[i];
                         item.RemoveFromContainer();
                         item.Remove();
                     }
 
-                    AddToContainer(contaier, items, npcConfig.typeLootTable == 0 ? items.Count : UnityEngine.Random.Range(npcConfig.lootTable.Min, npcConfig.lootTable.Max + 1));
+                    if (npcConfig.typeLootTable == 1) AddToContainer(container, npcConfig.lootTable.Items, UnityEngine.Random.Range(npcConfig.lootTable.Min, npcConfig.lootTable.Max + 1));
 
-                    if (npcConfig.lootTable.Max == 0 && npcConfig.typeLootTable == 1)
-                    {
-                        for (int i = contaier.itemList.Count - 1; i >= 0; i--)
-                        {
-                            Item item = corpse.containers[0].itemList[i];
-                            item.RemoveFromContainer();
-                            item.Remove();
-                        }
-                    }
                     if (corpse != null && !corpse.IsDestroyed) corpse.Kill();
                 });
             }
@@ -1839,6 +1840,7 @@ namespace Oxide.Plugins
                 if (modularConfig.typeLootTable == 3) return null;
                 else return true;
             }
+
             return null;
         }
 
@@ -1846,11 +1848,10 @@ namespace Oxide.Plugins
         {
             if (crate == null) return;
 
-            NextTick(() =>
+            timer.In(0.15f, () =>
             {
                 if (crate.ShortPrefabName == "bradley_crate" && Vector3.Distance(deathBradleyCoord, crate.transform.position) < 15f)
                 {
-
                     if (bradleyConfig.offDelay)
                     {
                         crate.CancelInvoke(crate.Think);
@@ -1957,6 +1958,19 @@ namespace Oxide.Plugins
                 int index = message.IndexOf("<size=");
                 message = message.Remove(index, message.IndexOf(">", index) - index + 1);
             }
+            return message;
+        }
+
+        string GetTimeFromSecond(int second)
+        {
+            string message = "";
+
+            TimeSpan timeSpan = TimeSpan.FromSeconds(second);
+            if (timeSpan.Days > 0) message += $" {timeSpan.Days} d.";
+            if (timeSpan.Hours > 0) message += $" {timeSpan.Hours} h.";
+            if (timeSpan.Minutes > 0) message += $" {timeSpan.Minutes} m.";
+            if (message == "") message += $" {timeSpan.Seconds} s.";
+
             return message;
         }
 
@@ -2113,36 +2127,36 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["PreStart"] = "{0} Через <color=#738d43>{1}c</color>. начнется перевозка груза по автодороге!",
+                ["PreStart"] = "{0} Через <color=#738d43>{1}</color>. начнется перевозка груза по автодороге!",
                 ["ConvoyAttacked"] = "{0} {1} <color=#ce3f27>напал</color> на конвой",
                 ["EventStart"] = "{0} Конвой <color=#738d43>начал</color> движение!",
                 ["SecurityKill"] = "{0} Охрана конвоя была <color=#738d43>успешно</color> уничтожена!",
                 ["Failed"] = "{0} Грузовик с грузом <color=#ce3f27>уничтожен</color>! Добыча <color=#ce3f27>потеряна</color>!",
                 ["StartHackCrate"] = "{0} {1} <color=#738d43>начал</color> взлом заблокированного ящика!",
-                ["PreFinish"] = "{0} Ивент будет окончен через <color=#ce3f27>{1}c</color>",
+                ["PreFinish"] = "{0} Ивент будет окончен через <color=#ce3f27>{1}</color>",
                 ["Finish"] = "{0} Перевозка груза <color=#ce3f27>окончена</color>!",
                 ["CantHackCrate"] = "{0} Для того чтобы открыть ящик убейте все <color=#ce3f27>сопровождающие</color> транспортные средства!",
                 ["EventActive"] = "{0} Ивент в данный момент активен, сначала завершите текущий ивент (<color=#ce3f27>/convoystop</color>)!",
                 ["EnterPVP"] = "{0} Вы <color=#ce3f27>вошли</color> в PVP зону, теперь другие игроки <color=#ce3f27>могут</color> наносить вам урон!",
                 ["ExitPVP"] = "{0} Вы <color=#738d43>вышли</color> из PVP зоны, теперь другие игроки <color=#738d43>не могут</color> наносить вам урон!",
-                ["GUI"] = "Груз будет уничтожен через {0} сек."
+                ["GUI"] = "Груз будет уничтожен через {0}"
             }, this, "ru");
 
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                ["PreStart"] = "{0} In <color=#738d43>{1}s.</color> the cargo will be transported along the road!",
+                ["PreStart"] = "{0} In <color=#738d43>{1}</color> the cargo will be transported along the road!",
                 ["ConvoyAttacked"] = "{0} {1} <color=#ce3f27>attacked</color> a convoy",
                 ["EventStart"] = "{0} The convoy <color=#738d43>started</color> moving",
                 ["SecurityKill"] = "{0} The guard of the convoy was <color=#738d43>destroyed</color>!",
                 ["Failed"] = "{0} The cargo truck has been <color=#ce3f27>destroyed</color>! The loot is <color=#ce3f27>lost</color>!",
                 ["StartHackCrate"] = "{0} {1} started <color=#738d43>hacking</color> the locked crate!",
-                ["PreFinish"] = "{0} The event will be over in <color=#ce3f27>{1}s</color>",
+                ["PreFinish"] = "{0} The event will be over in <color=#ce3f27>{1}</color>",
                 ["Finish"] = "{0} The event is <color=#ce3f27>over</color>!",
                 ["CantHackCrate"] = "{0} To open the crate, kill all the <color=#ce3f27>accompanying</color> vehicles!",
                 ["EventActive"] = "{0} This event is active now. To finish this event (<color=#ce3f27/convoystop</color>)!",
                 ["EnterPVP"] = "{0} You <color=#ce3f27>have entered</color> the PVP zone, now other players <color=#ce3f27>can damage</color> you!",
                 ["ExitPVP"] = "{0} You <color=#738d43>have gone out</color> the PVP zone, now other players <color=#738d43>can’t damage</color> you!",
-                ["GUI"] = "The cargo will be destroyed in {0} sec."
+                ["GUI"] = "The cargo will be destroyed in {0}"
             }, this);
         }
 
@@ -2197,6 +2211,7 @@ namespace Oxide.Plugins
         public class SupportModularConfig
         {
             [JsonProperty(en ? "Name" : "Название пресета")] public string presetName { get; set; }
+            [JsonProperty(en ? "Prefab Name" : "Название префаба машины")] public string prefabName { get; set; }
             [JsonProperty(en ? "Scale damage" : "Множитель урона")] public float damageMultiplier { get; set; }
             [JsonProperty(en ? "Modules" : "Модули")] public List<string> modules { get; set; }
             [JsonProperty(en ? "NPC preset" : "Пресет НПС")] public string npcName { get; set; }
@@ -2252,6 +2267,7 @@ namespace Oxide.Plugins
         {
             [JsonProperty(en ? "Name" : "Название")] public string name { get; set; }
             [JsonProperty(en ? "Health" : "Кол-во ХП")] public float health { get; set; }
+            [JsonProperty(en ? "Should remove the corpse?" : "Удалять труп?")] public bool deleteCorpse { get; set; }
             [JsonProperty(en ? "Roam Range" : "Дальность патрулирования местности")] public float roamRange { get; set; }
             [JsonProperty(en ? "Chase Range" : "Дальность погони за целью")] public float chaseRange { get; set; }
             [JsonProperty(en ? "Attack Range Multiplier" : "Множитель радиуса атаки")] public float attackRangeMultiplier { get; set; }
@@ -2551,7 +2567,7 @@ namespace Oxide.Plugins
                             nextFireTime = 10f,
                             topTurretFireRate = 0.25f,
                             countCrates = 3,
-                            npcName = "ConvoyNPC",
+                            npcName = "Tankman",
                             coordinates = new List<CoordConfig>
                             {
                                 new CoordConfig { position = "(3, 0, 3)", rotation = "(0, 0, 0)" },
@@ -2606,6 +2622,7 @@ namespace Oxide.Plugins
                         new ModularConfig
                         {
                             presetName = "truck_1",
+                            prefabName = "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab",
                             damageMultiplier = 0.5f,
                             modules = new List<string> { "vehicle.1mod.engine", "vehicle.1mod.cockpit.armored", "vehicle.1mod.passengers.armored", "vehicle.1mod.flatbed" },
                             npcName = "ConvoyNPC",
@@ -2645,6 +2662,7 @@ namespace Oxide.Plugins
                         new SupportModularConfig
                         {
                             presetName = "modular_1",
+                            prefabName = "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab",
                             damageMultiplier = 0.5f,
                             modules = new List<string> { "vehicle.1mod.engine", "vehicle.1mod.cockpit.armored", "vehicle.1mod.passengers.armored", "vehicle.1mod.passengers.armored" },
                             npcName = "ConvoyNPC",
@@ -2701,6 +2719,7 @@ namespace Oxide.Plugins
                         {
                             name = "ConvoyNPC",
                             health = 200f,
+                            deleteCorpse = true,
                             wearItems = new List<NpcWear>
                             {
                                 new NpcWear
@@ -2997,6 +3016,7 @@ namespace Oxide.Plugins
                         {
                             name = "Tankman",
                             health = 500f,
+                            deleteCorpse = true,
                             wearItems = new List<NpcWear>
                             {
 
