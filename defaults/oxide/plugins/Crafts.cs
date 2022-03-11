@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.6.1")]
+    [Info("Crafts", "Mevent", "2.7.0")]
     public class Crafts : RustPlugin
     {
         #region Fields
@@ -1052,12 +1052,14 @@ namespace Oxide.Plugins
             _crafts = _config.Categories.SelectMany(x => x.Crafts).ToList();
 
             RegisterPermissions();
+
+            RegisterCommands();
         }
 
         private void OnServerInitialized(bool initial)
         {
             LoadItems();
-            
+
             LoadImages();
 
             if (!SpawnModularCar && _crafts.Exists(x => x.Enabled && x.Type == CraftType.ModularCar))
@@ -1066,8 +1068,6 @@ namespace Oxide.Plugins
             if (!initial)
                 foreach (var ent in BaseNetworkable.serverEntities.OfType<BaseCombatEntity>())
                     OnEntitySpawned(ent);
-
-            RegisterCommands();
         }
 
         private void Unload()
@@ -1723,6 +1723,19 @@ namespace Oxide.Plugins
                     EditItemUi(player, category, page, craftId, itemsPage, itemId);
                     break;
                 }
+
+                case "craftpage":
+                {
+                    int category, page, itemId, itemsPage;
+                    if (!arg.HasArgs(5) || !int.TryParse(arg.Args[1], out category)
+                                        || !int.TryParse(arg.Args[2], out page)
+                                        || !int.TryParse(arg.Args[3], out itemId)
+                                        || !int.TryParse(arg.Args[4], out itemsPage))
+                        return;
+
+                    CraftUi(player, category, page, itemId, itemsPage);
+                    break;
+                }
             }
         }
 
@@ -2214,7 +2227,7 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
-        private void CraftUi(BasePlayer player, int category, int page, int itemId)
+        private void CraftUi(BasePlayer player, int category, int page, int itemId, int itemsPage = 0)
         {
             var craft = GetPlayerCategories(player)[category].Crafts.Find(x => x.ID == itemId);
             if (craft == null) return;
@@ -2293,9 +2306,14 @@ namespace Oxide.Plugins
 
             var notItem = false;
 
-            var xSwitch = -(craft.Items.Count * width + (craft.Items.Count - 1) * margin) /
+            var maxAmount = 7;
+
+            var items = craft.Items.Skip(itemsPage * maxAmount).Take(maxAmount).ToList();
+
+            var xSwitch = -(items.Count * width + (items.Count - 1) * margin) /
                           2f;
-            craft.Items.ForEach(item =>
+
+            items.ForEach(item =>
             {
                 container.Add(new CuiPanel
                 {
@@ -2386,6 +2404,61 @@ namespace Oxide.Plugins
 
                 xSwitch += width + margin;
             });
+
+            #endregion
+
+            #region Items.Pages
+
+            if (craft.Items.Count > maxAmount)
+            {
+                if (itemsPage != 0)
+                    container.Add(new CuiButton
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0 0.5", AnchorMax = "0 0.5",
+                            OffsetMin = "10 -105",
+                            OffsetMax = "40 -75"
+                        },
+                        Text =
+                        {
+                            Text = Msg(player, BtnBack),
+                            Align = TextAnchor.MiddleCenter,
+                            Font = "robotocondensed-regular.ttf",
+                            FontSize = 18,
+                            Color = "1 1 1 1"
+                        },
+                        Button =
+                        {
+                            Color = _config.UI.Color4.Get(),
+                            Command = $"UI_Crafts craftpage {category} {page} {itemId} {itemsPage - 1}"
+                        }
+                    }, Layer);
+
+                if (craft.Items.Count > (itemsPage + 1) * maxAmount)
+                    container.Add(new CuiButton
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "1 0.5", AnchorMax = "1 0.5",
+                            OffsetMin = "-40 -105",
+                            OffsetMax = "-10 -75"
+                        },
+                        Text =
+                        {
+                            Text = Msg(player, BtnNext),
+                            Align = TextAnchor.MiddleCenter,
+                            Font = "robotocondensed-regular.ttf",
+                            FontSize = 18,
+                            Color = "1 1 1 1"
+                        },
+                        Button =
+                        {
+                            Color = _config.UI.Color4.Get(),
+                            Command = $"UI_Crafts craftpage {category} {page} {itemId} {itemsPage + 1}"
+                        }
+                    }, Layer);
+            }
 
             #endregion
 

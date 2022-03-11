@@ -345,6 +345,9 @@ DEFAULT_PERMS=(
   globalstorage.access
   heal.player
   heal.self
+  helisams.ch47.npc
+  helisams.ch47.player
+  helisams.patrolheli
   instantcraft.use
   instantmixingtable.use
   iteminspector.use
@@ -393,6 +396,7 @@ DEFAULT_PERMS=(
   statistics.use
   trade.accept
   trade.use
+  trashcan.use
   turretloadouts.autoauth
   turretloadouts.autotoggle
   turretloadouts.manage
