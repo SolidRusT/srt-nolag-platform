@@ -22,7 +22,7 @@ using CompanionServer;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat", "LaserHydra", "5.2.7")]
+    [Info("Better Chat", "LaserHydra", "5.2.8")]
     [Description("Allows to manage chat groups, customize colors and add titles.")]
     internal class BetterChat : CovalencePlugin
     {
@@ -662,6 +662,12 @@ namespace Oxide.Plugins
             {
                 ChatGroup.FormatSettings output = new ChatGroup.FormatSettings();
 
+                if (Message.Contains("[#") || Message.Contains("[+"))
+                    Message = Message.Replace("[", string.Empty).Replace("]", string.Empty);
+
+                if (Username.Contains("[#") || Username.Contains("[+"))
+                    Username = Username.Replace("[", string.Empty).Replace("]", string.Empty);
+                
                 Dictionary<string, string> replacements = new Dictionary<string, string>
                 {
                     ["Title"] = string.Join(" ", Titles.ToArray()),
