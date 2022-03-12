@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using Oxide.Core;
 using UnityEngine;
 using System.Linq;
+using System;
 
 namespace Oxide.Plugins
 {
-    [Info("Instant Craft", "Vlad-0003 / Orange / rostov114", "2.2.0")]
+    [Info("Instant Craft", "Vlad-0003 / Orange / rostov114", "2.2.1")]
     [Description("Allows players to instantly craft items with features")]
     public class InstantCraft : RustPlugin
     {
@@ -52,7 +53,11 @@ namespace Oxide.Plugins
                 return null;
             }
 
-            GiveItem(task, stacks);
+            if (!GiveItem(task, stacks))
+            {
+                return null;
+            }
+
             return true;
         }
         #endregion
@@ -77,15 +82,21 @@ namespace Oxide.Plugins
             }
         }
 
-        private void GiveItem(ItemCraftTask task, List<int> stacks)
+        private bool GiveItem(ItemCraftTask task, List<int> stacks)
         {
             ulong skin = ItemDefinition.FindSkin(task.blueprint.targetItem.itemid, task.skinID);
+            int iteration = 0;
 
             if (_config.split)
             {
                 foreach (var stack in stacks)
                 {
-                    Give(task, stack, skin);
+                    if (!Give(task, stack, skin) && iteration <= 0)
+                    {
+                        return false;
+                    }
+
+                    iteration++;
                 }
             }
             else
@@ -96,15 +107,32 @@ namespace Oxide.Plugins
                     final += stack;
                 }
 
-                Give(task, final, skin);
+                if (!Give(task, final, skin))
+                {
+                    return false;
+                }
             }
 
             task.cancelled = true;
+            return true;
         }
 
-        private void Give(ItemCraftTask task, int amount, ulong skin)
+        private bool Give(ItemCraftTask task, int amount, ulong skin)
         {
-            Item item = ItemManager.Create(task.blueprint.targetItem, amount, skin);
+            Item item = null;
+            try
+            {
+                item = ItemManager.CreateByItemID(task.blueprint.targetItem.itemid, amount, skin);
+            }
+            catch (Exception e)
+            {
+                PrintError($"Exception creating item! targetItem: {task.blueprint.targetItem}-{amount}-{skin}; Exception: {e}");
+            }
+
+            if (item == null)
+            {
+                return false;
+            }
 
             if (item.hasCondition && task.conditionScale != 1f)
             {
@@ -113,8 +141,6 @@ namespace Oxide.Plugins
             }
 
             item.OnVirginSpawn();
-            Facepunch.Rust.Analytics.Crafting(task.blueprint.targetItem.shortname, task.skinID);
-            // task.owner.Command("note.craft_done", task.taskUID, 1, amount);
 
             if (task.instanceData != null)
             {
@@ -123,21 +149,18 @@ namespace Oxide.Plugins
 
             Interface.CallHook("OnItemCraftFinished", task, item);
 
-            if (!string.IsNullOrEmpty(task.blueprint.UnlockAchievment) && ConVar.Server.official)
-            {
-                task.owner.ClientRPCPlayer<string>(null, task.owner, "RecieveAchievement", task.blueprint.UnlockAchievment);
-            }
-
             if (task.owner.inventory.GiveItem(item, null))
             {
                 task.owner.Command("note.inv", new object[]{item.info.itemid, item.amount});
-                return;
+                return true;
             }
 
             ItemContainer itemContainer = task.owner.inventory.crafting.containers.First<ItemContainer>();
             task.owner.Command("note.inv", new object[]{item.info.itemid, item.amount});
             task.owner.Command("note.inv", new object[]{item.info.itemid, -item.amount});
             item.Drop(itemContainer.dropPosition, itemContainer.dropVelocity, default(Quaternion));
+
+            return true;
         }
 
         private int FreeSlots(BasePlayer player)
@@ -217,10 +240,10 @@ namespace Oxide.Plugins
         private class Configuration
         {
             [JsonProperty(PropertyName = "Check for free place")]
-            public bool checkPlace = false;
+            public bool checkPlace = true;
             
             [JsonProperty(PropertyName = "Split crafted stacks")]
-            public bool split = false;
+            public bool split = true;
             
             [JsonProperty(PropertyName = "Normal Speed")]
             public string[] normal =

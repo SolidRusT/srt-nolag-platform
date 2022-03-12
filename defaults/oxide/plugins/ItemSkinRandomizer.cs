@@ -1,81 +1,164 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Oxide.Core;
+using Oxide.Core.Libraries.Covalence;
+using Rust.Workshop;
 using UnityEngine;
-using Physics = UnityEngine.Physics;
 
 namespace Oxide.Plugins
 {
-    [Info("Item Skin Randomizer", "Orange", "1.5.4")]
+    [Info("Item Skin Randomizer", "Mevent", "1.6.0")]
     [Description("Simple plugin that will select a random skin for an item when crafting")]
     public class ItemSkinRandomizer : RustPlugin
     {
-        #region Vars
+        #region Fields
 
         private const string permUse = "itemskinrandomizer.use";
+
+        private const string permUseEntities = "itemskinrandomizer.useentities";
+
         private const string permReSkin = "itemskinrandomizer.reskin";
+
         private Dictionary<string, List<ulong>> skins = new Dictionary<string, List<ulong>>();
 
         #endregion
 
-        #region Oxide Hooks
+        #region Config
+
+        private static ConfigData _config = new ConfigData();
+
+        private class ConfigData
+        {
+            [JsonProperty("Commands")] public string[] Commands =
+            {
+                "reskin",
+                "rskin",
+                "randomskin"
+            };
+
+            [JsonProperty("Blocked skin id's")] public ulong[] BlockedSkins =
+            {
+                12,
+                345,
+                6789
+            };
+
+            [JsonProperty("Blocked items")] public string[] BlockedItems =
+            {
+                "grenade.f1",
+                "explosive.satchel"
+            };
+
+            [JsonProperty("Set random skins for entities?")]
+            public bool UseEntities = true;
+
+            [JsonProperty("Blocked entities")] public string[] BlockedEntities =
+            {
+                "grenade.f1",
+                "explosive.satchel"
+            };
+        }
+
+        protected override void LoadConfig()
+        {
+            base.LoadConfig();
+
+            try
+            {
+                _config = Config.ReadObject<ConfigData>();
+                if (_config == null) LoadDefaultConfig();
+            }
+            catch
+            {
+                for (var i = 0; i < 3; i++)
+                    PrintError("Configuration file is corrupt! Check your config file at https://jsonlint.com/");
+
+                LoadDefaultConfig();
+                return;
+            }
+
+            ValidateConfig();
+            SaveConfig();
+        }
+
+        private void ValidateConfig()
+        {
+            if (Interface.Oxide.CallHook("Debug_UseDefaultValues") != null)
+            {
+                PrintWarning("Using default configuration in debug mode");
+                _config = new ConfigData();
+            }
+        }
+
+        protected override void LoadDefaultConfig()
+        {
+            _config = new ConfigData();
+        }
+
+        protected override void SaveConfig()
+        {
+            Config.WriteObject(_config);
+        }
+
+        #endregion
+
+        #region Hooks
 
         private void Init()
         {
             permission.RegisterPermission(permUse, this);
+
+            permission.RegisterPermission(permUseEntities, this);
+
             permission.RegisterPermission(permReSkin, this);
-            
-            foreach (var command in config.commands)
-            {
-                cmd.AddChatCommand(command, this, nameof(cmdControlChat));
-                cmd.AddConsoleCommand(command, this, nameof(cmdControlConsole));
-            }
+
+            AddCovalenceCommand(_config.Commands, nameof(CmdControl));
+
+            if (!_config.UseEntities)
+                Unsubscribe(nameof(OnEntitySpawned));
         }
-		
-		private void OnServerInitialized() 
-		{          
+
+        private void OnServerInitialized()
+        {
             GenerateSkins();
-		}
+        }
+
+        private void Unload()
+        {
+            _config = null;
+        }
 
         private void OnItemCraftFinished(ItemCraftTask task, Item item)
         {
-            if (task.skinID != 0)
-            {
-                return;
-            }
-
-            if (permission.UserHasPermission(task.owner.UserIDString, permUse) == false)
-            {
-                return;
-            }
-
-            if (config.blockedItems.Contains(item.info.shortname))
-            {
-                return;
-            }
+            if (task.skinID != 0 || !permission.UserHasPermission(task.owner.UserIDString, permUse) ||
+                _config.BlockedItems.Contains(item.info.shortname)) return;
 
             SetRandomSkin(null, item);
+        }
+
+        private void OnEntitySpawned(BaseEntity entity)
+        {
+            if (entity == null || entity.OwnerID == 0 ||
+                !permission.UserHasPermission(entity.OwnerID.ToString(), permUse) ||
+                _config.BlockedEntities.Contains(entity.ShortPrefabName)) return;
+
+            SetRandomSkin(null, entity);
         }
 
         #endregion
 
         #region Commands
 
-        private void cmdControlConsole(ConsoleSystem.Arg arg)
+        private void CmdControl(IPlayer cov, string command, string[] args)
         {
-            cmdControlChat(arg.Player());
-        }
-
-        private void cmdControlChat(BasePlayer player)
-        {
+            var player = cov?.Object as BasePlayer;
             if (player == null)
-            {
                 return;
-            }
-            
-            if (permission.UserHasPermission(player.UserIDString, permReSkin) == false)
+
+            if (!cov.HasPermission(permReSkin))
             {
-                Message(player, "Permission");
+                Message(player, Permission);
                 return;
             }
 
@@ -86,9 +169,9 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (player.CanBuild() == false)
+            if (!player.CanBuild())
             {
-                Message(player, "Cant Build");
+                Message(player, CantBuild);
                 return;
             }
 
@@ -98,54 +181,59 @@ namespace Oxide.Plugins
                 SetRandomSkin(player, entity);
                 return;
             }
-            
-            Message(player, "No Object");
+
+            Message(player, NoObject);
         }
 
         #endregion
 
-        #region Core
+        #region Utils
+
+        private static string FixNames(string name)
+        {
+            switch (name)
+            {
+                case "wall.external.high.wood": return "wall.external.high";
+                case "electric.windmill.small": return "generator.wind.scrap";
+                case "graveyardfence": return "wall.graveyard.fence";
+                case "coffinstorage": return "coffin.storage";
+            }
+
+            return name;
+        }
 
         private void GenerateSkins()
         {
-            List<ulong> list;
-            
-            foreach (var pair in Rust.Workshop.Approved.All)
+            foreach (var pair in Approved.All)
             {
                 if (pair.Value == null || pair.Value.Skinnable == null)
-                {
                     continue;
-                }
-                
+
                 var skinId = pair.Value.WorkshopdId;
-                if (config.blockedSkins.Contains(skinId) == true || skinId == 0)
-                {
+                if (skinId == 0 || _config.BlockedSkins.Contains(skinId))
                     continue;
-                }
 
                 var key = pair.Value.Skinnable.ItemName;
                 if (key.Contains("lr300"))
-                {
                     key = "rifle.lr300";
-                }
-                
-                if (skins.TryGetValue(key, out list) == false)
+
+                List<ulong> list;
+                if (skins.TryGetValue(key, out list))
                 {
-                    list = new List<ulong>();
-                    skins.Add(key, list);
+                    if (!list.Contains(skinId))
+                        skins[key].Add(skinId);
                 }
-                
-                list.Add(skinId);
+                else
+                {
+                    skins.Add(key, new List<ulong>());
+                }
             }
         }
 
         private void SetRandomSkin(BasePlayer player, Item item)
         {
             var skin = GetRandomSkin(item.info.shortname);
-            if (skin == 0)
-            {
-                return;
-            }
+            if (skin == 0) return;
 
             item.skin = skin;
             item.MarkDirty();
@@ -156,8 +244,8 @@ namespace Oxide.Plugins
                 held.skinID = skin;
                 held.SendNetworkUpdate();
             }
-            
-            Message(player, "Changed To", skin);
+
+            Message(player, ChangedTo, skin);
         }
 
         private void SetRandomSkin(BasePlayer player, BaseEntity entity)
@@ -177,158 +265,73 @@ namespace Oxide.Plugins
                 case "woodbox_deployed":
                     shortname = "box.wooden";
                     break;
-                
+
                 case "reactivetarget_deployed":
                     shortname = "target.reactive";
                     break;
+
+                default:
+                {
+                    shortname = entity.ShortPrefabName;
+                    shortname = Regex.Replace(shortname, "\\.deployed|_deployed", "");
+                    shortname = FixNames(shortname);
+                    break;
+                }
             }
 
             var def = ItemManager.FindItemDefinition(shortname);
-            if (def != null)
-            {
-                var skin = GetRandomSkin(def.shortname);
-                if (skin == 0)
-                {
-                    return;
-                }
-                
-                entity.skinID = skin;
-                entity.SendNetworkUpdate();
-                Message(player, "Changed To", skin);
-            }
+            if (def == null) return;
+
+            var skin = GetRandomSkin(def.shortname);
+            if (skin == 0) return;
+
+            entity.skinID = skin;
+            entity.SendNetworkUpdate();
+
+            Message(player, ChangedTo, skin);
         }
 
         private ulong GetRandomSkin(string key)
         {
             List<ulong> list;
-
-            if (skins.TryGetValue(key, out list) == false)
-            {
-                return 0;
-            }
-
-            return list.GetRandom();
+            return skins.TryGetValue(key, out list) ? list.GetRandom() : 0;
         }
-        
+
         private static T GetLookEntity<T>(BasePlayer player)
         {
             RaycastHit hit;
-            if (Physics.Raycast(player.eyes.HeadRay(), out hit) == false)
-            {
-                return default(T);
-            }
+            if (!Physics.Raycast(player.eyes.HeadRay(), out hit)) return default(T);
 
             var entity = hit.GetEntity();
-            if (entity == null)
-            {
-                return default(T);
-            }
-
-            return entity.GetComponent<T>();
+            return entity == null ? default(T) : entity.GetComponent<T>();
         }
 
         #endregion
 
-        #region Configuration | 09.2020
+        #region Lang
 
-        private static ConfigData config = new ConfigData();
-
-        private class ConfigData
-        {
-            [JsonProperty("Commands")]
-            public string[] commands =
-            {
-                "reskin",
-                "rskin",
-                "randomskin"
-            };
-
-            [JsonProperty("Blocked skin id's")]
-            public ulong[] blockedSkins =
-            {
-                12,
-                345,
-                6789,
-            };
-
-            [JsonProperty("Blocked items")]
-            public string[] blockedItems =
-            {
-                "grenade.f1",
-                "explosive.satchel"
-            };
-        }
-
-        protected override void LoadConfig()
-        {
-            base.LoadConfig();
-
-            try
-            {
-                config = Config.ReadObject<ConfigData>();
-                if (config == null)
-                {
-                    LoadDefaultConfig();
-                }
-            }
-            catch
-            {
-                for (var i = 0; i < 3; i++)
-                {
-                    PrintError("Configuration file is corrupt! Check your config file at https://jsonlint.com/");
-                }
-                
-                LoadDefaultConfig();
-                return;
-            }
-
-            ValidateConfig();
-            SaveConfig();
-        }
-
-        private void ValidateConfig()
-        {
-            if (Interface.Oxide.CallHook("Debug_UseDefaultValues") != null)
-            {
-                PrintWarning("Using default configuration in debug mode");
-                config = new ConfigData();
-            }
-        }
-
-        protected override void LoadDefaultConfig()
-        {
-            config = new ConfigData();
-        }
-
-        protected override void SaveConfig()
-        {
-            Config.WriteObject(config);
-        }
-
-        #endregion
-
-        #region Localization 1.1.1
+        private const string
+            CantBuild = "Cant Build",
+            ChangedTo = "Changed To",
+            NoObject = "No Object",
+            Permission = "Permission";
 
         protected override void LoadDefaultMessages()
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                {"Permission", "You don't have permission to use that!"},
-                {"No Object", "You need to hold item or look on object!"},
-                {"Changed To", "Skin was changed to {0}"},
-                {"Cant Build", "You need building privilege to use that!"}
+                {Permission, "You don't have permission to use that!"},
+                {NoObject, "You need to hold item or look on object!"},
+                {ChangedTo, "Skin was changed to {0}"},
+                {CantBuild, "You need building privilege to use that!"}
             }, this);
         }
 
         private void Message(BasePlayer player, string messageKey, params object[] args)
         {
-            if (player == null)
-            {
-                return;
-            }
+            if (player == null) return;
 
-            var message = GetMessage(messageKey, player.UserIDString, args);
-            player.ChatMessage(message);
+            player.ChatMessage(GetMessage(messageKey, player.UserIDString, args));
         }
 
         private string GetMessage(string messageKey, string playerID, params object[] args)
