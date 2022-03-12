@@ -8,10 +8,10 @@ require 'main.conf.php';
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SolidRusT Server Account Linking">
+    <meta name="description" content="SolidRusT Networks">
     <meta name="keywords" content="rust, SolidRusT, SRT, NOLAG, link, rust server, server">
     <meta name="author" content="Suparious">
-    <meta property="og:title" content="SolidRusT &bull; Account Linking">
+    <meta property="og:title" content="SolidRusT Networks &bull; NoLAG game hosting">
     <meta property="og:description" content="Link your Discord and Steam accounts to our servers.">
     <meta property="og:image" content="https://solidrust.net/images/SoldRust_Logo.png">
     <meta property="og:site_name" content="solidrust.net">
