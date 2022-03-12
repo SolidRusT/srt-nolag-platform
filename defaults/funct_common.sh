@@ -221,4 +221,17 @@ function solidplayer() {
   fi
 }
 
+function afk_heals() {
+  PLAYERS=$(cat ${HOME}/solidrust.net/defaults/srt_team_steam)
+  for player in ${PLAYERS[@]}; do
+    if [ -f "${GAME_ROOT}/rcon" ]; then
+      echo "Healing $player" | tee -a ${LOGS}
+      ${GAME_ROOT}/rcon --log ${LOGS} --config ${RCON_CFG} "healplayer $player"
+      sleep 1
+    else
+      echo "No rcon binary found here, unable to heal AFK Team SRT" | tee -a ${LOGS}
+    fi
+  done
+}
+
 echo "SRT Common Functions initialized" | tee -a ${LOGS}
