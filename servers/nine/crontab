@@ -36,3 +36,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 ## SolidRusT local log management
 17 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
+
+## SolidRusT Team AFK Heals
+*/7 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/72_team_srt_heals.sh

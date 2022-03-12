@@ -12,3 +12,6 @@
 
 ## SolidRusT local log management
 15 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
+
+## SolidRusT Team AFK Heals
+*/7 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/72_team_srt_heals.sh
