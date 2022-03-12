@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -12,12 +11,13 @@ using Oxide.Core.Libraries;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
+using Oxide.Plugins.KitsExtensionMethods;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Kits", "Mevent", "1.0.32")]
+    [Info("Kits", "Mevent", "1.0.33")]
     public class Kits : RustPlugin
     {
         #region Fields
@@ -764,6 +764,8 @@ namespace Oxide.Plugins
 
         private KitData GetPlayerData(ulong userID, string name)
         {
+            if (!userID.IsSteamId()) return null;
+
             if (!_playerData.ContainsKey(userID))
                 _playerData[userID] = new Dictionary<string, KitData>();
 
@@ -1797,7 +1799,7 @@ namespace Oxide.Plugins
             var ySwitch = _config.UI.YIndent;
 
             var allKits = GetAvailableKits(player, targetId.ToString(), showAll);
-            var kitsList = allKits.Skip(page * totalAmount).Take(totalAmount).ToList();
+            var kitsList = allKits.Skip(page * totalAmount).Take(totalAmount);
 
             _openGUI[player] = kitsList;
 
@@ -3347,11 +3349,11 @@ namespace Oxide.Plugins
             var temp = canSearch
                 ? _itemsCategories
                     .SelectMany(x => x.Value)
-                    .Where(x => x.StartsWith(input) || x.Contains(input) || x.EndsWith(input)).ToList()
+                    .Where(x => x.StartsWith(input) || x.Contains(input) || x.EndsWith(input))
                 : _itemsCategories[selectedCategory];
 
             var itemsAmount = temp.Count;
-            var items = temp.Skip(page * totalAmount).Take(totalAmount).ToList();
+            var items = temp.Skip(page * totalAmount).Take(totalAmount);
 
             items.ForEach(item =>
             {
@@ -4112,6 +4114,7 @@ namespace Oxide.Plugins
             }
 
             var playerData = GetPlayerData(player.userID, kit.Name);
+            if (playerData == null) return;
 
             if (!force && kit.Amount > 0 && playerData.Amount >= kit.Amount)
             {
@@ -4448,13 +4451,16 @@ namespace Oxide.Plugins
             return IsAdmin(player) && showAll
                 ? _data.Kits
                 : _data.Kits.FindAll(x =>
-                    !x.Hide &&
-                    (targetId == "0" || _config.NpcKits.ContainsKey(targetId) &&
-                        _config.NpcKits[targetId].Kits.Contains(x.Name)) &&
-                    (!checkAmount || x.Amount == 0 || x.Amount > 0 &&
-                        GetPlayerData(player.userID, x.Name).Amount < x.Amount) &&
-                    (_config.ShowAllKits || string.IsNullOrEmpty(x.Permission) ||
-                     permission.UserHasPermission(player.UserIDString, x.Permission)));
+                {
+                    var data = GetPlayerData(player.userID, x.Name);
+                    return !x.Hide &&
+                           (targetId == "0" || _config.NpcKits.ContainsKey(targetId) &&
+                               _config.NpcKits[targetId].Kits.Contains(x.Name)) &&
+                           (!checkAmount || x.Amount == 0 || x.Amount > 0 &&
+                               data != null && data.Amount < x.Amount) &&
+                           (_config.ShowAllKits || string.IsNullOrEmpty(x.Permission) ||
+                            permission.UserHasPermission(player.UserIDString, x.Permission));
+                });
         }
 
         private List<Kit> GetAutoKits(BasePlayer player)
@@ -4809,7 +4815,7 @@ namespace Oxide.Plugins
 
         private double PlayerKitCooldown(ulong ID, string name)
         {
-            return GetPlayerData(ID, name).Cooldown;
+            return GetPlayerData(ID, name)?.Cooldown ?? 0.0;
         }
 
         private int KitMax(string name)
@@ -5039,3 +5045,316 @@ namespace Oxide.Plugins
         #endregion
     }
 }
+
+#region Extension Methods
+
+namespace Oxide.Plugins.KitsExtensionMethods
+{
+    public static class ExtensionMethods
+    {
+        public static bool All<T>(this IList<T> a, Func<T, bool> b)
+        {
+            for (var i = 0; i < a.Count; i++)
+                if (!b(a[i]))
+                    return false;
+            return true;
+        }
+
+        public static int Average(this IList<int> a)
+        {
+            if (a.Count == 0) return 0;
+            var b = 0;
+            for (var i = 0; i < a.Count; i++) b += a[i];
+            return b / a.Count;
+        }
+
+        public static T ElementAt<T>(this IEnumerable<T> a, int b)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                {
+                    if (b == 0) return c.Current;
+                    b--;
+                }
+            }
+
+            return default(T);
+        }
+
+        public static bool Exists<T>(this IEnumerable<T> a, Func<T, bool> b = null)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (b == null || b(c.Current))
+                        return true;
+            }
+
+            return false;
+        }
+
+        public static T FirstOrDefault<T>(this IEnumerable<T> a, Func<T, bool> b = null)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (b == null || b(c.Current))
+                        return c.Current;
+            }
+
+            return default(T);
+        }
+
+        public static T LastOrDefault<T>(this IList<T> a, Func<T, bool> b = null)
+        {
+            var count = a.Count;
+            return count > 0 ? a[count - 1] : default(T);
+        }
+
+        public static int RemoveAll<T, V>(this IDictionary<T, V> a, Func<T, V, bool> b)
+        {
+            var c = new List<T>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    if (b(d.Current.Key, d.Current.Value))
+                        c.Add(d.Current.Key);
+            }
+
+            c.ForEach(e => a.Remove(e));
+            return c.Count;
+        }
+
+        public static IEnumerable<V> Select<T, V>(this IEnumerable<T> a, Func<T, V> b)
+        {
+            var c = new List<V>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext()) c.Add(b(d.Current));
+            }
+
+            return c;
+        }
+
+        public static IEnumerable<V> SelectMany<T, V>(this IEnumerable<T> a, Func<T, IEnumerable<V>> b)
+        {
+            var c = new List<V>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    using (var f = b(d.Current).GetEnumerator())
+                    {
+                        while (f.MoveNext()) c.Add(f.Current);
+                    }
+            }
+
+            return c;
+        }
+
+        public static string[] Skip(this string[] a, int b)
+        {
+            if (a.Length == 0) return Array.Empty<string>();
+            var c = new string[a.Length - b];
+            var n = 0;
+            for (var i = 0; i < a.Length; i++)
+            {
+                if (i < b) continue;
+                c[n] = a[i];
+                n++;
+            }
+
+            return c;
+        }
+
+        public static List<T> Skip<T>(this IList<T> a, int b)
+        {
+            if (a.Count == 0) return new List<T>();
+
+            var c = new List<T>();
+
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (i < b) continue;
+
+                c.Add(a[i]);
+            }
+
+            return c;
+        }
+
+        public static List<T> Take<T>(this IList<T> a, int b)
+        {
+            var c = new List<T>();
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (c.Count == b) break;
+                c.Add(a[i]);
+            }
+
+            return c;
+        }
+
+        public static Dictionary<T, V> ToDictionary<S, T, V>(this IEnumerable<S> a, Func<S, T> b, Func<S, V> c)
+        {
+            var d = new Dictionary<T, V>();
+            using (var e = a.GetEnumerator())
+            {
+                while (e.MoveNext()) d[b(e.Current)] = c(e.Current);
+            }
+
+            return d;
+        }
+
+        public static List<T> ToList<T>(this IEnumerable<T> a)
+        {
+            var b = new List<T>();
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext()) b.Add(c.Current);
+            }
+
+            return b;
+        }
+
+        public static T[] ToArray<T>(this IEnumerable<T> a)
+        {
+            var b = Array.Empty<T>();
+            var n = 0;
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext()) b[n++] = c.Current;
+            }
+
+            return b;
+        }
+
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> a)
+        {
+            return new HashSet<T>(a);
+        }
+
+        public static List<T> Where<T>(this IEnumerable<T> a, Func<T, bool> b)
+        {
+            var c = new List<T>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    if (b(d.Current))
+                        c.Add(d.Current);
+            }
+
+            return c;
+        }
+
+        public static TAccumulate Aggregate<T, TAccumulate>(this IEnumerable<T> source, TAccumulate seed,
+            Func<TAccumulate, T, TAccumulate> func)
+        {
+            var result = seed;
+            foreach (var element in source) result = func(result, element);
+
+            return result;
+        }
+
+        public static float Min<T>(this IEnumerable<T> source, Func<T, float> selector)
+        {
+            float value;
+            using (var e = source.GetEnumerator())
+            {
+                value = selector(e.Current);
+                if (float.IsNaN(value)) return value;
+
+                while (e.MoveNext())
+                {
+                    var x = selector(e.Current);
+                    if (x < value)
+                        value = x;
+                    else if (float.IsNaN(x)) return x;
+                }
+            }
+
+            return value;
+        }
+
+        public static int Count<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+        {
+            var count = 0;
+            foreach (var element in source)
+                checked
+                {
+                    if (predicate(element)) count++;
+                }
+
+            return count;
+        }
+
+        public static List<T> OfType<T>(this IEnumerable<BaseNetworkable> a) where T : BaseEntity
+        {
+            var b = new List<T>();
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (c.Current is T)
+                        b.Add(c.Current as T);
+            }
+
+            return b;
+        }
+
+        public static int Sum<T>(this IList<T> a, Func<T, int> b)
+        {
+            var c = 0;
+            for (var i = 0; i < a.Count; i++)
+            {
+                var d = b(a[i]);
+                if (!float.IsNaN(d)) c += d;
+            }
+
+            return c;
+        }
+
+        public static bool IsReallyConnected(this BasePlayer a)
+        {
+            return a.IsReallyValid() && a.net.connection != null;
+        }
+
+        public static bool IsKilled(this BaseNetworkable a)
+        {
+            return (object) a == null || a.IsDestroyed;
+        }
+
+        public static bool IsNull<T>(this T a) where T : class
+        {
+            return a == null;
+        }
+
+        public static bool IsNull(this BasePlayer a)
+        {
+            return (object) a == null;
+        }
+
+        public static bool IsReallyValid(this BaseNetworkable a)
+        {
+            return !((object) a == null || a.IsDestroyed || a.net == null);
+        }
+
+        public static bool CanCall(this Plugin o)
+        {
+            return o != null && o.IsLoaded;
+        }
+
+        public static BasePlayer ToPlayer(this IPlayer user)
+        {
+            return user.Object as BasePlayer;
+        }
+
+        public static List<T> Sort<T, U>(this List<T> list, Func<T, U> expression)
+            where U : IComparable<U>
+        {
+            list.Sort((x, y) => expression.Invoke(y).CompareTo(expression.Invoke(x)));
+            return list;
+        }
+    }
+}
+
+#endregion Extension Methods

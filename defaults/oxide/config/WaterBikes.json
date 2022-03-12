@@ -1,7 +1,7 @@
 {
   "(0) Waterbike price item short name:amount (0 - free)": {
     "Key": "scrap",
-    "Value": 2500
+    "Value": 1000
   },
   "(1) Waterbike prefab": "assets/content/vehicles/snowmobiles/tomahasnowmobile.prefab",
   "(2) Make all snowmobiles waterbikes": true,
