@@ -23,7 +23,7 @@ if (!isset($_SESSION['steamid'])) {
 	  <a href="steam://connect/us-west-10x.solidrust.net:28015" class="btn btn-primary">connect us-west-10x.solidrust.net:28015</a>
 	  <p class="card-text"><h6>This server is a fast paced 10x with custom mods.</h6>
 		<ul>
-			<li>Map Wipe every MONDAY 10AM-PST</li>
+			<li>Map Wipe every FRIDAY 10AM-PST</li>
 		  <li>Full wipe first THURSDAY of the month 11AM-PST</li>
 			<li>10x Gather, Improved stack sizes and XP rewards</li>
 			<li>Hand-picked Procedural map seeds, with all monuments</li>

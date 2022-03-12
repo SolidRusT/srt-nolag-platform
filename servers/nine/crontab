@@ -22,14 +22,17 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 ## SolidRusT wipe schedule
 # SRT Monday, Thursday map wipe
-0 9 * * MON root /bin/sh -c /root/solidrust.net/defaults/0_wipe_server.sh
-0 9 * * THU root [ "$(date +\%d)" -le 7 ] && /bin/sh -c "/root/solidrust.net/defaults/0_wipe_server.sh force"
+0 9 * * FRI root /bin/sh -c /root/solidrust.net/defaults/0_wipe_server.sh
+10 10 * * THU root [ "$(date +\%d)" -le 7 ] && /bin/sh -c "/root/solidrust.net/defaults/0_wipe_server.sh force"
 
 ## SolidRusT server backups
-*/10 *  * * *   root /bin/sh -c /root/solidrust.net/defaults/10_backup.sh
+2,33 *  * * *   root /bin/sh -c /root/solidrust.net/defaults/10_backup.sh
+
+## SolidRusT server backups
+*/5 *  * * *   root /bin/sh -c /root/solidrust.net/defaults/01_server_save.sh
 
 ## SolidRusT Build refresh
-03 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/21_sync_repo.sh
+#03 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/21_sync_repo_game.sh
 
 ## SolidRusT local log management
-15 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
+17 *    * * *   root /bin/sh -c /root/solidrust.net/defaults/45_logrotate.sh
