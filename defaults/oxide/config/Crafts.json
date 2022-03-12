@@ -284,6 +284,50 @@
             }
           ],
           "For Modular Car": null
+        },
+        {
+          "Enabled": true,
+          "Image": "https://www.corrosionhour.com/wp-content/uploads/2022/02/rust-snowmobiletomaha-150x150.png",
+          "Title": "Tomaha",
+          "Description": "Conquers snow biomes and water",
+          "Command (to give an item)": "givetomaha",
+          "Permission (ex: crafts.vip)": "",
+          "Display Name": "Tomaha",
+          "ShortName": "electric.flasherlight",
+          "Amount": 1,
+          "Skin": 2771957914,
+          "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
+          "Prefab": "assets/content/vehicles/snowmobiles/tomahasnowmobile.prefab",
+          "Command on give": "",
+          "Workbench Level": 3,
+          "Distance Check": true,
+          "Distance": 1.5,
+          "Place the ground": true,
+          "Place the structure": false,
+          "Items For Craft": [
+            {
+              "Image": "",
+              "ShortName": "gears",
+              "Amount": 25,
+              "Skin": 0,
+              "Title (empty - default)": null
+            },
+            {
+              "Image": "",
+              "ShortName": "sheetmetal",
+              "Amount": 15,
+              "Skin": 0,
+              "Title (empty - default)": null
+            },
+            {
+              "Image": "",
+              "ShortName": "metal.fragments",
+              "Amount": 7000,
+              "Skin": 0,
+              "Title (empty - default)": null
+            }
+          ],
+          "For Modular Car": null
         }
       ]
     },
