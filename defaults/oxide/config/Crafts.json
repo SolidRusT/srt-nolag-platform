@@ -9,6 +9,7 @@
     "recycler"
   ],
   "Work with Notify?": true,
+  "Work with LangAPI?": true,
   "Permission (ex: crafts.use)": "crafts.use",
   "Categories": [
     {
@@ -28,7 +29,7 @@
           "Command (to give an item)": "givecopter",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "Minicopter",
-          "Shortname": "electric.flasherlight",
+          "ShortName": "electric.flasherlight",
           "Amount": 1,
           "Skin": 2080145158,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
@@ -42,21 +43,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 20,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metalblade",
+              "ShortName": "metalblade",
               "Amount": 10,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.refined",
+              "ShortName": "metal.refined",
               "Amount": 100,
               "Skin": 0,
               "Title (empty - default)": null
@@ -72,7 +73,7 @@
           "Command (to give an item)": "giverowboat",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "Row Boat",
-          "Shortname": "coffin.storage",
+          "ShortName": "coffin.storage",
           "Amount": 1,
           "Skin": 2080150023,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
@@ -86,21 +87,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "carburetor3",
+              "ShortName": "carburetor3",
               "Amount": 1,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "wood",
+              "ShortName": "wood",
               "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -116,7 +117,7 @@
           "Command (to give an item)": "giverhibboat",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "RHIB",
-          "Shortname": "electric.sirenlight",
+          "ShortName": "electric.sirenlight",
           "Amount": 1,
           "Skin": 2080150770,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
@@ -130,21 +131,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
+              "ShortName": "roadsigns",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
+              "ShortName": "metal.fragments",
               "Amount": 2000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -160,7 +161,7 @@
           "Command (to give an item)": "givehotair",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "Hot Air Balloon",
-          "Shortname": "box.repair.bench",
+          "ShortName": "box.repair.bench",
           "Amount": 1,
           "Skin": 2080152635,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
@@ -174,21 +175,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
+              "ShortName": "roadsigns",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
+              "ShortName": "metal.fragments",
               "Amount": 2000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -204,7 +205,7 @@
           "Command (to give an item)": "givescrapheli",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "Transport Helicopter",
-          "Shortname": "electric.flasherlight",
+          "ShortName": "electric.flasherlight",
           "Amount": 1,
           "Skin": 2080154394,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
@@ -218,21 +219,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 30,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "sheetmetal",
+              "ShortName": "sheetmetal",
               "Amount": 20,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
+              "ShortName": "metal.fragments",
               "Amount": 10000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -248,7 +249,7 @@
           "Command (to give an item)": "givesnowmobile",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "Snowmobile",
-          "Shortname": "electric.flasherlight",
+          "ShortName": "electric.flasherlight",
           "Amount": 1,
           "Skin": 2747934628,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
@@ -262,21 +263,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 20,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "sheetmetal",
+              "ShortName": "sheetmetal",
               "Amount": 10,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
+              "ShortName": "metal.fragments",
               "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -303,7 +304,7 @@
           "Command (to give an item)": "givesedan",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "Car",
-          "Shortname": "woodcross",
+          "ShortName": "woodcross",
           "Amount": 1,
           "Skin": 2080151780,
           "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
@@ -317,21 +318,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
+              "ShortName": "roadsigns",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
+              "ShortName": "metal.fragments",
               "Amount": 4000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -347,7 +348,7 @@
           "Command (to give an item)": "givemod1",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "Car",
-          "Shortname": "electric.flasherlight",
+          "ShortName": "electric.flasherlight",
           "Amount": 1,
           "Skin": 2244308598,
           "Type (Item/Command/Vehicle/Recycler)": "ModularCar",
@@ -361,21 +362,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
+              "ShortName": "roadsigns",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
+              "ShortName": "metal.fragments",
               "Amount": 10000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -413,7 +414,7 @@
           "Command (to give an item)": "giverecycler",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "Home Recycler",
-          "Shortname": "research.table",
+          "ShortName": "research.table",
           "Amount": 1,
           "Skin": 2186833264,
           "Type (Item/Command/Vehicle/Recycler)": "Recycler",
@@ -427,21 +428,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
+              "ShortName": "roadsigns",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
+              "ShortName": "metal.fragments",
               "Amount": 5000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -457,7 +458,7 @@
           "Command (to give an item)": "givelr300",
           "Permission (ex: crafts.vip)": "",
           "Display Name": "",
-          "Shortname": "rifle.lr300",
+          "ShortName": "rifle.lr300",
           "Amount": 1,
           "Skin": 0,
           "Type (Item/Command/Vehicle/Recycler)": "Item",
@@ -471,21 +472,21 @@
           "Items For Craft": [
             {
               "Image": "",
-              "Shortname": "gears",
+              "ShortName": "gears",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "roadsigns",
+              "ShortName": "roadsigns",
               "Amount": 5,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
-              "Shortname": "metal.fragments",
+              "ShortName": "metal.fragments",
               "Amount": 2000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -609,11 +610,27 @@
       "HEX": "#595651",
       "Opacity (0 - 100)": 100.0
     },
+    "Color 8": {
+      "HEX": "#4B68FF",
+      "Opacity (0 - 100)": 70.0
+    },
+    "Color 9": {
+      "HEX": "#0E0E10",
+      "Opacity (0 - 100)": 98.0
+    },
+    "Color 10": {
+      "HEX": "#4B68FF",
+      "Opacity (0 - 100)": 50.0
+    },
+    "Color 11": {
+      "HEX": "#FF4B4B",
+      "Opacity (0 - 100)": 100.0
+    },
     "Background Image": ""
   },
   "Version": {
     "Major": 2,
-    "Minor": 5,
-    "Patch": 2
+    "Minor": 7,
+    "Patch": 0
   }
 }
