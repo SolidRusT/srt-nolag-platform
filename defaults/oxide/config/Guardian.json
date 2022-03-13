@@ -173,7 +173,7 @@
             "ItemDrop": false
         },
         "IP": {
-            "Filter": true
+            "Filter": false
         },
         "Projectile": {
             "Collapse": true,
