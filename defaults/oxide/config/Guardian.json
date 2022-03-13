@@ -152,11 +152,11 @@
     },
     "IP": {
         "Filter": {
-            "Cooldown": 30
+            "Cooldown": 15
         },
         "Violation": {
             "Ban": false,
-            "Enabled": false
+            "Enabled": true
         }
     },
     "Log": {
@@ -173,7 +173,7 @@
             "ItemDrop": false
         },
         "IP": {
-            "Filter": false
+            "Filter": true
         },
         "Projectile": {
             "Collapse": true,
