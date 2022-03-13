@@ -108,7 +108,7 @@
               },
               {
                 "Title": "Wipe Schedule",
-                "Value": "MONDAYS 10:00 AM (PST)",
+                "Value": "FRIDAYS 10:00 AM (PST)",
                 "Inline": true,
                 "Enabled": true
               },
