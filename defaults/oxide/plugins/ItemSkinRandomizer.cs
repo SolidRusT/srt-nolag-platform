@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Item Skin Randomizer", "Mevent", "1.6.0")]
+    [Info("Item Skin Randomizer", "Mevent", "1.6.1")]
     [Description("Simple plugin that will select a random skin for an item when crafting")]
     public class ItemSkinRandomizer : RustPlugin
     {
@@ -139,7 +139,7 @@ namespace Oxide.Plugins
 
         private void OnEntitySpawned(BaseEntity entity)
         {
-            if (entity == null || entity.OwnerID == 0 ||
+            if (entity == null || entity.OwnerID == 0 || entity.skinID != 0 ||
                 !permission.UserHasPermission(entity.OwnerID.ToString(), permUse) ||
                 _config.BlockedEntities.Contains(entity.ShortPrefabName)) return;
 

@@ -18,15 +18,10 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("XDCobaltLaboratory", "DezLife", "2.3.3")]
+    [Info("XDCobaltLaboratory", "DezLife", "2.3.4")]
     public class XDCobaltLaboratory : RustPlugin
     {
-        //Добавленна поддержка BetterNpc
-        //Добавленна поддержка BotReSpawn
-        //Исправлена проблема с вертолетом
-        //Исправлена проблема с появлением UI уведомления
-        //Некоторые небольшие изменения. 
-        //Некоторые исправления в конфигурации
+        //Исправлена загрузка стандартной постройки
 
         #region Var
         [PluginReference] Plugin CopyPaste, IQChat, NpcSpawn;
@@ -86,6 +81,7 @@ namespace Oxide.Plugins
                 ["XD_IVENT_CLCONTROLLER_LOADING_THE_CONSTRUCTION"] = "Файл постройки не найден!\nНачинаем импортировать...",
                 ["XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"] = "Постройка успешно загружена!",
                 ["XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"] = "Ошибка при загрузке постройки!\nПробуем загрузить еще раз",
+                ["XD_IVENT_CLCONTROLLER_ERROR_KEYAUTH"] = "Плагин не смог пройти аунтефикацию на сервере!\n Сверьте версию плагина или свяжитесь с разработчиком\nDezLife#1480\nvk.com/dezlife",
                 ["XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"] = "Повторная загрузка не была успешной\nОбратитесь к разработчику\nDezLife#1480\nvk.com/dezlife",
                 ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[Cobalt Lab Event] </color>Внутри ящика оказалась ловушка с сигналом в службу охраны Cobalt.\nНа защиту вылетел боевой вертолёт\nВы должны сбить его или выжить в течении 5 минут.",
                 ["XD_IVENT_CLCONTROLLER_ENTER_PVP"] = "Вы <color=#ce3f27>вошли</color> в PVP зону, теперь другие игроки <color=#ce3f27>могут</color> наносить вам урон!",
@@ -129,6 +125,7 @@ namespace Oxide.Plugins
                 ["XD_IVENT_CLCONTROLLER_LOADING_THE_CONSTRUCTION"] = "Building file not found!\nWe start to import...",
                 ["XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"] = "The building has been loaded successfully!",
                 ["XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"] = "Error when loading a building!\nTrying to download again",
+                ["XD_IVENT_CLCONTROLLER_ERROR_KEYAUTH"] = "The plugin did not pass the authentication on the server!\nCheck the plugin version or contact the developer\nDezLife#1480\nvk.com/dezlife",
                 ["XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"] = "Reload was not successful\nContact the developer\nDezLife#1480\nvk.com/dezlife",
                 ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[Cobalt Lab Event] </color>Inside the box was a trap with a signal to the Cobalt security service.\nA battle helicopter flew to protect the box\nYou need to shoot it down or survive for 5 minutes",
                 ["XD_IVENT_CLCONTROLLER_ENTER_PVP"] = "You <color=#ce3f27>entered</color> In the PVP zone, now other players <color=#ce3f27>can</color> do damage to you!",
@@ -140,34 +137,41 @@ namespace Oxide.Plugins
         #endregion
 
         #region Data
-        public void LoadDataCopyPaste(Boolean repeat = false)
+
+        private void LoadDataCopyPaste(Boolean repeat = false)
         {
             if (!Interface.Oxide.DataFileSystem.ExistsDatafile("copypaste/HouseCobalt"))
             {
                 PrintWarning(GetLang("XD_IVENT_CLCONTROLLER_LOADING_THE_CONSTRUCTION"));
-                webrequest.Enqueue("http://utilite.skyplugins.ru/XDCasinoOutPost/HouseCobaltNew234.json", null, (i, s) =>
+                webrequest.Enqueue($"https://xdquest.skyplugins.ru/api/getbuildinglab/vn4n5n88V34NMnm34", null, (code, response) =>
                 {
+                    switch (code)
                     {
-                        if (i == 200)
-                        {
-                            PasteData obj = JsonConvert.DeserializeObject<PasteData>(s);
-                            Interface.Oxide.DataFileSystem.WriteObject("copypaste/HouseCobalt", obj);
-                            PrintWarning(GetLang("XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"));
-                        }
-                        else
-                        {
-                            if (!repeat)
+                        case 200:
                             {
-                                PrintError(GetLang("XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"));
-                                timer.Once(10f, () => LoadDataCopyPaste(true));
+                                PasteData obj = JsonConvert.DeserializeObject<PasteData>(response);
+                                Interface.Oxide.DataFileSystem.WriteObject("copypaste/HouseCobalt", obj);
+                                PrintWarning(GetLang("XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"));
+                                break;
                             }
-                            else
+                        case 502:
                             {
-                                PrintError(GetLang("XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"));
+                                PrintError(GetLang("XD_IVENT_CLCONTROLLER_ERROR_KEYAUTH"));
+                                break;
                             }
-
-                            return;
-                        }
+                        default:
+                            {
+                                if (!repeat)
+                                {
+                                    PrintError(GetLang("XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"));
+                                    timer.Once(10f, () => LoadDataCopyPaste(true));
+                                }
+                                else
+                                {
+                                    PrintError(GetLang("XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"));
+                                }
+                                return;
+                            }
                     }
                 }, this, RequestMethod.GET);
             }
@@ -2549,7 +2553,7 @@ namespace Oxide.Plugins
                     Name = "CobaltImg",
                     Parent = "CobaltPanel",
                     Components = {
-                    new CuiRawImageComponent { Color = "0.9568628 0.7254 0 1", Material = "assets/icons/iconmaterial.mat", Sprite = "assets/icons/radiation.png", FadeIn = 0.2f },
+                    new CuiRawImageComponent { Color = "0.95686 0.7254 0 1", Material = "assets/icons/iconmaterial.mat", Sprite = "assets/icons/radiation.png", FadeIn = 0.2f },
                     new CuiRectTransformComponent { AnchorMin = "0 0.5", AnchorMax = "0 0.5", OffsetMin = "6.5 -17.5", OffsetMax = "41.5 17.5" }
                 }
                 });
