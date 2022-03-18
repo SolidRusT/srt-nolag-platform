@@ -18,9 +18,10 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("XDCobaltLaboratory", "DezLife", "2.2.7")]
+    [Info("XDCobaltLaboratory", "DezLife", "2.3.4")]
     public class XDCobaltLaboratory : RustPlugin
     {
+        //Исправлена загрузка стандартной постройки
 
         #region Var
         [PluginReference] Plugin CopyPaste, IQChat, NpcSpawn;
@@ -37,9 +38,8 @@ namespace Oxide.Plugins
         private Timer SpawnHouseTime;
         private Timer RemoveHouseTime;
         private Configuration.BuildingPasteSettings.PasteBuild labIndex = null;
-
+        private const bool Ru = false;
         private Coroutine setupBuildingRoutine { get; set; } = null;
-
         #endregion
 
         #region Lang
@@ -81,6 +81,7 @@ namespace Oxide.Plugins
                 ["XD_IVENT_CLCONTROLLER_LOADING_THE_CONSTRUCTION"] = "Файл постройки не найден!\nНачинаем импортировать...",
                 ["XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"] = "Постройка успешно загружена!",
                 ["XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"] = "Ошибка при загрузке постройки!\nПробуем загрузить еще раз",
+                ["XD_IVENT_CLCONTROLLER_ERROR_KEYAUTH"] = "Плагин не смог пройти аунтефикацию на сервере!\n Сверьте версию плагина или свяжитесь с разработчиком\nDezLife#1480\nvk.com/dezlife",
                 ["XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"] = "Повторная загрузка не была успешной\nОбратитесь к разработчику\nDezLife#1480\nvk.com/dezlife",
                 ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[Cobalt Lab Event] </color>Внутри ящика оказалась ловушка с сигналом в службу охраны Cobalt.\nНа защиту вылетел боевой вертолёт\nВы должны сбить его или выжить в течении 5 минут.",
                 ["XD_IVENT_CLCONTROLLER_ENTER_PVP"] = "Вы <color=#ce3f27>вошли</color> в PVP зону, теперь другие игроки <color=#ce3f27>могут</color> наносить вам урон!",
@@ -124,6 +125,7 @@ namespace Oxide.Plugins
                 ["XD_IVENT_CLCONTROLLER_LOADING_THE_CONSTRUCTION"] = "Building file not found!\nWe start to import...",
                 ["XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"] = "The building has been loaded successfully!",
                 ["XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"] = "Error when loading a building!\nTrying to download again",
+                ["XD_IVENT_CLCONTROLLER_ERROR_KEYAUTH"] = "The plugin did not pass the authentication on the server!\nCheck the plugin version or contact the developer\nDezLife#1480\nvk.com/dezlife",
                 ["XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"] = "Reload was not successful\nContact the developer\nDezLife#1480\nvk.com/dezlife",
                 ["XD_IVENT_CLCONTROLLER_HELI_HELP"] = "<color=#008000>[Cobalt Lab Event] </color>Inside the box was a trap with a signal to the Cobalt security service.\nA battle helicopter flew to protect the box\nYou need to shoot it down or survive for 5 minutes",
                 ["XD_IVENT_CLCONTROLLER_ENTER_PVP"] = "You <color=#ce3f27>entered</color> In the PVP zone, now other players <color=#ce3f27>can</color> do damage to you!",
@@ -135,34 +137,41 @@ namespace Oxide.Plugins
         #endregion
 
         #region Data
-        public void LoadDataCopyPaste(Boolean repeat = false)
+
+        private void LoadDataCopyPaste(Boolean repeat = false)
         {
             if (!Interface.Oxide.DataFileSystem.ExistsDatafile("copypaste/HouseCobalt"))
             {
                 PrintWarning(GetLang("XD_IVENT_CLCONTROLLER_LOADING_THE_CONSTRUCTION"));
-                webrequest.Enqueue("http://utilite.skyplugins.ru/XDCasinoOutPost/HouseCobaltNew234.json", null, (i, s) =>
+                webrequest.Enqueue($"https://xdquest.skyplugins.ru/api/getbuildinglab/vn4n5n88V34NMnm34", null, (code, response) =>
                 {
+                    switch (code)
                     {
-                        if (i == 200)
-                        {
-                            PasteData obj = JsonConvert.DeserializeObject<PasteData>(s);
-                            Interface.Oxide.DataFileSystem.WriteObject("copypaste/HouseCobalt", obj);
-                            PrintWarning(GetLang("XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"));
-                        }
-                        else
-                        {
-                            if (!repeat)
+                        case 200:
                             {
-                                PrintError(GetLang("XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"));
-                                timer.Once(10f, () => LoadDataCopyPaste(true));
+                                PasteData obj = JsonConvert.DeserializeObject<PasteData>(response);
+                                Interface.Oxide.DataFileSystem.WriteObject("copypaste/HouseCobalt", obj);
+                                PrintWarning(GetLang("XD_IVENT_CLCONTROLLER_CONSTRUCTION_LOADED"));
+                                break;
                             }
-                            else
+                        case 502:
                             {
-                                PrintError(GetLang("XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"));
+                                PrintError(GetLang("XD_IVENT_CLCONTROLLER_ERROR_KEYAUTH"));
+                                break;
                             }
-
-                            return;
-                        }
+                        default:
+                            {
+                                if (!repeat)
+                                {
+                                    PrintError(GetLang("XD_IVENT_CLCONTROLLER_ERROR_DOWNLOADING"));
+                                    timer.Once(10f, () => LoadDataCopyPaste(true));
+                                }
+                                else
+                                {
+                                    PrintError(GetLang("XD_IVENT_CLCONTROLLER_RETAINED_UPLOAD_ERROR"));
+                                }
+                                return;
+                            }
                     }
                 }, this, RequestMethod.GET);
             }
@@ -182,144 +191,107 @@ namespace Oxide.Plugins
             public string Shortname;
             [JsonProperty("SkinID")]
             public ulong SkinID;
-            ////[JsonProperty("Имя предмета")]
-            [JsonProperty("Item name")]
+            [JsonProperty(Ru ? "Имя предмета" : "Item name")]
             public string DisplayName;
-            ////[JsonProperty("Чертеж?")]
-            [JsonProperty("BluePrint?")]
+            [JsonProperty(Ru ? "Чертеж?" : "BluePrint")]
             public bool BluePrint;
-            ////[JsonProperty("Минимальное количество")]
-            [JsonProperty("Minimal amount")]
+            [JsonProperty(Ru ? "Минимальное количество" : "Minimal amount")]
             public int MinimalAmount;
-            ////[JsonProperty("Максимальное количество")]
-            [JsonProperty("Maximum amount")]
+            [JsonProperty(Ru ? "Максимальное количество" : "Maximum amount")]
             public int MaximumAmount;
-            ////[JsonProperty("Шанс выпадения предмета")]
-            [JsonProperty("Item drop chance")]
+            [JsonProperty(Ru ? "Шанс выпадения предмета" : "Item drop chance")]
             public int DropChance;
-            ////[JsonProperty("Умножать этот предмета на день вайпа ?")]
-            [JsonProperty("Multiply this item by wipe day?")]
+            [JsonProperty(Ru ? "Умножать этот предмета на день вайпа ?" : "Multiply this item by wipe day?")]
             public bool wipeCheck;
         }
 
         private Configuration config;
         private class Configuration
         {
-            ////[JsonProperty("Настройка запуска и остановки ивента")]
-            [JsonProperty("Setting up and stopping an event")]
+            [JsonProperty(Ru ? "Настройка запуска и остановки ивента" : "Setting up and stopping an event")]
             public IventController iventController = new IventController();
-            ////[JsonProperty("Настройка уведомлений")]
-            [JsonProperty("Configuring notifications")]
+            [JsonProperty(Ru ? "Настройка уведомлений" : "Configuring notifications")]
             public NotiferSettings notiferSettings = new NotiferSettings();
-            ////[JsonProperty("Настройка радиации в зоне ивента")]
-            [JsonProperty("Setting up radiation in the event area")]
+            [JsonProperty(Ru ? "Настройка радиации в зоне ивента" : "Setting up radiation in the event area")]
             public RadiationConroller radiationConroller = new RadiationConroller();
-            ////[JsonProperty("Отображения ивента на картах")]
-            [JsonProperty("Event display on maps")]
+            [JsonProperty(Ru ? "Отображения ивента на картах" : "Event display on maps")]
             public MapMarkers mapMarkers = new MapMarkers();
-            ////[JsonProperty("Настройка постройки для ивента (CopyPaste) и нпс")]
-            [JsonProperty("Setting up buildings for the event (Copypaste) and NPCs")]
+            [JsonProperty(Ru ? "Настройка постройки для ивента (CopyPaste) и нпс" : "Setting up buildings for the event (Copypaste) and NPCs")]
             public BuildingPasteSettings pasteSettings = new BuildingPasteSettings();
-            ////[JsonProperty("Настройка лута NPC")]
-            [JsonProperty("NPC loot setup")]
+            [JsonProperty(Ru ? "Настройка лута NPC" : "NPC loot setup")]
             public NpcLootController npcLootController = new NpcLootController();
-            ////[JsonProperty("Настройка ящика")]
-            [JsonProperty("Customizing the box")]
+            [JsonProperty(Ru ? "Настройка ящика" : "Customizing the box")]
             public BoxSetting boxSetting = new BoxSetting();
-             ////[JsonProperty("Награда в виде команды, игроку который 1 открыл груз")]
-            [JsonProperty("Reward in the form of a team to the player who 1 opened the cargo")]
+            [JsonProperty(Ru ? "Награда в виде команды, игроку который 1 открыл груз" : "Reward in the form of a team to the player who 1 opened the cargo")]
             public CommandReward commandReward = new CommandReward();
-             ////[JsonProperty("Настройка подбора позиций для спавна (Для опытных пользователей)")]
-            [JsonProperty("Setting up the selection of positions for spawn (For experienced users)")]
+            [JsonProperty(Ru ? "Настройка подбора позиций для спавна (Для опытных пользователей)" : "Setting up the selection of positions for spawn (For experienced users)")]
             public SpawnPositionGenerateSetting spawnPositionGenerateSetting = new SpawnPositionGenerateSetting();
 
             internal class RadiationConroller
             {
-                ////[JsonProperty("Включить радиацию ?")]
-                [JsonProperty("Turn on radiation?")]
+                [JsonProperty(Ru ? "Включить радиацию ?" : "Turn on radiation?")]
                 public bool radUse = true;
-                ////[JsonProperty("Количество радиационных частиц")]
-                [JsonProperty("Number of radiation particles")]
+                [JsonProperty(Ru ? "Количество радиационных частиц" : "Number of radiation particles")]
                 public int radCount = 20;
-                ////[JsonProperty("Радиус зоны поражения (Не более чем радиус обноружения игроков)")]
-                [JsonProperty("Radius of the affected area (No more than the radius of detection of players)")]
+                [JsonProperty(Ru ? "Радиус зоны поражения (Не более чем радиус обноружения игроков)" : "Radius of the affected area (No more than the radius of detection of players)")]
                 public int radRadius = 20;
             }
 
             internal class SpawnPositionGenerateSetting
             {
-                ////[JsonProperty("Разрешить спавн на дорогах ?")]
-                [JsonProperty("Allow spawn on the roads ?")]
+                [JsonProperty(Ru ? "Разрешить спавн на дорогах ?" : "Allow spawn on the roads ?")]
                 public bool spawnOnRoad = true;
-                ////[JsonProperty("Разрешить спавн на реках ?")]
-                [JsonProperty("Allow spawn on rivers ?")]
+                [JsonProperty(Ru ? "Разрешить спавн на реках ?" : "Allow spawn on rivers ?")]
                 public bool spawnOnRiver = true;
-                ////[JsonProperty("Радиус обноружения монументов")]
-                [JsonProperty("Radius of monument detection")]
+                [JsonProperty(Ru ? "Радиус обноружения монументов" : "Radius of monument detection")]
                 public float monumentFindRadius = 40f;
-                ////[JsonProperty("Радиус обноружения шкафов (Building Block)")]
-                [JsonProperty("Detection radius of the tool cupboard (Building Block)")]
+                [JsonProperty(Ru ? "Радиус обноружения шкафов (Building Block)" : "Detection radius of the tool cupboard (Building Block)")]
                 public float buildingBlockFindRadius = 90f;
             }
             public class CommandReward
             {
-                ////[JsonProperty("Список команд, которые выполняются в консоли (%STEAMID% - игрок который залутает ящик )")]
-                [JsonProperty("List of commands that are executed in the console (%STEAMID% - the player who looted the box)")]
+                [JsonProperty(Ru ? "Список команд, которые выполняются в консоли (%STEAMID% - игрок который залутает ящик )" : "List of commands that are executed in the console (%STEAMID% - the player who looted the box)")]
                 public List<string> Commands =  new List<string>();
-                ////[JsonProperty("Сообщения который игрок получит (Здесь можно написать о том , что получил игрок)")]
-                [JsonProperty("Messages that the player will receive (Here you can write about what the player received)")]
+                [JsonProperty(Ru ? "Сообщения который игрок получит (Здесь можно написать о том , что получил игрок)" : "Messages that the player will receive (Here you can write about what the player received)")]
                 public string MessagePlayerReward = "";
             }
             internal class MapMarkers
             {
-                ////[JsonProperty("Отметить ивент на карте G (Требуется https://skyplugins.ru/resources/428/)")]
-                [JsonProperty("Mark the event on the G card (Requires FREE https://skyplugins.ru/resources/428/)")]
-                public bool MapUse = false;
-                ////[JsonProperty("Текст для карты G")]
-                [JsonProperty("Text for map G")]
+                [JsonProperty(Ru ? "Отметить ивент на карте G (Требуется https://umod.org/plugins/marker-manager)" : "Mark the event on the G card (Requires FREE https://umod.org/plugins/marker-manager)")]
+                public bool MapUse = true;
+                [JsonProperty(Ru ? "Текст для карты G" : "Text for map G")]
                 public string MapTxt = "Cobalt lab";
-                ////[JsonProperty("Цвет маркера (без #)")]
-                [JsonProperty("Marker color (without #)")]
+                [JsonProperty(Ru ? "Цвет маркера (без #)" : "Marker color (without #)")]
                 public String colorMarker = "f3ecad";
-                ////[JsonProperty("Цвет обводки (без #)")]
-                [JsonProperty("Outline color (without #)")]
+                [JsonProperty(Ru ? "Цвет обводки (без #)" : "Outline color (without #)")]
                 public String colorOutline = "ff3535";
             }
             internal class IventController
             {
-                ////[JsonProperty("Минимальное количество игроков для запуска ивента")]
-                [JsonProperty("The minimum number of players to start an event")]
+                [JsonProperty(Ru ? "Минимальное количество игроков для запуска ивента" : "The minimum number of players to start an event")]
                 public int minPlayedPlayers = 0;
-                ////[JsonProperty("Время до начала ивента (Минимальное в секундах)")]
-                [JsonProperty("Time before the start of the event (Minimum in seconds)")]
+                [JsonProperty(Ru ? "Время до начала ивента (Минимальное в секундах)" : "Time before the start of the event (Minimum in seconds)")]
                 public int minSpawnIvent = 3000;
-                ////[JsonProperty("Время до начала ивента (Максимальное в секундах)")]
-                [JsonProperty("Time before the start of the event (Maximum in seconds)")]
+                [JsonProperty(Ru ? "Время до начала ивента (Максимальное в секундах)" : "Time before the start of the event (Maximum in seconds)")]
                 public int maxSpawnIvent = 7200;
-                ////[JsonProperty("Время до удаления ивента если никто не откроет ящик (Секунды)")]
-                [JsonProperty("Time until the event is deleted if no one opens the box (Seconds)")]
+                [JsonProperty(Ru ? "Время до удаления ивента если никто не откроет ящик (Секунды)" : "Time until the event is deleted if no one opens the box (Seconds)")]
                 public int timeRemoveHouse = 900;
-                ////[JsonProperty("Время до удаления ивента после того как разблокируется ящик")]
-                [JsonProperty("The time until the event is deleted after the box is unlocked")]
+                [JsonProperty(Ru ? "Время до удаления ивента после того как разблокируется ящик" : "The time until the event is deleted after the box is unlocked")]
                 public int timeRemoveHouse2 = 300;
-                ////[JsonProperty("Создавать PVP зону в радиусе ивента ? (Требуется TruePVE)")] 
-                [JsonProperty("Create a PVP zone within the radius of the event? (Requires TruePVE)")] 
+                [JsonProperty(Ru ? "Создавать PVP зону в радиусе ивента ? (Требуется TruePVE)" : "Create a PVP zone within the radius of the event? (Requires TruePVE)")]
                 public bool UseZonePVP = false;
-                ////[JsonProperty("Используете ли вы купол ?")]
-                [JsonProperty("Do you use a dome ?")] 
+                [JsonProperty(Ru ? "Используете ли вы купол" : "Do you use a dome ?")]
                 public bool useSphere = false;
-                ////[JsonProperty("Прозрачность купола (чем меньше число тем более он прозрачный. Значения должно быть не более 5)")]
-                [JsonProperty("Transparency of the dome (the smaller the number, the more transparent it is. The values should be no more than 5)")] 
+                [JsonProperty(Ru ? "Прозрачность купола (чем меньше число тем более он прозрачный. Значения должно быть не более 5)" : "Transparency of the dome (the smaller the number, the more transparent it is. The values should be no more than 5)")]
                 public int transperent = 3;
 
             }
             internal class NpcLootController
             {           
-                ////[JsonProperty("Использовать свой лут в нпс ?")]
-                [JsonProperty("Use your loot in NPCs?")]
+                [JsonProperty(Ru ? "Использовать свой лут в нпс ?" : "Use your loot in NPCs?")]
                 public bool useCustomLoot = true;
-                ////[JsonProperty("Настройка лута в NPC (Если выключенно то будет стандартный) /cl.botitems")]
-                [JsonProperty("Setting up loot in NPC (if disabled, it will be standard) /cl.botitems")]
+
+                [JsonProperty(Ru ? "Настройка лута в NPC (Если выключенно то будет стандартный) /cl.botitems" : "Setting up loot in NPC (if disabled, it will be standard) /cl.botitems")]
                 public List<LootNpcOrBox> lootNpcs = new List<LootNpcOrBox>();
                 internal class ItemNpc
                 {
@@ -334,46 +306,34 @@ namespace Oxide.Plugins
 
             internal class BuildingPasteSettings
             {
-                ////[JsonProperty("Постройки для спавна. (Если более 1 то выбирается рандомная)")]
-                [JsonProperty("Spawn buildings. (If more than 1 then random is selected)")]
+                [JsonProperty(Ru ? "Постройки для спавна. (Если более 1 то выбирается рандомная)" : "Spawn buildings. (If more than 1 then random is selected)")]
                 public List<PasteBuild> pasteBuilds = new List<PasteBuild>();
                 internal class PasteBuild
                 {
-                    ////[JsonProperty("Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку)")]
-                    [JsonProperty("Setting the height of the building (Required in the setting if you want to place your building)")]
+                    [JsonProperty(Ru ? "Настройка высоты постройки (Требуется в настройке, если вы хотите ставить свою постройку)" : "Setting the height of the building (Required in the setting if you want to place your building)")]
                     public int heightBuilding;
-                    ////[JsonProperty("файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная)")]
-                    [JsonProperty("file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)")]
+                    [JsonProperty(Ru ? "файл в папке /oxide/data/copypaste с вашей постройкой(Если не указать загрузится стандартная)" : "file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)")]
                     public string housepath;
-                    ////[JsonProperty("Колличевство NPC")]
-                    [JsonProperty("Number of NPCs")]
+                    [JsonProperty(Ru ? "Колличевство NPC" : "Number of NPCs")]
                     public int countSpawnNpc;
-                    ////[JsonProperty("Спавнить ли подмогу после взлома ящика ? (НПС)")]
-                    [JsonProperty("Should I spawn help after breaking the box? (NPC)")]
+                    [JsonProperty(Ru ? "Спавнить ли подмогу после взлома ящика ? (НПС)" : "Should I spawn help after breaking the box? (NPC)")]
                     public bool helpBot;
-                    ////[JsonProperty("Колличевство нпс (Подмога)")]
-                    [JsonProperty("Number of NPCs (Help)")]
+                    [JsonProperty(Ru ? "Колличевство нпс (Подмога)" : "Number of NPCs (Help)")]
                     public int helpCount;
-                    ////[JsonProperty("Возможность вылета вертолета в качевстве подмоги")]
-                    [JsonProperty("The possibility of a helicopter departure as an aid")]
+                    [JsonProperty(Ru ? "Возможность вылета вертолета в качевстве подмоги" : "The possibility of a helicopter departure as an aid")]
                     public Boolean heliHelp;
-                    ////[JsonProperty("Шанс вылета вертолета(0% - 100%)")]
-                    [JsonProperty("Helicopter departure chance (0% - 100%)")]
+                    [JsonProperty(Ru ? "Шанс вылета вертолета(0% - 100%)" : "Helicopter departure chance (0% - 100%)")]
                     public int ChanceHeliHelp;
-                    ////[JsonProperty("Шанс спавна коптера (Если присутствует в постройке)")]
-                    [JsonProperty("Copter spawn chance (if present in a building)")]
+                    [JsonProperty(Ru ? "Шанс спавна коптера (Если присутствует в постройке)" : "Copter spawn chance (if present in a building)")]
                     public int copterChance;
-                    ////[JsonProperty("Настройка NPC")]
-                    [JsonProperty("NPC setup")]
+                    [JsonProperty(Ru ? "Настройка NPC" : "NPC setup")]
                     public NpcConfig npcController = new NpcConfig();
                 }
                 internal class NpcConfig
                 {
-                    ////[JsonProperty("Рандомные ники нпс", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-                    [JsonProperty("Random nicknames npc", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+                    [JsonProperty(Ru ? "Рандомные ники нпс" : "Random nicknames npc", ObjectCreationHandling = ObjectCreationHandling.Replace)]
                     public List<string> nameNPC = new List<string> { "Cobalt guard", "Cobalt defense" };
-                    ////[JsonProperty("Одежда", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-                    [JsonProperty("Wear items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+                    [JsonProperty(Ru ? "Одежда" : "Wear items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
                     public List<ItemNpc> WearItems = new List<ItemNpc> 
                     {
                         new ItemNpc
@@ -413,8 +373,7 @@ namespace Oxide.Plugins
                             Amount = 1
                         },
                     };
-                    ////[JsonProperty("Быстрые слоты", ObjectCreationHandling = ObjectCreationHandling.Replace)]
-                    [JsonProperty("Belt items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+                    [JsonProperty(Ru ? "Быстрые слоты" : "Belt items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
                     public List<NpcBelt> BeltItems = new List<NpcBelt>
                     {
                         new NpcBelt
@@ -453,44 +412,31 @@ namespace Oxide.Plugins
                             Mods = new List<string>()
                         },
                     };
-                    ////[JsonProperty("Кит")] 
-                    [JsonProperty("Kit")] 
+                    [JsonProperty(Ru ? "Кит" : "Kit")]
                     public string Kit = "";
-                    ////[JsonProperty("Кол-во ХП")] 
-                    [JsonProperty("Health")] 
+                    [JsonProperty(Ru ? "Кол-во ХП" : "Health")]
                     public float Health = 150f;
-                    ////[JsonProperty("Дальность патрулирования местности")] 
-                    [JsonProperty("Roam Range")] 
+                    [JsonProperty(Ru ? "Дальность патрулирования местности" : "Roam Range")]
                     public float RoamRange = 30f;
-                    ////[JsonProperty("Дальность погони за целью")] 
-                    [JsonProperty("Chase Range")] 
+                    [JsonProperty(Ru ? "Дальность погони за целью" : "Chase Range")]
                     public float ChaseRange = 90f;
-                    ////[JsonProperty("Множитель радиуса атаки")] 
-                    [JsonProperty("Attack Range Multiplier")] 
+                    [JsonProperty(Ru ? "Множитель радиуса атаки" : "Attack Range Multiplier")]
                     public float AttackRangeMultiplier = 2f;
-                    ////[JsonProperty("Радиус обнаружения цели")] 
-                    [JsonProperty("Sense Range")] 
+                    [JsonProperty(Ru ? "Радиус обнаружения цели" : "Sense Range")]
                     public float SenseRange = 50f;
-                    ////[JsonProperty("Время которое npc будет помнить цель (секунды)")]
-                    [JsonProperty("Target Memory Duration [sec.]")] 
+                    [JsonProperty(Ru ? "Время которое npc будет помнить цель (секунды)" : "Target Memory Duration [sec.]")]
                     public float targetDuration = 300f;
-                    ////[JsonProperty("Множитель урона")] 
-                    [JsonProperty("Scale damage")] 
+                    [JsonProperty(Ru ? "Множитель урона" : "Scale damage")]
                     public float DamageScale = 1f;
-                    ////[JsonProperty("Множитель разброса")] 
-                    [JsonProperty("Aim Cone Scale")] 
+                    [JsonProperty(Ru ? "Множитель разброса" : "Aim Cone Scale")]
                     public float AimConeScale = 1f;
-                    ////[JsonProperty("Обнаруживать цель только в углу обзора NPC?")] 
-                    [JsonProperty("Detect the target only in the NPC's viewing vision cone?")] 
+                    [JsonProperty(Ru ? "Обнаруживать цель только в углу обзора NPC?" : "Detect the target only in the NPC's viewing vision cone?")]
                     public bool CheckVisionCone = false;
-                    ////[JsonProperty("Угол обзора")] 
-                    [JsonProperty("Vision Cone")] 
+                    [JsonProperty(Ru ? "Угол обзора" : "Vision Cone")]
                     public float VisionCone = 135f;
-                    ////[JsonProperty("Скорость")]
-                    [JsonProperty("Speed")] 
+                    [JsonProperty(Ru ? "Скорость" : "Speed")]
                     public float speed = 7f;
-                    ////[JsonProperty("Отключить радио эфект ?")]
-                    [JsonProperty("Disable radio effects?")] 
+                    [JsonProperty(Ru ? "Отключить радио эфект ?" : "Disable radio effects?")]
                     public bool radioEffect = true;
                     internal class ItemNpc
                     {
@@ -517,50 +463,36 @@ namespace Oxide.Plugins
 
             internal class BoxSetting
             {
-                ////[JsonProperty("Настройка лута в ящике /cl.items")]
-                [JsonProperty("Loot setting in the box /cl.items")]
+                [JsonProperty(Ru ? "Настройка лута в ящике /cl.items" : "Loot setting in the box /cl.items")]
                 public List<LootNpcOrBox> lootBoxes = new List<LootNpcOrBox>();
-                ////[JsonProperty("Время разблокировки ящика (Сек)")]
-                [JsonProperty("Box unlocking time (Sec)")]
+                [JsonProperty(Ru ? "Время разблокировки ящика (Сек)" : "Box unlocking time (Sec)")]
                 public int unBlockTime = 900;
-                ////[JsonProperty("Минимальное количество предметов в ящике")]
-                [JsonProperty("Minimal number of items in a drawer")]
+                [JsonProperty(Ru ? "Минимальное количество предметов в ящике" : "Minimal number of items in a drawer")]
                 public int minItemCount = 5;
-                ////[JsonProperty("Макcимальное количество предметов в ящике")]
-                [JsonProperty("Maximum number of items in a drawer")]
+                [JsonProperty(Ru ? "Макcимальное количество предметов в ящике" : "Maximum number of items in a drawer")]
                 public int maxItemCount = 10;
-                ////[JsonProperty("умножать количество лута на количество дней с начала вайпа (на 3й день - лута будет в 3 раза больше)")]
-                [JsonProperty("multiply the amount of loot by the number of days since the start of the wipe (on the 3rd day - there will be 3 times more loot)")]
+                [JsonProperty(Ru ? "умножать количество лута на количество дней с начала вайпа (на 3й день - лута будет в 3 раза больше)" : "multiply the amount of loot by the number of days since the start of the wipe (on the 3rd day - there will be 3 times more loot)")]
                 public bool lootWipePlus = false;
-                ////[JsonProperty("Включить сигнализацию ?")]
-                [JsonProperty("Turn on the alarm?")]
+                [JsonProperty(Ru ? "Включить сигнализацию ?" : "Turn on the alarm?")]
                 public bool signaling = true;
-                ////[JsonProperty("Использовать AlphaLoot для заполнения ящика ?")]
-                [JsonProperty("Use AlphaLoot to fill the box?")]
+                [JsonProperty(Ru ? "Использовать AlphaLoot для заполнения ящика ?" : "Use AlphaLoot to fill the box?")]
                 public bool AlphaLootUse = false;
-                //// [JsonProperty("Использовать EcoLootUI для заполнения ящика ?")]
-                [JsonProperty("Use EcoLootUI to fill the box?")]
+                [JsonProperty(Ru ? "Использовать EcoLootUI для заполнения ящика ?" : "Use EcoLootUI to fill the box?")]
                 public bool EcoLootUIUse = false;
             }
             internal class NotiferSettings
             {
-                ////[JsonProperty("ВебХук дискорда (Если не нужны уведомления в дискорд, оставьте поле пустым)")]
-                [JsonProperty("Discord WebHook (If you do not need discord notifications, leave the field blank)")]
+                [JsonProperty(Ru ? "ВебХук дискорда (Если не нужны уведомления в дискорд, оставьте поле пустым)" : "Discord WebHook (If you do not need discord notifications, leave the field blank)")]
                 public string weebHook = string.Empty;
-                ////[JsonProperty("Включить UI Уведомления ?")]
-                [JsonProperty("Enable UI Notifications?")]
+                [JsonProperty(Ru ? "Включить UI Уведомления ?" : "Enable UI Notifications?")]
                 public bool useUiNotifi = true;
-                ////[JsonProperty("Скрывать автоматически UI уведомления??")]
-                [JsonProperty("Auto hide UI notifications?")]
+                [JsonProperty(Ru ? "Скрывать автоматически UI уведомления?" : "Auto hide UI notifications?")]
                 public bool hideUiNotifi = true;
-                ////[JsonProperty("Через сколько после показа будет скрываться? (сек)")]
-                [JsonProperty("ЧHow long after the show will it hide? (sec)")]
+                [JsonProperty(Ru ? "Через сколько после показа будет скрываться? (сек)" : "How long after the show will it hide? (sec)")]
                 public float hideUiNotifiTime = 15f;
-                ////[JsonProperty("Цвет заднего фона окна UI")]
-                [JsonProperty("UI window background color")]
+                [JsonProperty(Ru ? "Цвет заднего фона окна UI" : "UI window background color")]
                 public string colorBackground = "0.8 0.28 0.2 0.8";
-                ////[JsonProperty("Цвет Кнопки закрытия UI")]
-                [JsonProperty("UI Close Button Color")]
+                [JsonProperty(Ru ? "Цвет Кнопки закрытия UI" : "UI Close Button Color")]
                 public string colorBtnCloseUi = "0.6784314 0.254902 0.1843137 0.8";
             }
         }
@@ -1360,6 +1292,18 @@ namespace Oxide.Plugins
         #endregion
 
         #region Hooks
+        object CanCh47SpawnNpc(HackableLockedCrate crate)
+        {
+            if (crate == CrateEnt)
+                return true;
+            else return null;
+        }
+        object OnBotReSpawnCrateDropped(HackableLockedCrate crate)
+        {
+            if (crate == CrateEnt)
+                return true;
+            else return null;
+        }
         void OnEntityMounted(BaseMountable entity, BasePlayer player)
         {
             if (HouseCobaltLab.Contains(entity?.GetParentEntity()))
@@ -1503,7 +1447,7 @@ namespace Oxide.Plugins
         {
             if (player == null || info == null)
                 return;
-            else if (npcZones.playersInZone.Contains(player))
+            else if (npcZones != null && npcZones.playersInZone.Contains(player))
                 npcZones.playersInZone.Remove(player);
         }
         #endregion
@@ -1811,7 +1755,6 @@ namespace Oxide.Plugins
             CrateEnt.enableSaving = false;
             CrateEnt.Spawn();
             CrateEnt.inventory.itemList.Clear();
-
             Int32 NeedAmountItems = Core.Random.Range(config.boxSetting.minItemCount, config.boxSetting.maxItemCount);
             CrateEnt.inventory.capacity = NeedAmountItems;
 
@@ -1881,7 +1824,7 @@ namespace Oxide.Plugins
 
         private void StopIvent(bool unload = false)
         {
-            if (FindPositions != null)
+            if (unload && FindPositions != null)
             {
                 ServerMgr.Instance.StopCoroutine(FindPositions);
                 FindPositions = null;
@@ -2113,6 +2056,8 @@ namespace Oxide.Plugins
             "OnEntityDeath",
             "CanPopulateLoot",
             "CanUILootSpawn",
+            "CanCh47SpawnNpc",
+            "OnBotReSpawnCrateDropped"
         };
         void Unsubscribes() { foreach (string hook in hooks) Unsubscribe(hook); }
 
@@ -2305,7 +2250,7 @@ namespace Oxide.Plugins
             if (IQChat)
                 IQChat?.Call("API_ALERT_PLAYER", player, Message);
             else
-                player.SendConsoleCommand("chat.add", channel, 0, Message);
+                player?.SendConsoleCommand("chat.add", channel, 0, Message);
         }
         private bool IsAlive(BaseNetworkable entity) => entity != null && !entity.IsDestroyed;
         private void DestroyZone()
@@ -2386,32 +2331,21 @@ namespace Oxide.Plugins
         #region Helicopter
         private void CallHeliForPlayer(BasePlayer player)
         {
-            #region RandomSpawnPosition
-            float x = TerrainMeta.Size.x;
-            float y = 70f;
-            Vector3 val = Vector3Ex.Range(-1f, 1f);
-            val.y = 0f;
-            val.Normalize();
-            val *= x * 1f;
-            val.y = y;
-            #endregion
-
-            BaseHelicopter heli = GameManager.server.CreateEntity("assets/prefabs/npc/patrol helicopter/patrolhelicopter.prefab", val, new Quaternion(), true) as BaseHelicopter;
-            if (!heli)
+            if (CrateEnt == null || CrateEnt.transform == null)
                 return;
+            BaseHelicopter heli = GameManager.server.CreateEntity("assets/prefabs/npc/patrol helicopter/patrolhelicopter.prefab") as BaseHelicopter;
+            PatrolHelicopterAI heliAI = heli.GetComponent<PatrolHelicopterAI>();
+            heliAI.SetInitialDestination(CrateEnt.transform.position);
+            heli.enableSaving = false;
             heli.Spawn();
-            var heliAi = heli.GetComponent<PatrolHelicopterAI>();
-            heliAi._targetList.Add(new PatrolHelicopterAI.targetinfo((BaseEntity)player, player));
-            heliAi.State_Move_Enter(player.transform.position + new Vector3(0.0f, 30f, 0.0f));
-            heliAi.State_Strafe_Enter(player.transform.position);
             timer.Once(15f, () =>
             {
                 SendChatAll("XD_IVENT_CLCONTROLLER_HELI_HELP");
             });
 
             timer.Once(360f, () => {
-                if (!heliAi.isDead)
-                    heliAi.Retire();
+                if (!heliAI.isDead)
+                    heliAI.Retire();
             });
         }
 
@@ -2599,7 +2533,7 @@ namespace Oxide.Plugins
                     MainUI(player);
                     if (_.config.notiferSettings.hideUiNotifi)
                     {
-                        _.timer.Once(_.config.notiferSettings.hideUiNotifiTime, () => { player.SendConsoleCommand("HideUi"); });
+                        _.timer.Once(_.config.notiferSettings.hideUiNotifiTime, () => { player?.SendConsoleCommand("HideUi"); });
                     }
                 }       
             }
@@ -2619,7 +2553,7 @@ namespace Oxide.Plugins
                     Name = "CobaltImg",
                     Parent = "CobaltPanel",
                     Components = {
-                    new CuiRawImageComponent { Color = "0.9568628 0.7254902 0 1", Material = "assets/icons/iconmaterial.mat", Sprite = "assets/icons/radiation.png", FadeIn = 0.2f },
+                    new CuiRawImageComponent { Color = "0.95686 0.7254 0 1", Material = "assets/icons/iconmaterial.mat", Sprite = "assets/icons/radiation.png", FadeIn = 0.2f },
                     new CuiRectTransformComponent { AnchorMin = "0 0.5", AnchorMax = "0 0.5", OffsetMin = "6.5 -17.5", OffsetMax = "41.5 17.5" }
                 }
                 });
