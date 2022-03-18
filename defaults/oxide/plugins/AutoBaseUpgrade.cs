@@ -1,6 +1,8 @@
-﻿using System;
+﻿
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
@@ -8,7 +10,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("AutoBaseUpgrade", "CASHR#6906", "1.0.4")]
+    [Info("AutoBaseUpgrade", "CASHR#6906", "1.0.5")]
     internal class AutoBaseUpgrade : RustPlugin
     {
         #region Static
@@ -22,8 +24,20 @@ namespace Oxide.Plugins
 
         private class Configuration
         {
+
             [JsonProperty("Upgrade cooldown (seconds)")]
-            public float Cooldown = 0.55f;
+            public Dictionary<string, float> CDList = new Dictionary<string, float>()
+            {
+                ["autobaseugrade.use"] = 1.55f,
+                ["autobaseugrade.vip"] = 0.55f,
+            };
+            
+            [JsonProperty("Cost Modifier for repairs")]
+            public Dictionary<string, float> CostList = new Dictionary<string, float>()
+            {
+                ["autobaseugrade.use"] = 1.5f,
+                ["autobaseugrade.vip"] = 1.0f,
+            };
             [JsonProperty("Run upgrade effect")]
             public bool Effect = true;
             [JsonProperty("AnchorMin")] public string AnchorMin ="0.5 0.5";
@@ -64,6 +78,16 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
+            foreach (var check in _config.CDList)
+            {
+                if (!permission.PermissionExists(check.Key, this))
+                    permission.RegisterPermission(check.Key, this);
+            }
+            foreach (var check in _config.CostList)
+            {
+                if (!permission.PermissionExists(check.Key, this))
+                    permission.RegisterPermission(check.Key, this);
+            }
             permission.RegisterPermission(perm, this);
         }
 
@@ -71,8 +95,12 @@ namespace Oxide.Plugins
         {
             foreach (var check in TCList)
             {
-                if(check.Value._cor != null)
+                if (check.Value._cor != null)
+                {
                     ServerMgr.Instance.StopCoroutine(check.Value._cor);
+                }
+                if(check.Value._corRepair != null)
+                    ServerMgr.Instance.StopCoroutine(check.Value._corRepair);
             }
         }
 
@@ -81,11 +109,117 @@ namespace Oxide.Plugins
 
         #region Function
 
+        private float GetCD(BasePlayer player)
+        {
+            float time = 100.0f;
+            foreach (var check in _config.CDList)
+            {
+                if (permission.UserHasPermission(player.UserIDString, check.Key))
+                    time = Math.Min(time, check.Value);
+
+            }
+
+            return time;
+        }
+
+        private float GetCost(BasePlayer player)
+        {
+            float cost = 100.0f;
+            foreach (var check in _config.CostList)
+            {
+                if (permission.UserHasPermission(player.UserIDString, check.Key))
+                    cost = Math.Min(cost, check.Value);
+
+            }
+
+            return cost;
+        }
+        private void DoRepair(BuildingBlock block, BuildingPrivlidge tc,BasePlayer player)
+        {
+            float num2 = block.MaxHealth() - block.Health();
+
+            float healthMissingFraction = num2 / block.MaxHealth() * GetCost(player);
+            if (healthMissingFraction <= 0.0)
+            {
+                return;
+            }
+
+            var requirements = block.RepairCost(healthMissingFraction);
+            if (requirements == null)
+                return;
+            float num3 = 0;
+            for (var index = 0; index < requirements.Count; index++)
+            {
+                var x = requirements[index];
+                num3 += x.amount;
+            }
+
+            if (num3 > 0.0)
+            {
+                float num4 =
+                    Mathf.Min(requirements.Min(x => Mathf.Clamp01(tc.inventory.GetAmount(x.itemid, false) / x.amount)), 50f / num2);
+                if (num4 <= 0.0)
+                {
+                    player.ChatMessage(GetMessage("MSG_REPAIRNOTFUND",player.UserIDString));
+                    TCList[tc].isRepair = false;
+                    return;
+                }
+
+                int num5 = 0;
+                foreach (ItemAmount itemAmount in requirements)
+                {
+                    int amount = Mathf.CeilToInt(num4 * itemAmount.amount);
+                    int num6 = tc.inventory.Take(null, itemAmount.itemid, amount);
+                    if (num6 > 0)
+                    {
+                        num5 += num6;
+                    }
+                }
+
+                float num7 = num5 / num3;
+                block.health += num2 * num7;
+                block.SendNetworkUpdate();
+            }
+            else
+            {
+                block.health += num2;
+                block.SendNetworkUpdate();
+            }
+
+            if (block.Health() >= block.MaxHealth())
+                block.OnRepairFinished();
+            else
+                block.OnRepair();
+
+        }
+
+        private IEnumerator RepairProgress(BasePlayer player, BuildingPrivlidge tc)
+        {
+            var set = tc.GetBuilding().buildingBlocks;
+            yield return CoroutineEx.waitForSeconds(0.15f);
+            var cd = GetCD(player);
+            for (var index = 0; index < set.Count; index++)
+            {
+                var check = set[index];
+                if (tc == null)
+                {
+                    yield break;
+                }
+                if(!TCList[tc].isRepair)break;
+                if (check.MaxHealth() - check.Health() <= 0) continue;
+                DoRepair(check, tc, player);
+                yield return CoroutineEx.waitForSeconds(cd);
+            }
+            TCList[tc].isRepair = false;
+            player.ChatMessage(GetMessage("MSG_REPAIRDONE",player.UserIDString));
+            yield return 0;
+        }
 
         private IEnumerator UpdateProgress(BasePlayer player, BuildingPrivlidge tc)
         {
             var set = tc.GetBuilding().buildingBlocks;
             yield return CoroutineEx.waitForSeconds(0.15f);
+            var cd = GetCD(player);
             for (var index = 0; index < set.Count; index++)
             {
                 var check = set[index];
@@ -97,7 +231,7 @@ namespace Oxide.Plugins
                 var grade = TCList[tc].currentGrade;
                 if (grade <= check.grade) continue;
                 PayForUpgrade(check, tc, grade, tc.inventory.itemList, player);
-                yield return CoroutineEx.waitForSeconds(_config.Cooldown);
+                yield return CoroutineEx.waitForSeconds(cd);
             }
 
             TCList[tc].isUpgrade = false;
@@ -108,7 +242,9 @@ namespace Oxide.Plugins
         {
             public BuildingGrade.Enum currentGrade;
             public Coroutine _cor;
+            public Coroutine _corRepair;
             public bool isUpgrade;
+            public bool isRepair;
         }
         private void PayForUpgrade(BuildingBlock block,BuildingPrivlidge tc, BuildingGrade.Enum grade, List<Item> itemList, BasePlayer initiator)
         {
@@ -160,9 +296,24 @@ namespace Oxide.Plugins
                     OffsetMax = _config.OffsetMax
                 }
             }, "Overlay", "Panel_507");
-            var text = TCList[tc].isUpgrade
-                ? "<color=#6FBD57>UPGRADE             </color>"
-                : "<color=white>UPGRADE             </color>";
+            var text = TCList[tc].isUpgrade ? "<color=#6FBD57>UPGRADE             </color>" : "<color=white>UPGRADE             </color>";
+            var textRepair = TCList[tc].isRepair ? "<color=#6FBD57>REPAIR ALL      </color>" : "<color=white>REPAIR ALL      </color>";
+            
+            
+            container.Add(new CuiButton
+            {
+                Button = {Color = "0.3372549 0.3411765 0.2705882 1", Command = "UI_UPGRADEBASEUP REPAIR"},
+                Text =
+                {
+                    Text = textRepair, Font = "robotocondensed-bold.ttf", FontSize = 15, Align = TextAnchor.MiddleCenter,
+                    Color = "1 1 1 1"
+                },
+                RectTransform =
+                {
+                    AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5", OffsetMin = "-158.351 -10.285", OffsetMax = "-58.349 10"
+                }
+            }, "Panel_507", "Button_6571");
+            
             container.Add(new CuiButton
             {
                 Button = {Color = "0.3372549 0.3411765 0.2705882 1", Command = "UI_UPGRADEBASEUP SWITCH"},
@@ -227,6 +378,31 @@ namespace Oxide.Plugins
 
             switch (arg.Args[0])
             {
+                case "skykey":
+                {
+                    player.ChatMessage("У вас нет разрешение на использование");
+                    break;
+                    
+                }
+                case "REPAIR":
+                {
+                    TCList[tc].isRepair = !TCList[tc].isRepair;
+
+                    if (TCList[tc].isRepair)
+                    {
+                        TCList[tc]._corRepair = ServerMgr.Instance.StartCoroutine(RepairProgress(player, tc));
+                    }
+                    else
+                    {
+                        if (TCList[tc]._corRepair != null)
+                        {
+                            ServerMgr.Instance.StopCoroutine(TCList[tc]._corRepair);
+                        }
+                    }
+
+                    break;
+                    
+                }
                 case "CHANGE":
                 { 
                     var grade = TCList[tc].currentGrade;
@@ -271,14 +447,14 @@ namespace Oxide.Plugins
             return true;
         }
         
-        private object CanLootEntity(BasePlayer player, BuildingPrivlidge tc)
+        private void OnLootEntity(BasePlayer player, BuildingPrivlidge tc)
         {
-            if (player == null || tc == null) return null;
-            if (!permission.UserHasPermission(player.UserIDString, perm)) return null;
+            if (player == null || tc == null) return;
+            if (!permission.UserHasPermission(player.UserIDString, perm)) return;
             if (NoEscape != null)
             {
                 if (NoEscape.Call<bool>("IsRaidBlocked", player.UserIDString))
-                    return null;
+                    return;
             }
             if (!TCList.ContainsKey(tc))
             {
@@ -288,9 +464,7 @@ namespace Oxide.Plugins
                     isUpgrade = false
                 });
             }
-
             ShowUI(player, tc);
-            return null;
         }
         private  void OnLootEntityEnd(BasePlayer player, BaseCombatEntity entity)
         {
@@ -338,13 +512,17 @@ namespace Oxide.Plugins
             lang.RegisterMessages(new Dictionary<string, string>
             {
                 ["MSG_UPGRADEDONE"] = "The improvement of the buildings is finished",
+                ["MSG_REPAIRDONE"] = "The repair of the building is finished",
+                ["MSG_REPAIRNOTFUND"] = "Not enough resources to repair the building",
                 ["MSG_RESOURSENOTFUND"] = "There are not enough resources to improve the structure",
             }, this);
 
             lang.RegisterMessages(new Dictionary<string, string>
             {
                 ["MSG_UPGRADEDONE"] = "Улучшение построек закончено",
-                ["MSG_RESOURSENOTFUND"] = "Не достаточно ресурсов для того, чтобы улучший строение",
+                ["MSG_REPAIRDONE"] = "Ремонт здания завершен",
+                ["MSG_REPAIRNOTFUND"] = "Недостаточно ресурсов для ремонта здания",
+                ["MSG_RESOURSENOTFUND"] = "Не достаточно ресурсов для того, чтобы улучшить строение",
             }, this, "ru");
         }
 
@@ -357,5 +535,7 @@ namespace Oxide.Plugins
                 : string.Format(GetMessage(langKey, steamID), args);
         }
         #endregion
+
+
     }
 }

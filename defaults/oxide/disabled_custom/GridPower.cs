@@ -17,11 +17,12 @@ namespace Oxide.Plugins
     public class GridPower : RustPlugin
     {
         #region CONST & STATIC
-        private const string VERSION = "1.0.2";
+        private const string VERSION = "1.0.5";
 
         public const string FX_PLUG = "assets/prefabs/tools/wire/effects/plugeffect.prefab";
         public const string FX_TECHTRASH = "assets/prefabs/deployable/dropbox/effects/submit_items.prefab";
         public const string FX_COMBINER = "assets/prefabs/deployable/dropbox/effects/dropbox-deploy.prefab";
+        public const string FX_SELECT = "assets/bundled/prefabs/fx/notice/item.select.fx.prefab";
 
         public const string ITEM_LIGHTS = "xmas.lightstring.advanced";
         public const string ITEM_WIRETOOL = "wiretool";
@@ -49,6 +50,8 @@ namespace Oxide.Plugins
 
         public const ulong SKIN_PANTS_COBALT_ELECTRIC = 1581896222;
 
+        public const uint PREFAB_FLOOR_ID = 916411076;
+
         public const string PREFAB_POWERLINE_POLE_LIGHTS_YES = "assets/bundled/prefabs/autospawn/decor/powerline-small/powerline_pole_a.prefab";
         public const string PREFAB_POWERLINE_POLE_LIGHTS_NO = "assets/content/props/powerline_poles/powerline_pole_a.prefab";
 
@@ -75,6 +78,8 @@ namespace Oxide.Plugins
 
         public const string CMD_GP_CFG = "gp_cfg";
 
+        public const string CMD_GP_POLE = "gp_pole";
+
         public const string CMD_GP_EMERGENCY_CLEANUP = "gp_emergency_cleanup";
 
         public static BaseEntity.Flags FLAG_BAKED = BaseEntity.Flags.Reserved11;
@@ -91,6 +96,8 @@ namespace Oxide.Plugins
         public static ListHashSet<string> ValidTools;
 
         public static ItemDefinition[] FuseboxAllowedItems;
+
+        public static DeployVolume[] MonumentTestingDeployVolumes;
 
         #endregion
 
@@ -129,6 +136,8 @@ namespace Oxide.Plugins
             public float StreetlightsTurnOnAtHour = 20F;
             public float StreetlightsTurnOffAtHour = 8F;
 
+            public bool StreetlightsEnable = true;
+
             public float StreetlightsReliability = 0.75F;
 
             public float StreetlightsFlickerLengthMin = 0.1F;
@@ -147,6 +156,16 @@ namespace Oxide.Plugins
 
             public bool BuildingBlockPreventsButtonPress = true;
 
+            public bool BuildingBlockPreventsRootCombinerDamage = false;
+
+            public string UpgradeItemShortname = ITEM_TECHTRASH;
+
+            public ulong UpgradeItemSkinID = 0;
+
+            public string UpgradeItemGuiIconURL = string.Empty;
+
+            public string UpgradeItemGuiName = string.Empty;
+
         }
 
         protected override void LoadDefaultConfig()
@@ -154,9 +173,11 @@ namespace Oxide.Plugins
             RestoreDefaultConfig();
         }
 
-        private void ProcessConfigData()
+        private void ProcessConfigData(out string oldVersion)
         {
             bool needsSave = false;
+
+            oldVersion = Configuration.Version;
 
             if (Configuration.PermissionProfiles?.Count == 0)
             {
@@ -201,7 +222,7 @@ namespace Oxide.Plugins
 
             if (Configuration.Version != VERSION)
             {
-                var oldVersion = Configuration.Version;
+                oldVersion = Configuration.Version;
 
                 if (oldVersion == "1.0.0")
                 {
@@ -245,9 +266,10 @@ namespace Oxide.Plugins
                         Instance.PrintWarning($"Replaced {count} static generators with deployed ones.");
                     }
 
-                    Configuration.Version = VERSION;
-                    needsSave = true;
                 }
+
+                Configuration.Version = VERSION;
+                needsSave = true;
 
             }
 
@@ -526,6 +548,8 @@ namespace Oxide.Plugins
 
             AddInteractiveConfigValue("GridProductionEndAtHour", $"The hour of the day when the power production settles back at 0", () => Instance.Configuration.GridProductionEndAtHour, val => { Instance.Configuration.GridProductionEndAtHour = (float)val; }, typeof(float), 0, 24);
 
+            AddInteractiveConfigValue("StreetlightsEnable", $"If set to false, no Street Lights will spawn and existing ones will be removed.", () => Instance.Configuration.StreetlightsEnable, val => { Instance.Configuration.StreetlightsEnable = (bool)val; StreetlightsSet((bool)val); }, typeof(bool));
+
             AddInteractiveConfigValue("StreetlightsConstantPower", $"If set to true, the Streetlights will be on 24 hours a day.", () => Instance.Configuration.StreetlightsConstantPower, val => { Instance.Configuration.StreetlightsConstantPower = (bool)val; }, typeof(bool));
 
             AddInteractiveConfigValue("StreetlightsTurnOnAtHour", $"The hour of the day when the street lights turn on", () => Instance.Configuration.StreetlightsTurnOnAtHour, val => { Instance.Configuration.StreetlightsTurnOnAtHour = (float)val; }, typeof(float), 0, 24);
@@ -544,15 +568,15 @@ namespace Oxide.Plugins
 
             AddInteractiveConfigValue("BuildingBlockPreventsButtonPress", $"If set to to true, if there's any Tool Cupboards in the range of the Transformer, you need to be authorised on all of them to open the Transformer GUI", () => Instance.Configuration.BuildingBlockPreventsButtonPress, val => { Instance.Configuration.BuildingBlockPreventsButtonPress = (bool)val; }, typeof(bool));
 
-            AddInteractiveConfigValue("GeneratorInitialLevelMin", $"The lower limit for the random Tech Trash level of valid Power Line Poles during generation", () => Instance.Configuration.GeneratorInitialLevelMin, val => { Instance.Configuration.GeneratorInitialLevelMin = (int)val; }, typeof(int), 0, 1000);
+            AddInteractiveConfigValue("GeneratorInitialLevelMin", $"The lower limit for the random upgrade level of valid Power Line Poles during generation", () => Instance.Configuration.GeneratorInitialLevelMin, val => { Instance.Configuration.GeneratorInitialLevelMin = (int)val; }, typeof(int), 0, 1000);
 
-            AddInteractiveConfigValue("GeneratorInitialLevelMax", $"The upper limit for the random Tech Trash level of valid Power Line Poles during generation", () => Instance.Configuration.GeneratorInitialLevelMax, val => { Instance.Configuration.GeneratorInitialLevelMax = (int)val; }, typeof(int), 0, 1000);
+            AddInteractiveConfigValue("GeneratorInitialLevelMax", $"The upper limit for the random upgrade level of valid Power Line Poles during generation", () => Instance.Configuration.GeneratorInitialLevelMax, val => { Instance.Configuration.GeneratorInitialLevelMax = (int)val; }, typeof(int), 0, 1000);
 
             AddInteractiveConfigValue("GeneratorInitialOutletsMin", $"The lower limit for the random number of Outlets of valid Power Line Poles during generation", () => Instance.Configuration.GeneratorInitialOutletsMin, val => { Instance.Configuration.GeneratorInitialOutletsMin = (int)val; }, typeof(int), 0, 4);
 
             AddInteractiveConfigValue("GeneratorInitialOutletsMax", $"The upper limit for the random number of Outlets of valid Power Line Poles during generation", () => Instance.Configuration.GeneratorInitialOutletsMax, val => { Instance.Configuration.GeneratorInitialOutletsMax = (int)val; }, typeof(int), 0, 4);
 
-            AddInteractiveConfigValue("PowerlinePowerPerTechTrash", $"How much RWs at peak hours are provided per 1 Tech Trash Level upgrade", () => Instance.Configuration.PowerlinePowerPerTechTrash, val => { Instance.Configuration.PowerlinePowerPerTechTrash = (int)val; }, typeof(int), 0, 1000);
+            AddInteractiveConfigValue("PowerlinePowerPerTechTrash", $"How much RWs at peak hours are provided per 1 level upgrade", () => Instance.Configuration.PowerlinePowerPerTechTrash, val => { Instance.Configuration.PowerlinePowerPerTechTrash = (int)val; }, typeof(int), 0, 1000);
 
             AddInteractiveConfigValue("PowerlineMaxTechTrashLevel", $"The maximum level that a Transformer can be upgraded to", () => Instance.Configuration.PowerlineMaxTechTrashLevel, val => { Instance.Configuration.PowerlineMaxTechTrashLevel = (int)val; }, typeof(int), 0, 1000);
 
@@ -666,7 +690,7 @@ namespace Oxide.Plugins
         #region DATA
         public StoredData Data;
 
-        public void ProcessData()
+        public void ProcessData(string previousConfigVersion)
         {
             bool needsSave = false;
 
@@ -675,6 +699,7 @@ namespace Oxide.Plugins
                 Instance.PrintError($"Fresh wipe or empty data detected, clearing old data, locating powerline poles and creating data entries for them...");
 
                 Data.PowerlineData = new Hash<uint, SerializablePowerlinePole>();
+                Data.LastPowerlineDataID = 0;
                 Data.PlayerWireConfigs = new Hash<ulong, MultiToolConfig>();
 
                 var removed = TryEmergencyCleanup();
@@ -694,7 +719,7 @@ namespace Oxide.Plugins
                 uint validPolesFound = 0;
                 uint totalPolesTurned = 0;
 
-                SerializablePowerlinePole currentDataPowerPole;
+                uint blockedPolesFound = 0;
 
                 foreach (ProtoBuf.PrefabData entry in World.Serialization.world.prefabs)
                 {
@@ -712,8 +737,9 @@ namespace Oxide.Plugins
                         continue;
                     }
 
-                    if (IsPlacementBlockedAt(entry.position))
+                    if (!TestPlacingCloseToMonument(entry.position))
                     {
+                        blockedPolesFound++;
                         continue;
                     }
 
@@ -726,34 +752,20 @@ namespace Oxide.Plugins
                         continue;
                     }
 
-                    int outlets = Mathf.Clamp(UnityEngine.Random.Range(Configuration.GeneratorInitialOutletsMin, Configuration.GeneratorInitialOutletsMax), 0, 4);
+                    PoleDataAdd(entry.position, entry.rotation, validPolesFound);
 
-                    currentDataPowerPole = new SerializablePowerlinePole
-                    {
-                        Uid = validPolesFound,
-                        TechTrashInside = 1, //use config value
-                        OutletStates = new bool[4]
-                        {
-                            outlets > 0,
-                            outlets > 1,
-                            outlets > 2,
-                            outlets > 3,
-                        },
-                        Transform = new SerializableTransform
-                        {
-                            Position = new SerializableVector3(entry.position),
-                            Rotation = new SerializableVector3(entry.rotation)
-                        }
-                    };
-
-                    Data.PowerlineData.Add(validPolesFound, currentDataPowerPole);
                     totalPolesTurned++;
 
                 }
 
+                if (blockedPolesFound > 0)
+                {
+                    Instance.PrintError($"INFO: Found {blockedPolesFound} poles blocked by a monument or a building block volume nearby - those have been skipped.");
+                }
+
                 if (validPolesFound == 0)
                 {
-                    Instance.PrintError("ERROR: Your map doesn't seem to contain any valid, non - placement blocked Power Line Poles. Please review your map.");
+                    Instance.PrintError("ERROR: Your map doesn't seem to contain any valid, non - building blocked Power Line Poles. Please review your map.");
                     Data.PowerlineData = null;
                 }
                 else
@@ -765,7 +777,7 @@ namespace Oxide.Plugins
                     }
                     else
                     {
-                        Instance.PrintWarning($"Found {validPolesFound} valid (non-placement blocked) Powerline Poles and saved {totalPolesTurned} of them to data as functional.");
+                        Instance.PrintWarning($"Found {validPolesFound} valid (non - building blocked) Powerline Poles and saved {totalPolesTurned} of them to data as functional.");
                     }
 
                 }
@@ -776,15 +788,35 @@ namespace Oxide.Plugins
 
             int spawnedHelpers = 0;
 
+            uint lastID = 0;
+
             foreach (var dataEntry in Data.PowerlineData)
             {
                 PowerlinePoleHelper.AddHelperPowerlinePole(dataEntry.Value);
+                lastID = dataEntry.Key;
                 spawnedHelpers++;
             }
 
             if (spawnedHelpers > 0)
             {
                 Instance.PrintWarning($"Successfully spawned {spawnedHelpers} functional powerlines and their entities");
+
+                if (previousConfigVersion != Configuration.Version)
+                {
+                    Instance.PrintWarning($"Looks like you're migrating from {previousConfigVersion} to {Configuration.Version}, checking if your Data needs post-processing...");
+
+                    if (previousConfigVersion == "1.0.4" || previousConfigVersion == "1.0.3" || previousConfigVersion == "1.0.2" || previousConfigVersion == "1.0.1" || previousConfigVersion == "1.0.0")
+                    {
+                        Instance.PrintWarning($"{VERSION} MIGRATION: Assigned {lastID} as the Last Functional Powerline ID in your Data.");
+
+                        Data.LastPowerlineDataID = lastID;
+                        needsSave = true;
+                    }
+                }
+            }
+            else
+            {
+                Instance.PrintWarning("It doesn't look like you have any functional Power Line Poles.");
             }
 
             if (needsSave)
@@ -833,6 +865,8 @@ namespace Oxide.Plugins
         {
             public Hash<uint, SerializablePowerlinePole> PowerlineData = new Hash<uint, SerializablePowerlinePole>();
             public Hash<ulong, MultiToolConfig> PlayerWireConfigs = new Hash<ulong, MultiToolConfig>();
+
+            public uint LastPowerlineDataID = 0;
 
             [JsonIgnore]
             public bool Dirty = false;
@@ -905,6 +939,7 @@ namespace Oxide.Plugins
         public class MultiToolConfig
         {
             public float Slack = 0.5F;
+            public bool Enabled = true;
 
             [JsonIgnore]
             public bool Dirty
@@ -920,6 +955,8 @@ namespace Oxide.Plugins
 
         #region LANG
         public const string MSG_CHAT_PREFIX = "MSG_CHAT_PREFIX";
+
+        public const string MSG_TECH_TRASH = "MSG_TECH_TRASH";
 
         public const string MSG_VALGP_HAS_BEEN_SET = "MSG_VALGP_HAS_BEEN_SET";
         public const string MSG_CFG_RUNDOWN_FORMAT = "MSG_CFG_RUNDOWN_FORMAT";
@@ -958,12 +995,13 @@ namespace Oxide.Plugins
         public const string MSG_CANT_UPGRADE = "MSG_CANT_UPGRADE";
         public const string MSG_POWERLINE_BODY_FUSE_NOT_REQUIRED = "MSG_POWERLINE_BODY_FUSE_NOT_REQUIRED";
         public const string MSG_CANT_PRESS_BUILDING_BLOCK = "MSG_CANT_PRESS_BUILDING_BLOCK";
-        public const string MSG_PLACEHOLDER_29 = "MSG_PLACEHOLDER_29";
-        public const string MSG_PLACEHOLDER_30 = "MSG_PLACEHOLDER_30";
+        public const string MSG_WIRE_SLACK_ENABLED = "MSG_WIRE_SLACK_ENABLED";
+        public const string MSG_WIRE_SLACK_DISABLED = "MSG_WIRE_SLACK_DISABLED";
 
         private static Dictionary<string, string> LangMessages = new Dictionary<string, string>
         {
             [MSG_CHAT_PREFIX] = $"<color=#57ff77>[Grid Power]</color>",
+            [MSG_TECH_TRASH] = "Tech Trash",
             [MSG_VALGP_HAS_BEEN_SET] = "Config value <color=yellow>{0}</color> has been set to {1} by an admin.",
             [MSG_CFG_DEFAULT] = "Here's the current settings. Type <color=yellow>/gp_cfg settingName</color> with no parameters to see the description, the current value and what the accepted arguments are. Type <color=yellow>/gp_cfg settingName acceptedValue</color> to change the setting.",
             [MSG_CFG_RUNDOWN_FORMAT] = "/gp_cfg <color=yellow>{0}</color> (currently: {1})",
@@ -982,7 +1020,7 @@ namespace Oxide.Plugins
 
             [MSG_POWERLINE_TIME_FORMAT_HOUR_MINUTE_SECOND] = "{0}:{1}:{2}",
 
-            [MSG_POWERLINE_STATUS_NO_TECHTRASH] = "No Tech Trash applied, insert some in the Fuse Box below",
+            [MSG_POWERLINE_STATUS_NO_TECHTRASH] = "No {0} applied, insert some in the Fuse Box below",
             [MSG_POWERLINE_STATUS_NO_OUTLETS] = "No Root Combiners, insert some in the Fuse Box below",
             [MSG_POWERLINE_STATUS_NO_FUSE] = "No Fuse inside, insert one in the Fuse Box below",
 
@@ -992,7 +1030,7 @@ namespace Oxide.Plugins
             [MSG_POWERLINE_BODY_OUTLET_ALL_THERE] = "4 out of 4 outlets present",
 
 
-            [MSG_POWERLINE_BODY_TECHTRASH] = "Tech Trash level: {0} ({1} max level)\nPeak output: {2} RW ({3} RW at max level)\nEach Tech Trash inserted permanently increases peak output by {4} RW",
+            [MSG_POWERLINE_BODY_TECHTRASH] = "Upgrade level: {0} ({1} max level)\nPeak output: {2} RW ({3} RW at max level)\nEach {5} inserted permanently increases peak output by {4} RW",
             [MSG_POWERLINE_BODY_FUSE_TIME_LEFT] = "Fuse condition: {0}%\nEstimated time left: {1}",
             [MSG_POWERLINE_BODY_FUSE_WILL_LAST] = "Each fresh fuse inside the transformer will last for approximately {0}",
 
@@ -1003,13 +1041,13 @@ namespace Oxide.Plugins
             [MSG_SLOT_NAME_GRID] = "Grid Out {0}",
 
             [MSG_CANT_PRESS_TRANSFORMER_BUTTON] = "You don't have permission to open the Grid Transformer.",
-            [MSG_CANT_CONNECT_DISCONNECT_GRID] = "You don't have permission to connect/disconnect to/from the Grid Transformer.",
+            [MSG_CANT_CONNECT_DISCONNECT_GRID] = "You don'tA have permission to connect/disconnect to/from the Grid Transformer.",
             [MSG_CANT_DEPLOY_LADDER] = "You don't have permission to deploy ladders on Powerline poles.",
-            [MSG_CANT_UPGRADE] = "You don't have permission to upgrade Grid Transformers with Tech Trash.",
+            [MSG_CANT_UPGRADE] = "You don't have permission to upgrade Grid Transformers with {0}.",
             [MSG_POWERLINE_BODY_FUSE_NOT_REQUIRED] = "Fuses are not required on this server.",
             [MSG_CANT_PRESS_BUILDING_BLOCK] = "Cannot access the Transformer, you're building blocked",
-            [MSG_PLACEHOLDER_29] = "Placeholder",
-            [MSG_PLACEHOLDER_30] = "Placeholder",
+            [MSG_WIRE_SLACK_ENABLED] = "Wire Slack: [SLA]\n<size=12>Hold SPRINT to decrease, DUCK to increase\nHold USE to disable Slack</size>",
+            [MSG_WIRE_SLACK_DISABLED] = "Wire Slack: DISABLED\n<size=12>\nHold USE to enable Slack</size>",
 
         };
 
@@ -1043,9 +1081,21 @@ namespace Oxide.Plugins
             {
                 UpdateRate = 1F;
                 UpdateRateRandomization = 0.015F;
-                UpdatePowerProduction();
+                UpdateEverything();
 
                 TheOnlyInstance = this;
+            }
+
+
+            public override void PerformUpdate()
+            {
+                UpdateEverything();
+            }
+
+            public void UpdateEverything()
+            {
+                UpdatePowerProduction();
+                UpdateStreetlights();
             }
 
             public void UpdatePowerProduction()
@@ -1059,20 +1109,46 @@ namespace Oxide.Plugins
 
                 GlobalEfficiency = GetGlobalPowerProduction(GetCurrentHour());
                 GridProducing = GlobalEfficiency > 0F;
-
-                StreetlightsOn = IsItTime(GetCurrentHour(), Instance.Configuration.StreetlightsTurnOnAtHour, Instance.Configuration.StreetlightsTurnOffAtHour);
-
             }
 
-            public override void PerformUpdate()
+            public void UpdateStreetlights()
             {
-                UpdatePowerProduction();
+                if (Instance.Configuration.StreetlightsConstantPower)
+                {
+                    StreetlightsOn = true;
+                    return;
+                }
+
+                StreetlightsOn = IsItTime(GetCurrentHour(), Instance.Configuration.StreetlightsTurnOnAtHour, Instance.Configuration.StreetlightsTurnOffAtHour);
             }
 
             void OnDestroy()
             {
                 TheOnlyInstance = null;
             }
+            public static float GetGlobalPowerProduction(float hour)
+            {
+                if (!IsItTime(hour, Instance.Configuration.GridProductionStartAtHour, Instance.Configuration.GridProductionEndAtHour))
+                {
+                    return 0F;
+                }
+
+                return (-Mathf.Cos(Mathf.InverseLerp(Instance.Configuration.GridProductionStartAtHour, Instance.Configuration.GridProductionEndAtHour, hour) * 2F * Mathf.PI) + 1F) / 2F;
+            }
+
+            public static bool IsItTime(float hour, float startAt, float endAt)
+            {
+                if (startAt > endAt)
+                {
+                    return (hour > startAt && hour < 24F) || (hour < endAt);
+                }
+                else
+                {
+                    return (hour > startAt && hour < endAt);
+                }
+            }
+
+            public static float GetCurrentHour() => TOD_Sky.Instance.Cycle.Hour;
         }
 
         public class PowerlinePoleOutlet
@@ -1212,29 +1288,6 @@ namespace Oxide.Plugins
 
         public class PowerlinePoleGuiTransformerState
         {
-            //decide on the final form of the shit displayed
-            //put the encapsulators in lang and the replacements right here
-
-
-            //what is taken from config?
-            //hours of operation (put that in status when the grid is off)
-            //peak hour
-            //OR
-            //constant power
-            //max level
-            //how much more RW per update
-            //how long a fuse lasts
-
-            //what do we wanna know per powerline?
-
-            //current level
-            //current max output
-            //is the grid currently emitting?
-            //health of current slots/or missing
-            //output of current slots if not missing
-            //is the fuse inside?
-            //how much time left on the fuse
-
             public string TopStatusCurrent = "";
             public string TopStatusPrevious = "";
 
@@ -1295,7 +1348,7 @@ namespace Oxide.Plugins
 
                 if (TechTrashInsideCurrent <= 0)
                 {
-                    TopStatusCurrent = $"{MSG(MSG_POWERLINE_STATUS_NO_TECHTRASH)}";
+                    TopStatusCurrent = $"{MSG(MSG_POWERLINE_STATUS_NO_TECHTRASH, null, GetUpgradeItemName())}";
                     StatusColor = ColorPalette.RustyRed.unityColorString + " 0.5";
                     return TopStatusCurrent != TopStatusPrevious;
                 }
@@ -1349,9 +1402,9 @@ namespace Oxide.Plugins
 
                 TechTrashStatusPrevious = TechTrashStatusCurrent;
 
-                var fabryluk = Instance.Configuration.PowerlinePowerPerTechTrash * Instance.Configuration.PowerlineMaxTechTrashLevel;
+                var level = Instance.Configuration.PowerlinePowerPerTechTrash * Instance.Configuration.PowerlineMaxTechTrashLevel;
 
-                TechTrashStatusCurrent = MSG(MSG_POWERLINE_BODY_TECHTRASH, null, TechTrashInsideCurrent, Instance.Configuration.PowerlineMaxTechTrashLevel, PowerOutputMaxCurrent, fabryluk, Instance.Configuration.PowerlinePowerPerTechTrash);
+                TechTrashStatusCurrent = MSG(MSG_POWERLINE_BODY_TECHTRASH, null, TechTrashInsideCurrent, Instance.Configuration.PowerlineMaxTechTrashLevel, PowerOutputMaxCurrent, level, Instance.Configuration.PowerlinePowerPerTechTrash, GetUpgradeItemName());
 
 
 
@@ -1807,8 +1860,6 @@ namespace Oxide.Plugins
                 GuiState = new PowerlinePoleGuiTransformerState(this);
 
                 Data = data;
-
-                //tell the sphere to die in like a second
                                 
                 PowerlinePoleHelperCache.Add(Data.Uid, this);
 
@@ -2086,7 +2137,7 @@ namespace Oxide.Plugins
                 {
                     if (!GetPermissionProfile(player).GridCanDeployRootCombiners)
                     {
-                        TellMessage(player, MSG_CANT_UPGRADE);
+                        TellMessage(player, MSG(MSG_CANT_UPGRADE, player.UserIDString, GetUpgradeItemName()));
                         return -1;
                     }
                 }
@@ -2104,7 +2155,7 @@ namespace Oxide.Plugins
                 {
                     if (!GetPermissionProfile(player).GridCanUpgrade)
                     {
-                        TellMessage(player, MSG_CANT_UPGRADE);
+                        TellMessage(player, MSG(MSG_CANT_UPGRADE, player.UserIDString));
                         return false;
                     }
                 }
@@ -2168,9 +2219,14 @@ namespace Oxide.Plugins
                     return ItemContainer.CanAcceptResult.CannotAccept;
                 }
 
-                if (item.info.shortname == ITEM_TECHTRASH)
+                if (item.info.shortname == Instance.Configuration.UpgradeItemShortname)
                 {
-                    SomebodyTriedInsertingTechTrash(item);
+                    if (Instance.Configuration.UpgradeItemSkinID == 0 || (Instance.Configuration.UpgradeItemSkinID != 0 && item.skin == Instance.Configuration.UpgradeItemSkinID))
+                    {
+                        SomebodyTriedInsertingTechTrash(item);
+
+                    }
+
                     return ItemContainer.CanAcceptResult.CannotAccept;
                 }
 
@@ -2203,7 +2259,7 @@ namespace Oxide.Plugins
                     {
                         if (player.IsBuildingBlocked())
                         {
-                            TellMessage(player, MSG_CANT_PRESS_BUILDING_BLOCK);
+                            TellMessage(player, MSG(MSG_CANT_PRESS_BUILDING_BLOCK, player.UserIDString));
                             return;
                         }
                     }
@@ -2268,7 +2324,7 @@ namespace Oxide.Plugins
 
             private void OnDestroy()
             {
-                foreach (var player in GuiSubscribers)
+                foreach (var player in GuiSubscribers.ToArray())
                 {
                     if (player.Value == null)
                     {
@@ -2446,8 +2502,10 @@ namespace Oxide.Plugins
             public static Hash<ulong, PlayerHelper> Cache;
 
             public static CuiRectTransformComponent AnchorSlack;
-            public static CuiElementContainer ContainerSlack;
-            public static string ContainerSlackJSON;
+            public static CuiElementContainer ContainerSlackEnabled;
+            public static string ContainerSlackEnabledJSON;
+            public static CuiElementContainer ContainerSlackDisabled;
+            public static string ContainerSlackDisabledJSON;
 
             public static CuiRectTransformComponent AnchorCrosshair;
             public static CuiElementContainer ContainerCrosshair;
@@ -2464,7 +2522,7 @@ namespace Oxide.Plugins
 
             public static void GuiPrepareStatic()
             {
-                AnchorCrosshair = GetAnchorFromScreenBox(0F, SCREEN_HEIGHT_IN_PIXELS, SCREEN_WIDTH_IN_PIXELS, 0F);
+                AnchorCrosshair = GetAnchorFromScreenBox(0F, SCREEN_HEIGHT_IN_PIXELS_LEGACY, SCREEN_WIDTH_IN_PIXELS_LEGACY, 0F);
                 ContainerCrosshair = new CuiElementContainer
                 {
                     new CuiElement
@@ -2487,9 +2545,15 @@ namespace Oxide.Plugins
 
                 ContainerCrosshairJSON = ContainerCrosshair.ToJson();
 
-                AnchorSlack = GetAnchorFromScreenBox(633, 186, 1263, 111);
+                AnchorSlack = new CuiRectTransformComponent
+                {
+                    AnchorMin = "0.5 1",
+                    AnchorMax = "0.5 1",
+                    OffsetMin = "-300 -200",
+                    OffsetMax = "300 0"
+                };
 
-                ContainerSlack = new CuiElementContainer
+                ContainerSlackEnabled = new CuiElementContainer
                 {
                     new CuiElement
                     {
@@ -2499,7 +2563,7 @@ namespace Oxide.Plugins
                         {
                             new CuiTextComponent
                             {
-                                Text = "Wire Slack: [SLA]\n<size=12>Hold SPRINT to decrease, DUCK to increase</size>",
+                                Text = MSG(MSG_WIRE_SLACK_ENABLED),
                                 Color = ColorPalette.RustyDirtyPink.unityColorString,
                                 FontSize = 18,
                                 Align = TextAnchor.MiddleCenter,
@@ -2515,15 +2579,45 @@ namespace Oxide.Plugins
                     }
                 };
 
-                ContainerSlackJSON = ContainerSlack.ToJson();
+                ContainerSlackEnabledJSON = ContainerSlackEnabled.ToJson();
+
+                ContainerSlackDisabled = new CuiElementContainer
+                {
+                    new CuiElement
+                    {
+                        Parent = "Hud",
+                        Name = GUI_SLACK,
+                        Components =
+                        {
+                            new CuiTextComponent
+                            {
+                                Text = MSG(MSG_WIRE_SLACK_DISABLED),
+                                Color = ColorPalette.RustyDirtyPink.unityColorString,
+                                FontSize = 18,
+                                Align = TextAnchor.MiddleCenter,
+                            },
+                            new CuiOutlineComponent
+                            {
+                                Color = ColorPalette.RustyBlack.unityColorString,
+                                Distance = "1 1",
+                                UseGraphicAlpha = true
+                            },
+                            AnchorSlack,
+                        }
+                    }
+                };
+
+                ContainerSlackDisabledJSON = ContainerSlackDisabled.ToJson();
 
             }
 
             public static void GuiUnloadStatic()
             {
                 AnchorSlack = null;
-                ContainerSlack = null;
-                ContainerSlackJSON = null;
+                ContainerSlackEnabled = null;
+                ContainerSlackEnabledJSON = null;
+                ContainerSlackDisabled = null;
+                ContainerSlackDisabledJSON = null;
 
                 AnchorCrosshair = null;
                 ContainerCrosshair = null;
@@ -2580,15 +2674,23 @@ namespace Oxide.Plugins
             }
 
 
-            public void SlackShow()
+            public void SlackShow(bool enabled = true)
             {
                 if (Player == null)
                 {
                     return;
                 }
+
                 SlackHide();
 
-                CuiHelper.AddUi(Player, ContainerSlackJSON.Replace("[SLA]", PlayerConfig.Slack.ToString("0.00")));
+                if (enabled)
+                {
+                    CuiHelper.AddUi(Player, ContainerSlackEnabledJSON.Replace("[SLA]", PlayerConfig.Slack.ToString("0.00")));
+                }
+                else
+                {
+                    CuiHelper.AddUi(Player, ContainerSlackDisabledJSON);
+                }
 
                 if (Player.IsInvoking(SlackHide))
                 {
@@ -2622,6 +2724,13 @@ namespace Oxide.Plugins
             public Vector3 LastPlayerInputAnglesCurrent = Vector3.zero;
             public Vector3 LastPlayerInputAnglesPrevious = Vector3.zero;
 
+            public bool UseKeyIsDownPrevious = false;
+            public bool UseKeyIsDownCurrent = false;
+
+            public float UseKeyPressedAt = float.PositiveInfinity;
+
+            public static Effect ReusableEffect;
+
             public void WhenPlayerInput(InputState state)
             {
                 bool leftPressed = state.WasJustPressed(BUTTON.FIRE_PRIMARY);
@@ -2640,7 +2749,6 @@ namespace Oxide.Plugins
                     return;
                 }
 
-
                 if (PlayerHeldItem.info.shortname != ITEM_LADDER)
                 {
                     return;
@@ -2648,7 +2756,7 @@ namespace Oxide.Plugins
 
                 if (!PlayerPermissionProfile.GridCanDeployLadder)
                 {
-                    TellMessage(Player, MSG_CANT_DEPLOY_LADDER);
+                    TellMessage(Player, MSG(MSG_CANT_DEPLOY_LADDER, Player.UserIDString));
                     return;
                 }
 
@@ -2753,106 +2861,165 @@ namespace Oxide.Plugins
                     }
                 }
 
-                PlayerMovedMousePrevious = PlayerMovedMouseCurrent;
-                //assigning will be done OnPlayerInput
-
-                //the player can't be missing here
-                ButtonSprintIsDownPrevious = ButtonSprintIsDownCurrent;
-                ButtonSprintIsDownCurrent = PlayerServerInput.IsDown(BUTTON.SPRINT);
-
-                ButtonDuckIsDownPrevious = ButtonDuckIsDownCurrent;
-                ButtonDuckIsDownCurrent = PlayerServerInput.IsDown(BUTTON.DUCK);
-
-                ButtonReloadIsDownPrevious = ButtonReloadIsDownCurrent;
-                ButtonReloadIsDownCurrent = PlayerServerInput.IsDown(BUTTON.RELOAD);
-
-                //wires and hoses
+                UseKeyIsDownPrevious = UseKeyIsDownCurrent;
+                UseKeyIsDownCurrent = false;
 
                 if (ToolIsValidCurrent)
                 {
-                    switch (Dragging)
-                    {
-                        case 0:
-                            {
-                                //not dragging. listen if you should start
-                                if (ButtonSprintIsDownCurrent && !ButtonSprintIsDownPrevious)
-                                {
-                                    Dragging = -1;
-                                }
-                                else if (ButtonDuckIsDownCurrent && !ButtonDuckIsDownPrevious)
-                                {
-                                    Dragging = 1;
-                                }
-                            }
-                            break;
-                        case -1:
-                            {
-                                //currently reducing slack with sprint, check if you should stop
-                                if (!ButtonSprintIsDownCurrent && ButtonSprintIsDownPrevious)
-                                {
-                                    Dragging = 0;
-                                    LastDelta = 0F;
-                                }
-                                else
-                                {
-                                    //keep reducing
-                                    LastDelta -= 0.01F;
-                                    if (LastDelta < -1F)
-                                    {
-                                        LastDelta = -1F;
-                                    }
-                                }
-                            }
-                            break;
-                        case 1:
-                            {
-                                //currently increasing slack with duck, check if you should stop
-                                if (!ButtonDuckIsDownCurrent && ButtonDuckIsDownPrevious)
-                                {
-                                    Dragging = 0;
-                                    LastDelta = 0F;
-                                }
-                                else
-                                {
-                                    //keep increasing
-                                    LastDelta += 0.01F;
-                                    if (LastDelta > 1F)
-                                    {
-                                        LastDelta = 1F;
-                                    }
-                                }
-                            }
-                            break;
-                    }
-
+                    UseKeyIsDownCurrent = Player.serverInput.IsDown(BUTTON.USE);
                 }
                 else
                 {
-                    Dragging = 0;
-                    LastDelta = 0F;
+                    UseKeyPressedAt = float.PositiveInfinity;
                 }
 
-                if (Dragging != 0)
+                if (UseKeyIsDownCurrent != UseKeyIsDownPrevious)
                 {
-                    if (LastDelta != 0F)
+                    //something changed
+
+                    if (UseKeyIsDownCurrent)
                     {
-                        var newSlack = Mathf.Clamp(PlayerConfig.Slack + LastDelta, 0F, PlayerPermissionProfile.SlackMax);
+                        //wasn't down but now is
+                        UseKeyPressedAt = Time.time;
 
-                        SlackDirty = false;
+                    }
+                    else
+                    {
+                        //was down but now isn't
+                        UseKeyPressedAt = float.PositiveInfinity;
+                    }
+                }
+                /*
+                else if (!UseKeyIsDownCurrent && !UseKeyIsDownPrevious)
+                {
+                    Player.ChatMessage($"NOTHING PRESSED ANYMORE");
+                    UseKeyPressedAt = float.PositiveInfinity;
+                }*/
 
-                        if (newSlack != PlayerConfig.Slack)
+                if (UseKeyPressedAt != float.PositiveInfinity)
+                {
+                    //how long has the button been pressed? at least 1 seconds?
+                    if (Time.time - UseKeyPressedAt > 1)
+                    {
+                        UseKeyPressedAt = float.PositiveInfinity;
+
+                        PlayerConfig.Enabled = !PlayerConfig.Enabled;
+                        PlayerConfig.Dirty = true;
+                        shouldShowSlack = true;
+
+
+                        ReusableEffect.Clear();
+                        ReusableEffect.Init(Effect.Type.Generic, Player.transform.position + Vector3.up, Vector3.up);
+                        ReusableEffect.pooledString = FX_SELECT;
+                        EffectNetwork.Send(ReusableEffect, Player.net.connection);
+                    }
+                }
+
+                if (PlayerConfig.Enabled)
+                {
+                    PlayerMovedMousePrevious = PlayerMovedMouseCurrent;
+                    //assigning will be done OnPlayerInput
+
+                    //the player can't be missing here
+                    ButtonSprintIsDownPrevious = ButtonSprintIsDownCurrent;
+                    ButtonSprintIsDownCurrent = PlayerServerInput.IsDown(BUTTON.SPRINT);
+
+                    ButtonDuckIsDownPrevious = ButtonDuckIsDownCurrent;
+                    ButtonDuckIsDownCurrent = PlayerServerInput.IsDown(BUTTON.DUCK);
+
+                    ButtonReloadIsDownPrevious = ButtonReloadIsDownCurrent;
+                    ButtonReloadIsDownCurrent = PlayerServerInput.IsDown(BUTTON.RELOAD);
+
+                    //wires and hoses
+
+                    if (ToolIsValidCurrent)
+                    {
+                        switch (Dragging)
                         {
-                            PlayerConfig.Slack = newSlack;
-                            SlackDirty = true;
-                            PlayerConfig.Dirty = true;
-                            shouldShowSlack = true;
+                            case 0:
+                                {
+                                    //not dragging. listen if you should start
+                                    if (ButtonSprintIsDownCurrent && !ButtonSprintIsDownPrevious)
+                                    {
+                                        Dragging = -1;
+                                    }
+                                    else if (ButtonDuckIsDownCurrent && !ButtonDuckIsDownPrevious)
+                                    {
+                                        Dragging = 1;
+                                    }
+                                }
+                                break;
+                            case -1:
+                                {
+                                    //currently reducing slack with sprint, check if you should stop
+                                    if (!ButtonSprintIsDownCurrent && ButtonSprintIsDownPrevious)
+                                    {
+                                        Dragging = 0;
+                                        LastDelta = 0F;
+                                    }
+                                    else
+                                    {
+                                        //keep reducing
+                                        LastDelta -= 0.01F;
+                                        if (LastDelta < -1F)
+                                        {
+                                            LastDelta = -1F;
+                                        }
+                                    }
+                                }
+                                break;
+                            case 1:
+                                {
+                                    //currently increasing slack with duck, check if you should stop
+                                    if (!ButtonDuckIsDownCurrent && ButtonDuckIsDownPrevious)
+                                    {
+                                        Dragging = 0;
+                                        LastDelta = 0F;
+                                    }
+                                    else
+                                    {
+                                        //keep increasing
+                                        LastDelta += 0.01F;
+                                        if (LastDelta > 1F)
+                                        {
+                                            LastDelta = 1F;
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+
+                    }
+                    else
+                    {
+                        Dragging = 0;
+                        LastDelta = 0F;
+                    }
+
+                    if (Dragging != 0)
+                    {
+                        if (LastDelta != 0F)
+                        {
+                            var newSlack = Mathf.Clamp(PlayerConfig.Slack + LastDelta, 0F, PlayerPermissionProfile.SlackMax);
+
+                            SlackDirty = false;
+
+                            if (newSlack != PlayerConfig.Slack)
+                            {
+                                PlayerConfig.Slack = newSlack;
+                                SlackDirty = true;
+                                PlayerConfig.Dirty = true;
+                                shouldShowSlack = true;
+                            }
                         }
                     }
                 }
 
+
+
                 if (shouldShowSlack)
                 {
-                    SlackShow();
+                    SlackShow(PlayerConfig.Enabled);
                 }                
 
             }
@@ -2891,7 +3058,7 @@ namespace Oxide.Plugins
 
             public float LastDrawnPreviewAt = float.MinValue;
 
-            public float DestroyAt = UnityEngine.Time.time + MAX_LIFETIME_SECONDS;
+            public float DestroyAt;
 
             public Vector3[] PreviewCatenary = null;
 
@@ -2929,6 +3096,7 @@ namespace Oxide.Plugins
 
             public void Prepare(BasePlayer player, AdvancedChristmasLights lights, Vector3 normal = default(Vector3))
             {
+                DestroyAt = UnityEngine.Time.time + MAX_LIFETIME_SECONDS;
                 Player = player;
                 PlayerConfig = GetPlayerConfig(player);
                 PlayerPermissionProfile = GetPermissionProfile(player);
@@ -3148,7 +3316,7 @@ namespace Oxide.Plugins
             public const string ICON_URL_COMBINER = "https://i.imgur.com/jb70lgk.png";
             public const string ICON_URL_FUSE = "https://i.imgur.com/TPDgyh2.png";
 
-            public const float PADDING = 11;
+            public const float PADDING = 10;
 
             public const float ANCHOR_TITLE_AND_STATUS_LEFT = 1249;
             public const float ANCHOR_TITLE_AND_STATUS_RIGHT = 1818;
@@ -3356,7 +3524,7 @@ namespace Oxide.Plugins
                         {
                             new CuiRawImageComponent
                             {
-                                Url = ICON_URL_COMBINER,
+                                Url = Instance.Configuration.UpgradeItemGuiIconURL != string.Empty ? Instance.Configuration.UpgradeItemGuiIconURL : ICON_URL_COMBINER,
                                 FadeIn = GUI_FADE,
                             },
                             AnchorIcon1Image
@@ -3699,6 +3867,8 @@ namespace Oxide.Plugins
      current.Replace(value.Key, value.Value));
                 }
 
+                //Instance.PrintError($"{containerJSON}");
+
                 CuiHelper.AddUi(player, containerJSON);
             }
 
@@ -3770,14 +3940,117 @@ namespace Oxide.Plugins
 
             player.ChatMessage($"{hit.collider.name} is hit collider name. {hit.collider.gameObject.name} is game object name of that collider.");
             Collider AAA = hit.collider;
-
-            Instance.PrintToChat("BREAKIE POINTIE");
         }
         #endregion
 
         #region COMMANDS
         private static BasePlayer commandPlayer;
-        #region CMD
+
+        [Command(CMD_GP_POLE), Permission(PERM_ADMIN)]
+        private void CommandPole(IPlayer iplayer, string command, string[] args)
+        {
+            if (!HasAdminPermission(iplayer)) return;
+
+            if (iplayer.IsServer)
+            {
+                TellMessageI(iplayer, $"This command needs to be executed from the F1 console or the chat (requires a player involved).");
+                return;
+            }
+
+            var player = iplayer.Object as BasePlayer;
+
+            if (player == null)
+            {
+                TellMessageI(iplayer, $"This command needs to be executed from the F1 console or the chat (requires a player involved).");
+                return;
+            }
+
+            //perform a raycast up to 100 meters
+
+            RaycastHit hit;
+            var ray = player.eyes.BodyRay();
+
+            if (!Physics.Raycast(ray, out hit, 100F, LayerMask.GetMask("World", "Deployed"), QueryTriggerInteraction.Ignore))
+            {
+                TellMessageI(iplayer, $"You're not looking at any World prefabs.");
+                return;
+            }
+
+            if (hit.collider.name != "powerline_pole_a (1)")
+            {
+                TellMessageI(iplayer, $"You're not looking at a Power Line Pole.");
+                return;
+            }
+
+            if (args.Length == 0)
+            {
+                TellMessageI(iplayer, $"Please provide an argument: \"add\" or \"remove\"");
+                return;
+            }
+
+            var arg = args[0];
+
+            if (!(arg == "add" || arg == "remove"))
+            {
+                TellMessageI(iplayer, $"\"{arg}\" is not a valid argument. Try \"add\" or \"remove\" instead.");
+                return;
+            }
+
+            //try to find a pole helper associated with this pole..
+            
+            var colliderExactPos = hit.transform.position;
+            var colliderExactRot = hit.transform.eulerAngles;
+
+            PowerlinePoleHelper foundHelper = null;
+
+            foreach (var helper in PowerlinePoleHelper.PowerlinePoleHelperCache)
+            {
+                var distance = Vector3.Distance(helper.Value.transform.position, colliderExactPos);
+
+                if (distance < 1F)
+                {
+                    foundHelper = helper.Value;
+                    break;
+                }
+            }
+
+            if (arg == "add")
+            {
+                if (foundHelper != null)
+                {
+                    TellMessageI(iplayer, $"The pole you're looking at is already functional, cannot add! Use \"remove\" instead.");
+                    return;
+                }
+
+                if (!TestPlacingCloseToMonument(colliderExactPos))
+                {
+                    TellMessageI(iplayer, $"The pole you're looking at is building blocked by a monument - players would not be able to use it properly. Try a different pole.");
+                    return;
+                }
+
+                PowerlinePoleHelper.AddHelperPowerlinePole(PoleDataAdd(colliderExactPos, colliderExactRot, Instance.Data.LastPowerlineDataID + 1));
+
+                TellMessageI(iplayer, $"Successfully turned the pole you're looking at into a functional one (with a random number of outlets according to your config).");
+
+            }
+            else
+            {
+                if (foundHelper == null)
+                {
+                    TellMessageI(iplayer, $"The pole you're looking at is not functional, cannot remove! Use \"add\" instead.");
+                    return;
+                }
+
+                foundHelper.FuseboxButton.Kill();
+
+                TellMessageI(iplayer, $"Successfully rendered the pole you're looking at non-functional.");
+            }
+
+            //if we got here, save data
+            Data.Dirty = true;
+            SaveData();
+        }
+
         [Command(CMD_GP_EMERGENCY_CLEANUP), Permission(PERM_ADMIN)]
         private void CommandEmergencyCleanup(IPlayer iplayer, string command, string[] args)
         {
@@ -3787,8 +4060,6 @@ namespace Oxide.Plugins
 
             TellMessageI(iplayer, $"Emergency cleanup done, removed {removed} entities");
         }
-
-        #endregion
 
         [Command(CMD_GP_CFG), Permission(PERM_ADMIN)]
         private void CommandGPConfig(IPlayer iplayer, string command, string[] args)
@@ -3944,16 +4215,13 @@ namespace Oxide.Plugins
             Unloading = false;
             Instance = this;
 
+            MonumentTestingDeployVolumes = GetFloorVolumes();
+
+            PlayerHelper.ReusableEffect = new Effect();
+
             lang.RegisterMessages(LangMessages, this);
 
             LadderConstruction = PrefabAttribute.server.Find<Construction>(LADDER_PREFAB_ID);
-
-            FuseboxAllowedItems = new ItemDefinition[]
-            {
-                ItemManager.itemDictionaryByName[ITEM_FUSE],
-                ItemManager.itemDictionaryByName[ITEM_TECHTRASH],
-                ItemManager.itemDictionaryByName[ITEM_ROOTCOMBINER],
-            };
 
             PowerlinePoleHelper.PowerlineSocketPositions = new List<Vector3>
             {
@@ -3973,7 +4241,7 @@ namespace Oxide.Plugins
                 Vector3.forward,
             };
 
-            PowerlineTransformerGUI.InitializeStatic();
+
 
             XmasColorSequence = new Color[]
             {
@@ -4010,36 +4278,48 @@ namespace Oxide.Plugins
             PlayerHelper.Cache = new Hash<ulong, PlayerHelper>();
 
             LoadConfigData();
-            ProcessConfigData();
+            string previousConfigVersion = Configuration.Version;
+
+            ProcessConfigData(out previousConfigVersion);
+
+            PowerlineTransformerGUI.InitializeStatic();
+
+            ItemDefinition techTrashDefinition = null;
+
+            if (ItemManager.itemDictionaryByName.ContainsKey(Configuration.UpgradeItemShortname))
+            {
+                techTrashDefinition = ItemManager.itemDictionaryByName[Configuration.UpgradeItemShortname];
+            }
+            else
+            {
+                PrintError($"ERROR: Your configuration mentions `{Configuration.UpgradeItemShortname}` shortname as the transformer upgrade item, but the item definition could not be found. Defaulting to `{ITEM_TECHTRASH}`");
+                techTrashDefinition = ItemManager.itemDictionaryByName[ITEM_TECHTRASH];
+            }
+
+            FuseboxAllowedItems = new ItemDefinition[]
+            {
+                ItemManager.itemDictionaryByName[ITEM_FUSE],
+                techTrashDefinition,
+                ItemManager.itemDictionaryByName[ITEM_ROOTCOMBINER],
+            };
 
             ThePowerGridGameObject.AddComponent<PowerGrid>().Prepare();
 
             GenerateAllInteractiveConfigValues();
 
             LoadData();
-            ProcessData();
+            ProcessData(previousConfigVersion);
 
-            Instance.PrintWarning("Looking for streetlights...");
-
-            var iterateOver = UnityEngine.Object.FindObjectsOfType<MeshCollider>();
-
-            foreach (var collider in iterateOver)
+            if (Configuration.StreetlightsEnable)
             {
-                if (!(collider.name == COLLIDER_NAME_STREETLAMP_LEFT || collider.name == COLLIDER_NAME_STREETLAMP_RIGHT))
-                {
-                    continue;
-                }
+                Instance.PrintWarning("Looking for Street Lights...");
 
-                Instance.PrintWarning($"Found a street lamp at {collider.transform.position}, activating helper if it doesn't have one...");
-
-                if (collider.transform.parent.gameObject.HasComponent<StreetLampHelper>())
-                {
-                    Instance.PrintWarning($"It DOES have one already. NEXT...");
-                    continue;
-                }
-
-                Instance.PrintWarning($"ADDING COMPO TO PARENT...");
-                collider.transform.parent.gameObject.AddComponent<StreetLampHelper>().Prepare();
+                StreetlightsSet(true);
+            }
+            else
+            {
+                Instance.PrintWarning("Street Lights are disabled in the config. To enable them, type `gp_cfg StreetlightsEnable true`");
+                KillCinematics();
             }
 
             permission.RegisterPermission(PERM_ADMIN, this);
@@ -4050,9 +4330,9 @@ namespace Oxide.Plugins
             permission.RegisterPermission(PERM_VIP5, this);
 
 
-
             AddCovalenceCommand(CMD_GP_CFG, nameof(CommandGPConfig));
             AddCovalenceCommand(CMD_GP_EMERGENCY_CLEANUP, nameof(CommandEmergencyCleanup));
+            AddCovalenceCommand(CMD_GP_POLE, nameof(CommandPole));
 
             PlayerHelper.GuiPrepareStatic();
 
@@ -4449,6 +4729,13 @@ namespace Oxide.Plugins
                 return null;
             }
 
+            var wireConfig = GetPlayerConfig(player);
+
+            if (!wireConfig.Enabled)
+            {
+                return null;
+            }
+
             //dont do this for real tiny slacks.
             if (GetPlayerConfig(player).Slack < 0.01F)
             {
@@ -4566,6 +4853,8 @@ namespace Oxide.Plugins
         {
             Unloading = true;
 
+            MonumentTestingDeployVolumes = null;
+
             foreach (var helper in PowerlinePoleHelper.PowerlinePoleHelperCache.ToArray())
             {
                 UnityEngine.Object.DestroyImmediate(helper.Value.gameObject);
@@ -4573,13 +4862,9 @@ namespace Oxide.Plugins
 
             UnityEngine.Object.DestroyImmediate(ThePowerGridGameObject);
 
+            PlayerHelper.ReusableEffect = null;
 
-            foreach (var helper in StreetLampHelper.StreetLampHelperCache.ToArray())
-            {
-                UnityEngine.Object.DestroyImmediate(helper);
-            }
-
-
+            StreetlightsSet(false);
 
             StreetLampHelper.StreetLampHelperCache = null;
             PowerlinePoleHelper.PowerlinePoleHelperCache = null;
@@ -4594,16 +4879,17 @@ namespace Oxide.Plugins
             PowerlinePoleHelper.DangerousSlotToEntityNetID = null;
 
             //remove all monos
-            foreach (var helper in VanillaXmasLightsHelper.Cache)
+            foreach (var helper in VanillaXmasLightsHelper.Cache.ToArray())
             {
                 UnityEngine.Object.DestroyImmediate(helper.Value);
             }
             VanillaXmasLightsHelper.Cache = null;
 
-            foreach (var helper in PlayerHelper.Cache)
+            foreach (var helper in PlayerHelper.Cache.ToArray())
             {
                 UnityEngine.Object.DestroyImmediate(helper.Value);
             }
+
             PlayerHelper.Cache = null;
 
             PowerlineTransformerGUI.UnloadStatic();
@@ -4718,12 +5004,12 @@ namespace Oxide.Plugins
 
             return foundPlayer;
         }
-        private object OnEntityTakeDamage(BaseLadder ladder, HitInfo info) => OnEntityTakeDamageGenericPrevent(ladder, info);
-        private object OnEntityTakeDamage(ElectricalCombiner combiner, HitInfo info) => OnEntityTakeDamageGenericPrevent(combiner, info);
+        private object OnEntityTakeDamage(PressButton button, HitInfo info) => OnEntityTakeDamageGenericPrevent(button, info);
+        private object OnEntityTakeDamage(ElectricalCombiner combiner, HitInfo info) => OnEntityTakeDamageGenericPrevent(combiner, info, true);
         private object OnEntityTakeDamage(ElectricGenerator generator, HitInfo info) => OnEntityTakeDamageGenericPrevent(generator, info);
         private object OnEntityTakeDamage(TeslaCoil coil, HitInfo info) => OnEntityTakeDamageGenericPrevent(coil, info);
 
-        private object OnEntityTakeDamageGenericPrevent(BaseEntity entity, HitInfo info)
+        private object OnEntityTakeDamageGenericPrevent(BaseEntity entity, HitInfo info, bool preventIfInitiatorHasBuildingBlockToo = false)
         {
             if (entity == null)
             {
@@ -4737,10 +5023,24 @@ namespace Oxide.Plugins
 
             if (IsMarkedInternal(entity))
             {
-
                 //if it's not indestructible, don't go further if it's NOT decay (apply normal damage)
                 if (!IsMarkedIndestructible(entity))
                 {
+                    if (preventIfInitiatorHasBuildingBlockToo)
+                    {
+                        if (Instance.Configuration.BuildingBlockPreventsRootCombinerDamage)
+                        {
+                            if (info.InitiatorPlayer != null)
+                            {
+                                if (info.InitiatorPlayer.IsBuildingBlocked())
+                                {
+                                    info.damageTypes.ScaleAll(0F);
+                                    return null;
+                                }
+                            }
+                        }
+                    }
+
                     if (info.damageTypes.GetMajorityDamageType() != Rust.DamageType.Decay)
                     {
                         return null;
@@ -4801,6 +5101,11 @@ namespace Oxide.Plugins
             //this is vanilla+ editor
 
             if (!GetPermissionProfile(foundPlayer).HangingXmasLights)
+            {
+                return;
+            }
+
+            if (!(GetPlayerConfig(foundPlayer).Enabled))
             {
                 return;
             }
@@ -4879,59 +5184,164 @@ namespace Oxide.Plugins
 
         #region VARIOUS STATIC HELPERS
 
-        public const int SCREEN_WIDTH_IN_PIXELS = 1920;
-        public const int SCREEN_HEIGHT_IN_PIXELS = 1080;
+        public const float SCREEN_WIDTH_IN_PIXELS_LEGACY = 1920;
+        public const float SCREEN_HEIGHT_IN_PIXELS_LEGACY = 1080;
 
-        public static CuiRectTransformComponent GetAnchorFromScreenBox(float leftmostX, float bottommostY, float rightmostX, float topmostY)
+        public const float SCREEN_WIDTH_IN_PIXELS = 1280;
+        public const float SCREEN_HEIGHT_IN_PIXELS = 720;
+        public static Vector3 GetGroundPosition(Vector3 position)
         {
-            return new CuiRectTransformComponent { AnchorMin = $"{ScreenToRustX(leftmostX).ToString()} {ScreenToRustY(bottommostY).ToString()}", AnchorMax = $"{ScreenToRustX(rightmostX).ToString()} {ScreenToRustY(topmostY).ToString()}" };
-        }
-        public static CuiRectTransformComponent GetAnchorResizedRelative(CuiRectTransformComponent originalAnchor, float xLeft, float yBottom, float xRight, float yTop, float paddingInPixels = 0)
-        {
-            var paddingH = ScreenToRustX(paddingInPixels);
-            var paddingV = 1F - ScreenToRustY(paddingInPixels);
+            float terrainHeight = TerrainMeta.HeightMap.GetHeight(position);
+            float waterHeight = WaterSystem.GetHeight(position);
 
-            //let's split parse some strings, shall we.
-            var anchorMinSplit = originalAnchor.AnchorMin.Split(' ');
-            var anchorMaxSplit = originalAnchor.AnchorMax.Split(' ');
+            position.y = Mathf.Max(terrainHeight, waterHeight);
 
-            float anchorMinX = float.Parse(anchorMinSplit[0]);
-            float anchorMinY = float.Parse(anchorMinSplit[1]);
-
-            float anchorMaxX = float.Parse(anchorMaxSplit[0]);
-            float anchorMaxY = float.Parse(anchorMaxSplit[1]);
-
-            float width = anchorMaxX - anchorMinX;
-            float height = anchorMaxY - anchorMinY;
-
-            float xLeftNew = anchorMinX + xLeft * width;
-            float yBottomNew = anchorMinY + yBottom * height;
-
-            float xRightNew = anchorMaxX - (1 - xRight) * width;
-            float yTopNew = anchorMaxY - (1 - yTop) * height;
-
-            return new CuiRectTransformComponent { AnchorMin = $"{xLeftNew + paddingH} {yBottomNew + paddingV}", AnchorMax = $"{xRightNew - paddingH} {yTopNew - paddingV}" };
-        }
-        public static float ScreenToRustX(float x)
-        {
-            return WidthToRustX(x, SCREEN_WIDTH_IN_PIXELS);
-        }
-        public static float ScreenToRustY(float y)
-        {
-            return HeightToRustY(y, SCREEN_HEIGHT_IN_PIXELS);
-        }
-        public static float WidthToRustX(float x, float width)
-        {
-            return (float)x / width;
-        }
-        public static float HeightToRustY(float y, float height)
-        {
-            return 1 - ((float)y / height);
+            return position;
         }
 
-        public static bool IsPlacementBlockedAt(Vector3 worldPos)
+        public static SerializablePowerlinePole PoleDataAdd(Vector3 position, Vector3 eulers, uint uid)
         {
-            return TerrainMeta.PlacementMap.GetBlocked(worldPos);
+            int outlets = Mathf.Clamp(UnityEngine.Random.Range(Instance.Configuration.GeneratorInitialOutletsMin, Instance.Configuration.GeneratorInitialOutletsMax), 0, 4);
+
+            SerializablePowerlinePole newPoleData = new SerializablePowerlinePole
+            {
+                Uid = uid,
+                TechTrashInside = 1,
+                OutletStates = new bool[4]
+                {
+                            outlets > 0,
+                            outlets > 1,
+                            outlets > 2,
+                            outlets > 3,
+                },
+                Transform = new SerializableTransform
+                {
+                    Position = new SerializableVector3(position),
+                    Rotation = new SerializableVector3(eulers)
+                }
+            };
+
+            Instance.Data.PowerlineData.Add(uid, newPoleData);
+            Instance.Data.LastPowerlineDataID = uid;
+
+            return newPoleData;
+        }
+
+        public static string GetUpgradeItemName()
+        {
+            return Instance.Configuration.UpgradeItemGuiName != string.Empty ? Instance.Configuration.UpgradeItemGuiName : MSG(MSG_TECH_TRASH);
+        }
+        //
+        public static void StreetlightsSet(bool wantsOn)
+        {
+            if (wantsOn)
+            {
+                KillCinematics();
+
+                var iterateOver = UnityEngine.Object.FindObjectsOfType<MeshCollider>().ToArray();
+
+                foreach (var collider in iterateOver)
+                {
+                    if (!(collider.name == COLLIDER_NAME_STREETLAMP_LEFT || collider.name == COLLIDER_NAME_STREETLAMP_RIGHT))
+                    {
+                        continue;
+                    }
+
+                    //Instance.PrintWarning($"Found a street lamp at {collider.transform.position}, activating helper if it doesn't have one...");
+
+                    if (collider.transform.parent.gameObject.HasComponent<StreetLampHelper>())
+                    {
+                        continue;
+                    }
+
+                    collider.transform.parent.gameObject.AddComponent<StreetLampHelper>().Prepare();
+                }
+            }
+            else
+            {
+                foreach (var helper in StreetLampHelper.StreetLampHelperCache.ToArray())
+                {
+                    UnityEngine.Object.DestroyImmediate(helper);
+                }
+
+                KillCinematics();
+            }
+        }
+
+        public static void KillCinematics()
+        {
+            foreach (var cinematic in BaseEntity.serverEntities.OfType<CinematicEntity>().ToArray())
+            {
+                cinematic.Kill(BaseNetworkable.DestroyMode.None);
+            }
+        }
+
+        public const float ANCHOR_X = 0.5F;
+        public const float ANCHOR_Y = 0F;
+
+        public static string ANCHOR_DEFAULT = ANCHOR_X.ToString() + " " + ANCHOR_Y.ToString();
+
+        //multiply by these to get the 1280 x 720 pixel coords
+
+        public const float DOWNSIZING_FACTOR_HORIZONTAL = SCREEN_WIDTH_IN_PIXELS / SCREEN_WIDTH_IN_PIXELS_LEGACY;
+        public const float DOWNSIZING_FACTOR_VERTICAL = SCREEN_HEIGHT_IN_PIXELS / SCREEN_HEIGHT_IN_PIXELS_LEGACY;
+
+        public const float ANCHOR_DEFAULT_PIXEL_X = ANCHOR_X * SCREEN_WIDTH_IN_PIXELS;
+        public const float ANCHOR_DEFAULT_PIXEL_Y = 720;// (1F - ANCHOR_Y) * SCREEN_HEIGHT_IN_PIXELS; //because it's inverse for Y
+
+        public static CuiRectTransformComponent GetAnchorFromScreenBox(float leftmostX, float bottommostY, float rightmostX, float topmostY, string alignedTo = default(string))
+        {
+            if (alignedTo == default(string))
+            {
+                alignedTo = ANCHOR_DEFAULT;
+            }
+
+
+            //left, bottom, right and top are fed using 1920 x 1080
+
+            //first:
+
+            //these need to be converted to 1280 x 720 equivalents, this maintains the same ratio, 1.777(7...)
+
+            leftmostX *= DOWNSIZING_FACTOR_HORIZONTAL;
+            rightmostX *= DOWNSIZING_FACTOR_HORIZONTAL;
+            bottommostY *= DOWNSIZING_FACTOR_VERTICAL;
+            topmostY *= DOWNSIZING_FACTOR_VERTICAL;
+
+            //done, converted. Now based on the absolute values on screen, find the relative values, relative to the default anchor pixel x and y
+
+            //do that with: the absolute value minus anchor coord
+
+            leftmostX = ( leftmostX - ANCHOR_DEFAULT_PIXEL_X);
+            rightmostX = ( rightmostX - ANCHOR_DEFAULT_PIXEL_X);
+
+            bottommostY = -( bottommostY - ANCHOR_DEFAULT_PIXEL_Y);
+            topmostY = -( topmostY - ANCHOR_DEFAULT_PIXEL_Y);
+            var result = new CuiRectTransformComponent
+            {
+                AnchorMin = alignedTo,
+                AnchorMax = alignedTo,
+                OffsetMin = $"{Mathf.Ceil(leftmostX)} {Mathf.Ceil(bottommostY)}",
+                OffsetMax = $"{Mathf.Ceil(rightmostX)} {Mathf.Ceil(topmostY)}",
+            };
+
+            return result;
+        }
+        private static DeployVolume[] GetFloorVolumes()
+        {
+            return PrefabAttribute.server.FindAll<DeployVolume>(PREFAB_FLOOR_ID);
+        }
+
+        private static bool TestPlacingCloseToMonument(Vector3 position)
+        {
+            position = GetGroundPosition(position);
+
+            if (DeployVolume.Check(position, Quaternion.identity, MonumentTestingDeployVolumes))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private static GroundWatch _reusableGroundWatch;
@@ -5330,6 +5740,7 @@ namespace Oxide.Plugins
             List<Socket_Base> obj = Facepunch.Pool.GetList<Socket_Base>();
             common.FindMaleSockets(target, obj);
 
+            DeployVolume[] volumes = PrefabAttribute.server.FindAll<DeployVolume>(common.prefabID);
 
             foreach (Socket_Base item in obj)
             {
@@ -5378,7 +5789,6 @@ namespace Oxide.Plugins
                     continue;
                 }
 
-                DeployVolume[] volumes = PrefabAttribute.server.FindAll<DeployVolume>(common.prefabID);
                 if (DeployVolume.Check(placement.position, placement.rotation, volumes))
                 {
                     transform.position = placement.position;
@@ -5605,6 +6015,8 @@ namespace Oxide.Plugins
                 UnityEngine.Object.DestroyImmediate(helper);
             }
 
+            KillCinematics();
+
             StreetLampHelper.StreetLampHelperCache.Clear();
 
             PowerlinePoleHelper.PowerlinePoleHelperCache.Clear();
@@ -5696,33 +6108,6 @@ namespace Oxide.Plugins
             return false;
         }
 
-        public static float GetGlobalPowerProduction(float hour)
-        {
-            if (!IsItTime(hour, Instance.Configuration.GridProductionStartAtHour, Instance.Configuration.GridProductionEndAtHour))
-            {
-                return 0F;
-            }
-
-            return (-Mathf.Cos(Mathf.InverseLerp(Instance.Configuration.GridProductionStartAtHour, Instance.Configuration.GridProductionEndAtHour, hour) * 2F * Mathf.PI) + 1F) / 2F;
-        }
-
-        public static bool IsItTime(float hour, float startAt, float endAt)
-        {
-            if (startAt > endAt)
-            {
-                return (hour > startAt && hour < 24F) || (hour < endAt);
-            }
-            else
-            {
-                return (hour > startAt && hour < endAt);
-            }
-        }
-
-        public static float GetCurrentHour() => TOD_Sky.Instance.Cycle.Hour;
-        public static float GetCurrentDay() => TOD_Sky.Instance.Cycle.Day;
-        public static float GetCurrentMonth() => TOD_Sky.Instance.Cycle.Month;
-        public static float GetCurrentYear() => TOD_Sky.Instance.Cycle.Year;
-
         public static void TranslateLinePointsFromWorldToLocal(Transform transform, Vector3[] linePoints)
         {
             for (var i = 0; i< linePoints.Length; i++)
@@ -5746,6 +6131,21 @@ namespace Oxide.Plugins
 
             foreach (var candidate in visibilityList)//list)
             {
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                if (candidate.IsDestroyed)
+                {
+                    continue;
+                }
+
+                if (candidate.transform == null)
+                {
+                    continue;
+                }
+
                 if (candidate.PrefabName != prefabName)
                 {
                     continue;

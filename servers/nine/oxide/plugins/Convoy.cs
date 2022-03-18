@@ -15,7 +15,7 @@ using System;
 
 namespace Oxide.Plugins
 {
-    [Info("Convoy", "Adem", "1.1.9")]
+    [Info("Convoy", "Adem", "2.0.0")]
     class Convoy : RustPlugin
     {
         [PluginReference] Plugin NpcSpawn, GUIAnnouncements, DiscordMessages, PveMode;
@@ -90,6 +90,7 @@ namespace Oxide.Plugins
         {
             ins = this;
             Unsubscribes();
+            Unsubscribe("OnLootSpawn");
             LoadData();
         }
 
@@ -98,6 +99,8 @@ namespace Oxide.Plugins
             LoadDefaultMessages();
             UpdateConfig();
             int vehicleCount = 0;
+
+            Subscribe("OnLootSpawn");
 
             foreach (ConvoySetting convoySetting in _config.convoys)
             {
@@ -419,7 +422,7 @@ namespace Oxide.Plugins
             else CreateConvoy();
         }
 
-        [ChatCommand("convoystop")]  void StopCommand(BasePlayer player, string command, string[] arg)
+        [ChatCommand("convoystop")] void StopCommand(BasePlayer player, string command, string[] arg)
         {
             if (!player.IsAdmin) return;
             if (active) DeleteConvoy(true);
@@ -495,84 +498,51 @@ namespace Oxide.Plugins
         {
             if (_config.version != Version.ToString())
             {
-                if (_config.version == "1.1.6" || _config.version == "1.1.7" || _config.version == "1.1.8")
+                if (_config.version == "1.1.6" || _config.version == "1.1.7" || _config.version == "1.1.8" || _config.version == "1.1.9")
                 {
                     foreach (var a in _config.supportModularConfiguration) if (a.prefabName == null) a.prefabName = "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab";
                     foreach (var a in _config.modularConfiguration) if (a.prefabName == null) a.prefabName = "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab";
-                    foreach (var a in _config.NPC) a.deleteCorpse = true;
-                    _config.deleteTrees = true;
 
-                    _config.pveMode = new PveModeConfig
+                    if (_config.version != "1.1.9")
                     {
-                        pve = false,
-                        damage = 500f,
-                        scaleDamage = new HashSet<ScaleDamageConfig>
+                        _config.pveMode = new PveModeConfig
+                        {
+                            pve = false,
+                            damage = 500f,
+                            scaleDamage = new HashSet<ScaleDamageConfig>
                         {
                             new ScaleDamageConfig { Type = "NPC", Scale = 1f },
                             new ScaleDamageConfig { Type = "Bradley", Scale = 1f }
                         },
-                        lootCrate = false,
-                        hackCrate = false,
-                        lootNpc = false,
-                        damageNpc = false,
-                        targetNpc = false,
-                        canEnter = false,
-                        canEnterCooldownPlayer = true,
-                        timeExitOwner = 300,
-                        alertTime = 60,
-                        restoreUponDeath = true,
-                        cooldownOwner = 86400,
-                        darkening = 12
-                    };
+                            lootCrate = false,
+                            hackCrate = false,
+                            lootNpc = false,
+                            damageNpc = false,
+                            targetNpc = false,
+                            canEnter = false,
+                            canEnterCooldownPlayer = true,
+                            timeExitOwner = 300,
+                            alertTime = 60,
+                            restoreUponDeath = true,
+                            cooldownOwner = 86400,
+                            darkening = 12
+                        };
 
-                    _config.economyConfig = new EconomyConfig
-                    {
-                        enable = false,
-                        plugins = new HashSet<string> { "Economics", "Server Rewards", "IQEconomic" },
-                        min = 0,
-                        npc = 0.3,
-                        bradley = 1,
-                        heli = 1,
-                        sedan = 0.3,
-                        modularCar = 0.3,
-                        lockedCrate = 0.5,
-                        commands = new HashSet<string>()
-                    };
-
-                    NpcConfig npcConfig = _config.NPC.FirstOrDefault(x => x.wearItems.Count == 0);
-                    if (npcConfig != null)
-                    {
-                        npcConfig.wearItems = new List<NpcWear>
+                        _config.economyConfig = new EconomyConfig
                         {
-                            new NpcWear
-                            {
-                                shortName = "metal.plate.torso",
-                                skinID = 1988476232
-                            },
-                            new NpcWear
-                            {
-                                shortName = "riot.helmet",
-                                skinID = 1988478091
-                            },
-                            new NpcWear
-                            {
-                                shortName = "pants",
-                                skinID = 1582399729
-                            },
-                            new NpcWear
-                            {
-                                shortName = "tshirt",
-                                skinID = 1582403431
-                            },
-                            new NpcWear
-                            {
-                                shortName = "shoes.boots",
-                                skinID = 0
-                            }
+                            enable = false,
+                            plugins = new HashSet<string> { "Economics", "Server Rewards", "IQEconomic" },
+                            min = 0,
+                            npc = 0.3,
+                            bradley = 1,
+                            heli = 1,
+                            sedan = 0.3,
+                            modularCar = 0.3,
+                            lockedCrate = 0.5,
+                            commands = new HashSet<string>()
                         };
                     }
-
-                    _config.version = "1.1.9";
+                    _config.version = Version.ToString();
                     SaveConfig();
                 }
                 else
@@ -638,8 +608,7 @@ namespace Oxide.Plugins
 
                 int totalVehicleCount = convoySetting.firstBradleyCount + convoySetting.firstSedanCount + convoySetting.endSedanCount + convoySetting.endBradleyCount;
 
-                //int startPoint = round ? UnityEngine.Random.Range(0, pathCount / 2) : 1;
-                int startPoint = round ? (int)(pathCount * 0.72f) : 1;
+                int startPoint = round ? UnityEngine.Random.Range(0, pathCount / 2) : 1;
 
                 int count = 0;
                 int totalCount = convoySetting.endBradleyCount;
@@ -771,6 +740,7 @@ namespace Oxide.Plugins
             {
                 if (convoyVehicle == null || convoyVehicle.baseEntity == null || convoyVehicle.baseEntity.IsDestroyed) continue;
                 Transform transform = convoyVehicle.baseEntity.transform;
+                convoyVehicle.rigidbody.velocity = Vector3.zero;
                 transform.RotateAround(transform.position, transform.up, 180);
                 convoyVehicle.Rotate();
                 convoyVehicle.DefineFollowEntity();
@@ -971,9 +941,9 @@ namespace Oxide.Plugins
             BaseEntity baseEntity = nextVehicle.baseEntity;
             if (baseEntity == null || baseEntity.IsDestroyed) return;
             convoyVehicles.Remove(convoyVehicle);
-            NextTick(() => 
-            { 
-                if (nextVehicle != null && nextVehicle.baseEntity != null && !nextVehicle.baseEntity.IsDestroyed) nextVehicle.DefineFollowEntity(); 
+            NextTick(() =>
+            {
+                if (nextVehicle != null && nextVehicle.baseEntity != null && !nextVehicle.baseEntity.IsDestroyed) nextVehicle.DefineFollowEntity();
             });
         }
 
@@ -1087,11 +1057,11 @@ namespace Oxide.Plugins
                             if (convoyVehicle is ConvoyBradley) bradleys.Add(convoyVehicle.baseEntity.net.ID);
                         }
                         ins.PveMode.Call("EventAddPveMode", ins.Name, config, mainCloser.transform.position, ins._config.eventZone.radius, new HashSet<uint> { ins.convoyModular.crate.net.ID }, npcs, bradleys, ins.owners, null);
-                    }, 1f );
+                    }, 1f);
                 }
                 else if (ins._config.eventZone.isDome) CreateSphere();
 
-                if (ins._config.GUI.IsGUI) guiCoroune  = ServerMgr.Instance.StartCoroutine(GuiCoroune());
+                if (ins._config.GUI.IsGUI) guiCoroune = ServerMgr.Instance.StartCoroutine(GuiCoroune());
             }
 
             void CreateSphere()
@@ -1663,7 +1633,7 @@ namespace Oxide.Plugins
                     if (engineStorage == null) continue;
                     ItemContainer inventory = engineStorage.inventory;
 
-                    foreach(Item item in inventory.itemList)
+                    foreach (Item item in inventory.itemList)
                     {
                         if (item == null) continue;
                     }
@@ -2171,7 +2141,7 @@ namespace Oxide.Plugins
         #region TruePVE
         object CanEntityTakeDamage(BasePlayer victim, HitInfo hitinfo)
         {
-            if (!_config.eventZone.isCreateZonePVP || victim == null || !victim.userID.IsSteamId() || hitinfo == null || !active || doorCloser == null || doorCloser.IsDestroyed) return null;
+            if (victim == null ||  hitinfo == null || !_config.eventZone.isCreateZonePVP || victim == null || !victim.userID.IsSteamId() || hitinfo == null || !active || doorCloser == null || doorCloser.IsDestroyed) return null;
             BasePlayer attacker = hitinfo.InitiatorPlayer;
             if (players.Contains(victim) && (attacker == null || (attacker != null && players.Contains(attacker)))) return true;
             else return null;
@@ -2231,7 +2201,7 @@ namespace Oxide.Plugins
 
         private void SendBalance()
         {
-            if (_playersBalance.Count == 0) return;
+            if (!_config.economyConfig.enable || _playersBalance.Count == 0) return;
             foreach (KeyValuePair<ulong, double> dic in _playersBalance)
             {
                 if (dic.Value < _config.economyConfig.min) continue;
@@ -2289,15 +2259,15 @@ namespace Oxide.Plugins
             return message;
         }
 
-        string GetTimeFromSecond(int second)
+        string GetTimeFromSecond(int second, string id = null)
         {
             string message = "";
 
             TimeSpan timeSpan = TimeSpan.FromSeconds(second);
-            if (timeSpan.Days > 0) message += $" {timeSpan.Days} d.";
-            if (timeSpan.Hours > 0) message += $" {timeSpan.Hours} h.";
-            if (timeSpan.Minutes > 0) message += $" {timeSpan.Minutes} m.";
-            if (message == "") message += $" {timeSpan.Seconds} s.";
+            if (timeSpan.Days > 0) message += $" {timeSpan.Days} {GetMessage("Days", id)}";
+            if (timeSpan.Hours > 0) message += $" {timeSpan.Hours} {GetMessage("Hours", id)}";
+            if (timeSpan.Minutes > 0) message += $" {timeSpan.Minutes} {GetMessage("Minutes", id)}";
+            if (message == "") message += $" {timeSpan.Seconds} {GetMessage("Seconds", id)}";
 
             return message;
         }
@@ -2467,7 +2437,11 @@ namespace Oxide.Plugins
                 ["EnterPVP"] = "{0} Вы <color=#ce3f27>вошли</color> в PVP зону, теперь другие игроки <color=#ce3f27>могут</color> наносить вам урон!",
                 ["ExitPVP"] = "{0} Вы <color=#738d43>вышли</color> из PVP зоны, теперь другие игроки <color=#738d43>не могут</color> наносить вам урон!",
                 ["GUI"] = "Груз будет уничтожен через {0}",
-                ["SendEconomy"] = "{0} Вы <color=#738d43>получили</color> <color=#55aaff>{1}</color> баллов в экономику за прохождение ивента"
+                ["SendEconomy"] = "{0} Вы <color=#738d43>получили</color> <color=#55aaff>{1}</color> баллов в экономику за прохождение ивента",
+                ["Days"] = "д.",
+                ["Hours"] = "ч.",
+                ["Minutes"] = "м.",
+                ["Seconds"] = "с.",
             }, this, "ru");
 
             lang.RegisterMessages(new Dictionary<string, string>
@@ -2485,7 +2459,11 @@ namespace Oxide.Plugins
                 ["EnterPVP"] = "{0} You <color=#ce3f27>have entered</color> the PVP zone, now other players <color=#ce3f27>can damage</color> you!",
                 ["ExitPVP"] = "{0} You <color=#738d43>have gone out</color> the PVP zone, now other players <color=#738d43>can’t damage</color> you!",
                 ["GUI"] = "The cargo will be destroyed in {0}",
-                ["SendEconomy"] = "{0} You <color=#738d43>have earned</color> <color=#55aaff>{1}</color> points in economics for participating in the event"
+                ["SendEconomy"] = "{0} You <color=#738d43>have earned</color> <color=#55aaff>{1}</color> points in economics for participating in the event",
+                ["Days"] = "d.",
+                ["Hours"] = "h.",
+                ["Minutes"] = "m.",
+                ["Seconds"] = "s.",
             }, this);
         }
 
@@ -2799,7 +2777,7 @@ namespace Oxide.Plugins
             {
                 return new PluginConfig()
                 {
-                    version = "1.1.9",
+                    version = "2.0.0",
                     prefics = "[Convoy]",
                     IsChat = true,
                     GUIAnnouncements = new GUIAnnouncementsConfig
