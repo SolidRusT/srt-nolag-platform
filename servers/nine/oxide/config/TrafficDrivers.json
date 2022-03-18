@@ -8,7 +8,7 @@
         "vehicle.1mod.cockpit.with.engine"
       ],
       "Add codelock?": false,
-      "Add door lock?": false,
+      "Add door lock?": true,
       "Engine parts tier (0-3, 0 to spawn without parts)": 3,
       "Fuel amount (-1 for max amount)": -1,
       "Water amount for fuel tank (not necessary, -1 for max amount)": 0,
@@ -16,10 +16,10 @@
       "Enable infinite fuel": true,
       "Driver preset name (leave blank to spawn random driver)": "",
       "Destroy car after driver death?": false,
-      "Block access to engine parts?": true,
-      "Destroy engine parts after driver death?": true,
+      "Block access to engine parts?": false,
+      "Destroy engine parts after driver death?": false,
       "Add flashing lights to car driver module?": false,
-      "Vehicle and passenger immortal time after spawn": 5.0,
+      "Vehicle and passenger immortal time after spawn": 1.0,
       "Make vehicle immortal?": false,
       "Detonator (for vehicle despawn)": {
         "Add a detonator to the car after the death of the driver (useful to despawn cars)": true,
@@ -57,8 +57,8 @@
       "Display driver name": "Водитель Ярик",
       "Bot skin (0 - random)": 0,
       "Bot health": {
-        "Minimum": 100.0,
-        "Maximum": 150.0
+        "Minimum": 50.0,
+        "Maximum": 75.0
       },
       "Bot loot": [
         {
@@ -85,7 +85,7 @@
         }
       ],
       "Driver will be moving with default speed (1) or will be increase max. speed for a while (2) when attacked?": 2,
-      "Damage receive rate": 0.5,
+      "Damage receive rate": 1,
       "Clothes": [
         {
           "Item shortname": "hazmatsuit",
@@ -96,8 +96,8 @@
         "Spawn companion for driver? (he will shoot and protect him)": true,
         "Display companion name": "Компаньон-защитник",
         "Companion health": {
-          "Minimum": 100.0,
-          "Maximum": 150.0
+          "Minimum": 50.0,
+          "Maximum": 75.0
         },
         "Clothes": [
           {
@@ -111,7 +111,7 @@
             "Item skin": 0
           }
         ],
-        "Damage receive rate": 0.5,
+        "Damage receive rate": 1,
         "Damage rate": 2.0
       }
     }
@@ -126,9 +126,9 @@
     "Delay between spawn next car": 5,
     "Prevent bots from attacking drivers and companions?": true,
     "Convoy plugin support": {
-      "Enable the Convoy plugin support?": false,
-      "Destroy traffic vehicles at the start of the Convoy plugin event?": false,
-      "Destroy traffic vehicles when colliding with Convoy plugin event vehicles?": false
+      "Enable the Convoy plugin support?": true,
+      "Destroy traffic vehicles at the start of the Convoy plugin event?": true,
+      "Destroy traffic vehicles when colliding with Convoy plugin event vehicles?": true
     }
   }
 }

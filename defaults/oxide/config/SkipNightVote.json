@@ -7,7 +7,7 @@
   "Options": {
     "RequiredVotePercentage": 0.001,
     "TimeToOpen": "18:00:00",
-    "TimeToSet": "08:30:00"
+    "TimeToSet": "08:00:00"
   },
   "VoteTimers": {
     "TimeBetweenVotes": 5,
