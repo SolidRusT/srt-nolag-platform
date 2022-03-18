@@ -20,8 +20,8 @@
     "Default radius for location based massdrop": 100.0,
     "Delay between Massdrop plane spawns": 0.66,
     "Massdrop default plane amount": 5,
-    "Multiplier for (plane height * highest point on Map); Default 1.0": 1.0,
-    "Multiplier for overall flight distance; lower means faster at map": 0.75,
+    "Multiplier for (plane height * highest point on Map); Default 1.0": 0.7,
+    "Multiplier for overall flight distance; lower means faster at map": 0.25,
     "Disable SupplySignal randomization": false,
     "Visual & Sound Effects Settings": {
       "Use Explosion Sound Effect when hits ground position": false,
@@ -41,12 +41,12 @@
   },
   "Allow Damage Airdrop Settings": {
     "Players can shoot down the drop": true,
-    "Players can shoot down the drop - needed hits": 3,
+    "Players can shoot down the drop - needed hits": 1,
     "Set Angular Drag for drop": 0.1,
-    "Set Drag for drop (drop resistance)": 0.3,
+    "Set Drag for drop (drop resistance)": 0.2,
     "Set drop allow to explode on impact": true,
     "Set drop chance exploding on impact (x out of 100)": 25,
-    "Set Mass weight for drop": 0.75
+    "Set Mass weight for drop": 2.0
   },
   "Notification Settings": {
     "Maximum distance in meters to get notified about landed Drop": 1000.0,
@@ -297,7 +297,7 @@
   },
   "Version": {
     "Major": 3,
-    "Minor": 1,
-    "Patch": 9
+    "Minor": 2,
+    "Patch": 2
   }
 }
