@@ -21,7 +21,7 @@
     "Delay between Massdrop plane spawns": 0.66,
     "Massdrop default plane amount": 5,
     "Multiplier for (plane height * highest point on Map); Default 1.0": 1.0,
-    "Multiplier for overall flight distance; lower means faster at map": 1.25,
+    "Multiplier for overall flight distance; lower means faster at map": 0.75,
     "Disable SupplySignal randomization": false,
     "Visual & Sound Effects Settings": {
       "Use Explosion Sound Effect when hits ground position": false,
