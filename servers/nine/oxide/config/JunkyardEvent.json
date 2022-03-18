@@ -1,5 +1,5 @@
 {
-  "Minimum time between events [sec.]": 10800.0,
+  "Minimum time between events [sec.]": 7200.0,
   "Maximum time between events [sec.]": 10800.0,
   "Is active the timer on to start the event? [true/false]": true,
   "Duration of the event [sec.]": 3600,
