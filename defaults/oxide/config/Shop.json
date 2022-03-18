@@ -2449,6 +2449,33 @@
         },
         {
           "Type": "Item",
+          "ID": 2019042823,
+          "Image": "",
+          "Title": "",
+          "Description": null,
+          "Command (%steamid%)": "",
+          "Kit": null,
+          "Plugin": {
+            "Hook": "",
+            "Plugin Name": "",
+            "Amount": 1
+          },
+          "DisplayName (empty - default)": "",
+          "ShortName": "tarp",
+          "Skin": 0,
+          "Amount": 5,
+          "Price": 10.0,
+          "Sell Price": 0.0,
+          "Buy Cooldown (0 - disable)": 0.0,
+          "Sell Cooldown (0 - disable)": 0.0,
+          "Discount (%)": {},
+          "Sell Limits (0 - no limit)": {},
+          "Buy Limits (0 - no limit)": {},
+          "Max Buy Amount (0 - disable)": 0,
+          "Max Sell Amount (0 - disable)": 0
+        },
+        {
+          "Type": "Item",
           "ID": 1600219134,
           "Image": "",
           "Title": "",
