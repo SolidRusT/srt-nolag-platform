@@ -1,0 +1,134 @@
+{
+  "Enable path recorder?": false,
+  "Vehicle presets": {
+    "3-х модульный транспорт": {
+      "Modules": [
+        "vehicle.1mod.engine",
+        "vehicle.1mod.storage",
+        "vehicle.1mod.cockpit.with.engine"
+      ],
+      "Add codelock?": false,
+      "Add door lock?": false,
+      "Engine parts tier (0-3, 0 to spawn without parts)": 3,
+      "Fuel amount (-1 for max amount)": -1,
+      "Water amount for fuel tank (not necessary, -1 for max amount)": 0,
+      "Max speed": 10.0,
+      "Enable infinite fuel": true,
+      "Driver preset name (leave blank to spawn random driver)": "",
+      "Destroy car after driver death?": false,
+      "Block access to engine parts?": true,
+      "Destroy engine parts after driver death?": true,
+      "Add flashing lights to car driver module?": false,
+      "Vehicle and passenger immortal time after spawn": 5.0,
+      "Make vehicle immortal?": false,
+      "Detonator (for vehicle despawn)": {
+        "Add a detonator to the car after the death of the driver (useful to despawn cars)": true,
+        "In how many seconds detonator will be blow up": 300.0
+      },
+      "Loot in Storage Module": {
+        "Add loot to Storage Module": true,
+        "Loot": [
+          {
+            "Item shortname": "wood",
+            "Item skin": 0,
+            "Item name (not necessary)": null,
+            "Spawn chance": 100.0,
+            "Item amount": {
+              "Minimum": 1000.0,
+              "Maximum": 10000.0
+            }
+          },
+          {
+            "Item shortname": "stones",
+            "Item skin": 0,
+            "Item name (not necessary)": null,
+            "Spawn chance": 100.0,
+            "Item amount": {
+              "Minimum": 5000.0,
+              "Maximum": 50000.0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Driver presets": {
+    "Водитель Ярик": {
+      "Display driver name": "Водитель Ярик",
+      "Bot skin (0 - random)": 0,
+      "Bot health": {
+        "Minimum": 100.0,
+        "Maximum": 150.0
+      },
+      "Bot loot": [
+        {
+          "Item name": null,
+          "Item shortname": "rifle.ak",
+          "Item skin": 0,
+          "Spawn chance": 100.0,
+          "Item amount": {
+            "Minimum": 1.0,
+            "Maximum": 1.0
+          },
+          "Target container (main, belt, wear)": "belt"
+        },
+        {
+          "Item name": null,
+          "Item shortname": "hatchet",
+          "Item skin": 0,
+          "Spawn chance": 100.0,
+          "Item amount": {
+            "Minimum": 1.0,
+            "Maximum": 1.0
+          },
+          "Target container (main, belt, wear)": "main"
+        }
+      ],
+      "Driver will be moving with default speed (1) or will be increase max. speed for a while (2) when attacked?": 2,
+      "Damage receive rate": 0.5,
+      "Clothes": [
+        {
+          "Item shortname": "hazmatsuit",
+          "Item skin": 0
+        }
+      ],
+      "Companion": {
+        "Spawn companion for driver? (he will shoot and protect him)": true,
+        "Display companion name": "Компаньон-защитник",
+        "Companion health": {
+          "Minimum": 100.0,
+          "Maximum": 150.0
+        },
+        "Clothes": [
+          {
+            "Item shortname": "attire.banditguard",
+            "Item skin": 0
+          }
+        ],
+        "Weapons": [
+          {
+            "Item shortname": "rifle.ak",
+            "Item skin": 0
+          }
+        ],
+        "Damage receive rate": 0.5,
+        "Damage rate": 2.0
+      }
+    }
+  },
+  "Limits, spawn and interaction setup": {
+    "Maximum amount of cars": {
+      "Minimum": 1.0,
+      "Maximum": 5.0
+    },
+    "Minimum road width": 100,
+    "After how many seconds destroy stuck car?": 60.0,
+    "Delay between spawn next car": 5,
+    "Prevent bots from attacking drivers and companions?": true,
+    "Convoy plugin support": {
+      "Enable the Convoy plugin support?": false,
+      "Destroy traffic vehicles at the start of the Convoy plugin event?": false,
+      "Destroy traffic vehicles when colliding with Convoy plugin event vehicles?": false
+    }
+  }
+}
