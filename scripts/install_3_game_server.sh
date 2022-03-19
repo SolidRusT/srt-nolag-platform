@@ -1,5 +1,8 @@
 #!/bin/bash
 sudo sed -i 's/main/main contrib non-free/g' /etc/apt/sources.list
+# sudo add-apt-repository universe
+# sudo add-apt-repository multiverse
+# sudo add-apt-repository restricted
 sudo dpkg --add-architecture i386
 sudo apt update
 sudo apt -y dist-upgrade

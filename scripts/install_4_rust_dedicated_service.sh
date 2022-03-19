@@ -12,6 +12,10 @@ sudo mount /dev/nvme0n1 ${GAME_ROOT}
 #sudo mkfs -t xfs /dev/nvme1n1
 #sudo mount /dev/nvme1n1 ${GAME_ROOT}
 
+#curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#unzip awscliv2.zip
+#sudo ./aws/install
+
 sudo su - ${STEAMUSER}
 export GAME_ROOT="/game"
 export S3_REPO="s3://solidrust.net-repository"
