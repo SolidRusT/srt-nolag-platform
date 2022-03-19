@@ -11,7 +11,7 @@
     "Prefix format": "<size=12><color={0}>{1}</color>: ",
     "GUI Announce command": "announce",
     "Show message to admin after command usage": true,
-    "Time for active smoke of SupplySignal (default is 210)": 210.0,
+    "Time for active smoke of SupplySignal (default is 210)": 120.0,
     "Lock DirectDrop to be looted only by target player": true,
     "Lock SignalDrop to be looted only by target player": false,
     "Unlock crates only after player stopped looting": false
