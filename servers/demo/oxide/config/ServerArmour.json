@@ -35,13 +35,13 @@
       "Reason Prefix": "Assoc Ban -> {playerId}: {reason}"
   },
   "Discord": {
-      "Bans Webhook URL": "https://discordapp.com/api/webhooks/869390181076181062/MRjtQkAMJXYsDrLBVnWnR0qraY31ywWW4mt4u27oy2NRi_ezWKiWmW6VyqBmxIl26ojm",
+      "Bans Webhook URL": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5",
       "Notify when a player has received a game ban": true,
       "Send Ban Report": true,
       "Send Kick Report": true,
       "Send Only Dirty Player Reports": true,
       "Show Quick Connect On report": false,
-      "Webhook URL": "https://discordapp.com/api/webhooks/869390181076181062/MRjtQkAMJXYsDrLBVnWnR0qraY31ywWW4mt4u27oy2NRi_ezWKiWmW6VyqBmxIl26ojm"
+      "Webhook URL": "https://discord.com/api/webhooks/884236923458162749/Mtg23TFkKtoJAfvabeqAJYZxVlk93NCvpFnXLHcY6BP1qFuOLL-EGjElndR-AIe0HtG5"
   },
   "General": {
       "Debug: Show additional debug console logs": false,
@@ -59,7 +59,7 @@
       "Game Port": "28015",
       "Query Port": "28015",
       "RCON Port": "28016",
-      "Your Server IP": "24.80.117.39"
+      "Your Server IP": "35.175.207.195"
   },
   "Show Protected MSG": true
 }
