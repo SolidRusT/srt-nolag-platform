@@ -171,7 +171,7 @@ function update_configs() {
 
 function update_maps() {
   echo "=> Update Rust custom maps configs" | tee -a ${LOGS}
-  aws s3 sync --size-only --delete ${S3_WEB}/maps ${HOME}/solidrust.net/web/maps | tee -a ${LOGS}
+  aws s3 sync --size-only --delete --include *.map ${S3_REPO}/web/maps ${HOME}/solidrust.net/web/maps | tee -a ${LOGS}
 }
 
 function update_radio() {
