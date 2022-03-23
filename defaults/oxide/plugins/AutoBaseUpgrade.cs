@@ -4,13 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Oxide.Core;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
 using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("AutoBaseUpgrade", "CASHR#6906", "1.0.5")]
+    [Info("AutoBaseUpgrade", "CASHR#6906", "1.0.6")]
     internal class AutoBaseUpgrade : RustPlugin
     {
         #region Static
@@ -24,24 +25,25 @@ namespace Oxide.Plugins
 
         private class Configuration
         {
-
+            [JsonProperty("Allow the repair of deployable objects?")]
+            public bool DepRepair = true;
             [JsonProperty("Upgrade cooldown (seconds)")]
             public Dictionary<string, float> CDList = new Dictionary<string, float>()
             {
-                ["autobaseugrade.use"] = 1.55f,
-                ["autobaseugrade.vip"] = 0.55f,
+                ["autobaseupgrade.use"] = 1.55f,
+                ["autobaseupgrade.vip"] = 0.55f,
             };
             
             [JsonProperty("Cost Modifier for repairs")]
             public Dictionary<string, float> CostList = new Dictionary<string, float>()
             {
-                ["autobaseugrade.use"] = 1.5f,
-                ["autobaseugrade.vip"] = 1.0f,
+                ["autobaseupgrade.use"] = 1.5f,
+                ["autobaseupgrade.vip"] = 1.0f,
             };
             [JsonProperty("Run upgrade effect")]
             public bool Effect = true;
-            [JsonProperty("AnchorMin")] public string AnchorMin ="0.5 0.5";
-            [JsonProperty("AnchorMax")] public string AnchorMax = "0.5 0.5";
+            [JsonProperty("AnchorMin")] public string AnchorMin ="0.56 0.8";
+            [JsonProperty("AnchorMax")] public string AnchorMax = "0.7 0.665";
             [JsonProperty("OffsetMin")] public string OffsetMin = "293.746 57.215";
             [JsonProperty("OffsetMax")] public string OffsetMax = "406.44 77.785";
         }
@@ -134,84 +136,102 @@ namespace Oxide.Plugins
 
             return cost;
         }
-        private void DoRepair(BuildingBlock block, BuildingPrivlidge tc,BasePlayer player)
+
+        private bool  DoRepair(BasePlayer player, BaseCombatEntity entity, BuildingPrivlidge tc, float cost)
         {
-            float num2 = block.MaxHealth() - block.Health();
-
-            float healthMissingFraction = num2 / block.MaxHealth() * GetCost(player);
-            if (healthMissingFraction <= 0.0)
+            if (entity == null || !entity.IsValid() || entity.IsDestroyed || entity.transform == null)
             {
-                return;
+                return false;
             }
 
-            var requirements = block.RepairCost(healthMissingFraction);
-            if (requirements == null)
-                return;
-            float num3 = 0;
-            for (var index = 0; index < requirements.Count; index++)
+            if (!entity.repair.enabled || entity.health == entity.MaxHealth())
             {
-                var x = requirements[index];
-                num3 += x.amount;
+                return false;
             }
 
-            if (num3 > 0.0)
+            if (Interface.CallHook("OnStructureRepair", entity, player) != null)
             {
-                float num4 =
-                    Mathf.Min(requirements.Min(x => Mathf.Clamp01(tc.inventory.GetAmount(x.itemid, false) / x.amount)), 50f / num2);
-                if (num4 <= 0.0)
-                {
-                    player.ChatMessage(GetMessage("MSG_REPAIRNOTFUND",player.UserIDString));
-                    TCList[tc].isRepair = false;
-                    return;
-                }
+                return false;
+            }
 
-                int num5 = 0;
-                foreach (ItemAmount itemAmount in requirements)
-                {
-                    int amount = Mathf.CeilToInt(num4 * itemAmount.amount);
-                    int num6 = tc.inventory.Take(null, itemAmount.itemid, amount);
-                    if (num6 > 0)
-                    {
-                        num5 += num6;
-                    }
-                }
+            float missingHealth = entity.MaxHealth() - entity.health;
+            float healthPercentage = missingHealth / entity.MaxHealth();
+            if (missingHealth <= 0f || healthPercentage <= 0f)
+            {
+                entity.OnRepairFailed(null, string.Empty);
+                return false;
+            }
 
-                float num7 = num5 / num3;
-                block.health += num2 * num7;
-                block.SendNetworkUpdate();
+
+            List<ItemAmount> itemAmounts = entity.RepairCost(healthPercentage);
+            if (itemAmounts.Sum(x => x.amount) <= 0f)
+            {
+                entity.health += missingHealth;
+                entity.SendNetworkUpdate();
+                entity.OnRepairFinished();
+                return true;
+            }
+
+            foreach (ItemAmount amount in itemAmounts)
+            {
+                amount.amount *= cost;
+            }
+
+
+            if (itemAmounts.Any(ia => tc.inventory.GetAmount(ia.itemid, false) < (int)ia.amount))
+            {
+                entity.OnRepairFailed(null, string.Empty);
+                player.ChatMessage(GetMessage("MSG_REPAIRNOTFUND",player.UserIDString));
+                TCList[tc].isRepair = false;
+                return false;
+            }
+
+            foreach (ItemAmount amount in itemAmounts)
+            {
+                tc.inventory.Take(null, amount.itemid, (int)amount.amount);
+            }
+            entity.health += missingHealth;
+            entity.SendNetworkUpdate();
+            if (entity.health < entity.MaxHealth())
+            {
+                entity.OnRepair();
             }
             else
             {
-                block.health += num2;
-                block.SendNetworkUpdate();
+                entity.OnRepairFinished();
             }
 
-            if (block.Health() >= block.MaxHealth())
-                block.OnRepairFinished();
-            else
-                block.OnRepair();
+            return true;
 
         }
 
         private IEnumerator RepairProgress(BasePlayer player, BuildingPrivlidge tc)
         {
-            var set = tc.GetBuilding().buildingBlocks;
+            var building = tc.GetBuilding();
             yield return CoroutineEx.waitForSeconds(0.15f);
             var cd = GetCD(player);
-            for (var index = 0; index < set.Count; index++)
+            var cost = GetCost(player);
+            for (int index = 0; index < building.buildingBlocks.Count; index++)
             {
-                var check = set[index];
-                if (tc == null)
-                {
-                    yield break;
-                }
-                if(!TCList[tc].isRepair)break;
-                if (check.MaxHealth() - check.Health() <= 0) continue;
-                DoRepair(check, tc, player);
+                var entity = building.buildingBlocks[index];
+                if (!TCList[tc].isRepair) break;
+                if (!DoRepair(player, entity, tc, cost)) continue;
                 yield return CoroutineEx.waitForSeconds(cd);
             }
+
+            if (_config.DepRepair)
+            {
+                for (int index = 0; index < building.decayEntities.Count; index++)
+                {
+                    var entity = building.decayEntities[index];
+                    if (!TCList[tc].isRepair) break;
+                    if (!DoRepair(player, entity, tc, cost)) continue;
+                    yield return CoroutineEx.waitForSeconds(cd);
+                }
+            }
+
             TCList[tc].isRepair = false;
-            player.ChatMessage(GetMessage("MSG_REPAIRDONE",player.UserIDString));
+            player.ChatMessage(GetMessage("MSG_REPAIRDONE", player.UserIDString));
             yield return 0;
         }
 
