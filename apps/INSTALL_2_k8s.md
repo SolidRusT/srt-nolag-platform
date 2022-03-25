@@ -15,7 +15,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ## Configure virtual networks
 
 /etc/default/kubelet:
-  `KUBELET_EXTRA_ARGS=--cgroup-driver=cgroupfs`
+  `KUBELET_EXTRA_ARGS="--cgroup-driver=cgroupfs"`
 
 ```bash
 #sudo iptables -P INPUT ACCEPT
@@ -23,7 +23,8 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 #sudo iptables -P OUTPUT ACCEPT
 #sudo iptables -F
 
-kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+
+
 
 #curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm repo add cilium https://helm.cilium.io/
@@ -65,7 +66,7 @@ echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt
 sudo apt-get update
 sudo apt-get install helm
 helm repo add metallb https://metallb.github.io/metallb
-helm install metallb metallb/metallb -f solidrust.net/apps/metallb-values.yaml --create-namespace --namespace metallb
+helm install metallb metallb/metallb -f ${HOME}/solidrust.net/apps/metallb-values.yaml --create-namespace --namespace metallb
 ```
 
 ### Install Ingress controller

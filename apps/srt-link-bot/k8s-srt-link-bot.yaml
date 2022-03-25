@@ -8,7 +8,7 @@ metadata:
 spec:
   containers:
     - name: srt-link-bot
-      image: repo.lab.hq.solidrust.net:5000/srt-link-bot:1.0.0
+      image: localhost:32000/srt-link-bot:1.0.0
       resources:
         requests:
           cpu: 50m
