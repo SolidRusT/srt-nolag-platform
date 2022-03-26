@@ -19,7 +19,7 @@ using Facepunch.Extend;
 
 namespace Oxide.Plugins
 {
-    [Info("Server Armour", "Pho3niX90", "0.6.51")]
+    [Info("Server Armour", "Pho3niX90", "0.7.3")]
     [Description("Protect your server! Auto ban known hackers, scripters and griefer accounts, and notify server owners of threats.")]
     class ServerArmour : CovalencePlugin
     {
@@ -36,7 +36,10 @@ namespace Oxide.Plugins
         const string DATE_FORMAT = "yyyy/MM/dd HH:mm";
         const string DATE_FORMAT2 = "yyyy-MM-dd HH:mm:ss";
         ulong ServerArmourId = 76561199060671869L;
-        bool init = false;
+
+        bool apiConnected = false;
+        bool serverStarted = false;
+
         private Dictionary<string, string> headers;
         string adminIds = "";
 
@@ -132,6 +135,21 @@ namespace Oxide.Plugins
         {
             _instance = this;
             LoadData();
+
+            if (first)
+            {
+                //quick fix to ignore bans on server restart. (rust rebanning.)
+                Unsubscribe(nameof(OnUserBanned));
+                timer.Once(60, () =>
+                {
+                    Subscribe(nameof(OnUserBanned));
+                    serverStarted = true;
+                });
+            }
+            else
+            {
+                serverStarted = true;
+            }
 
             // CheckOnlineUsers();
             // CheckLocalBans();
@@ -235,7 +253,7 @@ namespace Oxide.Plugins
                     var key = obj["key"]?.ToString();
                     if (msg.Equals("connected"))
                     {
-                        init = true;
+                        apiConnected = true;
                         Puts("connected to SA API");
                     }
                     else if (msg.Equals("key assigned to server") || msg.Equals("key assigned to new server"))
@@ -248,7 +266,7 @@ namespace Oxide.Plugins
 
                         SaveConfig();
                         Puts("Server key has been updated");
-                        init = true;
+                        apiConnected = true;
                     }
                     else
                     {
@@ -273,7 +291,7 @@ namespace Oxide.Plugins
         void OnUserConnected(IPlayer player)
         {
 
-            if (!init)
+            if (!apiConnected)
             {
                 LogError("User not checked. Server armour is not loaded.");
             }
@@ -295,7 +313,7 @@ namespace Oxide.Plugins
 
         void OnUserDisconnected(IPlayer player)
         {
-            if (init)
+            if (apiConnected)
             {
                 _playerData = _playerData.Where(pair => minutesAgo((uint)pair.Value.cacheTimestamp) < cacheLifetime)
                                  .ToDictionary(pair => pair.Key,
@@ -499,12 +517,6 @@ namespace Oxide.Plugins
                         Interface.CallHook("OnSATooManyGameBansKick", pSteamId, isaPlayer.steamNumberOfGameBans);
                         KickPlayer(isaPlayer?.steamid, GetMsg("Too Many Previous Game Bans"), "C");
                     }
-
-                    /*LogDebug("Check for bloody/a4tech owner");
-                    if (!HasPerm(pSteamId, PermissionWhitelistHardwareOwnsBloody) && (OwnsBloody(isaPlayer) || HasGroup(pSteamId, GroupBloody))) {
-                        Interface.CallHook("OnSABloodyKick", pSteamId);
-                        KickPlayer(isaPlayer?.steamid, GetMsg("Kick Bloody"), "C");
-                    }*/
 
                     LogDebug("Check for players with too many server bans");
                     if (!HasPerm(pSteamId, PermissionWhitelistServerCeilingKick) && HasReachedServerCeiling(isaPlayer))
@@ -939,9 +951,17 @@ namespace Oxide.Plugins
         {
 
             int argsLength = args == null ? 0 : args.Length;
-            if (argsLength > 0 && argsLength < 2 && !args[0].IsSteamId())
+            if (argsLength >= 0 && argsLength < 2)
             {
                 SendReplyWithIcon(player, GetMsg("Ban Syntax"));
+                return;
+            }
+
+            var fPlayer = players.FindPlayer(args[0].ToString());
+            if(fPlayer == null)
+            {
+                //Puts("Player not found, or not in servers cache.");
+                SendReplyWithIcon(player, "Player not found, or not in servers cache.");
                 return;
             }
             /***
@@ -956,7 +976,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            var playerId = args[0];
+            var playerId = fPlayer.Id;
             var reason = argsLength < 2 ? "No reason provided." : args[1];
             var length = args.Length > 2 ? args[2].ToUpper() : "100Y";
             var ignoreSearch = false;
@@ -968,8 +988,9 @@ namespace Oxide.Plugins
             {
                 API_BanPlayer(player, playerId, reason, length, ignoreSearch);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Puts(e.Message);
                 SendReplyWithIcon(player, GetMsg("Ban Syntax"));
             }
         }
@@ -1572,10 +1593,6 @@ namespace Oxide.Plugins
             return kick;
         }
 
-        /*bool OwnsBloody(ISAPlayer isaPlayer) {
-            return config.AutoKickOn && config.AutoKick_Hardware_Bloody && isaPlayer.bloodyScriptsCount > 0;
-        }*/
-
         bool HasReachedServerCeiling(ISAPlayer isaPlayer)
         {
             return config.AutoKickOn && config.AutoKickCeiling < (ServerBanCount(isaPlayer) + ServerBanCount(isaPlayer?.lender));
@@ -1719,34 +1736,37 @@ namespace Oxide.Plugins
                 // Add ember support.
                 if (Ember != null)
                     Ember?.Call("Ban", playerId, BanMinutes(_BanUntil(lengthOfBan)), banReason, true, config.OwnerSteamId, Player.FindById(player.Id));
-                //
 
-                if (config.RconBroadcast)
-                    RCon.Broadcast(RCon.LogType.Chat, new Chat.ChatEntry
+                // fix to ignore init rebans from rust
+                if (serverStarted && apiConnected)
+                {
+                    if (config.RconBroadcast)
+                        RCon.Broadcast(RCon.LogType.Chat, new Chat.ChatEntry
+                        {
+                            Message = msgClean,
+                            UserId = playerId,
+                            Username = playerName,
+                            Time = Facepunch.Math.Epoch.Current
+                        });
+
+                    if (config.BroadcastNewBans)
                     {
-                        Message = msgClean,
-                        UserId = playerId,
-                        Username = playerName,
-                        Time = Facepunch.Math.Epoch.Current
-                    });
-
-                if (config.BroadcastNewBans)
-                {
-                    BroadcastWithIcon(msg);
-                }
-                else
-                {
-                    SendReplyWithIcon(player, msg);
-                }
-
-                if (config.DiscordBanReport)
-                {
-                    DiscordSend(playerId, playerName, new EmbedFieldList()
+                        BroadcastWithIcon(msg);
+                    }
+                    else
                     {
-                        name = "Player Banned",
-                        value = msgClean,
-                        inline = true
-                    }, 13459797, true);
+                        SendReplyWithIcon(player, msg);
+                    }
+
+                    if (config.DiscordBanReport)
+                    {
+                        DiscordSend(playerId, playerName, new EmbedFieldList()
+                        {
+                            name = "Player Banned",
+                            value = msgClean,
+                            inline = true
+                        }, 13459797, true);
+                    }
                 }
 
                 try
@@ -1793,7 +1813,7 @@ namespace Oxide.Plugins
                 ["Reason: Proxy IP"] = "VPN & Proxy's not allowed.",
                 ["Player Not Found"] = "Player wasn't found",
                 ["Multiple Players Found"] = "Multiple players found with that name ({players}), please try something more unique like a steamid",
-                ["Ban Syntax"] = "sa.ban <playerNameOrID> \"<reason>\" length (example: 1h for 1 hour, 1m for 1 month etc)",
+                ["Ban Syntax"] = "[#ff0000]ban <playerNameOrID> \"the reason\" <length>[/#]\nexample: ban \"some user\" \"cheating\" 1y\n length examples: 1h for 1 hour, 1m for 1 month etc",
                 ["UnBan Syntax"] = "sa.unban <playerNameOrID> <reason>",
                 ["No Response From API"] = "Couldn't get an answer from ServerArmour.com! Error: {code} {response}",
                 ["Player Not Banned"] = "Player not banned",
@@ -1805,7 +1825,6 @@ namespace Oxide.Plugins
                 ["Family Share Kick"] = "Family share accounts are not allowed on this server.",
                 ["Too Many Previous Bans"] = "You have too many previous bans (other servers included). Appeal in discord",
                 ["Too Many Previous Game Bans"] = "You have too many previous game bans. Appeal in discord",
-                ["Kick Bloody"] = "You own a bloody/a4 tech device. Appeal in discord",
                 ["VAC Ceiling Kick"] = "You have too many VAC bans. Appeal in discord",
                 ["Player Kicked"] = "[#ff0000]{player} Kicked[/#] - Reason\n{reason}",
                 ["Profile Private"] = "Your Steam Profile is not allowed to be private on this server.",
@@ -1869,11 +1888,6 @@ namespace Oxide.Plugins
         }
 
         string FixColors(string msg) => msg.Replace("[/#]", "</color>").Replace("[", "<color=").Replace("]", ">");
-
-        void AddGroup(string group)
-        {
-            if (!permission.GroupExists(group)) permission.CreateGroup(group, "Bloody Mouse Owners", 0);
-        }
 
         void AssignGroup(string id, string group) => permission.AddUserGroup(id, group);
         bool HasGroup(string id, string group) => permission.UserHasGroup(id, group);
@@ -1940,29 +1954,13 @@ namespace Oxide.Plugins
             public int steamVACBanned { get; set; }
             public int steamNumberOfVACBans { get; set; }
             public int steamDaysSinceLastBan { get; set; }
-            public string lastServerBan { get; set; }
             public int steamNumberOfGameBans { get; set; }
             public string steamEconomyBan { get; set; }
-            public string steamBansLastCheckUTC { get; set; }
-            public string created { get; set; }
-            public string lastSeen { get; set; }
-            public string lastBan { get; set; }
-            public int rustadminBanCount { get; set; }
-            public string rustadminLastCheck { get; set; }
             public float ipRating { get; set; }
-            public string country { get; set; }
             public string ipLastCheck { get; set; }
-            public int bloodyScriptsCount { get; set; }
             public int communityvisibilitystate { get; set; }
-            public int? profilestate { get; set; }
             public string personaname { get; set; }
-            public string avatar { get; set; }
-            public string personastateflags { get; set; }
-            public float avgProb { get; set; }
-            public int aimbotViolations { get; set; }
-            public int? steamDaysOld { get; set; }
             public long? twitterBanId { get; set; }
-            public string twitterBanDate { get; set; }
 
             public uint? cacheTimestamp { get; set; }
 
@@ -1992,7 +1990,6 @@ namespace Oxide.Plugins
             public ISAPlayer CreatePlayer(IPlayer bPlayer)
             {
                 steamid = bPlayer.Id;
-                bloodyScriptsCount = 0;
                 personaname = bPlayer.Name;
                 cacheTimestamp = new Time().GetUnixTimestamp();
                 lastConnected = new Time().GetUnixTimestamp();
@@ -2002,7 +1999,6 @@ namespace Oxide.Plugins
             public ISAPlayer CreatePlayer(string id)
             {
                 steamid = id;
-                bloodyScriptsCount = 0;
                 personaname = "";
                 cacheTimestamp = new Time().GetUnixTimestamp();
                 lastConnected = new Time().GetUnixTimestamp();
@@ -2165,7 +2161,6 @@ namespace Oxide.Plugins
             public string ServerAdminEmail = string.Empty;
             public string ServerApiKey = string.Empty;
 
-            //public bool AutoKick_Hardware_Bloody = true;
             public bool AutoKick_KickHiddenLevel = false;
             public int AutoKick_MinSteamProfileLevel = -1;
             public bool AutoKick_KickPrivateProfile = false;
