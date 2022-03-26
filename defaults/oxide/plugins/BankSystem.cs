@@ -15,12 +15,17 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Bank System", "Mevent", "1.1.0")]
+    [Info("Bank System", "Mevent", "1.2.0")]
     public class BankSystem : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, Notify, UINotify, StackSizeController, StackModifier, Economics;
+        [PluginReference] private Plugin ImageLibrary = null,
+            Notify = null,
+            UINotify = null,
+            StackSizeController = null,
+            StackModifier = null,
+            Economics = null;
 
         private const string Layer = "UI.BankSystem";
 
@@ -89,7 +94,7 @@ namespace Oxide.Plugins
             public readonly string ExitImage = "https://i.imgur.com/OGoMu9N.png";
 
             [JsonProperty(PropertyName = "Disable the close button in the ATM header")]
-            public bool AtmDisbaleCloser;
+            public bool AtmDisableCloser = false;
 
             [JsonProperty(PropertyName = "Currency Settings")]
             public readonly CurrencySettings Currency = new CurrencySettings
@@ -347,7 +352,7 @@ namespace Oxide.Plugins
                 var plugin = _instance?.plugins?.Find(PluginName);
                 if (plugin == null) return 0;
 
-                return Math.Round(Convert.ToDouble(plugin.Call(BalanceHook, player)));
+                return Math.Round(Convert.ToDouble(plugin.Call(BalanceHook, player)), 2);
             }
 
             public void AddBalance(BasePlayer player, int amount)
@@ -1105,12 +1110,7 @@ namespace Oxide.Plugins
                 !permission.PermissionExists(_config.Permission))
                 permission.RegisterPermission(_config.Permission, this);
 
-            AddCovalenceCommand(_config.Commands, nameof(CmdOpenBank));
-            AddCovalenceCommand("bank.givenote", nameof(CmdGiveNotes));
-            AddCovalenceCommand("bank.giveatm", nameof(CmdGiveATM));
-            AddCovalenceCommand(new[] {"bank.setbalance", "bank.deposit", "bank.withdraw", "bank.transfer"},
-                nameof(AdminCommands));
-            AddCovalenceCommand("bank.wipe", nameof(WipeCommands));
+            RegisterCommands();
 
             foreach (var player in BasePlayer.activePlayerList)
                 OnPlayerConnected(player);
@@ -1185,11 +1185,16 @@ namespace Oxide.Plugins
 
             NextTick(() =>
             {
-                if (container.inventory.capacity <= container.inventory.itemList.Count)
-                    container.inventory.capacity = container.inventory.itemList.Count + 1;
+                if (container == null) return;
+
+                var inventory = container.inventory;
+                if (inventory == null) return;
+
+                if (inventory.capacity <= inventory.itemList.Count)
+                    inventory.capacity = inventory.itemList.Count + 1;
 
                 _config.Currency.ToItem(Random.Range(dropInfo.MinAmount, dropInfo.MaxAmount))
-                    ?.MoveToContainer(container.inventory);
+                    ?.MoveToContainer(inventory);
             });
         }
 
@@ -1284,6 +1289,13 @@ namespace Oxide.Plugins
             return false;
         }
 
+        private void OnEntityKill(VendingMachine machine)
+        {
+            if (machine == null || machine.skinID != _config.Atm.Skin) return;
+
+            LogToFile(Name, Environment.StackTrace, this);
+        }
+
         #endregion
 
         #region Split
@@ -1370,7 +1382,7 @@ namespace Oxide.Plugins
 
         private void OnLootEntity(BasePlayer player, LootContainer container)
         {
-            if (player == null || container == null) return;
+            if (player == null || container == null || container.net == null) return;
 
             var netID = container.net.ID;
 
@@ -3369,7 +3381,7 @@ namespace Oxide.Plugins
                 }
             }, Layer + ".Header");
 
-            if (!_config.AtmDisbaleCloser)
+            if (!_config.AtmDisableCloser)
                 container.Add(new CuiButton
                 {
                     RectTransform =
@@ -5522,6 +5534,16 @@ namespace Oxide.Plugins
 
         #region Utils
 
+        private void RegisterCommands()
+        {
+            AddCovalenceCommand(_config.Commands, nameof(CmdOpenBank));
+            AddCovalenceCommand("bank.givenote", nameof(CmdGiveNotes));
+            AddCovalenceCommand("bank.giveatm", nameof(CmdGiveATM));
+            AddCovalenceCommand(new[] {"bank.setbalance", "bank.deposit", "bank.withdraw", "bank.transfer"},
+                nameof(AdminCommands));
+            AddCovalenceCommand("bank.wipe", nameof(WipeCommands));
+        }
+
         private static string HexToCuiColor(string hex, float alpha = 100)
         {
             if (string.IsNullOrEmpty(hex)) hex = "#FFFFFF";
@@ -5834,10 +5856,13 @@ namespace Oxide.Plugins
 
             entity.skinID = _config.Atm.Skin;
 
-            entity.GetComponent<DestroyOnGroundMissing>().enabled = false;
-            entity.GetComponent<GroundWatch>().enabled = false;
+            UnityEngine.Object.DestroyImmediate(entity.GetComponent<DestroyOnGroundMissing>());
+
+            UnityEngine.Object.DestroyImmediate(entity.GetComponent<GroundWatch>());
 
             entity.Spawn();
+
+            entity.lifestate = BaseCombatEntity.LifeState.Dead;
 
             entity.shopName = conf.DisplayName;
             entity.UpdateMapMarker();
