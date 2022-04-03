@@ -15,7 +15,7 @@ using System;
 
 namespace Oxide.Plugins
 {
-    [Info("Convoy", "Adem", "2.0.0")]
+    [Info("Convoy", "Adem", "2.0.1")]
     class Convoy : RustPlugin
     {
         [PluginReference] Plugin NpcSpawn, GUIAnnouncements, DiscordMessages, PveMode;
@@ -33,6 +33,8 @@ namespace Oxide.Plugins
         bool destroying = false;
         bool failed = false;
         bool hackedCrate = false;
+
+        ConvoySetting convoySetting = null;
 
         List<Vector3> currentPath = new List<Vector3>();
         List<ConvoyVehicle> convoyVehicles = new List<ConvoyVehicle>();
@@ -174,8 +176,17 @@ namespace Oxide.Plugins
                     float damageScale = convoyModular.baseEntity == modularVehicle ? modularConfig.damageMultiplier : supportModularConfig.damageMultiplier;
                     if (info.damageTypes.Has(DamageType.Explosion)) modularVehicle.health -= damageScale * info.damageTypes.Total() / 10;
                     else modularVehicle.health -= damageScale * info.damageTypes.Total() / 5;
+
                     if (!modularVehicle.IsDestroyed && modularVehicle.health <= 0) modularVehicle.Kill();
-                    else ConvoyTakeDamage(modularVehicle, info);
+                    else
+                    {
+                        for (int i = 0; i <= modularVehicle.moduleSockets.Count; i++)
+                        {
+                            BaseVehicleModule module;
+                            if (modularVehicle.TryGetModuleAt(i, out module)) module.SetHealth(module._maxHealth * modularVehicle.health / modularVehicle._maxHealth);
+                        }
+                        ConvoyTakeDamage(modularVehicle, info);
+                    }
                 }
                 return true;
             }
@@ -326,11 +337,6 @@ namespace Oxide.Plugins
             }
         }
 
-        void OnLootSpawn(LootContainer entity)
-        {
-            if (entity != null && barrels.Contains(entity.ShortPrefabName) && !entity.IsDestroyed && UnityEngine.Physics.RaycastAll(new Ray(entity.transform.position + new Vector3(0, 1, 0), Vector3.down), 4f).Any(x => x.collider.name.Contains("Road Mesh"))) entity.Kill();
-        }
-
         object CanHackCrate(BasePlayer player, HackableLockedCrate crate)
         {
             if (crate == null || convoyModular == null || crate != convoyModular.crate) return null;
@@ -410,7 +416,8 @@ namespace Oxide.Plugins
         #endregion Hooks
 
         #region Commands
-        [ChatCommand("convoystart")] void StartCommand(BasePlayer player, string command, string[] arg)
+        [ChatCommand("convoystart")]
+        void StartCommand(BasePlayer player, string command, string[] arg)
         {
             if (!player.IsAdmin) return;
             if (active)
@@ -422,37 +429,43 @@ namespace Oxide.Plugins
             else CreateConvoy();
         }
 
-        [ChatCommand("convoystop")] void StopCommand(BasePlayer player, string command, string[] arg)
+        [ChatCommand("convoystop")]
+        void StopCommand(BasePlayer player, string command, string[] arg)
         {
             if (!player.IsAdmin) return;
             if (active) DeleteConvoy(true);
         }
 
-        [ConsoleCommand("convoystart")] void ConsoleStartCommand(ConsoleSystem.Arg arg)
+        [ConsoleCommand("convoystart")]
+        void ConsoleStartCommand(ConsoleSystem.Arg arg)
         {
             if (arg.Player() != null) return;
             if (arg.Args != null && arg.Args.Count() > 0) CreateConvoy(arg.Args[0]);
             CreateConvoy();
         }
 
-        [ConsoleCommand("convoystop")] void ConsoleStopCommand(ConsoleSystem.Arg arg)
+        [ConsoleCommand("convoystop")]
+        void ConsoleStopCommand(ConsoleSystem.Arg arg)
         {
             if (arg.Player() == null && active) DeleteConvoy(true);
         }
 
-        [ChatCommand("convoyrootstart")] void RootStartCommand(BasePlayer player, string command, string[] arg)
+        [ChatCommand("convoyrootstart")]
+        void RootStartCommand(BasePlayer player, string command, string[] arg)
         {
             if (!player.IsAdmin || player.isInAir) return;
             CreateRootCar(player);
         }
 
-        [ChatCommand("convoyrootstop")] void RootStopCommand(BasePlayer player, string command, string[] arg)
+        [ChatCommand("convoyrootstop")]
+        void RootStopCommand(BasePlayer player, string command, string[] arg)
         {
             if (!player.IsAdmin || rootCar == null) return;
             RootStop();
         }
 
-        [ChatCommand("convoyrootsave")] void RootSaveCommand(BasePlayer player, string command, string[] arg)
+        [ChatCommand("convoyrootsave")]
+        void RootSaveCommand(BasePlayer player, string command, string[] arg)
         {
             if (!player.IsAdmin || rootCar == null) return;
 
@@ -475,7 +488,8 @@ namespace Oxide.Plugins
             }
         }
 
-        [ChatCommand("convoyroadblock")] void RoadBlockCommand(BasePlayer player, string command, string[] arg)
+        [ChatCommand("convoyroadblock")]
+        void RoadBlockCommand(BasePlayer player, string command, string[] arg)
         {
             if (!player.IsAdmin || player.isInAir) return;
 
@@ -498,50 +512,9 @@ namespace Oxide.Plugins
         {
             if (_config.version != Version.ToString())
             {
-                if (_config.version == "1.1.6" || _config.version == "1.1.7" || _config.version == "1.1.8" || _config.version == "1.1.9")
+                if (_config.version == "2.0.0")
                 {
-                    foreach (var a in _config.supportModularConfiguration) if (a.prefabName == null) a.prefabName = "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab";
-                    foreach (var a in _config.modularConfiguration) if (a.prefabName == null) a.prefabName = "assets/content/vehicles/modularcar/4module_car_spawned.entity.prefab";
-
-                    if (_config.version != "1.1.9")
-                    {
-                        _config.pveMode = new PveModeConfig
-                        {
-                            pve = false,
-                            damage = 500f,
-                            scaleDamage = new HashSet<ScaleDamageConfig>
-                        {
-                            new ScaleDamageConfig { Type = "NPC", Scale = 1f },
-                            new ScaleDamageConfig { Type = "Bradley", Scale = 1f }
-                        },
-                            lootCrate = false,
-                            hackCrate = false,
-                            lootNpc = false,
-                            damageNpc = false,
-                            targetNpc = false,
-                            canEnter = false,
-                            canEnterCooldownPlayer = true,
-                            timeExitOwner = 300,
-                            alertTime = 60,
-                            restoreUponDeath = true,
-                            cooldownOwner = 86400,
-                            darkening = 12
-                        };
-
-                        _config.economyConfig = new EconomyConfig
-                        {
-                            enable = false,
-                            plugins = new HashSet<string> { "Economics", "Server Rewards", "IQEconomic" },
-                            min = 0,
-                            npc = 0.3,
-                            bradley = 1,
-                            heli = 1,
-                            sedan = 0.3,
-                            modularCar = 0.3,
-                            lockedCrate = 0.5,
-                            commands = new HashSet<string>()
-                        };
-                    }
+                    foreach (ConvoySetting convoySetting in _config.convoys) convoySetting.displayName = "Convoy";
                     _config.version = Version.ToString();
                     SaveConfig();
                 }
@@ -570,7 +543,6 @@ namespace Oxide.Plugins
             }
 
             destroyTime = ins._config.preFinishTime;
-            ConvoySetting convoySetting = null;
 
             if (presetName != "") convoySetting = _config.convoys.Where(x => x.name == presetName).FirstOrDefault();
             else if (_config.convoys.Any(x => x.chance > 0))
@@ -847,8 +819,8 @@ namespace Oxide.Plugins
             players.Clear();
             if (_config.pveMode.pve && plugins.Exists("PveMode"))
             {
-                PveMode.Call("EventRemovePveMode", Name, false);
                 owners = (HashSet<ulong>)PveMode.Call("GetEventOwners", Name);
+                PveMode.Call("EventRemovePveMode", Name, false);
             }
         }
 
@@ -1094,8 +1066,9 @@ namespace Oxide.Plugins
                 BasePlayer player = other.GetComponentInParent<BasePlayer>();
                 if (player != null && player.userID.IsSteamId())
                 {
+                    int time = ins._config.eventTime - ins.eventTime;
                     ins.players.Add(player);
-                    if (ins._config.GUI.IsGUI) ins.MessageGUI(player, ins.GetMessage("GUI", player.UserIDString, ins.GetTimeFromSecond(ins._config.eventTime - ins.eventTime + ins.destroyTime)));
+                    if (ins._config.GUI.IsGUI) ins.MessageGUI(player, ins.GetMessage("GUI", player.UserIDString, ins.GetTimeFromSecond(time)));
                     if (ins._config.eventZone.isCreateZonePVP) ins.Alert(player, ins.GetMessage("EnterPVP", player.UserIDString, ins._config.prefics));
                 }
             }
@@ -1494,7 +1467,6 @@ namespace Oxide.Plugins
 
             internal override void OnDestroy()
             {
-                RemoveEngineParts();
                 base.OnDestroy();
 
                 if (main)
@@ -1519,7 +1491,7 @@ namespace Oxide.Plugins
                 mapmarker.SendNetworkUpdate();
 
                 vendingMarker.transform.position = modularCar.transform.position;
-                vendingMarker.markerShopName = $"Convoy ({ins.GetTimeFromSecond(ins._config.eventTime - ins.eventTime + ins.destroyTime)})";
+                vendingMarker.markerShopName = $"{ins.convoySetting.displayName} ({ins.GetTimeFromSecond(ins._config.eventTime - ins.eventTime + ins.destroyTime)})";
                 vendingMarker.SendNetworkUpdate();
             }
 
@@ -1561,7 +1533,6 @@ namespace Oxide.Plugins
             void Build()
             {
                 AddCarModules();
-                AddFuel();
                 if (main)
                 {
                     SpawnCrate();
@@ -1569,13 +1540,8 @@ namespace Oxide.Plugins
                     if (ins._config.marker != null && ins._config.marker.IsMarker) SpawnMapMarker();
                     else InvokeRepeating(UpdateCrateMarker, 10f, 2f);
                 }
-            }
-
-            void AddFuel()
-            {
-                StorageContainer fuelContainer = modularCar.GetFuelSystem().GetFuelContainer();
-                fuelContainer.inventory.AddItem(fuelContainer.allowedItem, 1000);
-                fuelContainer.isLootable = false;
+                modularCar.GetFuelSystem().cachedHasFuel = true;
+                modularCar.GetFuelSystem().nextFuelCheckTime = float.MaxValue;
             }
 
             void AddCarModules()
@@ -1584,6 +1550,7 @@ namespace Oxide.Plugins
                 for (int socketIndex = 0; socketIndex < modularCar.TotalSockets && socketIndex < modules.Count; socketIndex++)
                 {
                     string shortName = modules[socketIndex];
+                    if (shortName == "") continue;
                     Item existingItem = modularCar.Inventory.ModuleContainer.GetSlot(socketIndex);
                     if (existingItem != null) continue;
                     Item moduleItem = ItemManager.CreateByName(shortName);
@@ -1592,6 +1559,7 @@ namespace Oxide.Plugins
 
                     if (!modularCar.TryAddModule(moduleItem, socketIndex)) moduleItem.Remove();
                 }
+                
                 Invoke(AddEngineParts, 0.01f);
             }
 
@@ -1613,29 +1581,9 @@ namespace Oxide.Plugins
                         ItemDefinition component = output.GetComponent<ItemDefinition>();
                         Item item = ItemManager.Create(component);
                         if (item == null) continue;
-                        item.conditionNormalized = 100;
+                        item._maxCondition = int.MaxValue;
+                        item.condition = int.MaxValue;
                         item.MoveToContainer(engineStorage.inventory, i, allowStack: false);
-                    }
-                    engineModule.RefreshPerformanceStats(engineStorage);
-                    return;
-                }
-            }
-
-            void RemoveEngineParts()
-            {
-                foreach (BaseVehicleModule module in modularCar.AttachedModuleEntities)
-                {
-                    VehicleModuleEngine engineModule = module as VehicleModuleEngine;
-                    if (engineModule == null) continue;
-                    engineModule.engine.maxFuelPerSec = 0;
-                    engineModule.engine.idleFuelPerSec = 0;
-                    EngineStorage engineStorage = engineModule.GetContainer() as EngineStorage;
-                    if (engineStorage == null) continue;
-                    ItemContainer inventory = engineStorage.inventory;
-
-                    foreach (Item item in inventory.itemList)
-                    {
-                        if (item == null) continue;
                     }
                     engineModule.RefreshPerformanceStats(engineStorage);
                     return;
@@ -1931,13 +1879,19 @@ namespace Oxide.Plugins
 
             void FixedUpdate()
             {
+                
                 if (targetEntity == null || targetEntity.IsDestroyed) return;
                 if (ins.stopTime <= 0)
                 {
                     patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0));
-                    patrolHelicopterAI.SetIdealRotation(targetEntity.transform.rotation, 100);
+                    if (Vector2.Distance(new Vector2(baseHelicopter.transform.position.x, baseHelicopter.transform.position.z), new Vector2(targetEntity.transform.position.x, targetEntity.transform.position.z)) < 35) patrolHelicopterAI.SetIdealRotation(targetEntity.transform.rotation, 100);
+                    else patrolHelicopterAI.SetIdealRotation(Quaternion.LookRotation(targetEntity.transform.position - baseHelicopter.transform.position + new Vector3(0, ins.heliConfig.height, 0)), 100);
                 }
-                else if (targetEntity.Distance(baseHelicopter.transform.position) > ins.heliConfig.distance) patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0));
+                else if (targetEntity.Distance(baseHelicopter.transform.position) > ins.heliConfig.distance)
+                {
+                    patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0));
+                    patrolHelicopterAI.SetIdealRotation(Quaternion.Euler(targetEntity.transform.position - baseHelicopter.transform.position + new Vector3(0, ins.heliConfig.height, 0)), 100);
+                }
             }
 
             public void OnDestroy()
@@ -2141,7 +2095,7 @@ namespace Oxide.Plugins
         #region TruePVE
         object CanEntityTakeDamage(BasePlayer victim, HitInfo hitinfo)
         {
-            if (victim == null ||  hitinfo == null || !_config.eventZone.isCreateZonePVP || victim == null || !victim.userID.IsSteamId() || hitinfo == null || !active || doorCloser == null || doorCloser.IsDestroyed) return null;
+            if (victim == null || hitinfo == null || !_config.eventZone.isCreateZonePVP || victim == null || !victim.userID.IsSteamId() || hitinfo == null || !active || doorCloser == null || doorCloser.IsDestroyed) return null;
             BasePlayer attacker = hitinfo.InitiatorPlayer;
             if (players.Contains(victim) && (attacker == null || (attacker != null && players.Contains(attacker)))) return true;
             else return null;
@@ -2215,7 +2169,7 @@ namespace Oxide.Plugins
 
             double max = 0;
             ulong winnerId = 0;
-            foreach(var a in _playersBalance)
+            foreach (var a in _playersBalance)
             {
                 if (a.Value > max)
                 {
@@ -2491,6 +2445,7 @@ namespace Oxide.Plugins
         public class ConvoySetting
         {
             [JsonProperty(en ? "Name" : "Название пресета")] public string name { get; set; }
+            [JsonProperty(en ? "Name displayed on the map (For custom marker)" : "Отображаемое на карте название (для кастомного маркера)")] public string displayName { get; set; }
             [JsonProperty(en ? "Automatic startup" : "Автоматический запуск")] public bool on { get; set; }
             [JsonProperty(en ? "Probability of a preset [0.0-100.0]" : "Вероятность пресета [0.0-100.0]")] public float chance { get; set; }
             [JsonProperty(en ? "Enable the helicopter" : "Включить вертолет")] public bool heliOn { get; set; }
@@ -2777,7 +2732,7 @@ namespace Oxide.Plugins
             {
                 return new PluginConfig()
                 {
-                    version = "2.0.0",
+                    version = "2.0.1",
                     prefics = "[Convoy]",
                     IsChat = true,
                     GUIAnnouncements = new GUIAnnouncementsConfig
@@ -2888,6 +2843,7 @@ namespace Oxide.Plugins
                         new ConvoySetting
                         {
                             name = "hard",
+                            displayName = "Hard convoy",
                             chance = 25,
                             on = true,
                             firstBradleyCount = 1,
@@ -2906,6 +2862,7 @@ namespace Oxide.Plugins
                         new ConvoySetting
                         {
                             name = "standart",
+                            displayName = "Convoy",
                             chance = 75,
                             on = true,
                             firstBradleyCount = 1,

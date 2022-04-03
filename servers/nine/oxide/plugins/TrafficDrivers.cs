@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Oxide.Plugins 
 {
-    [Info("Traffic Drivers", "walkinrey", "1.1.0")]
+    [Info("Traffic Drivers", "walkinrey", "1.1.1")]
     public class TrafficDrivers : RustPlugin
     {
         [PluginReference] private Plugin SpawnModularCar, Convoy;
@@ -122,6 +122,21 @@ namespace Oxide.Plugins
                 [JsonProperty("Companion")]
                 public CompanionSetup companion = new CompanionSetup();
 
+                [JsonProperty("Lock player inventory containers")]
+                public ContainerLock containerLock = new ContainerLock();
+
+                public class ContainerLock 
+                {
+                    [JsonProperty("Lock player main inventory container?")]
+                    public bool lockMain = false;
+
+                    [JsonProperty("Lock player wear inventory container?")]
+                    public bool lockWear = false;
+
+                    [JsonProperty("Lock player belt inventory container?")]
+                    public bool lockBelt = false;
+                }
+
                 public class CompanionSetup 
                 {
                     [JsonProperty("Spawn companion for driver? (he will shoot and protect him)")]
@@ -129,6 +144,9 @@ namespace Oxide.Plugins
 
                     [JsonProperty("Display companion name")]
                     public string name = "Компаньон-защитник";
+
+                    [JsonProperty("Prevent companion from attacking first?")]
+                    public bool preventAttackFirst = true;
 
                     [JsonProperty("Companion health")]
                     public MinMax health = new MinMax();
@@ -173,7 +191,10 @@ namespace Oxide.Plugins
 
             public class CarPreset 
             {
-                [JsonProperty("Modules")]
+                [JsonProperty("Random modules count (2-4, 0 for random count)")]
+                public int modulesCount;
+
+                [JsonProperty("Modules (if you enter modules here the random modules option will not work)")]
                 public string[] modules = new string[] {};
 
                 [JsonProperty("Add codelock?")]
@@ -223,6 +244,33 @@ namespace Oxide.Plugins
 
                 [JsonProperty("Loot in Storage Module")]
                 public StorageLoot storage = new StorageLoot();
+
+                [JsonProperty("Passengers")]
+                public List<Passenger> passengers = new List<Passenger>();
+
+                public class Passenger 
+                {
+                    [JsonProperty("Spawn chance")]
+                    public float chance = 50f;
+
+                    [JsonProperty("Make passenger scientist?")]
+                    public bool makePassengerScientist = false;
+
+                    [JsonProperty("Passenger display name")]
+                    public string displayName = "Passenger";
+
+                    [JsonProperty("Passenger skin (0 for random, this option isn't available when passenger is scientist)")]
+                    public ulong id = 0;
+
+                    [JsonProperty("Passenger health")]
+                    public MinMax health = new MinMax();
+
+                    [JsonProperty("Passenger loot (scientists will be have a standard rust loot, here you can give them clothes and guns)")]
+                    public List<DriverPreset.LootInfo> loot = new List<DriverPreset.LootInfo>();
+
+                    [JsonProperty("Passenger lock inventory containers (this option isn't available when passenger is scientist)")]
+                    public DriverPreset.ContainerLock lockInventory = new DriverPreset.ContainerLock();
+                }
 
                 public class Detonator 
                 {
@@ -318,6 +366,7 @@ namespace Oxide.Plugins
                     "vehicle.1mod.storage",
                     "vehicle.1mod.cockpit.with.engine"
                 },
+
                 maxSpeed = 10,
                 storage = new Configuration.CarPreset.StorageLoot
                 {
@@ -342,6 +391,38 @@ namespace Oxide.Plugins
                             {
                                 min = 5000,
                                 max = 50000
+                            }
+                        }
+                    }
+                },
+                passengers = new List<Configuration.CarPreset.Passenger>
+                {
+                    new Configuration.CarPreset.Passenger
+                    {
+                        health = new Configuration.MinMax(100, 150),
+                        loot = new List<Configuration.DriverPreset.LootInfo>
+                        {
+                            new Configuration.DriverPreset.LootInfo
+                            {
+                                shortname = "wood",
+                                chance = 100,
+                                amount = new Configuration.MinMax
+                                {
+                                    min = 1000,
+                                    max = 10000,
+                                }, 
+                                container = "main"
+                            },
+                            new Configuration.DriverPreset.LootInfo
+                            {
+                                shortname = "stones",
+                                chance = 100,
+                                amount = new Configuration.MinMax
+                                {
+                                    min = 5000,
+                                    max = 50000
+                                },
+                                container = "main"
                             }
                         }
                     }
@@ -508,8 +589,7 @@ namespace Oxide.Plugins
 
             foreach(var recorder in _recorders.Values)
             {
-                if(recorder == null) return;
-                UnityEngine.Object.Destroy(recorder);
+                if(recorder != null) UnityEngine.Object.Destroy(recorder);
             }
         }
 
@@ -742,6 +822,13 @@ namespace Oxide.Plugins
             return null;
         }
 
+        private void OnPlayerCorpseSpawned(BasePlayer player, PlayerCorpse corpse)
+        {
+            if(player.inventory.containerMain.IsLocked()) corpse.containers[0].SetLocked(true);
+            if(player.inventory.containerBelt.IsLocked()) corpse.containers[1].SetLocked(true);
+            if(player.inventory.containerWear.IsLocked()) corpse.containers[2].SetLocked(true);
+        }
+
         #endregion
 
         #region Методы
@@ -815,7 +902,7 @@ namespace Oxide.Plugins
             var carPreset = presetsList[UnityEngine.Random.Range(0, presetsList.Count)]; 
             var driverPreset = !string.IsNullOrEmpty(carPreset.driverPreset) ? _config.driverPresets[carPreset.driverPreset] : driversList[UnityEngine.Random.Range(0, driversList.Count)];
 
-            BasePlayer bot = GameManager.server.CreateEntity("assets/prefabs/player/player.prefab", position, Quaternion.identity) as BasePlayer;
+            BasePlayer bot = GameManager.server.CreateEntity("assets/prefabs/player/player.prefab", position) as BasePlayer;
             
             bot.displayName = driverPreset.name;
 
@@ -826,6 +913,10 @@ namespace Oxide.Plugins
 
             bot.Spawn();
             bot.InitializeHealth(driverPreset.health.min, driverPreset.health.max);
+
+            if(driverPreset.containerLock.lockWear) bot.inventory.containerWear.SetLocked(true);
+            if(driverPreset.containerLock.lockBelt) bot.inventory.containerBelt.SetLocked(true);
+            if(driverPreset.containerLock.lockMain) bot.inventory.containerMain.SetLocked(true);
 
             foreach(var cloth in driverPreset.clothes) bot.inventory.containerWear.Insert(ItemManager.CreateByName(cloth.shortname, 1, cloth.skin));
 
@@ -844,8 +935,28 @@ namespace Oxide.Plugins
                 }
             }
 
-            ModularCar car = SpawnModularCar.Call<ModularCar>("API_SpawnPresetCar", bot, carPreset.ConvertForAPI());
+            if(carPreset.modules == null || carPreset.modules?.Length == 0)
+            {
+                List<string> modules = new List<string>();
 
+                string prefab;
+
+                if(carPreset.modulesCount == 0) prefab = $"assets/content/vehicles/modularcar/{UnityEngine.Random.Range(3, 5)}module_car_spawned.entity.prefab";
+                else prefab = $"assets/content/vehicles/modularcar/{carPreset.modulesCount}module_car_spawned.entity.prefab";
+
+                ModularCar vehicle = GameManager.server.CreateEntity(prefab) as ModularCar;
+                vehicle.Spawn();
+
+                foreach (KeyValuePair<BaseVehicleModule, System.Action> entry in (new List<KeyValuePair<BaseVehicleModule, System.Action>>(vehicle.moduleAddActions)))
+                {
+                    modules.Add(entry.Key.AssociatedItemDef.shortname);
+                }
+
+                vehicle.Kill();
+                carPreset.modules = modules.ToArray();
+            }
+
+            ModularCar car = SpawnModularCar.Call<ModularCar>("API_SpawnPresetCar", bot, carPreset.ConvertForAPI());
             car.enableSaving = false;
 
             if(carPreset.infiniteFuel)
@@ -876,6 +987,8 @@ namespace Oxide.Plugins
 
             foreach(var module in car.AttachedModuleEntities)
             {
+                module.SetHealth(module.MaxHealth());
+
                 if(carPreset.storage.enableLoot && storage == null)
                 {
                     if(module is VehicleModuleStorage && module.ShortPrefabName == "1module_storage")
@@ -938,24 +1051,137 @@ namespace Oxide.Plugins
 
             driverPlace.MountPlayer(bot);
 
-            ScientistNPC companion = null;
+            TrafficCompanion trafficCompanion = null;
 
             if(driverPreset.companion.enableCompanion)
             {
-                companion = GameManager.server.CreateEntity("assets/rust.ai/agents/npcplayer/humannpc/scientist/scientistnpc_full_any.prefab", position, Quaternion.identity) as ScientistNPC;
+                var companion = GameManager.server.CreateEntity("assets/rust.ai/agents/npcplayer/humannpc/scientist/scientistnpc_full_any.prefab", position, Quaternion.identity) as ScientistNPC;
                 companion.Spawn();
 
                 companion.enableSaving = false;
 
-                var trafficCompanion = companion.gameObject.AddComponent<TrafficCompanion>();
-                trafficCompanion.Init(driverPreset.companion, bot.net.ID);
+                trafficCompanion = companion.gameObject.AddComponent<TrafficCompanion>();
+                trafficCompanion.Init(driverPreset.companion);
+
+                trafficCompanion.AddExclude(bot.net.ID);
 
                 companionPlace.MountPlayer(companion);
                 _driverCompanions.Add(companion.net.ID, trafficCompanion);
             }
 
+            List<BasePlayer> passengers = new List<BasePlayer>();
+
+            foreach(var passenger in carPreset.passengers)
+            {
+                if(UnityEngine.Random.Range(0f, 100f) < passenger.chance)
+                {
+                    BasePlayer passengerPlayer = GameManager.server.CreateEntity(passenger.makePassengerScientist ? "assets/rust.ai/agents/npcplayer/humannpc/scientist/scientistnpc_full_any.prefab" : "assets/prefabs/player/player.prefab", bot.transform.position) as BasePlayer;
+                    passengerPlayer.displayName = passenger.displayName;
+
+                    if(!passenger.makePassengerScientist)
+                    {
+                        passengerPlayer.userID = passenger.id == 0 ? (ulong)UnityEngine.Random.Range(1, 99999) : passenger.id;
+                        passengerPlayer.UserIDString = passengerPlayer.userID.ToString();
+                    }
+
+                    passengerPlayer.enableSaving = false;
+                    passengerPlayer.Spawn();
+
+                    if(!passenger.makePassengerScientist)
+                    {
+                        passengerPlayer.InitializeHealth(passenger.health.min, passenger.health.max);
+
+                        if(passenger.lockInventory.lockWear) passengerPlayer.inventory.containerWear.SetLocked(true);
+                        if(passenger.lockInventory.lockBelt) passengerPlayer.inventory.containerBelt.SetLocked(true);
+                        if(passenger.lockInventory.lockMain) passengerPlayer.inventory.containerMain.SetLocked(true);
+                    }
+
+                    passengerPlayer.inventory.Strip();
+
+                    if(!passenger.makePassengerScientist)
+                    {
+                        foreach(var loot in passenger.loot)
+                        {
+                            if(UnityEngine.Random.Range(0, 100) < loot.chance)
+                            {
+                                Item item = ItemManager.CreateByName(loot.shortname, (int)loot.amount.Randomize(), loot.skin);
+
+                                if(item == null) continue;
+                                if(!string.IsNullOrEmpty(loot.name)) item.name = loot.name;
+
+                                if(loot.container == "main") passengerPlayer.inventory.containerMain.Insert(item);
+                                if(loot.container == "belt") passengerPlayer.inventory.containerBelt.Insert(item);
+                                if(loot.container == "wear") passengerPlayer.inventory.containerWear.Insert(item);
+                            }
+                        }
+                    }
+
+                    car.AttemptMount(passengerPlayer);
+
+                    if(!passengerPlayer.isMounted)
+                    {
+                        passengerPlayer.Teleport(new Vector3(0, -1000, 0));
+                        passengerPlayer.Kill();
+                    }
+                    else 
+                    {
+                        if(trafficCompanion) trafficCompanion.AddExclude(passengerPlayer.net.ID);
+
+                        var _npc = passengerPlayer.GetComponent<ScientistNPC>();
+                        if(_npc)
+                        {
+                            var navigator = _npc.GetComponent<BaseNavigator>();
+
+                            navigator.CanUseNavMesh = false;
+                            navigator.MaxRoamDistanceFromHome = navigator.BestMovementPointMaxDistance = navigator.BestRoamPointMaxDistance = 0f;
+                            navigator.DefaultArea = "Not Walkable";     
+
+                            _npc._health = UnityEngine.Random.Range(passenger.health.min, passenger.health.max);
+                            _npc.Brain = _npc.GetComponent<ScientistBrain>();
+
+                            _npc.CancelInvoke(_npc.EquipTest);
+                            _npc.inventory.Strip();
+
+                            foreach(var item in _npc.inventory.containerBelt.itemList) item.Remove();
+
+                            foreach(var loot in passenger.loot)
+                            {
+                                if(UnityEngine.Random.Range(0, 100) < loot.chance)
+                                {
+                                    Item item = ItemManager.CreateByName(loot.shortname, (int)loot.amount.Randomize(), loot.skin);
+
+                                    if(item == null) continue;
+                                    if(!string.IsNullOrEmpty(loot.name)) item.name = loot.name;
+
+                                    if(loot.container == "main") _npc.inventory.containerMain.Insert(item);
+                                    if(loot.container == "belt") _npc.inventory.containerBelt.Insert(item);
+                                    if(loot.container == "wear") _npc.inventory.containerWear.Insert(item);
+                                }
+                            }
+
+                            var slot = _npc.inventory.containerBelt.GetSlot(0);
+
+                            if(slot != null)
+                            {
+                                var projectile = slot.GetHeldEntity()?.GetComponent<BaseProjectile>();
+                            
+                                if(projectile != null)
+                                {
+                                    if(projectile.GetOwnerPlayer() == null) projectile.SetOwnerPlayer(_npc);
+                                    projectile.ServerReload();
+                                }
+                            }
+
+                            _npc.EquipWeapon();
+                        }
+
+                        passengers.Add(passengerPlayer);
+                    }
+                }
+            }
+
             var driver = bot.gameObject.AddComponent<TrafficDriver>();  
-            driver.AssignCar(car, path, side, driverPreset, carPreset, GetKeyFromValue(_config.carPresets, carPreset), _config.limits.stuckDespawnTime, companion != null ? companion.GetComponent<TrafficCompanion>() : null);
+            driver.AssignCar(car, path, side, driverPreset, carPreset, GetKeyFromValue(_config.carPresets, carPreset), _config.limits.stuckDespawnTime, trafficCompanion, passengers);
 
             _carsDrivers.Add(bot.net.ID, driver);
 
@@ -1110,16 +1336,16 @@ namespace Oxide.Plugins
         {
             private ScientistNPC _npc;
             private Configuration.DriverPreset.CompanionSetup _setup;
-            private uint _driverNetID;
+            private List<uint> _attackExclude = new List<uint>();
 
             private List<uint> _attackers = new List<uint>();
 
-            public virtual bool CanTargetEntity(BaseEntity ent) => _driverNetID != ent.net.ID && _attackers.Contains(ent.net.ID);
+            public virtual bool CanTargetEntity(BaseEntity ent) => _setup.preventAttackFirst ? (!_attackExclude.Contains(ent.net.ID) && _attackers.Contains(ent.net.ID)) : (!_attackExclude.Contains(ent.net.ID));
             public virtual float GetDamageReceiveRate() => _setup.damageReceiveRate;
 
-            public virtual uint GetDriverID() => _driverNetID;
-
             public virtual void Kill() => _npc.Kill();
+
+            public virtual uint GetDriverID() => _attackExclude[0];
 
             public virtual void AddAttacker(uint id) 
             {
@@ -1127,9 +1353,8 @@ namespace Oxide.Plugins
                 _attackers.Add(id);
             }
  
-            public virtual void Init(Configuration.DriverPreset.CompanionSetup companionSetup, uint driverNet)
+            public virtual void Init(Configuration.DriverPreset.CompanionSetup companionSetup)
             {
-                _driverNetID = driverNet;
                 _setup = companionSetup;
 
                 _npc = GetComponent<ScientistNPC>();
@@ -1172,6 +1397,8 @@ namespace Oxide.Plugins
 
                 _npc.EquipWeapon();
             }
+
+            public virtual void AddExclude(uint exclude) => _attackExclude.Add(exclude);
         }
 
         public class TrafficDriver : FacepunchBehaviour
@@ -1197,6 +1424,8 @@ namespace Oxide.Plugins
             private Configuration.DriverPreset _driverPreset;
             private Configuration.CarPreset _carPreset;
             
+            private List<BasePlayer> _passengers = new List<BasePlayer>();
+
             private float _lastObstacleTime;
             private int _currentPathIndex = 0;
 
@@ -1230,13 +1459,15 @@ namespace Oxide.Plugins
                 }, 5f, 5f);
             }
 
-            public virtual void AssignCar(ModularCar car, Vector3[] path, DriveSide side, Configuration.DriverPreset driverPreset, Configuration.CarPreset carPreset, string carPresetName, float stuckTime, TrafficCompanion companion) 
+            public virtual void AssignCar(ModularCar car, Vector3[] path, DriveSide side, Configuration.DriverPreset driverPreset, Configuration.CarPreset carPreset, string carPresetName, float stuckTime, TrafficCompanion companion, List<BasePlayer> passengers) 
             {
                 CarPresetName = carPresetName;
                 _companion = companion;
 
                 _stuckTime = stuckTime;
                 _car = car;
+
+                _passengers = passengers;
 
                 _side = side;
                 _path = path;
@@ -1411,6 +1642,14 @@ namespace Oxide.Plugins
 
                 }
                 else if(_companion) _companion.Kill();
+
+                if(_passengers?.Count != 0)
+                {
+                    foreach(var passenger in _passengers) 
+                    {
+                        if(passenger != null) passenger.Kill();
+                    }
+                }
             }
         }
 

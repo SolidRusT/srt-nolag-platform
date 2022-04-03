@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.27")]
+    [Info("Shop", "Mevent", "1.0.28")]
     public class Shop : RustPlugin
     {
         #region Fields
@@ -52,18 +52,53 @@ namespace Oxide.Plugins
         {
             public readonly Dictionary<ShopItem, int> Items = new Dictionary<ShopItem, int>();
 
-            public void AddItem(ShopItem item)
+            public void AddItem(ShopItem item, BasePlayer player)
             {
+                int result;
                 int amount;
                 if (Items.TryGetValue(item, out amount))
                 {
                     if (item.BuyMaxAmount > 0 && amount >= item.BuyMaxAmount) return;
 
+                    if (!CanAdd(player, item, amount + 1, out result))
+                    {
+                        _instance.SendNotify(player, result == 1 ? BuyLimitReached : DailyBuyLimitReached, 1,
+                            item.PublicTitle);
+                        return;
+                    }
+
                     Items[item]++;
-                    return;
+                }
+                else
+                {
+                    if (!CanAdd(player, item, 1, out result))
+                    {
+                        _instance.SendNotify(player, result == 1 ? BuyLimitReached : DailyBuyLimitReached, 1,
+                            item.PublicTitle);
+                        return;
+                    }
+
+                    Items.Add(item, 1);
+                }
+            }
+
+            private bool CanAdd(BasePlayer player, ShopItem item, int amount, out int result)
+            {
+                int leftLimit;
+                if (HasLimit(player, item, true, out leftLimit) && amount >= leftLimit) //total Limit
+                {
+                    result = 1;
+                    return false;
                 }
 
-                Items.Add(item, 1);
+                if (HasLimit(player, item, true, out leftLimit, true) && amount > leftLimit) //daily Limit
+                {
+                    result = 2;
+                    return false;
+                }
+
+                result = 0;
+                return true;
             }
 
             public void RemoveItem(ShopItem item)
@@ -71,12 +106,26 @@ namespace Oxide.Plugins
                 Items.Remove(item);
             }
 
-            public void ChangeAmountItem(ShopItem item, int amount)
+            public void ChangeAmountItem(BasePlayer player, ShopItem item, int amount)
             {
                 if (amount > 0)
+                {
+                    int totalLimit;
+                    if (HasLimit(player, item, true, out totalLimit) && amount >= totalLimit)
+                        amount = Math.Min(totalLimit, amount);
+
+                    int dailyLimit;
+                    if (HasLimit(player, item, true, out dailyLimit, true) && amount >= dailyLimit)
+                        amount = Math.Min(dailyLimit, amount);
+
+                    if (amount <= 0) return;
+
                     Items[item] = amount;
+                }
                 else
+                {
                     Items.Remove(item);
+                }
             }
 
             public int GetAmount()
@@ -279,7 +328,27 @@ namespace Oxide.Plugins
                 }
             };
 
+            [JsonProperty(PropertyName = "Auto-Wipe Settings")]
+            public WipeSettings Wipe = new WipeSettings
+            {
+                Cooldowns = true,
+                Players = true,
+                Limits = true
+            };
+
             public VersionNumber Version;
+        }
+
+        private class WipeSettings
+        {
+            [JsonProperty(PropertyName = "Wipe Cooldowns?")]
+            public bool Cooldowns;
+
+            [JsonProperty(PropertyName = "Wipe Players?")]
+            public bool Players;
+
+            [JsonProperty(PropertyName = "Wipe Limits?")]
+            public bool Limits;
         }
 
         private class UserInterface
@@ -410,6 +479,14 @@ namespace Oxide.Plugins
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public Dictionary<string, int> BuyLimits = new Dictionary<string, int>();
 
+            [JsonProperty(PropertyName = "Daily Buy Limits (0 - no limit)",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<string, int> DailyBuyLimits = new Dictionary<string, int>();
+
+            [JsonProperty(PropertyName = "Daily Sell Limits (0 - no limit)",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<string, int> DailySellLimits = new Dictionary<string, int>();
+
             [JsonProperty(PropertyName = "Max Buy Amount (0 - disable)")]
             public int BuyMaxAmount;
 
@@ -512,9 +589,10 @@ namespace Oxide.Plugins
                     select check.Value).Prepend(0).Max();
             }
 
-            public int GetLimit(BasePlayer player, bool buy = true)
+            public int GetLimit(BasePlayer player, bool buy = true, bool daily = false)
             {
-                var dict = buy ? BuyLimits : SellLimits;
+                var dict = daily ? buy ? DailyBuyLimits : DailySellLimits
+                    : buy ? BuyLimits : SellLimits;
 
                 if (dict.Count == 0)
                     return 0;
@@ -858,6 +936,16 @@ namespace Oxide.Plugins
                             ["shop.default"] = 0,
                             ["shop.vip"] = 0
                         };
+                        item.DailyBuyLimits = new Dictionary<string, int>
+                        {
+                            ["shop.default"] = 0,
+                            ["shop.vip"] = 0
+                        };
+                        item.DailySellLimits = new Dictionary<string, int>
+                        {
+                            ["shop.default"] = 0,
+                            ["shop.vip"] = 0
+                        };
                     });
                 });
 
@@ -1048,6 +1136,20 @@ namespace Oxide.Plugins
             MainUi(player, npcShop: npcShop, first: true);
         }
 
+        private void OnNewSave(string filename)
+        {
+            if (_config.Wipe.Players)
+                _data.PlayerCarts.Clear();
+
+            if (_config.Wipe.Cooldowns)
+                _cooldown.Clear();
+
+            if (_config.Wipe.Limits)
+                _limits.Players.Clear();
+
+            SaveData();
+        }
+
         #endregion
 
         #region Commands
@@ -1109,7 +1211,7 @@ namespace Oxide.Plugins
                     var playerCart = GetPlayerCart(player);
                     if (playerCart == null) return;
 
-                    playerCart.AddItem(shopItem);
+                    playerCart.AddItem(shopItem, player);
 
                     var cooldownTime = GetCooldownTime(player.userID, shopItem, true);
                     if (cooldownTime > 0)
@@ -1202,7 +1304,17 @@ namespace Oxide.Plugins
                     if (shopItem.BuyMaxAmount > 0 && amount > shopItem.BuyMaxAmount)
                         amount = shopItem.BuyMaxAmount;
 
-                    playerCart.ChangeAmountItem(shopItem, amount);
+
+                    /*
+                    var limit = Mathf.Min(GetLimit(player, shopItem, true),
+                        GetLimit(player, shopItem, true, true));
+                    
+                    amount = Mathf.Min(limit, amount);
+                    
+                    if (amount <= 0) return;
+                    */
+
+                    playerCart.ChangeAmountItem(player, shopItem, amount);
 
                     var container = new CuiElementContainer();
                     RefreshCart(ref container, player, playerCart);
@@ -1256,10 +1368,20 @@ namespace Oxide.Plugins
                     if (playerCart.Items.Any(x =>
                         {
                             var limit = GetLimit(player, x.Key, true);
-                            if (limit > 0) return false;
+                            if (limit <= 0)
+                            {
+                                ErrorUi(player, Msg(player, BuyLimitReached, x.Key.PublicTitle));
+                                return true;
+                            }
 
-                            ErrorUi(player, Msg(player, BuyLimitReached, x.Key.PublicTitle));
-                            return true;
+                            limit = GetLimit(player, x.Key, true, true);
+                            if (limit <= 0)
+                            {
+                                ErrorUi(player, Msg(player, DailyBuyLimitReached, x.Key.PublicTitle));
+                                return true;
+                            }
+
+                            return false;
                         }))
                         return;
 
@@ -1271,7 +1393,8 @@ namespace Oxide.Plugins
                         cartItem.Key?.Get(player, cartItem.Value);
 
                         SetCooldown(player, cartItem.Key, true);
-                        UseLimit(player, cartItem.Key, true);
+                        UseLimit(player, cartItem.Key, true, cartItem.Value);
+                        UseLimit(player, cartItem.Key, true, cartItem.Value, true);
                     }
 
                     Log("Buy", LogBuyItems, player.displayName, player.UserIDString,
@@ -1336,6 +1459,13 @@ namespace Oxide.Plugins
                         return;
                     }
 
+                    limit = GetLimit(player, item, false, true);
+                    if (limit <= 0)
+                    {
+                        ErrorUi(player, Msg(player, DailySellLimitReached, item.PublicTitle));
+                        return;
+                    }
+
                     List<ulong> blockedSkins;
                     if (_config.BlockedSkins.TryGetValue(item.ShortName, out blockedSkins))
                         if (blockedSkins.Contains(item.Skin))
@@ -1361,7 +1491,8 @@ namespace Oxide.Plugins
                     _config.Economy.AddBalance(player, item.SellPrice * amount);
 
                     SetCooldown(player, item, false, true);
-                    UseLimit(player, item, false);
+                    UseLimit(player, item, false, amount);
+                    UseLimit(player, item, false, amount, true);
 
                     if (_itemsToUpdate.ContainsKey(player))
                     {
@@ -1620,6 +1751,25 @@ namespace Oxide.Plugins
             FillCategories();
 
             ItemsToDict();
+        }
+
+        [ConsoleCommand("shop.wipe")]
+        private void CmdConsoleWipe(ConsoleSystem.Arg arg)
+        {
+            if (!arg.IsAdmin) return;
+
+            if (_config.Wipe.Players)
+                _data.PlayerCarts.Clear();
+
+            if (_config.Wipe.Cooldowns)
+                _cooldown.Clear();
+
+            if (_config.Wipe.Limits)
+                _limits.Players.Clear();
+
+            PrintWarning($"{Name} wiped!");
+
+            SaveData();
         }
 
         #endregion
@@ -4385,6 +4535,16 @@ namespace Oxide.Plugins
                                 {
                                     ["shop.default"] = 0,
                                     ["shop.vip"] = 0
+                                },
+                                DailyBuyLimits = new Dictionary<string, int>
+                                {
+                                    ["shop.default"] = 0,
+                                    ["shop.vip"] = 0
+                                },
+                                DailySellLimits = new Dictionary<string, int>
+                                {
+                                    ["shop.default"] = 0,
+                                    ["shop.vip"] = 0
                                 }
                             });
                         });
@@ -4762,23 +4922,38 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Limits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public readonly Dictionary<int, ItemLimitData> ItemsLimits = new Dictionary<int, ItemLimitData>();
 
-            public void AddItem(ShopItem item, bool buy)
+            [JsonProperty(PropertyName = "Last Update Time")]
+            public DateTime LastUpdate;
+
+            [JsonProperty(PropertyName = "Daily Limits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public readonly Dictionary<int, ItemLimitData> DailyItemsLimits = new Dictionary<int, ItemLimitData>();
+
+            public void AddItem(ShopItem item, bool buy, int amount, bool daily = false)
             {
-                if (!ItemsLimits.ContainsKey(item.ID)) ItemsLimits.Add(item.ID, new ItemLimitData());
+                var totalAmount = item.Amount * amount;
+
+                var dict = daily ? DailyItemsLimits : ItemsLimits;
+
+                if (!dict.ContainsKey(item.ID)) dict.Add(item.ID, new ItemLimitData());
 
                 if (buy)
-                    ItemsLimits[item.ID].Buy++;
+                    dict[item.ID].Buy += totalAmount;
                 else
-                    ItemsLimits[item.ID].Sell++;
+                    dict[item.ID].Sell += totalAmount;
             }
 
-            public int GetLimit(ShopItem item, bool buy)
+            public int GetLimit(ShopItem item, bool buy, bool daily = false)
             {
-                ItemLimitData data;
-                if (ItemsLimits.TryGetValue(item.ID, out data))
-                    return buy ? data.Buy : data.Sell;
+                if (daily && DateTime.Now.Date != LastUpdate.Date) // auto wipe
+                {
+                    LastUpdate = DateTime.Now;
+                    DailyItemsLimits.Clear();
+                }
 
-                return 0;
+                ItemLimitData data;
+                return (daily ? DailyItemsLimits : ItemsLimits).TryGetValue(item.ID, out data)
+                    ? buy ? data.Buy : data.Sell
+                    : 0;
             }
         }
 
@@ -4789,20 +4964,33 @@ namespace Oxide.Plugins
             public int Buy;
         }
 
-        private void UseLimit(BasePlayer player, ShopItem item, bool buy)
+        private void UseLimit(BasePlayer player, ShopItem item, bool buy, int amount, bool daily = false)
         {
-            PlayerLimits.GetOrAdd(player.userID).AddItem(item, buy);
+            PlayerLimits.GetOrAdd(player.userID).AddItem(item, buy, amount, daily);
         }
 
-        private int GetLimit(BasePlayer player, ShopItem item, bool buy)
+        private int GetLimit(BasePlayer player, ShopItem item, bool buy, bool daily = false)
         {
-            var hasLimit = item.GetLimit(player, buy);
+            var hasLimit = item.GetLimit(player, buy, daily);
             if (hasLimit == 0)
                 return 1;
 
-            var used = PlayerLimits.GetOrAdd(player.userID).GetLimit(item, buy);
-
+            var used = PlayerLimits.GetOrAdd(player.userID).GetLimit(item, buy, daily);
             return hasLimit - used;
+        }
+
+        private static bool HasLimit(BasePlayer player, ShopItem item, bool buy, out int leftAmount, bool daily = false)
+        {
+            var hasLimit = item.GetLimit(player, buy, daily);
+            if (hasLimit == 0)
+            {
+                leftAmount = 0;
+                return false;
+            }
+
+            var used = PlayerLimits.GetOrAdd(player.userID).GetLimit(item, buy, daily);
+            leftAmount = hasLimit - used;
+            return true;
         }
 
         #endregion
@@ -4826,6 +5014,8 @@ namespace Oxide.Plugins
             LogBuyItems = "LogBuyItems",
             SkinBlocked = "SkinBlocked",
             NoUseDuel = "NoUseDuel",
+            DailySellLimitReached = "DailySellLimitReached",
+            DailyBuyLimitReached = "DailyBuyLimitReached",
             SellLimitReached = "SellLimitReached",
             BuyLimitReached = "BuyLimitReached",
             InfoTitle = "InfoTitle",
@@ -4943,6 +5133,10 @@ namespace Oxide.Plugins
                 [BuyRaidBlocked] = "You can't buy while blocked!",
                 [SellRaidBlocked] = "You can't sell while blocked!",
                 [InfoTitle] = "i",
+                [DailyBuyLimitReached] =
+                    "You cannot buy the '{0}'. You have reached the daily limit. Come back tomorrow!",
+                [DailySellLimitReached] =
+                    "You cannot buy the '{0}'. You have reached the daily limit. Come back tomorrow!",
                 [BuyLimitReached] = "You cannot buy the '{0}'. You have reached the limit",
                 [SellLimitReached] = "You cannot sell the '{0}'. You have reached the limit",
                 [NoUseDuel] = "You are in a duel. The use of the shop is blocked.",

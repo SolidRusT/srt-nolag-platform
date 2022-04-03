@@ -6,12 +6,13 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("WaterBikes", "senyaa", "1.1.7")]
+    [Info("WaterBikes", "senyaa", "1.1.8")]
     [Description("Turns snowmobiles into waterbikes")]
     class WaterBikes : RustPlugin
     {
         #region Fields
         private static Dictionary<BaseNetworkable, WaterBikeComponent> waterbikes;
+        private List<BasePlayer> cooldownList;
         private ItemDefinition priceDef;
         private Vector3 lastKilledSnowmobilePos; // workaround to get water bikes work properly with spray can reskinning
         #endregion
@@ -21,6 +22,8 @@ namespace Oxide.Plugins
 
         private class WaterbikeConfig
         {
+            [JsonProperty("(00) Spawn cooldown (in seconds)")]
+            public int Cooldown;
             [JsonProperty("(0) Waterbike price item short name:amount (0 - free)")]
             public KeyValuePair<string, int> Price;
             [JsonProperty("(1) Waterbike prefab")]
@@ -49,6 +52,7 @@ namespace Oxide.Plugins
         {
             return new WaterbikeConfig
             {
+                Cooldown = 120,
                 Price = new KeyValuePair<string, int>("scrap", 0),
                 WaterbikePrefab = "assets/content/vehicles/snowmobiles/tomahasnowmobile.prefab",
                 Make_All_Snowmobiles_Waterbikes = true,
@@ -87,7 +91,8 @@ namespace Oxide.Plugins
                 ["NoWaterbike"] = "You aren't on a waterbike",
                 ["Showing"] = "Showing buoyancy points...",
                 ["NotEnough"] = "You don't have enough to buy a waterbike",
-                ["Converted"] = "Snowmobile converted into waterbike"
+                ["Converted"] = "Snowmobile converted into waterbike",
+                ["Cooldown"] = "You are on cooldown!"
             }, this, "en");
 
             lang.RegisterMessages(new Dictionary<string, string>
@@ -97,7 +102,8 @@ namespace Oxide.Plugins
                 ["NoWaterbike"] = "Не на гидроцикле",
                 ["Showing"] = "Показываются точки плавучести...",
                 ["NotEnough"] = "У вас не хватает ресурсов для покупки гидроцикла",
-                ["Converted"] = "Снегоход переделан в гидроцикл"
+                ["Converted"] = "Снегоход переделан в гидроцикл",
+                ["Cooldown"] = "Вы не можете спаунить гидроциклы так быстро"
             }, this, "ru");
         }
         #endregion
@@ -292,6 +298,7 @@ namespace Oxide.Plugins
         void Init()
         {
             waterbikes = new Dictionary<BaseNetworkable, WaterBikeComponent>();
+            cooldownList = Facepunch.Pool.GetList<BasePlayer>();
             config = Config.ReadObject<WaterbikeConfig>();
             permission.RegisterPermission(config.Spawn_Permission, this);
             permission.RegisterPermission(config.NoPay_Permission, this);
@@ -314,6 +321,7 @@ namespace Oxide.Plugins
                 UnityEngine.Object.DestroyImmediate(obj);
 
             waterbikes = null;
+            Facepunch.Pool.FreeList(ref cooldownList);
             config = null;
         }
 
@@ -377,7 +385,6 @@ namespace Oxide.Plugins
             entity.gameObject.AddComponent<WaterBikeComponent>();
         }
 
-
         void OnEntityKill(BaseNetworkable entity)
         {
             if (entity == null) return;
@@ -385,6 +392,12 @@ namespace Oxide.Plugins
             lastKilledSnowmobilePos = entity.transform.position;
         }
 
+        void OnPlayerDisconnected(BasePlayer player, string reason)
+        {
+            if (!cooldownList.Contains(player)) return;
+            
+            cooldownList.Remove(player);
+        }
         #endregion
 
         #region API
@@ -409,6 +422,23 @@ namespace Oxide.Plugins
                 position = player.transform.position;
 
             return position;
+        }
+
+        public void StartCooldown(BasePlayer player)
+        {
+            if (player == null) return;
+            if (config.Cooldown <= 0) return; 
+            if (cooldownList.Contains(player)) return;
+
+            cooldownList.Add(player);
+
+            timer.Once(config.Cooldown, () => 
+            {
+                if(cooldownList.Contains(player))
+                {
+                    cooldownList.Remove(player);
+                }
+            });
         }
         #endregion
 
@@ -447,6 +477,18 @@ namespace Oxide.Plugins
         [ChatCommand("waterbike")]
         private void WaterbikeCommand(BasePlayer player, string command, string[] args)
         {
+            if (!permission.UserHasPermission(player.UserIDString, config.Spawn_Permission))
+            {
+                PrintToChat(player, lang.GetMessage("NoPermission", this, player.UserIDString));
+                return;
+            }
+
+            if (cooldownList.Contains(player))
+            {
+                PrintToChat(player, lang.GetMessage("Cooldown", this, player.UserIDString));
+                return;
+            }
+
             RaycastHit hit;
             BaseEntity ent = null;
 
@@ -457,12 +499,6 @@ namespace Oxide.Plugins
                 {
                     ent = hit_ent;
                 } 
-            }
-
-            if(!permission.UserHasPermission(player.UserIDString, config.Spawn_Permission))
-            {
-                PrintToChat(player, lang.GetMessage("NoPermission", this, player.UserIDString));
-                return;
             }
 
             if(config.Price.Value > 0 && priceDef != null && !permission.UserHasPermission(player.UserIDString, config.NoPay_Permission))
@@ -479,6 +515,7 @@ namespace Oxide.Plugins
                     else
                     {
                         SpawnWaterbike(GetSpawnPosition(player), player.eyes.rotation);
+                        StartCooldown(player);
                         PrintToChat(player, lang.GetMessage("Spawned", this, player.UserIDString));
                     }
                 }
@@ -497,6 +534,7 @@ namespace Oxide.Plugins
             else
             {
                 SpawnWaterbike(GetSpawnPosition(player), player.eyes.rotation);
+                StartCooldown(player);
                 PrintToChat(player, lang.GetMessage("Spawned", this, player.UserIDString));
             }
         }

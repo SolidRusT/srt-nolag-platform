@@ -1,0 +1,1052 @@
+{
+  "Setting up and stopping an event": {
+    "The minimum number of players to start an event": 2,
+    "Time before the start of the event (Minimum in seconds)": 3000,
+    "Time before the start of the event (Maximum in seconds)": 7200,
+    "Time until the event is deleted if no one opens the box (Seconds)": 900,
+    "The time until the event is deleted after the box is unlocked": 300,
+    "Create a PVP zone within the radius of the event? (Requires TruePVE)": false,
+    "Do you use a dome ?": false,
+    "Transparency of the dome (the smaller the number, the more transparent it is. The values should be no more than 5)": 3
+  },
+  "Configuring notifications": {
+    "Discord WebHook (If you do not need discord notifications, leave the field blank)": "",
+    "Enable UI Notifications?": false,
+    "Auto hide UI notifications?": true,
+    "ЧHow long after the show will it hide? (sec)": 15.0,
+    "UI window background color": "0.8 0.28 0.2 0.8",
+    "UI Close Button Color": "0.6784314 0.254902 0.1843137 0.8"
+  },
+  "Setting up radiation in the event area": {
+    "Turn on radiation?": true,
+    "Number of radiation particles": 20,
+    "Radius of the affected area (No more than the radius of detection of players)": 20
+  },
+  "Event display on maps": {
+    "Mark the event on the G card (Requires FREE https://skyplugins.ru/resources/428/)": false,
+    "Text for map G": "Cobalt lab",
+    "Marker color (without #)": "f3ecad",
+    "Outline color (without #)": "ff3535"
+  },
+  "Setting up buildings for the event (Copypaste) and NPCs": {
+    "Spawn buildings. (If more than 1 then random is selected)": [
+      {
+        "Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "",
+        "Number of NPCs": 8,
+        "Should I spawn help after breaking the box? (NPC)": true,
+        "Number of NPCs (Help)": 4,
+        "The possibility of a helicopter departure as an aid": true,
+        "Helicopter departure chance (0% - 100%)": 50,
+        "Copter spawn chance (if present in a building)": 50,
+        "NPC setup": {
+          "Random nicknames npc": [
+            "Cobalt guard",
+            "Cobalt defense"
+          ],
+          "Wear items": [
+            {
+              "ShortName": "roadsign.kilt",
+              "Amount": 1,
+              "SkinID (0 - default)": 1121447954
+            },
+            {
+              "ShortName": "burlap.shirt",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076298726
+            },
+            {
+              "ShortName": "shoes.boots",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "roadsign.gloves",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "burlap.trousers",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076292007
+            },
+            {
+              "ShortName": "metal.facemask",
+              "Amount": 1,
+              "SkinID (0 - default)": 835028125
+            }
+          ],
+          "Belt items": [
+            {
+              "ShortName": "rifle.lr300",
+              "Amount": 1,
+              "SkinID (0 - default)": 1837473292,
+              "Mods": []
+            },
+            {
+              "ShortName": "pistol.semiauto",
+              "Amount": 1,
+              "SkinID (0 - default)": 1557105240,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.smoke",
+              "Amount": 2,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.f1",
+              "Amount": 3,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "syringe.medical",
+              "Amount": 5,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            }
+          ],
+          "Kit": "",
+          "Health": 150.0,
+          "Roam Range": 30.0,
+          "Chase Range": 90.0,
+          "Attack Range Multiplier": 1.0,
+          "Sense Range": 50.0,
+          "Target Memory Duration [sec.]": 300.0,
+          "Scale damage": 2.0,
+          "Aim Cone Scale": 1.0,
+          "Detect the target only in the NPC's viewing vision cone?": false,
+          "Vision Cone": 135.0,
+          "Speed": 7.0,
+          "Disable radio effects?": true
+        }
+      },
+      {
+        "Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab1",
+        "Number of NPCs": 8,
+        "Should I spawn help after breaking the box? (NPC)": true,
+        "Number of NPCs (Help)": 4,
+        "The possibility of a helicopter departure as an aid": true,
+        "Helicopter departure chance (0% - 100%)": 50,
+        "Copter spawn chance (if present in a building)": 70,
+        "NPC setup": {
+          "Random nicknames npc": [
+            "Cobalt guard",
+            "Cobalt defense"
+          ],
+          "Wear items": [
+            {
+              "ShortName": "roadsign.kilt",
+              "Amount": 1,
+              "SkinID (0 - default)": 1121447954
+            },
+            {
+              "ShortName": "burlap.shirt",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076298726
+            },
+            {
+              "ShortName": "shoes.boots",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "roadsign.gloves",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "burlap.trousers",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076292007
+            },
+            {
+              "ShortName": "metal.facemask",
+              "Amount": 1,
+              "SkinID (0 - default)": 835028125
+            }
+          ],
+          "Belt items": [
+            {
+              "ShortName": "rifle.lr300",
+              "Amount": 1,
+              "SkinID (0 - default)": 1837473292,
+              "Mods": []
+            },
+            {
+              "ShortName": "pistol.semiauto",
+              "Amount": 1,
+              "SkinID (0 - default)": 1557105240,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.smoke",
+              "Amount": 2,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.f1",
+              "Amount": 3,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "syringe.medical",
+              "Amount": 5,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            }
+          ],
+          "Kit": "",
+          "Health": 150.0,
+          "Roam Range": 30.0,
+          "Chase Range": 90.0,
+          "Attack Range Multiplier": 1.0,
+          "Sense Range": 50.0,
+          "Target Memory Duration [sec.]": 300.0,
+          "Scale damage": 2.0,
+          "Aim Cone Scale": 1.0,
+          "Detect the target only in the NPC's viewing vision cone?": true,
+          "Vision Cone": 135.0,
+          "Speed": 7.0,
+          "Disable radio effects?": true
+        }
+      },
+      {
+        "Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab2",
+        "Number of NPCs": 8,
+        "Should I spawn help after breaking the box? (NPC)": true,
+        "Number of NPCs (Help)": 2,
+        "The possibility of a helicopter departure as an aid": true,
+        "Helicopter departure chance (0% - 100%)": 50,
+        "Copter spawn chance (if present in a building)": 70,
+        "NPC setup": {
+          "Random nicknames npc": [
+            "Cobalt guard",
+            "Cobalt defense"
+          ],
+          "Wear items": [
+            {
+              "ShortName": "roadsign.kilt",
+              "Amount": 1,
+              "SkinID (0 - default)": 1121447954
+            },
+            {
+              "ShortName": "burlap.shirt",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076298726
+            },
+            {
+              "ShortName": "shoes.boots",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "roadsign.gloves",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "burlap.trousers",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076292007
+            },
+            {
+              "ShortName": "metal.facemask",
+              "Amount": 1,
+              "SkinID (0 - default)": 835028125
+            }
+          ],
+          "Belt items": [
+            {
+              "ShortName": "rifle.lr300",
+              "Amount": 1,
+              "SkinID (0 - default)": 1837473292,
+              "Mods": []
+            },
+            {
+              "ShortName": "pistol.semiauto",
+              "Amount": 1,
+              "SkinID (0 - default)": 1557105240,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.smoke",
+              "Amount": 2,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.f1",
+              "Amount": 3,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "syringe.medical",
+              "Amount": 5,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            }
+          ],
+          "Kit": "",
+          "Health": 150.0,
+          "Roam Range": 30.0,
+          "Chase Range": 90.0,
+          "Attack Range Multiplier": 1.0,
+          "Sense Range": 50.0,
+          "Target Memory Duration [sec.]": 300.0,
+          "Scale damage": 2.0,
+          "Aim Cone Scale": 1.0,
+          "Detect the target only in the NPC's viewing vision cone?": false,
+          "Vision Cone": 135.0,
+          "Speed": 7.0,
+          "Disable radio effects?": true
+        }
+      },
+      {
+        "Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab3",
+        "Number of NPCs": 10,
+        "Should I spawn help after breaking the box? (NPC)": true,
+        "Number of NPCs (Help)": 4,
+        "The possibility of a helicopter departure as an aid": true,
+        "Helicopter departure chance (0% - 100%)": 30,
+        "Copter spawn chance (if present in a building)": 70,
+        "NPC setup": {
+          "Random nicknames npc": [
+            "Cobalt guard",
+            "Cobalt defense"
+          ],
+          "Wear items": [
+            {
+              "ShortName": "roadsign.kilt",
+              "Amount": 1,
+              "SkinID (0 - default)": 1121447954
+            },
+            {
+              "ShortName": "burlap.shirt",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076298726
+            },
+            {
+              "ShortName": "shoes.boots",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "roadsign.gloves",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "burlap.trousers",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076292007
+            },
+            {
+              "ShortName": "metal.facemask",
+              "Amount": 1,
+              "SkinID (0 - default)": 835028125
+            }
+          ],
+          "Belt items": [
+            {
+              "ShortName": "rifle.lr300",
+              "Amount": 1,
+              "SkinID (0 - default)": 1837473292,
+              "Mods": []
+            },
+            {
+              "ShortName": "pistol.semiauto",
+              "Amount": 1,
+              "SkinID (0 - default)": 1557105240,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.smoke",
+              "Amount": 2,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.f1",
+              "Amount": 3,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "syringe.medical",
+              "Amount": 5,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            }
+          ],
+          "Kit": "",
+          "Health": 170.0,
+          "Roam Range": 30.0,
+          "Chase Range": 90.0,
+          "Attack Range Multiplier": 1.0,
+          "Sense Range": 50.0,
+          "Target Memory Duration [sec.]": 300.0,
+          "Scale damage": 2.0,
+          "Aim Cone Scale": 1.0,
+          "Detect the target only in the NPC's viewing vision cone?": false,
+          "Vision Cone": 135.0,
+          "Speed": 7.5,
+          "Disable radio effects?": true
+        }
+      },
+      {
+        "Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab4",
+        "Number of NPCs": 8,
+        "Should I spawn help after breaking the box? (NPC)": true,
+        "Number of NPCs (Help)": 5,
+        "The possibility of a helicopter departure as an aid": true,
+        "Helicopter departure chance (0% - 100%)": 40,
+        "Copter spawn chance (if present in a building)": 70,
+        "NPC setup": {
+          "Random nicknames npc": [
+            "Cobalt guard",
+            "Cobalt defense"
+          ],
+          "Wear items": [
+            {
+              "ShortName": "roadsign.kilt",
+              "Amount": 1,
+              "SkinID (0 - default)": 1121447954
+            },
+            {
+              "ShortName": "burlap.shirt",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076298726
+            },
+            {
+              "ShortName": "shoes.boots",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "roadsign.gloves",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "burlap.trousers",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076292007
+            },
+            {
+              "ShortName": "metal.facemask",
+              "Amount": 1,
+              "SkinID (0 - default)": 835028125
+            }
+          ],
+          "Belt items": [
+            {
+              "ShortName": "rifle.lr300",
+              "Amount": 1,
+              "SkinID (0 - default)": 1837473292,
+              "Mods": []
+            },
+            {
+              "ShortName": "pistol.semiauto",
+              "Amount": 1,
+              "SkinID (0 - default)": 1557105240,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.smoke",
+              "Amount": 2,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.f1",
+              "Amount": 3,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "syringe.medical",
+              "Amount": 5,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            }
+          ],
+          "Kit": "",
+          "Health": 150.0,
+          "Roam Range": 30.0,
+          "Chase Range": 100.0,
+          "Attack Range Multiplier": 1.0,
+          "Sense Range": 50.0,
+          "Target Memory Duration [sec.]": 300.0,
+          "Scale damage": 2.0,
+          "Aim Cone Scale": 1.0,
+          "Detect the target only in the NPC's viewing vision cone?": false,
+          "Vision Cone": 135.0,
+          "Speed": 7.0,
+          "Disable radio effects?": true
+        }
+      },
+      {
+        "Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab5",
+        "Number of NPCs": 10,
+        "Should I spawn help after breaking the box? (NPC)": true,
+        "Number of NPCs (Help)": 4,
+        "The possibility of a helicopter departure as an aid": true,
+        "Helicopter departure chance (0% - 100%)": 70,
+        "Copter spawn chance (if present in a building)": 50,
+        "NPC setup": {
+          "Random nicknames npc": [
+            "Cobalt guard",
+            "Cobalt defense"
+          ],
+          "Wear items": [
+            {
+              "ShortName": "roadsign.kilt",
+              "Amount": 1,
+              "SkinID (0 - default)": 1121447954
+            },
+            {
+              "ShortName": "burlap.shirt",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076298726
+            },
+            {
+              "ShortName": "shoes.boots",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "roadsign.gloves",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "burlap.trousers",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076292007
+            },
+            {
+              "ShortName": "metal.facemask",
+              "Amount": 1,
+              "SkinID (0 - default)": 835028125
+            }
+          ],
+          "Belt items": [
+            {
+              "ShortName": "rifle.lr300",
+              "Amount": 1,
+              "SkinID (0 - default)": 1837473292,
+              "Mods": []
+            },
+            {
+              "ShortName": "pistol.semiauto",
+              "Amount": 1,
+              "SkinID (0 - default)": 1557105240,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.smoke",
+              "Amount": 2,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.f1",
+              "Amount": 3,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "syringe.medical",
+              "Amount": 5,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            }
+          ],
+          "Kit": "",
+          "Health": 200.0,
+          "Roam Range": 35.0,
+          "Chase Range": 100.0,
+          "Attack Range Multiplier": 1.0,
+          "Sense Range": 50.0,
+          "Target Memory Duration [sec.]": 300.0,
+          "Scale damage": 2.0,
+          "Aim Cone Scale": 1.0,
+          "Detect the target only in the NPC's viewing vision cone?": true,
+          "Vision Cone": 135.0,
+          "Speed": 7.5,
+          "Disable radio effects?": true
+        }
+      },
+      {
+        "Setting the height of the building (Required in the setting if you want to place your building)": 0,
+        "file in the folder /oxide/data/ copypaste with your building (If you do not specify the standard will be loaded)": "CobaltLab6",
+        "Number of NPCs": 10,
+        "Should I spawn help after breaking the box? (NPC)": true,
+        "Number of NPCs (Help)": 4,
+        "The possibility of a helicopter departure as an aid": true,
+        "Helicopter departure chance (0% - 100%)": 70,
+        "Copter spawn chance (if present in a building)": 80,
+        "NPC setup": {
+          "Random nicknames npc": [
+            "Cobalt guard",
+            "Cobalt defense"
+          ],
+          "Wear items": [
+            {
+              "ShortName": "roadsign.kilt",
+              "Amount": 1,
+              "SkinID (0 - default)": 1121447954
+            },
+            {
+              "ShortName": "burlap.shirt",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076298726
+            },
+            {
+              "ShortName": "shoes.boots",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "roadsign.gloves",
+              "Amount": 1,
+              "SkinID (0 - default)": 0
+            },
+            {
+              "ShortName": "burlap.trousers",
+              "Amount": 1,
+              "SkinID (0 - default)": 2076292007
+            },
+            {
+              "ShortName": "metal.facemask",
+              "Amount": 1,
+              "SkinID (0 - default)": 835028125
+            }
+          ],
+          "Belt items": [
+            {
+              "ShortName": "rifle.lr300",
+              "Amount": 1,
+              "SkinID (0 - default)": 1837473292,
+              "Mods": []
+            },
+            {
+              "ShortName": "pistol.semiauto",
+              "Amount": 1,
+              "SkinID (0 - default)": 1557105240,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.smoke",
+              "Amount": 2,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "grenade.f1",
+              "Amount": 3,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            },
+            {
+              "ShortName": "syringe.medical",
+              "Amount": 5,
+              "SkinID (0 - default)": 0,
+              "Mods": []
+            }
+          ],
+          "Kit": "",
+          "Health": 230.0,
+          "Roam Range": 35.0,
+          "Chase Range": 100.0,
+          "Attack Range Multiplier": 1.0,
+          "Sense Range": 50.0,
+          "Target Memory Duration [sec.]": 300.0,
+          "Scale damage": 2.0,
+          "Aim Cone Scale": 1.0,
+          "Detect the target only in the NPC's viewing vision cone?": false,
+          "Vision Cone": 135.0,
+          "Speed": 8.0,
+          "Disable radio effects?": true
+        }
+      }
+    ]
+  },
+  "NPC loot setup": {
+    "Use your loot in NPCs?": true,
+    "Setting up loot in NPC (if disabled, it will be standard) /cl.botitems": [
+      {
+        "ShortName": "halloween.surgeonsuit",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 70,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "metal.facemask",
+        "SkinID": 1886184322,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 20,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "door.double.hinged.metal",
+        "SkinID": 191100000,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 2,
+        "Item drop chance": 60,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "rifle.bolt",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": true,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 10,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "rifle.lr300",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 15,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "pistol.revolver",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 3,
+        "Item drop chance": 60,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "supply.signal",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 3,
+        "Item drop chance": 20,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "explosive.satchel",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 3,
+        "Item drop chance": 5,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "grenade.smoke",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 20,
+        "Item drop chance": 45,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "ammo.rifle",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 50,
+        "Maximum amount": 120,
+        "Item drop chance": 35,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "scrap",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 100,
+        "Maximum amount": 500,
+        "Item drop chance": 20,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "giantcandycanedecor",
+        "SkinID": 0,
+        "Item name": "Новый год",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 5,
+        "Item drop chance": 70,
+        "Multiply this item by wipe day?": false
+      }
+    ]
+  },
+  "Customizing the box": {
+    "Loot setting in the box /cl.items": [
+      {
+        "ShortName": "pistol.python",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 60,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "multiplegrenadelauncher",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 15,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "sulfur",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 500,
+        "Maximum amount": 800,
+        "Item drop chance": 40,
+        "Multiply this item by wipe day?": true
+      },
+      {
+        "ShortName": "gunpowder",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 300,
+        "Maximum amount": 400,
+        "Item drop chance": 10,
+        "Multiply this item by wipe day?": true
+      },
+      {
+        "ShortName": "door.hinged.toptier",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": true,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 15,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "wall.external.high.ice",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 5,
+        "Item drop chance": 75,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "ammo.rocket.basic",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 3,
+        "Item drop chance": 25,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "ammo.grenadelauncher.smoke",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 3,
+        "Maximum amount": 10,
+        "Item drop chance": 70,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "ammo.grenadelauncher.he",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 2,
+        "Maximum amount": 5,
+        "Item drop chance": 10,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "metal.facemask",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": true,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 15,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "metal.plate.torso",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": true,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 10,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "clatter.helmet",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 70,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "carburetor3",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 20,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "crankshaft3",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 10,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "techparts",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 5,
+        "Maximum amount": 15,
+        "Item drop chance": 35,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "xmas.lightstring.advanced",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 30,
+        "Maximum amount": 70,
+        "Item drop chance": 45,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "largemedkit",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 3,
+        "Maximum amount": 5,
+        "Item drop chance": 70,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "largemedkit",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": true,
+        "Minimal amount": 3,
+        "Maximum amount": 5,
+        "Item drop chance": 70,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "metal.fragments",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1000,
+        "Maximum amount": 2000,
+        "Item drop chance": 70,
+        "Multiply this item by wipe day?": true
+      },
+      {
+        "ShortName": "explosives",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 10,
+        "Maximum amount": 50,
+        "Item drop chance": 30,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "autoturret",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 60,
+        "Multiply this item by wipe day?": false
+      },
+      {
+        "ShortName": "explosive.timed",
+        "SkinID": 0,
+        "Item name": "",
+        "BluePrint?": false,
+        "Minimal amount": 1,
+        "Maximum amount": 1,
+        "Item drop chance": 5,
+        "Multiply this item by wipe day?": true
+      }
+    ],
+    "Box unlocking time (Sec)": 900,
+    "Minimal number of items in a drawer": 5,
+    "Maximum number of items in a drawer": 10,
+    "multiply the amount of loot by the number of days since the start of the wipe (on the 3rd day - there will be 3 times more loot)": false,
+    "Turn on the alarm?": true,
+    "Use AlphaLoot to fill the box?": false,
+    "Use EcoLootUI to fill the box?": false
+  },
+  "Reward in the form of a team to the player who 1 opened the cargo": {
+    "List of commands that are executed in the console (%STEAMID% - the player who looted the box)": [],
+    "Messages that the player will receive (Here you can write about what the player received)": ""
+  },
+  "Setting up the selection of positions for spawn (For experienced users)": {
+    "Allow spawn on the roads ?": true,
+    "Allow spawn on rivers ?": true,
+    "Radius of monument detection": 40.0,
+    "Detection radius of the tool cupboard (Building Block)": 90.0
+  }
+}
