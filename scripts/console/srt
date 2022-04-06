@@ -13,8 +13,8 @@ case ${SRT} in
   nine)
     ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@nine.solidrust.net
     ;;
-  demo)
-    ssh -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@demo.solidrust.net
+  eks-3)
+    ssh -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@eks-3.solidrust.net
     ;;
   eleven)
     ssh shaun@10.42.69.45

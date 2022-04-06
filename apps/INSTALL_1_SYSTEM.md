@@ -1,16 +1,16 @@
 ## Install
-### Bootstrap Debian 11 (root)
+### Bootstrap Debian 11 Bullseye
 
 ```bash
-apt install sudo net-tools python3 certbot python3-certbot-dns-cloudflare
-sudo apt-get install \
+sudo apt update
+sudo apt install -y sudo net-tools python3 certbot python3-certbot-dns-cloudflare
+sudo apt-get install -y \
     ca-certificates \
     curl \
     gnupg \
     lsb-release \
     software-properties-common \
     apt-transport-https
-usermod -aG sudo shaun
 ```
 
 ### Update distribution (user)
@@ -51,7 +51,7 @@ sudo apt install kubelet kubeadm kubectl -y
 
 
 ```bash
-sudo apt install unzip
+sudo apt install -y unzip
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
