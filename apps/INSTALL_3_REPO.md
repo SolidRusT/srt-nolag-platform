@@ -83,16 +83,25 @@ sudo systemctl restart docker
 sudo mount -a
 ```
 
+kubectl get configmap kube-proxy -n kube-system -o yaml | \
+sed -e "s/strictARP: false/strictARP: true/" | \
+kubectl apply -f - -n kube-system
+
+kubectl apply -f ${HOME}/solidrust.net/apps/cillium-config.yaml
+
+
 ### Create Docker repo service
 
 ```bash
 kubectl create namespace srt-repo
 kubectl apply -f ${HOME}/solidrust.net/apps/private-registry.yaml -n srt-repo
 kubectl apply -f ${HOME}/solidrust.net/apps/private-registry-svc.yaml -n srt-repo
-kubectl -n srt-lab-repo get svc
+kubectl -n srt-repo get svc
+kubectl get svc private-repository-k8s -n srt-repo
 ```
 
- `kubectl get svc private-repository-k8s -n srt-lab-repo` and put external IP into DNS
+
+
 
 ```bash
 docker pull nginx
