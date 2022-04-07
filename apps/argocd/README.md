@@ -22,7 +22,7 @@ kubectl patch validatingwebhookconfigurations ingress-nginx-admission -n $ns --t
 ```
 
 ```bash
-kubectl apply -f dev-https-ingress.yaml
+kubectl replace -f prod-https-ingress.yaml
 #kubectl replace -f dev-https-ingress.yaml
 # can be contatenated with `---`
 kubectl get ingress -n argocd
