@@ -59,6 +59,7 @@ certbot certonly -d eks.solidrust.net --dns-cloudflare --dns-cloudflare-credenti
 certbot certonly -d *.eks.solidrust.net --dns-cloudflare --dns-cloudflare-credentials ${HOME}/certbot/cloudflare.ini --logs-dir ${CERTWILD_DIR}/log/ --config-dir ${CERTWILD_DIR}/config/ --work-dir ${CERTWILD_DIR}/work/ -m shaun@solidrust.net --agree-tos --server https://acme-v02.api.letsencrypt.org/directory
 ```
 
+```bash
 sudo cp ${HOME}/letsencrypt-wild/config/live/eks.solidrust.net/fullchain.pem /opt/certs
 sudo cp ${HOME}/letsencrypt-wild/config/live/eks.solidrust.net/privkey.pem /opt/certs
 sudo openssl x509 -outform der -in ${HOME}/letsencrypt-wild/config/live/eks.solidrust.net/fullchain.pem \
@@ -93,12 +94,10 @@ kubectl -n srt-repo get svc
 kubectl get svc private-repository-k8s -n srt-repo
 ```
 
-
-
+### Test push to your repository
 
 ```bash
 docker pull nginx
-docker tag nginx:latest srt-lab-repo:5000/nginx:latest
 docker tag nginx:latest repo.eks.solidrust.net:5000/nginx:latest
 # docker push srt-lab-repo:5000/nginx:latest
 docker push repo.eks.solidrust.net:5000/nginx:latest

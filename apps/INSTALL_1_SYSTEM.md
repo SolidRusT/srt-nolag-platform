@@ -17,7 +17,8 @@ sudo apt-get install -y \
     unzip \
     nfs-common \
     nfs-kernel-server \
-    xfsprogs && \
+    xfsprogs \
+    lvm2 && \
 sudo apt dist-upgrade -y
 ```
 
