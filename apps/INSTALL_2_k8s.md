@@ -79,7 +79,4 @@ kubectl get pods --all-namespaces -o custom-columns=NAMESPACE:.metadata.namespac
 ### Install Ingress controller
 ```bash
 kubectl apply -n ingress-nginx -f ${HOME}/solidrust.net/apps/ingress-nginx.yaml
-#helm install ingress-nginx ingress-nginx \
-#--repo https://kubernetes.github.io/ingress-nginx \
-#--namespace ingress-nginx --create-namespace
 ```

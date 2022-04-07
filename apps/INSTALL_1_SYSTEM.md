@@ -16,7 +16,8 @@ sudo apt-get install -y \
     apt-transport-https \
     unzip \
     nfs-common \
-    nfs-kernel-server && \
+    nfs-kernel-server \
+    xfsprogs && \
 sudo apt dist-upgrade -y
 ```
 
