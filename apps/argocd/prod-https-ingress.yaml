@@ -11,7 +11,7 @@ spec:
   - host: argocd.eks.solidrust.net
     http:
       paths:
-        - backend:
+       - backend:
           service:
             name: argocd-server
             port:
@@ -32,11 +32,11 @@ spec:
   - host: argocd-grpc.eks.solidrust.net
     http:
       paths:
-        - backend:
-          service: 
+       - backend:
+          service:
             name: argocd-server
-            port: 
-              number: 443
+            port:
+              number: 80
           path: /
           pathType: Exact
     
