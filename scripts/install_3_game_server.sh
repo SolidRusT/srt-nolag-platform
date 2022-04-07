@@ -10,7 +10,6 @@ sudo apt -y dist-upgrade
 NEW_NAME="demo"
 echo ${NEW_NAME} | sudo tee /etc/hostname
 echo "127.0.0.1    ${NEW_NAME} ${NEW_NAME}.solidrust.net" | sudo tee -a /etc/hosts /etc/cloud/templates/hosts.debian.tmpl
-#echo "10.9.1.58    data data.solidrust.net" | sudo tee -a /etc/hosts /etc/cloud/templates/hosts.debian.tmpl
 sudo hostnamectl set-hostname ${NEW_NAME}
 
 echo "en_US.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen

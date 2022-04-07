@@ -10,23 +10,20 @@ else
 fi
 # Associate each server name with their respective SSH key, user and host.
 case ${SRT} in
-  nine)
-    ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@nine.solidrust.net
+  eks-1)
+    ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@eks-1.solidrust.net
+    ;;
+  eks-2)
+    ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@eks-2.solidrust.net
     ;;
   eks-3)
     ssh -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@eks-3.solidrust.net
-    ;;
-  eleven)
-    ssh shaun@10.42.69.45
     ;;
   data)
     ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@data.solidrust.net
     ;;
   web)
     ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@web.solidrust.net
-    ;;
-  bots)
-    ssh ubuntu@10.42.69.120
     ;;
   *)
     if [ -z ${SRT} ]; then
