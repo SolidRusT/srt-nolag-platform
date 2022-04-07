@@ -13,7 +13,7 @@ spec:
       - backend:
           serviceName: argocd-server
           servicePort: http
-    host: argocd-prod.mlops.reefplatform.com
+    host: argocd.eks.solidrust.net
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -30,4 +30,4 @@ spec:
       - backend:
           serviceName: argocd-server
           servicePort: https
-    host: argocd-prod-grpc.mlops.reefplatform.com
+    host: argocd-grpc.eks.solidrust.net
