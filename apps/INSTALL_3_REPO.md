@@ -88,7 +88,7 @@ sudo mount -a
 ```bash
 kubectl create namespace srt-repo
 kubectl apply -f ${HOME}/solidrust.net/apps/private-registry.yaml -n srt-repo
-kubectl apply -f private-registry-svc.yaml
+kubectl apply -f ${HOME}/solidrust.net/apps/private-registry-svc.yaml -n srt-repo
 kubectl -n srt-lab-repo get svc
 ```
 
