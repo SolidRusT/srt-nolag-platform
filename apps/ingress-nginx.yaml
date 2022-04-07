@@ -42,7 +42,7 @@ data:
       listen 2443;
       return 308 https://$host$request_uri;
     }
-  proxy-real-ip-cidr: 10.20.2.0/24,10.20.1.0/24,10.20.0.0/24
+  proxy-real-ip-cidr: 10.2.1.0/24,10.9.1.0/24
   use-forwarded-headers: 'true'
 ---
 # Source: ingress-nginx/templates/clusterrole.yaml

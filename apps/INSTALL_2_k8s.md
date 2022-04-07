@@ -43,10 +43,12 @@ sudo tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
 rm cilium-linux-amd64.tar.gz{,.sha256sum}
 ```
 
-
+### Apply Cilium cusomizations
+```bash
+kubectl apply -f ${HOME}solidrust.net/apps/cilium-config.yaml -n kube-system
+```
 
 ### Test connectivity
-
 ```bash
 cilium status --wait
 cilium connectivity test
@@ -58,27 +60,26 @@ cilium connectivity test
 #rm hubble-linux-amd64.tar.gz{,.sha256sum}
 ```
 
-### Install Ingress controller
+### Install LoadBalancer
 
+```bash
+kubectl get configmap kube-proxy -n kube-system -o yaml | \
+sed -e "s/strictARP: false/strictARP: true/" | \
+kubectl apply -f - -n kube-system
+helm repo add metallb https://metallb.github.io/metallb
+helm install metallb metallb/metallb
+helm install metallb metallb/metallb -f ${HOME}/solidrust.net/apps/metallb-values.yaml
+```
+
+### Restart all pods
+```bash
+kubectl get pods --all-namespaces -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,HOSTNETWORK:.spec.hostNetwork --no-headers=true | grep '<none>' | awk '{print "-n "$1" "$2}' | xargs -L 1 -r kubectl delete pod
+```
+
+### Install Ingress controller
 ```bash
 kubectl apply -n ingress-nginx -f ${HOME}/solidrust.net/apps/ingress-nginx.yaml
 #helm install ingress-nginx ingress-nginx \
 #--repo https://kubernetes.github.io/ingress-nginx \
 #--namespace ingress-nginx --create-namespace
-```
-
-### Restart all pods
-
-```bash
-kubectl get pods --all-namespaces -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,HOSTNETWORK:.spec.hostNetwork --no-headers=true | grep '<none>' | awk '{print "-n "$1" "$2}' | xargs -L 1 -r kubectl delete pod
-```
-
-## Uninstall k8s cluster (on all servers)
-
-```bash
-sudo kubeadm reset
-sudo rm -rf /etc/cni/net.d
-sudo rm -f $HOME/.kube/config
-sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
-sudo reboot
 ```

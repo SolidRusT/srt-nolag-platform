@@ -83,13 +83,6 @@ sudo systemctl restart docker
 sudo mount -a
 ```
 
-kubectl get configmap kube-proxy -n kube-system -o yaml | \
-sed -e "s/strictARP: false/strictARP: true/" | \
-kubectl apply -f - -n kube-system
-
-kubectl apply -f ${HOME}/solidrust.net/apps/cilium-config.yaml
-
-
 ### Create Docker repo service
 
 ```bash
