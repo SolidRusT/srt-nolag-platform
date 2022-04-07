@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: private-repository-k8s
-  namespace: srt-lab-repo
   labels:
     app: private-repository-k8s
 spec:
@@ -24,7 +23,6 @@ spec:
         hostPath:
           path: /opt/registry
           type: Directory
-
       containers:
         - image: registry:2
           name: private-repository-k8s

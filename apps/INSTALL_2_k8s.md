@@ -23,10 +23,14 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 #sudo iptables -P OUTPUT ACCEPT
 #sudo iptables -F
 
+### Connect Nodes
 
+```bash
+kubeadm token create --print-join-command
+```
 
-
-#curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```bash
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm repo add cilium https://helm.cilium.io/
 helm repo update
 helm install cilium cilium/cilium \
@@ -39,11 +43,7 @@ sudo tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
 rm cilium-linux-amd64.tar.gz{,.sha256sum}
 ```
 
-### Connect Nodes
 
-```bash
-kubeadm token create --print-join-command
-```
 
 ### Test connectivity
 
@@ -56,17 +56,6 @@ cilium connectivity test
 #sha256sum --check hubble-linux-amd64.tar.gz.sha256sum
 #sudo tar xzvfC hubble-linux-amd64.tar.gz /usr/local/bin
 #rm hubble-linux-amd64.tar.gz{,.sha256sum}
-```
-
-### Install MetalLB
-
-```bash
-curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
-echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-sudo apt-get update
-sudo apt-get install helm
-helm repo add metallb https://metallb.github.io/metallb
-helm install metallb metallb/metallb -f ${HOME}/solidrust.net/apps/metallb-values.yaml --create-namespace --namespace metallb
 ```
 
 ### Install Ingress controller

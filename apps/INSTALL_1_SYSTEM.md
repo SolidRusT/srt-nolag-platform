@@ -14,7 +14,9 @@ sudo apt-get install -y \
     lsb-release \
     software-properties-common \
     apt-transport-https \
-    unzip && \
+    unzip \
+    nfs-common \
+    nfs-kernel-server && \
 sudo apt dist-upgrade -y
 ```
 
