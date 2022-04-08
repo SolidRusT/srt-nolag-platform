@@ -1,6 +1,6 @@
 # SolidRusT Installation
 ## SolidRusT Game Server
- * [Installing SRT Game server](INSTALL.md)
+ * [Installing SRT Game server](scripts/)
  * [Useful Admin commands](docs/)
 
 # SolidRusT Game Server Releases
