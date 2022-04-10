@@ -18,7 +18,7 @@
     "MiningQuarries": "Mining Quarries",
     "ModifyDispenser": "You have set the resource amount for {0} dispensers to x{1}",
     "ModifyMiningQuarrySpeed": "The Mining Quarry will now provide resources every {0} seconds.",
-    "ModifyResource": "You have set the gather rate for {0} to x{1} from {2}.",
+    "ModifyResource": "You have set the gather rate for {0} to x{1} from {3}.",
     "ModifyResourceRemove": "You have reset the gather rate for {0} from {1}.",
     "NotAllowed": "You don't have permission to use this command.",
     "Pickups": "pickups",
