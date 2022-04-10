@@ -4,8 +4,8 @@ echo "export STEAMUSER=\"${STEAMUSER}\"" >>~/.bashrc
 echo "export GAME_ROOT=\"${GAME_ROOT}\"" >>~/.bashrc
 
 sudo mkdir -p ${GAME_ROOT}
-sudo mkfs -t xfs /dev/nvme0n1
-sudo mount /dev/nvme0n1 ${GAME_ROOT}
+sudo mkfs -t xfs /dev/nvme1n1
+sudo mount /dev/nvme1n1 ${GAME_ROOT}
 
 # Using AWS quickstart AMI
 #sudo mkdir -p ${GAME_ROOT}
@@ -24,6 +24,7 @@ export LOGS="${HOME}/${LOG_FILE}"
 touch ${LOGS}
 
 echo "Sync repo for game server"
+export S3_REPO="s3://solidrust.net-repository"
 mkdir -p ${HOME}/solidrust.net/servers ${HOME}/solidrust.net/defaults
 aws s3 sync --delete \
   --exclude "web/*" \

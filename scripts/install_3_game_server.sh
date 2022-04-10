@@ -7,7 +7,7 @@ sudo dpkg --add-architecture i386
 sudo apt update
 sudo apt -y dist-upgrade
 
-NEW_NAME="demo"
+NEW_NAME="nine"
 echo ${NEW_NAME} | sudo tee /etc/hostname
 echo "127.0.0.1    ${NEW_NAME} ${NEW_NAME}.solidrust.net" | sudo tee -a /etc/hosts /etc/cloud/templates/hosts.debian.tmpl
 sudo hostnamectl set-hostname ${NEW_NAME}
@@ -25,13 +25,13 @@ sudo swapon /swapfile
 sudo swapon -s
 echo "/swapfile swap swap defaults 0 0" | sudo tee -a /etc/fstab # TODO move this to NVMe drive
 
-# reboot # Recommended
-
 # freshen-up the Debian repo
 sudo apt -y install -f
 sudo apt -y autoremove
 sudo apt clean
 sudo apt autoclean
+# reboot # Recommended
+
 # Installed required dependencies
 ## Buster required lib32gcc1 instead of lib32gcc-s1
 ## Bullseye required lib32gcc-s1 instead of lib32gcc1

@@ -19,6 +19,9 @@ case ${SRT} in
   eks-3)
     ssh -i ${SERVER_KEYS}/solidrust-us-east-1pem.pem admin@eks-3.solidrust.net
     ;;
+  nine)
+    ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@nine.solidrust.net
+    ;;
   data)
     ssh -i ${SERVER_KEYS}/us-west-2-solidrust.pem admin@data.solidrust.net
     ;;
