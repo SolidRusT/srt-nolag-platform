@@ -169,10 +169,10 @@
       "ItemList": {
         "autoturret": {
           "Max": 1,
-          "Min": 1
+          "Min": 0
         },
         "explosive.timed": {
-          "Max": 1,
+          "Max": 3,
           "Min": 1
         },
         "metal.facemask": {
@@ -203,13 +203,13 @@
           "Max": 1,
           "Min": 1
         },
-        "rifle.m39": {
-          "Max": 1,
-          "Min": 1
+        "ammo.rocket.basic": {
+          "Max": 6,
+          "Min": 2
         },
         "rifle.lr300": {
           "Max": 1,
-          "Min": 1
+          "Min": 0
         },
         "ammo.rifle.explosive": {
           "Max": 30,
@@ -241,7 +241,7 @@
           "Min": 1
         },
         "lowgradefuel": {
-          "Max": 100,
+          "Max": 500,
           "Min": 100
         },
         "metal.fragments": {
@@ -253,7 +253,7 @@
           "Min": 100
         },
         "sulfur.ore": {
-          "Max": 3500,
+          "Max": 5000,
           "Min": 3500
         },
         "stones": {
@@ -275,7 +275,7 @@
         },
         "grenade.smoke": {
           "Max": 1,
-          "Min": 1
+          "Min": 0
         },
         "metal.refined": {
           "Max": 100,
@@ -303,23 +303,23 @@
         },
         "shotgun.pump": {
           "Max": 1,
-          "Min": 1
+          "Min": 0
         },
         "smg.2": {
-          "Max": 1,
-          "Min": 1
+          "Max": 2,
+          "Min": 0
         },
         "smg.thompson": {
-          "Max": 1,
-          "Min": 1
+          "Max": 2,
+          "Min": 2
         },
         "smgbody": {
           "Max": 1,
           "Min": 1
         },
         "syringe.medical": {
-          "Max": 3,
-          "Min": 2
+          "Max": 5,
+          "Min": 5
         },
         "targeting.computer": {
           "Max": 3,
@@ -343,19 +343,19 @@
         },
         "bleach": {
           "Max": 1,
-          "Min": 1
+          "Min": 0
         },
         "glue": {
-          "Max": 3,
-          "Min": 1
+          "Max": 0,
+          "Min": 0
         },
         "ducttape": {
-          "Max": 2,
-          "Min": 1
+          "Max": 0,
+          "Min": 0
         }
       },
-      "ItemsMax": 7,
-      "ItemsMin": 7,
+      "ItemsMax": 8,
+      "ItemsMin": 6,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -444,8 +444,8 @@
           "Min": 1
         },
         "pumpkin": {
-          "Max": 1,
-          "Min": 1
+          "Max": 5,
+          "Min": 2
         },
         "smallwaterbottle": {
           "Max": 1,
@@ -457,7 +457,7 @@
         }
       },
       "ItemsMax": 5,
-      "ItemsMin": 5,
+      "ItemsMin": 4,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -473,7 +473,7 @@
           "Min": 1
         },
         "syringe.medical": {
-          "Max": 1,
+          "Max": 5,
           "Min": 1
         }
       },
@@ -498,11 +498,11 @@
           "Min": 6
         },
         "chainsaw": {
-          "Max": 1,
+          "Max": 2,
           "Min": 1
         },
         "jackhammer": {
-          "Max": 1,
+          "Max": 2,
           "Min": 1
         },
         "lowgradefuel": {
@@ -642,8 +642,8 @@
       "Enabled": true,
       "ItemList": {
         "explosive.timed": {
-          "Max": 1,
-          "Min": 1
+          "Max": 2,
+          "Min": 2
         }
       },
       "ItemsMax": 4,
@@ -1509,9 +1509,9 @@
           "Max": 1,
           "Min": 1
         },
-        "electric.generator.small": {
-          "Max": 1,
-          "Min": 1
+        "ammo.rocket.basic": {
+          "Max": 3,
+          "Min": 3
         },
         "aiming.module.mlrs": {
           "Max": 1,
@@ -2111,7 +2111,7 @@
           "Min": 1
         },
         "explosive.timed": {
-          "Max": 3,
+          "Max": 4,
           "Min": 2
         },
         "weapon.mod.8x.scope": {
@@ -2128,7 +2128,11 @@
         },
         "rifle.lr300": {
           "Max": 1,
-          "Min": 1
+          "Min": 0
+        }
+        "ammo.rocket.basic": {
+          "Max": 5,
+          "Min": 2,
         }
       },
       "ItemsMax": 10,
@@ -2144,7 +2148,7 @@
           "Min": 1
         },
         "explosive.timed": {
-          "Max": 3,
+          "Max": 6,
           "Min": 2
         },
         "metal.facemask": {
@@ -2185,8 +2189,11 @@
         },
         "rifle.lr300": {
           "Max": 1,
-          "Min": 1
-        }
+          "Min": 0
+        },
+        "ammo.rocket.basic": {
+          "Max": 5,
+          "Min": 3,
       },
       "ItemsMax": 10,
       "ItemsMin": 10,
@@ -2197,7 +2204,7 @@
       "Enabled": true,
       "ItemList": {
         "explosive.timed": {
-          "Max": 1,
+          "Max": 2,
           "Min": 1
         },
         "metal.refined": {
@@ -2221,16 +2228,16 @@
           "Min": 100
         },
         "explosive.satchel": {
-          "Max": 5,
+          "Max": 10,
           "Min": 5
         },
-        "wall.external.high.ice": {
+        "wall.external.high.wood": {
           "Max": 2,
           "Min": 2
         },
         "rifle.lr300": {
           "Max": 1,
-          "Min": 1
+          "Min": 0
         },
         "rifle.m39": {
           "Max": 1,
@@ -2342,20 +2349,20 @@
           "Min": 100
         },
         "ammo.rocket.fire": {
-          "Max": 3,
-          "Min": 2
+          "Max": 1,
+          "Min": 1
         },
         "ammo.rocket.hv": {
-          "Max": 3,
-          "Min": 3
+          "Max": 9,
+          "Min": 5
         },
         "ammo.rocket.mlrs": {
           "Max": 4,
-          "Min": 3
+          "Min": 2
         },
         "explosive.timed": {
-          "Max": 3,
-          "Min": 2
+          "Max": 5,
+          "Min": 3
         },
         "lmg.m249": {
           "Max": 1,
@@ -2369,16 +2376,12 @@
           "Max": 1,
           "Min": 1
         },
-        "rifle.lr300": {
-          "Max": 1,
-          "Min": 1
-        },
         "weapon.mod.8x.scope": {
           "Max": 1,
           "Min": 1
         },
         "ammo.rocket.basic": {
-          "Max": 3,
+          "Max": 5,
           "Min": 3
         }
       },
@@ -2395,24 +2398,20 @@
           "Min": 100
         },
         "ammo.rocket.basic": {
-          "Max": 3,
+          "Max": 7,
           "Min": 3
         },
         "ammo.rocket.fire": {
-          "Max": 3,
-          "Min": 2
+          "Max": 2,
+          "Min": 0
         },
         "ammo.rocket.hv": {
-          "Max": 3,
+          "Max": 4,
           "Min": 3
         },
-        "ammo.rocket.mlrs": {
-          "Max": 6,
-          "Min": 4
-        },
         "explosive.timed": {
-          "Max": 3,
-          "Min": 2
+          "Max": 4,
+          "Min": 4
         },
         "lmg.m249": {
           "Max": 1,
@@ -2423,10 +2422,6 @@
           "Min": 1
         },
         "rifle.l96": {
-          "Max": 1,
-          "Min": 1
-        },
-        "rifle.lr300": {
           "Max": 1,
           "Min": 1
         },
