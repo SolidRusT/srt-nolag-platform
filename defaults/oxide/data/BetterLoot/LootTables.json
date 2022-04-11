@@ -159,8 +159,8 @@
           "Min": 100
         }
       },
-      "ItemsMax": 1,
-      "ItemsMin": 1,
+      "ItemsMax": 3,
+      "ItemsMin": 3,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -379,8 +379,8 @@
           "Min": 10
         },
         "semibody": {
-          "Max": 1,
-          "Min": 1
+          "Max": 3,
+          "Min": 3
         },
         "sheetmetal": {
           "Max": 10,
@@ -1292,10 +1292,10 @@
           "Min": 2
         }
       },
-      "ItemsMax": 5,
+      "ItemsMax": 7,
       "ItemsMin": 4,
       "MaxBPs": 0,
-      "Scrap": 0
+      "Scrap": 15
     },
     "assets/bundled/prefabs/radtown/loot_barrel_2.prefab": {
       "Enabled": true,
@@ -1352,7 +1352,7 @@
       "ItemsMax": 5,
       "ItemsMin": 4,
       "MaxBPs": 0,
-      "Scrap": 0
+      "Scrap": 15
     },
     "assets/bundled/prefabs/radtown/loot_trash.prefab": {
       "Enabled": true,
@@ -1408,7 +1408,7 @@
           "Min": 25
         },
         "lowgradefuel": {
-          "Max": 25,
+          "Max": 50,
           "Min": 25
         }
       },
@@ -2135,8 +2135,8 @@
           "Min": 2,
         }
       },
-      "ItemsMax": 10,
-      "ItemsMin": 10,
+      "ItemsMax": 12,
+      "ItemsMin": 12,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -2195,8 +2195,8 @@
           "Max": 5,
           "Min": 3,
       },
-      "ItemsMax": 10,
-      "ItemsMin": 10,
+      "ItemsMax": 18,
+      "ItemsMin": 18,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -2336,7 +2336,7 @@
           "Min": 1
         }
       },
-      "ItemsMax": 9,
+      "ItemsMax": 10,
       "ItemsMin": 9,
       "MaxBPs": 0,
       "Scrap": 0
@@ -2385,7 +2385,7 @@
           "Min": 3
         }
       },
-      "ItemsMax": 8,
+      "ItemsMax": 9,
       "ItemsMin": 8,
       "MaxBPs": 0,
       "Scrap": 0
@@ -2430,10 +2430,10 @@
           "Min": 1
         }
       },
-      "ItemsMax": 6,
-      "ItemsMin": 5,
+      "ItemsMax": 10,
+      "ItemsMin": 6,
       "MaxBPs": 0,
-      "Scrap": 0
+      "Scrap": 70
     }
   }
 }
