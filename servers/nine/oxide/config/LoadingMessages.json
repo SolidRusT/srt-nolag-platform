@@ -4,7 +4,7 @@
     "Use Random Cyclicity (Instead of sequential)": false,
     "Cycle Messages Every ~N Seconds": 3.0,
     "Messages": [{
-            "Top Status": "<color=#ffff00>SRT NoLAG 10x</color>",
+            "Top Status": "<color=#ffff00>SRT NoLAG 3x</color>",
             "Bottom Status": "<color=#add8e6>/info  to see help and the chat commands</color>"
         },
         {
@@ -12,7 +12,7 @@
             "Bottom Status": "<color=#ffff00>/spawnmini  spawn your personal minicopter</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SRT NoLAG 10x",
+            "Top Status": "<color=#add8e6>SRT NoLAG 3x",
             "Bottom Status": "<color=#ffff00>/buildcar  craft a sedan with storage</color>"
         },
         {
@@ -20,7 +20,7 @@
             "Bottom Status": "<color=#ffff00>/recycler.craft  craft personal Recyclers</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SRT NoLAG 10x",
+            "Top Status": "<color=#add8e6>SRT NoLAG 3x",
             "Bottom Status": "<color=#ffff00>/heal  instantly heal yourself</color>"
         },
         {
@@ -28,7 +28,7 @@
             "Bottom Status": "<color=#ffff00>/outpost  teleport to Outpost</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SRT NoLAG 10x",
+            "Top Status": "<color=#add8e6>SRT NoLAG 3x",
             "Bottom Status": "<color=#ffff00>/bandit  teleport to Bandit Camp</color>"
         },
         {
@@ -36,7 +36,7 @@
             "Bottom Status": "<color=#ffff00>/chute  deploy a parachute while falling</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SRT NoLAG 10x",
+            "Top Status": "<color=#add8e6>SRT NoLAG 3x",
             "Bottom Status": "<color=#ffff00>/setgenes  change seed genes</color>"
         },
         {
@@ -44,7 +44,7 @@
             "Bottom Status": "<color=#ffff00>/trade  remotely trade with other players</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SRT NoLAG 10x",
+            "Top Status": "<color=#add8e6>SRT NoLAG 3x",
             "Bottom Status": "<color=#ffff00>/home  set and teleport to your home base</color>"
         },
         {
@@ -52,7 +52,7 @@
             "Bottom Status": "<color=#ffff00>/stats  show your current player ranking</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SRT NoLAG 10x",
+            "Top Status": "<color=#add8e6>SRT NoLAG 3x",
             "Bottom Status": "<color=#ffff00>/top  show your kills and deaths</color>"
         },
         {
@@ -60,7 +60,7 @@
             "Bottom Status": "<color=#ffff00>/skin  change skins on your items</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SRT NoLAG 10x",
+            "Top Status": "<color=#add8e6>SRT NoLAG 3x",
             "Bottom Status": "<color=#ffff00>/ad  automatically close doors behind you</color>"
         },
         {
@@ -80,7 +80,7 @@
     ],
     "QueuePosition": null,
     "Last Message (When entering game)": {
-        "Top Status": "<color=#ffff00>SRT NoLAG 10x</color>",
+        "Top Status": "<color=#ffff00>SRT NoLAG 3x</color>",
         "Bottom Status": "<color=#008000>Spawning into the game...</color>"
     }
 }
