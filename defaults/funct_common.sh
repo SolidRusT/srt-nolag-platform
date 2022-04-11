@@ -100,8 +100,6 @@ function start_rust() {
   sleep 3
   # Bump-up process priority
   export MY_PID=$(pidof RustDedicated)
-  echo "Boosting affinity for RustDedicated PID: ${MY_PID}" | tee -a ${LOGS}
-  renice -n 10 ${MY_PID} | tee -a ${LOGS}
   # Sleep for a bit (required/legacy)
   tail -n 10 ${SERVER_LOGS}
   echo "Delaying for about 8mins while service loads" | tee -a ${LOGS}
