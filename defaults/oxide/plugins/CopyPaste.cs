@@ -1,4 +1,5 @@
 ﻿//If debug is defined it will add a stopwatch to the paste and copydata which can be used to profile copying and pasting.
+
 //#define DEBUG
 
 using System;
@@ -34,7 +35,7 @@ using Graphics = System.Drawing.Graphics;
 
 namespace Oxide.Plugins
 {
-    [Info("Copy Paste", "misticos", "4.1.31")]
+    [Info("Copy Paste", "misticos", "4.1.32")]
     [Description("Copy and paste buildings to save them or move them")]
     public class CopyPaste : CovalencePlugin
     {
@@ -270,7 +271,8 @@ namespace Oxide.Plugins
                 DegreeToRadian(player.GetNetworkRotation().eulerAngles.y), args, player.IPlayer, callback);
         }
 
-        private object TryPasteFromSteamId(ulong userId, string filename, string[] args, Action callback = null)
+        private object TryPasteFromSteamId(ulong userId, string filename, string[] args, Action callback = null,
+            Action<BaseEntity> callbackSpawned = null)
         {
             var player = players.FindPlayerById(userId.ToString())?.Object as BasePlayer;
             if (player == null)
@@ -283,13 +285,26 @@ namespace Oxide.Plugins
 
             return TryPaste(hit.point, filename, player.IPlayer,
                 DegreeToRadian(player.GetNetworkRotation().eulerAngles.y),
-                args, callback: callback);
+                args, callback: callback, callbackSpawned: callbackSpawned).Item1;
         }
 
         private object TryPasteFromVector3(Vector3 pos, float rotationCorrection, string filename, string[] args,
-            Action callback = null)
+            Action callback = null, Action<BaseEntity> callbackSpawned = null)
         {
-            return TryPaste(pos, filename, _consolePlayer, rotationCorrection, args, callback: callback);
+            return TryPaste(pos, filename, _consolePlayer, rotationCorrection, args, callback: callback,
+                callbackSpawned: callbackSpawned).Item1;
+        }
+
+        private ValueTuple<object, Action> TryPasteFromVector3Cancellable(Vector3 pos, float rotationCorrection,
+            string filename, string[] args,
+            Action callback = null, Action<BaseEntity> callbackSpawned = null)
+        {
+            var result = TryPaste(pos, filename, _consolePlayer, rotationCorrection, args, callback: callback,
+                callbackSpawned: callbackSpawned);
+
+            var pasteData = result.Item2;
+
+            return new ValueTuple<object, Action>(result.Item1, () => pasteData.Cancelled = true);
         }
 
         #endregion
@@ -377,13 +392,13 @@ namespace Oxide.Plugins
             // If it gets stuck in infinite loop break the loop.
             if (count != 0 && entities.Count != 0 && entities.Count == count)
             {
-                player.Reply("Undo cancelled because of infinite loop.");
+                player?.Reply("Undo cancelled because of infinite loop.");
                 return;
             }
 
             if (entities.Count > 0)
                 NextTick(() => UndoLoop(entities, player, entities.Count));
-            else
+            else if (player != null)
             {
                 player.Reply(Lang("UNDO_SUCCESS", player.Id));
 
@@ -996,9 +1011,9 @@ namespace Oxide.Plugins
             return transformedPos;
         }
 
-        private void Paste(ICollection<Dictionary<string, object>> entities, Dictionary<string, object> protocol,
+        private PasteData Paste(ICollection<Dictionary<string, object>> entities, Dictionary<string, object> protocol,
             bool ownership, Vector3 startPos, IPlayer player, bool stability, float rotationCorrection,
-            float heightAdj, bool auth, Action callback, string filename)
+            float heightAdj, bool auth, Action callback, Action<BaseEntity> callbackSpawned, string filename, bool checkPlaced)
         {
             //Settings
 
@@ -1019,22 +1034,39 @@ namespace Oxide.Plugins
                 Stability = stability,
                 Auth = auth,
                 Ownership = ownership,
-                Callback = callback,
-                Filename = filename
+                CallbackFinished = callback,
+                CallbackSpawned = callbackSpawned,
+                Filename = filename,
+                CheckPlaced = checkPlaced
             };
 
             NextTick(() => PasteLoop(pasteData));
+
+            return pasteData;
         }
 
         private void PasteLoop(PasteData pasteData)
         {
+            if (pasteData.Cancelled)
+            {
+                UndoLoop(new HashSet<BaseEntity>(pasteData.PastedEntities), pasteData.Player,
+                    pasteData.PastedEntities.Count);
+                
+                return;
+            }
+
             var entities = pasteData.Entities;
             var todo = entities.Take(_config.PasteBatchSize).ToArray();
 
             foreach (var data in todo)
             {
                 entities.Remove(data);
+
                 var prefabname = (string)data["prefabname"];
+#if DEBUG
+                Puts($"{nameof(PasteLoop)}: Entity {prefabname}");
+#endif
+
                 var skinid = ulong.Parse(data["skinid"].ToString());
                 var pos = (Vector3)data["position"];
                 var rot = (Quaternion)data["rotation"];
@@ -1045,7 +1077,7 @@ namespace Oxide.Plugins
                     ownerId = Convert.ToUInt64(data["ownerid"]);
                 }
 
-                if (CheckPlaced(prefabname, pos, rot))
+                if (pasteData.CheckPlaced && CheckPlaced(prefabname, pos, rot))
                     continue;
 
                 if (prefabname.Contains("pillar"))
@@ -1163,7 +1195,7 @@ namespace Oxide.Plugins
                                     RaycastHit hitInfo;
 
                                     if (Physics.Raycast(growableEntity.transform.position, Vector3.down, out hitInfo,
-                                        .5f, Rust.Layers.DefaultDeployVolumeCheck))
+                                            .5f, Rust.Layers.DefaultDeployVolumeCheck))
                                     {
                                         var parentEntity = hitInfo.GetEntity();
                                         if (parentEntity != null)
@@ -1596,6 +1628,7 @@ namespace Oxide.Plugins
                 }
 
                 pasteData.PastedEntities.Add(entity);
+                pasteData.CallbackSpawned?.Invoke(entity);
             }
 
             if (entities.Count > 0)
@@ -1759,7 +1792,7 @@ namespace Oxide.Plugins
 
                 _lastPastes[pasteData.Player.Id].Push(pasteData.PastedEntities);
 
-                pasteData.Callback?.Invoke();
+                pasteData.CallbackFinished?.Invoke();
 
                 Interface.CallHook("OnPasteFinished", pasteData.PastedEntities, pasteData.Filename);
             }
@@ -1942,20 +1975,22 @@ namespace Oxide.Plugins
             return flags;
         }
 
-        private object TryPaste(Vector3 startPos, string filename, IPlayer player, float rotationCorrection,
-            string[] args, bool autoHeight = true, Action callback = null)
+        private ValueTuple<object, PasteData> TryPaste(Vector3 startPos, string filename, IPlayer player,
+            float rotationCorrection,
+            string[] args, bool autoHeight = true, Action callback = null,
+            Action<BaseEntity> callbackSpawned = null)
         {
             var userId = player?.Id;
 
             var path = _subDirectory + filename;
 
             if (!Interface.Oxide.DataFileSystem.ExistsDatafile(path))
-                return Lang("FILE_NOT_EXISTS", userId);
+                return new ValueTuple<object, PasteData>(Lang("FILE_NOT_EXISTS", userId), null);
 
             var data = Interface.Oxide.DataFileSystem.GetDatafile(path);
 
             if (data["default"] == null || data["entities"] == null)
-                return Lang("FILE_BROKEN", userId);
+                return new ValueTuple<object, PasteData>(Lang("FILE_BROKEN", userId), null);
 
             float heightAdj = 0f, blockCollision = 0f;
             bool auth = _config.Paste.Auth,
@@ -1963,7 +1998,8 @@ namespace Oxide.Plugins
                 deployables = _config.Paste.Deployables,
                 vending = _config.Paste.VendingMachines,
                 stability = _config.Paste.Stability,
-                ownership = _config.Paste.EntityOwner;
+                ownership = _config.Paste.EntityOwner,
+                checkPlaced = true;
 
             for (var i = 0;; i += 2)
             {
@@ -1973,7 +2009,7 @@ namespace Oxide.Plugins
                 var valueIndex = i + 1;
 
                 if (valueIndex >= args.Length)
-                    return Lang("SYNTAX_PASTE_OR_PASTEBACK", userId);
+                    return new ValueTuple<object, PasteData>(Lang("SYNTAX_PASTE_OR_PASTEBACK", userId), null);
 
                 var param = args[i].ToLower();
 
@@ -1982,62 +2018,69 @@ namespace Oxide.Plugins
                     case "a":
                     case "auth":
                         if (!bool.TryParse(args[valueIndex], out auth))
-                            return Lang("SYNTAX_BOOL", userId, param);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BOOL", userId, param), null);
 
                         break;
 
                     case "b":
                     case "blockcollision":
                         if (!float.TryParse(args[valueIndex], out blockCollision))
-                            return Lang("SYNTAX_BLOCKCOLLISION", userId);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BLOCKCOLLISION", userId), null);
 
                         break;
 
                     case "d":
                     case "deployables":
                         if (!bool.TryParse(args[valueIndex], out deployables))
-                            return Lang("SYNTAX_BOOL", userId, param);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BOOL", userId, param), null);
 
                         break;
 
                     case "h":
                     case "height":
                         if (!float.TryParse(args[valueIndex], out heightAdj))
-                            return Lang("SYNTAX_HEIGHT", userId);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_HEIGHT", userId), null);
 
                         break;
 
                     case "i":
                     case "inventories":
                         if (!bool.TryParse(args[valueIndex], out inventories))
-                            return Lang("SYNTAX_BOOL", userId, param);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BOOL", userId, param), null);
 
                         break;
 
                     case "s":
                     case "stability":
                         if (!bool.TryParse(args[valueIndex], out stability))
-                            return Lang("SYNTAX_BOOL", userId, param);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BOOL", userId, param), null);
 
                         break;
 
                     case "v":
                     case "vending":
                         if (!bool.TryParse(args[valueIndex], out vending))
-                            return Lang("SYNTAX_BOOL", userId, param);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BOOL", userId, param), null);
 
                         break;
 
                     case "o":
                     case "entityowner":
                         if (!bool.TryParse(args[valueIndex], out ownership))
-                            return Lang("SYNTAX_BOOL", userId, param);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BOOL", userId, param), null);
+
+                        break;
+
+                    case "cp":
+                    case "checkplaced":
+                        if (!bool.TryParse(args[valueIndex], out checkPlaced))
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BOOL", userId, param), null);
 
                         break;
 
                     case "autoheight":
                         if (!bool.TryParse(args[valueIndex], out autoHeight))
-                            return Lang("SYNTAX_BOOL", userId, param);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_BOOL", userId, param), null);
 
                         break;
 
@@ -2047,12 +2090,12 @@ namespace Oxide.Plugins
 
                     case "rotation":
                         if (!float.TryParse(args[valueIndex], out rotationCorrection))
-                            return Lang("SYNTAX_FLOAT", userId, param);
+                            return new ValueTuple<object, PasteData>(Lang("SYNTAX_FLOAT", userId, param), null);
 
                         break;
 
                     default:
-                        return Lang("SYNTAX_PASTE_OR_PASTEBACK", userId);
+                        return new ValueTuple<object, PasteData>(Lang("SYNTAX_PASTE_OR_PASTEBACK", userId), null);
                 }
             }
 
@@ -2066,7 +2109,7 @@ namespace Oxide.Plugins
                 var bestHeight = FindBestHeight(preloadData, startPos);
 
                 if (bestHeight is string)
-                    return bestHeight;
+                    return new ValueTuple<object, PasteData>(bestHeight, null);
 
                 heightAdj += (float)bestHeight - startPos.y;
 
@@ -2084,7 +2127,7 @@ namespace Oxide.Plugins
                 var collision = CheckCollision(preloadData, startPos, blockCollision);
 
                 if (collision is string)
-                    return collision;
+                    return new ValueTuple<object, PasteData>(collision, null);
             }
 
             var protocol = new Dictionary<string, object>();
@@ -2092,9 +2135,10 @@ namespace Oxide.Plugins
             if (data["protocol"] != null)
                 protocol = data["protocol"] as Dictionary<string, object>;
 
-            Paste(preloadData, protocol, ownership, startPos, player, stability, rotationCorrection,
-                autoHeight ? heightAdj : 0, auth, callback, filename);
-            return true;
+            var pasteData = Paste(preloadData, protocol, ownership, startPos, player, stability, rotationCorrection,
+                autoHeight ? heightAdj : 0, auth, callback, callbackSpawned, filename, checkPlaced);
+
+            return new ValueTuple<object, PasteData>(true, pasteData);
         }
 
         private List<BaseEntity> TryPasteSlots(BaseEntity ent, Dictionary<string, object> structure,
@@ -2183,6 +2227,8 @@ namespace Oxide.Plugins
                         keyLock.OwnerID = Convert.ToUInt64(slotData["ownerId"]);
                     }
                 }
+
+                pasteData.CallbackSpawned?.Invoke(ent);
             }
 
             return entitySlots;
@@ -2206,7 +2252,7 @@ namespace Oxide.Plugins
             var startPos = new Vector3(Convert.ToSingle(pos?["x"]), Convert.ToSingle(pos?["y"]),
                 Convert.ToSingle(pos?["z"]));
 
-            return TryPaste(startPos, filename, player, rotationCorrection, args, false);
+            return TryPaste(startPos, filename, player, rotationCorrection, args, false).Item1;
         }
 
         [Command("copy")]
@@ -3000,7 +3046,8 @@ namespace Oxide.Plugins
             public BasePlayer BasePlayer;
             public List<StabilityEntity> StabilityEntities = new List<StabilityEntity>();
             public Quaternion QuaternionRotation;
-            public Action Callback;
+            public Action CallbackFinished;
+            public Action<BaseEntity> CallbackSpawned;
 
             public bool Auth;
             public Vector3 StartPos;
@@ -3008,6 +3055,9 @@ namespace Oxide.Plugins
             public bool Stability;
             public bool IsItemReplace;
             public bool Ownership;
+            public bool CheckPlaced = true;
+
+            public bool Cancelled = false;
 
             public uint BuildingId = 0;
 

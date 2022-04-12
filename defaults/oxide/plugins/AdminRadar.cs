@@ -16,20 +16,9 @@ using Oxide.Game.Rust.Libraries;
 using Rust;
 using UnityEngine;
 
-/*
-Fixed ShowActive().NullReferenceException
-*/
-
-// make all entities dynamic and where they can be assigned to any filter or their own
-// implement toggable filters
-
-// add submarines
-//cache deployables
-//https://umod.org/community/admin-radar/32562-show-if-person-near-tc
-
 namespace Oxide.Plugins
 {
-    [Info("Admin Radar", "nivex", "5.1.7")]
+    [Info("Admin Radar", "nivex", "5.1.9")]
     [Description("Radar tool for Admins and Developers.")]
     class AdminRadar : RustPlugin
     {
@@ -77,7 +66,7 @@ namespace Oxide.Plugins
 
             private void Create()
             {
-                foreach (BaseEntity entity in BaseNetworkable.serverEntities)
+                foreach (BaseEntity entity in OfType<BaseEntity>(BaseNetworkable.serverEntities))
                 {
                     CacheInfo ci;
                     if (!dict.TryGetValue(entity.GetType().Name, out ci))
@@ -244,6 +233,23 @@ namespace Oxide.Plugins
             Zombies
         }
 
+        private static List<T> OfType<T>(IEnumerable<BaseNetworkable> networkables) where T : BaseEntity
+        {
+            List<T> result = new List<T>();
+            using (var enumerator = networkables.GetEnumerator())
+            {
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.Current is T)
+                    {
+                        result.Add(enumerator.Current as T);
+                    }
+                }
+            }
+            return result;
+        }
+
+
         private string PositionToGrid(Vector3 position) // Credit: MagicGridPanel
         {
             var r = new Vector2(position.x + (World.Size / 2f), position.z + (World.Size / 2f));
@@ -360,12 +366,6 @@ namespace Oxide.Plugins
             public bool showAll;
             private BaseEntity source;
             public bool barebonesMode;
-
-            private class Ping
-            {
-                public int AveragePing;
-                public float Time;
-            }
 
             private class PrivInfo
             {
@@ -571,7 +571,7 @@ namespace Oxide.Plugins
             {
                 do
                 {
-                    if (!player || !player.IsConnected || ins == null || ins.isUnloading)
+                    if (player == null || !player.IsConnected || ins == null || ins.isUnloading)
                     {
                         Destroy(this);
                         yield break;
@@ -610,7 +610,7 @@ namespace Oxide.Plugins
             {
                 do
                 {
-                    if (!player || !player.IsConnected || ins == null || ins.isUnloading)
+                    if (player == null || !player.IsConnected || ins == null || ins.isUnloading)
                     {
                         Destroy(this);
                         yield break;
@@ -2094,15 +2094,18 @@ namespace Oxide.Plugins
 
                     return npc.GetBestTarget() as BasePlayer;
                 }
-                /*else if (entity is BaseAnimalNPC) // brain must be exposed
+                else if (entity is BaseAnimalNPC) // brain must be exposed
                 {
                     var npc = entity as BaseAnimalNPC;
 
                     foreach (var target in npc.brain.Senses.Players)
                     {
-                        return target as BasePlayer;
+                        if (target is BasePlayer)
+                        {
+                            return target as BasePlayer;
+                        }
                     }
-                }*/
+                }
 
                 return null;
             }
@@ -3254,7 +3257,7 @@ namespace Oxide.Plugins
                         return;
                     case "train":
                         {
-                            foreach (BaseTrain train in BaseNetworkable.serverEntities)
+                            foreach (TrainCar train in OfType<TrainCar>(BaseNetworkable.serverEntities))
                             { 
                                 timer.Repeat(1f, 60, () => 
                                 {
@@ -3597,7 +3600,7 @@ namespace Oxide.Plugins
                     player.SendNetworkUpdateImmediate();
                 }
                 
-                foreach (BaseEntity e in BaseNetworkable.serverEntities)
+                foreach (var e in OfType<BaseEntity>(BaseNetworkable.serverEntities))
                 {
                     if (e is BuildingPrivlidge && (e as BuildingPrivlidge).IsAuthed(userID))
                     {
@@ -3674,7 +3677,7 @@ namespace Oxide.Plugins
                     player.SendNetworkUpdateImmediate();
                 }
 
-                foreach (BaseEntity o in BaseNetworkable.serverEntities)
+                foreach (BaseEntity o in OfType<BaseEntity>(BaseNetworkable.serverEntities))
                 {
                     if (!o.ShortPrefabName.Contains(value, CompareOptions.OrdinalIgnoreCase)) continue;
                     var distance = Mathf.FloorToInt(o.Distance(player));
@@ -3710,6 +3713,11 @@ namespace Oxide.Plugins
                 {
                     if (entity is DroppedItem || entity is Landmine || entity is BearTrap || entity is DroppedItemContainer)
                     {
+                        if (entity == null || entity.IsDestroyed)
+                        {
+                            continue;
+                        }
+
                         drop = entity as DroppedItem;
                         string shortname = drop?.item?.info.shortname ?? entity.ShortPrefabName;
                         currDistance = (entity.transform.position - player.transform.position).magnitude;

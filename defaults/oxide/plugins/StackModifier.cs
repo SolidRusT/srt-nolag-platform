@@ -17,12 +17,9 @@ using UnityEngine;
  * Has not being able to stack a used gun onto a new gun, only.
  * Doesn't have the weapon attachments issues
  *
- * Fixed config spelling errors
  * Fixed Visual bug on item splits ( where the players inventory UI wasn't updating properly )
  * Slight performance tweak
  * Added Updater methods.
- *
- * Updater code was derived from whitethunder's plugin.
  *
  * Fixed new NRE issues 6/8/2021
  *
@@ -160,8 +157,8 @@ using UnityEngine;
  * New command sluts! /stackmodifiercolor
  * Fixed Search bar commands! ( reset & set ) now work excellently!
  * Search parameters work 200% better than before!
- * Added Patch for Nivex
- * This update was brought to you with baz!
+ * Added Patch for Nivex's RaidableBases Plugins
+ * This update was brought to you in conjunction with baz!
  *
  * Update 1.4.1
  * Fixed UI Constantly Re-Updating the Multiplier Descriptions ( when not needed ).
@@ -188,11 +185,24 @@ using UnityEngine;
  * hazmatsuit_scientist_arctic
  * spraycan
  * rifle.ak.ice
+ *
+ * update 1.4.8
+ * Updated for rust update
+ * Added the following new items
+ * bluedogtags
+ * dogtagneutral
+ * reddogtags
+ * attire.egg.suit
+ * sign.egg.suit
+ *
+ * update 1.4.9
+ * Added 1 new feature
+ * Disable Images toggle: Disables ImageLibrary Requirement / Images for UI Editor
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.4.7")]
+    [Info("Stack Modifier", "Khan", "1.4.9")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
@@ -207,6 +217,8 @@ namespace Oxide.Plugins
         private Dictionary<string, string> _stackModifierImageList;
         private List<KeyValuePair<string, ulong>> _stackModifierIcons;
 
+        //TODO: Code in feature request for stack overrides
+        //private const string OverRide = "stackmodifier.override";
         private const string ByPass = "stackmodifier.bypass";
         private const string Admin = "stackmodifier.admin";
 
@@ -980,6 +992,11 @@ namespace Oxide.Plugins
             {"hazmatsuit_scientist_arctic", 1},
             {"spraycan", 1},
             {"rifle.ak.ice", 1},
+            {"bluedogtags", 5000},
+            {"dogtagneutral", 5000},
+            {"reddogtags", 5000},
+            {"attire.egg.suit", 1},
+            {"sign.egg.suit", 5},
         };
 
         private readonly HashSet<string> _exclude = new HashSet<string>
@@ -1101,6 +1118,9 @@ namespace Oxide.Plugins
 
             [JsonProperty("Enable UI Editor")]
             public bool EnableEditor = true;
+
+            [JsonProperty("Disable ImageLibrary Requirement / Images for UI Editor")]
+            public bool DisableImages = false;
 
             [JsonProperty("Sets editor command")] 
             public string modifycommand = "stackmodifier";
@@ -1342,6 +1362,7 @@ namespace Oxide.Plugins
 
         private void OnServerInitialized()
         {
+            //permission.RegisterPermission(OverRide, this);
             permission.RegisterPermission(ByPass, this);
             permission.RegisterPermission(Admin, this);
             CheckConfig();
@@ -1721,7 +1742,7 @@ namespace Oxide.Plugins
         {
             bool success = ImageLibrary != null && ImageLibrary.IsLoaded && ImageLibrary.Call<bool>("IsReady");
 
-            if (!_config.EnableEditor) return;
+            if (!_config.EnableEditor || _config.DisableImages) return;
             if (!success)
             {
                 if (_maxImageLibraryAttempts >= 20)
@@ -2045,6 +2066,8 @@ namespace Oxide.Plugins
 
         private void CreateEditorItemIcon(ref CuiElementContainer container, string shortname, string displayName, string userId, float ymax, float ymin)
         {
+            float position = _config.DisableImages ? 0.27f : 0.3f;
+
             var label = new CuiLabel
             {
                 Text =
@@ -2056,13 +2079,17 @@ namespace Oxide.Plugins
                 },
                 RectTransform =
                 {
-                    AnchorMin = $"0.3 {ymin}",
+                    AnchorMin = $"{position} {ymin}",
                     AnchorMax = $"0.4 {ymax}"
                 }
             };
 
+            container.Add(label, StackModifierEditorContentName);
+
+            if (_config.DisableImages) return;
+
             var rawImage = new CuiRawImageComponent();
-            
+
             if ((bool) (ImageLibrary?.Call("HasImage", shortname, 0UL) ?? false))
             {
                 rawImage.Png = (string) ImageLibrary?.Call("GetImage", shortname, 0UL, false);
@@ -2072,7 +2099,6 @@ namespace Oxide.Plugins
                 rawImage.Png = (string) ImageLibrary?.Call("GetImage", _config.IconUrlSm);
             }
 
-            container.Add(label, StackModifierEditorContentName);
             container.Add(new CuiElement
             {
                 Parent = StackModifierEditorContentName,
@@ -2354,7 +2380,7 @@ namespace Oxide.Plugins
             if (!_config.EnableEditor || !permission.UserHasPermission(player.UserIDString, Admin))
                 return;
 
-            if (!_isEditorReady)
+            if (!_isEditorReady && !_config.DisableImages)
             {
                 player.ChatMessage("Waiting On ImageLibrary to finish the load order");
                 return;

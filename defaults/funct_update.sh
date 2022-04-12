@@ -325,6 +325,7 @@ DEFAULT_PERMS=(
   carturrets.limit.2
   chute.allowed
   clearrepair.use
+  compoundteleport.use
   craftchassis.2
   crafts.use
   craftsman.leveling.clothing
@@ -380,6 +381,7 @@ DEFAULT_PERMS=(
   quicksort.lootall
   quicksort.use
   raidalarm.use
+  raidmarkers.allow
   realistictorch.use
   recyclerspeed.use
   removertool.normal

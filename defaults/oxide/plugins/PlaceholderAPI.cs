@@ -1,14 +1,11 @@
 // Uncomment this line to enable some debug output and performance measurers
-// #define DEBUG
+//#define DEBUG
+//#define Conditionals
 
 #if DEBUG
 using System.Diagnostics;
 #endif
 
-#if RUST
-using Network;
-using Oxide.Game.Rust;
-#endif
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -26,14 +23,14 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("Placeholder API", "misticos", "2.2.0")]
+    [Info("Placeholder API", "misticos", "2.2.1")]
     [Description("Centralized location to query data from other plugins. Streamlined, convenient, and performant.")]
     class PlaceholderAPI : CovalencePlugin
     {
         #region Variables
 
 #if RUST
-        [PluginReference(nameof(RustCore))]
+        [PluginReference(nameof(Game.Rust.RustCore))]
         private Plugin _rustCore = null;
 #endif
 
@@ -66,7 +63,7 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Placeholders", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public Dictionary<string, string> Placeholders = new Dictionary<string, string>
             {
-                {"key", "Custom value"}
+                { "key", "Custom value" }
             };
 
             [JsonProperty(PropertyName = "Culture Ietf Tag")]
@@ -543,9 +540,9 @@ namespace Oxide.Plugins
             public Plugin Owner;
 
             public Func<IPlayer, string, object> Action;
-            
+
             public Dictionary<string, Dictionary<string, KeyValuePair<long, object>>> Cache;
-            
+
             public long CacheTTLTicks = 0;
             public bool CachePerPlayer = true;
 
@@ -556,17 +553,17 @@ namespace Oxide.Plugins
                 Name = name;
                 Description = description;
                 Action = action;
-                
+
                 CachePerPlayer = cachePerPlayer;
                 CacheTTLTicks = double.IsNaN(cacheTTL) || cacheTTL <= 0d
                     ? long.MinValue
                     : Math.Abs(double.MaxValue - cacheTTL) < 0.1 // why not just in case
                         ? long.MaxValue
-                        : (long) Math.Round(cacheTTL * TimeSpan.TicksPerSecond);
+                        : (long)Math.Round(cacheTTL * TimeSpan.TicksPerSecond);
 
                 if (!HasCache())
                     return;
-                
+
                 Cache = new Dictionary<string, Dictionary<string, KeyValuePair<long, object>>>();
             }
 
@@ -713,10 +710,22 @@ namespace Oxide.Plugins
                     return string.Empty;
 
                 if (value is DateTime && option?.ToLower(CultureInfo.CurrentCulture) == "local")
-                    value = (DateTime) value + _ins._config.LocalTimeOffset;
+                    value = (DateTime)value + _ins._config.LocalTimeOffset;
 
                 if (string.IsNullOrEmpty(format))
                     return value.ToString();
+
+#if Conditionals
+                if (value is string)
+                {
+                    var equalIndex = format.IndexOf('=', 0, format.Length);
+                    if (equalIndex != -1)
+                    {
+                        value = (string)value == format.Substring(0, equalIndex);
+                        format = format.Substring(equalIndex + 1);
+                    }
+                }
+#endif
 
                 if (value is bool)
                 {
@@ -724,7 +733,7 @@ namespace Oxide.Plugins
                     var separatorIndex = format.IndexOf('|', 0, format.Length);
                     if (separatorIndex != -1)
                     {
-                        if ((bool) value)
+                        if ((bool)value)
                             return format.Substring(0, separatorIndex);
                         return format.Substring(separatorIndex + 1);
                     }
@@ -747,15 +756,15 @@ namespace Oxide.Plugins
         {
             lang.RegisterMessages(new Dictionary<string, string>
             {
-                {"Command: List: Not Found", "There are no registered placeholders."},
-                {"Command: List: Format", "Placeholders ({found}/{total}):\n{list}"},
-                {"Command: List: Entry Format", "{name} ({owner}, {cache}) - {description}"},
-                {"Command: List: Entry Separator", "\n"},
-                {"Command: List: No Description", "No description"},
-                {"Command: List: No Cache", "No cache"},
-                {"Command: Test: Syntax", "Usage: (Text) [player Player] [ignoreCache Ignore Cache]"},
-                {"Command: Test: Player Not Found", "Player specified was not found."},
-                {"No Permission", "You do not have enough permissions."}
+                { "Command: List: Not Found", "There are no registered placeholders." },
+                { "Command: List: Format", "Placeholders ({found}/{total}):\n{list}" },
+                { "Command: List: Entry Format", "{name} ({owner}, {cache}) - {description}" },
+                { "Command: List: Entry Separator", "\n" },
+                { "Command: List: No Description", "No description" },
+                { "Command: List: No Cache", "No cache" },
+                { "Command: Test: Syntax", "Usage: (Text) [player Player] [ignoreCache Ignore Cache]" },
+                { "Command: Test: Player Not Found", "Player specified was not found." },
+                { "No Permission", "You do not have enough permissions." }
             }, this);
         }
 
@@ -768,6 +777,8 @@ namespace Oxide.Plugins
 
             AddCovalenceCommand(CommandNameList, nameof(CommandList));
             AddCovalenceCommand(CommandNameTest, nameof(CommandTest));
+
+            Unsubscribe(nameof(OnPluginLoaded));
         }
 
         private void Loaded()
@@ -827,6 +838,8 @@ namespace Oxide.Plugins
             {
                 OnUserApprovedInternal(player, player.Address);
             }
+
+            Subscribe(nameof(OnPluginLoaded));
         }
 
         private void Unload()
@@ -868,12 +881,12 @@ namespace Oxide.Plugins
             {
                 case 0:
                 {
-                    return (Action<IPlayer, StringBuilder>) ((player, builder) => ProcessPlaceholders(player, builder));
+                    return (Action<IPlayer, StringBuilder>)((player, builder) => ProcessPlaceholders(player, builder));
                 }
 
                 case 1:
                 {
-                    return (Action<IPlayer, StringBuilder, bool>) ProcessPlaceholders;
+                    return (Action<IPlayer, StringBuilder, bool>)ProcessPlaceholders;
                 }
 
                 default:
@@ -899,13 +912,13 @@ namespace Oxide.Plugins
             {
                 case 0:
                 {
-                    return (Func<IPlayer, string, string, object>) ((player, name, option) =>
+                    return (Func<IPlayer, string, string, object>)((player, name, option) =>
                         EvaluatePlaceholder(player, name, option));
                 }
 
                 case 1:
                 {
-                    return (Func<IPlayer, string, string, bool, object>) EvaluatePlaceholder;
+                    return (Func<IPlayer, string, string, bool, object>)EvaluatePlaceholder;
                 }
 
                 default:
@@ -1145,104 +1158,106 @@ namespace Oxide.Plugins
             }, "Options: B (default), KB, MB, GB", double.MaxValue, false);
 
             AddPlaceholder(this, "server.network.in", (p, o) =>
-            {
-                var used = Net.sv.GetStat(null, BaseNetwork.StatTypeLong.BytesReceived_LastSecond) * 1f;
-                switch (o?.ToLower(CultureInfo.CurrentCulture))
                 {
-                    case "kb":
-                    case "kb/s":
+                    var used = Network.Net.sv.GetStat(null, Network.BaseNetwork.StatTypeLong.BytesReceived_LastSecond) * 1f;
+                    switch (o?.ToLower(CultureInfo.CurrentCulture))
                     {
-                        return used / 1024;
-                    }
+                        case "kb":
+                        case "kb/s":
+                        {
+                            return used / 1024;
+                        }
 
-                    case "mb":
-                    case "mb/s":
-                    {
-                        return used / (1024 * 1024);
-                    }
+                        case "mb":
+                        case "mb/s":
+                        {
+                            return used / (1024 * 1024);
+                        }
 
-                    case "gb":
-                    case "gb/s":
-                    {
-                        return used / (1024 * 1024 * 1024);
-                    }
+                        case "gb":
+                        case "gb/s":
+                        {
+                            return used / (1024 * 1024 * 1024);
+                        }
 
-                    case "kbps":
-                    {
-                        return used / 1024 * 8;
-                    }
+                        case "kbps":
+                        {
+                            return used / 1024 * 8;
+                        }
 
-                    case "mbps":
-                    {
-                        return used / (1024 * 1024) * 8;
-                    }
+                        case "mbps":
+                        {
+                            return used / (1024 * 1024) * 8;
+                        }
 
-                    case "gbps":
-                    {
-                        return used / (1024 * 1024 * 1024) * 8;
-                    }
+                        case "gbps":
+                        {
+                            return used / (1024 * 1024 * 1024) * 8;
+                        }
 
-                    case "bps":
-                    {
-                        return used * 8;
-                    }
+                        case "bps":
+                        {
+                            return used * 8;
+                        }
 
-                    default:
-                    {
-                        return used;
+                        default:
+                        {
+                            return used;
+                        }
                     }
-                }
-            }, "Options: B (or B/s, default) KB (or KB/s), MB (or MB/s), GB (or GB/s), Bps, Kbps, Mbps, Gbps", 1d, false);
+                }, "Options: B (or B/s, default) KB (or KB/s), MB (or MB/s), GB (or GB/s), Bps, Kbps, Mbps, Gbps", 1d,
+                false);
 
             AddPlaceholder(this, "server.network.out", (p, o) =>
-            {
-                var used = Net.sv.GetStat(null, BaseNetwork.StatTypeLong.BytesSent_LastSecond) * 1f;
-                switch (o?.ToLower(CultureInfo.CurrentCulture))
                 {
-                    case "kb":
-                    case "kb/s":
+                    var used = Network.Net.sv.GetStat(null, Network.BaseNetwork.StatTypeLong.BytesSent_LastSecond) * 1f;
+                    switch (o?.ToLower(CultureInfo.CurrentCulture))
                     {
-                        return used / 1024;
-                    }
+                        case "kb":
+                        case "kb/s":
+                        {
+                            return used / 1024;
+                        }
 
-                    case "mb":
-                    case "mb/s":
-                    {
-                        return used / (1024 * 1024);
-                    }
+                        case "mb":
+                        case "mb/s":
+                        {
+                            return used / (1024 * 1024);
+                        }
 
-                    case "gb":
-                    case "gb/s":
-                    {
-                        return used / (1024 * 1024 * 1024);
-                    }
+                        case "gb":
+                        case "gb/s":
+                        {
+                            return used / (1024 * 1024 * 1024);
+                        }
 
-                    case "kbps":
-                    {
-                        return used / 1024 * 8;
-                    }
+                        case "kbps":
+                        {
+                            return used / 1024 * 8;
+                        }
 
-                    case "mbps":
-                    {
-                        return used / (1024 * 1024) * 8;
-                    }
+                        case "mbps":
+                        {
+                            return used / (1024 * 1024) * 8;
+                        }
 
-                    case "gbps":
-                    {
-                        return used / (1024 * 1024 * 1024) * 8;
-                    }
+                        case "gbps":
+                        {
+                            return used / (1024 * 1024 * 1024) * 8;
+                        }
 
-                    case "bps":
-                    {
-                        return used * 8;
-                    }
+                        case "bps":
+                        {
+                            return used * 8;
+                        }
 
-                    default:
-                    {
-                        return used;
+                        default:
+                        {
+                            return used;
+                        }
                     }
-                }
-            }, "Options: B (or B/s, default) KB (or KB/s), MB (or MB/s), GB (or GB/s), Bps, Kbps, Mbps, Gbps", 1d, false);
+                }, "Options: B (or B/s, default) KB (or KB/s), MB (or MB/s), GB (or GB/s), Bps, Kbps, Mbps, Gbps", 1d,
+                false);
 
             AddPlaceholder(this, "player.hasflag", (p, o) =>
             {
@@ -1563,7 +1578,7 @@ namespace Oxide.Plugins
                 if (basePlayer == null)
                     return null;
 
-                return TimeSpan.FromSeconds(basePlayer.unHostileTime - TimeEx.currentTimestamp);
+                return TimeSpan.FromSeconds(basePlayer.unHostileTime - Network.TimeEx.currentTimestamp);
             });
 
             AddPlaceholder(this, "player.input.isdown", (p, o) =>
@@ -1585,7 +1600,7 @@ namespace Oxide.Plugins
             AddPlaceholder(this, "server.fps", (p, o) =>  GameManager.Instance.fps.Counter);
             AddPlaceholder(this, "server.entities", (p, o) => GameManager.Instance.World.Entities.list.Count);
             AddPlaceholder(this, "server.day", (p, o) => SkyManager.dayCount);
-            AddPlaceholder(this, "server.isbloodmoon", (p, o) => SkyManager.BloodMoon());
+            AddPlaceholder(this, "server.isbloodmoon", (p, o) => SkyManager.IsBloodMoonVisible());
             AddPlaceholder(this, "server.day.bloodmoonin", (p, o) => _bloodMoonFrequency - (SkyManager.dayCount % _bloodMoonFrequency));
 #elif HURTWORLD
             AddPlaceholder(this, "server.wipe.last", (p, o) => DateTimeX.FromUTCInt(GameSerializer.Instance.CurrentSaveCreationTimestamp),
@@ -1596,7 +1611,8 @@ namespace Oxide.Plugins
                 "Options: \"local\" to use local time offset, UTC (default)");
 #endif
 
-            AddPlaceholder(this, "server.address", (p, o) => GetServerAddress(), cacheTTL: 60 * 60, cachePerPlayer: false);
+            AddPlaceholder(this, "server.address", (p, o) => GetServerAddress(), cacheTTL: 60 * 60,
+                cachePerPlayer: false);
             AddPlaceholder(this, "server.protocol", (p, o) => server.Protocol);
             AddPlaceholder(this, "server.language.code", (p, o) => server.Language.TwoLetterISOLanguageName,
                 "Two letter ISO language name");
