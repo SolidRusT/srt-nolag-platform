@@ -8,15 +8,15 @@
             "Bottom Status": "<color=#add8e6>/info  to see help and the chat commands</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SolidRusT.net",
-            "Bottom Status": "<color=#ffff00>/spawnmini  spawn your personal minicopter</color>"
+            "Top Status": "<color=#add8e6>Join Discord.gg/eBJpwPwrfg",
+            "Bottom Status": "<color=#ffff00>For kits and other addons.</color>"
         },
         {
             "Top Status": "<color=#add8e6>SRT NoLAG 3x",
             "Bottom Status": "<color=#ffff00>/buildcar  craft a sedan with storage</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SolidRusT.net",
+            "Top Status": "<color=#add8e6>Join Discord.gg/eBJpwPwrfg",
             "Bottom Status": "<color=#ffff00>/recycler.craft  craft personal Recyclers</color>"
         },
         {
@@ -24,7 +24,7 @@
             "Bottom Status": "<color=#ffff00>/heal  instantly heal yourself</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SolidRusT.net",
+            "Top Status": "<color=#add8e6>Join Discord.gg/eBJpwPwrfg",
             "Bottom Status": "<color=#ffff00>/outpost  teleport to Outpost</color>"
         },
         {
@@ -32,7 +32,7 @@
             "Bottom Status": "<color=#ffff00>/bandit  teleport to Bandit Camp</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SolidRusT.net",
+            "Top Status": "<color=#add8e6>Join Discord.gg/eBJpwPwrfg",
             "Bottom Status": "<color=#ffff00>/chute  deploy a parachute while falling</color>"
         },
         {
@@ -40,7 +40,7 @@
             "Bottom Status": "<color=#ffff00>/setgenes  change seed genes</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SolidRusT.net",
+            "Top Status": "<color=#add8e6>Join Discord.gg/eBJpwPwrfg",
             "Bottom Status": "<color=#ffff00>/trade  remotely trade with other players</color>"
         },
         {
@@ -48,7 +48,7 @@
             "Bottom Status": "<color=#ffff00>/home  set and teleport to your home base</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SolidRusT.net",
+            "Top Status": "<color=#add8e6>Join Discord.gg/eBJpwPwrfg",
             "Bottom Status": "<color=#ffff00>/stats  show your current player ranking</color>"
         },
         {
@@ -56,7 +56,7 @@
             "Bottom Status": "<color=#ffff00>/top  show your kills and deaths</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SolidRusT.net",
+            "Top Status": "<color=#add8e6>Join Discord.gg/eBJpwPwrfg",
             "Bottom Status": "<color=#ffff00>/skin  change skins on your items</color>"
         },
         {
@@ -64,7 +64,7 @@
             "Bottom Status": "<color=#ffff00>/ad  automatically close doors behind you</color>"
         },
         {
-            "Top Status": "<color=#add8e6>SolidRusT.net",
+            "Top Status": "<color=#add8e6>Join Discord.gg/eBJpwPwrfg",
             "Bottom Status": "<color=#ffff00>/kit  redeem your free kits</color>"
         }
     ],
