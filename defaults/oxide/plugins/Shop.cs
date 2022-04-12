@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.28")]
+    [Info("Shop", "Mevent", "1.0.29")]
     public class Shop : RustPlugin
     {
         #region Fields
@@ -219,6 +219,18 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Block (NoEscape)")]
             public bool BlockNoEscape;
+
+            [JsonProperty(PropertyName = "Wipe Block")]
+            public bool WipeCooldown = true;
+
+            [JsonProperty(PropertyName = "Wipe Cooldown")]
+            public float WipeCooldownTimer = 3600;
+
+            [JsonProperty(PropertyName = "Respawn Block")]
+            public bool RespawnCooldown = true;
+
+            [JsonProperty(PropertyName = "Respawn Cooldown")]
+            public float RespawnCooldownTimer = 60;
 
             [JsonProperty(PropertyName = "Blocking the opening in duels?")]
             public bool UseDuels;
@@ -1183,6 +1195,20 @@ namespace Oxide.Plugins
                     break;
                 }
 
+                case "search_page":
+                {
+                    int catPage, page, searchPage;
+                    if (!arg.HasArgs(4) || !int.TryParse(arg.Args[1], out catPage) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out searchPage)) return;
+
+                    var search = string.Empty;
+                    if (arg.HasArgs(5)) search = string.Join(" ", arg.Args.Skip(4));
+
+                    MainUi(player, catPage, page, GetShopByPlayer(player), search);
+                    break;
+                }
+
                 case "main_page":
                 {
                     int catPage, page;
@@ -1304,16 +1330,6 @@ namespace Oxide.Plugins
                     if (shopItem.BuyMaxAmount > 0 && amount > shopItem.BuyMaxAmount)
                         amount = shopItem.BuyMaxAmount;
 
-
-                    /*
-                    var limit = Mathf.Min(GetLimit(player, shopItem, true),
-                        GetLimit(player, shopItem, true, true));
-                    
-                    amount = Mathf.Min(limit, amount);
-                    
-                    if (amount <= 0) return;
-                    */
-
                     playerCart.ChangeAmountItem(player, shopItem, amount);
 
                     var container = new CuiElementContainer();
@@ -1342,6 +1358,30 @@ namespace Oxide.Plugins
                         if (success is bool && (bool) success)
                         {
                             ErrorUi(player, Msg(player, BuyRaidBlocked));
+                            return;
+                        }
+                    }
+
+                    if (_config.WipeCooldown)
+                    {
+                        var seconds = SecondsFromWipe();
+                        if (SecondsFromWipe() < _config.WipeCooldownTimer)
+                        {
+                            ErrorUi(player,
+                                Msg(player, BuyWipeCooldown,
+                                    FormatShortTime(seconds)));
+                            return;
+                        }
+                    }
+
+                    if (_config.RespawnCooldown)
+                    {
+                        var timeLeft = Mathf.RoundToInt(_config.RespawnCooldownTimer - player.TimeAlive());
+                        if (timeLeft > 0)
+                        {
+                            ErrorUi(player,
+                                Msg(player, BuyRespawnCooldown,
+                                    FormatShortTime(timeLeft)));
                             return;
                         }
                     }
@@ -1448,6 +1488,31 @@ namespace Oxide.Plugins
                         if (success is bool && (bool) success)
                         {
                             ErrorUi(player, Msg(player, SellRaidBlocked));
+                            return;
+                        }
+                    }
+
+                    if (_config.WipeCooldown)
+                    {
+                        var seconds = SecondsFromWipe();
+                        if (SecondsFromWipe() < _config.WipeCooldownTimer)
+                        {
+                            ErrorUi(player,
+                                Msg(player, SellWipeCooldown,
+                                    FormatShortTime(seconds)));
+
+                            return;
+                        }
+                    }
+
+                    if (_config.RespawnCooldown)
+                    {
+                        var timeLeft = Mathf.RoundToInt(_config.RespawnCooldownTimer - player.TimeAlive());
+                        if (timeLeft > 0)
+                        {
+                            ErrorUi(player,
+                                Msg(player, SellRespawnCooldown,
+                                    FormatShortTime(timeLeft)));
                             return;
                         }
                     }
@@ -1659,7 +1724,7 @@ namespace Oxide.Plugins
                     if (category == -1)
                         category = 0;
 
-                    MainUi(player, category, page, npcShop, string.Empty, true);
+                    MainUi(player, category, page, npcShop, string.Empty, 0, true);
                     break;
                 }
 
@@ -1783,6 +1848,7 @@ namespace Oxide.Plugins
 
         private void MainUi(BasePlayer player, int catPage = 0, int shopPage = 0, NPCShop npcShop = null,
             string search = "",
+            int searchPage = 0,
             bool first = false)
         {
             var shopCategories = GetCategories(player, npcShop);
@@ -1961,19 +2027,22 @@ namespace Oxide.Plugins
 
             if (shopCategories.Count > 0)
             {
+                var enableSearch = _config.UI.EnableSearch;
+
                 #region Items
 
                 var xSwitch = MainSwitch;
                 var ySwitch = -70f;
 
-                var shopItems = string.IsNullOrEmpty(search)
-                    ? shopCategories[catPage].Items
-                    : shopCategories.SelectMany(x => x.Items).Where(
+                var isSearch = enableSearch && !string.IsNullOrEmpty(search);
+                var shopItems = isSearch
+                    ? shopCategories.SelectMany(x => x.Items).Where(
                         item => item.PublicTitle.StartsWith(search) || item.PublicTitle.Contains(search) ||
-                                item.ShortName.StartsWith(search) || item.ShortName.Contains(search)).ToList();
+                                item.ShortName.StartsWith(search) || item.ShortName.Contains(search)).ToList()
+                    : shopCategories[catPage].Items;
 
-
-                var inPageItems = shopItems.Skip(shopPage * MainTotalAmount).Take(MainTotalAmount).ToList();
+                var inPageItems = shopItems.Skip((isSearch ? searchPage : shopPage) * MainTotalAmount)
+                    .Take(MainTotalAmount).ToList();
 
                 var cdItems = inPageItems.FindAll(x =>
                     GetCooldownTime(player.userID, x, true) > 0 || GetCooldownTime(player.userID, x, false) > 0);
@@ -2016,7 +2085,6 @@ namespace Oxide.Plugins
 
                 #region Search
 
-                var enableSearch = _config.UI.EnableSearch;
                 if (enableSearch)
                 {
                     container.Add(new CuiPanel
@@ -2056,9 +2124,10 @@ namespace Oxide.Plugins
                                 FontSize = 12,
                                 Align = TextAnchor.MiddleCenter,
                                 Font = "robotocondensed-regular.ttf",
-                                Command = catPage != -1 && shopPage != 0
+                                Command = $"UI_Shop search_page {catPage} {shopPage} {searchPage} ",
+                                /*Command = catPage != -1 && shopPage != 0
                                     ? "UI_Shop main_page -1 0 "
-                                    : $"UI_Shop main_page -1 {shopPage} ",
+                                    : $"UI_Shop main_page -1 {shopPage} ",*/
                                 Color = "1 1 1 0.95",
                                 CharsLimit = 32
                             },
@@ -4373,6 +4442,17 @@ namespace Oxide.Plugins
 
         #region Utils
 
+        private int SecondsFromWipe()
+        {
+            return (int) DateTime.Now.ToUniversalTime()
+                .Subtract(SaveRestore.SaveCreatedTime.ToUniversalTime()).TotalSeconds;
+        }
+
+        private static string FormatShortTime(int seconds)
+        {
+            return TimeSpan.FromSeconds(seconds).ToShortString();
+        }
+
         private bool InDuel(BasePlayer player)
         {
             return Convert.ToBoolean(Duel?.Call("IsPlayerOnActiveDuel", player)) ||
@@ -5010,6 +5090,10 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            BuyWipeCooldown = "BuyWipeCooldown",
+            SellWipeCooldown = "SellWipeCooldown",
+            BuyRespawnCooldown = "BuyRespawnCooldown",
+            SellRespawnCooldown = "SellRespawnCooldown",
             LogSellItem = "LogSellItem",
             LogBuyItems = "LogBuyItems",
             SkinBlocked = "SkinBlocked",
@@ -5132,6 +5216,10 @@ namespace Oxide.Plugins
                 [SellNotify] = "You have successfully sold {0} pcs of {1}",
                 [BuyRaidBlocked] = "You can't buy while blocked!",
                 [SellRaidBlocked] = "You can't sell while blocked!",
+                [BuyWipeCooldown] = "You can't buy for another {0}!",
+                [SellWipeCooldown] = "You can't sell for another {0}!",
+                [BuyRespawnCooldown] = "You can't buy for another {0}!",
+                [SellRespawnCooldown] = "You can't sell for another {0}!",
                 [InfoTitle] = "i",
                 [DailyBuyLimitReached] =
                     "You cannot buy the '{0}'. You have reached the daily limit. Come back tomorrow!",

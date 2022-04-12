@@ -15,7 +15,7 @@ using System;
 
 namespace Oxide.Plugins
 {
-    [Info("Convoy", "Adem", "2.0.1")]
+    [Info("Convoy", "Adem", "2.0.2")]
     class Convoy : RustPlugin
     {
         [PluginReference] Plugin NpcSpawn, GUIAnnouncements, DiscordMessages, PveMode;
@@ -518,6 +518,13 @@ namespace Oxide.Plugins
                     _config.version = Version.ToString();
                     SaveConfig();
                 }
+                
+                else if(_config.version == "2.0.1")
+                {
+                    _config.version = Version.ToString();
+                    SaveConfig();
+                }
+
                 else
                 {
                     PrintError("Delete the configuration file!");
@@ -803,7 +810,7 @@ namespace Oxide.Plugins
             foreach (ConvoyVehicle convoyVehicle in convoyVehicles) if (convoyVehicle != null) convoyVehicle.StopMoving(true, true);
             if (initiator != null && convoyHeli != null) convoyHeli.SetTarget(initiator);
             if (initiator != null) AlertToAllPlayers("ConvoyAttacked", _config.prefics, initiator.displayName);
-            if (convoyModular != null) NextTick(() => CreateEventZone(convoyModular.baseEntity.transform.position - new Vector3(0f, 0.5f, 0f)));
+            if (convoyModular != null) timer.In(2f, () => CreateEventZone(convoyModular.baseEntity.transform.position - new Vector3(0f, 0.5f, 0f)));
         }
 
         void StartConvoy()
@@ -1559,7 +1566,7 @@ namespace Oxide.Plugins
 
                     if (!modularCar.TryAddModule(moduleItem, socketIndex)) moduleItem.Remove();
                 }
-                
+
                 Invoke(AddEngineParts, 0.01f);
             }
 
@@ -1879,18 +1886,16 @@ namespace Oxide.Plugins
 
             void FixedUpdate()
             {
-                
+
                 if (targetEntity == null || targetEntity.IsDestroyed) return;
                 if (ins.stopTime <= 0)
                 {
                     patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0));
                     if (Vector2.Distance(new Vector2(baseHelicopter.transform.position.x, baseHelicopter.transform.position.z), new Vector2(targetEntity.transform.position.x, targetEntity.transform.position.z)) < 35) patrolHelicopterAI.SetIdealRotation(targetEntity.transform.rotation, 100);
-                    else patrolHelicopterAI.SetIdealRotation(Quaternion.LookRotation(targetEntity.transform.position - baseHelicopter.transform.position + new Vector3(0, ins.heliConfig.height, 0)), 100);
                 }
                 else if (targetEntity.Distance(baseHelicopter.transform.position) > ins.heliConfig.distance)
                 {
                     patrolHelicopterAI.SetTargetDestination(targetEntity.transform.position + new Vector3(0, ins.heliConfig.height, 0));
-                    patrolHelicopterAI.SetIdealRotation(Quaternion.Euler(targetEntity.transform.position - baseHelicopter.transform.position + new Vector3(0, ins.heliConfig.height, 0)), 100);
                 }
             }
 

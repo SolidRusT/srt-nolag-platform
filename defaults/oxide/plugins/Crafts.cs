@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.7.0")]
+    [Info("Crafts", "Mevent", "2.7.2")]
     public class Crafts : RustPlugin
     {
         #region Fields
@@ -35,6 +35,8 @@ namespace Oxide.Plugins
         private readonly List<RecyclerComponent> _recyclers = new List<RecyclerComponent>();
 
         private readonly List<CarController> _cars = new List<CarController>();
+
+        private readonly List<BasePlayer> _openedUi = new List<BasePlayer>();
 
         private readonly Dictionary<string, List<string>> _itemsCategories =
             new Dictionary<string, List<string>>();
@@ -76,6 +78,9 @@ namespace Oxide.Plugins
         {
             [JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public readonly string[] Commands = {"craft", "crafts"};
+
+            [JsonProperty(PropertyName = "Close UI when reusing a command?")]
+            public readonly bool CloseReusing = false;
 
             [JsonProperty(PropertyName = "Work with Notify?")]
             public readonly bool UseNotify = true;
@@ -462,6 +467,7 @@ namespace Oxide.Plugins
                 CraftYIndent = -115,
                 CraftStrings = 2,
                 CraftAmountOnString = 5,
+                CategoriesAmountOnPage = 7,
                 PageSize = 25,
                 PageSelectedSize = 40,
                 PagesMargin = 5,
@@ -478,7 +484,8 @@ namespace Oxide.Plugins
                 Color9 = new IColor("#0E0E10", 98),
                 Color10 = new IColor("#4B68FF", 50),
                 Color11 = new IColor("#FF4B4B", 100),
-                BackgroundImage = string.Empty
+                BackgroundImage = string.Empty,
+                CloseAfterCraft = true
             };
 
             public VersionNumber Version;
@@ -509,6 +516,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Craft Amount On String")]
             public int CraftAmountOnString;
+
+            [JsonProperty(PropertyName = "Categories Amount On Page")]
+            public int CategoriesAmountOnPage;
 
             [JsonProperty(PropertyName = "Craft Strings")]
             public int CraftStrings;
@@ -563,6 +573,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Background Image")]
             public string BackgroundImage;
+
+            [JsonProperty(PropertyName = "Close after craft?")]
+            public bool CloseAfterCraft;
         }
 
         private class Category
@@ -584,6 +597,8 @@ namespace Oxide.Plugins
 
         private class CraftConf
         {
+            [JsonProperty(PropertyName = "ID")] public int ID;
+
             [JsonProperty(PropertyName = "Enabled")]
             public bool Enabled;
 
@@ -643,25 +658,25 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "For Modular Car")]
             public ModularCarConf Modular;
 
-            [JsonIgnore] public bool Active = false;
-
-            [JsonIgnore] private int _id = -1;
+            [JsonProperty(PropertyName = "Cooldown")]
+            public float Cooldown;
 
             [JsonIgnore]
-            public int ID
+            public int PUBLIC_ID
             {
                 get
                 {
-                    while (_id == -1)
+                    while (ID == 0)
                     {
                         var val = Random.Range(int.MinValue, int.MaxValue);
                         if (_instance._craftsById.ContainsKey(val)) continue;
 
-                        _id = val;
-                        _instance._craftsById[_id] = this;
+                        ID = val;
+                        _instance._craftsById[ID] = this;
+                        _instance.SaveConfig();
                     }
 
-                    return _id;
+                    return ID;
                 }
             }
 
@@ -776,6 +791,25 @@ namespace Oxide.Plugins
                     ["Structure"] = Structure,
                     ["Items"] = Items
                 };
+            }
+
+            public void UpdateCooldown(BasePlayer player)
+            {
+                PlayerCooldown.GetOrAdd(player.userID)?.Add(this);
+            }
+
+            public bool HasCooldown(BasePlayer player, out int timeLeft)
+            {
+                timeLeft = 0;
+
+                if (Cooldown <= 0)
+                    return false;
+
+                var data = PlayerCooldown.GetOrAdd(player.userID);
+                if (data == null) return false;
+
+                timeLeft = data.GetCooldown(this);
+                return timeLeft > 0;
             }
         }
 
@@ -1043,6 +1077,65 @@ namespace Oxide.Plugins
 
         #endregion
 
+        #region Data
+
+        private PlayerCooldown _cooldown;
+
+        private void LoadCooldown()
+        {
+            try
+            {
+                _cooldown = Interface.Oxide.DataFileSystem.ReadObject<PlayerCooldown>($"{Name}/Cooldowns");
+            }
+            catch (Exception e)
+            {
+                PrintError(e.ToString());
+            }
+
+            if (_cooldown == null) _cooldown = new PlayerCooldown();
+        }
+
+        private void SaveCooldown()
+        {
+            Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Cooldowns", _cooldown);
+        }
+
+        private class PlayerCooldown
+        {
+            [JsonProperty(PropertyName = "Players", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public readonly Dictionary<ulong, PlayerCooldownData> Players = new Dictionary<ulong, PlayerCooldownData>();
+
+            public static PlayerCooldownData GetOrAdd(ulong member)
+            {
+                if (!_instance._cooldown.Players.ContainsKey(member))
+                    _instance._cooldown.Players.Add(member, new PlayerCooldownData());
+
+                return _instance._cooldown.Players[member];
+            }
+        }
+
+        private class PlayerCooldownData
+        {
+            [JsonProperty(PropertyName = "LastTime", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<int, DateTime> LastTime = new Dictionary<int, DateTime>();
+
+            public void Add(CraftConf craft)
+            {
+                if (craft.Cooldown > 0) LastTime[craft.PUBLIC_ID] = DateTime.Now;
+            }
+
+            public int GetCooldown(CraftConf craft)
+            {
+                DateTime time;
+                if (LastTime.TryGetValue(craft.PUBLIC_ID, out time))
+                    return (int) time.AddSeconds(craft.Cooldown).Subtract(DateTime.Now).TotalSeconds;
+
+                return 0;
+            }
+        }
+
+        #endregion
+
         #region Hooks
 
         private void Init()
@@ -1054,6 +1147,8 @@ namespace Oxide.Plugins
             RegisterPermissions();
 
             RegisterCommands();
+
+            LoadCooldown();
         }
 
         private void OnServerInitialized(bool initial)
@@ -1068,6 +1163,9 @@ namespace Oxide.Plugins
             if (!initial)
                 foreach (var ent in BaseNetworkable.serverEntities.OfType<BaseCombatEntity>())
                     OnEntitySpawned(ent);
+
+            if (_config.Categories.Exists(cat => cat.Crafts.Exists(craft => craft.Cooldown > 0)))
+                timer.Every(1, UpdateCooldown);
         }
 
         private void Unload()
@@ -1089,6 +1187,8 @@ namespace Oxide.Plugins
                 if (car != null)
                     car.Kill();
             });
+
+            SaveCooldown();
 
             _instance = null;
             _config = null;
@@ -1228,6 +1328,13 @@ namespace Oxide.Plugins
             component.TryPickup(player);
         }
 
+        private void OnPlayerDisconnected(BasePlayer player)
+        {
+            if (player == null) return;
+
+            _updateCooldowns.Remove(player);
+        }
+
         #endregion
 
         #region Commands
@@ -1242,6 +1349,22 @@ namespace Oxide.Plugins
             {
                 SendNotify(player, NoPermission, 1);
                 return;
+            }
+
+            if (_config.CloseReusing)
+            {
+                if (_openedUi.Contains(player))
+                {
+                    CuiHelper.DestroyUi(player, Layer);
+
+                    _updateCooldowns.Remove(player);
+
+                    _openedUi.Remove(player);
+
+                    return;
+                }
+
+                _openedUi.Add(player);
             }
 
             MainUi(player, first: true);
@@ -1279,50 +1402,64 @@ namespace Oxide.Plugins
 
             switch (arg.Args[0])
             {
+                case "close":
+                {
+                    _updateCooldowns.Remove(player);
+                    break;
+                }
+
                 case "page":
                 {
-                    int category, page = 0;
+                    int category, page = 0, catPage = 0;
                     if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out category)) return;
 
                     if (arg.HasArgs(3))
                         int.TryParse(arg.Args[2], out page);
 
-                    MainUi(player, category, page);
+                    if (arg.HasArgs(4))
+                        int.TryParse(arg.Args[3], out catPage);
+
+                    MainUi(player, category, page, catPage);
                     break;
                 }
 
                 case "back":
                 {
-                    int category, page;
-                    if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out category) ||
-                        !int.TryParse(arg.Args[2], out page)) return;
+                    int category, page, catPage;
+                    if (!arg.HasArgs(4) || !int.TryParse(arg.Args[1], out category) ||
+                        !int.TryParse(arg.Args[2], out page) ||
+                        !int.TryParse(arg.Args[3], out catPage)) return;
 
                     _craftEditing.Remove(player);
                     _itemEditing.Remove(player);
 
-                    MainUi(player, category, page, true);
+                    MainUi(player, category, page, catPage, true);
                     break;
                 }
 
                 case "trycraft":
                 {
-                    int category, page, itemId;
-                    if (!arg.HasArgs(4) || !int.TryParse(arg.Args[1], out category) ||
+                    int category, page, catPage, itemId;
+                    if (!arg.HasArgs(5) || !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out itemId)) return;
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out itemId)) return;
 
-                    CraftUi(player, category, page, itemId);
+                    _updateCooldowns.Remove(player);
+
+                    CraftUi(player, category, page, catPage, itemId);
                     break;
                 }
 
                 case "craft":
                 {
-                    int category, page, itemId;
-                    if (!arg.HasArgs(4) || !int.TryParse(arg.Args[1], out category) ||
+                    int category, page, catPage, itemId;
+                    if (!arg.HasArgs(5) || !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out itemId)) return;
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out itemId)) return;
 
-                    var craft = GetPlayerCategories(player)[category].Crafts.Find(x => x.ID == itemId);
+                    var craft = GetPlayerCategories(player)[category].Crafts.Find(x => x.PUBLIC_ID == itemId);
                     if (craft == null) return;
 
                     if (!HasWorkbench(player, craft.Level))
@@ -1341,36 +1478,45 @@ namespace Oxide.Plugins
 
                     craft.Items.ForEach(item => Take(allItems, item.ShortName, item.SkinID, item.Amount));
 
+                    craft.UpdateCooldown(player);
+
                     GiveCraft(player, craft);
                     SendNotify(player, SuccessfulCraft, 0, craft.PublicTitle);
+
+                    if (_config.UI.CloseAfterCraft)
+                        _updateCooldowns.Remove(player);
+                    else
+                        MainUi(player, category, page, catPage, true);
                     break;
                 }
 
                 case "start_edit":
                 {
-                    int category, page, craftId;
-                    if (!arg.HasArgs(4) ||
+                    int category, page, catPage, craftId;
+                    if (!arg.HasArgs(5) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId))
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId))
                         return;
 
-                    EditUi(player, category, page, craftId);
+                    EditUi(player, category, page, catPage, craftId);
                     break;
                 }
 
                 case "edit":
                 {
-                    int category, page, craftId, itemsPage;
-                    if (!arg.HasArgs(7) ||
+                    int category, page, catPage, craftId, itemsPage;
+                    if (!arg.HasArgs(8) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId) ||
-                        !int.TryParse(arg.Args[4], out itemsPage) ||
-                        string.IsNullOrEmpty(arg.Args[5]) || string.IsNullOrEmpty(arg.Args[6])) return;
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId) ||
+                        !int.TryParse(arg.Args[5], out itemsPage) ||
+                        string.IsNullOrEmpty(arg.Args[6]) || string.IsNullOrEmpty(arg.Args[7])) return;
 
-                    var key = arg.Args[5];
-                    var value = arg.Args[6];
+                    var key = arg.Args[6];
+                    var value = arg.Args[7];
 
                     if (_craftEditing.ContainsKey(player) && _craftEditing[player].ContainsKey(key))
                     {
@@ -1447,17 +1593,18 @@ namespace Oxide.Plugins
                         _craftEditing[player][key] = newValue;
                     }
 
-                    EditUi(player, category, page, craftId);
+                    EditUi(player, category, page, catPage, craftId);
                     break;
                 }
 
                 case "save_edit":
                 {
-                    int category, page, craftId;
-                    if (!arg.HasArgs(4) ||
+                    int category, page, catPage, craftId;
+                    if (!arg.HasArgs(5) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId))
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId))
                         return;
 
                     Dictionary<string, object> values;
@@ -1494,17 +1641,18 @@ namespace Oxide.Plugins
 
                     SaveConfig();
 
-                    MainUi(player, category, page, true);
+                    MainUi(player, category, page, catPage, true);
                     break;
                 }
 
                 case "delete_edit":
                 {
-                    int category, page, craftId;
+                    int category, page, catPage, craftId;
                     if (!arg.HasArgs(4) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId))
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId))
                         return;
 
                     var craft = FindCraftById(craftId);
@@ -1517,21 +1665,22 @@ namespace Oxide.Plugins
 
                     SaveConfig();
 
-                    MainUi(player, category, page, true);
+                    MainUi(player, category, page, catPage, true);
                     break;
                 }
 
                 case "edit_page":
                 {
-                    int category, page, craftId, itemsPage;
-                    if (!arg.HasArgs(5) ||
+                    int category, page, catPage, craftId, itemsPage;
+                    if (!arg.HasArgs(6) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId) ||
-                        !int.TryParse(arg.Args[4], out itemsPage))
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId) ||
+                        !int.TryParse(arg.Args[5], out itemsPage))
                         return;
 
-                    EditUi(player, category, page, craftId, itemsPage);
+                    EditUi(player, category, page, catPage, craftId, itemsPage);
                     break;
                 }
 
@@ -1544,35 +1693,37 @@ namespace Oxide.Plugins
 
                 case "start_edititem":
                 {
-                    int category, page, craftId, itemsPage, itemId;
-                    if (!arg.HasArgs(6) ||
+                    int category, page, catPage, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(7) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId) ||
-                        !int.TryParse(arg.Args[4], out itemsPage) ||
-                        !int.TryParse(arg.Args[5], out itemId))
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId) ||
+                        !int.TryParse(arg.Args[5], out itemsPage) ||
+                        !int.TryParse(arg.Args[6], out itemId))
                         return;
 
                     _itemEditing.Remove(player);
 
-                    EditItemUi(player, category, page, craftId, itemsPage, itemId);
+                    EditItemUi(player, category, page, catPage, craftId, itemsPage, itemId);
                     break;
                 }
 
                 case "edititem":
                 {
-                    int category, page, craftId, itemsPage, itemId;
-                    if (!arg.HasArgs(8) ||
+                    int category, page, catPage, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(9) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId) ||
-                        !int.TryParse(arg.Args[4], out itemsPage) ||
-                        !int.TryParse(arg.Args[5], out itemId) ||
-                        string.IsNullOrEmpty(arg.Args[6]) || string.IsNullOrEmpty(arg.Args[7]))
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId) ||
+                        !int.TryParse(arg.Args[5], out itemsPage) ||
+                        !int.TryParse(arg.Args[6], out itemId) ||
+                        string.IsNullOrEmpty(arg.Args[7]) || string.IsNullOrEmpty(arg.Args[8]))
                         return;
 
-                    var key = arg.Args[6];
-                    var value = arg.Args[7];
+                    var key = arg.Args[7];
+                    var value = arg.Args[8];
 
                     if (_itemEditing.ContainsKey(player) && _itemEditing[player].ContainsKey(key))
                     {
@@ -1608,7 +1759,7 @@ namespace Oxide.Plugins
                         _itemEditing[player][key] = newValue;
                     }
 
-                    EditItemUi(player, category, page, craftId, itemsPage, itemId);
+                    EditItemUi(player, category, page, catPage, craftId, itemsPage, itemId);
                     break;
                 }
 
@@ -1678,41 +1829,44 @@ namespace Oxide.Plugins
 
                 case "selectitem":
                 {
-                    int category, page, craftId, itemsPage, itemId;
-                    if (!arg.HasArgs(6) ||
+                    int category, page, catPage, craftId, itemsPage, itemId;
+                    if (!arg.HasArgs(7) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId) ||
-                        !int.TryParse(arg.Args[4], out itemsPage) ||
-                        !int.TryParse(arg.Args[5], out itemId))
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId) ||
+                        !int.TryParse(arg.Args[5], out itemsPage) ||
+                        !int.TryParse(arg.Args[6], out itemId))
                         return;
 
                     var selectedCategory = string.Empty;
-                    if (arg.HasArgs(7))
-                        selectedCategory = arg.Args[6];
+                    if (arg.HasArgs(8))
+                        selectedCategory = arg.Args[7];
 
                     var localPage = 0;
-                    if (arg.HasArgs(8))
-                        int.TryParse(arg.Args[7], out localPage);
+                    if (arg.HasArgs(9))
+                        int.TryParse(arg.Args[8], out localPage);
 
                     var input = string.Empty;
-                    if (arg.HasArgs(9))
-                        input = string.Join(" ", arg.Args.Skip(8));
+                    if (arg.HasArgs(10))
+                        input = string.Join(" ", arg.Args.Skip(9));
 
-                    SelectItemUi(player, category, page, craftId, itemsPage, itemId, selectedCategory, localPage,
+                    SelectItemUi(player, category, page, catPage, craftId, itemsPage, itemId, selectedCategory,
+                        localPage,
                         input);
                     break;
                 }
 
                 case "takeitem":
                 {
-                    int category, page, craftId, itemsPage, itemId;
+                    int category, page, catPage, craftId, itemsPage, itemId;
                     if (!arg.HasArgs(7) ||
                         !int.TryParse(arg.Args[1], out category) ||
                         !int.TryParse(arg.Args[2], out page) ||
-                        !int.TryParse(arg.Args[3], out craftId) ||
-                        !int.TryParse(arg.Args[4], out itemsPage) ||
-                        !int.TryParse(arg.Args[5], out itemId))
+                        !int.TryParse(arg.Args[3], out catPage) ||
+                        !int.TryParse(arg.Args[4], out craftId) ||
+                        !int.TryParse(arg.Args[5], out itemsPage) ||
+                        !int.TryParse(arg.Args[6], out itemId))
                         return;
 
                     var shortName = arg.Args[6];
@@ -1720,7 +1874,7 @@ namespace Oxide.Plugins
 
                     _itemEditing[player]["ShortName"] = shortName;
 
-                    EditItemUi(player, category, page, craftId, itemsPage, itemId);
+                    EditItemUi(player, category, page, catPage, craftId, itemsPage, itemId);
                     break;
                 }
 
@@ -1743,10 +1897,16 @@ namespace Oxide.Plugins
 
         #region Interface
 
-        private void MainUi(BasePlayer player, int category = 0, int page = 0, bool first = false)
+        private void MainUi(BasePlayer player, int category = 0, int page = 0, int catPage = 0, bool first = false)
         {
             var categories = GetPlayerCategories(player);
             if (categories == null) return;
+
+            var updateCooldown = new PlayerUpdateCooldown(category, page, catPage);
+
+            float xSwitch;
+            float width;
+            var catsOnPage = _config.UI.CategoriesAmountOnPage;
 
             var container = new CuiElementContainer();
 
@@ -1794,7 +1954,8 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = "0 0 0 0",
-                        Close = Layer
+                        Close = Layer,
+                        Command = "UI_Crafts close"
                     }
                 }, Layer);
 
@@ -1924,37 +2085,16 @@ namespace Oxide.Plugins
                 }
             }, Layer + ".Header");
 
-            if (CanEdit(player))
-                container.Add(new CuiButton
-                {
-                    RectTransform =
-                    {
-                        AnchorMin = "1 1", AnchorMax = "1 1",
-                        OffsetMin = "-145 -37.5",
-                        OffsetMax = "-55 -12.5"
-                    },
-                    Text =
-                    {
-                        Text = Msg(player, CraftCreate),
-                        Align = TextAnchor.MiddleCenter,
-                        Font = "robotocondensed-bold.ttf",
-                        FontSize = 10,
-                        Color = _config.UI.Color3.Get()
-                    },
-                    Button =
-                    {
-                        Color = _config.UI.Color1.Get(),
-                        Command = $"UI_Crafts start_edit {category} {page} -1"
-                    }
-                }, Layer + ".Header");
+            xSwitch = -25f;
+            width = 25;
 
             container.Add(new CuiButton
             {
                 RectTransform =
                 {
                     AnchorMin = "1 1", AnchorMax = "1 1",
-                    OffsetMin = "-50 -37.5",
-                    OffsetMax = "-25 -12.5"
+                    OffsetMin = $"{xSwitch - width} -37.5",
+                    OffsetMax = $"{xSwitch} -12.5"
                 },
                 Text =
                 {
@@ -1967,22 +2107,117 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Close = Layer,
-                    Color = _config.UI.Color4.Get()
+                    Color = _config.UI.Color4.Get(),
+                    Command = "UI_Crafts close"
                 }
             }, Layer + ".Header");
+
+            xSwitch = xSwitch - width - 5;
+
+            if (CanEdit(player))
+            {
+                width = 90;
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "1 1", AnchorMax = "1 1",
+                        OffsetMin = $"{xSwitch - width} -37.5",
+                        OffsetMax = $"{xSwitch} -12.5"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, CraftCreate),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 10,
+                        Color = _config.UI.Color3.Get()
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color1.Get(),
+                        Command = $"UI_Crafts start_edit {category} {page} {catPage} -1"
+                    }
+                }, Layer + ".Header");
+
+                xSwitch = xSwitch - width - 5;
+            }
+
+            width = 25;
+
+            #endregion
+
+            #region Categories.Pages
+
+            if (categories.Count > catsOnPage)
+            {
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "1 1", AnchorMax = "1 1",
+                        OffsetMin = $"{xSwitch - width} -37.5",
+                        OffsetMax = $"{xSwitch} -12.5"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, BtnNext),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 10,
+                        Color = _config.UI.Color3.Get()
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color1.Get(),
+                        Command = categories.Count > (catPage + 1) * catsOnPage
+                            ? $"UI_Crafts page {category} {page} {catPage + 1}"
+                            : ""
+                    }
+                }, Layer + ".Header");
+
+                xSwitch = xSwitch - width - 5;
+                width = 25;
+
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "1 1", AnchorMax = "1 1",
+                        OffsetMin = $"{xSwitch - width} -37.5",
+                        OffsetMax = $"{xSwitch} -12.5"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, BtnBack),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 10,
+                        Color = _config.UI.Color3.Get()
+                    },
+                    Button =
+                    {
+                        Color = _config.UI.Color1.Get(),
+                        Command = catPage != 0
+                            ? $"UI_Crafts page {category} {page} {catPage - 1}"
+                            : ""
+                    }
+                }, Layer + ".Header");
+            }
 
             #endregion
 
             #region Categories
 
-            var width = _config.UI.CatWidth;
+            width = _config.UI.CatWidth;
             margin = _config.UI.CatMargin;
 
-            var xSwitch = 25f;
+            xSwitch = 25f;
 
-            for (var i = 0; i < categories.Count; i++)
+            var v = 0;
+            foreach (var cat in categories.Skip(catPage * catsOnPage).Take(catsOnPage))
             {
-                var cat = categories[i];
+                var index = v + catPage * catsOnPage;
 
                 container.Add(new CuiButton
                 {
@@ -2002,12 +2237,13 @@ namespace Oxide.Plugins
                     },
                     Button =
                     {
-                        Color = i == category ? _config.UI.Color4.Get() : cat.Color.Get(),
-                        Command = $"UI_Crafts page {i} 0"
+                        Color = index == category ? _config.UI.Color4.Get() : cat.Color.Get(),
+                        Command = $"UI_Crafts page {index} 0 {catPage}"
                     }
                 }, Layer + ".Main");
 
                 xSwitch += width + margin;
+                v++;
             }
 
             #endregion
@@ -2028,6 +2264,7 @@ namespace Oxide.Plugins
             var playerCrafts = GetPlayerCrafts(player, categories[category]);
             var crafts = playerCrafts.Skip(page * totalAmount).Take(totalAmount)
                 .ToList();
+
             if (crafts.Count > 0)
                 for (var i = 0; i < crafts.Count; i++)
                 {
@@ -2045,12 +2282,12 @@ namespace Oxide.Plugins
                         {
                             Color = _config.UI.Color2.Get()
                         }
-                    }, Layer + ".Main", Layer + $".Craft.{i}");
+                    }, Layer + ".Main", Layer + $".Craft.{craft.PUBLIC_ID}");
 
                     if (ImageLibrary)
                         container.Add(new CuiElement
                         {
-                            Parent = Layer + $".Craft.{i}",
+                            Parent = Layer + $".Craft.{craft.PUBLIC_ID}",
                             Components =
                             {
                                 new CuiRawImageComponent
@@ -2082,7 +2319,7 @@ namespace Oxide.Plugins
                             FontSize = 14,
                             Color = "1 1 1 1"
                         }
-                    }, Layer + $".Craft.{i}");
+                    }, Layer + $".Craft.{craft.PUBLIC_ID}");
 
                     if (!string.IsNullOrEmpty(craft.Description))
                         container.Add(new CuiLabel
@@ -2100,7 +2337,7 @@ namespace Oxide.Plugins
                                 FontSize = 10,
                                 Color = "1 1 1 0.5"
                             }
-                        }, Layer + $".Craft.{i}");
+                        }, Layer + $".Craft.{craft.PUBLIC_ID}");
 
                     if (craft.Level > 0)
                         container.Add(new CuiPanel
@@ -2114,18 +2351,10 @@ namespace Oxide.Plugins
                             {
                                 Color = _config.Workbenches[craft.Level].Get()
                             }
-                        }, Layer + $".Craft.{i}");
+                        }, Layer + $".Craft.{craft.PUBLIC_ID}");
 
-                    container.Add(new CuiButton
-                    {
-                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                        Text = {Text = ""},
-                        Button =
-                        {
-                            Color = "0 0 0 0",
-                            Command = $"UI_Crafts trycraft {category} {page} {craft.ID}"
-                        }
-                    }, Layer + $".Craft.{i}");
+                    if (CooldownUi(ref container, player, craft, category, page, catPage))
+                        updateCooldown.Items.Add(craft);
 
                     if (CanEdit(player))
                     {
@@ -2141,7 +2370,7 @@ namespace Oxide.Plugins
                                 {
                                     Color = _config.UI.Color4.Get()
                                 }
-                            }, Layer + $".Craft.{i}");
+                            }, Layer + $".Craft.{craft.PUBLIC_ID}");
 
                         container.Add(new CuiButton
                         {
@@ -2158,9 +2387,9 @@ namespace Oxide.Plugins
                             {
                                 Color = "1 1 1 1",
                                 Sprite = "assets/icons/gear.png",
-                                Command = $"UI_Crafts start_edit {category} {page} {craft.ID}"
+                                Command = $"UI_Crafts start_edit {category} {page} {catPage} {craft.PUBLIC_ID}"
                             }
-                        }, Layer + $".Craft.{i}");
+                        }, Layer + $".Craft.{craft.PUBLIC_ID}");
                     }
 
                     if ((i + 1) % amountOnString == 0)
@@ -2211,7 +2440,7 @@ namespace Oxide.Plugins
                         Button =
                         {
                             Color = _config.UI.Color4.Get(),
-                            Command = $"UI_Crafts page {category} {j}"
+                            Command = $"UI_Crafts page {category} {j} {catPage}"
                         }
                     }, Layer + ".Main");
 
@@ -2225,11 +2454,13 @@ namespace Oxide.Plugins
 
             CuiHelper.DestroyUi(player, Layer + ".Main");
             CuiHelper.AddUi(player, container);
+
+            _updateCooldowns[player] = updateCooldown;
         }
 
-        private void CraftUi(BasePlayer player, int category, int page, int itemId, int itemsPage = 0)
+        private void CraftUi(BasePlayer player, int category, int page, int catPage, int itemId, int itemsPage = 0)
         {
-            var craft = GetPlayerCategories(player)[category].Crafts.Find(x => x.ID == itemId);
+            var craft = GetPlayerCategories(player)[category].Crafts.Find(x => x.PUBLIC_ID == itemId);
             if (craft == null) return;
 
             var allItems = player.inventory.AllItems();
@@ -2257,7 +2488,7 @@ namespace Oxide.Plugins
                 {
                     Color = "0 0 0 0",
                     Close = Layer,
-                    Command = $"UI_Crafts back {category} {page}"
+                    Command = $"UI_Crafts back {category} {page} {catPage}"
                 }
             }, Layer);
 
@@ -2484,8 +2715,8 @@ namespace Oxide.Plugins
                 {
                     Color = notItem ? _config.UI.Color7.Get() : _config.UI.Color4.Get(),
                     Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat",
-                    Command = notItem ? "" : $"UI_Crafts craft {category} {page} {itemId}",
-                    Close = Layer
+                    Command = notItem ? "" : $"UI_Crafts craft {category} {page} {catPage} {itemId}",
+                    Close = _config.UI.CloseAfterCraft ? Layer : string.Empty
                 }
             }, Layer);
 
@@ -2510,7 +2741,7 @@ namespace Oxide.Plugins
                     Color = _config.UI.Color7.Get(),
                     Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat",
                     Close = Layer,
-                    Command = $"UI_Crafts back {category} {page}"
+                    Command = $"UI_Crafts back {category} {page} {catPage}"
                 }
             }, Layer);
 
@@ -2520,7 +2751,7 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
-        private void EditUi(BasePlayer player, int category, int page, int craftId, int itemsPage = 0)
+        private void EditUi(BasePlayer player, int category, int page, int catPage, int craftId, int itemsPage = 0)
         {
             #region Dictionary
 
@@ -2736,7 +2967,7 @@ namespace Oxide.Plugins
                         FontSize = 10,
                         Align = TextAnchor.MiddleLeft,
                         Font = "robotocondensed-bold.ttf",
-                        Command = $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Image ",
+                        Command = $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} Image ",
                         Color = "1 1 1 0.95",
                         CharsLimit = 9
                     },
@@ -2798,7 +3029,7 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = nowStatus ? _config.UI.Color10.Get() : _config.UI.Color4.Get(),
-                        Command = $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Type {craftType}"
+                        Command = $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} Type {craftType}"
                     }
                 }, EditLayer);
 
@@ -2852,7 +3083,7 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = _config.Workbenches[wbLevel].Get(),
-                        Command = $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Level {wbLevel}"
+                        Command = $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} Level {wbLevel}"
                     }
                 }, EditLayer, Layer + $".WorkBench.{wbLevel}");
 
@@ -2870,7 +3101,7 @@ namespace Oxide.Plugins
             EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
                 "-85 -215",
                 "235 -165",
-                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Prefab ",
+                $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} Prefab ",
                 new KeyValuePair<string, object>("Prefab", edit["Prefab"]));
 
             #endregion
@@ -2903,7 +3134,7 @@ namespace Oxide.Plugins
                 EditFieldUi(player, ref container, EditLayer, Layer + $".Editing.{i}",
                     $"{xSwitch} {ySwitch - height}",
                     $"{xSwitch + width} {ySwitch}",
-                    $"UI_Crafts edit {category} {page} {craftId} {itemsPage} {obj.Key} ",
+                    $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} {obj.Key} ",
                     obj);
 
                 if (i % fieldsOnString == 0)
@@ -3013,7 +3244,8 @@ namespace Oxide.Plugins
                         Button =
                         {
                             Color = "0 0 0 0",
-                            Command = $"UI_Crafts start_edititem {category} {page} {craftId} {itemsPage} {craftItem.ID}"
+                            Command =
+                                $"UI_Crafts start_edititem {category} {page} {catPage} {craftId} {itemsPage} {craftItem.ID}"
                         }
                     }, Layer + $".Craft.Item.{xSwitch}");
 
@@ -3043,7 +3275,7 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = _config.UI.Color4.Get(),
-                        Command = $"UI_Crafts start_edititem {category} {page} {craftId} {itemsPage} -1"
+                        Command = $"UI_Crafts start_edititem {category} {page} {catPage} {craftId} {itemsPage} -1"
                     }
                 }, EditLayer);
 
@@ -3071,7 +3303,7 @@ namespace Oxide.Plugins
                     {
                         Color = _config.UI.Color4.Get(),
                         Command = itemsPage != 0
-                            ? $"UI_Crafts edit_page {category} {page} {craftId} {itemsPage - 1}"
+                            ? $"UI_Crafts edit_page {category} {page} {catPage} {craftId} {itemsPage - 1}"
                             : ""
                     }
                 }, EditLayer);
@@ -3100,7 +3332,7 @@ namespace Oxide.Plugins
                     {
                         Color = _config.UI.Color4.Get(),
                         Command = items.Count > (itemsPage + 1) * amountOnString
-                            ? $"UI_Crafts edit_page {category} {page} {craftId} {itemsPage + 1}"
+                            ? $"UI_Crafts edit_page {category} {page} {catPage} {craftId} {itemsPage + 1}"
                             : ""
                     }
                 }, EditLayer);
@@ -3130,7 +3362,7 @@ namespace Oxide.Plugins
                 $"{xSwitch} {ySwitch - 10}",
                 $"{xSwitch + 10} {ySwitch}",
                 enabled,
-                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Enabled {!enabled}",
+                $"UI_Crafts edit {category} {page} {catPage} {catPage} {craftId} {itemsPage} Enabled {!enabled}",
                 text
             );
 
@@ -3148,7 +3380,7 @@ namespace Oxide.Plugins
                 $"{xSwitch} {ySwitch - 10}",
                 $"{xSwitch + 10} {ySwitch}",
                 useDistance,
-                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} UseDistance {!useDistance}",
+                $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} UseDistance {!useDistance}",
                 text
             );
 
@@ -3166,7 +3398,7 @@ namespace Oxide.Plugins
                 $"{xSwitch} {ySwitch - 10}",
                 $"{xSwitch + 10} {ySwitch}",
                 ground,
-                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Ground {!ground}",
+                $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} Ground {!ground}",
                 text
             );
 
@@ -3184,7 +3416,7 @@ namespace Oxide.Plugins
                 $"{xSwitch} {ySwitch - 10}",
                 $"{xSwitch + 10} {ySwitch}",
                 structure,
-                $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Structure {!structure}",
+                $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} Structure {!structure}",
                 text
             );
 
@@ -3217,7 +3449,7 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Color = _config.UI.Color4.Get(),
-                    Command = $"UI_Crafts save_edit {category} {page} {craftId}"
+                    Command = $"UI_Crafts save_edit {category} {page} {catPage} {craftId}"
                 }
             }, EditLayer);
 
@@ -3245,7 +3477,7 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = _config.UI.Color11.Get(),
-                        Command = $"UI_Crafts delete_edit {category} {page} {craftId}"
+                        Command = $"UI_Crafts delete_edit {category} {page} {catPage} {craftId}"
                     }
                 }, EditLayer);
 
@@ -3405,7 +3637,8 @@ namespace Oxide.Plugins
             }, name);
         }
 
-        private void EditItemUi(BasePlayer player, int category, int page, int craftId, int itemsPage, int itemId)
+        private void EditItemUi(BasePlayer player, int category, int page, int catPage, int craftId, int itemsPage,
+            int itemId)
         {
             #region Dictionary
 
@@ -3451,7 +3684,7 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Color = "0 0 0 0",
-                    Command = $"UI_Crafts edit_page {category} {page} {craftId} {itemsPage}"
+                    Command = $"UI_Crafts edit_page {category} {page} {catPage} {craftId} {itemsPage}"
                 }
             }, EditLayer + ".Background");
 
@@ -3523,7 +3756,7 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Color = _config.UI.Color4.Get(),
-                    Command = $"UI_Crafts edit_page {category} {page} {craftId} {itemsPage}"
+                    Command = $"UI_Crafts edit_page {category} {page} {catPage} {craftId} {itemsPage}"
                 }
             }, Layer + ".Header");
 
@@ -3606,7 +3839,7 @@ namespace Oxide.Plugins
                         FontSize = 10,
                         Align = TextAnchor.MiddleLeft,
                         Font = "robotocondensed-bold.ttf",
-                        Command = $"UI_Crafts edit {category} {page} {craftId} {itemsPage} Image ",
+                        Command = $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} Image ",
                         Color = "1 1 1 0.95",
                         CharsLimit = 9
                     },
@@ -3626,7 +3859,7 @@ namespace Oxide.Plugins
             EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
                 "-85 -105",
                 "235 -65",
-                $"UI_Crafts edititem {category} {page} {craftId} {itemsPage} {itemId} Title ",
+                $"UI_Crafts edititem {category} {page} {catPage} {craftId} {itemsPage} {itemId} Title ",
                 new KeyValuePair<string, object>("Title", edit["Title"]));
 
             #endregion
@@ -3636,7 +3869,7 @@ namespace Oxide.Plugins
             EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
                 "-85 -155",
                 "70 -115",
-                $"UI_Crafts edititem {category} {page} {craftId} {itemsPage} {itemId} Amount ",
+                $"UI_Crafts edititem {category} {page} {catPage} {craftId} {itemsPage} {itemId} Amount ",
                 new KeyValuePair<string, object>("Amount", edit["Amount"]));
 
             #endregion
@@ -3646,7 +3879,7 @@ namespace Oxide.Plugins
             EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
                 "80 -155",
                 "235 -115",
-                $"UI_Crafts edititem {category} {page} {craftId} {itemsPage} {itemId} SkinID ",
+                $"UI_Crafts edititem {category} {page} {catPage} {craftId} {itemsPage} {itemId} SkinID ",
                 new KeyValuePair<string, object>("SkinID", edit["SkinID"]));
 
             #endregion
@@ -3656,7 +3889,7 @@ namespace Oxide.Plugins
             EditFieldUi(player, ref container, EditLayer, CuiHelper.GetGuid(),
                 "-85 -205",
                 "70 -165",
-                $"UI_Crafts edititem {category} {page} {craftId} {itemsPage} {itemId} Shortname ",
+                $"UI_Crafts edititem {category} {page} {catPage} {craftId} {itemsPage} {itemId} Shortname ",
                 new KeyValuePair<string, object>("ShortName", edit["ShortName"]));
 
             container.Add(new CuiButton
@@ -3677,7 +3910,7 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Color = _config.UI.Color4.Get(),
-                    Command = $"UI_Crafts selectitem {category} {page} {craftId} {itemsPage} {itemId}"
+                    Command = $"UI_Crafts selectitem {category} {page} {catPage} {craftId} {itemsPage} {itemId}"
                 }
             }, EditLayer);
 
@@ -3750,7 +3983,8 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
-        private void SelectItemUi(BasePlayer player, int category, int page, int craftId, int itemsPage, int itemId,
+        private void SelectItemUi(BasePlayer player, int category, int page, int catPage, int craftId, int itemsPage,
+            int itemId,
             string selectedCategory = "",
             int localPage = 0,
             string input = "")
@@ -3777,7 +4011,7 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Color = "0 0 0 0",
-                    Command = $"UI_Crafts start_edititem {category} {page} {craftId} {itemsPage} {itemId}"
+                    Command = $"UI_Crafts start_edititem {category} {page} {catPage} {craftId} {itemsPage} {itemId}"
                 }
             }, EditLayer + ".Background");
 
@@ -3835,7 +4069,8 @@ namespace Oxide.Plugins
                         Color = selectedCategory == cat.Key
                             ? _config.UI.Color4.Get()
                             : _config.UI.Color2.Get(),
-                        Command = $"UI_Crafts selectitem {category} {page} {craftId} {itemsPage} {itemId} {cat.Key}"
+                        Command =
+                            $"UI_Crafts selectitem {category} {page} {catPage} {craftId} {itemsPage} {itemId} {cat.Key}"
                     }
                 }, EditLayer);
 
@@ -3920,7 +4155,7 @@ namespace Oxide.Plugins
                     {
                         Color = "0 0 0 0",
                         Command =
-                            $"UI_Crafts takeitem {category} {page} {craftId} {itemsPage} {itemId} {item}"
+                            $"UI_Crafts takeitem {category} {page} {catPage} {craftId} {itemsPage} {itemId} {item}"
                     }
                 }, EditLayer + $".Item.{item}");
 
@@ -3978,7 +4213,7 @@ namespace Oxide.Plugins
                         FontSize = 10,
                         Align = TextAnchor.MiddleLeft,
                         Command =
-                            $"UI_Crafts selectitem selectitem {category} {page} {craftId} {itemsPage} {itemId} {selectedCategory} 0 ",
+                            $"UI_Crafts selectitem {category} {page} {catPage} {craftId} {itemsPage} {itemId} {selectedCategory} 0 ",
                         Color = "1 1 1 0.95",
                         CharsLimit = 150
                     },
@@ -4014,7 +4249,7 @@ namespace Oxide.Plugins
                 {
                     Color = _config.UI.Color2.Get(),
                     Command = localPage != 0
-                        ? $"UI_Crafts selectitem {category} {page} {craftId} {itemsPage} {itemId} {selectedCategory} {localPage - 1} {input}"
+                        ? $"UI_Crafts selectitem {category} {page} {catPage} {craftId} {itemsPage} {itemId} {selectedCategory} {localPage - 1} {input}"
                         : ""
                 }
             }, EditLayer);
@@ -4039,7 +4274,7 @@ namespace Oxide.Plugins
                 {
                     Color = _config.UI.Color4.Get(),
                     Command = itemsAmount > (localPage + 1) * totalAmount
-                        ? $"UI_Crafts selectitem {category} {page} {craftId} {itemsPage} {itemId} {selectedCategory} {localPage + 1} {input}"
+                        ? $"UI_Crafts selectitem {category} {page} {catPage} {craftId} {itemsPage} {itemId} {selectedCategory} {localPage + 1} {input}"
                         : ""
                 }
             }, EditLayer);
@@ -4052,9 +4287,131 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
+        private bool CooldownUi(ref CuiElementContainer container, BasePlayer player, CraftConf craft, int category,
+            int page,
+            int catPage,
+            bool update = false)
+        {
+            int leftTime;
+            if (craft.HasCooldown(player, out leftTime))
+            {
+                if (update)
+                    CuiHelper.DestroyUi(player, Layer + $".Craft.{craft.PUBLIC_ID}.Cooldown");
+
+                container.Add(new CuiPanel
+                {
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Image = {Color = "0 0 0 0.3", Material = "assets/content/ui/uibackgroundblur.mat"}
+                }, Layer + $".Craft.{craft.PUBLIC_ID}", Layer + $".Craft.{craft.PUBLIC_ID}.Cooldown");
+
+                container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+                        OffsetMin = "-32.5 -10", OffsetMax = "32.5 10"
+                    },
+                    Image =
+                    {
+                        Color = _config.UI.Color1.Get()
+                    }
+                }, Layer + $".Craft.{craft.PUBLIC_ID}.Cooldown", Layer + $".Craft.{craft.PUBLIC_ID}.Cooldown.Text");
+
+                container.Add(new CuiLabel
+                {
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text =
+                    {
+                        Text = $"{FormatShortTime(leftTime)}",
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 12,
+                        Color = "1 1 1 1"
+                    }
+                }, Layer + $".Craft.{craft.PUBLIC_ID}.Cooldown.Text");
+
+                return true;
+            }
+
+            if (update)
+                CuiHelper.DestroyUi(player, Layer + $".Craft.{craft.PUBLIC_ID}.Btn");
+
+            container.Add(new CuiButton
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
+                Button =
+                {
+                    Color = "0 0 0 0",
+                    Command = $"UI_Crafts trycraft {category} {page} {catPage} {craft.PUBLIC_ID}"
+                }
+            }, Layer + $".Craft.{craft.PUBLIC_ID}", Layer + $".Craft.{craft.PUBLIC_ID}.Btn");
+
+            return false;
+        }
+
         #endregion
 
         #region Utils
+
+        #region Cooldown
+
+        private readonly Dictionary<BasePlayer, PlayerUpdateCooldown> _updateCooldowns =
+            new Dictionary<BasePlayer, PlayerUpdateCooldown>();
+
+        private class PlayerUpdateCooldown
+        {
+            public List<CraftConf> Items = new List<CraftConf>();
+
+            public int category;
+            public int page;
+            public int catPage;
+
+            public PlayerUpdateCooldown(int category, int page, int catPage)
+            {
+                this.category = category;
+                this.page = page;
+                this.catPage = catPage;
+            }
+        }
+
+        private void UpdateCooldown()
+        {
+            var toRemove = Pool.GetList<BasePlayer>();
+
+            _updateCooldowns.ToList().ForEach(check =>
+            {
+                if (check.Key == null)
+                {
+                    toRemove.Add(check.Key);
+                    return;
+                }
+
+                var container = new CuiElementContainer();
+
+                check.Value.Items.ToList().ForEach(item =>
+                {
+                    if (!CooldownUi(ref container, check.Key, item, check.Value.category, check.Value.page,
+                            check.Value.catPage, true))
+                        check.Value.Items.Remove(item);
+                });
+
+                CuiHelper.AddUi(check.Key, container);
+
+                if (check.Value.Items.Count <= 0) toRemove.Add(check.Key);
+            });
+
+            toRemove.ForEach(x => _updateCooldowns.Remove(x));
+
+            Pool.FreeList(ref toRemove);
+        }
+
+        #endregion
+
+        private static string FormatShortTime(int time)
+        {
+            return TimeSpan.FromSeconds(time).ToShortString();
+        }
 
         private bool CanEdit(BasePlayer player)
         {
@@ -4099,7 +4456,7 @@ namespace Oxide.Plugins
             {
                 var val = Random.Range(int.MinValue, int.MaxValue);
 
-                if (!_crafts.Exists(craft => craft.ID == val))
+                if (!_crafts.Exists(craft => craft.PUBLIC_ID == val))
                     result = val;
             } while (result == -1);
 

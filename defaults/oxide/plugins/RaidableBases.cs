@@ -40,7 +40,7 @@ using UnityEngine.SceneManagement;
 
 namespace Oxide.Plugins
 {
-    [Info("Raidable Bases", "nivex", "2.4.2")]
+    [Info("Raidable Bases", "nivex", "2.4.3")]
     [Description("Create fully automated raidable bases with npcs.")]
     class RaidableBases : RustPlugin
     {
@@ -100,7 +100,7 @@ namespace Oxide.Plugins
         private const float M_RADIUS = 25f;
         private const float CELL_SIZE = M_RADIUS / 2f;
 
-        private List<RankedRecord> Records = new List<RankedRecord>
+        private List<RankedRecord> RankedRecords = new List<RankedRecord>
         {
             new RankedRecord("raidablebases.ladder.easy", "raideasy", RaidableMode.Easy),
             new RankedRecord("raidablebases.ladder.medium", "raidmedium", RaidableMode.Medium),
@@ -131,24 +131,48 @@ namespace Oxide.Plugins
             public Dictionary<string, Lockout> Lockouts { get; } = new Dictionary<string, Lockout>();
             public Dictionary<string, PlayerInfo> Players { get; set; } = new Dictionary<string, PlayerInfo>();
             public Dictionary<string, UI.Info> UI { get; set; } = new Dictionary<string, UI.Info>();
+            public List<uint> TemporaryUID { get; set; } = new List<uint>();
             public string RaidTime { get; set; } = DateTime.MinValue.ToString();
             public int TotalEvents { get; set; }
             public StoredData() { }
-            public static void Load()
+            public static void Load(PluginTimers timer)
             {
                 try { data = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(Name); } catch { }
 
                 if (data.IsNull()) data = new StoredData();
                 if (data.UI.IsNull()) data.UI = new Dictionary<string, UI.Info>();
                 if (data.Players.IsNull()) data.Players = new Dictionary<string, PlayerInfo>();
+                if (data.TemporaryUID.Count > 0) timer.Once(30f, CleanupTemporaryFiles);
             }
             public void Save()
             {
                 data.Lockouts.RemoveAll((userid, lo) => lo.IsExpired());
                 data.UI.RemoveAll((userid, uii) => uii.All());
                 data.Players.RemoveAll((userid, playerInfo) => playerInfo.TotalRaids == 0 || playerInfo.IsExpired());
-
                 Interface.Oxide.DataFileSystem.WriteObject(Name, this);
+            }
+            private static void CleanupTemporaryFiles()
+            {
+                var entities = new List<BaseEntity>();
+                foreach (uint uid in data.TemporaryUID)
+                {
+                    var entity = BaseNetworkable.serverEntities.Find(uid) as BaseEntity;
+                    if (entity.IsKilled()) continue;
+                    entities.Add(entity);
+                }
+                data.TemporaryUID.Clear(); 
+                if (entities.Count == 0) return;
+                GarbageController.UndoLoop(new UndoSettings
+                {
+                    Limit = 3,
+                    Entities = RaidableBase.GetChildren(entities)
+                });
+                GarbageController.UndoLoop(new UndoSettings
+                {
+                    Entities = entities,
+                    Limit = 3,
+                    Mounts = true
+                });
             }
         }
 
@@ -160,7 +184,6 @@ namespace Oxide.Plugins
             public RaidableType Type;
             public RaidableSpawns spawns;
             public List<Payment> payments;
-            public EjectController ec;
             public float Radius;
             public bool hasSpawned;
 
@@ -178,8 +201,10 @@ namespace Oxide.Plugins
                 this.payments = payments;
                 this.Radius = Profile.Options.ProtectionRadius(Type);
             }
-
-            public void InitializeController() => ec = EjectController.Create(this);
+            public void InitializeController()
+            {
+                //TODO: implement eject functionality before base spawns
+            }
         }
 
         public class BackpackData
@@ -630,6 +655,12 @@ done:
 
                 UndoLoop(new UndoSettings
                 {
+                    Limit = 3,
+                    Entities = RaidableBase.GetChildren(entities)
+                });
+
+                UndoLoop(new UndoSettings
+                {
                     Structures = config.Settings.Management.DoNotDestroyStructures,
                     Deployables = config.Settings.Management.DoNotDestroyDeployables,
                     Mounts = config.Settings.Management.DespawnMounts,
@@ -642,147 +673,16 @@ done:
             }
         }
 
-        public class EjectController : FacepunchBehaviour
-        {
-            private GameObject go;
-            private Vector3 position;
-            private float radius;
-            private float lastMountCheckTime;
-            private List<BasePlayer> playersInSphere = new List<BasePlayer>();
-            private List<HotAirBalloon> habsInSphere = new List<HotAirBalloon>();
-            private List<BaseMountable> mountablesInSphere = new List<BaseMountable>();
-
-            private void OnDestroy()
-            {
-                try { CancelInvoke(); } catch { }
-                Destroy(go);
-                Destroy(this);
-            }
-
-            public void DestroyMe()
-            {
-                Destroy(this);
-            }
-
-            public static EjectController Create(RandomBase rb)
-            {
-                var ec = new GameObject("EjectController").AddComponent<EjectController>();
-
-                Interface.Oxide.NextTick(() =>
-                {
-                    ec.go = ec.gameObject;
-                    ec.go.transform.position = ec.position = rb.Position;
-                    ec.radius = rb.Radius;
-
-                    ec.InvokeRepeating(ec.CheckEntitiesInSphere, 0f, 0.1f);
-                });
-
-                return ec;
-            }
-
-            public static void FindEntities(Vector3 a, float n, int m, ref float lastMountCheckTime, List<HotAirBalloon> habsInSphere, List<BasePlayer> playersInSphere, List<BaseMountable> mountablesInSphere)
-            {
-                var entities = FindEntitiesOfType<BaseCombatEntity>(a, n, m);
-                for (int i = 0; i < entities.Count; i++)
-                {
-                    var entity = entities[i];
-                    if (entity.IsKilled() || entity.Health() <= 0f || entity.IsDead())
-                    {
-                        continue;
-                    }
-                    if (entity is BasePlayer)
-                    {
-                        playersInSphere.Add(entity as BasePlayer);
-                    }
-                    else if (entity is BaseMountable)
-                    {
-                        if (Time.time < lastMountCheckTime) continue;
-                        lastMountCheckTime = Time.time + 1f;
-                        mountablesInSphere.Add(entity as BaseMountable);
-                    }
-                    else if (entity is HotAirBalloon)
-                    {
-                        if (Time.time < lastMountCheckTime) continue;
-                        lastMountCheckTime = Time.time + 1f;
-                        habsInSphere.Add(entity as HotAirBalloon);
-                    }
-                }
-            }
-
-            private void CheckEntitiesInSphere()
-            {
-                FindEntities(position, radius, 174088, ref lastMountCheckTime, habsInSphere, playersInSphere, mountablesInSphere);
-                CheckMountables();
-                CheckIntruders();
-                habsInSphere.Clear();
-                playersInSphere.Clear();
-                mountablesInSphere.Clear();
-            }
-
-            private void CheckMountables()
-            {
-                if (habsInSphere.Count > 0)
-                {
-                    habsInSphere.ToList().ForEach(hab =>
-                    {
-                        var players = RaidableBase.GetMountedPlayers(hab);
-
-                        if (players.Count == 0 || players.Exists(player => CanBypass(player)))
-                        {
-                            return;
-                        }
-
-                        RaidableBase.EjectMountable(hab, EjectCode.Spawning, players, position, radius);
-                    });
-                }
-                if (mountablesInSphere.Count > 0)
-                {
-                    mountablesInSphere.ToList().ForEach(m =>
-                    {
-                        var players = RaidableBase.GetMountedPlayers(m);
-
-                        if (players.Count == 0 || players.Exists(player => CanBypass(player)))
-                        {
-                            return;
-                        }
-
-                        RaidableBase.EjectMountable(m, EjectCode.Spawning, players, position, radius);
-                    });
-                }
-            }
-
-            private void CheckIntruders()
-            {
-                if (playersInSphere.Count > 0)
-                {
-                    playersInSphere.ToList().ForEach(player =>
-                    {
-                        if (CanBypass(player) || IsUnderground(player.transform.position))
-                        {
-                            return;
-                        }
-
-                        RaidableBase.RemovePlayer(player, EjectCode.Spawning, position, radius, RaidableType.Manual);
-                    });
-                }
-            }
-
-            private bool CanBypass(BasePlayer player)
-            {
-                return !player.IsHuman() || player.IsFlying || player.limitNetworking || player.HasPermission("raidablebases.canbypass");
-            }
-        }
-
         public static class GridController
         {
-            internal static HashSet<RaidableSpawnLocation> Seabed { get; set; }
+            internal static List<RaidableSpawnLocation> Seabed { get; set; }
             internal static Dictionary<RaidableType, RaidableSpawns> Spawns { get; set; }
             internal static Coroutine gridCoroutine { get; set; }
             internal static float gridTime { get; set; }
 
             public static void Initialize()
             {
-                Seabed = new HashSet<RaidableSpawnLocation>();
+                Seabed = new List<RaidableSpawnLocation>();
                 Spawns = new Dictionary<RaidableType, RaidableSpawns>();
             }
 
@@ -948,7 +848,7 @@ done:
                 return FileExists($"SpawnsDatabase{Path.DirectorySeparatorChar}{spawnsFile}");
             }
 
-            public static HashSet<RaidableSpawnLocation> GetSpawnsLocations(string spawnsFile)
+            public static List<RaidableSpawnLocation> GetSpawnsLocations(string spawnsFile)
             {
                 Spawnfile data;
 
@@ -961,7 +861,7 @@ done:
                     return null;
                 }
 
-                var locations = new HashSet<RaidableSpawnLocation>();
+                var locations = new List<RaidableSpawnLocation>();
 
                 if (data.IsNull())
                 {
@@ -978,7 +878,7 @@ done:
 
                     var vector = value.ToVector3();
 
-                    if (vector == Vector3.zero) continue;
+                    if (vector == Vector3.zero || locations.Exists(x => x.Location == vector)) continue;
 
                     locations.Add(new RaidableSpawnLocation(vector));
                 }
@@ -1030,7 +930,7 @@ done:
 
                 if (!Instance.CanContinueAutomation())
                 {
-                    Puts(mx("MaintainCoroutineFailedToday"));
+                    Instance.timer.Once(1f, StartCoroutine);
                     return;
                 }
 
@@ -1167,7 +1067,7 @@ done:
 
                 if (!Instance.CanContinueAutomation())
                 {
-                    Puts(mx("ScheduleCoroutineFailedToday"));
+                    Instance.timer.Once(1f, StartCoroutine);
                     return;
                 }
 
@@ -1623,7 +1523,7 @@ done:
                 return result;
             }
 
-            private HashSet<ulong> _granted = new HashSet<ulong>();
+            private List<ulong> _granted = new List<ulong>();
 
             public bool HasCardPermission(BasePlayer player)
             {
@@ -1684,19 +1584,19 @@ done:
 
         public class RaidableSpawns
         {
-            public readonly HashSet<RaidableSpawnLocation> Spawns = new HashSet<RaidableSpawnLocation>();
-            private readonly Dictionary<CacheType, HashSet<RaidableSpawnLocation>> Cached = new Dictionary<CacheType, HashSet<RaidableSpawnLocation>>();
+            public List<RaidableSpawnLocation> Spawns { get; set; } = new List<RaidableSpawnLocation>();
+            private Dictionary<CacheType, List<RaidableSpawnLocation>> Cached { get; set; } = new Dictionary<CacheType, List<RaidableSpawnLocation>>();
             private float lastTryTime;
 
             public bool IsCustomSpawn { get; set; }
 
             public int Count => Spawns.Count;
 
-            public HashSet<RaidableSpawnLocation> Active => Spawns;
+            public List<RaidableSpawnLocation> Active => Spawns;
 
-            public HashSet<RaidableSpawnLocation> Inactive(CacheType cacheType) => Get(cacheType);
+            public List<RaidableSpawnLocation> Inactive(CacheType cacheType) => Get(cacheType);
 
-            public RaidableSpawns(HashSet<RaidableSpawnLocation> spawns)
+            public RaidableSpawns(List<RaidableSpawnLocation> spawns)
             {
                 Spawns = spawns;
                 IsCustomSpawn = true;
@@ -1726,7 +1626,10 @@ done:
                         break;
                 }
 
-                Spawns.Add(rsl);
+                if (!Spawns.Exists(x => x.Location == rsl.Location))
+                {
+                    Spawns.Add(rsl);
+                }
             }
 
             public void Check()
@@ -1746,18 +1649,21 @@ done:
 
             public void TryAddRange(CacheType cacheType = CacheType.Generic, bool forced = false)
             {
-                HashSet<RaidableSpawnLocation> cache = Get(cacheType);
+                List<RaidableSpawnLocation> cache = Get(cacheType);
 
                 foreach (var rsl in cache)
                 {
                     if (forced)
                     {
-                        Spawns.Add(rsl);
+                        if (!Spawns.Exists(x => x.Location == rsl.Location))
+                        {
+                            Spawns.Add(rsl);
+                        }
                     }
                     else Add(rsl, cacheType);
                 }
 
-                cache.RemoveWhere(rsl => Spawns.Contains(rsl));
+                cache.RemoveAll(x => Spawns.Contains(x));
             }
 
             public RaidableSpawnLocation GetRandom(BuildingWaterOptions options)
@@ -1766,7 +1672,7 @@ done:
 
                 if (GridController.Seabed.Count > 0 && UnityEngine.Random.Range(0f, 100f) >= options.Seabed)
                 {
-                    var rsl = GridController.Seabed.ElementAt(UnityEngine.Random.Range(0, GridController.Seabed.Count));
+                    var rsl = GridController.Seabed.GetRandom();
 
                     Remove(rsl, CacheType.Generic);
 
@@ -1776,7 +1682,7 @@ done:
                 }
                 else
                 {
-                    var rsl = Spawns.ElementAt(UnityEngine.Random.Range(0, Spawns.Count));
+                    var rsl = Spawns.GetRandom();
 
                     Remove(rsl, CacheType.Generic);
 
@@ -1784,12 +1690,12 @@ done:
                 }
             }
 
-            public HashSet<RaidableSpawnLocation> Get(CacheType cacheType)
+            public List<RaidableSpawnLocation> Get(CacheType cacheType)
             {
-                HashSet<RaidableSpawnLocation> cache;
+                List<RaidableSpawnLocation> cache;
                 if (!Cached.TryGetValue(cacheType, out cache))
                 {
-                    Cached[cacheType] = cache = new HashSet<RaidableSpawnLocation>();
+                    Cached[cacheType] = cache = new List<RaidableSpawnLocation>();
                 }
 
                 return cache;
@@ -1803,12 +1709,12 @@ done:
                     return;
                 }
 
-                HashSet<RaidableSpawnLocation> cache = Get(cacheType);
+                List<RaidableSpawnLocation> cache = Get(cacheType);
 
                 AddNear(cache, target, radius);
             }
 
-            private void AddNear(HashSet<RaidableSpawnLocation> cache, Vector3 target, float radius)
+            private void AddNear(List<RaidableSpawnLocation> cache, Vector3 target, float radius)
             {
                 foreach (var b in cache)
                 {
@@ -1818,7 +1724,7 @@ done:
                     }
                 }
 
-                cache.RemoveWhere(Spawns.Contains);
+                cache.RemoveAll(x => Spawns.Contains(x));
             }
 
             public void Remove(RaidableSpawnLocation a, CacheType cacheType)
@@ -1844,7 +1750,7 @@ done:
                     }
                 }
 
-                Spawns.RemoveWhere(x => cache.Contains(x));
+                Spawns.RemoveAll(x => cache.Contains(x));
                 return radius;
             }
         }
@@ -2086,8 +1992,8 @@ done:
                         e.SetParent(hit.GetEntity(), true, false);
                     }
 
-                    raid.Entities.Add(e);
-                    raid.BuiltList[e] = hit.point;
+                    raid.BuiltList[e] = hit.point;                    
+                    raid.AddEntity(e);
                 });
 
                 player.Invoke(action, 0.1f);
@@ -2540,7 +2446,7 @@ done:
                     }
                     else if (brain.CanUseMedicalTool())
                     {
-                        brain.UseSyringe();
+                        brain.UseSyringe(true);
                     }
                     else brain.MeleeAttack();
                 }
@@ -2884,19 +2790,10 @@ done:
             private void UseSyringe(bool now = false)
             {
                 raid.EquipWeapon(npc, this, now);
-
                 IdentifyWeapon();
-                if (syringe.IsNull()) return;
+                if (syringe == null) return;
                 syringe.ServerUse();
                 Invoke(() => UseSyringe(), 4f);
-            }
-
-            private void UseSyringeNEW()
-            {
-                if (syringe.IsNull() || syringe.GetItem()?.amount <= 0)
-                {
-                    IdentifyWeapon();
-                }
             }
 
             private void UseChainsaw()
@@ -3207,6 +3104,7 @@ done:
                 DestroyInput();
                 IsAllowed = false;
                 IsRaider = false;
+                LockedOnEnter = false;
             }
         }
 
@@ -3228,14 +3126,14 @@ done:
             public List<ulong> intruders { get; set; } = Pool.GetList<ulong>();
             public Dictionary<ulong, Raider> raiders { get; set; } = Pool.Get<Dictionary<ulong, Raider>>();
             public Hash<uint, float> conditions { get; set; } = Pool.Get<Hash<uint, float>>();
-            public HashSet<StorageContainer> _containers { get; set; } = Pool.Get<HashSet<StorageContainer>>();
-            public HashSet<StorageContainer> _allcontainers { get; set; } = Pool.Get<HashSet<StorageContainer>>();
+            public List<StorageContainer> _containers { get; set; } = new List<StorageContainer>();
+            public List<StorageContainer> _allcontainers { get; set; } = new List<StorageContainer>();
             public List<ScientistNPC> npcs { get; set; } = Pool.GetList<ScientistNPC>();
             public List<HotAirBalloon> habs { get; set; } = Pool.GetList<HotAirBalloon>();
             public List<BaseMountable> mountables { get; set; } = Pool.GetList<BaseMountable>();
             public Dictionary<uint, BackpackData> backpacks { get; set; } = Pool.Get<Dictionary<uint, BackpackData>>();
             public Dictionary<uint, DamageRecord> records { get; set; } = Pool.Get<Dictionary<uint, DamageRecord>>();
-            public List<Vector3> foundations { get; set; } = Pool.GetList<Vector3>();
+            public List<Vector3> foundations { get; set; } = new List<Vector3>(); // 2.4.3 arena wall fix (?)
             public List<BaseEntity> locks { get; set; } = Pool.GetList<BaseEntity>();
             private List<BuildingBlock> blocks { get; set; } = Pool.GetList<BuildingBlock>();
             private List<Vector3> _randomSpots { get; set; } = Pool.GetList<Vector3>();
@@ -3255,7 +3153,6 @@ done:
             private List<SleepingBag> _beds { get; set; } = Pool.GetList<SleepingBag>();
             private Dictionary<SleepingBag, ulong> _bags { get; set; } = Pool.Get<Dictionary<SleepingBag, ulong>>();
             private List<BaseEntity> _rugs { get; set; } = Pool.GetList<BaseEntity>();
-            public List<StabilityEntity> ses { get; set; } = Pool.GetList<StabilityEntity>();
             public List<SamSite> samsites { get; set; } = Pool.GetList<SamSite>();
             public List<VendingMachine> vms { get; set; } = Pool.GetList<VendingMachine>();
             public Dictionary<string, ItemDefinition> Definitions { get; set; }
@@ -3269,7 +3166,7 @@ done:
             private bool IsInvokingCanFinish { get; set; }
             public bool IsDespawning { get; set; }
             public Vector3 PastedLocation { get; set; }
-            public Vector3 Location { get; set; }
+            public Vector3 Location { get; private set; }
             public string ProfileName { get; set; }
             public string BaseName { get; set; }
             public int BaseIndex { get; set; } = -1;
@@ -3291,6 +3188,7 @@ done:
             public BuildingOptions Options { get; set; }
             public bool IsAuthed { get; set; }
             public bool IsOpened { get; set; } = true;
+            public bool IsResetting { get; set; } 
             public bool IsUnloading { get; set; }
             public bool IsPayLocked { get; set; }
             public int npcMaxAmount { get; set; }
@@ -3313,9 +3211,9 @@ done:
             private bool _undoMounts { get; set; }
             private bool _undoTeleport { get; set; }
             private int _undoLimit { get; set; }
-            private Dictionary<Elevator, BMGELEVATOR> elevators { get; set; } = new Dictionary<Elevator, BMGELEVATOR>();
+            private Dictionary<Elevator, BMGELEVATOR> Elevators { get; set; } = new Dictionary<Elevator, BMGELEVATOR>();
             private ItemDefinition lowgradefuel { get; set; } = ItemManager.FindItemDefinition("lowgradefuel");
-            public HashSet<BaseEntity> Entities { get; set; } = new HashSet<BaseEntity>();
+            public List<BaseEntity> Entities { get; set; } = new List<BaseEntity>();
             public Dictionary<BaseEntity, Vector3> BuiltList { get; set; } = new Dictionary<BaseEntity, Vector3>();
             public RaidableSpawns spawns { get; set; }
             public float RemoveNearDistance { get; set; }
@@ -3363,6 +3261,22 @@ done:
                 return ri;
             }
 
+            public void AddEntity(BaseEntity entity)
+            {
+                if (!entity.IsValid())
+                {
+                    return;
+                }
+                if (!Entities.Contains(entity))
+                {
+                    Entities.Add(entity);                    
+                }
+                if (!data.TemporaryUID.Contains(entity.net.ID))
+                {
+                    data.TemporaryUID.Add(entity.net.ID);
+                }
+            }
+
             private void ResetToPool<T>(ICollection<T> collection)
             {
                 collection.Clear();
@@ -3380,8 +3294,6 @@ done:
                 ResetToPool(lastActive);
                 ResetToPool(locks);
                 ResetToPool(blocks);
-                ResetToPool(_containers);
-                ResetToPool(_allcontainers);
                 ResetToPool(npcs);
                 ResetToPool(foundations);
                 ResetToPool(spheres);
@@ -3399,7 +3311,6 @@ done:
                 ResetToPool(_beds);
                 ResetToPool(_bags);
                 ResetToPool(_rugs);
-                ResetToPool(ses);
                 ResetToPool(samsites);
                 ResetToPool(payments);
                 ResetToPool(vms);
@@ -3429,7 +3340,7 @@ done:
 
             private void CheckEntitiesInSphere()
             {
-                EjectController.FindEntities(Location, ProtectionRadius, 174088, ref lastMountCheckTime, habsInSphere, playersInSphere, mountablesInSphere);
+                FindEntities(Location, ProtectionRadius, 174088, ref lastMountCheckTime, habsInSphere, playersInSphere, mountablesInSphere);
                 CheckMountablesExiting();
                 CheckMountablesEntering();
                 CheckIntrudersExiting();
@@ -3437,6 +3348,35 @@ done:
                 habsInSphere.Clear();
                 playersInSphere.Clear();
                 mountablesInSphere.Clear();
+            }
+
+            public static void FindEntities(Vector3 a, float n, int m, ref float lastMountCheckTime, List<HotAirBalloon> habsInSphere, List<BasePlayer> playersInSphere, List<BaseMountable> mountablesInSphere)
+            {
+                var entities = FindEntitiesOfType<BaseCombatEntity>(a, n, m);
+                for (int i = 0; i < entities.Count; i++)
+                {
+                    var entity = entities[i];
+                    if (entity.IsKilled() || entity.Health() <= 0f || entity.IsDead())
+                    {
+                        continue;
+                    }
+                    if (entity is BasePlayer)
+                    {
+                        playersInSphere.Add(entity as BasePlayer);
+                    }
+                    else if (entity is BaseMountable)
+                    {
+                        if (Time.time < lastMountCheckTime) continue;
+                        lastMountCheckTime = Time.time + 1f;
+                        mountablesInSphere.Add(entity as BaseMountable);
+                    }
+                    else if (entity is HotAirBalloon)
+                    {
+                        if (Time.time < lastMountCheckTime) continue;
+                        lastMountCheckTime = Time.time + 1f;
+                        habsInSphere.Add(entity as HotAirBalloon);
+                    }
+                }
             }
 
             private void CheckMountablesExiting()
@@ -3722,7 +3662,7 @@ enterExit:
             {
                 foreach (var raid in Instance.Raids.ToList())
                 {
-                    foreach (var x in raid.elevators.Values.Where(e => e._UI.ContainsKey(player.userID)).ToList()) { x._UI[player.userID] = player; }
+                    foreach (var x in raid.Elevators.Values.Where(e => e._UI.ContainsKey(player.userID)).ToList()) { x._UI[player.userID] = player; }
                     if (raid.raiders.ContainsKey(player.userID)) { raid.raiders[player.userID].player = player; }
                     if (raid.ownerId == player.userID) { raid.owner = player; }
                 }
@@ -3740,7 +3680,7 @@ enterExit:
 
             private bool RemoveFauxAdmin(BasePlayer player)
             {
-                if (player.IsDeveloper && player.HasPermission("fauxadmin.allowed") && player.HasPermission("raidablebases.block.fauxadmin") && player.IsCheating())
+                if (player.IsReallyValid() && player.IsDeveloper && player.HasPermission("fauxadmin.allowed") && player.HasPermission("raidablebases.block.fauxadmin") && player.IsCheating())
                 {
                     RemovePlayer(player, EjectCode.FauxAdmin, Location, ProtectionRadius, Type);
                     QueueNotification(player, "NoFauxAdmin");
@@ -3914,7 +3854,7 @@ enterExit:
 
             public void DestroyUI()
             {
-                elevators.ToList().ForEach(element => element.Value.DestroyMe());
+                TryInvokeMethod(DestroyElevators);
                 GetIntruders().ForEach(UI.DestroyStatusUI);
                 raiders.ToList().ForEach(ri => TrySetLockout(ri.Value));
             }
@@ -4022,15 +3962,37 @@ enterExit:
 
             private void DestroyElevators()
             {
-                if (!elevators.IsNullOrEmpty())
+                if (!Elevators.IsNullOrEmpty())
                 {
                     TryInvokeMethod(RemoveParentFromEntitiesOnElevators);
-                    elevators.ToList().ForEach(element => Destroy(element.Value));
+                    Elevators.ToList().ForEach(element => Destroy(element.Value));
                 }
+            }
+
+            public static List<BaseEntity> GetChildren(List<BaseEntity> entities)
+            {
+                var children = new List<BaseEntity>();
+
+                entities.ForEach(e =>
+                {
+                    if (!e.IsKilled() && e.HasParent())
+                    {
+                        //e.SetParent(null);
+                        children.Add(e);
+                    }
+                });
+
+                return children;
             }
 
             private void DestroyEntities()
             {
+                GarbageController.UndoLoop(new UndoSettings
+                {
+                    Limit = 3,
+                    Entities = GetChildren(Entities)
+                });
+
                 GarbageController.UndoLoop(new UndoSettings
                 {
                     Structures = _undoStructures,
@@ -4104,7 +4066,7 @@ enterExit:
 
             public List<BasePlayer> GetRaiders()
             {
-                return raiders.Values.Where(x => x.player.IsReallyValid() && x.IsRaider).Select(x => x.player).ToList();
+                return raiders.Values.Where(x => x.player.IsReallyValid() && (x.IsRaider || x.LockedOnEnter)).Select(x => x.player).ToList();
             }
 
             public bool AddLooter(BasePlayer looter, HitInfo hitInfo = null)
@@ -4414,13 +4376,25 @@ enterExit:
 
                 foreach (var ri in raiders.Values)
                 {
-                    if (ri.player.IsNull() || ri.player.IsCheating() || !IsPlayerActive(ri.id))
+                    if (ri.player.IsNull() || ri.player.IsFlying || ri.player._limitedNetworking || !IsPlayerActive(ri.id))
                     {
                         ri.reward = false;
                         continue;
                     }
 
                     if (config.Settings.RemoveAdminRaiders && ri.player.IsAdmin && Type != RaidableType.None)
+                    {
+                        ri.reward = false;
+                        continue;
+                    }
+
+                    if (config.Settings.Management.OnlyAwardOwner && ri.player.userID != ownerId && ownerId.IsSteamId())
+                    {
+                        ri.reward = false;
+                        continue;
+                    }
+
+                    if (!ri.IsRaider && !ri.LockedOnEnter)
                     {
                         ri.reward = false;
                         continue;
@@ -4489,11 +4463,11 @@ enterExit:
                 {
                     TrySetLockout(ri);
 
-                    if (!ri.IsRaider || !ri.reward)
+                    if (!ri.IsRaider && !ri.LockedOnEnter || !ri.reward)
                     {
                         continue;
                     }
-
+                                        
                     if (config.RankedLadder.Enabled)
                     {
                         PlayerInfo playerInfo = PlayerInfo.Get(ri.id);
@@ -4572,7 +4546,7 @@ enterExit:
                         return;
                     }
 
-                    int total = raiders.Values.ToList().Sum(x => x.IsRaider ? 1 : 0);
+                    int total = raiders.Values.ToList().Sum(x => x.IsRaider || x.LockedOnEnter ? 1 : 0);
 
                     if (Options.Rewards.Custom.IsReallyValid())
                     {
@@ -4745,12 +4719,12 @@ enterExit:
 
             private void TrySetLockout(Raider ri)
             {
-                if (IsUnloading || ri == null || (!ri.IsRaider && !ri.LockedOnEnter) || Type == RaidableType.None || ri.id.HasPermission("raidablebases.canbypass") || ri.id.HasPermission("raidablebases.lockoutbypass"))
+                if (IsUnloading || IsResetting || ri == null || (!ri.IsRaider && !ri.LockedOnEnter) || Type == RaidableType.None || ri.id.HasPermission("raidablebases.canbypass") || ri.id.HasPermission("raidablebases.lockoutbypass"))
                 {
                     return;
                 }
 
-                if (ri.player.IsReallyValid() && ri.player.IsFlying)
+                if (ri.player.IsReallyValid() && (ri.player.IsFlying || ri.player._limitedNetworking))
                 {
                     return;
                 }
@@ -4927,6 +4901,7 @@ enterExit:
                     return;
                 }
 
+                IsResetting = config.Settings.Buyable.Refunds.Reset;
                 Reset(player);
 
                 foreach (var payment in payments)
@@ -4994,8 +4969,15 @@ enterExit:
                 }
 
                 float time;
+                if (!lastActive.TryGetValue(playerId, out time)) 
+                {
+                    return true;
+                }
+                
+                float secondsInactive = Time.realtimeSinceStartup - time;
+                float secondsBeforeInactive = config.Settings.Management.LockTime * 60f;
 
-                return !lastActive.TryGetValue(playerId, out time) || Time.realtimeSinceStartup - time <= config.Settings.Management.LockTime * 60f;
+                return secondsInactive < secondsBeforeInactive;
             }
 
             public void TrySetOwner(BasePlayer attacker, BaseEntity entity, HitInfo hitInfo)
@@ -5073,38 +5055,6 @@ enterExit:
 
                     ss.staticRespawn = false;
                 });
-
-                SesLoop(entity.transform.position);
-            }
-
-            private void SesLoop(Vector3 a)
-            {
-                ses.RemoveAll(e => e.IsKilled() || !e.grounded);
-
-                if (ses.Count == 0)
-                {
-                    return;
-                }
-
-                var stabilityEntities = ses.Where(e => InRange(e.transform.position, a, 6f));
-
-                if (stabilityEntities.Count > 0)
-                {
-                    var stabilityEntity = stabilityEntities[0];
-
-                    ses.Remove(stabilityEntity);
-
-                    stabilityEntity.grounded = false;
-                    stabilityEntity.InitializeSupports();
-                    stabilityEntity.UpdateStability();
-
-                    Interface.Oxide.NextTick(() => SesLoop(a));
-                }
-            }
-
-            public void FoundationWiped()
-            {
-                ses.Clear();
             }
 
             public void CheckDespawn()
@@ -5314,7 +5264,7 @@ enterExit:
                     return;
                 }
 
-                if (Type != RaidableType.None && raiders.Exists(ri => ri.Value.IsRaider))
+                if (Type != RaidableType.None && raiders.Exists(ri => ri.Value.IsRaider || ri.Value.LockedOnEnter))
                 {
                     CheckDespawn();
                 }
@@ -5369,15 +5319,16 @@ enterExit:
                 {
                     TrySetPayLock(x.payments);
                 }
-
-                RemoveNearDistance = distance;
-                BaseIndex = x.BaseIndex;
-                Entities = entities.ToHashSet();
-                spawns = x.spawns;
+                
                 IsLoading = true;
-
-                TryInvokeMethod(() => SetupElevators(elevators));
-                x.ec?.DestroyMe();
+                spawns = x.spawns;
+                Entities = entities;
+                Elevators = elevators;
+                BaseIndex = x.BaseIndex;
+                RemoveNearDistance = distance; 
+                
+                TryInvokeMethod(SetCenterFromMultiplePoints);
+                TryInvokeMethod(SetupElevators);
 
                 Interface.Oxide.NextTick(() =>
                 {
@@ -5387,32 +5338,34 @@ enterExit:
                 });
             }
 
-            private void SetupElevators(Dictionary<Elevator, BMGELEVATOR> elevators)
+            private void SetupElevators()
             {
-                if (elevators.IsNullOrEmpty())
+                if (Elevators.IsNullOrEmpty())
                 {
                     return;
                 }
 
-                this.elevators = elevators;
-
-                elevators.ToList().ForEach(element => element.Value.Init(this));
+                Elevators.ToList().ForEach(element => element.Value.Init(this));
             }
 
-            private Vector3 GetCenterFromMultiplePoints()
+            private void SetCenterFromMultiplePoints()
             {
-                if (foundations.Count <= 1)
-                {
-                    return PastedLocation;
-                }
-
                 float x = 0f;
                 float z = 0f;
 
-                foreach (var position in foundations)
+                foreach (var e in Entities.Where(e => !e.IsKilled() && (e.ShortPrefabName == "foundation.triangle" || e.ShortPrefabName == "foundation")))
                 {
+                    var position = e.transform.position;
+
+                    if (foundations.Contains(position))
+                    {
+                        continue;
+                    }
+
                     z += position.z;
                     x += position.x;
+
+                    foundations.Add(position);
                 }
 
                 var vector = new Vector3(x / foundations.Count, 0f, z / foundations.Count);
@@ -5423,7 +5376,7 @@ enterExit:
                 }
                 else vector.y = SpawnsController.GetSpawnHeight(vector);
 
-                return vector;
+                Location = vector;
             }
 
             private void CreateSpheres()
@@ -5619,10 +5572,9 @@ enterExit:
 
                 int checks = 0;
                 float invokeTime = 0f;
-                var list = new List<BaseEntity>(Entities);
                 int limit = Mathf.Clamp(Options.Setup.SpawnLimit, 1, 500);
 
-                foreach (var e in list)
+                foreach (var e in Entities.ToList())
                 {
                     if (Instance.IsNull())
                     {
@@ -5798,7 +5750,7 @@ next:
                 Interface.CallHook("OnRaidableBaseStarted", hookObjects);
             }
 
-            private void TryInvokeMethod(Action action)
+            public static void TryInvokeMethod(Action action)
             {
                 try
                 {
@@ -5835,22 +5787,14 @@ next:
 
             private void SetupCollider()
             {
-                foreach (var e in Entities.Where(e => !e.IsKilled()))
-                {
-                    if (e.ShortPrefabName == "foundation.triangle" || e.ShortPrefabName == "foundation")
-                    {
-                        foundations.Add(e.transform.position);
-                    }
-                }
-
-                Location = GetCenterFromMultiplePoints();
                 go.transform.position = Location;
+
                 InvokeRepeating(CheckEntitiesInSphere, 0f, 0.1f);
             }
 
             private void SetupLoot()
             {
-                _containers.RemoveWhere(x => x.IsKilled());
+                _containers.RemoveAll(x => x.IsKilled());
 
                 treasureAmount = Options.MinTreasure > 0 ? UnityEngine.Random.Range(Options.MinTreasure, Options.MaxTreasure + 1) : Options.MaxTreasure;
 
@@ -5859,11 +5803,10 @@ next:
                     return;
                 }
 
-                var containers = Pool.GetList<StorageContainer>();
+                var containers = new List<StorageContainer>();
 
                 if (!SetupLootContainers(containers))
                 {
-                    Pool.FreeList(ref containers);
                     return;
                 }
                 
@@ -5876,7 +5819,6 @@ next:
 
                 if (Loot.Count == 0)
                 {
-                    Pool.FreeList(ref containers);
                     Puts(mx("NoConfiguredLoot"));
                     return;
                 }
@@ -5885,8 +5827,6 @@ next:
                 VerifyLootAmount();
                 SpawnLoot(containers);
                 SetupSellOrders();
-
-                Pool.FreeList(ref containers);
             }
 
             private void SetupContainers()
@@ -5903,7 +5843,7 @@ next:
             {
                 if (skipCheck)
                 {
-                    Entities.Add(e);
+                    AddEntity(e);
                 }
 
                 GarbageController.RaidEntities[e] = this;
@@ -5916,13 +5856,17 @@ next:
 
             private void AddContainer(StorageContainer container)
             {
-                if (IsBox(container, true) || container is BuildingPrivlidge)
-                {
+                if (!_containers.Contains(container) && (IsBox(container, true) || container is BuildingPrivlidge))
+                {                    
                     _containers.Add(container);
                 }
 
-                _allcontainers.Add(container);
-                Entities.Add(container);
+                if (!_allcontainers.Contains(container))
+                {
+                    _allcontainers.Add(container);
+                }
+
+                AddEntity(container);
             }
 
             private void SetupContainer(StorageContainer container)
@@ -5988,7 +5932,7 @@ next:
 
             private void SetupLock(BaseEntity e, bool justCreated = false)
             {
-                Entities.Add(e);
+                AddEntity(e);
                 locks.Add(e);
 
                 if (Type == RaidableType.None)
@@ -6553,11 +6497,6 @@ next:
                     BuildingID = BuildingManager.server.NewBuildingID();
                 }
 
-                if (decayEntity is StabilityEntity)
-                {
-                    ses.Add(decayEntity as StabilityEntity);
-                }
-
                 decayEntity.AttachToBuilding(BuildingID);
                 decayEntity.decay = null;
                 decayEntity.upkeepTimer = float.MinValue;
@@ -6596,7 +6535,7 @@ next:
 
                 if (!skinIds.ContainsKey(container.prefabID))
                 {
-                    if (config.Skins.Boxes.PresetSkin == 0uL || !si.allSkins.Contains(config.Skins.Boxes.PresetSkin))
+                    if (config.Skins.Boxes.PresetSkin == 0uL)
                     {
                         var random = new List<ulong>();
 
@@ -6802,7 +6741,7 @@ next:
             {
                 if (Type == RaidableType.None)
                 {
-                    _allcontainers.RemoveWhere(x => x.IsKilled());
+                    _allcontainers.RemoveAll(x => x.IsKilled());
 
                     itemAmountSpawned = _allcontainers.ToList().Sum(x => x.inventory.itemList.Count);
                 }
@@ -6901,7 +6840,11 @@ next:
                 IsEngaged = true;
                 IsPayLocked = false;
                 CheckBackpacks(true);
-                raiders.Values.ToList().ForEach(ri => ri.IsRaider = false);
+                raiders.Values.ToList().ForEach(ri =>
+                {
+                    ri.IsRaider = false;
+                    ri.LockedOnEnter = false;
+                });
             }
 
             private void ResetLock()
@@ -7297,11 +7240,12 @@ next:
 
                     foreach (var ti in Loot)
                     {
-                        if (ti.isPriority || !LootNames.Contains(ti.shortname))
+                        if (!LootNames.Contains(ti.shortname))
                         {
-                            LootNames.Add(ti.shortname);
+                            LootNames.Add(ti.shortname);                            
                             newLoot.Add(ti);
                         }
+                        else if (ti.isPriority) newLoot.Add(ti);
                     }
 
                     Loot = newLoot;
@@ -7309,7 +7253,10 @@ next:
 
                 foreach (var ti in Loot)
                 {
-                    LootNames.Add(ti.shortname);
+                    if (!LootNames.Contains(ti.shortname))
+                    {
+                        LootNames.Add(ti.shortname);
+                    }
                 }
             }
 
@@ -7343,7 +7290,11 @@ next:
                             continue;
                         }
 
-                        LootNames.Add(ti.shortname);
+                        if (!LootNames.Contains(ti.shortname))
+                        {
+                            LootNames.Add(ti.shortname);
+                        }
+
                         Loot.Add(ti);
                     }
                 }
@@ -7400,7 +7351,7 @@ next:
             private List<LootItem> DifficultyLoot { get; set; } = new List<LootItem>();
             private List<LootItem> DefaultLoot { get; set; } = new List<LootItem>();
             private List<LootItem> Loot { get; set; } = new List<LootItem>();
-            private HashSet<string> LootNames { get;set;} = new HashSet<string>();
+            private List<string> LootNames { get;set;} = new List<string>();
 
             private void SpawnItem(LootItem ti, ItemContainer[] containers)
             {
@@ -7857,7 +7808,7 @@ next:
 
             public static bool IsOwner(BasePlayer player)
             {
-                return Instance.Raids.Exists(raid => raid.ownerId == player.userID && raid.IsOpened);
+                return Instance.Raids.Exists(raid => raid.ownerId == player.userID && (raid.IsOpened || raid.IsDespawning));
             }
 
             public static bool Has(ulong userID)
@@ -8341,31 +8292,31 @@ next:
 
             private static List<BasePlayer> GetMountedPlayers(BaseVehicle vehicle)
             {
-                var players = new HashSet<BasePlayer>();
+                var players = new List<BasePlayer>();
 
                 if (!vehicle.HasMountPoints())
                 {
                     var player = vehicle.GetMounted();
 
-                    if (player?.IsHuman() == true)
+                    if (player?.IsHuman() == true && !players.Contains(player))
                     {
                         players.Add(player);
                     }
 
-                    return players.ToList();
+                    return players;
                 }
 
                 foreach (var mountPoint in vehicle.allMountPoints)
                 {
                     var player = mountPoint.mountable?.GetMounted();
 
-                    if (player?.IsHuman() == true)
+                    if (player?.IsHuman() == true && !players.Contains(player))
                     {
                         players.Add(player);
                     }
                 }
 
-                return players.ToList();
+                return players;
             }
 
             private bool CanEject(List<BasePlayer> players)
@@ -8474,7 +8425,7 @@ next:
 
             private bool TryRemoveMountable(BaseEntity m, List<BasePlayer> players)
             {
-                if (m.IsNull() || Type == RaidableType.None || m.GetParentEntity() is BaseTrain || IsControlledMount(m) || Entities.Contains(m))
+                if (m.IsNull() || Type == RaidableType.None || m.GetParentEntity() is TrainCar || IsControlledMount(m) || Entities.Contains(m))
                 {
                     return false;
                 }
@@ -8528,6 +8479,10 @@ next:
                         return EjectMountable(m as HotAirBalloon, EjectCode.Mounted, players, Location, ProtectionRadius);
                     }
                 }
+                else if (IsJetpack(m))
+                {
+                    shouldEject = config.Settings.Management.Mounts.Jetpacks;
+                }
 
                 if (shouldEject && m is BaseMountable)
                 {
@@ -8535,6 +8490,11 @@ next:
                 }
 
                 return false;
+            }
+
+            private bool IsJetpack(BaseEntity m)
+            {
+                return m.ShortPrefabName == "standingdriver" && m.HasParent() && m.GetParentEntity() is DroppedItemContainer;
             }
 
             private static void TryPushMountable(BaseVehicle vehicle, Vector3 target)
@@ -8645,6 +8605,7 @@ next:
                     return false;
                 }
 
+                data.TemporaryUID.Add(e.net.ID);
                 e.enableSaving = false;
                 return true;
             }
@@ -10189,17 +10150,21 @@ next:
 
         private void Init()
         {
+            tryBuyCooldowns = new List<string>();
             Instance = this;
             IsUnloading = false;
             _sb = new StringBuilder();
             _sb2 = new StringBuilder();
             Buildings = new BuildingTables();
 
-            foreach (var record in Records)
+            if (config.RankedLadder.Enabled)
             {
-                permission.RegisterPermission(record.Permission, this);
-                permission.CreateGroup(record.Group, record.Group, 0);
-                permission.GrantGroupPermission(record.Group, record.Permission, this);
+                foreach (var record in RankedRecords)
+                {
+                    permission.RegisterPermission(record.Permission, this);
+                    permission.CreateGroup(record.Group, record.Group, 0);
+                    permission.GrantGroupPermission(record.Group, record.Permission, this);
+                }
             }
 
             permission.RegisterPermission("raidablebases.allow", this);
@@ -10221,6 +10186,7 @@ next:
             permission.RegisterPermission("raidablebases.elevators.bypass.building", this);
             permission.RegisterPermission("raidablebases.elevators.bypass.card", this);
             permission.RegisterPermission("raidablebases.time", this);
+            permission.RegisterPermission("raidablebases.buyraid", this);
             lastSpawnRequestTime = Time.realtimeSinceStartup;
             buyableEnabled = config.Settings.Buyable.Max > 0;
             Unsubscribe(nameof(OnMapMarkerAdded));
@@ -10243,7 +10209,7 @@ next:
             AddCovalenceCommand("rb.config", nameof(CommandConfig), "raidablebases.config");
             AddCovalenceCommand("rb.populate", nameof(CommandPopulate), "raidablebases.config");
             AddCovalenceCommand("rb.toggle", nameof(CommandToggle), "raidablebases.config");
-            StoredData.Load();
+            StoredData.Load(timer);
             CheckForWipe();
             Initialize();
             float interval = Mathf.Clamp(config.EventMessages.Interval, 1f, 60f);
@@ -10583,11 +10549,14 @@ next:
                     UnityEngine.Object.Destroy(e.GetComponent<DestroyOnGroundMissing>());
                     UnityEngine.Object.Destroy(e.GetComponent<GroundWatch>());
                 }
-                else raid.Entities.Add(e);
+                else
+                {
+                    raid.AddEntity(e);
+                }
             }
             else if (!config.Settings.Management.DoNotDestroyStructures)
             {
-                raid.Entities.Add(e);
+                raid.AddEntity(e);
             }
         }
 
@@ -10843,19 +10812,19 @@ next:
             return null;
         }
 
-        private float OnExplosiveFuseSet(TimedExplosive explosive, float fuseLength)
+        private object OnExplosiveFuseSet(TimedExplosive explosive, float fuseLength)
         {
             var npc = explosive.creatorEntity as ScientistNPC;
 
             if (npc.IsNull())
             {
-                return fuseLength;
+                return null;
             }
 
             HumanoidBrain brain;
             if (!HumanoidBrains.TryGetValue(npc.userID, out brain) || !brain.Settings.PlayCatch || !brain.ValidTarget)
             {
-                return fuseLength;
+                return null;
             }
 
             return Vector3.Distance(brain.ServerPosition, brain.AttackPosition) * 0.1275f;
@@ -10913,15 +10882,6 @@ next:
                 return;
             }
 
-            if (raid.Options.FoundationWipe && (entity.ShortPrefabName == "foundation.triangle" || entity.ShortPrefabName == "foundation"))
-            {
-                if (++raid.foundationsDestroyed < raid.foundations.Count)
-                {
-                    raid.UpdateStability(entity);
-                }
-                else raid.FoundationWiped();
-            }
-
             var player = hitInfo?.Initiator as BasePlayer;
 
             if (!player.IsReallyValid())
@@ -10964,15 +10924,15 @@ next:
         {
             if (config.Settings.Management.DropLoot.AutoTurret && io is AutoTurret && io.OwnerID == 0uL)
             {
-                DropIOLoot(io);
+                DropIOLoot(io, true);
             }
             else if (config.Settings.Management.DropLoot.SamSite && io is SamSite && io.OwnerID == 0uL)
             {
-                DropIOLoot(io);
+                DropIOLoot(io, false);
             }
         }
 
-        private void DropIOLoot(IOEntity io)
+        private void DropIOLoot(IOEntity io, bool isAutoTurret)
         {
             var raid = RaidableBase.Get(io);
 
@@ -10990,8 +10950,8 @@ next:
                 ice.inventory.Drop(StringPool.Get(545786656), io.transform.position.WithY(y), io.transform.rotation);
             }
 
-            raid.turrets.RemoveAll(turret => io == turret);
-            raid.samsites.RemoveAll(ss => io == ss);
+            if (isAutoTurret) raid.turrets.RemoveAll(turret => io == turret);
+            else raid.samsites.RemoveAll(ss => io == ss);
         }
 
         private void EntityHandler(StorageContainer container, HitInfo hitInfo)
@@ -11335,8 +11295,8 @@ done:
         private bool CanBuild(BasePlayer player, RaidableBase raid)
         {
             if (!config.Settings.Management.AllowLadders) return false;
-            if (!raid.Options.RequiresCupboardAccessLadders) return true;
-            return player.CanBuild();
+            if (raid.Options.RequiresCupboardAccessLadders) return player.CanBuild();
+            return true;
         }
 
         private void OnLootEntityEnd(BasePlayer player, StorageContainer container)
@@ -11379,7 +11339,10 @@ done:
         {
             var raid = RaidableBase.Get(player);
 
-            if (raid != null && (raid.Type == RaidableType.None || raid.AllowPVP && !raid.Options.PenalizePVP || !raid.AllowPVP && !raid.Options.PenalizePVE))
+            if (raid != null && 
+                (raid.Type == RaidableType.None || 
+                raid.AllowPVP && !raid.Options.PenalizePVP || 
+                !raid.AllowPVP && !raid.Options.PenalizePVE))
             {
                 return false;
             }
@@ -11515,6 +11478,11 @@ done:
 
         private object HandlePlayerDamage(BasePlayer victim, HitInfo hitInfo)
         {
+            if (RaidableBase.Has(victim.userID) && hitInfo.Initiator is SimpleBuildingBlock)
+            {
+                return false;
+            }
+
             var raid = RaidableBase.Get(victim, hitInfo);
 
             if (raid == null || raid.IsDespawning)
@@ -11574,7 +11542,7 @@ done:
                         return victim.IsHuman() ? raid.AllowPVP : true;
                     }
 
-                    return raid.AllowPVP;
+                    return raid.AllowPVP || !victim.IsHuman();
                 }
             }
 
@@ -11941,7 +11909,6 @@ done:
             raid.Definitions = _definitions;
             raid.SetAllowPVP(x.Type, x.Profile.Options.AllowPVP);
             raid.PastedLocation = x.Position;
-            raid.Location = x.Position;
             raid.Options = x.Profile.Options;
             raid.BaseName = x.BaseName;
             raid.BaseIndex = x.BaseIndex;
@@ -12360,7 +12327,7 @@ done:
                 }
             }
 
-            var list = GetListedOptions(options);
+            var list = GetListedOptions(options, x.Profile.Options.Stability);
 
             Locations.Add(x);
 
@@ -12375,7 +12342,7 @@ done:
             return true;
         }
 
-        private List<string> GetListedOptions(List<PasteOption> options)
+        private List<string> GetListedOptions(List<PasteOption> options, bool stability)
         {
             var list = new List<string>();
             bool flag1 = false, flag2 = false, flag3 = false, flag4 = false, flag5 = false;
@@ -12388,7 +12355,7 @@ done:
                 if (key == "stability")
                 {
                     flag1 = true;
-                    value = "false";
+                    value = stability ? "true" : "false";
                 }
                 if (key == "autoheight")
                 {
@@ -12416,7 +12383,7 @@ done:
             if (!flag1)
             {
                 list.Add("stability");
-                list.Add("false");
+                list.Add(stability ? "true" : "false");
             }
 
             if (!flag2)
@@ -12459,7 +12426,6 @@ done:
 
             if (IsUnloading)
             {
-                randomBase.ec?.DestroyMe();
                 RaidableBase.IsSpawning = false;
                 return;
             }
@@ -13118,6 +13084,12 @@ done:
 
         private void CommandBuyRaid(IPlayer user, string command, string[] args)
         {
+            if (config.Settings.Buyable.UsePermission && !user.HasPermission("raidablebases.buyraid"))
+            {
+                user.Reply(m("No Permission", user.Id));
+                return;
+            }
+
             var player = user.ToPlayer();
 
             if (user.IsServer && args.Length >= 1 && args[0].IsSteamId())
@@ -13140,7 +13112,7 @@ done:
 
             if (tryBuyCooldowns.Contains(buyer.UserIDString))
             {
-                Message(buyer, "BuyableAlreadyRequested");
+                Message(buyer, "BuyableAlreadyRequestedNew");
                 return;
             }
 
@@ -13192,7 +13164,7 @@ done:
                 return;
             }
 
-            if (!IsDifficultyAvailable(mode, false))
+            if (mode == RaidableMode.Random || !IsDifficultyAvailable(mode, false))
             {
                 Message(buyer, "BuyAnotherDifficulty", value);
                 return;
@@ -14374,22 +14346,37 @@ done:
 
         private List<string> GetMembers(BasePlayer buyer)
         {
-            var members = new HashSet<string>();
+            var members = new List<string>();
 
             if (buyer.currentTeam == 0uL)
             {
-                members.Add(buyer.UserIDString);
+                if (!members.Contains(buyer.UserIDString))
+                {
+                    members.Add(buyer.UserIDString);
+                }
             }
-            else buyer.Team.members.ForEach(member => members.Add(member.ToString()));
+            else buyer.Team.members.ForEach(member =>
+            {
+                if (!members.Contains(member.ToString()))
+                {
+                    members.Add(member.ToString());
+                }
+            });
 
             var clan = Clans?.Call("GetClanMembers", buyer.userID) as List<string>;
 
             if (clan != null)
             {
-                clan.ForEach(member => members.Add(member));
+                clan.ForEach(member =>
+                {
+                    if (!members.Contains(member))
+                    {
+                        members.Add(member);
+                    }
+                });
             }
 
-            return members.ToList();
+            return members;
         }
 
         private bool IsHelicopter(HitInfo hitInfo)
@@ -14976,7 +14963,7 @@ done:
         {
             foreach (var target in covalence.Players.All)
             {
-                foreach (var record in Records)
+                foreach (var record in RankedRecords)
                 {
                     if (target.Id.HasPermission(record.Permission))
                     {
@@ -14997,7 +14984,7 @@ done:
 
             var players = data.Players.ToList().Where(x => x.Key.IsSteamId() && IsNormalUser(x.Key));
 
-            Records.ForEach(record => AssignTreasureHunters(record, players));
+            RankedRecords.ForEach(record => AssignTreasureHunters(record, players));
 
             Puts(mx("Log Saved", null, "treasurehunters"));
 
@@ -15084,7 +15071,7 @@ done:
             return false;
         }
 
-        private static bool IsModeValid(RaidableMode mode) => mode != RaidableMode.Disabled && mode != RaidableMode.Random;
+        private static bool IsModeValid(RaidableMode mode) => mode != RaidableMode.Disabled && mode != RaidableMode.Random && mode != RaidableMode.Points;
 
         public static string FormatGridReference(Vector3 position)
         {
@@ -15295,15 +15282,15 @@ done:
             foreach (LootType lootType in Enum.GetValues(typeof(LootType)))
             {
                 string file = lootType == LootType.Default ? $"{Name}{Path.DirectorySeparatorChar}Default_Loot" : $"{Name}{Path.DirectorySeparatorChar}Difficulty_Loot{Path.DirectorySeparatorChar}{lootType}";
-
-                LoadTable(file, Buildings.DifficultyLootLists[lootType] = GetTable(file));
+                var lootTable = Buildings.DifficultyLootLists[lootType] = GetTable(file);
+                LoadTable(file, lootTable);
             }
 
             foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
             {
                 string file = $"{Name}{Path.DirectorySeparatorChar}Weekday_Loot{Path.DirectorySeparatorChar}{day}";
-
-                LoadTable(file, Buildings.WeekdayLootLists[day] = GetTable(file));
+                var lootTable = Buildings.WeekdayLootLists[day] = GetTable(file);
+                LoadTable(file, lootTable);
             }
         }
 
@@ -15312,8 +15299,8 @@ done:
             foreach (var entry in Buildings.Profiles)
             {
                 string file = $"{Name}{Path.DirectorySeparatorChar}Base_Loot{Path.DirectorySeparatorChar}{entry.Key}";
-
-                LoadTable(file, entry.Value.BaseLootList = GetTable(file));
+                var lootTable = entry.Value.BaseLootList = GetTable(file);
+                LoadTable(file, lootTable);
             }
 
             Interface.Oxide.LogInfo("{0}", _sb.ToString());
@@ -15322,33 +15309,33 @@ done:
 
         private void LoadTable(string file, List<LootItem> lootList)
         {
-            if (lootList.Count == 0)
+            if (lootList.Count == 0) // if its empty then do nothing. more importantly this prevents it from being saved when your current loot table is corrupted and won't load. otherwise it'd reset the file as empty
             {
                 return;
             }
 
-            if (lootList.All(ti => ti.probability == 0f))
+            if (lootList.All(ti => ti.probability == 0f)) // fix for prior bug where all were set to 0.0 (not spawning)
             {
                 lootList.ForEach(ti => ti.probability = 1f);
             }
 
-            if (lootList.All(ti => ti.stacksize == 0))
+            if (lootList.All(ti => ti.stacksize == 0)) // ditto, preventitive
             {
                 lootList.ForEach(ti => ti.stacksize = -1);
             }
 
-            Interface.Oxide.DataFileSystem.WriteObject(file, lootList);
+            Interface.Oxide.DataFileSystem.WriteObject(file, lootList); // save loot table - this allows adding new options which must be saved to apply to the file
 
-            lootList.RemoveAll(ti => ti == null || ti.amount == 0 && ti.amountMin == 0);
+            lootList.RemoveAll(ti => ti == null || ti.amount == 0 && ti.amountMin == 0); // invalid entries that reside in memory only and do not get written back to the file since it was written above already
 
-            if (lootList.Count == 0)
+            if (lootList.Count == 0) // verify again that its not empty
             {
                 return;
             }
 
-            _sb.AppendLine($"Loaded {lootList.Count} items from {file}");
+            _sb.AppendLine($"Loaded {lootList.Count} items from {file}"); // print in server console that the file loaded
 
-            lootList.ForEach(ti =>
+            lootList.ForEach(ti => // someone put the min as the max and the max as the min so reverse them
             {
                 if (ti != null && ti.amount < ti.amountMin)
                 {
@@ -15486,8 +15473,6 @@ done:
                 ["InstallPluginCopyPaste"] = "CopyPaste is a required plugin and is not installed. Download from https://umod.org/plugins/copy-paste",
                 ["LoadSupportedCopyPasteVersion"] = "You must update your version of CopyPaste to 4.1.31 or higher!",
                 ["DoomAndGloom"] = "<color=#FF0000>You have left a {0} zone and can be attacked for another {1} seconds!</color>",
-                ["MaintainCoroutineFailedToday"] = "<color=#FF0000>Failed to start maintain coroutine; no difficulties are available today.</color>",
-                ["ScheduleCoroutineFailedToday"] = "<color=#FF0000>Failed to start scheduled coroutine; no difficulties are available today.</color>",
                 ["NoConfiguredLoot"] = "Error: No loot found in the config!",
                 ["NoContainersFound"] = "Error: No usable containers found for {0} @ {1}!",
                 ["NoBoxesFound"] = "Error: No usable boxes found for {0} @ {1}!",
@@ -15547,7 +15532,7 @@ done:
                 ["HoggingFinishYourRaidTeam"] = "<color=#FF0000>Your team mate `{0}` must finish their last raid at {1}.</color>",
                 ["HoggingFinishYourRaidFriend"] = "<color=#FF0000>Your friend `{0}` must finish their last raid at {1}.</color>",
                 ["TimeFormat"] = "{0:D2}h {1:D2}m {2:D2}s",
-                ["BuyableAlreadyRequested"] = "You must wait 2 seconds to try buying again.",
+                ["BuyableAlreadyRequestedNew"] = "You must wait 5 seconds to try buying again.",
                 ["BuyableServerRestarting"] = "You cannot buy a raid when a server restart is pending.",
                 ["BuyableServerRestartingAdmin"] = "You cannot buy a raid when a server restart is pending. You can bypass this typing: /rb ignore_restart",
                 ["BuyableServerSaving"] = "You cannot buy a raid while the server is saving.",
@@ -15673,7 +15658,7 @@ done:
             {
                 return;
             }
-
+            
             if (config.EventMessages.Message)
             {
                 Instance.Player.Message(player, message, config.Settings.ChatID);
@@ -16097,6 +16082,9 @@ done:
             [JsonProperty(PropertyName = "HotAirBalloon")]
             public bool HotAirBalloon { get; set; } = true;
 
+            [JsonProperty(PropertyName = "Jetpacks")]
+            public bool Jetpacks { get; set; }
+
             [JsonProperty(PropertyName = "MiniCopters")]
             public bool MiniCopters { get; set; }
 
@@ -16403,6 +16391,9 @@ done:
 
             [JsonProperty(PropertyName = "Only Award First Attacker and Allies")]
             public bool OnlyAwardAllies { get; set; }
+
+            [JsonProperty(PropertyName = "Only Award Owner Of Raid")]
+            public bool OnlyAwardOwner { get; set; }
 
             [JsonProperty(PropertyName = "Minutes Until Despawn After Looting (min: 1)")]
             public int DespawnMinutes { get; set; } = 15;
@@ -17230,8 +17221,8 @@ done:
             [JsonProperty(PropertyName = "Create Dome Around Event Using Spheres (0 = disabled, recommended = 5)")]
             public int SphereAmount { get; set; } = 5;
 
-            [JsonProperty(PropertyName = "Enable Stability Foundation Wipe")]
-            public bool FoundationWipe { get; set; }
+            [JsonProperty(PropertyName = "Enable CopyPaste Stability Option (USE AT YOUR OWN RISK - POTENTIAL SERVER CRASH)")]
+            public bool Stability { get; set; }
 
             [JsonProperty(PropertyName = "Empty All Containers Before Spawning Loot")]
             public bool EmptyAll { get; set; } = true;
@@ -17515,6 +17506,9 @@ done:
 
             [JsonProperty(PropertyName = "Spawns Database File (Optional)")]
             public string SpawnsFile { get; set; } = "none";
+
+            [JsonProperty(PropertyName = "Use Permission (raidablebases.buyraid)")]
+            public bool UsePermission { get; set; }
         }
 
         public class RaidableBaseSettingsManual
@@ -19033,7 +19027,6 @@ namespace Oxide.Plugins.RaidableBasesExtensionMethods
         public static List<T> Take<T>(this IList<T> a, int b) { var c = new List<T>(); for (int i = 0; i < a.Count; i++) { if (c.Count == b) { break; } c.Add(a[i]); } return c; }
         public static Dictionary<T, V> ToDictionary<S, T, V>(this IEnumerable<S> a, Func<S, T> b, Func<S, V> c) { var d = new Dictionary<T, V>(); using (var e = a.GetEnumerator()) { while (e.MoveNext()) { d[b(e.Current)] = c(e.Current); } } return d; }
         public static List<T> ToList<T>(this IEnumerable<T> a) { var b = new List<T>(); using (var c = a.GetEnumerator()) { while (c.MoveNext()) { b.Add(c.Current); } } return b; }
-        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> a) { return new HashSet<T>(a); }
         public static List<T> Where<T>(this IEnumerable<T> a, Func<T, bool> b) { var c = new List<T>(); using (var d = a.GetEnumerator()) { while (d.MoveNext()) { if (b(d.Current)) { c.Add(d.Current); } } } return c; }
         public static List<T> OfType<T>(this IEnumerable<BaseNetworkable> a) where T : BaseEntity { var b = new List<T>(); using (var c = a.GetEnumerator()) { while (c.MoveNext()) { if (c.Current is T) { b.Add(c.Current as T); } } } return b; }
         public static int Sum<T>(this IList<T> a, Func<T, int> b) { int c = 0; for (int i = 0; i < a.Count; i++) { var d = b(a[i]); if (!float.IsNaN(d)) { c += d; } } return c; }
