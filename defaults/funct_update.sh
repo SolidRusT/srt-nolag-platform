@@ -164,9 +164,8 @@ function update_configs() {
   mkdir -p ${GAME_ROOT}/server/solidrust/cfg | tee -a ${LOGS}
   rm ${GAME_ROOT}/server/solidrust/cfg/serverauto.cfg ## TODO, conditional, only if file exists
   rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/server.cfg ${GAME_ROOT}/server/solidrust/cfg/server.cfg | tee -a ${LOGS}
-  rsync -a ${SERVER_GLOBAL}/cfg/users.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg | tee -a ${LOGS}
   rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/users.cfg ${GAME_ROOT}/server/solidrust/cfg/users.cfg | tee -a ${LOGS}
-  rsync -a ${SERVER_GLOBAL}/cfg/bans.cfg ${GAME_ROOT}/server/solidrust/cfg/bans.cfg | tee -a ${LOGS}
+  rsync -a ${SERVER_CUSTOM}/server/solidrust/cfg/bans.cfg ${GAME_ROOT}/server/solidrust/cfg/bans.cfg | tee -a ${LOGS}
 }
 
 function update_maps() {
