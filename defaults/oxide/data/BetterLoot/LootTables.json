@@ -52,8 +52,8 @@
           "Min": 1
         }
       },
-      "ItemsMax": 5,
-      "ItemsMin": 4,
+      "ItemsMax": 8,
+      "ItemsMin": 6,
       "MaxBPs": 0,
       "Scrap": 25
     },
@@ -109,8 +109,8 @@
           "Min": 2
         }
       },
-      "ItemsMax": 5,
-      "ItemsMin": 4,
+      "ItemsMax": 9,
+      "ItemsMin": 7,
       "MaxBPs": 0,
       "Scrap": 25
     },
@@ -146,7 +146,7 @@
           "Min": 1
         }
       },
-      "ItemsMax": 5,
+      "ItemsMax": 7,
       "ItemsMin": 5,
       "MaxBPs": 0,
       "Scrap": 0
@@ -159,7 +159,7 @@
           "Min": 100
         }
       },
-      "ItemsMax": 3,
+      "ItemsMax": 5,
       "ItemsMin": 3,
       "MaxBPs": 0,
       "Scrap": 0
@@ -228,7 +228,7 @@
           "Min": 1
         }
       },
-      "ItemsMax": 8,
+      "ItemsMax": 12,
       "ItemsMin": 8,
       "MaxBPs": 0,
       "Scrap": 0
@@ -261,7 +261,7 @@
           "Min": 10000
         }
       },
-      "ItemsMax": 6,
+      "ItemsMax": 12,
       "ItemsMin": 6,
       "MaxBPs": 0,
       "Scrap": 0
@@ -354,8 +354,8 @@
           "Min": 0
         }
       },
-      "ItemsMax": 8,
-      "ItemsMin": 6,
+      "ItemsMax": 12,
+      "ItemsMin": 9,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -402,13 +402,13 @@
           "Max": 10,
           "Min": 10
         },
-        "metalblade": {
-          "Max": 10,
-          "Min": 10
+        "smg.mp5": {
+          "Max": 1,
+          "Min": 1
         }
       },
-      "ItemsMax": 5,
-      "ItemsMin": 5,
+      "ItemsMax": 15,
+      "ItemsMin": 10,
       "MaxBPs": 0,
       "Scrap": 0
     },
@@ -1412,10 +1412,10 @@
           "Min": 25
         }
       },
-      "ItemsMax": 3,
+      "ItemsMax": 5,
       "ItemsMin": 3,
       "MaxBPs": 0,
-      "Scrap": 25
+      "Scrap": 35
     },
     "assets/bundled/prefabs/radtown/underwater_labs/crate_ammunition.prefab": {
       "Enabled": true,
