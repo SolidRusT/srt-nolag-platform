@@ -291,7 +291,7 @@ function update_linked_players() {
   rm ${SQL_OUTPUT}
 }
 
-function update_configs() {
+function srt_update() {
   echo "=> Update ALL THE THINGS!" | tee -a ${LOGS}
   rm -rf ${HOME}/solidrust.net
   update_repo game
