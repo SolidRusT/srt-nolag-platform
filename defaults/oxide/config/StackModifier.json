@@ -1,5 +1,6 @@
 {
   "Enable UI Editor": true,
+  "Disable ImageLibrary Requirement / Images for UI Editor": false,
   "Sets editor command": "stackmodifier",
   "Sets editor color command": "stackmodifiercolor",
   "Sets Reset Vendors command": "resetvenders",
@@ -479,6 +480,11 @@
       "hat.bunnyhat": {
         "ShortName": "hat.bunnyhat",
         "DisplayName": "Bunny Hat",
+        "Modified": 1
+      },
+      "attire.egg.suit": {
+        "ShortName": "attire.egg.suit",
+        "DisplayName": "Egg Suit",
         "Modified": 1
       },
       "attire.nesthat": {
