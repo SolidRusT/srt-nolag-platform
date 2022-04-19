@@ -291,6 +291,16 @@ function update_linked_players() {
   rm ${SQL_OUTPUT}
 }
 
+function update_configs() {
+  echo "=> Update ALL THE THINGS!" | tee -a ${LOGS}
+  rm -rf ${HOME}/solidrust.net
+  update_repo game
+  update_server
+  update_configs
+  update_mods
+  echo "=> Done!" | tee -a ${LOGS}
+}
+
 # Default Game permissions
 DEFAULT_PERMS=(
   Kits.default
