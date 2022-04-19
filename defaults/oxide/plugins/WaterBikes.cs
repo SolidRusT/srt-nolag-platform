@@ -6,12 +6,19 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("WaterBikes", "senyaa", "1.1.8")]
+    [Info("WaterBikes", "senyaa", "1.2.2")]
     [Description("Turns snowmobiles into waterbikes")]
     class WaterBikes : RustPlugin
     {
+        #region Constants
+        public const int BEACHSIDE_TOPOLOGY = 16;
+        public const int BEACH_TOPOLOGY = 8;
+        public const int OCEANSIDE_TOPOLOGY = 256;
+        #endregion
+
         #region Fields
         private static Dictionary<BaseNetworkable, WaterBikeComponent> waterbikes;
+        private Dictionary<BasePlayer, Snowmobile> playerWaterbikes;
         private List<BasePlayer> cooldownList;
         private ItemDefinition priceDef;
         private Vector3 lastKilledSnowmobilePos; // workaround to get water bikes work properly with spray can reskinning
@@ -22,27 +29,41 @@ namespace Oxide.Plugins
 
         private class WaterbikeConfig
         {
-            [JsonProperty("(00) Spawn cooldown (in seconds)")]
+            [JsonProperty("(0) Spawn cooldown (in seconds)")]
             public int Cooldown;
-            [JsonProperty("(0) Waterbike price item short name:amount (0 - free)")]
+            [JsonProperty("(1) Waterbike price item short name:amount (0 - free)")]
             public KeyValuePair<string, int> Price;
-            [JsonProperty("(1) Waterbike prefab")]
+            [JsonProperty("(2) Waterbike prefab")]
             public string WaterbikePrefab;
-            [JsonProperty("(2) Make all snowmobiles waterbikes")]
+            [JsonProperty("(3) Allow only 1 water bike per player")]
+            public bool AllowOnlyOneWaterBikePerPlayer;
+            [JsonProperty("(4) Starting fuel")]
+            public int startingFuel;
+            [JsonProperty("(5) Make all snowmobiles waterbikes")]
             public bool Make_All_Snowmobiles_Waterbikes;
-            [JsonProperty("(3) Allow waterbikes to drive on land")]
+            [JsonProperty("(6) Allow waterbikes to drive on land")]
             public bool Allow_To_Move_On_Land;
-            [JsonProperty("(4) Spawn permission name")]
+            [JsonProperty("(7) Spawn permission name")]
             public string Spawn_Permission;
-            [JsonProperty("(5) This permission allows players to spawn waterbikes for free")]
+            [JsonProperty("(8) This permission allows players to spawn waterbikes for free")]
             public string NoPay_Permission;
-            [JsonProperty("(6) Engine thrust")]
-            public float engineThrust;
-            [JsonProperty("(7) Steering scale")]
+            [JsonProperty("(9) Water bike despawn permission")]
+            public string Despawn_Permission;
+            [JsonProperty(".(10) Engine thrust")]
+            public int engineThrust;
+            [JsonProperty(".(11) Engine thrust on land")]
+            public int engineThrustOnLand;
+            [JsonProperty(".(12) Move slowly on grass or roads")]
+            public bool slowlyOnGrass;
+            [JsonProperty(".(13) Steering scale")]
             public float steeringScale;
-            [JsonProperty("(8) Off axis drag")]
+            [JsonProperty(".(14) Allow spawning water bikes only on beaches")]
+            public bool spawnOnlyOnBeaches;
+            [JsonProperty(".(15) Automatically flip water bikes")]
+            public bool autoFlip;
+            [JsonProperty(".(16) Off axis drag")]
             public float offAxisDrag;
-            [JsonProperty("(9) Thrust point position")]
+            [JsonProperty("Thrust point position")]
             public Vector3 ThrustPoint;
             [JsonProperty("Buoyancy points")]
             public SerializedBuoyancyPoint[] BuoyancyPoints;
@@ -54,12 +75,18 @@ namespace Oxide.Plugins
             {
                 Cooldown = 120,
                 Price = new KeyValuePair<string, int>("scrap", 0),
+                startingFuel = 0,
                 WaterbikePrefab = "assets/content/vehicles/snowmobiles/tomahasnowmobile.prefab",
                 Make_All_Snowmobiles_Waterbikes = true,
                 Allow_To_Move_On_Land = true,
+                AllowOnlyOneWaterBikePerPlayer = false,
                 Spawn_Permission = "waterbikes.spawn",
                 NoPay_Permission = "waterbikes.free",
-                engineThrust = 5000f,
+                Despawn_Permission = "waterbikes.despawn",
+                spawnOnlyOnBeaches = false,
+                autoFlip = false,
+                engineThrust = 5000,
+                engineThrustOnLand = 49,
                 steeringScale = 0.1f,
                 offAxisDrag = 0.35f,
                 ThrustPoint = new Vector3(-0.001150894f, 0.055f, -1.125f),
@@ -92,7 +119,12 @@ namespace Oxide.Plugins
                 ["Showing"] = "Showing buoyancy points...",
                 ["NotEnough"] = "You don't have enough to buy a waterbike",
                 ["Converted"] = "Snowmobile converted into waterbike",
-                ["Cooldown"] = "You are on cooldown!"
+                ["Cooldown"] = "You are on cooldown!",
+                ["onlyBeach"] = "You can spawn water bikes only on beaches",
+                ["onlyOne"] = "You can have only 1 water bike",
+                ["removed"] = "Waterbike is removed",
+                ["waterbikeDoesntExist"] = "You don't have a water bike",
+                ["lookat"] = "Look at a water bike"
             }, this, "en");
 
             lang.RegisterMessages(new Dictionary<string, string>
@@ -103,7 +135,12 @@ namespace Oxide.Plugins
                 ["Showing"] = "Показываются точки плавучести...",
                 ["NotEnough"] = "У вас не хватает ресурсов для покупки гидроцикла",
                 ["Converted"] = "Снегоход переделан в гидроцикл",
-                ["Cooldown"] = "Вы не можете спаунить гидроциклы так быстро"
+                ["Cooldown"] = "Вы не можете спаунить гидроциклы так быстро",
+                ["onlyBeach"] = "Вы можете заспаунить гидроцикл только на пляже",
+                ["onlyOne"] = "Только 1 гидроцикл на игрока",
+                ["removed"] = "Гидроцикл удалён",
+                ["waterbikeDoesntExist"] = "У вас нет гидроцикла",
+                ["lookat"] = "Смотрите на гидроцикл"
             }, this, "ru");
         }
         #endregion
@@ -134,6 +171,9 @@ namespace Oxide.Plugins
             private float gasPedal;
             private float steering;
 
+            private float framesSinceLastFlip;
+            private float framesSinceLastInWater;
+
             private Vector3 _waterLoggedPointLocalPosition;
 
             void Awake()
@@ -141,9 +181,8 @@ namespace Oxide.Plugins
                 _snowmobile = GetComponent<Snowmobile>();
                 _rigidbody = _snowmobile.gameObject.GetComponent<Rigidbody>();
 
-                if (!config.Allow_To_Move_On_Land)
-                    _snowmobile.engineKW = -1;
-
+                _snowmobile.engineKW = config.Allow_To_Move_On_Land ? config.engineThrustOnLand : -1;
+                
                 if (_snowmobile.waterloggedPoint != null && _snowmobile.waterloggedPoint.parent != null)
                 {
                     _waterLoggedPointLocalPosition = _snowmobile.waterloggedPoint.localPosition;
@@ -214,6 +253,20 @@ namespace Oxide.Plugins
             }
             void FixedUpdate()
             {
+                var isInWater = WaterLevel.Test(thrustPoint.transform.position, true, _snowmobile);
+                if (isInWater)
+                    framesSinceLastInWater = 0;
+                else
+                    framesSinceLastInWater += 1;
+
+                framesSinceLastFlip += 1;
+                if (config.autoFlip && IsFlipped() && framesSinceLastFlip > 30f && isInWater)
+                {
+                    Flip();
+                    framesSinceLastFlip = 0;
+                    return;
+                }
+                
                 if (IsFlipped() && _snowmobile.engineController.IsOn)
                 {
                     _snowmobile.engineController.StopEngine();
@@ -228,17 +281,21 @@ namespace Oxide.Plugins
                 }
                 _snowmobile.SetFlag(BaseEntity.Flags.Reserved7, _rigidbody.IsSleeping() && !_snowmobile.AnyMounted(), false, true);
 
-                if (gasPedal != 0f && WaterLevel.Test(thrustPoint.transform.position, true, _snowmobile) && _buoyancy.submergedFraction > 0.3f)
+                if (gasPedal != 0f && isInWater && _buoyancy.submergedFraction > 0.3f)
                 {
                     var force = (transform.forward + transform.right * steering * config.steeringScale).normalized * gasPedal * config.engineThrust;
                     _rigidbody.AddForceAtPosition(force, thrustPoint.transform.position, ForceMode.Force);
                     _snowmobile.engineKW = 65;
                 }
                 else
-                    _snowmobile.engineKW = config.Allow_To_Move_On_Land ? 49 : 1;
+                    _snowmobile.engineKW = config.Allow_To_Move_On_Land ? config.engineThrustOnLand : 1;
 
-                _rigidbody.angularDrag = 0.5f + 0.005f * Mathf.InverseLerp(0f, 2f, _rigidbody.velocity.SqrMagnitude2D());
-                _rigidbody.drag = 0.2f + 0.6f * Mathf.InverseLerp(0f, 1f, _buoyancy.submergedFraction);
+
+                if (!config.slowlyOnGrass || framesSinceLastInWater < 100 || TerrainMeta.TopologyMap.GetTopology(_snowmobile.transform.position, OCEANSIDE_TOPOLOGY)) { 
+                    _rigidbody.drag = 0.2f + 0.6f * Mathf.InverseLerp(0f, 1f, _buoyancy.submergedFraction);
+                    _rigidbody.angularDrag = 0.5f + 0.005f * Mathf.InverseLerp(0f, 2f, _rigidbody.velocity.SqrMagnitude2D());
+                }
+
                 parentPoint.transform.rotation = _snowmobile.transform.rotation;
                 if (config.offAxisDrag > 0f)
                 {
@@ -288,7 +345,7 @@ namespace Oxide.Plugins
 
             public void Flip()
             {
-                _rigidbody.AddRelativeTorque(Vector3.forward, ForceMode.VelocityChange);
+                _rigidbody.AddRelativeTorque(Vector3.right * 4f, ForceMode.VelocityChange);
                 _rigidbody.AddForce(Vector3.up * 4f, ForceMode.VelocityChange);
             }
         }
@@ -298,10 +355,12 @@ namespace Oxide.Plugins
         void Init()
         {
             waterbikes = new Dictionary<BaseNetworkable, WaterBikeComponent>();
+            playerWaterbikes = new Dictionary<BasePlayer, Snowmobile>();
             cooldownList = Facepunch.Pool.GetList<BasePlayer>();
             config = Config.ReadObject<WaterbikeConfig>();
             permission.RegisterPermission(config.Spawn_Permission, this);
             permission.RegisterPermission(config.NoPay_Permission, this);
+            permission.RegisterPermission(config.Despawn_Permission, this);
 
             try
             {
@@ -321,6 +380,7 @@ namespace Oxide.Plugins
                 UnityEngine.Object.DestroyImmediate(obj);
 
             waterbikes = null;
+            playerWaterbikes = null;
             Facepunch.Pool.FreeList(ref cooldownList);
             config = null;
         }
@@ -336,6 +396,15 @@ namespace Oxide.Plugins
                 if ((config.Make_All_Snowmobiles_Waterbikes || (ent as BaseEntity).HasFlag(BaseEntity.Flags.Reserved10)) && !waterbikes.ContainsKey(ent))
                 {
                     ent.gameObject.AddComponent<WaterBikeComponent>();
+                    var snowmobile = ent as Snowmobile;
+                    if (snowmobile.OwnerID != 0)
+                    {
+                        var player = BasePlayer.FindByID(snowmobile.OwnerID);
+                        if (playerWaterbikes.ContainsKey(player))
+                            playerWaterbikes[player] = snowmobile;
+                        else
+                            playerWaterbikes.Add(player, snowmobile);
+                    }
                     count++;
                 }
             }
@@ -349,6 +418,7 @@ namespace Oxide.Plugins
             var mounted = player.GetMountedVehicle();
             if (mounted != null && waterbikes.ContainsKey(mounted))
             {
+
                 waterbikes[mounted].OnPlayerInput(input);
             }
         }
@@ -369,6 +439,7 @@ namespace Oxide.Plugins
                 });
             }
         }
+
         void OnEntitySpawned(BaseNetworkable entity)
         {
             if (!(entity is Snowmobile)) return;
@@ -390,6 +461,12 @@ namespace Oxide.Plugins
             if (entity == null) return;
             if (!waterbikes.ContainsKey(entity)) return;
             lastKilledSnowmobilePos = entity.transform.position;
+            var snowmobile = entity as Snowmobile;
+
+            if(!playerWaterbikes.ContainsValue(snowmobile)) return;
+            var player = BasePlayer.FindByID(snowmobile.OwnerID);
+            if(player != null)
+                playerWaterbikes.Remove(player);
         }
 
         void OnPlayerDisconnected(BasePlayer player, string reason)
@@ -402,11 +479,21 @@ namespace Oxide.Plugins
 
         #region API
         [HookMethod("SpawnWaterbike")]
-        public BaseEntity SpawnWaterbike(Vector3 position, Quaternion rotation)
+        public BaseEntity SpawnWaterbike(Vector3 position, Quaternion rotation, BasePlayer ownerPlayer=null)
         {
-            var waterBike = GameManager.server.CreateEntity(config.WaterbikePrefab, position, rotation);
+            var waterBike = GameManager.server.CreateEntity(config.WaterbikePrefab, position, rotation) as Snowmobile;
             waterBike.gameObject.AddComponent<WaterBikeComponent>();
             waterBike.Spawn();
+                
+            if(config.AllowOnlyOneWaterBikePerPlayer && ownerPlayer != null)
+            {
+                waterBike.OwnerID = ownerPlayer.userID;
+                playerWaterbikes.Add(ownerPlayer, waterBike);
+            }
+
+            if (config.startingFuel > 0)
+                waterBike.GetFuelSystem().AddStartingFuel(config.startingFuel);
+
             return waterBike;
         }
         #endregion
@@ -483,9 +570,58 @@ namespace Oxide.Plugins
                 return;
             }
 
+            if(args.Length == 1 && args[0].ToLower() == "remove")
+            {
+                if (!permission.UserHasPermission(player.UserIDString, config.Despawn_Permission))
+                {
+                    PrintToChat(player, lang.GetMessage("NoPermission", this, player.UserIDString));
+                    return;
+                }
+
+                if (config.AllowOnlyOneWaterBikePerPlayer)
+                {
+                    if (!playerWaterbikes.ContainsKey(player) || playerWaterbikes[player] == null)
+                    {
+                        PrintToChat(player, lang.GetMessage("waterbikeDoesntExist", this, player.UserIDString));
+                        return;
+                    }
+
+                    playerWaterbikes[player].DismountAllPlayers();
+                    playerWaterbikes[player].Kill(BaseNetworkable.DestroyMode.Gib);
+                    PrintToChat(player, lang.GetMessage("removed", this, player.UserIDString));
+                    return;
+                }
+
+                RaycastHit despawn_hit;
+                if (Physics.Raycast(player.eyes.position, player.eyes.HeadForward(), out despawn_hit, 15f))
+                {
+                    var hit_ent = despawn_hit.GetEntity();
+                    if(hit_ent != null && hit_ent is Snowmobile && waterbikes.ContainsKey(hit_ent))
+                    {
+                        hit_ent.Kill(BaseNetworkable.DestroyMode.Gib);
+                        PrintToChat(player, lang.GetMessage("removed", this, player.UserIDString));
+                        return;
+                    } 
+                }
+                PrintToChat(player, lang.GetMessage("lookat", this, player.UserIDString));
+                return;
+            }
+
+            if(config.AllowOnlyOneWaterBikePerPlayer && playerWaterbikes.ContainsKey(player) && playerWaterbikes[player] != null)
+            {
+                PrintToChat(player, lang.GetMessage("onlyOne", this, player.UserIDString));
+                return;
+            }
+
             if (cooldownList.Contains(player))
             {
                 PrintToChat(player, lang.GetMessage("Cooldown", this, player.UserIDString));
+                return;
+            }
+
+            if (config.spawnOnlyOnBeaches && !(TerrainMeta.TopologyMap.GetTopology(player.transform.position, BEACH_TOPOLOGY) || TerrainMeta.TopologyMap.GetTopology(player.transform.position, BEACHSIDE_TOPOLOGY)))
+            { 
+                PrintToChat(player, lang.GetMessage("onlyBeach", this, player.UserIDString));
                 return;
             }
 
@@ -514,7 +650,7 @@ namespace Oxide.Plugins
                     }
                     else
                     {
-                        SpawnWaterbike(GetSpawnPosition(player), player.eyes.rotation);
+                        SpawnWaterbike(GetSpawnPosition(player), player.eyes.rotation, player);
                         StartCooldown(player);
                         PrintToChat(player, lang.GetMessage("Spawned", this, player.UserIDString));
                     }
@@ -533,7 +669,7 @@ namespace Oxide.Plugins
             }
             else
             {
-                SpawnWaterbike(GetSpawnPosition(player), player.eyes.rotation);
+                SpawnWaterbike(GetSpawnPosition(player), player.eyes.rotation, player);
                 StartCooldown(player);
                 PrintToChat(player, lang.GetMessage("Spawned", this, player.UserIDString));
             }

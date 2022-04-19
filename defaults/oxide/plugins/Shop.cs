@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -17,7 +18,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.29")]
+    [Info("Shop", "Mevent", "1.0.32")]
     public class Shop : RustPlugin
     {
         #region Fields
@@ -201,6 +202,9 @@ namespace Oxide.Plugins
         {
             [JsonProperty(PropertyName = "Commands", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public readonly string[] Commands = {"shop", "shops"};
+
+            [JsonProperty(PropertyName = "Enable money transfers between players??")]
+            public readonly bool Transfer = true;
 
             [JsonProperty(PropertyName = "Enable logging to the console?")]
             public readonly bool LogToConsole = true;
@@ -674,7 +678,17 @@ namespace Oxide.Plugins
                             "%username%",
                             player.displayName, StringComparison.OrdinalIgnoreCase);
 
-                    foreach (var check in command.Split('|')) _instance?.Server.Command(check);
+                    foreach (var check in command.Split('|'))
+                        if (check.Contains("chat.say"))
+                        {
+                            var args = check.Split(' ');
+                            player.SendConsoleCommand(
+                                $"{args[0]}  \" {string.Join(" ", args.ToList().GetRange(1, args.Length - 1))}\" 0");
+                        }
+                        else
+                        {
+                            _instance?.Server.Command(check);
+                        }
                 }
             }
 
@@ -875,6 +889,15 @@ namespace Oxide.Plugins
                 }
             }
 
+            public bool Transfer(BasePlayer player, BasePlayer targetPlayer, double amount)
+            {
+                if (!RemoveBalance(player, amount))
+                    return false;
+
+                AddBalance(targetPlayer, amount);
+                return true;
+            }
+
             private Item ToItem(int amount)
             {
                 var item = ItemManager.CreateByName(ShortName, amount, Skin);
@@ -1042,9 +1065,6 @@ namespace Oxide.Plugins
 
             LoadData();
 
-            if (!_config.LoginImages)
-                Unsubscribe(nameof(OnPlayerConnected));
-
             _firstColor = HexToCuiColor(_config.FirstColor);
             _secondColor = HexToCuiColor(_config.SecondColor);
             _thirdColor = HexToCuiColor(_config.ThirdColor);
@@ -1082,9 +1102,8 @@ namespace Oxide.Plugins
             foreach (var check in _data.PlayerCarts)
                 _carts.Add(check.Key, new DataCart(check.Value));
 
-            if (_config.LoginImages)
-                foreach (var player in BasePlayer.activePlayerList)
-                    OnPlayerConnected(player);
+            foreach (var player in BasePlayer.activePlayerList)
+                OnPlayerConnected(player);
 
             AddCovalenceCommand(_config.Commands, nameof(CmdShopOpen));
 
@@ -1112,12 +1131,18 @@ namespace Oxide.Plugins
         {
             if (player == null) return;
 
-            var coroutine = ServerMgr.Instance.StartCoroutine(LoadImages(player));
+            GetAvatar(player.userID,
+                avatar => ImageLibrary?.Call("AddImage", avatar, $"avatar_{player.UserIDString}"));
 
-            if (_coroutines.ContainsKey(player))
-                _coroutines[player] = coroutine;
-            else
-                _coroutines.Add(player, coroutine);
+            if (_config.LoginImages)
+            {
+                var coroutine = ServerMgr.Instance.StartCoroutine(LoadImages(player));
+
+                if (_coroutines.ContainsKey(player))
+                    _coroutines[player] = coroutine;
+                else
+                    _coroutines.Add(player, coroutine);
+            }
         }
 
         private void OnPlayerDisconnected(BasePlayer player)
@@ -1205,7 +1230,7 @@ namespace Oxide.Plugins
                     var search = string.Empty;
                     if (arg.HasArgs(5)) search = string.Join(" ", arg.Args.Skip(4));
 
-                    MainUi(player, catPage, page, GetShopByPlayer(player), search);
+                    MainUi(player, catPage, page, GetShopByPlayer(player), search, searchPage);
                     break;
                 }
 
@@ -1365,7 +1390,7 @@ namespace Oxide.Plugins
                     if (_config.WipeCooldown)
                     {
                         var seconds = SecondsFromWipe();
-                        if (SecondsFromWipe() < _config.WipeCooldownTimer)
+                        if (seconds < _config.WipeCooldownTimer)
                         {
                             ErrorUi(player,
                                 Msg(player, BuyWipeCooldown,
@@ -1495,7 +1520,7 @@ namespace Oxide.Plugins
                     if (_config.WipeCooldown)
                     {
                         var seconds = SecondsFromWipe();
-                        if (SecondsFromWipe() < _config.WipeCooldownTimer)
+                        if (seconds < _config.WipeCooldownTimer)
                         {
                             ErrorUi(player,
                                 Msg(player, SellWipeCooldown,
@@ -1710,10 +1735,10 @@ namespace Oxide.Plugins
                             shopItem.Price = newItem.Price;
                             shopItem.SellPrice = newItem.SellPrice;
                         }
-
-                        if (!string.IsNullOrEmpty(newItem.Image))
-                            ImageLibrary.Call("AddImage", newItem.Image, newItem.Image);
                     }
+
+                    if (!string.IsNullOrEmpty(newItem.Image))
+                        ImageLibrary.Call("AddImage", newItem.Image, newItem.Image);
 
                     _itemEditing.Remove(player);
 
@@ -1803,6 +1828,150 @@ namespace Oxide.Plugins
                     ItemUi(player, item, ref container, catPage, shopPage, !status);
                     CuiHelper.DestroyUi(player, Layer + $".Item.{item.ID}");
                     CuiHelper.AddUi(player, container);
+                    break;
+                }
+
+                case "pselect":
+                {
+                    int catPage, shopPage, searchPage;
+                    if (!arg.HasArgs(4) ||
+                        !int.TryParse(arg.Args[1], out catPage) ||
+                        !int.TryParse(arg.Args[2], out shopPage) ||
+                        !int.TryParse(arg.Args[3], out searchPage)) return;
+
+                    var search = string.Empty;
+                    if (arg.HasArgs(5))
+                        search = string.Join(" ", arg.Args.Skip(4));
+
+                    SelectPlayerUi(player, catPage, shopPage, searchPage, search);
+                    break;
+                }
+
+                case "pselect_page":
+                {
+                    int catPage, shopPage, searchPage, selectPage;
+                    if (!arg.HasArgs(5) ||
+                        !int.TryParse(arg.Args[1], out catPage) ||
+                        !int.TryParse(arg.Args[2], out shopPage) ||
+                        !int.TryParse(arg.Args[3], out searchPage) ||
+                        !int.TryParse(arg.Args[4], out selectPage)) return;
+
+                    var search = string.Empty;
+                    if (arg.HasArgs(6))
+                        search = string.Join(" ", arg.Args.Skip(5));
+
+                    SelectPlayerUi(player, catPage, shopPage, searchPage, search, selectPage);
+                    break;
+                }
+
+                case "try_ptransfer":
+                {
+                    int catPage, shopPage, searchPage;
+                    ulong targetId;
+                    if (!arg.HasArgs(5) ||
+                        !int.TryParse(arg.Args[1], out catPage) ||
+                        !int.TryParse(arg.Args[2], out shopPage) ||
+                        !int.TryParse(arg.Args[3], out searchPage) ||
+                        !ulong.TryParse(arg.Args[4], out targetId)) return;
+
+                    var search = string.Empty;
+                    if (arg.HasArgs(6))
+                        search = string.Join(" ", arg.Args.Skip(5));
+
+                    TransferUi(player, targetId, catPage, shopPage, searchPage, search);
+                    break;
+                }
+
+                case "ptransfer_amount":
+                {
+                    int catPage, shopPage, searchPage;
+                    ulong targetId;
+                    bool hasSearch;
+                    float amount;
+                    if (!arg.HasArgs(6) ||
+                        !int.TryParse(arg.Args[1], out catPage) ||
+                        !int.TryParse(arg.Args[2], out shopPage) ||
+                        !int.TryParse(arg.Args[3], out searchPage) ||
+                        !ulong.TryParse(arg.Args[4], out targetId) ||
+                        !bool.TryParse(arg.Args[5], out hasSearch))
+                        return;
+
+                    var search = string.Empty;
+                    if (hasSearch)
+                    {
+                        if (!arg.HasArgs(8) || !float.TryParse(arg.Args[7], out amount)) return;
+
+                        search = arg.Args[6];
+                    }
+                    else if (!arg.HasArgs(7) || !float.TryParse(arg.Args[6], out amount))
+                    {
+                        return;
+                    }
+
+                    TransferUi(player, targetId, catPage, shopPage, searchPage, search, amount);
+                    break;
+                }
+
+                case "ptransfer_send":
+                {
+                    int catPage, shopPage, searchPage;
+                    ulong targetId;
+                    bool hasSearch;
+                    float amount;
+                    if (!arg.HasArgs(6) ||
+                        !int.TryParse(arg.Args[1], out catPage) ||
+                        !int.TryParse(arg.Args[2], out shopPage) ||
+                        !int.TryParse(arg.Args[3], out searchPage) ||
+                        !ulong.TryParse(arg.Args[4], out targetId) ||
+                        !bool.TryParse(arg.Args[5], out hasSearch))
+                        return;
+
+                    var search = string.Empty;
+                    if (hasSearch)
+                    {
+                        if (!arg.HasArgs(8) || !float.TryParse(arg.Args[7], out amount)) return;
+
+                        search = arg.Args[6];
+                    }
+                    else if (!arg.HasArgs(7) || !float.TryParse(arg.Args[6], out amount))
+                    {
+                        return;
+                    }
+
+                    var targetPlayer = BasePlayer.FindAwakeOrSleeping(targetId.ToString());
+                    if (targetPlayer == null)
+                    {
+                        ErrorUi(player, Msg(player, PlayerNotFound));
+                        return;
+                    }
+
+                    if (!_config.Economy.Transfer(player, targetPlayer, amount))
+                    {
+                        ErrorUi(player, Msg(player, NotMoney));
+                        return;
+                    }
+
+                    SendNotify(player, SuccessfulTransfer, 0, amount, targetPlayer.displayName);
+
+                    MainUi(player, catPage, shopPage, GetShopByPlayer(player), search?.Replace("-", " "), searchPage,
+                        true);
+                    break;
+                }
+
+                case "goback":
+                {
+                    int catPage, shopPage, searchPage;
+                    if (!arg.HasArgs(4) ||
+                        !int.TryParse(arg.Args[1], out catPage) ||
+                        !int.TryParse(arg.Args[2], out shopPage) ||
+                        !int.TryParse(arg.Args[3], out searchPage))
+                        return;
+
+                    var search = string.Empty;
+                    if (arg.HasArgs(5))
+                        search = string.Join(" ", arg.Args.Skip(4));
+
+                    MainUi(player, catPage, shopPage, GetShopByPlayer(player), search, searchPage, true);
                     break;
                 }
             }
@@ -1948,52 +2117,8 @@ namespace Oxide.Plugins
                 }
             }, Layer + ".Header");
 
-            #region Balance
-
-            container.Add(new CuiLabel
-            {
-                RectTransform =
-                {
-                    AnchorMin = "0 0", AnchorMax = "1 1",
-                    OffsetMin = "0 0", OffsetMax = $"{(IsAdmin(player) ? -225 : -150)} 0"
-                },
-                Text =
-                {
-                    Text = Msg(player, YourBalance),
-                    Align = TextAnchor.MiddleRight,
-                    Font = "robotocondensed-bold.ttf",
-                    FontSize = 12,
-                    Color = "1 1 1 1"
-                }
-            }, Layer + ".Header");
-
-            BalanceUi(ref container, player);
-
-            if (IsAdmin(player))
-                container.Add(new CuiButton
-                {
-                    RectTransform =
-                    {
-                        AnchorMin = "1 1", AnchorMax = "1 1",
-                        OffsetMin = "-110 -37.5",
-                        OffsetMax = "-40 -12.5"
-                    },
-                    Text =
-                    {
-                        Text = Msg(player, AddItem),
-                        Align = TextAnchor.MiddleCenter,
-                        Font = "robotocondensed-regular.ttf",
-                        FontSize = 10,
-                        Color = "1 1 1 1"
-                    },
-                    Button =
-                    {
-                        Color = _secondColor,
-                        Command = $"UI_Shop startedititem {catPage} {shopPage} {GetId()}"
-                    }
-                }, Layer + ".Header");
-
-            #endregion
+            var xSwitch = -25f;
+            var width = 25;
 
             #region Close
 
@@ -2002,8 +2127,8 @@ namespace Oxide.Plugins
                 RectTransform =
                 {
                     AnchorMin = "1 1", AnchorMax = "1 1",
-                    OffsetMin = "-35 -37.5",
-                    OffsetMax = "-10 -12.5"
+                    OffsetMin = $"{xSwitch - width} -37.5",
+                    OffsetMax = $"{xSwitch} -12.5"
                 },
                 Text =
                 {
@@ -2021,6 +2146,115 @@ namespace Oxide.Plugins
                 }
             }, Layer + ".Header");
 
+            xSwitch = xSwitch - width - 5;
+
+            #endregion
+
+            #region Transfer
+
+            if (_config.Transfer)
+            {
+                width = 115;
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "1 1", AnchorMax = "1 1",
+                        OffsetMin = $"{xSwitch - width} -37.5",
+                        OffsetMax = $"{xSwitch} -12.5"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, TransferTitle),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Close = Layer,
+                        Color = _secondColor,
+                        Command = $"UI_Shop pselect {catPage} {shopPage} {searchPage} {search}"
+                    }
+                }, Layer + ".Header");
+
+                xSwitch = xSwitch - width - 5;
+            }
+
+            #endregion
+
+            #region Add item
+
+            if (IsAdmin(player))
+            {
+                width = 70;
+
+                container.Add(new CuiButton
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "1 1", AnchorMax = "1 1",
+                        OffsetMin = $"{xSwitch - width} -37.5",
+                        OffsetMax = $"{xSwitch} -12.5"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, AddItem),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 10,
+                        Color = "1 1 1 1"
+                    },
+                    Button =
+                    {
+                        Color = _secondColor,
+                        Command = $"UI_Shop startedititem {catPage} {shopPage} {GetId()}"
+                    }
+                }, Layer + ".Header");
+
+                xSwitch = xSwitch - width - 5;
+            }
+
+            #endregion
+
+            #region Balance
+
+            width = 105;
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "1 1", AnchorMax = "1 1",
+                    OffsetMin = $"{xSwitch - width} -37.5",
+                    OffsetMax = $"{xSwitch} -12.5"
+                },
+                Image =
+                {
+                    Color = _secondColor
+                }
+            }, Layer + ".Header", Layer + ".Balance");
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "0 1",
+                    OffsetMin = "-200 0", OffsetMax = "-5 0"
+                },
+                Text =
+                {
+                    Text = Msg(player, YourBalance),
+                    Align = TextAnchor.MiddleRight,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 12,
+                    Color = "1 1 1 1"
+                }
+            }, Layer + ".Balance");
+
+            BalanceUi(ref container, player);
+
             #endregion
 
             #endregion
@@ -2031,7 +2265,7 @@ namespace Oxide.Plugins
 
                 #region Items
 
-                var xSwitch = MainSwitch;
+                xSwitch = MainSwitch;
                 var ySwitch = -70f;
 
                 var isSearch = enableSearch && !string.IsNullOrEmpty(search);
@@ -2162,7 +2396,12 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = _sixthColor,
-                        Command = shopPage != 0 ? $"UI_Shop main_page {catPage} {shopPage - 1} {search}" : ""
+                        Command = isSearch
+                            ? searchPage != 0 ? $"UI_Shop search_page {catPage} {shopPage} {searchPage - 1} {search}" :
+                            ""
+                            : shopPage != 0
+                                ? $"UI_Shop main_page {catPage} {shopPage - 1} {search}"
+                                : ""
                     }
                 }, Layer + ".Main");
 
@@ -2185,9 +2424,13 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = _secondColor,
-                        Command = shopItems.Count > (shopPage + 1) * MainTotalAmount
-                            ? $"UI_Shop main_page {catPage} {shopPage + 1} {search}"
-                            : ""
+                        Command = isSearch
+                            ? shopItems.Count > (searchPage + 1) * MainTotalAmount
+                                ? $"UI_Shop search_page {catPage} {shopPage} {searchPage + 1} {search}"
+                                : ""
+                            : shopItems.Count > (shopPage + 1) * MainTotalAmount
+                                ? $"UI_Shop main_page {catPage} {shopPage + 1} {search}"
+                                : ""
                     }
                 }, Layer + ".Main");
 
@@ -3128,22 +3371,6 @@ namespace Oxide.Plugins
 
         private void BalanceUi(ref CuiElementContainer container, BasePlayer player)
         {
-            var admin = IsAdmin(player);
-
-            container.Add(new CuiPanel
-            {
-                RectTransform =
-                {
-                    AnchorMin = "1 1", AnchorMax = "1 1",
-                    OffsetMin = $"{(admin ? -220 : -145)} -37.5",
-                    OffsetMax = $"{(admin ? -115 : -40)} -12.5"
-                },
-                Image =
-                {
-                    Color = _secondColor
-                }
-            }, Layer + ".Header", Layer + ".Balance");
-
             container.Add(new CuiLabel
             {
                 RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
@@ -3155,9 +3382,9 @@ namespace Oxide.Plugins
                     FontSize = 10,
                     Color = "1 1 1 1"
                 }
-            }, Layer + ".Balance");
+            }, Layer + ".Balance", Layer + ".Balance.Value");
 
-            CuiHelper.DestroyUi(player, Layer + ".Balance");
+            CuiHelper.DestroyUi(player, Layer + ".Balance.Value");
         }
 
         private void EditUi(BasePlayer player, int category, int page, int itemId = 0, bool First = false)
@@ -3694,7 +3921,6 @@ namespace Oxide.Plugins
                 }
             });
         }
-
 
         private void SelectItem(BasePlayer player, int category, string selectedCategory = "", int page = 0,
             string input = "")
@@ -4438,9 +4664,506 @@ namespace Oxide.Plugins
             #endregion
         }
 
+        private void SelectPlayerUi(BasePlayer player, int catPage,
+            int shopPage,
+            int searchPage,
+            string search,
+            int selectPage = 0)
+        {
+            #region Fields
+
+            var Width = 180f;
+            var Height = 50f;
+            var xMargin = 20f;
+            var yMargin = 30f;
+
+            var amountOnString = 4;
+            var strings = 5;
+            var totalAmount = amountOnString * strings;
+
+            var constSwitch = -(amountOnString * Width + (amountOnString - 1) * xMargin) / 2f;
+
+            var xSwitch = constSwitch;
+            var ySwitch = -180f;
+
+            var i = 1;
+
+            var players = BasePlayer.activePlayerList.Where(x => x != player).ToList();
+
+            #endregion
+
+            var container = new CuiElementContainer();
+
+            #region Background
+
+            container.Add(new CuiPanel
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Image =
+                {
+                    Color = "0.19 0.19 0.18 0.65",
+                    Material = "assets/content/ui/uibackgroundblur-ingamemenu.mat"
+                },
+                CursorEnabled = true
+            }, "Overlay", Layer);
+
+            container.Add(new CuiButton
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
+                Button =
+                {
+                    Color = "0 0 0 0",
+                    Close = Layer,
+                    Command = $"UI_Shop goback {catPage} {shopPage} {searchPage} {search}"
+                }
+            }, Layer);
+
+            #endregion
+
+            #region Title
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = "-200 -140",
+                    OffsetMax = "200 -100"
+                },
+                Text =
+                {
+                    Text = Msg(player, SelectPlayerTitle),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 32,
+                    Color = "1 1 1 1"
+                }
+            }, Layer);
+
+            #endregion
+
+            #region Players
+
+            foreach (var member in players.Skip(selectPage * totalAmount).Take(totalAmount))
+            {
+                container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                        OffsetMin = $"{xSwitch} {ySwitch - Height}",
+                        OffsetMax = $"{xSwitch + Width} {ySwitch}"
+                    },
+                    Image =
+                    {
+                        Color = "0 0 0 0"
+                    }
+                }, Layer, Layer + $".Player.{i}");
+
+                container.Add(new CuiElement
+                {
+                    Parent = Layer + $".Player.{i}",
+                    Components =
+                    {
+                        new CuiRawImageComponent
+                            {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{member.userID}")},
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = "0 0", AnchorMax = "0 0",
+                            OffsetMin = "0 0", OffsetMax = "50 50"
+                        }
+                    }
+                });
+
+                container.Add(new CuiLabel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0.5", AnchorMax = "1 1",
+                        OffsetMin = "55 0", OffsetMax = "0 0"
+                    },
+                    Text =
+                    {
+                        Text = $"{member.displayName}",
+                        Align = TextAnchor.LowerLeft,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 18,
+                        Color = "1 1 1 1"
+                    }
+                }, Layer + $".Player.{i}");
+
+                container.Add(new CuiButton
+                {
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
+                    Button =
+                    {
+                        Color = "0 0 0 0",
+                        Command = $"UI_Shop try_ptransfer {catPage} {shopPage} {searchPage} {member.userID} {search}"
+                    }
+                }, Layer + $".Player.{i}");
+
+                if (i % amountOnString == 0)
+                {
+                    xSwitch = constSwitch;
+                    ySwitch = ySwitch - Height - yMargin;
+                }
+                else
+                {
+                    xSwitch += Width + xMargin;
+                }
+
+                i++;
+            }
+
+            #endregion
+
+            #region Pages
+
+            var pageSize = 25f;
+            var selPageSize = 40f;
+            xMargin = 5f;
+
+            var pages = (int) Math.Ceiling((double) players.Count / totalAmount);
+            if (pages > 1)
+            {
+                xSwitch = -((pages - 1) * pageSize + (pages - 1) * xMargin + selPageSize) / 2f;
+
+                for (var j = 0; j < pages; j++)
+                {
+                    var selected = selectPage == j;
+
+                    container.Add(new CuiButton
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                            OffsetMin = $"{xSwitch} 60",
+                            OffsetMax =
+                                $"{xSwitch + (selected ? selPageSize : pageSize)} {60 + (selected ? selPageSize : pageSize)}"
+                        },
+                        Text =
+                        {
+                            Text = $"{j + 1}",
+                            Align = TextAnchor.MiddleCenter,
+                            Font = "robotocondensed-bold.ttf",
+                            FontSize = selected ? 18 : 12,
+                            Color = "1 1 1 1"
+                        },
+                        Button =
+                        {
+                            Color = _secondColor,
+                            Command =
+                                $"UI_Shop pselect_page {catPage} {shopPage} {searchPage} {j} {search}"
+                        }
+                    }, Layer);
+
+                    xSwitch += (selected ? selPageSize : pageSize) + xMargin;
+                }
+            }
+
+            #endregion
+
+            CuiHelper.DestroyUi(player, Layer);
+            CuiHelper.AddUi(player, container);
+        }
+
+        private void TransferUi(BasePlayer player,
+            ulong targetId,
+            int catPage,
+            int shopPage,
+            int searchPage,
+            string search,
+            float amount = 0)
+        {
+            var hasSearch = !string.IsNullOrEmpty(search);
+            if (hasSearch)
+                search = search.Replace(" ", "-");
+
+            var target = BasePlayer.FindByID(targetId);
+            if (target == null) return;
+
+            var container = new CuiElementContainer();
+
+            #region Background
+
+            container.Add(new CuiPanel
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Image =
+                {
+                    Color = "0 0 0 0.9",
+                    Material = "assets/content/ui/uibackgroundblur.mat"
+                },
+                CursorEnabled = true
+            }, "Overlay", Layer);
+
+            container.Add(new CuiButton
+            {
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                Text = {Text = ""},
+                Button =
+                {
+                    Color = "0 0 0 0",
+                    Close = Layer,
+                    Command = $"UI_Shop goback {catPage} {shopPage} {searchPage} {search}"
+                }
+            }, Layer);
+
+            #endregion
+
+            #region Main
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+                    OffsetMin = "-125 -100",
+                    OffsetMax = "125 75"
+                },
+                Image =
+                {
+                    Color = _thirdColor
+                }
+            }, Layer, Layer + ".Main");
+
+            #region Header
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 1", AnchorMax = "1 1",
+                    OffsetMin = "0 -50", OffsetMax = "0 0"
+                },
+                Image =
+                {
+                    Color = _firstColor
+                }
+            }, Layer + ".Main", Layer + ".Header");
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 1",
+                    OffsetMin = "20 0", OffsetMax = "0 0"
+                },
+                Text =
+                {
+                    Text = Msg(player, TransferTitle),
+                    Align = TextAnchor.MiddleLeft,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 14,
+                    Color = "1 1 1 1"
+                }
+            }, Layer + ".Header");
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "1 1", AnchorMax = "1 1",
+                    OffsetMin = "-35 -37.5",
+                    OffsetMax = "-10 -12.5"
+                },
+                Text =
+                {
+                    Text = Msg(player, CloseButton),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 10,
+                    Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Close = Layer,
+                    Color = _secondColor,
+                    Command = $"UI_Shop goback {catPage} {shopPage} {searchPage} {search}"
+                }
+            }, Layer + ".Header");
+
+            #endregion
+
+            #region Player
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = "-105 -110",
+                    OffsetMax = "105 -60"
+                },
+                Image =
+                {
+                    Color = _firstColor
+                }
+            }, Layer + ".Main", Layer + ".Player");
+
+            #region Avatar
+
+            if (ImageLibrary)
+                container.Add(new CuiElement
+                {
+                    Parent = Layer + ".Player",
+                    Components =
+                    {
+                        new CuiRawImageComponent
+                        {
+                            Png = ImageLibrary.Call<string>("GetImage", $"avatar_{target.userID}")
+                        },
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = "0 0", AnchorMax = "0 0",
+                            OffsetMin = "5 5",
+                            OffsetMax = "45 45"
+                        }
+                    }
+                });
+
+            #endregion
+
+            #region Name
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 1",
+                    OffsetMin = "50 0", OffsetMax = "0 0"
+                },
+                Text =
+                {
+                    Text = $"{target.displayName}",
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-bold.ttf",
+                    FontSize = 20,
+                    Color = "1 1 1 1"
+                }
+            }, Layer + ".Player");
+
+            #endregion
+
+            #endregion
+
+            #region Send
+
+            container.Add(new CuiPanel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = "-105 -160",
+                    OffsetMax = "105 -120"
+                },
+                Image =
+                {
+                    Color = _firstColor
+                }
+            }, Layer + ".Main", Layer + ".Send");
+
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "1 0.5", AnchorMax = "1 0.5",
+                    OffsetMin = "-85 -12.5",
+                    OffsetMax = "-5 12.5"
+                },
+                Text =
+                {
+                    Text = Msg(player, TransferButton),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 10,
+                    Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Color = _secondColor,
+                    Close = Layer,
+                    Command =
+                        $"UI_Shop ptransfer_send {catPage} {shopPage} {searchPage} {targetId} {hasSearch} {search} {amount}"
+                }
+            }, Layer + ".Send");
+
+            container.Add(new CuiLabel
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0 0", AnchorMax = "1 1",
+                    OffsetMin = "0 0", OffsetMax = "-90 0"
+                },
+                Text =
+                {
+                    Text = $"{amount}",
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 12,
+                    Color = "1 1 1 0.65"
+                }
+            }, Layer + ".Send");
+
+            container.Add(new CuiElement
+            {
+                Parent = Layer + ".Send",
+                Components =
+                {
+                    new CuiInputFieldComponent
+                    {
+                        FontSize = 12,
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        Command =
+                            $"UI_Shop ptransfer_amount {catPage} {shopPage} {searchPage} {targetId} {hasSearch} {search} ",
+                        Color = "1 1 1 0.95",
+                        CharsLimit = 32
+                    },
+                    new CuiRectTransformComponent
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1",
+                        OffsetMin = "0 0", OffsetMax = "-90 0"
+                    }
+                }
+            });
+
+            #endregion
+
+            #endregion
+
+            CuiHelper.DestroyUi(player, Layer);
+            CuiHelper.AddUi(player, container);
+        }
+
         #endregion
 
         #region Utils
+
+        #region Avatar
+
+        private readonly Regex _regex = new Regex(@"<avatarFull><!\[CDATA\[(.*)\]\]></avatarFull>");
+
+        private void GetAvatar(ulong userId, Action<string> callback)
+        {
+            if (callback == null) return;
+
+            webrequest.Enqueue($"http://steamcommunity.com/profiles/{userId}?xml=1", null, (code, response) =>
+            {
+                if (code != 200 || response == null)
+                    return;
+
+                var avatar = _regex.Match(response).Groups[1].ToString();
+                if (string.IsNullOrEmpty(avatar))
+                    return;
+
+                callback.Invoke(avatar);
+            }, this);
+        }
+
+        #endregion
 
         private int SecondsFromWipe()
         {
@@ -5090,6 +5813,11 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            TransferButton = "TransferButton",
+            TransferTitle = "TransferTitle",
+            SuccessfulTransfer = "SuccessfulTransfer",
+            PlayerNotFound = "PlayerNotFound",
+            SelectPlayerTitle = "SelectPlayerTitle",
             BuyWipeCooldown = "BuyWipeCooldown",
             SellWipeCooldown = "SellWipeCooldown",
             BuyRespawnCooldown = "BuyRespawnCooldown",
@@ -5230,7 +5958,12 @@ namespace Oxide.Plugins
                 [NoUseDuel] = "You are in a duel. The use of the shop is blocked.",
                 [SkinBlocked] = "Skin is blocked for sale",
                 [LogBuyItems] = "Player {0} ({1}) bought items for {2}$: {3}.",
-                [LogSellItem] = "Player {0} ({1}) sold item for {2}$: {3}."
+                [LogSellItem] = "Player {0} ({1}) sold item for {2}$: {3}.",
+                [SelectPlayerTitle] = "Select player to transfer",
+                [PlayerNotFound] = "Player not found",
+                [SuccessfulTransfer] = "Transferred {0}RP to player '{1}'",
+                [TransferTitle] = "Transfer",
+                [TransferButton] = "Send money"
             }, this);
         }
 

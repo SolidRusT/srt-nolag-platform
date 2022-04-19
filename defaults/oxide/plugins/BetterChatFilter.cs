@@ -13,7 +13,7 @@ using Oxide.Game.Rust.Libraries;
 
 namespace Oxide.Plugins
 {
-    [Info("Better Chat Filter", "NooBlet", "1.6.5", ResourceId = 2403)]
+    [Info("Better Chat Filter", "NooBlet", "1.6.7", ResourceId = 2403)]
     [Description("Filter for Better Chat")]
     public class BetterChatFilter : CovalencePlugin
     {
@@ -212,25 +212,30 @@ namespace Oxide.Plugins
                 {
                     if (KickCount >= PlayerOffenses[player.Id].offenses)
                     {
-                        if (KickCount == 0)
+                        if (BroadcastKick)
                         {
-                            player.Reply(string.Format(GetLang("OffenseWarning", player.Id), PlayerOffenses[player.Id].offenses + 1));
-                        }
-                        else
-                        {
+                            if (KickCount == 0)
+                            {
+                                player.Reply(string.Format(GetLang("OffenseWarning", player.Id), PlayerOffenses[player.Id].offenses + 1));
+                            }
+                            else
+                            {
 
-                            player.Reply(string.Format(GetLang("OffenseWarningKick", player.Id), PlayerOffenses[player.Id].offenses + 1, KickCount));
+                                player.Reply(string.Format(GetLang("OffenseWarningKick", player.Id), PlayerOffenses[player.Id].offenses + 1, KickCount));
 
-                        }
+                            }
+                        }                     
 
                     }
-                    if (BanCount != 0)
+                    if (BroadcastBan)
                     {
-                        player.Reply(string.Format(GetLang("OffenseWarningBan", player.Id), PlayerOffenses[player.Id].offenses + 1, BanCount));
+                        if (BanCount != 0)
+                        {
+                            player.Reply(string.Format(GetLang("OffenseWarningBan", player.Id), PlayerOffenses[player.Id].offenses + 1, BanCount));
+                        }
+
                     }
-
                 }
-
             }
         }
 
@@ -426,7 +431,7 @@ namespace Oxide.Plugins
             Regex r = new Regex(regextouse, RegexOptions.IgnoreCase);
             foreach (var word in original.Split(' '))
             {
-                if (DoWhiteList(word)) { continue; }
+                if (DoWhiteList(word.ToLower())) { continue; }
                 if (UseRegex)
                 {
                     Match m = r.Match(word);
@@ -475,17 +480,17 @@ namespace Oxide.Plugins
             {
                 foreach (var w in _whitelist)
                 {
-                    if (word.Contains(w.ToString())) { return true; }
+                    if (word.Contains(w.ToString().ToLower())) { return true; }
                 }
                 return false;
             }
-            if (_whitelist.Contains(word))
+            if (_whitelist.Contains(word.ToLower()))
             {
                 return true;
             }
             foreach (var w in _whitelist)
             {
-                if (word.Contains(w.ToString())) { return true; }
+                if (word.Contains(w.ToString().ToLower())) { return true; }
             }
             return false;
         }

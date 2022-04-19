@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.7.2")]
+    [Info("Crafts", "Mevent", "2.7.3")]
     public class Crafts : RustPlugin
     {
         #region Fields
@@ -672,8 +672,6 @@ namespace Oxide.Plugins
                         if (_instance._craftsById.ContainsKey(val)) continue;
 
                         ID = val;
-                        _instance._craftsById[ID] = this;
-                        _instance.SaveConfig();
                     }
 
                     return ID;
@@ -888,7 +886,6 @@ namespace Oxide.Plugins
                         if (_instance._itemsById.ContainsKey(val)) continue;
 
                         _id = val;
-                        _instance._itemsById[_id] = this;
                     }
 
                     return _id;
@@ -2755,12 +2752,19 @@ namespace Oxide.Plugins
         {
             #region Dictionary
 
+            Puts("10");
             if (!_craftEditing.ContainsKey(player))
             {
+                Puts("20");
                 var craft = FindCraftById(craftId);
                 if (craft != null)
+                {
+                    Puts("30");
                     _craftEditing[player] = craft.ToDictionary();
+                }
                 else
+                {
+                    Puts("40");
                     _craftEditing[player] = new Dictionary<string, object>
                     {
                         ["Generated"] = true,
@@ -2784,6 +2788,7 @@ namespace Oxide.Plugins
                         ["Structure"] = false,
                         ["Items"] = new List<ItemForCraft>()
                     };
+                }
             }
 
             #endregion
@@ -3362,7 +3367,7 @@ namespace Oxide.Plugins
                 $"{xSwitch} {ySwitch - 10}",
                 $"{xSwitch + 10} {ySwitch}",
                 enabled,
-                $"UI_Crafts edit {category} {page} {catPage} {catPage} {craftId} {itemsPage} Enabled {!enabled}",
+                $"UI_Crafts edit {category} {page} {catPage} {craftId} {itemsPage} Enabled {!enabled}",
                 text
             );
 
@@ -4434,6 +4439,15 @@ namespace Oxide.Plugins
                     _itemsCategories.Add(itemCategory, new List<string> {item.shortname});
                 }
             });
+
+            foreach (var craft in _config.Categories.SelectMany(x => x.Crafts))
+            {
+                _craftsById[craft.PUBLIC_ID] = craft;
+
+                craft.Items.ForEach(item => _instance._itemsById[item.ID] = item);
+            }
+
+            SaveConfig();
         }
 
         private ItemForCraft FindItemById(int id)
