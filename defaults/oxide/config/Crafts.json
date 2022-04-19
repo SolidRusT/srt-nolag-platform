@@ -20,50 +20,7 @@
         "HEX": "#161617",
         "Opacity (0 - 100)": 100.0
       },
-      "Items": [
-        {
-          "Enabled": true,
-          "Image": "https://i.imgur.com/YXjADeE.png",
-          "Title": "Minicopter",
-          "Description": "Fast air transport",
-          "Command (to give an item)": "givecopter",
-          "Permission (ex: crafts.vip)": "",
-          "Display Name": "Minicopter",
-          "ShortName": "electric.flasherlight",
-          "Amount": 1,
-          "Skin": 2080145158,
-          "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
-          "Prefab": "assets/content/vehicles/minicopter/minicopter.entity.prefab",
-          "Command on give": "",
-          "Workbench Level": 1,
-          "Distance Check": true,
-          "Distance": 1.5,
-          "Place the ground": true,
-          "Place the structure": true,
-          "Items For Craft": [
-            {
-              "Image": "",
-              "ShortName": "gears",
-              "Amount": 20,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "metalblade",
-              "Amount": 10,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "metal.refined",
-              "Amount": 100,
-              "Skin": 0,
-              "Title (empty - default)": null
-            }
-          ],
-          "For Modular Car": null
+        "For Modular Car": null
         },
         {
           "Enabled": true,
@@ -88,152 +45,20 @@
             {
               "Image": "",
               "ShortName": "gears",
-              "Amount": 5,
+              "Amount": 10,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
               "ShortName": "carburetor3",
-              "Amount": 1,
+              "Amount": 2,
               "Skin": 0,
               "Title (empty - default)": null
             },
             {
               "Image": "",
               "ShortName": "wood",
-              "Amount": 5000,
-              "Skin": 0,
-              "Title (empty - default)": null
-            }
-          ],
-          "For Modular Car": null
-        },
-        {
-          "Enabled": true,
-          "Image": "https://i.imgur.com/CgpVw2j.png",
-          "Title": "RHIB",
-          "Description": "Slow water transport",
-          "Command (to give an item)": "giverhibboat",
-          "Permission (ex: crafts.vip)": "",
-          "Display Name": "RHIB",
-          "ShortName": "electric.sirenlight",
-          "Amount": 1,
-          "Skin": 2080150770,
-          "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
-          "Prefab": "assets/content/vehicles/boats/rhib/rhib.prefab",
-          "Command on give": "",
-          "Workbench Level": 3,
-          "Distance Check": true,
-          "Distance": 1.5,
-          "Place the ground": true,
-          "Place the structure": true,
-          "Items For Craft": [
-            {
-              "Image": "",
-              "ShortName": "gears",
-              "Amount": 5,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "roadsigns",
-              "Amount": 5,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "metal.fragments",
-              "Amount": 2000,
-              "Skin": 0,
-              "Title (empty - default)": null
-            }
-          ],
-          "For Modular Car": null
-        },
-        {
-          "Enabled": true,
-          "Image": "https://i.imgur.com/cp2Xx2A.png",
-          "Title": "Hot Air Balloon",
-          "Description": "Slow air transport",
-          "Command (to give an item)": "givehotair",
-          "Permission (ex: crafts.vip)": "",
-          "Display Name": "Hot Air Balloon",
-          "ShortName": "box.repair.bench",
-          "Amount": 1,
-          "Skin": 2080152635,
-          "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
-          "Prefab": "assets/prefabs/deployable/hot air balloon/hotairballoon.prefab",
-          "Command on give": "",
-          "Workbench Level": 2,
-          "Distance Check": true,
-          "Distance": 1.5,
-          "Place the ground": true,
-          "Place the structure": true,
-          "Items For Craft": [
-            {
-              "Image": "",
-              "ShortName": "gears",
-              "Amount": 5,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "roadsigns",
-              "Amount": 5,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "metal.fragments",
-              "Amount": 2000,
-              "Skin": 0,
-              "Title (empty - default)": null
-            }
-          ],
-          "For Modular Car": null
-        },
-        {
-          "Enabled": true,
-          "Image": "https://i.imgur.com/7JZE0Lr.png",
-          "Title": "Transport Helicopter",
-          "Description": "Fast air transport",
-          "Command (to give an item)": "givescrapheli",
-          "Permission (ex: crafts.vip)": "",
-          "Display Name": "Transport Helicopter",
-          "ShortName": "electric.flasherlight",
-          "Amount": 1,
-          "Skin": 2080154394,
-          "Type (Item/Command/Vehicle/Recycler)": "Vehicle",
-          "Prefab": "assets/content/vehicles/scrap heli carrier/scraptransporthelicopter.prefab",
-          "Command on give": "",
-          "Workbench Level": 3,
-          "Distance Check": true,
-          "Distance": 1.5,
-          "Place the ground": true,
-          "Place the structure": true,
-          "Items For Craft": [
-            {
-              "Image": "",
-              "ShortName": "gears",
-              "Amount": 30,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "sheetmetal",
-              "Amount": 20,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "metal.fragments",
               "Amount": 10000,
               "Skin": 0,
               "Title (empty - default)": null
@@ -448,49 +273,7 @@
       "Background color": {
         "HEX": "#161617",
         "Opacity (0 - 100)": 100.0
-      },
-      "Items": [
-        {
-          "Enabled": true,
-          "Image": "https://i.imgur.com/LLB2AVi.png",
-          "Title": "Home Recycler",
-          "Description": "",
-          "Command (to give an item)": "giverecycler",
-          "Permission (ex: crafts.vip)": "",
-          "Display Name": "Home Recycler",
-          "ShortName": "research.table",
-          "Amount": 1,
-          "Skin": 2186833264,
-          "Type (Item/Command/Vehicle/Recycler)": "Recycler",
-          "Prefab": "assets/bundled/prefabs/static/recycler_static.prefab",
-          "Command on give": "",
-          "Workbench Level": 2,
-          "Distance Check": true,
-          "Distance": 1.5,
-          "Place the ground": true,
-          "Place the structure": true,
-          "Items For Craft": [
-            {
-              "Image": "",
-              "ShortName": "gears",
-              "Amount": 5,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "roadsigns",
-              "Amount": 5,
-              "Skin": 0,
-              "Title (empty - default)": null
-            },
-            {
-              "Image": "",
-              "ShortName": "metal.fragments",
-              "Amount": 5000,
-              "Skin": 0,
-              "Title (empty - default)": null
-            }
+          }
           ],
           "For Modular Car": null
         },
