@@ -19,25 +19,9 @@ using System;
 using UnityEngine;
 using System.IO;
 
-// scrap payments to bypass cooldown
-// costs to buy teleport
-
-/*
-Fixed locations for bandit and outpost being set to monuments underneath them
-Adjusted teleport position by an increase of 0.1 meters due to crazy InsideTerrain bugs
-Added back API for GetLimitRemaining and GetCooldownRemaining
-Added `Play Sounds After Teleport` (false) - set true to enable next option
-Added `Sounds To Player After Teleport` (list of 5 different sounds)
-Added `Block All Teleporting From Inside Authorized Base` (false)
-Added `Global Teleport Cooldown` (0)
-Added `Global VIP Teleport Cooldown` (0) - requires: nteleportation.globalcooldownvip
-Added API (GetLimitRemaining, GetCooldownRemaining, GetCountdownRemaining) (player, type)
-- e.g: int limit = Convert.ToInt32(NTeleportation?.Call("GetLimitRemaining", player, "tpr"));
-*/
-
 namespace Oxide.Plugins
 {
-    [Info("NTeleportation", "nivex", "1.6.8")]
+    [Info("NTeleportation", "nivex", "1.6.9")]
     [Description("Multiple teleportation systems for admin and players")]
     class NTeleportation : RustPlugin
     {
@@ -52,6 +36,7 @@ namespace Oxide.Plugins
         private string outpostPrefab;
         private const string NewLine = "\n";
         private const string PermAdmin = "nteleportation.admin";
+        private const string PermRestrictions = "nteleportation.norestrictions";
         private const string ConfigDefaultPermVip = "nteleportation.vip";
         private const string PermHome = "nteleportation.home";
         private const string PermWipeHomes = "nteleportation.wipehomes";
@@ -563,7 +548,7 @@ namespace Oxide.Plugins
                 }
                 else if (entry.Key.Equals("bandit", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (CompoundTeleport == null)
+                    if (CompoundTeleport == null || Convert.ToBoolean(CompoundTeleport?.Call("umodversion")))
                     {
                         banditEnabled = true;
                     }
@@ -571,7 +556,7 @@ namespace Oxide.Plugins
                 }
                 else if (entry.Key.Equals("outpost", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (CompoundTeleport == null)
+                    if (CompoundTeleport == null || Convert.ToBoolean(CompoundTeleport?.Call("umodversion")))
                     {
                         outpostEnabled = true;
                     }
@@ -724,6 +709,7 @@ namespace Oxide.Plugins
                 {"HomeTPCrafting", "You can't set your home while crafting!"},
                 {"Request", "You've requested a teleport to {0}!"},
                 {"RequestTarget", "{0} requested to be teleported to you! Use '/tpa' to accept!"},
+                {"RequestTargetOff", "Your request has been cancelled as the target is offline now." },
                 {"TPR_NoClan_NoFriend_NoTeam", "This command is only available to friends or teammates or clanmates!"},
                 {"PendingRequest", "You already have a request pending, cancel that request or wait until it gets accepted or times out!"},
                 {"PendingRequestTarget", "The player you wish to teleport to already has a pending request, try again later!"},
@@ -770,6 +756,7 @@ namespace Oxide.Plugins
                 {"TPAboveWater", "You can't teleport while above water!"},
                 {"TPTargetBuildingBlocked", "You can't teleport in a building blocked zone!"},
                 {"TPTargetInsideBlock", "You can't teleport into a foundation!"},
+                {"TPTargetInsideRock", "You can't teleport into a rock!"},
                 {"TPSwimming", "You can't teleport while swimming!"},
                 {"TPCargoShip", "You can't teleport from the cargo ship!"},
                 {"TPOilRig", "You can't teleport from the oil rig!"},
@@ -1207,6 +1194,7 @@ namespace Oxide.Plugins
                 {"HomeTPCrafting", "Вы не можете устанавливать местоположение а качестве дома в процессе крафта!"},
                 {"Request", "Вы запросили телепортацию к {0}!"},
                 {"RequestTarget", "{0} запросил телепортацию к вам! Используйте <color=yellow>/tpa</color>, чтобы принять!"},
+                {"RequestTargetOff", "Ваш запрос был отменен, так как цель сейчас не в сети." },
                 {"TPR_NoClan_NoFriend_NoTeam", "Эта команда доступна только друзьям, участникам команды или клана!"},
                 {"PendingRequest", "У вас уже есть активный запрос, отмените его, ожидайте подтверждения, либо отмены по таймауту!"},
                 {"PendingRequestTarget", "У игрока, к которому вы хотите телепортироваться уже есть активный запрос, попробуйте позже!"},
@@ -1253,6 +1241,7 @@ namespace Oxide.Plugins
                 {"TPAboveWater", "Вы не можете телепортироваться находясь над водой!"},
                 {"TPTargetBuildingBlocked", "Вы не можете телепортироваться в зону, где блокировано строительство!"},
                 {"TPTargetInsideBlock", "Вы не можете телепортироваться в фундамент!"},
+                {"TPTargetInsideRock", "Вы не можете телепортироваться в скалу!"},
                 {"TPSwimming", "Вы не можете телепортироваться, пока плывёте!"},
                 {"TPCargoShip", "Вы не можете телепортироваться с грузового корабля!"},
                 {"TPOilRig", "Вы не можете телепортироваться с нефтяной вышки!"},
@@ -1719,6 +1708,7 @@ namespace Oxide.Plugins
             try { DisabledCommandData = dataDisabled.ReadObject<DisabledData>(); } catch { }
             if (DisabledCommandData == null) { DisabledCommandData = new DisabledData(); }
 
+            permission.RegisterPermission("nteleportation.norestrictions", this);
             permission.RegisterPermission("nteleportation.globalcooldownvip", this);
             permission.RegisterPermission(PermFoundationCheck, this);
             permission.RegisterPermission(PermDeleteHome, this);
@@ -1755,6 +1745,8 @@ namespace Oxide.Plugins
                 RegisterCommand(entry.Key, entry.Value, false);
             }
         }
+
+        private bool CanBypassRestrictions(string userid) => permission.UserHasPermission(userid, "nteleportation.norestrictions");
 
         private void RegisterCommand(string command, string callback, string perm = null)
         {
@@ -2108,9 +2100,9 @@ namespace Oxide.Plugins
 
         private void SaveLocation(BasePlayer player, Vector3 position)
         {
-            if (player == null || !IsAllowed(player, PermTpB)) return;
+            if (player == null || _Admin == null || !IsAllowed(player, PermTpB)) return;
             AdminData adminData;
-            if (!_Admin.TryGetValue(player.userID, out adminData))
+            if (!_Admin.TryGetValue(player.userID, out adminData) || adminData == null)
                 _Admin[player.userID] = adminData = new AdminData();
             adminData.PreviousLocation = position;
             changedAdmin = true;
@@ -2531,12 +2523,15 @@ namespace Oxide.Plugins
                 return;
             }
             var positionCoordinates = player.transform.position;
-            foreach (var loc in adminData.Locations)
+            if (!CanBypassRestrictions(player.UserIDString))
             {
-                if ((positionCoordinates - loc.Value).magnitude < config.Admin.LocationRadius)
+                foreach (var loc in adminData.Locations)
                 {
-                    PrintMsgL(player, "LocationExistsNearby", loc.Key);
-                    return;
+                    if ((positionCoordinates - loc.Value).magnitude < config.Admin.LocationRadius)
+                    {
+                        PrintMsgL(player, "LocationExistsNearby", loc.Key);
+                        return;
+                    }
                 }
             }
             adminData.Locations[args[0]] = positionCoordinates;
@@ -2604,29 +2599,14 @@ namespace Oxide.Plugins
                 PrintMsgL(player, "SyntaxCommandSetHome");
                 return;
             }
-            var err = CheckPlayer(player, false, CanCraftHome(player), true, "sethome");
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
-            if (!player.CanBuild())
-            {
-                PrintMsgL(player, "HomeTPBuildingBlocked");
-                return;
-            }
-            if (!args[0].All(char.IsLetterOrDigit))
-            {
-                PrintMsgL(player, "InvalidCharacter");
-                return;
-            }
+            string err = null;
             HomeData homeData;
             if (!_Home.TryGetValue(player.userID, out homeData))
                 _Home[player.userID] = homeData = new HomeData();
             var limit = GetHigher(player, config.Home.VIPHomesLimits, config.Home.HomesLimit, true);
-            if (limit > 0 && homeData.Locations.Count >= limit)
+            if (!args[0].All(char.IsLetterOrDigit))
             {
-                PrintMsgL(player, "HomeMaxLocations", limit);
+                PrintMsgL(player, "InvalidCharacter");
                 return;
             }
             Vector3 location;
@@ -2636,35 +2616,46 @@ namespace Oxide.Plugins
                 return;
             }
             var positionCoordinates = player.transform.position;
-            foreach (var loc in homeData.Locations)
+            if (!CanBypassRestrictions(player.UserIDString))
             {
-                if ((positionCoordinates - loc.Value).magnitude < config.Home.LocationRadius)
+                err = CheckPlayer(player, false, CanCraftHome(player), true, "sethome");
+                if (err != null)
                 {
-                    PrintMsgL(player, "HomeExistsNearby", loc.Key);
+                    PrintMsgL(player, err);
+                    return;
+                }
+                if (!player.CanBuild())
+                {
+                    PrintMsgL(player, "HomeTPBuildingBlocked");
+                    return;
+                }                
+                if (limit > 0 && homeData.Locations.Count >= limit)
+                {
+                    PrintMsgL(player, "HomeMaxLocations", limit);
+                    return;
+                }
+                foreach (var loc in homeData.Locations)
+                {
+                    if ((positionCoordinates - loc.Value).magnitude < config.Home.LocationRadius)
+                    {
+                        PrintMsgL(player, "HomeExistsNearby", loc.Key);
+                        return;
+                    }
+                }
+                err = CanPlayerTeleport(player, positionCoordinates);
+                if (err != null)
+                {
+                    SendReply(player, err);
+                    return;
+                }
+                err = CheckFoundation(player.userID, positionCoordinates);
+                if (err != null)
+                {
+                    PrintMsgL(player, err);
                     return;
                 }
             }
-            err = CanPlayerTeleport(player, positionCoordinates);
-            if (err != null)
-            {
-                SendReply(player, err);
-                return;
-            }
-
             if (player.IsAdmin && config.Settings.DrawHomeSphere) player.SendConsoleCommand("ddraw.sphere", 30f, Color.blue, GetGround(positionCoordinates), 2.5f);
-
-            err = CheckFoundation(player.userID, positionCoordinates);
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
-            err = CheckInsideEntity(positionCoordinates);
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
             homeData.Locations[args[0]] = positionCoordinates;
             changedHome = true;
             PrintMsgL(player, "HomeSave");
@@ -2874,6 +2865,7 @@ namespace Oxide.Plugins
             {
                 return false;
             }
+            if (CanBypassRestrictions(player.UserIDString)) return true;
             double balance;
             bool foundmoney = false;
 
@@ -2929,17 +2921,6 @@ namespace Oxide.Plugins
                 PrintMsgL(player, "SyntaxCommandHome");
                 return;
             }
-            float globalCooldownTime = GetGlobalCooldown(player);
-            if (globalCooldownTime > 0f)
-            {
-                PrintMsgL(player, "WaitGlobalCooldown", FormatTime(player, (int)globalCooldownTime));
-                return;
-            }
-            if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed()) 
-            {
-                PrintMsgL(player, "CannotTeleportFromHome");
-                return;
-            }
             HomeData homeData;
             if (!_Home.TryGetValue(player.userID, out homeData) || homeData.Locations.Count <= 0)
             {
@@ -2952,125 +2933,133 @@ namespace Oxide.Plugins
                 PrintMsgL(player, "HomeNotFound");
                 return;
             }
-            var err = CheckPlayer(player, config.Home.UsableOutOfBuildingBlocked, CanCraftHome(player), true, "home");
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
-            if (config.Settings.BlockNoEscape && Convert.ToBoolean(NoEscape?.Call("IsBlockedZone", location)))
-            {
-                PrintMsgL(player, "TPNoEscapeBlocked");
-                return;
-            }
-            err = CheckFoundation(player.userID, location) ?? CheckTargetLocation(player, location, config.Home.UsableIntoBuildingBlocked, config.Home.CupOwnerAllowOnBuildingBlocked);
-            if (err != null)
-            {
-                PrintMsgL(player, "HomeRemovedInvalid", args[0]);
-                PrintMsgL(player, err);
-                homeData.Locations.Remove(args[0]);
-                changedHome = true;
-                return;
-            }
-            err = CheckInsideEntity(location);
-            if (err != null)
-            {
-                PrintMsgL(player, "HomeRemovedInsideBlock", args[0]);
-                homeData.Locations.Remove(args[0]);
-                changedHome = true;
-                return;
-            }
+            int limit = 0;
+            string err = null;
             var timestamp = Facepunch.Math.Epoch.Current;
-            var currentDate = DateTime.Now.ToString("d");
-            if (homeData.Teleports.Date != currentDate)
+            if (!CanBypassRestrictions(player.UserIDString))
             {
-                homeData.Teleports.Amount = 0;
-                homeData.Teleports.Date = currentDate;
-            }
-            var cooldown = GetLower(player, config.Home.VIPCooldowns, config.Home.Cooldown);
-            if (cooldown > 0 && timestamp - homeData.Teleports.Timestamp < cooldown)
-            {
-                var cmdSent = args.Length >= 2 ? args[1].ToLower() : string.Empty;
-
-                if (!string.IsNullOrEmpty(config.Settings.BypassCMD) && !paidmoney)
+                float globalCooldownTime = GetGlobalCooldown(player);
+                if (globalCooldownTime > 0f)
                 {
-                    if (cmdSent == config.Settings.BypassCMD.ToLower() && config.Home.Bypass > -1)
+                    PrintMsgL(player, "WaitGlobalCooldown", FormatTime(player, (int)globalCooldownTime));
+                    return;
+                }
+                if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
+                {
+                    PrintMsgL(player, "CannotTeleportFromHome");
+                    return;
+                }
+                err = CheckPlayer(player, config.Home.UsableOutOfBuildingBlocked, CanCraftHome(player), true, "home");
+                if (err != null)
+                {
+                    PrintMsgL(player, err);
+                    return;
+                }
+                if (config.Settings.BlockNoEscape && Convert.ToBoolean(NoEscape?.Call("IsBlockedZone", location)))
+                {
+                    PrintMsgL(player, "TPNoEscapeBlocked");
+                    return;
+                }
+                err = CheckFoundation(player.userID, location) ?? CheckTargetLocation(player, location, config.Home.UsableIntoBuildingBlocked, config.Home.CupOwnerAllowOnBuildingBlocked);
+                if (err != null)
+                {
+                    PrintMsgL(player, "HomeRemovedInvalid", args[0]);
+                    PrintMsgL(player, err);
+                    homeData.Locations.Remove(args[0]);
+                    changedHome = true;
+                    return;
+                }
+                var cooldown = GetLower(player, config.Home.VIPCooldowns, config.Home.Cooldown);
+                if (cooldown > 0 && timestamp - homeData.Teleports.Timestamp < cooldown)
+                {
+                    var cmdSent = args.Length >= 2 ? args[1].ToLower() : string.Empty;
+
+                    if (!string.IsNullOrEmpty(config.Settings.BypassCMD) && !paidmoney)
                     {
-                        bool foundmoney = CheckEconomy(player, config.Home.Bypass);
-
-                        if (foundmoney)
+                        if (cmdSent == config.Settings.BypassCMD.ToLower() && config.Home.Bypass > -1)
                         {
-                            CheckEconomy(player, config.Home.Bypass, true);
-                            paidmoney = true;
+                            bool foundmoney = CheckEconomy(player, config.Home.Bypass);
 
+                            if (foundmoney)
+                            {
+                                CheckEconomy(player, config.Home.Bypass, true);
+                                paidmoney = true;
+
+                                if (config.Home.Bypass > 0)
+                                {
+                                    PrintMsgL(player, "HomeTPCooldownBypass", config.Home.Bypass);
+                                }
+
+                                if (config.Home.Pay > 0)
+                                {
+                                    PrintMsgL(player, "PayToHome", config.Home.Pay);
+                                }
+                            }
+                            else
+                            {
+                                PrintMsgL(player, "HomeTPCooldownBypassF", config.Home.Bypass);
+                                return;
+                            }
+                        }
+                        else if (UseEconomy())
+                        {
                             if (config.Home.Bypass > 0)
                             {
-                                PrintMsgL(player, "HomeTPCooldownBypass", config.Home.Bypass);
-                            }
-
-                            if (config.Home.Pay > 0)
-                            {
-                                PrintMsgL(player, "PayToHome", config.Home.Pay);
+                                var remain = cooldown - (timestamp - homeData.Teleports.Timestamp);
+                                PrintMsgL(player, "HomeTPCooldown", FormatTime(player, remain));
+                                PrintMsgL(player, "HomeTPCooldownBypassP", config.Home.Bypass);
+                                PrintMsgL(player, "HomeTPCooldownBypassP2", config.Settings.BypassCMD);
+                                return;
                             }
                         }
                         else
                         {
-                            PrintMsgL(player, "HomeTPCooldownBypassF", config.Home.Bypass);
-                            return;
-                        }
-                    }
-                    else if (UseEconomy())
-                    {
-                        if (config.Home.Bypass > 0)
-                        {
                             var remain = cooldown - (timestamp - homeData.Teleports.Timestamp);
+
                             PrintMsgL(player, "HomeTPCooldown", FormatTime(player, remain));
-                            PrintMsgL(player, "HomeTPCooldownBypassP", config.Home.Bypass);
-                            PrintMsgL(player, "HomeTPCooldownBypassP2", config.Settings.BypassCMD);
                             return;
                         }
                     }
                     else
                     {
                         var remain = cooldown - (timestamp - homeData.Teleports.Timestamp);
-
                         PrintMsgL(player, "HomeTPCooldown", FormatTime(player, remain));
                         return;
                     }
                 }
-                else
+                limit = GetHigher(player, config.Home.VIPDailyLimits, config.Home.DailyLimit, true);
+                if (limit > 0 && homeData.Teleports.Amount >= limit)
                 {
-                    var remain = cooldown - (timestamp - homeData.Teleports.Timestamp);
-                    PrintMsgL(player, "HomeTPCooldown", FormatTime(player, remain));
+                    PrintMsgL(player, "HomeTPLimitReached", limit);
                     return;
                 }
-            }
-            var limit = GetHigher(player, config.Home.VIPDailyLimits, config.Home.DailyLimit, true);
-            if (limit > 0 && homeData.Teleports.Amount >= limit)
-            {
-                PrintMsgL(player, "HomeTPLimitReached", limit);
-                return;
+                var currentDate = DateTime.Now.ToString("d");
+                if (homeData.Teleports.Date != currentDate)
+                {
+                    homeData.Teleports.Amount = 0;
+                    homeData.Teleports.Date = currentDate;
+                }
+                err = CanPlayerTeleport(player, location);
+                if (err != null)
+                {
+                    SendReply(player, err);
+                    return;
+                }
+                err = CheckItems(player);
+                if (err != null)
+                {
+                    PrintMsgL(player, "TPBlockedItem", err);
+                    return;
+                }
+                if (config.Home.UsableFromSafeZoneOnly && !player.InSafeZone())
+                {
+                    PrintMsgL(player, "TPHomeSafeZoneOnly");
+                    return;
+                }
             }
             if (TeleportTimers.ContainsKey(player.userID))
             {
                 PrintMsgL(player, "TeleportPendingTPC");
-                return;
-            }
-            err = CanPlayerTeleport(player, location);
-            if (err != null)
-            {
-                SendReply(player, err);
-                return;
-            }
-            err = CheckItems(player);
-            if (err != null)
-            {
-                PrintMsgL(player, "TPBlockedItem", err);
-                return;
-            }
-            if (config.Home.UsableFromSafeZoneOnly && !player.InSafeZone())
-            {
-                PrintMsgL(player, "TPHomeSafeZoneOnly");
                 return;
             }
             var countdown = GetLower(player, config.Home.VIPCountdowns, config.Home.Countdown);
@@ -3082,99 +3071,87 @@ namespace Oxide.Plugins
 #if DEBUG
                     Puts("Calling CheckPlayer from cmdChatHomeTP");
 #endif
-                    err = CheckPlayer(player, config.Home.UsableOutOfBuildingBlocked, CanCraftHome(player), true, "home");
-                    if (err != null)
+                    if (!CanBypassRestrictions(player.UserIDString))
                     {
-                        PrintMsgL(player, "Interrupted");
-                        PrintMsgL(player, err);
-                        if (paidmoney)
+                        err = CheckPlayer(player, config.Home.UsableOutOfBuildingBlocked, CanCraftHome(player), true, "home");
+                        if (err != null)
                         {
-                            paidmoney = false;
-                            CheckEconomy(player, config.Home.Bypass, false, true);
-                        }
-                        TeleportTimers.Remove(player.userID);
-                        return;
-                    }
-                    err = CanPlayerTeleport(player, location);
-                    if (err != null)
-                    {
-                        PrintMsgL(player, "Interrupted");
-                        PrintMsgL(player, err);
-                        if (paidmoney)
-                        {
-                            paidmoney = false;
-                            CheckEconomy(player, config.Home.Bypass, false, true);
-                        }
-                        TeleportTimers.Remove(player.userID);
-                        return;
-                    }
-                    err = CheckItems(player);
-                    if (err != null)
-                    {
-                        PrintMsgL(player, "Interrupted");
-                        PrintMsgL(player, "TPBlockedItem", err);
-                        if (paidmoney)
-                        {
-                            paidmoney = false;
-                            CheckEconomy(player, config.Home.Bypass, false, true);
-                        }
-                        TeleportTimers.Remove(player.userID);
-                        return;
-                    }
-                    err = CheckFoundation(player.userID, location) ?? CheckTargetLocation(player, location, config.Home.UsableIntoBuildingBlocked, config.Home.CupOwnerAllowOnBuildingBlocked);
-                    if (err != null)
-                    {
-                        PrintMsgL(player, "HomeRemovedInvalid", args[0]);
-                        PrintMsgL(player, err);
-                        homeData.Locations.Remove(args[0]);
-                        changedHome = true;
-                        if (paidmoney)
-                        {
-                            paidmoney = false;
-                            CheckEconomy(player, config.Home.Bypass, false, true);
-                        }
-                        return;
-                    }
-                    err = CheckInsideEntity(location);
-                    if (err != null)
-                    {
-                        PrintMsgL(player, "HomeRemovedInsideBlock", args[0]);
-                        homeData.Locations.Remove(args[0]);
-                        changedHome = true;
-                        if (paidmoney)
-                        {
-                            paidmoney = false;
-                            CheckEconomy(player, config.Home.Bypass, false, true);
-                        }
-                        return;
-                    }
-
-                    if (UseEconomy())
-                    {
-                        if (config.Home.Pay < 0)
-                        {
+                            PrintMsgL(player, "Interrupted");
+                            PrintMsgL(player, err);
+                            if (paidmoney)
+                            {
+                                paidmoney = false;
+                                CheckEconomy(player, config.Home.Bypass, false, true);
+                            }
                             TeleportTimers.Remove(player.userID);
-                            PrintMsgL(player, "DM_TownTPDisabled", "/home");
                             return;
                         }
-                        else if (config.Home.Pay > 0)
+                        err = CanPlayerTeleport(player, location);
+                        if (err != null)
                         {
-                            if (!CheckEconomy(player, config.Home.Pay))
+                            PrintMsgL(player, "Interrupted");
+                            PrintMsgL(player, err);
+                            if (paidmoney)
+                            {
+                                paidmoney = false;
+                                CheckEconomy(player, config.Home.Bypass, false, true);
+                            }
+                            TeleportTimers.Remove(player.userID);
+                            return;
+                        }
+                        err = CheckItems(player);
+                        if (err != null)
+                        {
+                            PrintMsgL(player, "Interrupted");
+                            PrintMsgL(player, "TPBlockedItem", err);
+                            if (paidmoney)
+                            {
+                                paidmoney = false;
+                                CheckEconomy(player, config.Home.Bypass, false, true);
+                            }
+                            TeleportTimers.Remove(player.userID);
+                            return;
+                        }
+                        err = CheckFoundation(player.userID, location) ?? CheckTargetLocation(player, location, config.Home.UsableIntoBuildingBlocked, config.Home.CupOwnerAllowOnBuildingBlocked);
+                        if (err != null)
+                        {
+                            PrintMsgL(player, "HomeRemovedInvalid", args[0]);
+                            PrintMsgL(player, err);
+                            homeData.Locations.Remove(args[0]);
+                            changedHome = true;
+                            if (paidmoney)
+                            {
+                                paidmoney = false;
+                                CheckEconomy(player, config.Home.Bypass, false, true);
+                            }
+                            return;
+                        }
+                        if (UseEconomy())
+                        {
+                            if (config.Home.Pay < 0)
                             {
                                 TeleportTimers.Remove(player.userID);
-                                PrintMsgL(player, "TPNoMoney", config.Home.Pay);
+                                PrintMsgL(player, "DM_TownTPDisabled", "/home");
                                 return;
                             }
-
-                            if (!paidmoney)
+                            else if (config.Home.Pay > 0)
                             {
-                                PrintMsgL(player, "TPMoney", (double)config.Home.Pay);
-                            }
+                                if (!CheckEconomy(player, config.Home.Pay))
+                                {
+                                    TeleportTimers.Remove(player.userID);
+                                    PrintMsgL(player, "TPNoMoney", config.Home.Pay);
+                                    return;
+                                }
 
-                            paidmoney = CheckEconomy(player, config.Home.Pay, true);
+                                if (!paidmoney)
+                                {
+                                    PrintMsgL(player, "TPMoney", (double)config.Home.Pay);
+                                }
+
+                                paidmoney = CheckEconomy(player, config.Home.Pay, true);
+                            }
                         }
                     }
-
                     Teleport(player, location, config.Home.AllowTPB);
                     homeData.Teleports.Amount++;
                     homeData.Teleports.Timestamp = timestamp;
@@ -3209,6 +3186,13 @@ namespace Oxide.Plugins
                 return;
             }
             PrintMsgL(player, "HomeList");
+            ValidateHomes(player, homeData, true);
+            foreach (var location in homeData.Locations)
+                PrintMsgL(player, $"{location.Key} {location.Value}");
+        }
+
+        private void ValidateHomes(BasePlayer player, HomeData homeData, bool flag)
+        {
             if (config.Home.CheckValidOnList)
             {
                 var toRemove = new List<string>();
@@ -3217,22 +3201,19 @@ namespace Oxide.Plugins
                     var err = CheckFoundation(player.userID, location.Value);
                     if (err != null)
                     {
-                        PrintMsgL(player, err);
+                        if (flag) PrintMsgL(player, err);
                         toRemove.Add(location.Key);
                         continue;
                     }
-                    PrintMsgL(player, $"{location.Key} {location.Value}");
+                    if (flag) PrintMsgL(player, $"{location.Key} {location.Value}");
                 }
                 foreach (var loc in toRemove)
                 {
-                    PrintMsgL(player, "HomeRemovedInvalid", loc);
+                    if (flag) PrintMsgL(player, "HomeRemovedInvalid", loc);
                     homeData.Locations.Remove(loc);
                     changedHome = true;
                 }
-                return;
             }
-            foreach (var location in homeData.Locations)
-                PrintMsgL(player, $"{location.Key} {location.Value}");
         }
 
         private void CommandHomeHomes(IPlayer user, string command, string[] args)
@@ -3355,17 +3336,7 @@ namespace Oxide.Plugins
             var player = user.Object as BasePlayer;
             if (!player || !IsAllowedMsg(player, PermTpR) || !player.IsConnected || player.IsSleeping()) return;
             if (!config.Settings.TPREnabled) { user.Reply("TPR is not enabled in the config."); return; }
-            float globalCooldownTime = GetGlobalCooldown(player);
-            if (globalCooldownTime > 0f)
-            {
-                PrintMsgL(player, "WaitGlobalCooldown", FormatTime(player, (int)globalCooldownTime));
-                return;
-            }
-            if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
-            {
-                PrintMsgL(player, "CannotTeleportFromHome");
-                return;
-            }
+            string err = null;
             if (args.Length == 0)
             {
                 PrintMsgL(player, "SyntaxCommandTPR");
@@ -3410,86 +3381,106 @@ namespace Oxide.Plugins
 #if DEBUG
             Puts("Calling CheckPlayer from cmdChatTeleportRequest");
 #endif
-
-            var err = CheckPlayer(player, config.TPR.UsableOutOfBuildingBlocked, CanCraftTPR(player), true, "tpr");
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
-            var err2 = CheckPlayer(target, config.TPR.UsableIntoBuildingBlocked, CanCraftTPR(target), true, "tpr");
-            if (err2 != null)
-            {
-                string error = string.Format(lang.GetMessage("ErrorTPR", this, player.UserIDString), target.displayName, err);
-                PrintMsg(player, error);
-                return;
-            }
-            err = CheckTargetLocation(target, target.transform.position, config.TPR.UsableIntoBuildingBlocked, config.TPR.CupOwnerAllowOnBuildingBlocked);
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
-            var timestamp = Facepunch.Math.Epoch.Current;
-            var currentDate = DateTime.Now.ToString("d");
             TeleportData tprData;
             if (!_TPR.TryGetValue(player.userID, out tprData))
                 _TPR[player.userID] = tprData = new TeleportData();
-            if (tprData.Date != currentDate)
+            if (!CanBypassRestrictions(player.UserIDString))
             {
-                tprData.Amount = 0;
-                tprData.Date = currentDate;
-            }
-
-            var cooldown = GetLower(player, config.TPR.VIPCooldowns, config.TPR.Cooldown);
-            if (cooldown > 0 && timestamp - tprData.Timestamp < cooldown)
-            {
-                var cmdSent = args.Length >= 2 ? args[1].ToLower() : string.Empty;
-
-                if (!string.IsNullOrEmpty(config.Settings.BypassCMD))
+                float globalCooldownTime = GetGlobalCooldown(player);
+                if (globalCooldownTime > 0f)
                 {
-                    if (cmdSent == config.Settings.BypassCMD.ToLower() && config.TPR.Bypass > -1)
-                    {
-                        if (CheckEconomy(player, config.TPR.Bypass))
-                        {
-                            CheckEconomy(player, config.TPR.Bypass, true);
+                    PrintMsgL(player, "WaitGlobalCooldown", FormatTime(player, (int)globalCooldownTime));
+                    return;
+                }
+                if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
+                {
+                    PrintMsgL(player, "CannotTeleportFromHome");
+                    return;
+                }
+                err = CheckPlayer(player, config.TPR.UsableOutOfBuildingBlocked, CanCraftTPR(player), true, "tpr");
+                if (err != null)
+                {
+                    PrintMsgL(player, err);
+                    return;
+                }
+                var err2 = CheckPlayer(target, config.TPR.UsableIntoBuildingBlocked, CanCraftTPR(target), true, "tpr");
+                if (err2 != null)
+                {
+                    string error = string.Format(lang.GetMessage("ErrorTPR", this, player.UserIDString), target.displayName, err);
+                    PrintMsg(player, error);
+                    return;
+                }
+                err = CheckTargetLocation(target, target.transform.position, config.TPR.UsableIntoBuildingBlocked, config.TPR.CupOwnerAllowOnBuildingBlocked);
+                if (err != null)
+                {
+                    PrintMsgL(player, err);
+                    return;
+                }
+                var timestamp = Facepunch.Math.Epoch.Current;
+                var currentDate = DateTime.Now.ToString("d");
 
-                            if (config.TPR.Bypass > 0)
-                            {
-                                PrintMsgL(player, "TPRCooldownBypass", config.TPR.Bypass);
-                            }
+                if (tprData.Date != currentDate)
+                {
+                    tprData.Amount = 0;
+                    tprData.Date = currentDate;
+                }
 
-                            if (config.TPR.Pay > 0)
-                            {
-                                PrintMsgL(player, "PayToTPR", config.TPR.Pay);
-                            }
-                        }
-                        else
-                        {
-                            PrintMsgL(player, "TPRCooldownBypassF", config.TPR.Bypass);
-                            return;
-                        }
-                    }
-                    else if (UseEconomy())
+                var cooldown = GetLower(player, config.TPR.VIPCooldowns, config.TPR.Cooldown);
+                if (cooldown > 0 && timestamp - tprData.Timestamp < cooldown)
+                {
+                    var cmdSent = args.Length >= 2 ? args[1].ToLower() : string.Empty;
+
+                    if (!string.IsNullOrEmpty(config.Settings.BypassCMD))
                     {
-                        var remain = cooldown - (timestamp - tprData.Timestamp);
-                        PrintMsgL(player, "TPRCooldown", FormatTime(player, remain));
-                        if (config.TPR.Bypass > -1)
+                        if (cmdSent == config.Settings.BypassCMD.ToLower() && config.TPR.Bypass > -1)
                         {
-                            if (config.TPR.Bypass > 0)
+                            if (CheckEconomy(player, config.TPR.Bypass))
                             {
-                                PrintMsgL(player, "TPRCooldownBypassP", config.TPR.Bypass);
+                                CheckEconomy(player, config.TPR.Bypass, true);
+
+                                if (config.TPR.Bypass > 0)
+                                {
+                                    PrintMsgL(player, "TPRCooldownBypass", config.TPR.Bypass);
+                                }
 
                                 if (config.TPR.Pay > 0)
                                 {
                                     PrintMsgL(player, "PayToTPR", config.TPR.Pay);
                                 }
-
-                                PrintMsgL(player, "TPRCooldownBypassP2a", config.Settings.BypassCMD);
+                            }
+                            else
+                            {
+                                PrintMsgL(player, "TPRCooldownBypassF", config.TPR.Bypass);
                                 return;
                             }
                         }
-                        else return;
+                        else if (UseEconomy())
+                        {
+                            var remain = cooldown - (timestamp - tprData.Timestamp);
+                            PrintMsgL(player, "TPRCooldown", FormatTime(player, remain));
+                            if (config.TPR.Bypass > -1)
+                            {
+                                if (config.TPR.Bypass > 0)
+                                {
+                                    PrintMsgL(player, "TPRCooldownBypassP", config.TPR.Bypass);
+
+                                    if (config.TPR.Pay > 0)
+                                    {
+                                        PrintMsgL(player, "PayToTPR", config.TPR.Pay);
+                                    }
+
+                                    PrintMsgL(player, "TPRCooldownBypassP2a", config.Settings.BypassCMD);
+                                    return;
+                                }
+                            }
+                            else return;
+                        }
+                        else
+                        {
+                            var remain = cooldown - (timestamp - tprData.Timestamp);
+                            PrintMsgL(player, "TPRCooldown", FormatTime(player, remain));
+                            return;
+                        }
                     }
                     else
                     {
@@ -3498,19 +3489,30 @@ namespace Oxide.Plugins
                         return;
                     }
                 }
-                else
+                var limit = GetHigher(player, config.TPR.VIPDailyLimits, config.TPR.DailyLimit, true);
+                if (limit > 0 && tprData.Amount >= limit)
                 {
-                    var remain = cooldown - (timestamp - tprData.Timestamp);
-                    PrintMsgL(player, "TPRCooldown", FormatTime(player, remain));
+                    PrintMsgL(player, "TPRLimitReached", limit);
                     return;
                 }
-            }
-
-            var limit = GetHigher(player, config.TPR.VIPDailyLimits, config.TPR.DailyLimit, true);
-            if (limit > 0 && tprData.Amount >= limit)
-            {
-                PrintMsgL(player, "TPRLimitReached", limit);
-                return;
+                err = CanPlayerTeleport(player, target.transform.position);
+                if (err != null)
+                {
+                    SendReply(player, err);
+                    return;
+                }
+                err = CanPlayerTeleport(target, player.transform.position);
+                if (err != null)
+                {
+                    PrintMsgL(player, string.IsNullOrEmpty(err) ? "TPRTarget" : err);
+                    return;
+                }
+                err = CheckItems(player);
+                if (err != null)
+                {
+                    PrintMsgL(player, "TPBlockedItem", err);
+                    return;
+                }
             }
             if (TeleportTimers.ContainsKey(player.userID))
             {
@@ -3532,42 +3534,7 @@ namespace Oxide.Plugins
                 PrintMsgL(player, "PendingRequestTarget");
                 return;
             }
-            err = CanPlayerTeleport(player, target.transform.position);
-            if (err != null)
-            {
-                SendReply(player, err);
-                return;
-            }
-            err = CanPlayerTeleport(target, player.transform.position);
-            if (err != null)
-            {
-                PrintMsgL(player, string.IsNullOrEmpty(err) ? "TPRTarget" : err);
-                return;
-            }
-            err = CheckItems(player);
-            if (err != null)
-            {
-                PrintMsgL(player, "TPBlockedItem", err);
-                return;
-            }
-
-            if (config.TPR.UseClans_Friends_Teams)
-            {
-                if (IsInSameClan(player.UserIDString, target.UserIDString) || AreFriends(player.UserIDString, target.UserIDString) || IsOnSameTeam(player.userID, target.userID))
-                {
-                    PlayersRequests[player.userID] = target;
-                    PlayersRequests[target.userID] = player;
-                    PendingRequests[target.userID] = timer.Once(config.TPR.RequestDuration, () => { RequestTimedOut(player, target); });
-                    PrintMsgL(player, "Request", target.displayName);
-                    PrintMsgL(target, "RequestTarget", player.displayName);
-                    Interface.CallHook("OnTeleportRequested", target, player);
-                }
-                else
-                {
-                    PrintMsgL(player, "TPR_NoClan_NoFriend_NoTeam");
-                }
-            }
-            else
+            if (!config.TPR.UseClans_Friends_Teams || IsInSameClan(player.UserIDString, target.UserIDString) || AreFriends(player.UserIDString, target.UserIDString) || IsOnSameTeam(player.userID, target.userID) || CanBypassRestrictions(player.UserIDString))
             {
                 PlayersRequests[player.userID] = target;
                 PlayersRequests[target.userID] = player;
@@ -3576,6 +3543,10 @@ namespace Oxide.Plugins
                 PrintMsgL(target, "RequestTarget", player.displayName);
                 Interface.CallHook("OnTeleportRequested", target, player);
             }
+            else
+            {
+                PrintMsgL(player, "TPR_NoClan_NoFriend_NoTeam");
+            }
         }
 
         private void CommandTeleportAccept(IPlayer user, string command, string[] args)
@@ -3583,7 +3554,7 @@ namespace Oxide.Plugins
             if (DisabledCommandData.DisabledCommands.Contains(command.ToLower())) { user.Reply("Disabled command: " + command); return; }
             if (!config.Settings.TPREnabled) { user.Reply("TPR is not enabled in the config."); return; }
             var player = user.Object as BasePlayer;
-            if (!player || !player.IsConnected || player.IsSleeping()) return;
+            if (!player || !IsAllowedMsg(player, PermTpR) || !player.IsConnected || player.IsSleeping()) return;
             if (args.Length != 0)
             {
                 PrintMsgL(player, "SyntaxCommandTPA");
@@ -3598,49 +3569,53 @@ namespace Oxide.Plugins
 #if DEBUG
             Puts("Calling CheckPlayer from cmdChatTeleportAccept");
 #endif
-            var err = CheckPlayer(player, config.TPR.UsableIntoBuildingBlocked, CanCraftTPR(player), false, "tpa");
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
+            string err = null;
             var originPlayer = PlayersRequests[player.userID];
-            err = CheckPlayer(originPlayer, config.TPR.UsableOutOfBuildingBlocked, CanCraftTPR(originPlayer), true, "tpa");
-            if (err != null)
+            if (!CanBypassRestrictions(player.UserIDString))
             {
-                PrintMsgL(originPlayer, err);
-                return;
-            }
-            err = CheckTargetLocation(originPlayer, player.transform.position, config.TPR.UsableIntoBuildingBlocked, config.TPR.CupOwnerAllowOnBuildingBlocked);
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
-            err = CanPlayerTeleport(player, originPlayer.transform.position);
-            if (err != null)
-            {
-                SendReply(player, err);
-                return;
-            }
-            if (config.TPR.BlockTPAOnCeiling)
-            {
-                if (GetFloor(player.eyes.position).Count > 0)
+                err = CheckPlayer(player, config.TPR.UsableIntoBuildingBlocked, CanCraftTPR(player), false, "tpa");
+                if (err != null)
                 {
-                    PrintMsgL(player, "AcceptOnRoof");
+                    PrintMsgL(player, err);
                     return;
                 }
-            }
-            float globalCooldownTime = GetGlobalCooldown(player);
-            if (globalCooldownTime > 0f)
-            {
-                PrintMsgL(player, "WaitGlobalCooldown", FormatTime(player, (int)globalCooldownTime));
-                return;
-            }
-            if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
-            {
-                PrintMsgL(player, "CannotTeleportFromHome");
-                return;
+                err = CheckPlayer(originPlayer, config.TPR.UsableOutOfBuildingBlocked, CanCraftTPR(originPlayer), true, "tpa");
+                if (err != null)
+                {
+                    PrintMsgL(originPlayer, err);
+                    return;
+                }
+                err = CheckTargetLocation(originPlayer, player.transform.position, config.TPR.UsableIntoBuildingBlocked, config.TPR.CupOwnerAllowOnBuildingBlocked);
+                if (err != null)
+                {
+                    PrintMsgL(player, err);
+                    return;
+                }
+                err = CanPlayerTeleport(player, originPlayer.transform.position);
+                if (err != null)
+                {
+                    SendReply(player, err);
+                    return;
+                }
+                if (config.TPR.BlockTPAOnCeiling)
+                {
+                    if (GetFloor(player.eyes.position).Count > 0)
+                    {
+                        PrintMsgL(player, "AcceptOnRoof");
+                        return;
+                    }
+                }
+                float globalCooldownTime = GetGlobalCooldown(player);
+                if (globalCooldownTime > 0f)
+                {
+                    PrintMsgL(player, "WaitGlobalCooldown", FormatTime(player, (int)globalCooldownTime));
+                    return;
+                }
+                if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
+                {
+                    PrintMsgL(player, "CannotTeleportFromHome");
+                    return;
+                }
             }
             var countdown = GetLower(originPlayer, config.TPR.VIPCountdowns, config.TPR.Countdown);
             PrintMsgL(originPlayer, "Accept", player.displayName, countdown);
@@ -3655,69 +3630,72 @@ namespace Oxide.Plugins
 #if DEBUG
                     Puts("Calling CheckPlayer from cmdChatTeleportAccept timer loop");
 #endif
-                    if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
+                    if (!CanBypassRestrictions(player.UserIDString))
                     {
-                        PrintMsgL(player, "CannotTeleportFromHome");
-                        return;
-                    }
-                    err = CheckPlayer(originPlayer, config.TPR.UsableOutOfBuildingBlocked, CanCraftTPR(originPlayer), true, "tpa") ?? CheckPlayer(player, false, CanCraftTPR(player), true, "tpa");
-                    if (err != null)
-                    {
-                        PrintMsgL(player, "InterruptedTarget", originPlayer.displayName);
-                        PrintMsgL(originPlayer, "Interrupted");
-                        PrintMsgL(originPlayer, err);
-                        TeleportTimers.Remove(originPlayer.userID);
-                        return;
-                    }
-                    err = CheckTargetLocation(originPlayer, player.transform.position, config.TPR.UsableIntoBuildingBlocked, config.TPR.CupOwnerAllowOnBuildingBlocked);
-                    if (err != null)
-                    {
-                        PrintMsgL(player, err);
-                        PrintMsgL(originPlayer, "Interrupted");
-                        PrintMsgL(originPlayer, err);
-                        TeleportTimers.Remove(originPlayer.userID);
-                        return;
-                    }
-                    err = CanPlayerTeleport(originPlayer, player.transform.position) ?? CanPlayerTeleport(player, originPlayer.transform.position);
-                    if (err != null)
-                    {
-                        SendReply(player, err);
-                        PrintMsgL(originPlayer, "Interrupted");
-                        SendReply(originPlayer, err);
-                        TeleportTimers.Remove(originPlayer.userID);
-                        return;
-                    }
-                    err = CheckItems(originPlayer);
-                    if (err != null)
-                    {
-                        PrintMsgL(player, "InterruptedTarget", originPlayer.displayName);
-                        PrintMsgL(originPlayer, "Interrupted");
-                        PrintMsgL(originPlayer, "TPBlockedItem", err);
-                        TeleportTimers.Remove(originPlayer.userID);
-                        return;
-                    }
-                    if (UseEconomy())
-                    {
-                        if (config.TPR.Pay > -1)
+                        if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
                         {
-                            if (!CheckEconomy(originPlayer, config.TPR.Pay))
+                            PrintMsgL(player, "CannotTeleportFromHome");
+                            return;
+                        }
+                        err = CheckPlayer(originPlayer, config.TPR.UsableOutOfBuildingBlocked, CanCraftTPR(originPlayer), true, "tpa") ?? CheckPlayer(player, false, CanCraftTPR(player), true, "tpa");
+                        if (err != null)
+                        {
+                            PrintMsgL(player, "InterruptedTarget", originPlayer.displayName);
+                            PrintMsgL(originPlayer, "Interrupted");
+                            PrintMsgL(originPlayer, err);
+                            TeleportTimers.Remove(originPlayer.userID);
+                            return;
+                        }
+                        err = CheckTargetLocation(originPlayer, player.transform.position, config.TPR.UsableIntoBuildingBlocked, config.TPR.CupOwnerAllowOnBuildingBlocked);
+                        if (err != null)
+                        {
+                            PrintMsgL(player, err);
+                            PrintMsgL(originPlayer, "Interrupted");
+                            PrintMsgL(originPlayer, err);
+                            TeleportTimers.Remove(originPlayer.userID);
+                            return;
+                        }
+                        err = CanPlayerTeleport(originPlayer, player.transform.position) ?? CanPlayerTeleport(player, originPlayer.transform.position);
+                        if (err != null)
+                        {
+                            SendReply(player, err);
+                            PrintMsgL(originPlayer, "Interrupted");
+                            SendReply(originPlayer, err);
+                            TeleportTimers.Remove(originPlayer.userID);
+                            return;
+                        }
+                        err = CheckItems(originPlayer);
+                        if (err != null)
+                        {
+                            PrintMsgL(player, "InterruptedTarget", originPlayer.displayName);
+                            PrintMsgL(originPlayer, "Interrupted");
+                            PrintMsgL(originPlayer, "TPBlockedItem", err);
+                            TeleportTimers.Remove(originPlayer.userID);
+                            return;
+                        }
+                        if (UseEconomy())
+                        {
+                            if (config.TPR.Pay > -1)
                             {
-                                if (config.TPR.Pay > 0)
+                                if (!CheckEconomy(originPlayer, config.TPR.Pay))
                                 {
-                                    PrintMsgL(originPlayer, "TPNoMoney", config.TPR.Pay);
+                                    if (config.TPR.Pay > 0)
+                                    {
+                                        PrintMsgL(originPlayer, "TPNoMoney", config.TPR.Pay);
+                                    }
+
+                                    PrintMsgL(player, "InterruptedTarget", originPlayer.displayName);
+                                    TeleportTimers.Remove(originPlayer.userID);
+                                    return;
                                 }
-
-                                PrintMsgL(player, "InterruptedTarget", originPlayer.displayName);
-                                TeleportTimers.Remove(originPlayer.userID);
-                                return;
-                            }
-                            else
-                            {
-                                CheckEconomy(originPlayer, config.TPR.Pay, true);
-
-                                if (config.TPR.Pay > 0)
+                                else
                                 {
-                                    PrintMsgL(originPlayer, "TPMoney", (double)config.TPR.Pay);
+                                    CheckEconomy(originPlayer, config.TPR.Pay, true);
+
+                                    if (config.TPR.Pay > 0)
+                                    {
+                                        PrintMsgL(originPlayer, "TPMoney", (double)config.TPR.Pay);
+                                    }
                                 }
                             }
                         }
@@ -4047,17 +4025,20 @@ namespace Oxide.Plugins
 #endif
             if (!IsAllowedMsg(player, $"{Name}.tp{command}".ToLower())) return;
 
-            float globalCooldownTime = GetGlobalCooldown(player);
-            if (globalCooldownTime > 0f)
+            if (!CanBypassRestrictions(player.UserIDString))
             {
-                PrintMsgL(player, "WaitGlobalCooldown", FormatTime(player, (int)globalCooldownTime));
-                return;
-            }
-            
-            if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
-            {
-                PrintMsgL(player, "CannotTeleportFromHome");
-                return;
+                float globalCooldownTime = GetGlobalCooldown(player);
+                if (globalCooldownTime > 0f)
+                {
+                    PrintMsgL(player, "WaitGlobalCooldown", FormatTime(player, (int)globalCooldownTime));
+                    return;
+                }
+
+                if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
+                {
+                    PrintMsgL(player, "CannotTeleportFromHome");
+                    return;
+                }
             }
 
             var settings = GetSettings(command);
@@ -4142,78 +4123,85 @@ namespace Oxide.Plugins
             }
 
             TeleportData teleportData;
-            var timestamp = Facepunch.Math.Epoch.Current;
-            var currentDate = DateTime.Now.ToString("d");
-
-            // Setup vars for checks below
-            var err = CheckPlayer(player, settings.UsableOutOfBuildingBlocked, settings.CanCraft(player, command), true, command);
-
-            if (err != null)
-            {
-                PrintMsgL(player, err);
-                return;
-            }
-
-            var cooldown = GetLower(player, settings.VIPCooldowns, settings.Cooldown);
-
             if (!settings.Teleports.TPData.TryGetValue(player.userID, out teleportData))
             {
                 settings.Teleports.TPData[player.userID] = teleportData = new TeleportData();
             }
+            int limit = 0;
+            var timestamp = Facepunch.Math.Epoch.Current;
+            var currentDate = DateTime.Now.ToString("d");
 
-            if (teleportData.Date != currentDate)
+            // Setup vars for checks below
+            string err = null;
+            if (!CanBypassRestrictions(player.UserIDString))
             {
-                teleportData.Amount = 0;
-                teleportData.Date = currentDate;
-            }
+                err = CheckPlayer(player, settings.UsableOutOfBuildingBlocked, settings.CanCraft(player, command), true, command);
+                if (err != null)
+                {
+                    PrintMsgL(player, err);
+                    return;
+                }
+                var cooldown = GetLower(player, settings.VIPCooldowns, settings.Cooldown);
 
-            var limit = GetHigher(player, settings.VIPDailyLimits, settings.DailyLimit, true);
+                if (teleportData.Date != currentDate)
+                {
+                    teleportData.Amount = 0;
+                    teleportData.Date = currentDate;
+                }
+                limit = GetHigher(player, settings.VIPDailyLimits, settings.DailyLimit, true);
 #if DEBUG
-            Puts("Calling CheckPlayer from cmdChatTown");
+                Puts("Calling CheckPlayer from cmdChatTown");
 #endif
 
-            // Check and process cooldown, bypass, and payment for all modes
-            if (cooldown > 0 && timestamp - teleportData.Timestamp < cooldown)
-            {
-                var cmdSent = args.Length >= 1 ? args[0].ToLower() : string.Empty;
-
-                if (!string.IsNullOrEmpty(config.Settings.BypassCMD))
+                // Check and process cooldown, bypass, and payment for all modes
+                if (cooldown > 0 && timestamp - teleportData.Timestamp < cooldown)
                 {
-                    if (cmdSent == config.Settings.BypassCMD.ToLower() && settings.Bypass > -1)
+                    var cmdSent = args.Length >= 1 ? args[0].ToLower() : string.Empty;
+
+                    if (!string.IsNullOrEmpty(config.Settings.BypassCMD))
                     {
-                        bool foundmoney = CheckEconomy(player, settings.Bypass);
-
-                        if (foundmoney)
+                        if (cmdSent == config.Settings.BypassCMD.ToLower() && settings.Bypass > -1)
                         {
-                            CheckEconomy(player, settings.Bypass, true);
-                            paidmoney = true;
+                            bool foundmoney = CheckEconomy(player, settings.Bypass);
 
-                            if (settings.Bypass > 0)
+                            if (foundmoney)
                             {
-                                PrintMsgL(player, "DM_TownTPCooldownBypass", settings.Bypass);
-                            }
+                                CheckEconomy(player, settings.Bypass, true);
+                                paidmoney = true;
 
-                            if (settings.Pay > 0)
-                            {
-                                PrintMsgL(player, "PayToTown", settings.Pay, language);
+                                if (settings.Bypass > 0)
+                                {
+                                    PrintMsgL(player, "DM_TownTPCooldownBypass", settings.Bypass);
+                                }
+
+                                if (settings.Pay > 0)
+                                {
+                                    PrintMsgL(player, "PayToTown", settings.Pay, language);
+                                }
                             }
+                            else
+                            {
+                                PrintMsgL(player, "DM_TownTPCooldownBypassF", settings.Bypass);
+                                return;
+                            }
+                        }
+                        else if (UseEconomy())
+                        {
+                            var remain = cooldown - (timestamp - teleportData.Timestamp);
+                            PrintMsgL(player, "DM_TownTPCooldown", FormatTime(player, remain));
+                            if (settings.Bypass > -1)
+                            {
+                                PrintMsgL(player, "DM_TownTPCooldownBypassP", settings.Bypass);
+                                PrintMsgL(player, "DM_TownTPCooldownBypassP2", language, config.Settings.BypassCMD);
+                            }
+                            return;
                         }
                         else
                         {
-                            PrintMsgL(player, "DM_TownTPCooldownBypassF", settings.Bypass);
+                            var remain = cooldown - (timestamp - teleportData.Timestamp);
+                            PrintMsgL(player, "DM_TownTPCooldown", FormatTime(player, remain));
                             return;
                         }
-                    }
-                    else if (UseEconomy())
-                    {
-                        var remain = cooldown - (timestamp - teleportData.Timestamp);
-                        PrintMsgL(player, "DM_TownTPCooldown", FormatTime(player, remain));
-                        if (settings.Bypass > -1)
-                        {
-                            PrintMsgL(player, "DM_TownTPCooldownBypassP", settings.Bypass);
-                            PrintMsgL(player, "DM_TownTPCooldownBypassP2", language, config.Settings.BypassCMD);
-                        }
-                        return;
                     }
                     else
                     {
@@ -4222,21 +4210,14 @@ namespace Oxide.Plugins
                         return;
                     }
                 }
-                else
+
+                if (limit > 0 && teleportData.Amount >= limit)
                 {
-                    var remain = cooldown - (timestamp - teleportData.Timestamp);
-                    PrintMsgL(player, "DM_TownTPCooldown", FormatTime(player, remain));
+                    var left = FormatTime(player, (int)SecondsUntilTomorrow());
+                    PrintMsgL(player, "DM_TownTPLimitReached", limit, left);
                     return;
                 }
             }
-
-            if (limit > 0 && teleportData.Amount >= limit)
-            {
-                var left = FormatTime(player, (int)SecondsUntilTomorrow());
-                PrintMsgL(player, "DM_TownTPLimitReached", limit, left);
-                return;
-            }
-
             if (TeleportTimers.ContainsKey(player.userID))
             {
                 PrintMsgL(player, "TeleportPendingTPC");
@@ -4256,24 +4237,22 @@ namespace Oxide.Plugins
             }
             else location = settings.Locations.First();
 
-            err = CanPlayerTeleport(player, location);
-
-            if (err != null)
+            if (!CanBypassRestrictions(player.UserIDString))
             {
-                SendReply(player, err);
-                return;
+                err = CanPlayerTeleport(player, location);
+                if (err != null)
+                {
+                    SendReply(player, err);
+                    return;
+                }
+                err = CheckItems(player);
+                if (err != null)
+                {
+                    PrintMsgL(player, "TPBlockedItem", err);
+                    return;
+                }
             }
-
-            err = CheckItems(player);
-
-            if (err != null)
-            {
-                PrintMsgL(player, "TPBlockedItem", err);
-                return;
-            }
-
-            int countdown = 0;
-            countdown = GetLower(player, settings.VIPCountdowns, settings.Countdown);
+            int countdown = GetLower(player, settings.VIPCountdowns, settings.Countdown);
             TeleportTimers[player.userID] = new TeleportTimer
             {
                 OriginPlayer = player,
@@ -4282,62 +4261,63 @@ namespace Oxide.Plugins
 #if DEBUG
                     Puts($"Calling CheckPlayer from cmdChatTown {command} timer loop");
 #endif
-                    if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
+                    if (!CanBypassRestrictions(player.UserIDString))
                     {
-                        PrintMsgL(player, "CannotTeleportFromHome");
-                        return;
-                    }
-                    err = CheckPlayer(player, settings.UsableOutOfBuildingBlocked, settings.CanCraft(player, command.ToLower()), true, command.ToLower(), settings.AllowCave);
-                    if (err != null)
-                    {
-                        Interrupt(player, paidmoney, settings.Bypass);
-                        PrintMsgL(player, err);
-                        return;
-                    }
-                    err = CanPlayerTeleport(player, location);
-                    if (err != null)
-                    {
-                        Interrupt(player, paidmoney, settings.Bypass);
-                        PrintMsgL(player, err);
-                        return;
-                    }
-                    err = CheckItems(player);
-                    if (err != null)
-                    {
-                        Interrupt(player, paidmoney, settings.Bypass);
-                        PrintMsgL(player, "TPBlockedItem", err);
-                        return;
-                    }
-                    if (settings.Locations.Count == 0)
-                    {
-                        Interrupt(player, paidmoney, settings.Bypass);
-                        return;
-                    }
-                    if (UseEconomy())
-                    {
-                        if (settings.Pay < 0)
+                        if (config.Settings.BlockAuthorizedTeleporting && player.IsBuildingAuthed())
                         {
+                            PrintMsgL(player, "CannotTeleportFromHome");
                             return;
                         }
-                        if (settings.Pay > 0 && !CheckEconomy(player, settings.Pay))
+                        err = CheckPlayer(player, settings.UsableOutOfBuildingBlocked, settings.CanCraft(player, command.ToLower()), true, command.ToLower(), settings.AllowCave);
+                        if (err != null)
                         {
-                            Interrupt(player, false, 0);
-                            PrintMsgL(player, "TPNoMoney", settings.Pay);
+                            Interrupt(player, paidmoney, settings.Bypass);
+                            PrintMsgL(player, err);
                             return;
                         }
-                        if (settings.Pay > -1 && !paidmoney)
+                        err = CanPlayerTeleport(player, location);
+                        if (err != null)
                         {
-                            CheckEconomy(player, settings.Pay, true);
-
-                            if (settings.Pay > 0)
+                            Interrupt(player, paidmoney, settings.Bypass);
+                            PrintMsgL(player, err);
+                            return;
+                        }
+                        err = CheckItems(player);
+                        if (err != null)
+                        {
+                            Interrupt(player, paidmoney, settings.Bypass);
+                            PrintMsgL(player, "TPBlockedItem", err);
+                            return;
+                        }
+                        if (settings.Locations.Count == 0)
+                        {
+                            Interrupt(player, paidmoney, settings.Bypass);
+                            return;
+                        }
+                        if (UseEconomy())
+                        {
+                            if (settings.Pay < 0)
                             {
-                                PrintMsgL(player, "TPMoney", (double)settings.Pay);
+                                return;
+                            }
+                            if (settings.Pay > 0 && !CheckEconomy(player, settings.Pay))
+                            {
+                                Interrupt(player, false, 0);
+                                PrintMsgL(player, "TPNoMoney", settings.Pay);
+                                return;
+                            }
+                            if (settings.Pay > -1 && !paidmoney)
+                            {
+                                CheckEconomy(player, settings.Pay, true);
+
+                                if (settings.Pay > 0)
+                                {
+                                    PrintMsgL(player, "TPMoney", (double)settings.Pay);
+                                }
                             }
                         }
                     }
-
                     Teleport(player, location, settings.AllowTPB);
-
                     teleportData.Amount++;
                     teleportData.Timestamp = timestamp;
                     settings.Teleports.Changed = true;
@@ -4769,17 +4749,18 @@ namespace Oxide.Plugins
         #region Checks
         private string CanPlayerTeleport(BasePlayer player, Vector3 to)
         {
+            if (CanBypassRestrictions(player.UserIDString)) return null;
             return Interface.Oxide.CallHook("CanTeleport", player, to) as string;
         }
 
         private bool CanCraftHome(BasePlayer player)
         {
-            return config.Home.AllowCraft || permission.UserHasPermission(player.UserIDString, PermCraftHome);
+            return config.Home.AllowCraft || permission.UserHasPermission(player.UserIDString, PermCraftHome) || CanBypassRestrictions(player.UserIDString);
         }
 
         private bool CanCraftTPR(BasePlayer player)
         {
-            return config.TPR.AllowCraft || permission.UserHasPermission(player.UserIDString, PermCraftTpR);
+            return config.TPR.AllowCraft || permission.UserHasPermission(player.UserIDString, PermCraftTpR) || CanBypassRestrictions(player.UserIDString);
         }
 
         public bool AboveWater(BasePlayer player)
@@ -4910,6 +4891,7 @@ namespace Oxide.Plugins
 
         private string CheckPlayer(BasePlayer player, bool build = false, bool craft = false, bool origin = true, string mode = "home", bool allowcave = true)
         {
+            if (CanBypassRestrictions(player.UserIDString)) return null;
             if (config.Settings.Interrupt.Oilrig || config.Settings.Interrupt.Excavator || config.Settings.Interrupt.Monument || mode == "sethome")
             {
                 string monname = NearMonument(player.transform.position);
@@ -5093,6 +5075,7 @@ namespace Oxide.Plugins
 
         private string CheckTargetLocation(BasePlayer player, Vector3 targetLocation, bool usableIntoBuildingBlocked, bool cupOwnerAllowOnBuildingBlocked)
         {
+            if (CanBypassRestrictions(player.UserIDString)) return null;
             //if (AntiHack.TestInsideTerrain(targetLocation + new Vector3(0f, 0.1f, 0f))) return "TPInsideTerrainTo";
 
             // ubb == UsableIntoBuildingBlocked
@@ -5223,13 +5206,40 @@ namespace Oxide.Plugins
             return true;
         }
 
-        private string CheckInsideEntity(Vector3 targetLocation)
+        private string CheckInsideEntity(Vector3 targetLocation, ulong userid)
         {
-            var entities = Pool.GetList<BaseEntity>();
-            Vis.Entities(targetLocation + new Vector3(0, 0.25f), 0.1f, entities, -1);
-            bool inside = entities.Any(e => e is BuildingBlock || e is SimpleBuildingBlock || e is IceFence || e is ElectricBattery || e is Door);
-            Pool.FreeList(ref entities);
-            return inside ? "TPTargetInsideBlock" : null;
+            Vector3 a = targetLocation + new Vector3(0, 0.55f);
+            var entities = FindEntitiesOfType<BaseEntity>(a, 0.5f, Layers.Mask.Construction | Layers.Mask.Deployed);
+            if (entities.Any(e => e is BuildingBlock || e is SimpleBuildingBlock || e is IceFence || e is ElectricBattery || e is Door))
+            {
+                return "TPTargetInsideBlock";
+            }
+            if (Exploits.TestRock(targetLocation))
+            {
+                LogToFile("exploiters", $"{userid} sethome inside a rock at {targetLocation}", this, true);
+                PrintMsgL(userid, "TPTargetInsideRock");
+                return "TPTargetInsideRock";
+            }
+            if (Exploits.TestFoundation(targetLocation))
+            {
+                LogToFile("exploiters", $"{userid} sethome inside a foundation at {targetLocation}", this, true);
+                PrintMsgL(userid, "TPTargetInsideBlock");
+                return "TPTargetInsideBlock";
+            }
+            return null;
+        }
+
+        private static List<T> FindEntitiesOfType<T>(Vector3 a, float n, int m = -1) where T : BaseNetworkable
+        {
+            int hits = Physics.OverlapSphereNonAlloc(a, n, Vis.colBuffer, m, QueryTriggerInteraction.Collide);
+            List<T> entities = new List<T>();
+            for (int i = 0; i < hits; i++)
+            {
+                var entity = Vis.colBuffer[i]?.ToBaseEntity();
+                if (entity is T) entities.Add(entity as T);
+                Vis.colBuffer[i] = null;
+            }
+            return entities;
         }
 
         private string CheckItems(BasePlayer player)
@@ -5244,15 +5254,16 @@ namespace Oxide.Plugins
             return null;
         }
 
-        private string CheckFoundation(ulong userID, Vector3 position)
+        private string CheckFoundation(ulong userid, Vector3 position)
         {
-            if (permission.UserHasPermission(userID.ToString(), PermFoundationCheck))
-            {
-                return null;
-            }
-            if (CheckInsideEntity(position) != null)
+            if (CanBypassRestrictions(userid.ToString())) return null;
+            if (CheckInsideEntity(position, userid) != null)
             {
                 return "HomeNoFoundation";
+            }
+            if (permission.UserHasPermission(userid.ToString(), PermFoundationCheck))
+            {
+                return null;
             }
             if (!config.Home.ForceOnTopOfFoundation) return null; // Foundation/floor not required
             if (UnderneathFoundation(position))
@@ -5282,7 +5293,7 @@ namespace Oxide.Plugins
             if (!config.Home.CheckFoundationForOwner) return null;
             for (var i = 0; i < entities.Count; i++)
             {
-                if (IsFriend(userID, entities[i].OwnerID)) return null;
+                if (IsFriend(userid, entities[i].OwnerID)) return null;
             }
 
             return "HomeFoundationNotFriendsOwned";
@@ -5708,6 +5719,13 @@ namespace Oxide.Plugins
             PrintMsg(player, _(msgId, player, args));
         }
 
+        private void PrintMsgL(ulong userid, string msgId, params object[] args)
+        {
+            var player = BasePlayer.FindAwakeOrSleeping(userid.ToString());
+            if (player == null) return;
+            PrintMsgL(player, msgId, args);
+        }
+
         private void PrintMsg(BasePlayer player, string message)
         {
             if (player == null || string.IsNullOrEmpty(message)) return;
@@ -5834,21 +5852,7 @@ namespace Oxide.Plugins
             return players;
         }
         #endregion
-
-        #region API
-        private Dictionary<string, Vector3> GetHomes(object playerObj)
-        {
-            if (playerObj == null) return null;
-            if (playerObj is string) playerObj = Convert.ToUInt64(playerObj);
-            if (!(playerObj is ulong)) throw new ArgumentException("playerObj");
-            var playerId = (ulong)playerObj;
-            HomeData homeData;
-            if (!_Home.TryGetValue(playerId, out homeData) || homeData.Locations.Count == 0) return null;
-            return homeData.Locations;
-        }
-
-        #endregion
-
+                
         private class UnityVector3Converter : JsonConverter
         {
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -5911,6 +5915,55 @@ namespace Oxide.Plugins
             }
         }
 
+        public class Exploits
+        {
+            public static bool TestFoundation(Vector3 a)
+            {
+                Physics.queriesHitBackfaces = true;
+
+                bool flag = IsFoundationUpwards(a);
+
+                Physics.queriesHitBackfaces = false;
+
+                return flag;
+            }
+
+            private static bool IsFoundationUpwards(Vector3 point)
+            {
+                RaycastHit hit;
+                if (!Physics.Raycast(point, Vector3.up, out hit, 3f, Layers.Construction)) return false;
+                return hit.collider.name.Contains("foundation");
+            }
+
+            public static bool TestRock(Vector3 a)
+            {
+                Physics.queriesHitBackfaces = true;
+
+                bool flag = IsRockFaceUpwards(a);
+
+                Physics.queriesHitBackfaces = false;
+
+                return flag || IsRockFaceDownwards(a);
+            }
+
+            private static bool IsRockFaceDownwards(Vector3 a)
+            {
+                Vector3 b = a + new Vector3(0f, 20f, 0f);
+                Vector3 d = a - b;
+                var hits = Physics.RaycastAll(b, d, d.magnitude, Layers.World);
+                return Array.Exists(hits, hit => IsRock(hit.collider.name));
+            }
+
+            private static bool IsRockFaceUpwards(Vector3 point)
+            {
+                RaycastHit hit;
+                if (!Physics.Raycast(point, Vector3.up, out hit, 20f, Layers.World)) return false;
+                return IsRock(hit.collider.gameObject.name);
+            }
+
+            private static bool IsRock(string name) => name.Contains("rock", CompareOptions.OrdinalIgnoreCase) || name.Contains("formation", CompareOptions.OrdinalIgnoreCase) || name.Contains("cliff", CompareOptions.OrdinalIgnoreCase);
+        }
+
         [HookMethod("SendHelpText")]
         private void SendHelpText(BasePlayer player)
         {
@@ -5930,6 +5983,8 @@ namespace Oxide.Plugins
                 _Home[player.userID] = homeData = new HomeData();
             }
 
+            ValidateHomes(player, homeData, false);
+
             var limit = GetHigher(player, config.Home.VIPHomesLimits, config.Home.HomesLimit, true);
 
             if (limit == 0) return true;
@@ -5937,7 +5992,7 @@ namespace Oxide.Plugins
             return homeData.Locations.Count < limit;
         }
 
-        private List<string> API_GetHomes(BasePlayer player)
+        private Dictionary<string, Vector3> API_GetHomes(BasePlayer player)
         {
             HomeData homeData;
             if (!_Home.TryGetValue(player.userID, out homeData))
@@ -5945,7 +6000,9 @@ namespace Oxide.Plugins
                 _Home[player.userID] = homeData = new HomeData();
             }
 
-            return homeData.Locations.Keys.ToList();
+            ValidateHomes(player, homeData, false);
+
+            return homeData.Locations;
         }
 
         private List<Vector3> API_GetLocations(string command)

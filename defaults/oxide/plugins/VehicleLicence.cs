@@ -1,4 +1,4 @@
-// #define DEBUG
+//#define DEBUG
 
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Vehicle Licence", "Sorrow/TheDoc/Arainrr", "1.7.28")]
+    [Info("Vehicle Licence", "Arainrr", "1.7.29")]
     [Description("Allows players to buy vehicles and then spawn or store it")]
     public class VehicleLicence : RustPlugin
     {
@@ -2122,7 +2122,7 @@ namespace Oxide.Plugins
             if (ridableHorse != null)
             {
                 ridableHorse.TryLeaveHitch();
-                ridableHorse.DropToGround(ridableHorse.transform.position, true);//ridableHorse.UpdateDropToGroundForDuration(2f);
+                ridableHorse.DropToGround(ridableHorse.transform.position, true);
             }
             var trainEngine = entity as TrainEngine;
             if (trainEngine != null)
@@ -2132,15 +2132,14 @@ namespace Oxide.Plugins
                 TrainTrackSpline splineResult;
                 if (TrainTrackSpline.TryFindTrackNearby(trainEngine.GetFrontWheelPos(), 2f, out splineResult, out distResult) && splineResult.HasClearTrackSpaceNear(trainEngine))
                 {
-                    //trainEngine.FrontWheelSplineDist = distResult;
                     frontWheelSplineDistSetMethod?.Invoke(trainEngine, new object[] { distResult });
                     Vector3 vector3;
                     var positionAndTangent = splineResult.GetPositionAndTangent(trainEngine.FrontWheelSplineDist, trainEngine.transform.forward, out vector3);
-                    trainEngine.SetTheRestFromFrontWheelData(ref splineResult, trainEngine.FrontTrackSection.GetPosition(trainEngine.FrontWheelSplineDist), vector3);
+                    trainEngine.SetTheRestFromFrontWheelData(ref splineResult, trainEngine.FrontTrackSection.GetPosition(trainEngine.FrontWheelSplineDist), vector3, trainEngine.localTrackSelection);
                     trainEngine.FrontTrackSection = splineResult;
                     trainEngine.Invoke(() =>
                     {
-                        trainEngine.FixedUpdateMoveTrain(Time.fixedDeltaTime);
+                        trainEngine.completeTrain.UpdateTick(Time.fixedDeltaTime);
                     }, 0.25f);
                 }
                 else

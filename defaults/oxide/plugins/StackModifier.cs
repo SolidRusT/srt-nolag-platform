@@ -98,7 +98,7 @@ using UnityEngine;
  * Update 1.3.3
  * Fixed Missing Defaults
  * Fixed UI Not showing correctly between Multipliers and Modified items
- *
+ * Added
  * aiming.module.mlrs, MLRS Aiming Module
  * mlrs, MLRS
  * ammo.rocket.mlrs, MLRS Rocket
@@ -198,11 +198,14 @@ using UnityEngine;
  * update 1.4.9
  * Added 1 new feature
  * Disable Images toggle: Disables ImageLibrary Requirement / Images for UI Editor
+ *
+ * update 1.5.0
+ * Fixed panel not updating values when splitting a skinned item stack inside of a loot panel container
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.4.9")]
+    [Info("Stack Modifier", "Khan", "1.5.0")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
@@ -1564,8 +1567,9 @@ namespace Oxide.Plugins
                 var heldEntity = x.GetHeldEntity();
                 if (heldEntity != null)
                 {
-                    heldEntity.skinID = item.skin; 
+                    heldEntity.skinID = item.skin;
                 }
+                item.MarkDirty();
 
                 return x;
             }

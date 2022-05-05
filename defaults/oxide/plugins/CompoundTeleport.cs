@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("Compound Teleport", "kwamaking", "2.0.1")]
+    [Info("Compound Teleport", "kwamaking", "2.0.2")]
     [Description("Teleport through the death screen to Bandit Camp, Outpost, or any configured monument.")]
     class CompoundTeleport : RustPlugin
     {
@@ -244,6 +244,15 @@ namespace Oxide.Plugins
                 };
             }
         }
+
+        #endregion
+
+        #region API
+
+        private bool umodversion() => true;
+        // distinguish between free and paid versions
+        // https://umod.org/community/nteleportation/41710-conflit-with-plugin-compound-teleport
+        // https://umod.org/community/compound-teleport/40072-conflicts-with-nteleport
 
         #endregion
     }
