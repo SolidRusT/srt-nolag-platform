@@ -11,11 +11,12 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Furnace Splitter", "FastBurst", "2.3.3")]
+    [Info("Furnace Splitter", "FastBurst", "2.4.1")]
     [Description("Splits up resources in furnaces automatically and shows useful furnace information")]
     public class FurnaceSplitter : RustPlugin
     {
-        [PluginReference] Plugin UIScaleManager;
+        [PluginReference]
+        private Plugin UIScaleManager;
 
         private class OvenSlot
         {
@@ -87,7 +88,6 @@ namespace Oxide.Plugins
             }
         }
 
-
         private Dictionary<ulong, PlayerOptions> allPlayerOptions => storedData.AllPlayerOptions;
         private PluginConfig config;
         private StoredData storedData;
@@ -123,32 +123,22 @@ namespace Oxide.Plugins
             DestroyUI(player);
         }
 
-        private void OnPlayerConnected(BasePlayer player)
-        {
-            InitPlayer(player);
-        }
-
         private void Init()
         {
-            // Only add if it's not already been added in LoadDefaultConfig. That would be the case the first time the plugin is initialized.
+            // Only add if not already been added in LoadDefaultConfig. That would be the case the first time the plugin is initialized.
             if (Config.Settings.Converters.All(conv => conv.GetType() != typeof(Vector2Converter)))
                 Config.Settings.Converters.Add(new Vector2Converter());
-        }
 
-        private void Loaded()
-        {
-            storedData = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(Name);
+            storedData = Interface.Oxide.DataFileSystem.ReadObject<StoredData>(Name) ?? new StoredData();
 
             permission.RegisterPermission(permUse, this);
 
             if (config == null)
             {
-                // Default config not created, load existing config.
                 config = Config.ReadObject<PluginConfig>();
             }
             else
             {
-                // Save default config.
                 Config.WriteObject(config);
             }
         }
@@ -164,31 +154,6 @@ namespace Oxide.Plugins
 
         #endregion Configuration
 
-        private void OnServerInitialized()
-        {
-            foreach (BasePlayer player in Player.Players)
-            {
-                InitPlayer(player);
-            }
-
-            lang.RegisterMessages(new Dictionary<string, string>
-                        {
-                // English
-                { "turnon", "Turn On" },
-                { "turnoff", "Turn Off" },
-                { "title", "Furnace Splitter" },
-                { "eta", "ETA" },
-                { "totalstacks", "Total stacks" },
-                { "trim", "Trim fuel" },
-                { "lootsource_invalid", "Current loot source invalid" },
-                { "unsupported_furnace", "Unsupported furnace." },
-                { "nopermission", "You don't have permission to use this." },
-                { "StatusONColor", "<color=green>ON</color>"},
-                { "StatusOFFColor", "<color=red>OFF</color>"},
-                { "StatusMessage", "Furnace Splitter status set to: "}
-            }, this);
-        }
-
         private void OnServerSave()
         {
             SaveData();
@@ -196,7 +161,7 @@ namespace Oxide.Plugins
 
         private void SaveData()
         {
-            Interface.Oxide.DataFileSystem.WriteObject("FurnaceSplitter", storedData);
+            Interface.Oxide.DataFileSystem.WriteObject(Name, storedData);
         }
 
         private void InitPlayer(BasePlayer player)
@@ -250,11 +215,11 @@ namespace Oxide.Plugins
 
                 OvenInfo ovenInfo = GetOvenInfo(oven);
 
-                GetLooters(oven)?.ForEach(plr =>
+                GetLooters(oven)?.ForEach(player =>
                 {
-                    if (plr && !plr.IsDestroyed)
+                    if (player != null && !player.IsDestroyed && HasPermission(player) && GetEnabled(player))
                     {
-                        CreateUi(plr, oven, ovenInfo);
+                        CreateUi(player, oven, ovenInfo);
                     }
                 });
             }
@@ -291,12 +256,16 @@ namespace Oxide.Plugins
 
         private bool GetEnabled(BasePlayer player)
         {
+            if (!allPlayerOptions.ContainsKey(player.userID))
+                InitPlayer(player);
+            
             return allPlayerOptions[player.userID].Enabled;
         }
 
         private void SetEnabled(BasePlayer player, bool enabled)
         {
-            allPlayerOptions[player.userID].Enabled = enabled;
+            if (allPlayerOptions.ContainsKey(player.userID))
+                allPlayerOptions[player.userID].Enabled = enabled;
             CreateUiIfFurnaceOpen(player);
         }
 
@@ -354,14 +323,17 @@ namespace Oxide.Plugins
         {
             if (item == null || inventory == null)
                 return null;
+
             BasePlayer player = inventory.GetComponent<BasePlayer>();
             if (player == null)
                 return null;
 
             ItemContainer container = inventory.FindContainer(targetContainer);
             ItemContainer originalContainer = item.GetRootContainer();
+
             if (container == null || originalContainer == null)
                 return null;
+
             Func<object> splitFunc = () =>
             {
                 if (player == null || !HasPermission(player) || !GetEnabled(player))
@@ -397,7 +369,6 @@ namespace Oxide.Plugins
             if (HasPermission(player) && GetEnabled(player))
             {
                 BaseOven oven = container?.entityOwner as BaseOven ?? item.GetRootContainer().entityOwner as BaseOven;
-
                 if (oven != null && compatibleOvens.Contains(oven.ShortPrefabName))
                 {
                     if (returnValue is bool && (bool)returnValue)
@@ -416,7 +387,7 @@ namespace Oxide.Plugins
             int invalidItemsCount = container.itemList.Count(slotItem => !IsSlotCompatible(slotItem, oven, item.info));
             int numOreSlots = Math.Min(container.capacity - invalidItemsCount, totalSlots);
             int totalMoved = 0;
-            int totalAmount = Math.Min(item.amount + container.itemList.Where(slotItem => slotItem.info == item.info).Take(numOreSlots).Sum(slotItem => slotItem.amount), item.info.stackable * numOreSlots);
+            int totalAmount = Math.Min(item.amount + container.itemList.Where(slotItem => slotItem.info == item.info).Take(numOreSlots).Sum(slotItem => slotItem.amount), Math.Abs(item.info.stackable * numOreSlots));
 
             if (numOreSlots <= 0)
             {
@@ -642,7 +613,12 @@ namespace Oxide.Plugins
                 neededFuelStr = ovenInfo.FuelNeeded.ToString("##,###");
             }
 
-            float uiScale = UIScaleManager?.Call<float>("API_CheckPlayerUISize", player.UserIDString) ?? 1.0f;
+            float uiScale = 1.0f;
+            float[] playerUiInfo = UIScaleManager?.Call<float[]>("API_CheckPlayerUIInfo", player.UserIDString);
+            if (playerUiInfo?.Length > 0)
+            {
+                uiScale = playerUiInfo[2];
+            }
             string contentColor = "0.7 0.7 0.7 1.0";
             int contentSize = Convert.ToInt32(10 * uiScale);
             string toggleStateStr = (!options.Enabled).ToString();
@@ -948,7 +924,7 @@ namespace Oxide.Plugins
 
                 BaseOven playerLootOven = player.inventory.loot?.entitySource as BaseOven;
 
-                if (oven == playerLootOven)
+                if (playerLootOven != null && oven == playerLootOven)
                 {
                     DestroyUI(player);
                     RemoveLooter(oven, player);
@@ -964,6 +940,7 @@ namespace Oxide.Plugins
                 player.ConsoleMessage(lang.GetMessage("nopermission", this, player.UserIDString));
                 return;
             }
+
             var status = string.Empty;
             var statuson = lang.GetMessage("StatusONColor", this, player.UserIDString);
             var statusoff = lang.GetMessage("StatusOFFColor", this, player.UserIDString);
@@ -1011,6 +988,8 @@ namespace Oxide.Plugins
         private void ConsoleCommand_Toggle(ConsoleSystem.Arg arg)
         {
             BasePlayer player = arg.Player();
+            if (player == null)
+                return;
 
             if (!HasPermission(player))
             {
@@ -1033,6 +1012,9 @@ namespace Oxide.Plugins
         private void ConsoleCommand_TotalStacks(ConsoleSystem.Arg arg)
         {
             BasePlayer player = arg.Player();
+            if (player == null)
+                return;
+
             BaseOven lootSource = player.inventory.loot?.entitySource as BaseOven;
 
             if (!HasPermission(player))
@@ -1064,7 +1046,7 @@ namespace Oxide.Plugins
             }
             else
             {
-                Debug.LogWarning("[FurnaceSplitter] Unsupported furnace '" + ovenName + "'");
+                PrintWarning($"Unsupported furnace '{ovenName}'");
                 player.ConsoleMessage(lang.GetMessage("unsupported_furnace", this, player.UserIDString));
             }
 
@@ -1075,6 +1057,9 @@ namespace Oxide.Plugins
         private void ConsoleCommand_Trim(ConsoleSystem.Arg arg)
         {
             BasePlayer player = arg.Player();
+            if (player == null)
+                return;
+
             BaseOven lootSource = player.inventory.loot?.entitySource as BaseOven;
 
             if (!HasPermission(player))
@@ -1125,6 +1110,26 @@ namespace Oxide.Plugins
         private bool HasPermission(BasePlayer player)
         {
             return permission.UserHasPermission(player.UserIDString, permUse);
+        }
+
+        protected override void LoadDefaultMessages()
+        {
+            lang.RegisterMessages(new Dictionary<string, string>
+                        {
+                // English
+                { "turnon", "Turn On" },
+                { "turnoff", "Turn Off" },
+                { "title", "Furnace Splitter" },
+                { "eta", "ETA" },
+                { "totalstacks", "Total stacks" },
+                { "trim", "Trim fuel" },
+                { "lootsource_invalid", "Current loot source invalid" },
+                { "unsupported_furnace", "Unsupported furnace." },
+                { "nopermission", "You don't have permission to use this." },
+                { "StatusONColor", "<color=green>ON</color>"},
+                { "StatusOFFColor", "<color=red>OFF</color>"},
+                { "StatusMessage", "Furnace Splitter status set to: "}
+            }, this);
         }
 
         #region Exposed plugin methods

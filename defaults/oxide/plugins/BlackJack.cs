@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("BlackJack", "k1lly0u", "0.1.8")]
+    [Info("BlackJack", "k1lly0u", "0.1.9")]
     [Description("A Black Jack card game used with the Casino plugin")]
     class BlackJack : RustPlugin
     {
@@ -31,6 +31,7 @@ namespace Oxide.Plugins
         {
             Casino.Instance?.UnregisterGame(Casino.GameType.BlackJack);
             Instance = null;
+            Configuration = null;
         }
         #endregion
 
@@ -63,18 +64,20 @@ namespace Oxide.Plugins
         private static string BLACK_COLOR = Casino.UI.Color("000000", 0.7f);
 
         public class BlackJackGame : Casino.CardGame
-        {            
-            internal BlackJackAI DealerAI; 
+        {
+            public override Casino.GameType Type => Casino.GameType.BlackJack;
 
-            private Casino.Deck deck = new Casino.Deck();
+            public BlackJackAI _dealerAI;
 
-            private CuiElementContainer backgroundContainer;
+            private int _playerIndex = -1;
 
-            private Dictionary<string, CuiElementContainer> containers = new Dictionary<string, CuiElementContainer>();
+            private readonly Casino.Deck _deck = new Casino.Deck();
 
-            private int playerIndex = -1;
+            private readonly Dictionary<string, CuiElementContainer> _containers = new Dictionary<string, CuiElementContainer>();
 
-            internal readonly Casino.UI4[] cardPositions = new Casino.UI4[]
+            private CuiElementContainer _backgroundContainer;
+
+            public readonly Casino.UI4[] _cardPositions = new Casino.UI4[]
             {
                 new Casino.UI4(0.315f, 0.15f, 0.38f, 0.33f),
                 new Casino.UI4(0.55f, 0.15f, 0.615f, 0.33f),
@@ -82,17 +85,79 @@ namespace Oxide.Plugins
                 new Casino.UI4(0.765f, 0.25f, 0.83f, 0.43f),
                 new Casino.UI4(0.435f, 0.7f, 0.5f, 0.88f)
             };
-            
+
+            #region Game Initialization
+            public override void OnGameInitialized()
+            {
+                SetTableSkinID(Configuration.SkinID);
+
+                _dealerAI = new GameObject("Blackjack_Dealer").AddComponent<BlackJackAI>();
+                _dealerAI.Position = 4;
+                _dealerAI.RegisterCardGame(this);
+
+                base.OnGameInitialized();
+
+                _backgroundContainer = Casino.UI.Container(GAME_BG, Casino.UI4.FullScreen, true);
+                Casino.UI.Image(_backgroundContainer, GAME_BG, Casino.Images.GetBoardImage(Instance.Title.ToLower()), Casino.UI4.FullScreen);
+            }
+
+            private void ResetGame()
+            {
+                Timer.StopTimer();
+
+                _dealerAI.ResetHand();
+
+                for (int i = 0; i < Players.Length; i++)
+                {
+                    Casino.CardPlayer cardPlayer = Players[i];
+                    if (cardPlayer != null)
+                        cardPlayer.ResetHand();
+                }
+
+                _playerIndex = -1;
+
+                InvokeHandler.CancelInvoke(this, PlaceBets);
+
+                InvokeHandler.CancelInvoke(this, PreStartRound);
+
+                InvokeHandler.CancelInvoke(this, StartRound);
+
+                InvokeHandler.CancelInvoke(this, NextPlayerTurn);
+
+                InvokeHandler.CancelInvoke(this, _dealerAI.PlayTurn);
+
+                InvokeHandler.CancelInvoke(this, FinalizeGame);
+
+                InvokeHandler.CancelInvoke(this, ResetGame);
+
+                DestroyUIElements();
+
+                State = Casino.GameState.Waiting;
+
+                _deck.Shuffle();
+
+                if (CurrentPlayerCount > 0)
+                {
+                    CreatePlayerUI();
+
+                    CreateUIMessage(string.Format(msg("UI.Notification.StartsIn"), 5));
+
+                    InvokeHandler.Invoke(this, PlaceBets, 5f);
+                }
+            }
+            #endregion
+
+            #region Player Enter/Exit
             public override void OnPlayerEnter(BasePlayer player, int position)
             {
                 BlackJackPlayer blackjackPlayer = player.gameObject.AddComponent<BlackJackPlayer>();
-                cardPlayers[position] = blackjackPlayer;
+                Players[position] = blackjackPlayer;
 
                 blackjackPlayer.Position = position;
 
-                blackjackPlayer.AddUI(GAME_BG, backgroundContainer);
+                blackjackPlayer.AddUI(GAME_BG, _backgroundContainer);
                                 
-                if (gameState == Casino.GameState.Waiting)
+                if (State == Casino.GameState.Waiting)
                 {
                     CreatePlayerUI();
 
@@ -107,35 +172,35 @@ namespace Oxide.Plugins
                 }
                 else
                 {
-                    if (gameState == Casino.GameState.PlacingBets)
+                    if (State == Casino.GameState.PlacingBets)
                     {
                         CreatePlayerUI();
 
                         CreateUIMessage(blackjackPlayer, msg("UI.Notification.UsersPlacingBets"));
 
-                        for (int i = 0; i < cardPlayers.Length; i++)
+                        for (int i = 0; i < Players.Length; i++)
                         {
-                            Casino.CardPlayer cardPlayer = cardPlayers[i];
+                            Casino.CardPlayer cardPlayer = Players[i];
                             if (cardPlayer == null || !cardPlayer.IsPlaying)
                                 continue;
 
                             PlaceBets(cardPlayer as BlackJackPlayer);
                         }
                     }
-                    else if (gameState == Casino.GameState.Prestart)
+                    else if (State == Casino.GameState.Prestart)
                     {
                         CreatePlayerUI(true);
 
                         CreateUIMessage(blackjackPlayer, msg("UI.Notification.GameInProgress"));
 
-                        foreach (KeyValuePair<string, CuiElementContainer> kvp in containers)
+                        foreach (KeyValuePair<string, CuiElementContainer> kvp in _containers)
                             blackjackPlayer.AddUI(kvp.Key, kvp.Value);
                     }
                     else
                     {
                         CreateUIMessage(blackjackPlayer, msg("UI.Notification.GameInProgress"));
 
-                        foreach (KeyValuePair<string, CuiElementContainer> kvp in containers)
+                        foreach (KeyValuePair<string, CuiElementContainer> kvp in _containers)
                             blackjackPlayer.AddUI(kvp.Key, kvp.Value);
 
                         CreatePlayerUI(blackjackPlayer, true);
@@ -154,42 +219,42 @@ namespace Oxide.Plugins
 
             private void OnPlayerExit(BlackJackPlayer blackjackPlayer)
             {                
-                if (blackjackPlayer.Position < 0 || blackjackPlayer.Position > cardPlayers.Length - 1)
+                if (blackjackPlayer.Position < 0 || blackjackPlayer.Position > Players.Length - 1)
                 {
-                    for (int i = 0; i < cardPlayers.Length; i++)
+                    for (int i = 0; i < Players.Length; i++)
                     {
-                        Casino.CardPlayer cardPlayer = cardPlayers[i];
+                        Casino.CardPlayer cardPlayer = Players[i];
                         if (cardPlayer.Player == blackjackPlayer.Player)
                         {
-                            cardPlayers[i] = null;
+                            Players[i] = null;
                             break;
                         }
                     }                    
                 }
-                else cardPlayers[blackjackPlayer.Position] = null;
+                else Players[blackjackPlayer.Position] = null;
 
                 CreateUIMessageOffset(string.Format(msg("UI.Notification.LeftGame"), blackjackPlayer.Player.displayName), 5f);
 
                 Destroy(blackjackPlayer);
 
-                if (CurrentPlayerCount == 0 && gameState != Casino.GameState.Waiting)
+                if (CurrentPlayerCount == 0 && State != Casino.GameState.Waiting)
                 {
                     ResetGame();
                     return;
                 }
 
-                if (gameState == Casino.GameState.Playing)
+                if (State == Casino.GameState.Playing)
                 {
                     CreatePlayerUI(true);
 
-                    if (playerIndex == blackjackPlayer.Position)
+                    if (_playerIndex == blackjackPlayer.Position)
                     {
-                        timer.StopTimer();
+                        Timer.StopTimer();
                         InvokeHandler.Invoke(this, NextPlayerTurn, 2f);
                     }
                     else
                     {
-                        Casino.CardPlayer currentPlayer = cardPlayers[playerIndex];
+                        Casino.CardPlayer currentPlayer = Players[_playerIndex];
 
                         if (currentPlayer != null && currentPlayer.IsPlaying)
                             CreatePlayOverlay(currentPlayer as BlackJackPlayer);
@@ -197,137 +262,23 @@ namespace Oxide.Plugins
                 }
                 else
                 {
-                    if (gameState == Casino.GameState.PlacingBets)
+                    if (State == Casino.GameState.PlacingBets)
                     {
-                        for (int i = 0; i < cardPlayers.Length; i++)
+                        for (int i = 0; i < Players.Length; i++)
                         {
-                            Casino.CardPlayer cardPlayer = cardPlayers[i];
+                            Casino.CardPlayer cardPlayer = Players[i];
                             if (cardPlayer == null || !cardPlayer.IsPlaying)
                                 continue;
                             
                             PlaceBets(cardPlayer as BlackJackPlayer);
                         }
                     }
-                    else CreatePlayerUI(gameState == Casino.GameState.Prestart);
+                    else CreatePlayerUI(State == Casino.GameState.Prestart);
                 }
             }
+            #endregion
 
-            public override void OnGameInitialized()
-            {
-                this.gameType = Casino.GameType.BlackJack;
-
-                DealerAI = new GameObject("Blackjack_Dealer").AddComponent<BlackJackAI>();
-                DealerAI.Position = 4;
-                DealerAI.RegisterCardGame(this);
-
-                base.OnGameInitialized();
-
-                backgroundContainer = Casino.UI.ElementContainer(GAME_BG, Casino.UI4.FullScreen, true);
-                Casino.UI.Image(ref backgroundContainer, GAME_BG, PlayingCards.GetBoardImage(Instance.Title.ToLower()), Casino.UI4.FullScreen);                
-            }
-
-            private void ResetGame()
-            {
-                timer.StopTimer();
-
-                DealerAI.ResetHand();
-
-                for (int i = 0; i < cardPlayers.Length; i++)
-                {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
-                    if (cardPlayer != null)
-                        cardPlayer.ResetHand();
-                }
-
-                playerIndex = -1;
-
-                InvokeHandler.CancelInvoke(this, PlaceBets);
-
-                InvokeHandler.CancelInvoke(this, PreStartRound);
-
-                InvokeHandler.CancelInvoke(this, StartRound);
-
-                InvokeHandler.CancelInvoke(this, NextPlayerTurn);
-
-                InvokeHandler.CancelInvoke(this, DealerAI.PlayTurn);
-
-                InvokeHandler.CancelInvoke(this, FinalizeGame);
-
-                InvokeHandler.CancelInvoke(this, ResetGame);                
-
-                DestroyUIElements();
-                
-                gameState = Casino.GameState.Waiting;
-
-                deck.Shuffle();
-
-                if (CurrentPlayerCount > 0)
-                {
-                    CreatePlayerUI();
-
-                    CreateUIMessage(string.Format(msg("UI.Notification.StartsIn"), 5));
-
-                    InvokeHandler.Invoke(this, PlaceBets, 5f);
-                }
-            }
-
-            private void CreatePlayerUI(bool betsLocked = false)
-            {
-                CuiElementContainer container = CreatePlayerUIElement(betsLocked);
-
-                AddUIElement(PLAYER_OVERLAY, container, false);                
-            }
-
-            private void CreatePlayerUI(Casino.CardPlayer targetPlayer, bool betsLocked = false)
-            {
-                CuiElementContainer container = CreatePlayerUIElement(betsLocked);
-
-                targetPlayer.AddUI(PLAYER_OVERLAY, container);
-            }
-
-            private CuiElementContainer CreatePlayerUIElement(bool betsLocked)
-            {
-                CuiElementContainer container = Casino.UI.ElementContainer(PLAYER_OVERLAY, Casino.UI4.FullScreen);
-                Casino.UI4 cardPosition;
-                Casino.UI4 position;
-
-                for (int i = 0; i < cardPlayers.Length; i++)
-                {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
-                    if (cardPlayers[i] == null)
-                        continue;
-
-                    cardPosition = cardPositions[i];
-                    position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.035f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.01f);
-                    Casino.UI.Panel(ref container, PLAYER_OVERLAY, BLACK_COLOR, position);
-                    Casino.UI.Label(ref container, PLAYER_OVERLAY, cardPlayer.Player.displayName, 12, position, TextAnchor.MiddleCenter);
-
-                    if (betsLocked)
-                    {
-                        position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.065f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.04f);
-                        Casino.UI.Panel(ref container, PLAYER_OVERLAY, BLACK_COLOR, position);
-                        Casino.UI.Label(ref container, PLAYER_OVERLAY, cardPlayer.IsPlaying ? string.Format(msg("UI.Player.Bet"), cardPlayer.BetAmount) : msg("UI.Player.PlayingNext"), 12, position, TextAnchor.MiddleCenter);
-
-                        if (Instance.configData.ShowBalance)
-                        {
-                            CuiElementContainer balance = Casino.UI.ElementContainer(BALANCE_OVERLAY, new Casino.UI4(cardPosition.xMin, cardPosition.yMax + 0.01f, cardPosition.xMin + 0.12f, cardPosition.yMax + 0.035f));
-                            Casino.UI.Panel(ref balance, BALANCE_OVERLAY, BLACK_COLOR, Casino.UI4.FullScreen);
-                            Casino.UI.Label(ref balance, BALANCE_OVERLAY, string.Format(msg("UI.Player.BalanceAmount"), cardPlayer.BankBalance, FormatBetString(cardPlayer.Player)), 12, Casino.UI4.FullScreen, TextAnchor.MiddleCenter);
-                            cardPlayer.AddUI(BALANCE_OVERLAY, balance);
-                        }
-                    }
-                }
-
-                cardPosition = cardPositions[4];
-                position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.035f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.01f);
-                Casino.UI.Panel(ref container, PLAYER_OVERLAY, BLACK_COLOR, position);
-                Casino.UI.Label(ref container, PLAYER_OVERLAY, msg("UI.Dealer"), 12, position);
-
-                Casino.UI.Button(ref container, PLAYER_OVERLAY, BLACK_COLOR, msg("UI.LeaveTable"), 14, new Casino.UI4(0.9f, 0.95f, 0.99f, 0.98f), "casino.leavetable");
-
-                return container;
-            }
-
+            #region Betting
             private void PlaceBets()
             {
                 if (CurrentPlayerCount == 0)
@@ -335,73 +286,70 @@ namespace Oxide.Plugins
 
                 DestroyUIElement(MESSAGE_OVERLAY);                
 
-                for (int i = 0; i < cardPlayers.Length; i++)
+                for (int i = 0; i < Players.Length; i++)
                 {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
+                    BlackJackPlayer cardPlayer = Players[i] as BlackJackPlayer;
                     if (cardPlayer == null)
                         continue;
 
-                    BlackJackPlayer blackjackPlayer = cardPlayer as BlackJackPlayer;
-                    if (blackjackPlayer.BankBalance < gameData.minimumBet)
+                    if (cardPlayer.BankBalance < Data.minimumBet)
                     {
-                        OnPlayerExit(blackjackPlayer);
-                        blackjackPlayer.Player.ChatMessage(msg("Chat.Kicked.NoScrap", blackjackPlayer.Player.UserIDString));                        
+                        cardPlayer.Player.ChatMessage(string.Format(msg("Chat.Kicked.NotEnough", cardPlayer.Player.UserIDString), FormatBetString(cardPlayer.Player)));
+                        OnPlayerExit(cardPlayer);
                     }
                 }
 
-                for (int i = 0; i < cardPlayers.Length; i++)
+                for (int i = 0; i < Players.Length; i++)
                 {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
+                    BlackJackPlayer cardPlayer = Players[i] as BlackJackPlayer;
                     if (cardPlayer == null)
                         continue;
 
-                    BlackJackPlayer blackjackPlayer = cardPlayer as BlackJackPlayer;
+                    cardPlayer.IsPlaying = true;
 
-                    blackjackPlayer.IsPlaying = true;
-
-                    PlaceBets(blackjackPlayer);
+                    PlaceBets(cardPlayer);
                 }
 
-                gameState = Casino.GameState.PlacingBets;
+                State = Casino.GameState.PlacingBets;
 
-                timer.StartTimer(30);
+                Timer.StartTimer(30);
 
                 InvokeHandler.Invoke(this, PreStartRound, 30f);
             }
 
-            internal void PlaceBets(BlackJackPlayer blackjackPlayer)
+            public void PlaceBets(BlackJackPlayer blackjackPlayer)
             {
                 blackjackPlayer.DestroyUI(MESSAGE_OVERLAY);
 
-                CuiElementContainer container = Casino.UI.ElementContainer(BETTING_OVERLAY, Casino.UI4.FullScreen);
+                CuiElementContainer container = Casino.UI.Container(BETTING_OVERLAY, Casino.UI4.FullScreen);
 
                 if (!blackjackPlayer.BetLocked)
                 {
-                    Casino.UI.Label(ref container, BETTING_OVERLAY, msg("UI.Notification.PlaceBets"), 20, new Casino.UI4(0.3f, 0.4f, 0.7f, 0.6f));
+                    Casino.UI.Label(container, BETTING_OVERLAY, msg("UI.Notification.PlaceBets"), 20, new Casino.UI4(0.3f, 0.4f, 0.7f, 0.6f));
 
                     Casino.UI4 chipsPosition = new Casino.UI4(0.385f, 0.36f, 0.615f, 0.44f);
-                    Casino.UI.Image(ref container, BETTING_OVERLAY, PlayingCards.GetChipStackImage(), chipsPosition);
+                    Casino.UI.Image(container, BETTING_OVERLAY, Casino.Images.GetChipStackImage(), chipsPosition);
 
                     for (int i = 0; i < 5; i++)
                     {
-                        Casino.UI.Button(ref container, BETTING_OVERLAY, new Casino.UI4(chipsPosition.xMin + (i * 0.046f), chipsPosition.yMin, chipsPosition.xMax + (i * 0.046f), chipsPosition.yMax), $"blackjack.bet {i}");
+                        Casino.UI.Button(container, BETTING_OVERLAY, new Casino.UI4(chipsPosition.xMin + (i * 0.046f), chipsPosition.yMin, chipsPosition.xMax + (i * 0.046f), chipsPosition.yMax), $"blackjack.bet {i}");
                     }
 
-                    Casino.UI.Panel(ref container, BETTING_OVERLAY, BLACK_COLOR, new Casino.UI4(0.385f, 0.33f, 0.4975f, 0.355f));
-                    Casino.UI.Panel(ref container, BETTING_OVERLAY, BLACK_COLOR, new Casino.UI4(0.5005f, 0.33f, 0.615f, 0.355f));
-                    Casino.UI.Label(ref container, BETTING_OVERLAY, string.Format(msg("UI.Player.BalanceAmount"), blackjackPlayer.BankBalance, FormatBetString(blackjackPlayer.Player)), 12, new Casino.UI4(0.39f, 0.33f, 0.5f, 0.355f), TextAnchor.MiddleLeft);
-                    Casino.UI.Label(ref container, BETTING_OVERLAY, string.Format(msg("UI.Player.BetAmount"), blackjackPlayer.BetAmount), 12, new Casino.UI4(0.505f, 0.33f, 0.615f, 0.355f), TextAnchor.MiddleLeft);
-                    Casino.UI.Button(ref container, BETTING_OVERLAY, Casino.UI.Color("#ce422b", 0.7f), " - ", 12, new Casino.UI4(0.6f, 0.33f, 0.615f, 0.355f), "blackjack.deductbet");
+                    Casino.UI.Panel(container, BETTING_OVERLAY, BLACK_COLOR, new Casino.UI4(0.385f, 0.33f, 0.4975f, 0.355f));
+                    Casino.UI.Panel(container, BETTING_OVERLAY, BLACK_COLOR, new Casino.UI4(0.5005f, 0.33f, 0.615f, 0.355f));
+                    Casino.UI.Label(container, BETTING_OVERLAY, string.Format(msg("UI.Player.BalanceAmount"), blackjackPlayer.BankBalance, FormatBetString(blackjackPlayer.Player)), 12, new Casino.UI4(0.39f, 0.33f, 0.5f, 0.355f), TextAnchor.MiddleLeft);
+                    Casino.UI.Label(container, BETTING_OVERLAY, string.Format(msg("UI.Player.BetAmount"), blackjackPlayer.BetAmount), 12, new Casino.UI4(0.505f, 0.33f, 0.615f, 0.355f), TextAnchor.MiddleLeft);
+                    Casino.UI.Button(container, BETTING_OVERLAY, Casino.UI.Color("#ce422b", 0.7f), " - ", 12, new Casino.UI4(0.6f, 0.33f, 0.615f, 0.355f), "blackjack.deductbet");
 
-                    Casino.UI.Button(ref container, BETTING_OVERLAY, BLACK_COLOR, msg("UI.Player.ResetBet"), 12, new Casino.UI4(0.385f, 0.3f, 0.4975f, 0.325f), "blackjack.bet -1");
-                    Casino.UI.Button(ref container, BETTING_OVERLAY, BLACK_COLOR, msg("UI.Player.LockBet"), 12, new Casino.UI4(0.5005f, 0.3f, 0.615f, 0.325f), "blackjack.setbet");
+                    Casino.UI.Button(container, BETTING_OVERLAY, BLACK_COLOR, msg("UI.Player.ResetBet"), 12, new Casino.UI4(0.385f, 0.3f, 0.4975f, 0.325f), "blackjack.bet -1");
+                    Casino.UI.Button(container, BETTING_OVERLAY, BLACK_COLOR, msg("UI.Player.LockBet"), 12, new Casino.UI4(0.5005f, 0.3f, 0.615f, 0.325f), "blackjack.setbet");
                 }
                 else
                 {
                     bool waitingForBets = false;
-                    for (int i = 0; i < cardPlayers.Length; i++)
+                    for (int i = 0; i < Players.Length; i++)
                     {
-                        Casino.CardPlayer cardPlayer = cardPlayers[i];
+                        Casino.CardPlayer cardPlayer = Players[i];
                         if (cardPlayer == null || !cardPlayer.IsPlaying)
                             continue;
 
@@ -414,7 +362,7 @@ namespace Oxide.Plugins
 
                     if (waitingForBets)
                     {
-                        Casino.UI.Label(ref container, BETTING_OVERLAY, msg("UI.Notification.Waiting"), 20, new Casino.UI4(0.3f, 0.45f, 0.7f, 0.55f));
+                        Casino.UI.Label(container, BETTING_OVERLAY, msg("UI.Notification.Waiting"), 20, new Casino.UI4(0.3f, 0.45f, 0.7f, 0.55f));
                     }
                     else
                     {
@@ -425,60 +373,33 @@ namespace Oxide.Plugins
                         PreStartRound();
                     }
                 }
-                Casino.UI.Button(ref container, BETTING_OVERLAY, new Casino.UI4(0.9f, 0.95f, 0.99f, 0.98f), "casino.leavetable");
+                Casino.UI.Button(container, BETTING_OVERLAY, new Casino.UI4(0.9f, 0.95f, 0.99f, 0.98f), "casino.leavetable");
 
                 blackjackPlayer.AddUI(BETTING_OVERLAY, container);
             }
+            #endregion
 
-            internal void CreateUIMessage(string message)
-            {
-                CuiElementContainer container = Casino.UI.ElementContainer(MESSAGE_OVERLAY, new Casino.UI4(0.2f, 0.45f, 0.8f, 0.55f));
-                Casino.UI.Label(ref container, MESSAGE_OVERLAY, message, 20, Casino.UI4.FullScreen);
-
-                AddUIElement(MESSAGE_OVERLAY, container);
-            }
-
-            internal void CreateUIMessage(BlackJackPlayer blackjackPlayer, string message)
-            {
-                CuiElementContainer container = Casino.UI.ElementContainer(MESSAGE_OVERLAY, new Casino.UI4(0.2f, 0.45f, 0.8f, 0.55f));
-                Casino.UI.Label(ref container, MESSAGE_OVERLAY, message, 20, Casino.UI4.FullScreen);
-
-                blackjackPlayer.AddUI(MESSAGE_OVERLAY, container);
-            }
-
-            internal void CreateUIMessageOffset(string message, float time)
-            {
-                CuiElementContainer container = Casino.UI.ElementContainer(NOTIFICATION_OVERLAY, new Casino.UI4(0.3f, 0.89f, 0.7f, 0.97f));
-                Casino.UI.Label(ref container, NOTIFICATION_OVERLAY, message, 18, Casino.UI4.FullScreen);
-
-                AddUIElement(NOTIFICATION_OVERLAY, container);
-
-                if (InvokeHandler.IsInvoking(this, () => DestroyUIElement(NOTIFICATION_OVERLAY)))
-                    InvokeHandler.CancelInvoke(this, () => DestroyUIElement(NOTIFICATION_OVERLAY));
-
-                InvokeHandler.Invoke(this, () => DestroyUIElement(NOTIFICATION_OVERLAY), time);
-            }
-
+            #region Round Start
             private void PreStartRound()
             {
-                if (gameState == Casino.GameState.Prestart)
+                if (State == Casino.GameState.Prestart)
                     return;
 
-                timer.StopTimer();
+                Timer.StopTimer();
 
                 DestroyUIElement(BETTING_OVERLAY);
 
-                if (gameState != Casino.GameState.PlacingBets || CurrentPlayerCount == 0)
+                if (State != Casino.GameState.PlacingBets || CurrentPlayerCount == 0)
                 {                    
                     ResetGame();
                     return;
                 }
 
-                gameState = Casino.GameState.Prestart;
+                State = Casino.GameState.Prestart;
 
-                for (int i = 0; i < cardPlayers.Length; i++)
+                for (int i = 0; i < Players.Length; i++)
                 {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
+                    Casino.CardPlayer cardPlayer = Players[i];
                     if (cardPlayer != null && cardPlayer.IsPlaying)
                     {
                         if (!cardPlayer.BetLocked)
@@ -497,18 +418,20 @@ namespace Oxide.Plugins
             {
                 ServerMgr.Instance.StartCoroutine(DealCards());
             }
-            
+            #endregion
+
+            #region Deal Cards
             private IEnumerator DealCards()
             {
                 DestroyUIElement(MESSAGE_OVERLAY);
 
-                gameState = Casino.GameState.Playing;
+                State = Casino.GameState.Playing;
 
                 for (int count = 0; count < 2; count++)
                 {
-                    for (int i = 0; i < cardPlayers.Length; i++)
+                    for (int i = 0; i < Players.Length; i++)
                     {
-                        Casino.CardPlayer cardPlayer = cardPlayers[i];
+                        Casino.CardPlayer cardPlayer = Players[i];
                         if (cardPlayer != null && cardPlayer.IsPlaying)
                         {
                             DealCard(cardPlayer as BlackJackPlayer);
@@ -517,7 +440,7 @@ namespace Oxide.Plugins
                         }
                     }
 
-                    DealCard(DealerAI, count == 1);
+                    DealCard(_dealerAI, count == 1);
 
                     yield return CoroutineEx.waitForSeconds(0.5f);
                 }
@@ -527,9 +450,9 @@ namespace Oxide.Plugins
                 else NextPlayerTurn();
             }
 
-            internal void DealCard(BlackJackPlayer blackjackPlayer, bool hidden = false)
+            public void DealCard(BlackJackPlayer blackjackPlayer, bool hidden = false)
             {
-                Casino.Card card = deck.DealCard();
+                Casino.Card card = _deck.Deal();
 
                 blackjackPlayer.Hit(card);
 
@@ -539,48 +462,50 @@ namespace Oxide.Plugins
 
                 float offset = (float)(handCount - 1) * 0.015f;
 
-                Casino.UI4 cardPosition = cardPositions[blackjackPlayer.Position];
+                Casino.UI4 cardPosition = _cardPositions[blackjackPlayer.Position];
 
                 Casino.UI4 elementPosition = new Casino.UI4(cardPosition.xMin + offset, cardPosition.yMin, cardPosition.xMax + offset, cardPosition.yMax);
                
-                CuiElementContainer container = Casino.UI.ElementContainer(panel, elementPosition);
-                Casino.UI.Image(ref container, panel, hidden ? PlayingCards.GetCardBackground(Instance.configData.CardColor) : card.GetCardImage(), Casino.UI4.FullScreen);
+                CuiElementContainer container = Casino.UI.Container(panel, elementPosition);
+                Casino.UI.Image(container, panel, hidden ? Casino.Images.GetCardBackground(Configuration.CardColor) : card.GetCardImage(), Casino.UI4.FullScreen);
 
                 AddUIElement(panel, container, true);
             }
+            #endregion
 
+            #region Player Turns
             private void NextPlayerTurn()
             {
-                if (playerIndex >= 0)
+                if (_playerIndex >= 0)
                 {
-                    Casino.CardPlayer cardPlayer = cardPlayers[playerIndex];
+                    Casino.CardPlayer cardPlayer = Players[_playerIndex];
                     if (cardPlayer != null && cardPlayer.IsPlaying)
                     {
                         cardPlayer.DestroyUI(PLAY_OVERLAY);
                     }
                 }
                
-                playerIndex++;
+                _playerIndex++;
                 UserPlayTurn();
             }
 
             private void UserPlayTurn()
             {
-                timer.StopTimer();
+                Timer.StopTimer();
 
                 DestroyUIElement(MESSAGE_OVERLAY);
 
-                if (playerIndex >= cardPlayers.Length)
+                if (_playerIndex >= Players.Length)
                 {
-                    playerIndex = -1;
+                    _playerIndex = -1;
 
                     CreateUIMessage(string.Format(msg("UI.Notification.CurrentlyPlaying"), msg("UI.Dealer")));
 
-                    InvokeHandler.Invoke(this, DealerAI.PlayTurn, 1f);                    
+                    InvokeHandler.Invoke(this, _dealerAI.PlayTurn, 1f);                    
                     return;
                 }
 
-                Casino.CardPlayer cardPlayer = cardPlayers[playerIndex];
+                Casino.CardPlayer cardPlayer = Players[_playerIndex];
                 if (cardPlayer == null || !cardPlayer.IsPlaying)
                 {
                     NextPlayerTurn();
@@ -598,7 +523,7 @@ namespace Oxide.Plugins
 
                 CreatePlayOverlay(cardPlayer as BlackJackPlayer);
 
-                timer.StartTimer(30);
+                Timer.StartTimer(30);
 
                 if (InvokeHandler.IsInvoking(this, NextPlayerTurn))
                     InvokeHandler.CancelInvoke(this, NextPlayerTurn);
@@ -606,54 +531,35 @@ namespace Oxide.Plugins
                 InvokeHandler.Invoke(this, NextPlayerTurn, 30f);
             }
 
-            private void CreatePlayOverlay(BlackJackPlayer blackjackPlayer)
+            public void Hit(BlackJackPlayer blackjackPlayer)
             {
-                Casino.UI4 cardPosition = cardPositions[blackjackPlayer.Position];
-                Casino.UI4 position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.095f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.07f);
-
-                CuiElementContainer container = Casino.UI.ElementContainer(PLAY_OVERLAY, position);
-
-                Casino.UI.Button(ref container, PLAY_OVERLAY, BLACK_COLOR, msg("UI.Player.Hit"), 12, new Casino.UI4(0f, 0f, 0.495f, 1f), "blackjack.hit");
-                Casino.UI.Button(ref container, PLAY_OVERLAY, BLACK_COLOR, msg("UI.Player.Stay"), 12, new Casino.UI4(0.505f, 0f, 1f, 1f), "blackjack.stay");
-
-                if (blackjackPlayer.CanInsurance())
-                    Casino.UI.Button(ref container, PLAY_OVERLAY, BLACK_COLOR, msg("UI.Player.Insurance"), 12, new Casino.UI4(0f, -1.1f, 0.495f, -0.1f), "blackjack.insurance");
-
-                if (blackjackPlayer.CanDoubleDown())
-                    Casino.UI.Button(ref container, PLAY_OVERLAY, BLACK_COLOR, msg("UI.Player.DblDown"), 12, new Casino.UI4(0.505f, -1.1f, 1f, -0.1f), "blackjack.dbldown");
-
-                blackjackPlayer.AddUI(PLAY_OVERLAY, container);
-            }
-            
-            internal void Hit(BlackJackPlayer blackjackPlayer)
-            {
-                timer.StopTimer();
+                Timer.StopTimer();
 
                 DealCard(blackjackPlayer);
 
                 int score = blackjackPlayer.GetScore();
 
-                if (score > 21 || score == 21)                
-                    Stay(blackjackPlayer);                
+                if (score > 21 || score == 21)
+                    Stay(blackjackPlayer);
                 else UserPlayTurn();
             }
 
-            internal void Stay(BlackJackPlayer blackjackPlayer)
+            public void Stay(BlackJackPlayer blackjackPlayer)
             {
-                timer.StopTimer();
+                Timer.StopTimer();
 
                 blackjackPlayer.DestroyUI(PLAY_OVERLAY);
 
                 if (blackjackPlayer.IsBusted)
                     CreateUIMessage(string.Format(msg("UI.Notification.HasBust"), blackjackPlayer.Player.displayName));
                 else CreateUIMessage(string.Format(msg("UI.Notification.StayingOn"), blackjackPlayer.Player.displayName, blackjackPlayer.GetScore()));
-                
+
                 InvokeHandler.Invoke(this, NextPlayerTurn, 5f);
             }
 
-            internal void DoubleDown(BlackJackPlayer blackjackPlayer)
+            public void DoubleDown(BlackJackPlayer blackjackPlayer)
             {
-                timer.StopTimer();
+                Timer.StopTimer();
 
                 blackjackPlayer.PerformDoubleDown();
 
@@ -669,9 +575,9 @@ namespace Oxide.Plugins
                 InvokeHandler.Invoke(this, NextPlayerTurn, 5f);
             }
 
-            internal void Insurance(BlackJackPlayer blackjackPlayer)
+            public void Insurance(BlackJackPlayer blackjackPlayer)
             {
-                timer.StopTimer();
+                Timer.StopTimer();
 
                 blackjackPlayer.PerformInsurance();
 
@@ -681,8 +587,10 @@ namespace Oxide.Plugins
 
                 UserPlayTurn();
             }
+            #endregion
 
-            internal void FinalizeGame()
+            #region Round Finish
+            public void FinalizeGame()
             {
                 DestroyUIElement(MESSAGE_OVERLAY);
 
@@ -690,21 +598,21 @@ namespace Oxide.Plugins
 
                 CreateUIMessage(string.Format(msg("UI.Notification.StartsIn"), 5));
 
-                InvokeHandler.Invoke(this, ResetGame, 5f);                
+                InvokeHandler.Invoke(this, ResetGame, 5f);
             }
 
             private void CalculateScores()
             {
-                int dealerScore = DealerAI.GetScore();
+                int dealerScore = _dealerAI.GetScore();
 
-                CuiElementContainer container = Casino.UI.ElementContainer(STATUS_OVERLAY, Casino.UI4.FullScreen);
+                CuiElementContainer container = Casino.UI.Container(STATUS_OVERLAY, Casino.UI4.FullScreen);
 
                 Casino.UI4 cardPosition;
                 Casino.UI4 position;
 
-                for (int i = 0; i < cardPlayers.Length; i++)
+                for (int i = 0; i < Players.Length; i++)
                 {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
+                    Casino.CardPlayer cardPlayer = Players[i];
                     if (cardPlayer == null || !cardPlayer.IsPlaying)
                         continue;
 
@@ -712,90 +620,205 @@ namespace Oxide.Plugins
 
                     BlackJackPlayer blackjackPlayer = cardPlayer as BlackJackPlayer;
 
-                    cardPosition = cardPositions[blackjackPlayer.Position];
+                    cardPosition = _cardPositions[blackjackPlayer.Position];
                     position = new Casino.UI4(cardPosition.xMin, cardPosition.yMax + 0.01f, cardPosition.xMin + 0.12f, cardPosition.yMax + 0.035f);
 
-                    Casino.UI.Panel(ref container, STATUS_OVERLAY, BLACK_COLOR, position);
+                    Casino.UI.Panel(container, STATUS_OVERLAY, BLACK_COLOR, position);
 
-                    if (blackjackPlayer.IsBusted)    
-                        Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.Bust"), 12, position);
+                    if (blackjackPlayer.IsBusted)
+                        Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.Bust"), 12, position);
                     else
                     {
                         int playerScore = blackjackPlayer.GetScore();
 
-                        int insuranceWin = blackjackPlayer.HasInsurance && DealerAI.HasBlackJack() ? blackjackPlayer.BetAmount : 0;
+                        int insuranceWin = blackjackPlayer.HasInsurance && _dealerAI.HasBlackJack() ? blackjackPlayer.BetAmount : 0;
 
-                        if (blackjackPlayer.HasBlackJack() && !DealerAI.HasBlackJack())
+                        if (blackjackPlayer.HasBlackJack() && !_dealerAI.HasBlackJack())
                         {
-                            if (Instance.configData.ShowWinnings)
-                                Casino.UI.Label(ref container, STATUS_OVERLAY, string.Format(msg("UI.Status.BlackJack.Amount"), "+" + Mathf.CeilToInt((float)blackjackPlayer.BetAmount * 1.5f)), 12, position);
-                            else Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.BlackJack"), 12, position);
+                            if (Configuration.ShowWinnings)
+                                Casino.UI.Label(container, STATUS_OVERLAY, string.Format(msg("UI.Status.BlackJack.Amount"), "+" + Mathf.CeilToInt((float)blackjackPlayer.BetAmount * 1.5f)), 12, position);
+                            else Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.BlackJack"), 12, position);
+
                             blackjackPlayer.IssueWin(blackjackPlayer.BetAmount + Mathf.CeilToInt((float)blackjackPlayer.BetAmount * 1.5f));
                         }
                         else if (playerScore == dealerScore)
                         {
-                            if (Instance.configData.ShowWinnings)
-                                Casino.UI.Label(ref container, STATUS_OVERLAY, string.Format(msg("UI.Status.Tie.Amount"), 0), 12, position);
-                            else Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.Tie"), 12, position);
+                            if (Configuration.ShowWinnings)
+                                Casino.UI.Label(container, STATUS_OVERLAY, string.Format(msg("UI.Status.Tie.Amount"), 0), 12, position);
+                            else Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.Tie"), 12, position);
+
                             blackjackPlayer.IssueWin(blackjackPlayer.BetAmount + insuranceWin);
                         }
-                        else if (playerScore > dealerScore || DealerAI.IsBusted)
+                        else if (playerScore > dealerScore || _dealerAI.IsBusted)
                         {
-                            if (Instance.configData.ShowWinnings)
-                                Casino.UI.Label(ref container, STATUS_OVERLAY, string.Format(msg("UI.Status.Win.Amount"), "+" + blackjackPlayer.BetAmount), 12, position);
-                            else Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.Win"), 12, position);
+                            if (Configuration.ShowWinnings)
+                                Casino.UI.Label(container, STATUS_OVERLAY, string.Format(msg("UI.Status.Win.Amount"), "+" + blackjackPlayer.BetAmount), 12, position);
+                            else Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.Win"), 12, position);
+
                             blackjackPlayer.IssueWin(blackjackPlayer.BetAmount * 2);
                         }
                         else if (playerScore < dealerScore)
                         {
-                            if (Instance.configData.ShowWinnings)
+                            if (Configuration.ShowWinnings)
                             {
                                 if (insuranceWin > 0)
                                 {
-                                    Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.Lost.Insurance"), 12, position);
+                                    Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.Lost.Insurance"), 12, position);
                                     blackjackPlayer.IssueWin(insuranceWin);
                                 }
-                                else Casino.UI.Label(ref container, STATUS_OVERLAY, string.Format(msg("UI.Status.Lost.Amount"), "-" + blackjackPlayer.BetAmount), 12, position);
+                                else Casino.UI.Label(container, STATUS_OVERLAY, string.Format(msg("UI.Status.Lost.Amount"), "-" + blackjackPlayer.BetAmount), 12, position);
                             }
                             else
                             {
                                 if (insuranceWin > 0)
                                 {
-                                    Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.Lost.Insurance"), 12, position);
+                                    Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.Lost.Insurance"), 12, position);
                                     blackjackPlayer.IssueWin(insuranceWin);
                                 }
-                                else Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.Lost"), 12, position);
-                            }                                
-                        }                        
+                                else Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.Lost"), 12, position);
+                            }
+                        }
                     }
                 }
 
-                cardPosition = cardPositions[4];
+                cardPosition = _cardPositions[4];
                 position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.065f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.04f);
 
-                if (DealerAI.IsBusted)
+                if (_dealerAI.IsBusted)
                 {
-                    Casino.UI.Panel(ref container, STATUS_OVERLAY, BLACK_COLOR, position);
-                    Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.Bust"), 12, position);
+                    Casino.UI.Panel(container, STATUS_OVERLAY, BLACK_COLOR, position);
+                    Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.Bust"), 12, position);
                 }
-                else if (DealerAI.HasBlackJack())
+                else if (_dealerAI.HasBlackJack())
                 {
-                    Casino.UI.Panel(ref container, STATUS_OVERLAY, BLACK_COLOR, position);
-                    Casino.UI.Label(ref container, STATUS_OVERLAY, msg("UI.Status.BlackJack"), 12, position);
+                    Casino.UI.Panel(container, STATUS_OVERLAY, BLACK_COLOR, position);
+                    Casino.UI.Label(container, STATUS_OVERLAY, msg("UI.Status.BlackJack"), 12, position);
                 }
 
-                Casino.UI.Button(ref container, STATUS_OVERLAY, new Casino.UI4(0.9f, 0.95f, 0.99f, 0.98f), "casino.leavetable");
+                Casino.UI.Button(container, STATUS_OVERLAY, new Casino.UI4(0.9f, 0.95f, 0.99f, 0.98f), "casino.leavetable");
 
                 AddUIElement(STATUS_OVERLAY, container);
             }
-            
-            internal void DestroyUIElement(string str)
-            {
-                containers.Remove(str);
+            #endregion
 
-                for (int i = 0; i < cardPlayers.Length; i++)
+            #region Player UI
+            private void CreatePlayerUI(bool betsLocked = false)
+            {
+                CuiElementContainer container = CreatePlayerUIElement(betsLocked);
+
+                AddUIElement(PLAYER_OVERLAY, container, false);
+            }
+
+            private void CreatePlayerUI(Casino.CardPlayer targetPlayer, bool betsLocked = false)
+            {
+                CuiElementContainer container = CreatePlayerUIElement(betsLocked);
+
+                targetPlayer.AddUI(PLAYER_OVERLAY, container);
+            }
+
+            private CuiElementContainer CreatePlayerUIElement(bool betsLocked)
+            {
+                CuiElementContainer container = Casino.UI.Container(PLAYER_OVERLAY, Casino.UI4.FullScreen);
+                Casino.UI4 cardPosition;
+                Casino.UI4 position;
+
+                for (int i = 0; i < Players.Length; i++)
                 {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
+                    Casino.CardPlayer cardPlayer = Players[i];
+                    if (Players[i] == null)
+                        continue;
+
+                    cardPosition = _cardPositions[i];
+                    position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.035f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.01f);
+                    Casino.UI.Panel(container, PLAYER_OVERLAY, BLACK_COLOR, position);
+                    Casino.UI.Label(container, PLAYER_OVERLAY, cardPlayer.Player.displayName, 12, position, TextAnchor.MiddleCenter);
+
+                    if (betsLocked)
+                    {
+                        position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.065f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.04f);
+                        Casino.UI.Panel(container, PLAYER_OVERLAY, BLACK_COLOR, position);
+                        Casino.UI.Label(container, PLAYER_OVERLAY, cardPlayer.IsPlaying ? string.Format(msg("UI.Player.Bet"), cardPlayer.BetAmount) : msg("UI.Player.PlayingNext"), 12, position, TextAnchor.MiddleCenter);
+
+                        if (Configuration.ShowBalance)
+                        {
+                            CuiElementContainer balance = Casino.UI.Container(BALANCE_OVERLAY, new Casino.UI4(cardPosition.xMin, cardPosition.yMax + 0.01f, cardPosition.xMin + 0.12f, cardPosition.yMax + 0.035f));
+                            Casino.UI.Panel(balance, BALANCE_OVERLAY, BLACK_COLOR, Casino.UI4.FullScreen);
+                            Casino.UI.Label(balance, BALANCE_OVERLAY, string.Format(msg("UI.Player.BalanceAmount"), cardPlayer.BankBalance, FormatBetString(cardPlayer.Player)), 12, Casino.UI4.FullScreen, TextAnchor.MiddleCenter);
+                            cardPlayer.AddUI(BALANCE_OVERLAY, balance);
+                        }
+                    }
+                }
+
+                cardPosition = _cardPositions[4];
+                position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.035f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.01f);
+                Casino.UI.Panel(container, PLAYER_OVERLAY, BLACK_COLOR, position);
+                Casino.UI.Label(container, PLAYER_OVERLAY, msg("UI.Dealer"), 12, position);
+
+                Casino.UI.Button(container, PLAYER_OVERLAY, BLACK_COLOR, msg("UI.LeaveTable"), 14, new Casino.UI4(0.9f, 0.95f, 0.99f, 0.98f), "casino.leavetable");
+
+                return container;
+            }
+
+            private void CreatePlayOverlay(BlackJackPlayer blackjackPlayer)
+            {
+                Casino.UI4 cardPosition = _cardPositions[blackjackPlayer.Position];
+                Casino.UI4 position = new Casino.UI4(cardPosition.xMin, cardPosition.yMin - 0.095f, cardPosition.xMin + 0.12f, cardPosition.yMin - 0.07f);
+
+                CuiElementContainer container = Casino.UI.Container(PLAY_OVERLAY, position);
+
+                Casino.UI.Button(container, PLAY_OVERLAY, BLACK_COLOR, msg("UI.Player.Hit"), 12, new Casino.UI4(0f, 0f, 0.495f, 1f), "blackjack.hit");
+                Casino.UI.Button(container, PLAY_OVERLAY, BLACK_COLOR, msg("UI.Player.Stay"), 12, new Casino.UI4(0.505f, 0f, 1f, 1f), "blackjack.stay");
+
+                if (blackjackPlayer.CanInsurance())
+                    Casino.UI.Button(container, PLAY_OVERLAY, BLACK_COLOR, msg("UI.Player.Insurance"), 12, new Casino.UI4(0f, -1.1f, 0.495f, -0.1f), "blackjack.insurance");
+
+                if (blackjackPlayer.CanDoubleDown())
+                    Casino.UI.Button(container, PLAY_OVERLAY, BLACK_COLOR, msg("UI.Player.DblDown"), 12, new Casino.UI4(0.505f, -1.1f, 1f, -0.1f), "blackjack.dbldown");
+
+                blackjackPlayer.AddUI(PLAY_OVERLAY, container);
+            }
+
+            #endregion
+
+            #region Player UI Messages
+            public void CreateUIMessage(string message)
+            {
+                CuiElementContainer container = Casino.UI.Container(MESSAGE_OVERLAY, new Casino.UI4(0.2f, 0.45f, 0.8f, 0.55f));
+                Casino.UI.Label(container, MESSAGE_OVERLAY, message, 20, Casino.UI4.FullScreen);
+
+                AddUIElement(MESSAGE_OVERLAY, container);
+            }
+
+            public void CreateUIMessage(BlackJackPlayer blackjackPlayer, string message)
+            {
+                CuiElementContainer container = Casino.UI.Container(MESSAGE_OVERLAY, new Casino.UI4(0.2f, 0.45f, 0.8f, 0.55f));
+                Casino.UI.Label(container, MESSAGE_OVERLAY, message, 20, Casino.UI4.FullScreen);
+
+                blackjackPlayer.AddUI(MESSAGE_OVERLAY, container);
+            }
+
+            public void CreateUIMessageOffset(string message, float time)
+            {
+                CuiElementContainer container = Casino.UI.Container(NOTIFICATION_OVERLAY, new Casino.UI4(0.3f, 0.89f, 0.7f, 0.97f));
+                Casino.UI.Label(container, NOTIFICATION_OVERLAY, message, 18, Casino.UI4.FullScreen);
+
+                AddUIElement(NOTIFICATION_OVERLAY, container);
+
+                if (InvokeHandler.IsInvoking(this, () => DestroyUIElement(NOTIFICATION_OVERLAY)))
+                    InvokeHandler.CancelInvoke(this, () => DestroyUIElement(NOTIFICATION_OVERLAY));
+
+                InvokeHandler.Invoke(this, () => DestroyUIElement(NOTIFICATION_OVERLAY), time);
+            }
+            #endregion
+
+            #region Table UI          
+            public void DestroyUIElement(string str)
+            {
+                _containers.Remove(str);
+
+                for (int i = 0; i < Players.Length; i++)
+                {
+                    Casino.CardPlayer cardPlayer = Players[i];
                     if (cardPlayer == null)
                         continue;
 
@@ -803,11 +826,11 @@ namespace Oxide.Plugins
                 }
             }
 
-            internal void DestroyUIElements()
+            public void DestroyUIElements()
             {
-                for (int i = 0; i < cardPlayers.Length; i++)
+                for (int i = 0; i < Players.Length; i++)
                 {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
+                    Casino.CardPlayer cardPlayer = Players[i];
                     if (cardPlayer == null)
                         continue;
 
@@ -816,14 +839,14 @@ namespace Oxide.Plugins
 
                 DestroyUIElement(STATUS_OVERLAY);
 
-                containers.Clear();
+                _containers.Clear();
             }
 
-            internal void AddUIElement(string panel, CuiElementContainer container, bool addToList = false)
+            public void AddUIElement(string panel, CuiElementContainer container, bool addToList = false)
             {
-                for (int i = 0; i < cardPlayers.Length; i++)
+                for (int i = 0; i < Players.Length; i++)
                 {
-                    Casino.CardPlayer cardPlayer = cardPlayers[i];
+                    Casino.CardPlayer cardPlayer = Players[i];
                     if (cardPlayer == null)
                         continue;
 
@@ -831,38 +854,39 @@ namespace Oxide.Plugins
                 }
 
                 if (addToList)
-                    containers.Add(panel, container);
-            }            
+                    _containers.Add(panel, container);
+            }
+            #endregion
         }
-        
-        internal class BlackJackPlayer : Casino.CardPlayer
+
+        public class BlackJackPlayer : Casino.CardPlayer
         {
-            internal bool IsBusted => GetScore() > 21;
+            public bool IsBusted => GetScore() > 21;
 
-            internal bool HasInsurance = false;
+            public bool HasInsurance = false;
             
-            internal void Hit(Casino.Card dealtCard) => hand.Add(dealtCard);
+            public void Hit(Casino.Card dealtCard) => hand.Add(dealtCard);
 
-            internal List<Casino.Card> Show() => hand;
+            public List<Casino.Card> Show() => hand;
 
-            internal Casino.Card LastCard() => hand[hand.Count - 1];
+            public Casino.Card LastCard() => hand[hand.Count - 1];
 
-            internal int Count => hand.Count;
+            public int Count => hand.Count;
 
-            internal override void OnDestroy()
+            public override void OnDestroy()
             {
                 DestroyCards();
                 base.OnDestroy();
             }
 
-            internal override void ResetHand()
+            public override void ResetHand()
             {
                 HasInsurance = false;
                 DestroyCards();
                 base.ResetHand();
             }
 
-            internal void DestroyCards()
+            public void DestroyCards()
             {
                 for (int i = 0; i < hand.Count; i++)
                 {
@@ -871,9 +895,9 @@ namespace Oxide.Plugins
                 }
             }
 
-            internal void DestroyUIElements()
+            public void DestroyUIElements()
             {
-                for (int i = 0; i < uiPanels.Count; i++)
+                for (int i = uiPanels.Count - 1; i >= 0; i--)
                 {
                     string panel = uiPanels[i];
                     if (panel == GAME_BG)
@@ -883,12 +907,12 @@ namespace Oxide.Plugins
                 }
             }
 
-            internal bool HasBlackJack()
+            public bool HasBlackJack()
             {
                 return hand.Count == 2 && ((hand[0].Value == Casino.CardValue.Ace && (int)hand[1].Value >= 10) || (hand[1].Value == Casino.CardValue.Ace && (int)hand[0].Value >= 10));
             }
 
-            internal int GetScore()
+            public int GetScore()
             {
                 if (HasBlackJack())
                     return 21;
@@ -920,38 +944,38 @@ namespace Oxide.Plugins
                 return score;
             }
 
-            internal bool CanDoubleDown() => CardGame.GetUserAmount(Player) >= BetAmount && hand.Count == 2;
+            public bool CanDoubleDown() => CardGame.GetUserAmount(Player) >= BetAmount && hand.Count == 2;
 
-            internal bool CanInsurance() => CardGame.GetUserAmount(Player) >= (BetAmount * 0.5f) && (CardGame as BlackJackGame).DealerAI.hand[0].Value == Casino.CardValue.Ace && !HasInsurance;
+            public bool CanInsurance() => CardGame.GetUserAmount(Player) >= (BetAmount * 0.5f) && (CardGame as BlackJackGame)._dealerAI.hand[0].Value == Casino.CardValue.Ace && !HasInsurance;
 
-            internal void PerformDoubleDown()
+            public void PerformDoubleDown()
             {
                 CardGame.TakeAmount(Player, BetAmount);
                 BetAmount *= 2;
             }
 
-            internal void PerformInsurance()
+            public void PerformInsurance()
             {
                 CardGame.TakeAmount(Player, Mathf.CeilToInt(BetAmount * 0.5f));
                 HasInsurance = true;
             }
         }
 
-        internal class BlackJackAI : BlackJackPlayer
+        public class BlackJackAI : BlackJackPlayer
         {
             private Coroutine playRoutine;
 
-            internal override void Awake()
+            public override void Awake()
             {
                 GenerateUID();
             }
 
-            internal override void OnDestroy()
+            public override void OnDestroy()
             {
                 Destroy(this.gameObject);
             }
 
-            internal override void ResetHand()
+            public override void ResetHand()
             {
                 if (playRoutine != null)
                     ServerMgr.Instance.StopCoroutine(playRoutine);
@@ -959,7 +983,7 @@ namespace Oxide.Plugins
                 base.ResetHand();
             }
 
-            internal void RegisterCardGame(Casino.CardGame cardGame)
+            public void RegisterCardGame(Casino.CardGame cardGame)
             {
                 this.CardGame = cardGame;
             }
@@ -1002,11 +1026,11 @@ namespace Oxide.Plugins
 
                 (CardGame as BlackJackGame).DestroyUIElement(panel);
 
-                Casino.UI4 cardPosition = (CardGame as BlackJackGame).cardPositions[4];
+                Casino.UI4 cardPosition = (CardGame as BlackJackGame)._cardPositions[4];
                 Casino.UI4 elementPosition = new Casino.UI4(cardPosition.xMin + 0.015f, cardPosition.yMin, cardPosition.xMax + 0.015f, cardPosition.yMax);
 
-                CuiElementContainer container = Casino.UI.ElementContainer(panel, elementPosition);
-                Casino.UI.Image(ref container, panel, card.GetCardImage(), Casino.UI4.FullScreen);
+                CuiElementContainer container = Casino.UI.Container(panel, elementPosition);
+                Casino.UI.Image(container, panel, card.GetCardImage(), Casino.UI4.FullScreen);
 
                 (CardGame as BlackJackGame).AddUIElement(panel, container, true);                
             }
@@ -1084,31 +1108,35 @@ namespace Oxide.Plugins
             if (blackjackPlayer == null)
                 return;
 
+            BlackJackGame cardGame = (blackjackPlayer.CardGame as BlackJackGame);
+
             int amount = int.Parse(arg.Args[0]);
+            int minimum = cardGame.Data.minimumBet;
+            int maximum = cardGame.Data.maximumBet;
 
             switch (amount)
             {
                 case -1:
-                    blackjackPlayer.CardGame.ResetBet(blackjackPlayer);
+                    cardGame.ResetBet(blackjackPlayer);
                     break;
                 case 0:
-                    blackjackPlayer.CardGame.AdjustBet(blackjackPlayer, 1);
+                    cardGame.AdjustBet(blackjackPlayer, 1, minimum, maximum);
                     break;
                 case 1:
-                    blackjackPlayer.CardGame.AdjustBet(blackjackPlayer, 10);
+                    cardGame.AdjustBet(blackjackPlayer, 10, minimum, maximum);
                     break;
                 case 2:
-                    blackjackPlayer.CardGame.AdjustBet(blackjackPlayer, 50);
+                    cardGame.AdjustBet(blackjackPlayer, 50, minimum, maximum);
                     break;
                 case 3:
-                    blackjackPlayer.CardGame.AdjustBet(blackjackPlayer, 100);
+                    cardGame.AdjustBet(blackjackPlayer, 100, minimum, maximum);
                     break;
                 case 4:
-                    blackjackPlayer.CardGame.AdjustBet(blackjackPlayer, 500);
+                    cardGame.AdjustBet(blackjackPlayer, 500, minimum, maximum);
                     break;                
             }
 
-            (blackjackPlayer.CardGame as BlackJackGame).PlaceBets(blackjackPlayer);
+            cardGame.PlaceBets(blackjackPlayer);
         }
 
         [ConsoleCommand("blackjack.deductbet")]
@@ -1122,7 +1150,10 @@ namespace Oxide.Plugins
             if (blackjackPlayer == null)
                 return;
 
-            blackjackPlayer.CardGame.AdjustBet(blackjackPlayer, -1);
+            int minimum = blackjackPlayer.CardGame.Data.minimumBet;
+            int maximum = blackjackPlayer.CardGame.Data.maximumBet;
+
+            blackjackPlayer.CardGame.AdjustBet(blackjackPlayer, -1, minimum, maximum);
             (blackjackPlayer.CardGame as BlackJackGame).PlaceBets(blackjackPlayer);
         }
 
@@ -1143,7 +1174,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region Config        
-        private ConfigData configData;
+        private static ConfigData Configuration;
         private class ConfigData
         {
             [JsonProperty("Card Color (blue, gray, green, purple, red, yellow)")]
@@ -1155,38 +1186,51 @@ namespace Oxide.Plugins
             [JsonProperty("Show Balance")]
             public bool ShowBalance { get; set; }
 
+            [JsonProperty("Table Skin ID")]
+            public ulong SkinID { get; set; }
+
             public Oxide.Core.VersionNumber Version { get; set; }
         }
 
         protected override void LoadConfig()
         {
             base.LoadConfig();
-            configData = Config.ReadObject<ConfigData>();
+            Configuration = Config.ReadObject<ConfigData>();
 
-            if (configData.Version < Version)
+            if (Configuration.Version < Version)
                 UpdateConfigValues();
 
-            Config.WriteObject(configData, true);
+            Config.WriteObject(Configuration, true);
         }
 
-        protected override void LoadDefaultConfig() => configData = GetBaseConfig();
+        protected override void LoadDefaultConfig() => Configuration = GetBaseConfig();
 
         private ConfigData GetBaseConfig()
         {
             return new ConfigData
             {
                 CardColor = "blue",
+                ShowBalance = true,
+                ShowWinnings = true,
+                SkinID = 2808399350,
                 Version = Version
             };
         }
 
-        protected override void SaveConfig() => Config.WriteObject(configData, true);
+        protected override void SaveConfig() => Config.WriteObject(Configuration, true);
 
         private void UpdateConfigValues()
         {
             PrintWarning("Config update detected! Updating config values...");
 
-            configData.Version = Version;
+            if (Configuration.Version < new Core.VersionNumber(0, 1, 9))
+            {
+                Configuration.ShowBalance = true;
+                Configuration.ShowWinnings = true;
+                Configuration.SkinID = 2808399350;
+            }
+
+            Configuration.Version = Version;
             PrintWarning("Config update completed!");
         }
         #endregion
@@ -1237,7 +1281,7 @@ namespace Oxide.Plugins
             ["UI.Status.Win.Amount"] = "<color=#00E500>Win!</color> ({0})",
             ["UI.Status.Lost.Amount"] = "<color=#ce422b>Lost!</color> ({0})",
 
-            ["Chat.Kicked.NoScrap"] = "<color=#D3D3D3>You have run out of scrap to bet with!</color>",
+            ["Chat.Kicked.NotEnough"] = "<color=#D3D3D3>You have run out of {0} to bet with!</color>",
         };
         #endregion
     }

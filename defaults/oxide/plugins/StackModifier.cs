@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Oxide.Core;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
 using UnityEngine;
@@ -200,25 +201,34 @@ using UnityEngine;
  * Disable Images toggle: Disables ImageLibrary Requirement / Images for UI Editor
  *
  * update 1.5.0
- * Fixed panel not updating values when splitting a skinned item stack inside of a loot panel container
+ * Fixed loot panel UI not updating value counts on items when splitting a skinned item stack inside of a loot panel container into a players inventory
+ *
+ * update 1.5.1
+ * Removed All ImageLibrary support / code All plugins moving forward will strictly use built in FacePunch Native logic.
+ * Re-designed CanStack Hook re-coded fixing all rock skinned stacking bugs etc
+ * Big performance gains
+ * Improved search functions by 10 fold.
+ *
+ * update 1.5.2
+ * patched oncardswipe error
+ *
+ * update 1.5.3
+ * patched scientist suit having same name as peacekeeper scientist suit
+ * Fixed Stacking Problems with scientist suit & peacekeeper scientist suit
+ * Native FacePunch Bug / If you look in F1 menu for scientist suit you'll see what I mean.
 */
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.5.0")]
+    [Info("Stack Modifier", "Khan", "1.5.3")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
         #region Fields
 
-        [PluginReference] Plugin ImageLibrary, LangAPI;
+        [PluginReference] Plugin LangAPI;
 
-        private bool _isRestartSM = true;
-        private bool _isEditorReady;
-        private List<string> _opensm = new List<string>();
         private Hash<ulong, int> _editorPageSM = new Hash<ulong, int>();
-        private Dictionary<string, string> _stackModifierImageList;
-        private List<KeyValuePair<string, ulong>> _stackModifierIcons;
 
         //TODO: Code in feature request for stack overrides
         //private const string OverRide = "stackmodifier.override";
@@ -1000,14 +1010,17 @@ namespace Oxide.Plugins
             {"reddogtags", 5000},
             {"attire.egg.suit", 1},
             {"sign.egg.suit", 5},
+            {"wagon", 1},
         };
 
-        private readonly HashSet<string> _exclude = new HashSet<string>
+        private readonly List<string> _exclude = new List<string>
         {
             "water",
             "water.salt",
             "cardtable",
-            "ammo.snowballgun"
+            "ammo.snowballgun",
+            /*"rowboat",
+            "rhib"*/
         };
 
         private readonly Dictionary<string, string> _corrections = new Dictionary<string, string>
@@ -1019,6 +1032,7 @@ namespace Oxide.Plugins
             {"sunglasses03chrome", "Sunglasses Chrome"},
             {"sunglasses03gold", "Sunglasses Gold"},
             {"twitchsunglasses", "Sunglasses Purple"},
+            {"hazmatsuit_scientist_peacekeeper", "Peacekeeper Scientist Suit"}
         };
 
         #endregion
@@ -1031,13 +1045,17 @@ namespace Oxide.Plugins
 
         private void CheckConfig()
         {
-            _stackModifierIcons = new List<KeyValuePair<string, ulong>>();
             foreach (ItemDefinition item in ItemManager.itemList)
             {
                 string categoryName = item.category.ToString();
                 Dictionary<string, _Items> stackCategory;
 
-                if (_exclude.Contains(item.shortname)) continue;
+                if (_exclude.Contains(item.shortname))
+                {
+                    if (_config.StackCategories[categoryName].ContainsKey(item.shortname))
+                        _config.StackCategories[categoryName].Remove(item.shortname);
+                    continue;
+                }
 
                 if (!_itemMap.ContainsKey(item.shortname))
                     _itemMap.Add(item.shortname, categoryName);
@@ -1052,11 +1070,17 @@ namespace Oxide.Plugins
                     _config.StackCategories[categoryName] = stackCategory = new Dictionary<string, _Items>();
                 }
 
+                if (stackCategory.ContainsKey(item.shortname))
+                {
+                    stackCategory[item.shortname].ItemId = item.itemid;
+                }
+
                 if (!stackCategory.ContainsKey(item.shortname))
                 {
                     stackCategory.Add(item.shortname, new _Items
                     {
                         ShortName = item.shortname,
+                        ItemId = item.itemid,
                         DisplayName = item.displayName.english,
                         Modified = item.stackable,
                     });
@@ -1088,11 +1112,6 @@ namespace Oxide.Plugins
                 {
                     item.stackable = _config.StackCategories[categoryName][item.shortname].Modified;
                 }
-
-                if (!_config.StackCategories[categoryName].ContainsKey(item.shortname) ||
-                    item.shortname.Equals("vehicle.chassis") ||
-                    item.shortname.Equals("vehicle.module")) continue;
-                _stackModifierIcons.Add(new KeyValuePair<string, ulong>(item.shortname, 0));
             }
 
             SaveConfig();
@@ -1101,28 +1120,30 @@ namespace Oxide.Plugins
         internal class PluginConfig : SerializableConfiguration
         {
             [JsonProperty("Revert to Vanilla Stacks on unload (Recommended true if removing plugin)")]
-            public bool Reset { get; set; }
+            public bool Reset;
 
             [JsonProperty("Disable Ammo/Fuel duplication fix (Recommended false)")]
-            public bool DisableFix { get; set; }
+            public bool DisableFix;
 
             [JsonProperty("Enable VendingMachine Ammo Fix (Recommended)")]
-            public bool VendingMachineAmmoFix { get; set; }
+            public bool VendingMachineAmmoFix = true;
 
             [JsonProperty("Blocked Stackable Items", Order = 4)]
-            public List<string> Blocked { get; set; }
+            public List<string> Blocked = new List<string>
+            {
+                "shortname"
+            };
 
             [JsonProperty("Category Stack Multipliers", Order = 5)]
             public Dictionary<string, int> StackCategoryMultipliers = new Dictionary<string, int>();
 
             [JsonProperty("Stack Categories", Order = 6)]
-            public Dictionary<string, Dictionary<string, _Items>> StackCategories =
-                new Dictionary<string, Dictionary<string, _Items>>();
+            public Dictionary<string, Dictionary<string, _Items>> StackCategories = new Dictionary<string, Dictionary<string, _Items>>();
 
             [JsonProperty("Enable UI Editor")]
             public bool EnableEditor = true;
-
-            [JsonProperty("Disable ImageLibrary Requirement / Images for UI Editor")]
+            
+            [JsonProperty("Disable Images / Toggles off Images for UI Editor")]
             public bool DisableImages = false;
 
             [JsonProperty("Sets editor command")] 
@@ -1158,37 +1179,13 @@ namespace Oxide.Plugins
             [JsonProperty("UI - Close Label")] 
             public string CloseButtonlabel = "✖";
 
-            [JsonProperty("UI - Background Image Url")]
-            public string BackgroundUrlSm = "https://i.imgur.com/Jej3cwR.png";
-
-            [JsonProperty("Sets any item to this image if image library does not have one for it.")]
-            public string IconUrlSm = "https://imgur.com/BPM9UR4.png";
-
             public Colors Colors = new Colors();
-
-            public string ToJson() => JsonConvert.SerializeObject(this);
-
-            public Dictionary<string, object> ToDictionary() =>
-                JsonConvert.DeserializeObject<Dictionary<string, object>>(ToJson());
-
-            public static PluginConfig DefaultConfig()
-            {
-                return new PluginConfig
-                {
-                    Reset = false,
-                    DisableFix = false,
-                    VendingMachineAmmoFix = true,
-                    Blocked = new List<string>
-                    {
-                        "shortname"
-                    },
-                };
-            }
         }
 
         public class _Items
         {
             public string ShortName;
+            public int ItemId;
             public string DisplayName;
             public int Modified;
         }
@@ -1285,7 +1282,7 @@ namespace Oxide.Plugins
 
         #region Oxide
 
-        protected override void LoadDefaultConfig() => _config = PluginConfig.DefaultConfig();
+        protected override void LoadDefaultConfig() => _config = new PluginConfig();
 
         protected override void LoadConfig()
         {
@@ -1326,17 +1323,11 @@ namespace Oxide.Plugins
             {
                 foreach (BasePlayer player in BasePlayer.activePlayerList)
                 {
-                    if (!player.IsSpectating() || !permission.UserHasPermission(player.UserIDString, Admin)) continue;
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-                    player.gameObject.SetLayerRecursive(17);
-                    player.ChatMessage("Movement Restored");
+                    if (!permission.UserHasPermission(player.UserIDString, Admin)) continue;
                     DestroyUi(player, true);
                 }
 
                 _itemMap.Clear();
-                _stackModifierImageList = null;
-                _stackModifierIcons = null;
-                _opensm = null;
                 _editorPageSM = null;
             }
         }
@@ -1349,10 +1340,7 @@ namespace Oxide.Plugins
             {
                 foreach (BasePlayer player in BasePlayer.activePlayerList)
                 {
-                    if (!player.IsSpectating() || !permission.UserHasPermission(player.UserIDString, Admin)) continue;
-                    player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-                    player.gameObject.SetLayerRecursive(17);
-                    player.ChatMessage("Movement Restored");
+                    if (!permission.UserHasPermission(player.UserIDString, Admin)) continue;
                     DestroyUi(player, true);
                 }
             }
@@ -1372,7 +1360,6 @@ namespace Oxide.Plugins
             cmd.AddChatCommand(_config.modifycommand, this, CmdModify);
             cmd.AddChatCommand(_config.colorcommand, this, CmdColor);
             cmd.AddChatCommand(_config.resetvenders, this, cmddvend);
-            LibraryCheck();
             Subscribe(nameof(OnItemAddedToContainer));
             foreach (var vendor in BaseNetworkable.serverEntities.OfType<InvisibleVendingMachine>())
             {
@@ -1387,15 +1374,6 @@ namespace Oxide.Plugins
             }
         }
 
-        private void OnPluginLoaded(Plugin name)
-        {
-            if (ImageLibrary != null && name.Name == ImageLibrary.Name && !_isRestartSM)
-            {
-                _maxImageLibraryAttempts = 0;
-                LibraryCheck();
-            }
-        }
-
         private object CanStackItem(Item item, Item targetItem)
         {
             if (item.GetOwnerPlayer().IsUnityNull() || targetItem.GetOwnerPlayer().IsUnityNull())
@@ -1403,66 +1381,40 @@ namespace Oxide.Plugins
                 return null;
             }
 
-            /*if (_configData.VendingMachineAmmoFix && item.GetRootContainer()?.entityOwner is VendingMachine)
-            {
-                return true;
-            }*/
-
             if (_config.Blocked.Contains(item.info.shortname) && item.GetOwnerPlayer() != null && !permission.UserHasPermission(item.GetOwnerPlayer().UserIDString, ByPass))
-            {
                 return false;
-            }
 
             if (item.info.itemid == targetItem.info.itemid && !CanWaterItemsStack(item, targetItem))
-            {
                 return false;
-            }
 
-            if (
-                item.info.stackable <= 1 ||
-                targetItem.info.stackable <= 1 ||
-                item.info.itemid != targetItem.info.itemid ||
-                !item.IsValid() ||
-                item.IsBlueprint() && item.blueprintTarget != targetItem.blueprintTarget ||
-                Math.Ceiling(targetItem.condition) != item.maxCondition ||
-                item.skin != targetItem.skin ||
-                item.name != targetItem.name
-            )
-            {
+            if (!(targetItem != item && 
+                  item.info.stackable > 1 && 
+                  targetItem.info.stackable > 1 &&
+                  targetItem.info.itemid == item.info.itemid &&
+                  (!item.hasCondition || (double)item.condition == (double)targetItem.info.condition.max) &&
+                  (!targetItem.hasCondition || (double)targetItem.condition == (double)targetItem.info.condition.max) && 
+                  item.IsValid() &&
+                  (!item.IsBlueprint() || item.blueprintTarget == targetItem.blueprintTarget) && 
+                  targetItem.skin == item.skin &&
+                  targetItem.name == item.name &&
+                  targetItem.info.shortname == item.info.shortname &&
+                  (targetItem.info.amountType != ItemDefinition.AmountType.Genetics && item.info.amountType != ItemDefinition.AmountType.Genetics || (targetItem.instanceData != null ? targetItem.instanceData.dataInt : -1) == (item.instanceData != null ? item.instanceData.dataInt : -1)) &&
+                  (item.instanceData == null || item.instanceData.subEntity == 0U || !(bool)(UnityEngine.Object)item.info.GetComponent<ItemModSign>()) && 
+                  (targetItem.instanceData == null || targetItem.instanceData.subEntity == 0U || !(bool)(UnityEngine.Object)targetItem.info.GetComponent<ItemModSign>())))
                 return false;
-            }
-
-            if (item.info.amountType == ItemDefinition.AmountType.Genetics || targetItem.info.amountType == ItemDefinition.AmountType.Genetics)
-            {
-                if ((item.instanceData?.dataInt ?? -1) != (targetItem.instanceData?.dataInt ?? -1))
-                {
-                    return false;
-                }
-            }
 
             if (targetItem.contents?.itemList.Count > 0)
             {
                 foreach (Item containedItem in targetItem.contents.itemList)
-                {
-                    item.parent.playerOwner.GiveItem(ItemManager.CreateByItemID(containedItem.info.itemid,
-                        containedItem.amount));
-                }
-            }
-
-            if (_config.DisableFix)
-            {
-                return null;
+                    item.parent.playerOwner.GiveItem(ItemManager.CreateByItemID(containedItem.info.itemid, containedItem.amount));
             }
 
             BaseProjectile.Magazine itemMag = targetItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
-
             if (itemMag != null)
             {
                 if (itemMag.contents > 0)
                 {
-                    item.GetOwnerPlayer()
-                        .GiveItem(ItemManager.CreateByItemID(itemMag.ammoType.itemid, itemMag.contents));
-
+                    item.GetOwnerPlayer().GiveItem(ItemManager.CreateByItemID(itemMag.ammoType.itemid, itemMag.contents));
                     itemMag.contents = 0;
                 }
             }
@@ -1473,8 +1425,7 @@ namespace Oxide.Plugins
 
                 if (flameThrower.ammo > 0)
                 {
-                    item.GetOwnerPlayer()
-                        .GiveItem(ItemManager.CreateByItemID(flameThrower.fuelType.itemid, flameThrower.ammo));
+                    item.GetOwnerPlayer().GiveItem(ItemManager.CreateByItemID(flameThrower.fuelType.itemid, flameThrower.ammo));
 
                     flameThrower.ammo = 0;
                 }
@@ -1576,11 +1527,9 @@ namespace Oxide.Plugins
 
             Item newItem = ItemManager.CreateByItemID(item.info.itemid);
 
-            BaseProjectile.Magazine newItemMag =
-                newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
+            BaseProjectile.Magazine newItemMag = newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
 
-            if (newItem.contents?.itemList.Count == 0 &&
-                (_config.DisableFix || newItem.contents?.itemList.Count == 0 && newItemMag?.contents == 0))
+            if (newItem.contents?.itemList.Count == 0 && (_config.DisableFix || newItem.contents?.itemList.Count == 0 && newItemMag?.contents == 0))
             {
                 return null;
             }
@@ -1596,8 +1545,7 @@ namespace Oxide.Plugins
                 newItem.blueprintTarget = item.blueprintTarget;
             }
 
-            if (item.info.amountType == ItemDefinition.AmountType.Genetics && item.instanceData != null &&
-                item.instanceData.dataInt != 0)
+            if (item.info.amountType == ItemDefinition.AmountType.Genetics && item.instanceData != null && item.instanceData.dataInt != 0)
             {
                 newItem.instanceData = new ProtoBuf.Item.InstanceData()
                 {
@@ -1633,8 +1581,7 @@ namespace Oxide.Plugins
                 newItem.GetHeldEntity().GetComponent<Chainsaw>().ammo = 0;
             }
 
-            BaseProjectile.Magazine itemMagDefault =
-                newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
+            BaseProjectile.Magazine itemMagDefault = newItem.GetHeldEntity()?.GetComponent<BaseProjectile>()?.primaryMagazine;
             if (itemMagDefault != null && itemMagDefault.contents > 0)
             {
                 itemMagDefault.contents = 0;
@@ -1647,6 +1594,7 @@ namespace Oxide.Plugins
         {
             BasePlayer player = container.GetOwnerPlayer();
             if (player == null || player.IsNpc || player.IsAdmin) return;
+            if (Interface.CallHook("OnIgnoreStackSize", player, item) != null) return;
 
             if ((player.inventory.containerMain.uid == container.uid || player.inventory.containerBelt.uid == container.uid) && item.amount > item.MaxStackable())
             {
@@ -1680,7 +1628,7 @@ namespace Oxide.Plugins
         private object OnCardSwipe(CardReader cardReader, Keycard card, BasePlayer player)
         {
             var item = card.GetItem();
-            if (item.amount <= 1) return null;
+            if (item == null || item.isBroken || item.amount <= 1) return null;
 
             int division = item.amount / 1;
 
@@ -1692,16 +1640,6 @@ namespace Oxide.Plugins
                 {
                     x.Drop(player.inventory.containerMain.dropPosition, player.inventory.containerMain.dropVelocity);
                 }
-            }
-
-            return null;
-        }
-
-        private object CanSpectateTarget(BasePlayer player, string filter)
-        {
-            if (permission.UserHasPermission(player.UserIDString, Admin) && _opensm.Contains(player.UserIDString))
-            {
-                return false;
             }
 
             return null;
@@ -1740,52 +1678,6 @@ namespace Oxide.Plugins
                 itemDefinition.stackable = a;
             }
         }
-        
-        private int _maxImageLibraryAttempts = 0;
-        private void LibraryCheck()
-        {
-            bool success = ImageLibrary != null && ImageLibrary.IsLoaded && ImageLibrary.Call<bool>("IsReady");
-
-            if (!_config.EnableEditor || _config.DisableImages) return;
-            if (!success)
-            {
-                if (_maxImageLibraryAttempts >= 20)
-                {
-                    _isRestartSM = false;
-                    PrintWarning("StackModifier was still unable to find ImageLibrary plugin. UI Editor will not be usable!");
-                    return;
-                }
-                _maxImageLibraryAttempts++;
-                PrintWarning("Unable to find ImageLibrary plugin. This may be caused by StackModifier loading before it. Will check again in 1 minute");
-                timer.In(60, LibraryCheck);
-            }
-            else
-            {
-                _stackModifierImageList = new Dictionary<string, string>();
-                LoadImages();
-            }
-        }
-
-        private void LoadImages()
-        {
-            _isRestartSM = false;
-            _stackModifierImageList.Add(StackModifierEditorBackgroundImage, _config.BackgroundUrlSm);
-            _stackModifierImageList.Add(_config.IconUrlSm, _config.IconUrlSm);
-
-            if (_stackModifierIcons.Count > 0)
-            {
-                ImageLibrary?.Call("LoadImageList", Name, _stackModifierIcons, null);
-            }
-
-            ImageLibrary?.Call("ImportImageList", Name, _stackModifierImageList, 0UL, true, new Action(Ready));
-        }
-
-        private void Ready()
-        {
-            _isEditorReady = true;
-            _stackModifierImageList.Clear();
-            _stackModifierIcons.Clear();
-        }
 
         #endregion
 
@@ -1820,7 +1712,6 @@ namespace Oxide.Plugins
         private const string StackModifierEditorOverlayName = "StackModifierEditorOverlay";
         private const string StackModifierEditorContentName = "StackModifierEditorContent";
         private const string StackModifierEditorDescOverlay = "StackModifierEditorDescOverlay";
-        private const string StackModifierEditorBackgroundImage = "StackModifierBackground";
 
         private CuiElementContainer CreateEditorOverlay()
         {
@@ -1847,11 +1738,15 @@ namespace Oxide.Plugins
                         Parent = StackModifierEditorOverlayName,
                         Components =
                         {
-                            new CuiRawImageComponent
+                            new CuiImageComponent
                             {
-                                Png = ImageLibrary?.Call<string>("GetImage", StackModifierEditorBackgroundImage)
+                                Material = "assets/content/ui/uibackgroundblur.mat",
+                                Color = "0 0 0 0.3",
                             },
-                            new CuiRectTransformComponent {AnchorMin = "0 0", AnchorMax = "1 1"}
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0 0", AnchorMax = "1 1"
+                            }
                         }
                     },
                 {
@@ -2049,11 +1944,13 @@ namespace Oxide.Plugins
                 {
                     new CuiInputFieldComponent
                     {
-                        //Text = $"{dataItem.Modified}",
+                        Text = String.Empty, //$"{dataItem.Modified}",
                         FontSize = 18,
                         Align = TextAnchor.MiddleCenter,
                         Color = _config.Colors.NewInputColor.Rgb,
+                        CharsLimit = 40,
                         IsPassword = false,
+                        NeedsKeyboard = true,
                         Command = $"{"editorsm.edit"} {catName} {dataItem.DisplayName.Replace(" ", "_")} {text}",
                     },
 
@@ -2068,7 +1965,7 @@ namespace Oxide.Plugins
             return container;
         }
 
-        private void CreateEditorItemIcon(ref CuiElementContainer container, string shortname, string displayName, string userId, float ymax, float ymin)
+        private void CreateEditorItemIcon(ref CuiElementContainer container, int itemId, string shortname, string displayName, string userId, float ymax, float ymin)
         {
             float position = _config.DisableImages ? 0.27f : 0.3f;
 
@@ -2092,23 +1989,17 @@ namespace Oxide.Plugins
 
             if (_config.DisableImages) return;
 
-            var rawImage = new CuiRawImageComponent();
-
-            if ((bool) (ImageLibrary?.Call("HasImage", shortname, 0UL) ?? false))
+            var icons = new CuiImageComponent
             {
-                rawImage.Png = (string) ImageLibrary?.Call("GetImage", shortname, 0UL, false);
-            }
-            else
-            {
-                rawImage.Png = (string) ImageLibrary?.Call("GetImage", _config.IconUrlSm);
-            }
+                ItemId = itemId,
+            };
 
             container.Add(new CuiElement
             {
                 Parent = StackModifierEditorContentName,
                 Components =
                 {
-                    rawImage,
+                    icons,
                     new CuiRectTransformComponent
                     {
                         AnchorMin = $"0.26 {ymin}",
@@ -2293,7 +2184,11 @@ namespace Oxide.Plugins
 
             if (filter && !string.IsNullOrEmpty(input))
             {
-                if (catid == "All")
+                input = input.Replace("_", " ");
+                items.AddRange(item.Where(s => s.Key.Contains(input, CompareOptions.OrdinalIgnoreCase)).Select(x => x.Value));
+                items.Sort((a, b) => a.DisplayName.Length.CompareTo(b.DisplayName.Length));
+
+                /*if (catid == "All")
                 {
                     foreach (var cItem in item.Values)
                     {
@@ -2309,7 +2204,7 @@ namespace Oxide.Plugins
                         _Items cItem = _config.StackCategories[catid][shortname];
                         if (cItem.DisplayName.Contains(input.Replace("_", " "), CompareOptions.OrdinalIgnoreCase))
                             items.Add(cItem);
-                    }
+                    }*/
             }
             else
             {
@@ -2340,11 +2235,13 @@ namespace Oxide.Plugins
                 {
                     new CuiInputFieldComponent
                     {
-                        //Text = input,
+                        Text = String.Empty,
                         FontSize = 18,
                         Align = TextAnchor.MiddleCenter,
                         Color = _config.Colors.NewInputColor.Rgb, //$"{new Color("#FFE24B", 0.5f).Rgb}", //$"{new Color( "#FFFFFF", 0.05f).Rgb}",
+                        CharsLimit = 40,
                         IsPassword = false,
+                        NeedsKeyboard = true,
                         Command = $"editorsm.{("search")} {catid} {input.Replace(" ", "_")}",
                     },
                     new CuiRectTransformComponent
@@ -2361,7 +2258,7 @@ namespace Oxide.Plugins
                 {
                     float pos = 0.85f - 0.125f * (current - from);
 
-                    CreateEditorItemIcon(ref container, data.ShortName, data.DisplayName, player.UserIDString, pos + 0.125f, pos);
+                    CreateEditorItemIcon(ref container, data.ItemId, data.ShortName, data.DisplayName, player.UserIDString, pos + 0.125f, pos);
 
                     container.AddRange(CreateEditorItemEntry(data, pos + 0.125f, pos, catid, ""));
                 }
@@ -2384,19 +2281,13 @@ namespace Oxide.Plugins
             if (!_config.EnableEditor || !permission.UserHasPermission(player.UserIDString, Admin))
                 return;
 
-            if (!_isEditorReady && !_config.DisableImages)
+            if (LangAPI != null && LangAPI.Call<bool>("IsReady") == false)
             {
-                player.ChatMessage("Waiting On ImageLibrary to finish the load order");
+                player.ChatMessage($"Waiting On {LangAPI.Title} to finish the load order");
                 return;
             }
-            
+
             ShowEditor(player, _config.DefaultCat);
-            _opensm.Add(player.UserIDString);
-            player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
-            player.CancelInvoke("ServerUpdate");
-            /*player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, true);
-            player.gameObject.SetLayerRecursive(10);*/
-            player.ChatMessage("Blocking Movement");
         }
 
         private void CmdColor(BasePlayer player, string command, string[] args)
@@ -2456,6 +2347,7 @@ namespace Oxide.Plugins
 
             SaveConfig();
         }
+        
  
         [ConsoleCommand("editorsm.show")]
         private void ConsoleEditorShow(ConsoleSystem.Arg arg)
@@ -2486,7 +2378,10 @@ namespace Oxide.Plugins
             string catName = arg.GetString(0).Replace("_", " ");
             string item = arg.GetString(1).Replace("_", " ");
             int amount = arg.GetInt(2);
-            if (amount == 0 || string.IsNullOrEmpty(amount.ToString())) return;
+            if (amount == 0 || string.IsNullOrEmpty(amount.ToString()))
+            {
+                return;
+            }
 
             if (catName == "All")
             {
@@ -2654,12 +2549,12 @@ namespace Oxide.Plugins
             SaveConfig();
             BasePlayer player = arg.Player();
             DestroyUi(player, true);
-            player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
+            /*player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
             /*if (!player.IsSpectating()) return;
             player.SetPlayerFlag(BasePlayer.PlayerFlags.Spectating, false);
-            player.gameObject.SetLayerRecursive(17);*/
+            player.gameObject.SetLayerRecursive(17);#1#
             player.ChatMessage("Movement Restored");
-            _opensm.Remove(player.UserIDString);
+            _opensm.Remove(player.UserIDString);*/
         }
 
         #endregion

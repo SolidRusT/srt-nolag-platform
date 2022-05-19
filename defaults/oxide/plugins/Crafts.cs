@@ -15,12 +15,19 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Crafts", "Mevent", "2.7.3")]
+    [Info("Crafts", "Mevent", "2.8.0")]
     public class Crafts : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, SpawnModularCar, Notify, UINotify, LangAPI;
+        [PluginReference] private Plugin
+            ImageLibrary = null,
+            SpawnModularCar = null,
+            Notify = null,
+            UINotify = null,
+            LangAPI = null;
+
+        private static Crafts _instance;
 
         private const string Layer = "UI.Crafts";
 
@@ -28,7 +35,7 @@ namespace Oxide.Plugins
 
         private const string PermEdit = "crafts.edit";
 
-        private static Crafts _instance;
+        private const string PermSetWb = "crafts.setworkbench";
 
         private List<CraftConf> _crafts = new List<CraftConf>();
 
@@ -40,6 +47,8 @@ namespace Oxide.Plugins
 
         private readonly Dictionary<string, List<string>> _itemsCategories =
             new Dictionary<string, List<string>>();
+
+        private readonly List<SafeZoneComponent> _safeZones = new List<SafeZoneComponent>();
 
         private enum WorkbenchLevel
         {
@@ -67,6 +76,9 @@ namespace Oxide.Plugins
 
         private readonly Dictionary<BasePlayer, Dictionary<string, object>> _itemEditing =
             new Dictionary<BasePlayer, Dictionary<string, object>>();
+
+        private readonly Dictionary<BasePlayer, CustomWorkbenchConf> _openedCustomWb =
+            new Dictionary<BasePlayer, CustomWorkbenchConf>();
 
         #endregion
 
@@ -127,7 +139,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         },
                         new CraftConf
                         {
@@ -154,7 +181,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         },
                         new CraftConf
                         {
@@ -181,7 +223,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         },
                         new CraftConf
                         {
@@ -208,7 +265,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         },
                         new CraftConf
                         {
@@ -235,7 +307,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         },
                         new CraftConf
                         {
@@ -262,7 +349,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         }
                     }
                 },
@@ -299,7 +401,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         },
                         new CraftConf
                         {
@@ -340,7 +457,8 @@ namespace Oxide.Plugins
                                     "vehicle.1mod.cockpit.armored",
                                     "vehicle.1mod.cockpit.armored"
                                 }
-                            }
+                            },
+                            Cooldown = 0
                         }
                     }
                 },
@@ -377,7 +495,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         },
                         new CraftConf
                         {
@@ -404,7 +537,22 @@ namespace Oxide.Plugins
                                 new ItemForCraft(string.Empty, "gears", 5, 0),
                                 new ItemForCraft(string.Empty, "roadsigns", 5, 0),
                                 new ItemForCraft(string.Empty, "metal.fragments", 2000, 0)
-                            }
+                            },
+                            Modular = new ModularCarConf
+                            {
+                                CodeLock = true,
+                                KeyLock = false,
+                                EnginePartsTier = 2,
+                                FreshWaterAmount = 0,
+                                FuelAmount = 140,
+                                Modules = new[]
+                                {
+                                    "vehicle.1mod.engine",
+                                    "vehicle.1mod.cockpit.armored",
+                                    "vehicle.1mod.cockpit.armored"
+                                }
+                            },
+                            Cooldown = 0
                         }
                     }
                 }
@@ -435,7 +583,17 @@ namespace Oxide.Plugins
                     {0.9f, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0.9f, 0.5f, 0.5f, 0, 1, 1, 0.5f, 0, 0, 0, 0, 0, 1, 1},
                 Scale = 0.5f,
                 DDraw = true,
-                Building = true
+                Building = true,
+                Destroy = new RecyclerDestroy
+                {
+                    CheckGround = true,
+                    Item = true,
+                    Effects = new List<string>
+                    {
+                        "assets/bundled/prefabs/fx/item_break.prefab",
+                        "assets/bundled/prefabs/fx/impacts/stab/rock/stab_rock_01.prefab"
+                    }
+                }
             };
 
             [JsonProperty(PropertyName = "Car Settings")]
@@ -454,6 +612,27 @@ namespace Oxide.Plugins
                 Color = "#C5D0E6",
                 Delay = 0.75f
             };
+
+            [JsonProperty(PropertyName = "Custom Workbench Stations (Entity ID - settings)",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public readonly Dictionary<uint, CustomWorkbenchConf> CustomWorkbench =
+                new Dictionary<uint, CustomWorkbenchConf>
+                {
+                    [123343941] = new CustomWorkbenchConf
+                    {
+                        Categories = new List<string>
+                        {
+                            "Cars", "Misc"
+                        },
+                        SafeZone = true,
+                        SafeZoneRadius = 5,
+                        WorkBench = new Dictionary<string, int>
+                        {
+                            ["crafts.default"] = 0,
+                            ["crafts.premium"] = 3
+                        }
+                    }
+                };
 
             [JsonProperty(PropertyName = "UI Settings")]
             public readonly UserInterface UI = new UserInterface
@@ -489,6 +668,39 @@ namespace Oxide.Plugins
             };
 
             public VersionNumber Version;
+        }
+
+        private class CustomWorkbenchConf
+        {
+            [JsonProperty(PropertyName = "Categories (Titles) [* - all]",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> Categories;
+
+            [JsonProperty(PropertyName = "Use safe zone")]
+            public bool SafeZone;
+
+            [JsonProperty(PropertyName = "Safe Zone Radius")]
+            public float SafeZoneRadius;
+
+            [JsonProperty(PropertyName = "WorkBench Level", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<string, int> WorkBench = new Dictionary<string, int>
+            {
+                ["crafts.default"] = 0,
+                ["crafts.premium"] = 0
+            };
+
+            public WorkbenchLevel GetWorkBenchLevel(BasePlayer player)
+            {
+                var result = 0;
+
+                foreach (var check in WorkBench.Where(check => !string.IsNullOrEmpty(check.Key) &&
+                                                               _instance.permission.UserHasPermission(
+                                                                   player.UserIDString, check.Key)
+                                                               && check.Value > result))
+                    result = check.Value;
+
+                return (WorkbenchLevel) result;
+            }
         }
 
         private class UserInterface
@@ -660,6 +872,20 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Cooldown")]
             public float Cooldown;
+
+            [JsonIgnore] private int _itemId = -1;
+
+            [JsonIgnore]
+            public int itemId
+            {
+                get
+                {
+                    if (_itemId == -1)
+                        _itemId = ItemManager.FindItemDefinition(ShortName)?.itemid ?? -1;
+
+                    return _itemId;
+                }
+            }
 
             [JsonIgnore]
             public int PUBLIC_ID
@@ -851,7 +1077,21 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Skin")] public ulong SkinID;
 
             [JsonProperty(PropertyName = "Title (empty - default)")]
-            public string Title;
+            public string Title = string.Empty;
+
+            [JsonIgnore] private int _itemId = -1;
+
+            [JsonIgnore]
+            public int itemId
+            {
+                get
+                {
+                    if (_itemId == -1)
+                        _itemId = ItemManager.FindItemDefinition(ShortName)?.itemid ?? -1;
+
+                    return _itemId;
+                }
+            }
 
             [JsonIgnore] private string _publicTitle;
 
@@ -1029,6 +1269,35 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Damage Scale")]
             public float Scale;
+
+            [JsonProperty(PropertyName = "Destroy Settings")]
+            public RecyclerDestroy Destroy;
+
+            [JsonIgnore] private CraftConf _craft;
+
+            [JsonIgnore]
+            public Item GetItem
+            {
+                get
+                {
+                    if (_craft == null)
+                        _craft = _instance._crafts.Find(x => x.Type == CraftType.Recycler);
+
+                    return _craft?.ToItem();
+                }
+            }
+        }
+
+        private class RecyclerDestroy
+        {
+            [JsonProperty(PropertyName = "Check ground for recyclers? (destroy on missng)")]
+            public bool CheckGround;
+
+            [JsonProperty(PropertyName = "Give item on destroy?")]
+            public bool Item;
+
+            [JsonProperty(PropertyName = "Effects on destroy", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> Effects;
         }
 
         protected override void LoadConfig()
@@ -1154,8 +1423,7 @@ namespace Oxide.Plugins
 
             LoadImages();
 
-            if (!SpawnModularCar && _crafts.Exists(x => x.Enabled && x.Type == CraftType.ModularCar))
-                PrintError("SpawnModularCar IS NOT INSTALLED.");
+            LoadCustomWorkbenches();
 
             if (!initial)
                 foreach (var ent in BaseNetworkable.serverEntities.OfType<BaseCombatEntity>())
@@ -1167,23 +1435,13 @@ namespace Oxide.Plugins
 
         private void Unload()
         {
-            foreach (var player in BasePlayer.activePlayerList)
-            {
-                CuiHelper.DestroyUi(player, Layer);
-                CuiHelper.DestroyUi(player, EditLayer + ".Background");
-            }
+            DestroyUi();
 
-            Array.ForEach(_recyclers.ToArray(), recycler =>
-            {
-                if (recycler != null)
-                    recycler.Kill();
-            });
+            DestroyRecyclers();
 
-            Array.ForEach(_cars.ToArray(), car =>
-            {
-                if (car != null)
-                    car.Kill();
-            });
+            DestroyCars();
+
+            DestroyCustomWorkbenches();
 
             SaveCooldown();
 
@@ -1330,6 +1588,34 @@ namespace Oxide.Plugins
             if (player == null) return;
 
             _updateCooldowns.Remove(player);
+            _openedCustomWb.Remove(player);
+        }
+
+        private void OnEntityGroundMissing(Recycler recycler)
+        {
+            if (recycler == null) return;
+
+            var component = recycler.GetComponent<RecyclerComponent>();
+            if (component == null) return;
+
+            component.DestroyActions();
+        }
+
+        private object CanLootEntity(BasePlayer player, Workbench workbench)
+        {
+            if (player == null || workbench == null)
+                return null;
+
+            CustomWorkbenchConf customWb;
+            if (_config.CustomWorkbench.TryGetValue(workbench.net.ID, out customWb))
+            {
+                _openedCustomWb[player] = customWb;
+
+                MainUi(player, first: true);
+                return false;
+            }
+
+            return null;
         }
 
         #endregion
@@ -1373,7 +1659,7 @@ namespace Oxide.Plugins
 
             if (args.Length == 0)
             {
-                cov?.Reply($"Error syntax! Use: /{command} [name/steamId]");
+                cov.Reply($"Error syntax! Use: /{command} [name/steamId]");
                 return;
             }
 
@@ -1391,6 +1677,57 @@ namespace Oxide.Plugins
             SendNotify(target, GotCraft, 0, craft.PublicTitle);
         }
 
+        private void CmdSetCustomWb(IPlayer cov, string command, string[] args)
+        {
+            var player = cov?.Object as BasePlayer;
+            if (player == null) return;
+
+            if (!permission.UserHasPermission(player.UserIDString, PermSetWb))
+            {
+                SendNotify(player, NoPermission, 1);
+                return;
+            }
+
+            if (args.Length == 0)
+            {
+                SendNotify(player, ErrorSyntax, 1, $"{command} [categories: cat1 cat2 ...]");
+                return;
+            }
+
+            var categories = args.ToList();
+            categories.RemoveAll(cat => !_config.Categories.Exists(confCat => confCat.Title == cat));
+            if (categories.Count == 0)
+            {
+                SendNotify(player, WbNotFoundCategories, 1);
+                return;
+            }
+
+            var workbench = GetLookWorkbench(player);
+            if (workbench == null)
+            {
+                SendNotify(player, WbNotFoundWorkbench, 1);
+                return;
+            }
+
+            if (_config.CustomWorkbench.ContainsKey(workbench.net.ID))
+            {
+                SendNotify(player, WbWorkbenchExists, 1);
+                return;
+            }
+
+            var conf = new CustomWorkbenchConf
+            {
+                Categories = categories
+            };
+
+            _config.CustomWorkbench[workbench.net.ID] = conf;
+
+            SaveConfig();
+
+            SendNotify(player, WbWorkbenchInstalled, 0);
+            InitCustomWorkbench(workbench, conf);
+        }
+
         [ConsoleCommand("UI_Crafts")]
         private void CmdConsoleCrafts(ConsoleSystem.Arg arg)
         {
@@ -1402,6 +1739,7 @@ namespace Oxide.Plugins
                 case "close":
                 {
                     _updateCooldowns.Remove(player);
+                    _openedCustomWb.Remove(player);
                     break;
                 }
 
@@ -1481,9 +1819,15 @@ namespace Oxide.Plugins
                     SendNotify(player, SuccessfulCraft, 0, craft.PublicTitle);
 
                     if (_config.UI.CloseAfterCraft)
+                    {
                         _updateCooldowns.Remove(player);
+                        _openedCustomWb.Remove(player);
+                    }
                     else
+                    {
                         MainUi(player, category, page, catPage, true);
+                    }
+
                     break;
                 }
 
@@ -2282,24 +2626,39 @@ namespace Oxide.Plugins
                     }, Layer + ".Main", Layer + $".Craft.{craft.PUBLIC_ID}");
 
                     if (ImageLibrary)
-                        container.Add(new CuiElement
-                        {
-                            Parent = Layer + $".Craft.{craft.PUBLIC_ID}",
-                            Components =
+                    {
+                        if (!string.IsNullOrEmpty(craft.Image))
+                            container.Add(new CuiElement
                             {
-                                new CuiRawImageComponent
+                                Parent = Layer + $".Craft.{craft.PUBLIC_ID}",
+                                Components =
                                 {
-                                    Png = !string.IsNullOrEmpty(craft.Image)
-                                        ? ImageLibrary.Call<string>("GetImage", craft.Image)
-                                        : ImageLibrary.Call<string>("GetImage", craft.ShortName, craft.SkinID)
-                                },
-                                new CuiRectTransformComponent
+                                    new CuiRawImageComponent
+                                    {
+                                        Png = ImageLibrary.Call<string>("GetImage", craft.Image)
+                                    },
+                                    new CuiRectTransformComponent
+                                    {
+                                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                                        OffsetMin = "-36 -84", OffsetMax = "36 -12"
+                                    }
+                                }
+                            });
+                        else
+                            container.Add(new CuiPanel
+                            {
+                                RectTransform =
                                 {
                                     AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                                     OffsetMin = "-36 -84", OffsetMax = "36 -12"
+                                },
+                                Image =
+                                {
+                                    ItemId = craft.itemId,
+                                    SkinId = craft.SkinID
                                 }
-                            }
-                        });
+                            }, Layer + $".Craft.{craft.PUBLIC_ID}");
+                    }
 
                     container.Add(new CuiLabel
                     {
@@ -2557,25 +2916,37 @@ namespace Oxide.Plugins
                     }
                 }, Layer, Layer + $".Item.{xSwitch}");
 
-                container.Add(new CuiElement
-                {
-                    Parent = Layer + $".Item.{xSwitch}",
-                    Components =
+                if (!string.IsNullOrEmpty(item.Image))
+                    container.Add(new CuiElement
                     {
-                        new CuiRawImageComponent
+                        Parent = Layer + $".Item.{xSwitch}",
+                        Components =
                         {
-                            Png =
-                                !string.IsNullOrEmpty(item.Image)
-                                    ? ImageLibrary.Call<string>("GetImage", item.Image)
-                                    : ImageLibrary.Call<string>("GetImage", item.ShortName, item.SkinID)
-                        },
-                        new CuiRectTransformComponent
+                            new CuiRawImageComponent
+                            {
+                                Png = ImageLibrary.Call<string>("GetImage", item.Image)
+                            },
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                                OffsetMin = "-64 -128", OffsetMax = "64 0"
+                            }
+                        }
+                    });
+                else
+                    container.Add(new CuiPanel
+                    {
+                        RectTransform =
                         {
                             AnchorMin = "0.5 1", AnchorMax = "0.5 1",
                             OffsetMin = "-64 -128", OffsetMax = "64 0"
+                        },
+                        Image =
+                        {
+                            ItemId = item.itemId,
+                            SkinId = item.SkinID
                         }
-                    }
-                });
+                    }, Layer + $".Item.{xSwitch}");
 
                 container.Add(new CuiLabel
                 {
@@ -2909,25 +3280,39 @@ namespace Oxide.Plugins
             }, EditLayer, Layer + ".Image");
 
             if (!string.IsNullOrEmpty(edit["Image"].ToString()) || !string.IsNullOrEmpty(edit["ShortName"].ToString()))
-                container.Add(new CuiElement
-                {
-                    Parent = Layer + ".Image",
-                    Components =
+            {
+                if (!string.IsNullOrEmpty(edit["Image"].ToString()))
+                    container.Add(new CuiElement
                     {
-                        new CuiRawImageComponent
+                        Parent = Layer + ".Image",
+                        Components =
                         {
-                            Png = !string.IsNullOrEmpty(edit["Image"].ToString())
-                                ? ImageLibrary.Call<string>("GetImage", edit["Image"].ToString())
-                                : ImageLibrary.Call<string>("GetImage", edit["ShortName"].ToString(),
-                                    Convert.ToUInt64(edit["SkinID"]))
-                        },
-                        new CuiRectTransformComponent
+                            new CuiRawImageComponent
+                            {
+                                Png = ImageLibrary.Call<string>("GetImage", edit["Image"].ToString())
+                            },
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0 0", AnchorMax = "1 1",
+                                OffsetMin = "5 5", OffsetMax = "-5 -5"
+                            }
+                        }
+                    });
+                else
+                    container.Add(new CuiPanel
+                    {
+                        RectTransform =
                         {
                             AnchorMin = "0 0", AnchorMax = "1 1",
                             OffsetMin = "5 5", OffsetMax = "-5 -5"
+                        },
+                        Image =
+                        {
+                            ItemId = ItemManager.FindItemDefinition(edit["ShortName"].ToString())?.itemid ?? 0,
+                            SkinId = Convert.ToUInt64(edit["SkinID"])
                         }
-                    }
-                });
+                    }, Layer + ".Image");
+            }
 
             #region Input
 
@@ -3205,24 +3590,37 @@ namespace Oxide.Plugins
                         }
                     }, EditLayer, Layer + $".Craft.Item.{xSwitch}");
 
-                    container.Add(new CuiElement
-                    {
-                        Parent = Layer + $".Craft.Item.{xSwitch}",
-                        Components =
+                    if (!string.IsNullOrEmpty(craftItem.Image))
+                        container.Add(new CuiElement
                         {
-                            new CuiRawImageComponent
+                            Parent = Layer + $".Craft.Item.{xSwitch}",
+                            Components =
                             {
-                                Png = !string.IsNullOrEmpty(craftItem.Image)
-                                    ? ImageLibrary.Call<string>("GetImage", craftItem.Image)
-                                    : ImageLibrary.Call<string>("GetImage", craftItem.ShortName, craftItem.SkinID)
-                            },
-                            new CuiRectTransformComponent
+                                new CuiRawImageComponent
+                                {
+                                    Png = ImageLibrary.Call<string>("GetImage", craftItem.Image)
+                                },
+                                new CuiRectTransformComponent
+                                {
+                                    AnchorMin = "0 0", AnchorMax = "1 1",
+                                    OffsetMin = "5 5", OffsetMax = "-5 -5"
+                                }
+                            }
+                        });
+                    else
+                        container.Add(new CuiPanel
+                        {
+                            RectTransform =
                             {
                                 AnchorMin = "0 0", AnchorMax = "1 1",
                                 OffsetMin = "5 5", OffsetMax = "-5 -5"
+                            },
+                            Image =
+                            {
+                                ItemId = craftItem.itemId,
+                                SkinId = craftItem.SkinID
                             }
-                        }
-                    });
+                        }, Layer + $".Craft.Item.{xSwitch}");
 
                     container.Add(new CuiLabel
                     {
@@ -3781,25 +4179,39 @@ namespace Oxide.Plugins
             }, EditLayer, Layer + ".Image");
 
             if (!string.IsNullOrEmpty(edit["Image"].ToString()) || !string.IsNullOrEmpty(edit["ShortName"].ToString()))
-                container.Add(new CuiElement
-                {
-                    Parent = Layer + ".Image",
-                    Components =
+            {
+                if (!string.IsNullOrEmpty(edit["Image"].ToString()))
+                    container.Add(new CuiElement
                     {
-                        new CuiRawImageComponent
+                        Parent = Layer + ".Image",
+                        Components =
                         {
-                            Png = !string.IsNullOrEmpty(edit["Image"].ToString())
-                                ? ImageLibrary.Call<string>("GetImage", edit["Image"].ToString())
-                                : ImageLibrary.Call<string>("GetImage", edit["ShortName"].ToString(),
-                                    Convert.ToUInt64(edit["SkinID"]))
-                        },
-                        new CuiRectTransformComponent
+                            new CuiRawImageComponent
+                            {
+                                Png = ImageLibrary.Call<string>("GetImage", edit["Image"].ToString())
+                            },
+                            new CuiRectTransformComponent
+                            {
+                                AnchorMin = "0 0", AnchorMax = "1 1",
+                                OffsetMin = "5 5", OffsetMax = "-5 -5"
+                            }
+                        }
+                    });
+                else
+                    container.Add(new CuiPanel
+                    {
+                        RectTransform =
                         {
                             AnchorMin = "0 0", AnchorMax = "1 1",
                             OffsetMin = "5 5", OffsetMax = "-5 -5"
+                        },
+                        Image =
+                        {
+                            ItemId = ItemManager.FindItemDefinition(edit["ShortName"].ToString())?.itemid ?? 0,
+                            SkinId = Convert.ToUInt64(edit["SkinID"])
                         }
-                    }
-                });
+                    }, Layer + ".Image");
+            }
 
             #region Input
 
@@ -4138,19 +4550,19 @@ namespace Oxide.Plugins
                 }, EditLayer, EditLayer + $".Item.{item}");
 
                 if (ImageLibrary)
-                    container.Add(new CuiElement
+                    container.Add(new CuiPanel
                     {
-                        Parent = EditLayer + $".Item.{item}",
-                        Components =
+                        RectTransform =
                         {
-                            new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", item)},
-                            new CuiRectTransformComponent
-                            {
-                                AnchorMin = "0 0", AnchorMax = "1 1",
-                                OffsetMin = "5 5", OffsetMax = "-5 -5"
-                            }
+                            AnchorMin = "0 0", AnchorMax = "1 1",
+                            OffsetMin = "5 5", OffsetMax = "-5 -5"
+                        },
+                        Image =
+                        {
+                            ItemId = ItemManager.FindItemDefinition(item)?.itemid ?? 0,
+                            SkinId = 0
                         }
-                    });
+                    }, Layer + ".Image");
 
                 container.Add(new CuiButton
                 {
@@ -4359,6 +4771,82 @@ namespace Oxide.Plugins
 
         #region Utils
 
+        private void LoadCustomWorkbenches()
+        {
+            _config.CustomWorkbench.ToList().ForEach(wb => InitCustomWorkbench(wb.Key, wb.Value));
+        }
+
+        private void InitCustomWorkbench(uint netId, CustomWorkbenchConf conf)
+        {
+            var workBench = BaseNetworkable.serverEntities.Find(netId) as Workbench;
+            if (workBench == null)
+            {
+                _config.CustomWorkbench.Remove(netId);
+                SaveConfig();
+                return;
+            }
+
+            if (conf.SafeZone)
+                new GameObject().AddComponent<SafeZoneComponent>().Activate(workBench, conf.SafeZoneRadius);
+        }
+
+        private void InitCustomWorkbench(Workbench workBench, CustomWorkbenchConf conf)
+        {
+            if (workBench == null) return;
+
+            if (conf.SafeZone)
+                new GameObject().AddComponent<SafeZoneComponent>().Activate(workBench, conf.SafeZoneRadius);
+        }
+
+        private void DestroyCustomWorkbenches()
+        {
+            Array.ForEach(_safeZones.ToArray(), zone =>
+            {
+                if (zone != null)
+                    zone.Kill();
+            });
+        }
+
+        private void DestroyCars()
+        {
+            Array.ForEach(_cars.ToArray(), car =>
+            {
+                if (car != null)
+                    car.Kill();
+            });
+        }
+
+        private void DestroyRecyclers()
+        {
+            Array.ForEach(_recyclers.ToArray(), recycler =>
+            {
+                if (recycler != null)
+                    recycler.Kill();
+            });
+        }
+
+        private void DestroyUi()
+        {
+            foreach (var player in BasePlayer.activePlayerList)
+            {
+                CuiHelper.DestroyUi(player, Layer);
+                CuiHelper.DestroyUi(player, EditLayer + ".Background");
+            }
+        }
+
+        private void CheckCars()
+        {
+            if (!SpawnModularCar && _crafts.Exists(x => x.Enabled && x.Type == CraftType.ModularCar))
+                PrintError("SpawnModularCar IS NOT INSTALLED.");
+        }
+
+        private static void SendEffect(string effect, Vector3 pos)
+        {
+            if (string.IsNullOrEmpty(effect)) return;
+
+            Effect.server.Run(effect, pos);
+        }
+
         #region Cooldown
 
         private readonly Dictionary<BasePlayer, PlayerUpdateCooldown> _updateCooldowns =
@@ -4539,8 +5027,6 @@ namespace Oxide.Plugins
             {
                 var imagesList = new Dictionary<string, string>();
 
-                var itemIcons = new List<KeyValuePair<string, ulong>>();
-
                 if (!string.IsNullOrEmpty(_config.UI.BackgroundImage) &&
                     !imagesList.ContainsKey(_config.UI.BackgroundImage))
                     imagesList.Add(_config.UI.BackgroundImage, _config.UI.BackgroundImage);
@@ -4556,14 +5042,8 @@ namespace Oxide.Plugins
                         if (!string.IsNullOrEmpty(item.Image)
                             && !imagesList.ContainsKey(item.Image))
                             imagesList.Add(item.Image, item.Image);
-
-                        itemIcons.Add(new KeyValuePair<string, ulong>(item.ShortName, item.SkinID));
                     });
-
-                    itemIcons.Add(new KeyValuePair<string, ulong>(craft.ShortName, craft.SkinID));
                 });
-
-                if (itemIcons.Count > 0) ImageLibrary?.Call("LoadImageList", Title, itemIcons, null);
 
                 ImageLibrary?.Call("ImportImageList", Title, imagesList, 0UL, true);
             }
@@ -4572,6 +5052,8 @@ namespace Oxide.Plugins
         private void RegisterPermissions()
         {
             permission.RegisterPermission(PermEdit, this);
+
+            permission.RegisterPermission(PermSetWb, this);
 
             if (!string.IsNullOrEmpty(_config.Permission) && !permission.PermissionExists(_config.Permission))
                 permission.RegisterPermission(_config.Permission, this);
@@ -4587,6 +5069,11 @@ namespace Oxide.Plugins
                         permission.RegisterPermission(item.Permission, this);
                 });
             });
+
+            foreach (var workbench in _config.CustomWorkbench.SelectMany(check =>
+                         check.Value.WorkBench.Where(workbench =>
+                             !string.IsNullOrEmpty(workbench.Key) && !permission.PermissionExists(workbench.Key))))
+                permission.RegisterPermission(workbench.Key, this);
         }
 
         private void RegisterCommands()
@@ -4596,13 +5083,20 @@ namespace Oxide.Plugins
             AddCovalenceCommand(
                 _crafts.FindAll(x => !string.IsNullOrEmpty(x.CmdToGive)).Select(x => x.CmdToGive).ToArray(),
                 nameof(CmdGiveCrafts));
+
+            AddCovalenceCommand("crafts.setwb", nameof(CmdSetCustomWb));
         }
 
         private List<Category> GetPlayerCategories(BasePlayer player)
         {
-            return _config.Categories.FindAll(cat =>
-                cat.Enabled && (string.IsNullOrEmpty(cat.Permission) ||
-                                permission.UserHasPermission(player.UserIDString, cat.Permission)));
+            CustomWorkbenchConf customWb;
+            _openedCustomWb.TryGetValue(player, out customWb);
+
+            return _config.Categories.FindAll(cat => cat.Enabled && (string.IsNullOrEmpty(cat.Permission) ||
+                                                                     permission.UserHasPermission(player.UserIDString,
+                                                                         cat.Permission)) &&
+                                                     (customWb == null || customWb.Categories.Contains("*") ||
+                                                      customWb.Categories.Contains(cat.Title)));
         }
 
         private List<CraftConf> GetPlayerCrafts(BasePlayer player, Category category)
@@ -4694,7 +5188,7 @@ namespace Oxide.Plugins
             foreach (var item in itemList)
             {
                 if (item.info.shortname != shortname ||
-                    skinId != 0 && item.skin != skinId || item.isBroken) continue;
+                    (skinId != 0 && item.skin != skinId) || item.isBroken) continue;
 
                 var num2 = iAmount - num1;
                 if (num2 <= 0) continue;
@@ -4724,6 +5218,15 @@ namespace Oxide.Plugins
 
         private static bool HasWorkbench(BasePlayer player, WorkbenchLevel level)
         {
+            CustomWorkbenchConf customWb;
+            if (_instance._openedCustomWb.TryGetValue(player, out customWb))
+            {
+                var lvl = customWb.GetWorkBenchLevel(player);
+
+                if (lvl > level)
+                    level = lvl;
+            }
+
             return level == WorkbenchLevel.Three ? player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench3)
                 : level == WorkbenchLevel.Two ? player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench3) ||
                                                 player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench2)
@@ -4731,6 +5234,13 @@ namespace Oxide.Plugins
                                                 player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench2) ||
                                                 player.HasPlayerFlag(BasePlayer.PlayerFlags.Workbench1)
                 : level == WorkbenchLevel.None;
+        }
+
+        private Workbench GetLookWorkbench(BasePlayer player)
+        {
+            RaycastHit RaycastHit;
+            if (!Physics.Raycast(player.eyes.HeadRay(), out RaycastHit, 5f)) return null;
+            return RaycastHit.GetEntity() as Workbench;
         }
 
         #endregion
@@ -4758,7 +5268,34 @@ namespace Oxide.Plugins
 
                     _recycler.gameObject.AddComponent<GroundWatch>();
                     _recycler.gameObject.AddComponent<DestroyOnGroundMissing>();
+
+                    if (_config.Recycler.Destroy.CheckGround)
+                        InvokeRepeating(CheckGroundMissing, 5, 5);
                 }
+            }
+
+            private void CheckGroundMissing()
+            {
+                float distance = 3;
+                RaycastHit hitInfo;
+                if (Physics.Raycast(_recycler.transform.position + new Vector3(0, 0.1f, 0), Vector3.down,
+                        out hitInfo, 4f, LayerMask.GetMask("Terrain", "Construction")))
+                    distance = hitInfo.distance;
+
+                if (distance > 0.2f)
+                {
+                    _recycler.Kill();
+
+                    DestroyActions();
+                }
+            }
+
+            public void DestroyActions()
+            {
+                if (_config.Recycler.Destroy.Item)
+                    _config.Recycler.GetItem.DropAndTossUpwards(_recycler.Transform.position);
+
+                _config.Recycler.Destroy.Effects.ForEach(effect => SendEffect(effect, _recycler.Transform.position));
             }
 
             public void DDraw()
@@ -5176,11 +5713,81 @@ namespace Oxide.Plugins
 
         #endregion
 
+        #region Safe Zone
+
+        private class SafeZoneComponent : FacepunchBehaviour
+        {
+            private readonly int playerLayer = LayerMask.GetMask("Player (Server)");
+
+            private Rigidbody _rigidbody;
+
+            private SphereCollider _sphereCollider;
+
+            private TriggerSafeZone _safeZone;
+
+            private void Awake()
+            {
+                gameObject.layer = (int) Rust.Layer.Reserved1;
+
+                _rigidbody = gameObject.AddComponent<Rigidbody>();
+                _rigidbody.useGravity = false;
+                _rigidbody.isKinematic = true;
+
+                _instance?._safeZones.Add(this);
+            }
+
+            public void Activate(BaseEntity parent, float radius)
+            {
+                transform.SetPositionAndRotation(parent.transform.position, new Quaternion());
+
+                UpdateCollider(radius);
+
+                gameObject.SetActive(true);
+                enabled = true;
+                _safeZone = gameObject.GetComponent<TriggerSafeZone>() ?? gameObject.AddComponent<TriggerSafeZone>();
+                _safeZone.interestLayers = playerLayer;
+                _safeZone.enabled = true;
+            }
+
+            private void UpdateCollider(float ZoneRadius)
+            {
+                _sphereCollider = gameObject.GetComponent<SphereCollider>();
+
+                if (_sphereCollider == null)
+                {
+                    _sphereCollider = gameObject.AddComponent<SphereCollider>();
+                    _sphereCollider.isTrigger = true;
+                }
+
+                _sphereCollider.radius = ZoneRadius;
+            }
+
+            private void OnDestroy()
+            {
+                _instance?._safeZones.Remove(this);
+
+                Destroy(gameObject);
+                Destroy(this);
+            }
+
+            public void Kill()
+            {
+                DestroyImmediate(this);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Lang
 
         private const string
+            ErrorSyntax = "ErrorSyntax",
+            WbWorkbenchInstalled = "WbWorkbenchInstalled",
+            WbWorkbenchExists = "WbWorkbenchExists",
+            WbNotFoundWorkbench = "WbNotFoundWorkbench",
+            WbNotFoundCategories = "WbNotFoundCategories",
             CraftItemAmount = "CraftItemAmount",
             CraftSelect = "CraftSelect",
             CraftCreate = "CraftCreate",
@@ -5269,6 +5876,11 @@ namespace Oxide.Plugins
                 [CraftCreate] = "Create Craft",
                 [CraftSelect] = "Select",
                 [CraftItemAmount] = "{0} pcs",
+                [WbNotFoundCategories] = "Categories not found!",
+                [WbNotFoundWorkbench] = "Workbench not found!",
+                [WbWorkbenchExists] = "This Workbench is already in the config!",
+                [WbWorkbenchInstalled] = "You have successfully installed the custom Workbench!",
+                [ErrorSyntax] = "Syntax error! Use: /{0}",
                 ["Enabled"] = "Enabled",
                 ["Image"] = "Image",
                 ["Title"] = "Title",

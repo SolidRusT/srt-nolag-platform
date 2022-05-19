@@ -1,5 +1,4 @@
-﻿//Requires: PlayingCards
-using Facepunch;
+﻿using Facepunch;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
@@ -13,55 +12,61 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Casino", "k1lly0u", "0.1.7")]
+    [Info("Casino", "k1lly0u", "0.1.10")]
     [Description("Core card game and table management system")]
-    class Casino : RustPlugin
+    public class Casino : RustPlugin
     {
-        #region Fields
-        private StoredData storedData;
-        private DynamicConfigFile data;
-
+        #region Fields        
         [PluginReference]
-        private Plugin ServerRewards, Economics;
+        private Plugin ServerRewards, Economics, ImageLibrary;
 
-        public static Casino Instance { get; private set; }
-
-        private Hash<GameType, Action<BaseEntity, StoredData.GameData>> registeredGames = new Hash<GameType, Action<BaseEntity, StoredData.GameData>>();
-
-        private List<CardGame> cardGames = new List<CardGame>();
-
-        private readonly KeyValuePair<Vector3, Vector3>[] chairPositions = new KeyValuePair<Vector3, Vector3>[]
-        {
-            new KeyValuePair<Vector3, Vector3>(new Vector3(0.75f, 0, -1.1f), new Vector3(0, 0, 0)),
-            new KeyValuePair<Vector3, Vector3>(new Vector3(-0.75f, 0, -1.1f), new Vector3(0, 0, 0)),
-            new KeyValuePair<Vector3, Vector3>(new Vector3(0.75f, 0, 1.1f), new Vector3(0, 180, 0)),
-            new KeyValuePair<Vector3, Vector3>(new Vector3(-0.75f, 0, 1.1f), new Vector3(0, 180, 0))
-        };
+        private readonly Hash<GameType, Action<BaseEntity, StoredData.GameData>> registeredGames = new Hash<GameType, Action<BaseEntity, StoredData.GameData>>();
 
         private bool wipeData = false;
 
+        public static Casino Instance { get; private set; }
+
+        public static PlayingCards Images { get; private set; }
+
+        private static List<CardGame> ActiveGames;
+
+        private static readonly KeyValuePair<Vector3, Vector3>[] ChairPositions = new KeyValuePair<Vector3, Vector3>[]
+        {
+            new KeyValuePair<Vector3, Vector3>(new Vector3(0.5f, 0, -1.1f), new Vector3(0, 0, 0)),
+            new KeyValuePair<Vector3, Vector3>(new Vector3(-0.5f, 0, -1.1f), new Vector3(0, 0, 0)),
+            new KeyValuePair<Vector3, Vector3>(new Vector3(0.5f, 0, 1.1f), new Vector3(0, 180, 0)),
+            new KeyValuePair<Vector3, Vector3>(new Vector3(-0.5f, 0, 1.1f), new Vector3(0, 180, 0))
+        };
+
         private const string CHAIR_PREFAB = "assets/prefabs/deployable/chair/chair.deployed.prefab";
 
-        private const string TABLE_PREFAB = "assets/prefabs/deployable/table/table.deployed.prefab";        
+        private const string TABLE_PREFAB = "assets/prefabs/deployable/table/table.deployed.prefab";
+
+        public enum GameType { BlackJack, Roulette, Baccarat }
+
+        public enum GameState { Waiting, PlacingBets, Prestart, Playing }
+
+        public enum BettingType { Item, ServerRewards, Economics }
         #endregion
 
         #region Oxide Hooks
         private void Loaded()
         {
-            data = Interface.Oxide.DataFileSystem.GetFile("Casino/casino_data");
             Instance = this;
 
-            lang.RegisterMessages(new Dictionary<string, string>
-            {
-                ["Error.NotEnoughAmount"] = "<color=#D3D3D3>You do not have have {0} to play this table. Minimum bet is :</color> <color=#ce422b>{1}</color>",
-                ["Table.Information"] = "<size=25>{0}</size><size=20>\nMin Bet: {1} {3}\nMax Bet: {2} {3}\nTake a seat to play!</size>",
-                ["Bet.RP"] = "RP",
-                ["Bet.Eco"] = "Eco"
-            }, this);
+            ActiveGames = new List<CardGame>();            
         }
 
+        protected override void LoadDefaultMessages() => lang.RegisterMessages(new Dictionary<string, string>
+        {
+            ["Error.NotEnoughAmount"] = "<color=#D3D3D3>You do not have have {0} to play this table. Minimum bet is :</color> <color=#ce422b>{1}</color>",
+            ["Table.Information"] = "<size=25>{0}</size><size=20>\nMin Bet: {1} {3}\nMax Bet: {2} {3}\nTake a seat to play!</size>",
+            ["Bet.RP"] = "RP",
+            ["Bet.Eco"] = "Eco"
+        }, this);
+
         private void OnServerInitialized()
-        {            
+        {
             LoadData();
 
             if (wipeData)
@@ -70,14 +75,39 @@ namespace Oxide.Plugins
                 SaveData();
             }
 
-            PlayingCards.OnImagesReady += LoadTables;
+            timer.In(3f, ()=> LoadImages(0));
+        }
+
+        private void LoadImages(int attempts = 0)
+        {
+            if (!ImageLibrary)
+            {
+                if (attempts > 3)
+                {
+                    Puts("[Casino] - This plugin requires ImageLibrary to manage the card images. Please install ImageLibrary to continue...");
+                    return;
+                }
+
+                timer.In(10, () => LoadImages(attempts++));
+                return;
+            }
+
+            Images = new PlayingCards(ImageLibrary);
+            Images.ImportCardImages(registeredGames.Keys, Configuration.ForceUpdate, LoadTables);
         }
 
         private void OnNewSave(string filename) => wipeData = true;
 
         private void OnEntityMounted(BaseMountable mountable, BasePlayer player)
         {
-            CardGame cardGame = GameFromChair(mountable);
+            if (!mountable)
+                return;
+
+            GameChair gameChair = mountable.GetComponent<GameChair>();
+            if (gameChair == null)
+                return;
+
+            CardGame cardGame = gameChair.CardGame;
             if (cardGame == null)
                 return;
 
@@ -88,6 +118,7 @@ namespace Oxide.Plugins
                 return;
             }
             cardGame.OnPlayerEnter(player, position);
+            gameChair.OnPlayerEnter(player);
         }
 
         private object CanMountEntity(BasePlayer player, BaseMountable mountable)
@@ -96,9 +127,9 @@ namespace Oxide.Plugins
             if (cardGame != null)
             {
                 int amount = cardGame.GetUserAmount(player);
-                if (amount < cardGame.gameData.minimumBet)
+                if (amount < cardGame.Data.minimumBet)
                 {
-                    SendReply(player, string.Format(lang.GetMessage("Error.NotEnoughAmount", this, player.UserIDString), cardGame.FormatBetString(player), cardGame.gameData.minimumBet));
+                    SendReply(player, string.Format(lang.GetMessage("Error.NotEnoughAmount", this, player.UserIDString), cardGame.FormatBetString(player), cardGame.Data.minimumBet));
                     return false;
                 }
             }
@@ -124,11 +155,16 @@ namespace Oxide.Plugins
 
         private void OnEntityDismounted(BaseMountable mountable, BasePlayer player)
         {
-            CardGame cardGame = GameFromChair(mountable);
+            GameChair gameChair = mountable.GetComponent<GameChair>();
+            if (gameChair == null)
+                return;
+
+            CardGame cardGame = gameChair.CardGame;
             if (cardGame == null)
                 return;
 
             cardGame.OnPlayerExit(player);
+            gameChair.OnPlayerExit(player);
         }
 
         private object OnEntityTakeDamage(BaseCombatEntity baseCombatEntity, HitInfo info)
@@ -180,54 +216,37 @@ namespace Oxide.Plugins
         {
             Unsubscribe(nameof(OnEntityKill));
 
-            for (int i = 0; i < cardGames.Count; i++)            
-                UnityEngine.Object.Destroy(cardGames[i]);
+            for (int i = 0; i < ActiveGames.Count; i++)            
+                UnityEngine.Object.Destroy(ActiveGames[i]);
             
-            cardGames.Clear();
+            ActiveGames.Clear();
 
             Instance = null;
+            Images = null;
+            Configuration = null;
         }
         #endregion
 
-        #region Functions
-        public void RegisterGame(GameType gameType, Action<BaseEntity, StoredData.GameData> callback)
-        {
-            PlayingCards.CardGames.Add(gameType.ToString().ToLower());
-            registeredGames[gameType] = callback;
-        }
+        #region Game Registration
+        public void RegisterGame(GameType gameType, Action<BaseEntity, StoredData.GameData> callback) => registeredGames[gameType] = callback;
 
         public void UnregisterGame(GameType gameType)
         {
             registeredGames.Remove(gameType);
 
-            for (int i = cardGames.Count - 1; i >= 0; i--)
+            for (int i = ActiveGames.Count - 1; i >= 0; i--)
             {
-                CardGame cardGame = cardGames[i];
-                if (cardGame.gameType == gameType)
+                CardGame cardGame = ActiveGames[i];
+                if (cardGame.Type == gameType)
                 {
-                    cardGames.Remove(cardGame);
+                    ActiveGames.Remove(cardGame);
                     UnityEngine.Object.Destroy(cardGame);                    
                 }
             }
         }
+        #endregion
 
-        private BaseMountable CreateSeat(BaseEntity entity, int number, CardGame cardgame)
-        {
-            Vector3 position = entity.transform.position + (entity.transform.rotation * chairPositions[number].Key);
-            Quaternion rotation = entity.transform.rotation * Quaternion.Euler(chairPositions[number].Value);
-
-            BaseMountable baseMountable = GameManager.server.CreateEntity(CHAIR_PREFAB, position, rotation) as BaseMountable;
-            baseMountable.enableSaving = false;
-            baseMountable.pickup.enabled = false;
-
-            baseMountable.Spawn();
-
-            DestroyComponents(baseMountable);
-
-            baseMountable.gameObject.AddComponent<GameChair>().SetCardGame(cardgame, number);
-            return baseMountable;
-        }
-
+        #region Table Restoration
         private void LoadTables()
         {
             List<uint> allTables = storedData.tables.Keys.ToList();
@@ -284,7 +303,9 @@ namespace Oxide.Plugins
             if (save)
                 SaveData();
         }
+        #endregion
 
+        #region Game Setup
         private void CreateCardGame(BaseEntity baseEntity, StoredData.GameData gameData)
         {
             if (!registeredGames.ContainsKey(gameData.gameType))
@@ -298,9 +319,28 @@ namespace Oxide.Plugins
             registeredGames[gameData.gameType].Invoke(baseEntity, gameData);
         }
 
-        private CardGame GameFromChair(BaseMountable mountable) => mountable.GetComponent<GameChair>()?.CardGame;
+        private static BaseMountable CreateSeatEntity(BaseEntity entity, int number, CardGame cardgame)
+        {
+            Vector3 position = entity.transform.position + (entity.transform.rotation * ChairPositions[number].Key);
+            Quaternion rotation = entity.transform.rotation * Quaternion.Euler(ChairPositions[number].Value);
 
-        public CardGame GameFromPlayer(BasePlayer player)
+            BaseMountable baseMountable = GameManager.server.CreateEntity(CHAIR_PREFAB, position, rotation) as BaseMountable;
+            baseMountable.enableSaving = false;
+            baseMountable.canWieldItems = false;
+            baseMountable.pickup.enabled = false;
+            baseMountable.skinID = Configuration.ChairSkinID;
+
+            baseMountable.Spawn();
+
+            DestroyComponents(baseMountable);
+
+            baseMountable.gameObject.AddComponent<GameChair>().SetCardGame(cardgame, number);
+            return baseMountable;
+        }
+        #endregion
+
+        #region Helpers
+        private CardGame GameFromPlayer(BasePlayer player)
         {
             CardPlayer cardPlayer = player.GetComponent<CardPlayer>();
             if (cardPlayer == null)
@@ -322,7 +362,7 @@ namespace Oxide.Plugins
             return null;
         }
 
-        public void DestroyComponents(BaseEntity baseEntity)
+        private static void DestroyComponents(BaseEntity baseEntity)
         {
             BaseCombatEntity baseCombatEntity = baseEntity as BaseCombatEntity;
             if (baseCombatEntity != null)            
@@ -360,54 +400,48 @@ namespace Oxide.Plugins
         }
         #endregion        
 
-        #region Game Base
+        #region Base Game
         public class CardGame : MonoBehaviour
         {
-            internal StoredData.GameData gameData;
+            public DecorDeployable Table { get; private set; }
 
-            public GameType gameType;
+            public StoredData.GameData Data { get; private set; }
 
-            internal GameState gameState = GameState.Waiting;
+            public TimerElement Timer { get; private set; }
 
-            internal TimerElement timer;
+            public TableInformer Informer { get; private set; }
 
-            private TableInformer informer;
+            public GameState State { get; set; } = GameState.Waiting;
 
-            public CardPlayer[] cardPlayers;
+            public CardPlayer[] Players { get; private set; }
 
-            private BaseMountable[] availableSeats;
+            private BaseMountable[] Seats { get; set; }
 
-            public DecorDeployable table;
-
-            private int bettingItemID;
-
-            private string bettingItemName;
-
-            private BettingType bettingType;
+            public virtual GameType Type { get; }
 
             public void Awake()
             {
-                table = GetComponent<DecorDeployable>();
-                timer = gameObject.AddComponent<TimerElement>();
-                informer = gameObject.AddComponent<TableInformer>();
+                Table = GetComponent<DecorDeployable>();
+                Timer = gameObject.AddComponent<TimerElement>();
+                Informer = gameObject.AddComponent<TableInformer>();
+
                 enabled = false;
             }
 
             public virtual void OnDestroy()
             {
-                Destroy(informer);
+                Destroy(Informer);
 
-                for (int i = 0; i < cardPlayers.Length; i++)
+                for (int i = 0; i < Players.Length; i++)
                 {
-                    CardPlayer cardPlayer = cardPlayers[i];
+                    CardPlayer cardPlayer = Players[i];
                     if (cardPlayer != null)
                         Destroy(cardPlayer);
                 }
 
-                for (int i = availableSeats.Length - 1; i >= 0; i--)
+                for (int i = Seats.Length - 1; i >= 0; i--)
                 {
-                    BaseMountable baseMountable = availableSeats[i];
-
+                    BaseMountable baseMountable = Seats[i];
                     if (baseMountable != null)
                     {
                         baseMountable.DismountAllPlayers();
@@ -415,8 +449,44 @@ namespace Oxide.Plugins
                     }
                 }
 
-                Destroy(timer);
+                Destroy(Timer);
             }
+
+            public void SetTableSkinID(ulong skinID)
+            {
+                if (Table.skinID == skinID || skinID == 0UL)
+                    return;
+
+                Table.skinID = skinID;
+                Table.SendNetworkUpdateImmediate();
+
+                Table.ClientRPC<int, uint>(null, "Client_ReskinResult", 1, Table.net.ID);
+            }
+
+            #region Game Initialization
+            public void InitializeGame(StoredData.GameData gameData)
+            {
+                Data = gameData;
+                Data.InitializeBetData();
+
+                Players = new CardPlayer[gameData.maxPlayers];
+                Seats = new BaseMountable[gameData.maxPlayers];
+
+                for (int i = 0; i < gameData.maxPlayers; i++)
+                    CreateSeat(i);
+
+                OnGameInitialized();
+            }
+
+            public void CreateSeat(int number) => Seats[number] = CreateSeatEntity(Table, number, this);
+
+            public virtual void OnGameInitialized()
+            {
+                Informer.OnGameInitialized();
+
+                ActiveGames.Add(this);
+            }
+            #endregion
 
             public virtual void OnPlayerEnter(BasePlayer player, int position) { }
 
@@ -426,108 +496,69 @@ namespace Oxide.Plugins
 
             public int GetChairPosition(BaseMountable baseMountable)
             {
-                for (int i = 0; i < availableSeats.Length; i++)
+                for (int i = 0; i < Seats.Length; i++)
                 {
-                    if (availableSeats[i].EqualNetID(baseMountable))
+                    if (Seats[i].EqualNetID(baseMountable))
                         return i;
                 }
                 return -1;
             }
 
-            public int CurrentPlayerCount => cardPlayers.Where(x => x != null).Count();
-
-            public int CurrentPlayingCount => cardPlayers.Where(x => x != null && x.IsPlaying).Count();
-
-            public void InitializeGame(StoredData.GameData gameData)
+            public int CurrentPlayerCount
             {
-                this.gameData = gameData;
-
-                SetBettingType();
-
-                cardPlayers = new CardPlayer[gameData.maxPlayers];
-                availableSeats = new BaseMountable[gameData.maxPlayers];
-
-                for (int i = 0; i < gameData.maxPlayers; i++)                
-                    CreateSeat(i);                
-
-                informer.OnGameInitialized();
-
-                OnGameInitialized();
+                get
+                {
+                    int count = 0;
+                    for (int i = 0; i < Players.Length; i++)
+                    {
+                        if (Players[i] != null)
+                            count++;
+                    }
+                    return count;
+                }
             }
 
-            public void CreateSeat(int number)
+            public int CurrentPlayingCount
             {
-                BaseMountable baseMountable = Instance.CreateSeat(table, number, this);
-                availableSeats[number] = baseMountable;
+                get
+                {
+                    int count = 0;
+                    for (int i = 0; i < Players.Length; i++)
+                    {
+                        if (Players[i] != null && Players[i].IsPlaying)
+                            count++;
+                    }
+                    return count;
+                }
             }
 
-            public virtual void OnGameInitialized()
+            #region Betting  
+            public void AdjustBet(CardPlayer cardPlayer, int amount, int minimum, int maximum)
             {
-                Casino.Instance.cardGames.Add(this);
-            }
-
-            public void AdjustBet(CardPlayer cardPlayer, int amount)
-            {
-                if (gameState != GameState.PlacingBets)             
+                if (State != GameState.PlacingBets)
                     return;
 
-                amount += cardPlayer.BetAmount;
+                amount = Mathf.Clamp(amount + cardPlayer.BetAmount, minimum, maximum);
                 if (cardPlayer.BankBalance < amount)
                     return;
 
-                cardPlayer.BetAmount = Mathf.Clamp(amount, gameData.minimumBet, gameData.maximumBet);
+                cardPlayer.BetAmount = amount;
             }
 
             public void ResetBet(CardPlayer cardPlayer)
             {
-                if (gameState != GameState.PlacingBets)
+                if (State != GameState.PlacingBets)
                     return;
 
-                cardPlayer.BetAmount = gameData.minimumBet;
-            }
-
-            #region Betting
-
-            private void SetBettingType()
-            {
-                string type = string.IsNullOrEmpty(gameData.bettingTypeOverride) ? Instance.configData.BettingType : gameData.bettingTypeOverride;
-
-                bettingType = ParseType<BettingType>(type);
-
-                if (bettingType == BettingType.ServerRewards && !Instance.ServerRewards)
-                {
-                    Instance.PrintError("Betting Type set to ServerRewards but ServerRewards can not be found? Defaulting to Item");
-                    bettingType = BettingType.Item;
-                }
-
-                if (bettingType == BettingType.Economics && !Instance.Economics)
-                {
-                    Instance.PrintError("Betting Type set to Economics but Economics can not be found? Defaulting to Item");
-                    bettingType = BettingType.Item;
-                }
-
-                if (bettingType == BettingType.Item)
-                {
-                    string shortname = string.IsNullOrEmpty(gameData.bettingItemOverride) ? Instance.configData.BettingItem : gameData.bettingItemOverride;
-
-                    ItemDefinition itemDefinition = ItemManager.FindItemDefinition(shortname);
-                    if (itemDefinition == null)
-                    {
-                        Instance.PrintError($"Betting item shortname is not a valid item shortname :{shortname}. Defaulting to scrap");
-                        itemDefinition = ItemManager.FindItemDefinition("scrap");
-                    }
-
-                    bettingItemID = itemDefinition.itemid;
-                    bettingItemName = itemDefinition.displayName.english;
-                }
+                cardPlayer.BetAmount = Data.minimumBet;
             }
 
             public int GetUserAmount(BasePlayer player)
             {
-                switch (bettingType)
+                switch (Data.BetType)
                 {
                     case BettingType.Item:
-                        return player.inventory.GetAmount(bettingItemID);
+                        return player.inventory.GetAmount(Data.BetItemID);
                     case BettingType.ServerRewards:
                         return (int)Instance.ServerRewards?.Call("CheckPoints", player.userID);
                     case BettingType.Economics:
@@ -538,10 +569,10 @@ namespace Oxide.Plugins
 
             public void TakeAmount(BasePlayer player, int amount)
             {
-                switch (bettingType)
+                switch (Data.BetType)
                 {
                     case BettingType.Item:
-                        player.inventory.Take(null, bettingItemID, amount);
+                        player.inventory.Take(null, Data.BetItemID, amount);
                         break;
                     case BettingType.ServerRewards:
                         Instance.ServerRewards?.Call("TakePoints", player.userID, amount);
@@ -554,10 +585,10 @@ namespace Oxide.Plugins
 
             public void GiveAmount(BasePlayer player, int amount)
             {
-                switch (bettingType)
+                switch (Data.BetType)
                 {
                     case BettingType.Item:
-                        Item item = ItemManager.CreateByItemID(bettingItemID, amount);
+                        Item item = ItemManager.CreateByItemID(Data.BetItemID, amount);
                         player.inventory.GiveItem(item, null);
                         break;
                     case BettingType.ServerRewards:
@@ -571,10 +602,10 @@ namespace Oxide.Plugins
 
             public string FormatBetString(BasePlayer player = null)
             {
-                switch (bettingType)
+                switch (Data.BetType)
                 {
                     case BettingType.Item:
-                        return bettingItemName;
+                        return Data.BetItemName;
                     case BettingType.ServerRewards:
                         return Instance.lang.GetMessage("Bet.RP", Instance, player?.UserIDString);
                     case BettingType.Economics:
@@ -584,30 +615,89 @@ namespace Oxide.Plugins
             }
             #endregion
         }
+        #endregion
 
-        internal class GameChair : MonoBehaviour
+        #region Game Chair
+        public class GameChair : MonoBehaviour
         {
             private BaseMountable mountable;
+
+            private TriggerSafeZone triggerSafeZone;
 
             public CardGame CardGame { get; private set; }
 
             public int Number { get; private set; }
+
+            private const int PLAYER_MASK = 131072;
 
             private void Awake()
             {
                 mountable = GetComponent<BaseMountable>();
 
                 enabled = false;
+
+                triggerSafeZone = gameObject.AddComponent<TriggerSafeZone>();
+                triggerSafeZone.interestLayers = PLAYER_MASK;
+                triggerSafeZone.enabled = true;
             }
 
-            internal void SetCardGame(CardGame cardGame, int number)
+            private void OnDestroy()
+            {
+                if (triggerSafeZone.entityContents != null)
+                {
+                    for (int i = triggerSafeZone.entityContents.Count - 1; i >= 0; i--)
+                    {
+                        BaseEntity baseEntity = triggerSafeZone.entityContents.ElementAt(i);
+                        if (baseEntity)
+                        {
+                            triggerSafeZone.entityContents.Remove(baseEntity);
+                            baseEntity.LeaveTrigger(triggerSafeZone);
+                        }
+                    }                    
+                }
+
+                Destroy(triggerSafeZone);
+            }
+
+            public void SetCardGame(CardGame cardGame, int number)
             {
                 this.CardGame = cardGame;
                 this.Number = number;
             }
-        }
 
-        internal class TableInformer : MonoBehaviour
+            public void OnPlayerEnter(BasePlayer player)
+            {
+                if (triggerSafeZone.entityContents == null)
+                    triggerSafeZone.entityContents = new HashSet<BaseEntity>();
+
+                if (!triggerSafeZone.entityContents.Contains(player))
+                {
+                    triggerSafeZone.entityContents.Add(player);
+                    player.EnterTrigger(triggerSafeZone);
+
+                    if (player.IsItemHoldRestricted(player.inventory.containerBelt.FindItemByUID(player.svActiveItemID)))
+                        player.UpdateActiveItem(0);
+
+                    player.SetPlayerFlag(BasePlayer.PlayerFlags.SafeZone, true);
+                }
+            }
+
+            public void OnPlayerExit(BasePlayer player)
+            {
+                if (triggerSafeZone.entityContents != null && triggerSafeZone.entityContents.Contains(player))
+                {
+                    triggerSafeZone.entityContents.Remove(player);
+                    player.LeaveTrigger(triggerSafeZone);
+
+                    if (!player.InSafeZone())
+                        player.SetPlayerFlag(BasePlayer.PlayerFlags.SafeZone, false);
+                }
+            }
+        }
+        #endregion
+
+        #region Table Informer
+        public class TableInformer : MonoBehaviour
         {
             private DecorDeployable table;
 
@@ -630,14 +720,14 @@ namespace Oxide.Plugins
                 drawPosition = transform.position + (Vector3.up * 1.5f);
 
                 Bounds bounds = table.bounds;
-                bounds.Expand(Instance.configData.DDrawBoundsMultiplier);
+                bounds.Expand(Configuration.DDrawBoundsMultiplier);
 
                 worldSpaceBounds = new OBB(transform.position, transform.lossyScale, transform.rotation, bounds);                 
             }
 
             public void OnGameInitialized()
             {
-                informationStr = string.Format(Instance.lang.GetMessage("Table.Information", Instance), cardGame.gameData.gameType, cardGame.gameData.minimumBet, cardGame.gameData.maximumBet, cardGame.FormatBetString());
+                informationStr = string.Format(Instance.lang.GetMessage("Table.Information", Instance), cardGame.Data.gameType, cardGame.Data.minimumBet, cardGame.Data.maximumBet, cardGame.FormatBetString());
 
                 InvokeHandler.InvokeRepeating(this, InformationTick, UnityEngine.Random.Range(0.1f, 2f), REFRESH_RATE);
             }
@@ -667,8 +757,10 @@ namespace Oxide.Plugins
                 Pool.FreeList(ref basePlayers);
             }
         }
+        #endregion
 
-        internal class TimerElement : MonoBehaviour
+        #region Game Timer
+        public class TimerElement : MonoBehaviour
         {
             public Casino.CardGame CardGame { get; private set; }
 
@@ -698,9 +790,9 @@ namespace Oxide.Plugins
 
                 InvokeHandler.CancelInvoke(this, TimerTick);
 
-                for (int i = 0; i < CardGame.cardPlayers.Length; i++)
+                for (int i = 0; i < CardGame.Players.Length; i++)
                 {
-                    CardPlayer cardPlayer = CardGame.cardPlayers[i];
+                    CardPlayer cardPlayer = CardGame.Players[i];
                     if (cardPlayer == null)
                         continue;
 
@@ -722,12 +814,12 @@ namespace Oxide.Plugins
 
             private void UpdateTimerUI()
             {
-                CuiElementContainer container = UI.ElementContainer(TIMER_OVERLAY, TIMER_POSITION);
-                UI.Label(ref container, TIMER_OVERLAY, $"{timeRemaining}", 18, UI4.FullScreen);
+                CuiElementContainer container = UI.Container(TIMER_OVERLAY, TIMER_POSITION);
+                UI.Label(container, TIMER_OVERLAY, $"{timeRemaining}", 18, UI4.FullScreen);
 
-                for (int i = 0; i < CardGame.cardPlayers.Length; i++)
+                for (int i = 0; i < CardGame.Players.Length; i++)
                 {
-                    CardPlayer cardPlayer = CardGame.cardPlayers[i];
+                    CardPlayer cardPlayer = CardGame.Players[i];
                     if (cardPlayer == null)
                         continue;
 
@@ -735,31 +827,32 @@ namespace Oxide.Plugins
                 }
             }
         }
+        #endregion
 
-
+        #region Card Player
         public class CardPlayer : MonoBehaviour
         {            
-            internal List<Card> hand = new List<Card>();
+            public List<Card> hand = Pool.GetList<Card>();
 
-            internal List<string> uiPanels = new List<string>();
+            public List<string> uiPanels = Pool.GetList<string>();
 
-            internal BasePlayer Player { get; private set; }
+            public BasePlayer Player { get; private set; }
 
-            internal Casino.CardGame CardGame { get; set; }
+            public Casino.CardGame CardGame { get; set; }
 
-            internal bool IsLeaving { get; private set; }
+            public bool IsLeaving { get; private set; }
 
-            internal int UID { get; private set; }
+            public int UID { get; private set; }
 
-            internal int BetAmount { get; set; }
+            public int BetAmount { get; set; }
 
-            internal bool BetLocked { get; set; }
+            public bool BetLocked { get; set; }
 
-            internal bool IsPlaying { get; set; } = false;
+            public bool IsPlaying { get; set; } = false;
 
-            internal int Position { get; set; }
+            public int Position { get; set; }
 
-            public int BankBalance
+            public virtual int BankBalance
             {
                 get
                 {
@@ -775,17 +868,17 @@ namespace Oxide.Plugins
                 }
             }
 
-            internal virtual void Awake()
+            public virtual void Awake()
             {
                 Player = GetComponent<BasePlayer>();
                 CardGame = Player.GetMounted().GetComponent<Casino.GameChair>().CardGame;
-                BetAmount = CardGame.gameData.minimumBet;
+                BetAmount = CardGame.Data.minimumBet;
 
                 GenerateUID();
                 enabled = false;
             }
 
-            internal virtual void OnDestroy()
+            public virtual void OnDestroy()
             {
                 IsLeaving = true;
 
@@ -795,43 +888,46 @@ namespace Oxide.Plugins
                 {
                     Player.GetMounted().DismountPlayer(Player, false);
                 }
+
+                Pool.FreeList(ref hand);
+                Pool.FreeList(ref uiPanels);
             }
 
-            internal void GenerateUID() => UID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            public void GenerateUID() => UID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
 
-            internal virtual void ResetHand()
+            public virtual void ResetHand()
             {
                 hand.Clear();
-                BetAmount = CardGame.gameData.minimumBet;
+                BetAmount = CardGame.Data.minimumBet;
                 BetLocked = false;
                 IsPlaying = false;
             }
 
-            internal void SetBet()
+            public virtual void SetBet()
             {
                 BetLocked = true;
                 CardGame.TakeAmount(Player, BetAmount);                
             }
 
-            internal void IssueWin(int amount)
+            public void IssueWin(int amount)
             {
                 CardGame.GiveAmount(Player, amount);               
             }
 
-            internal void AddUI(string str, CuiElementContainer container)
+            public void AddUI(string str, CuiElementContainer container)
             {
                 DestroyUI(str);
                 uiPanels.Add(str);                   
                 CuiHelper.AddUi(Player, container);
             }
 
-            internal void DestroyUI(string str)
+            public virtual void DestroyUI(string str)
             {
                 uiPanels.Remove(str);
                 CuiHelper.DestroyUi(Player, str);
             }
 
-            internal void DestroyUI()
+            public virtual void DestroyUI()
             {
                 foreach (string str in uiPanels)                
                     CuiHelper.DestroyUi(Player, str);                
@@ -839,85 +935,80 @@ namespace Oxide.Plugins
                 uiPanels.Clear();
             }
         }
+        #endregion
 
+        #region Deck Of Cards
         public class Deck
         {
-            private Queue<Card> deckOfCards = new Queue<Card>();
+            private readonly Queue<Card> _deck = new Queue<Card>();
 
-            private List<int> cardsAsInt = new List<int>();
+            private readonly List<int> _cardIndexes = new List<int>();
 
-            private System.Random generator = new System.Random();
+            private readonly System.Random _random = new System.Random();
 
             public Deck()
             {
+                IndexCards();
                 Shuffle();
             }
 
-            private void GenerateCardsAsInt()
+            private void IndexCards()
             {
-                cardsAsInt.Clear();
-                for (int i = 0; i < 52; i++)
-                {
-                    cardsAsInt.Add(i);
-                }
+                _cardIndexes.Clear();
+
+                for (int i = 0; i < 52; i++)                
+                    _cardIndexes.Add(i);                
             }
 
             public void Shuffle()
             {
-                deckOfCards.Clear();
-                GenerateCardsAsInt();
+                _deck.Clear();                
+
                 for (int i = 51; i >= 0; i--)
                 {
-                    int index = generator.Next(0, i);
-                    int temp = cardsAsInt[i];
-                    cardsAsInt[i] = cardsAsInt[index];
-                    cardsAsInt[index] = temp;
+                    int index = _random.Next(0, i);
+                    int temp = _cardIndexes[i];
+                    _cardIndexes[i] = _cardIndexes[index];
+                    _cardIndexes[index] = temp;
                 }
-                FillDeck();
+
+                Fill();
             }
 
-            private void FillDeck()
+            private void Fill()
             {
-                for (int i = 0; i < cardsAsInt.Count; i++)
+                for (int i = 0; i < _cardIndexes.Count; i++)
                 {
-                    CardSuit suit = (CardSuit)(cardsAsInt[i] % 4);
-                    CardValue value = (CardValue)(cardsAsInt[i] % 13 + 1);
-                    deckOfCards.Enqueue(new Card(suit, value));
+                    CardSuit suit = (CardSuit)(_cardIndexes[i] % 4);
+                    CardValue value = (CardValue)(_cardIndexes[i] % 13 + 1);
+
+                    _deck.Enqueue(new Card(suit, value));
                 }
             }
 
-            public Card DealCard()
-            {
-                return deckOfCards.Dequeue();
-            }
+            public Card Deal() => _deck.Dequeue();            
         }
 
         public struct Card
-        {            
+        {
             public CardSuit Suit { get; private set; }
 
             public CardValue Value { get; private set; }
 
-            public static Dictionary<CardSuit, Dictionary<CardValue, string>> CardImages = new Dictionary<CardSuit, Dictionary<CardValue, string>>()
-            {
-                [CardSuit.Clubs] = new Dictionary<CardValue, string>(),
-                [CardSuit.Diamonds] = new Dictionary<CardValue, string>(),
-                [CardSuit.Hearts] = new Dictionary<CardValue, string>(),
-                [CardSuit.Spades] = new Dictionary<CardValue, string>()
-            };
-
+            private string ImageID { get; set; }
 
             public Card(CardSuit suit, CardValue value) : this()
             {
                 this.Suit = suit;
                 this.Value = value;
+                this.ImageID = string.Empty;
             }
 
             public override string ToString() => string.Format("Suit: {0}, Value: {1}", this.Suit, this.Value);
 
             public string GetCardImage()
             {
-                if (!Card.CardImages[this.Suit].ContainsKey(this.Value))
+                if (string.IsNullOrEmpty(ImageID))
                 {
                     string value = string.Empty;
                     string suit = string.Empty;
@@ -949,7 +1040,7 @@ namespace Oxide.Plugins
                             break;
                     }
 
-                    switch (this.Suit)
+                    switch (Suit)
                     {
                         case CardSuit.Spades:
                             suit = "S";
@@ -964,14 +1055,11 @@ namespace Oxide.Plugins
                             suit = "C";
                             break;
                     }
-                    string str = PlayingCards.GetCardImage(value, suit);
 
-                    Card.CardImages[this.Suit].Add(this.Value, str);
-
-                    return str;
+                    ImageID = Images.GetCardImage(value, suit);
                 }
 
-                else return Card.CardImages[this.Suit][this.Value];
+                return ImageID;
             }
         }
         
@@ -1003,26 +1091,8 @@ namespace Oxide.Plugins
 
         #region UI     
         public static class UI
-        {
-            public static CuiElementContainer ElementContainer(string panel, string color, UI4 dimensions, bool useCursor = false, string parent = "Overlay")
-            {
-                CuiElementContainer container = new CuiElementContainer()
-                {
-                    {
-                        new CuiPanel
-                        {
-                            Image = {Color = color},
-                            RectTransform = {AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax()},
-                            CursorEnabled = useCursor
-                        },
-                        new CuiElement().Parent = parent,
-                        panel
-                    }
-                };
-                return container;
-            }
-
-            public static CuiElementContainer ElementContainer(string panel, UI4 dimensions, bool useCursor = false, string parent = "Overlay")
+        {            
+            public static CuiElementContainer Container(string panel, UI4 dimensions, bool useCursor = false, string parent = "Overlay")
             {
                 CuiElementContainer container = new CuiElementContainer()
                 {
@@ -1040,37 +1110,17 @@ namespace Oxide.Plugins
                 return container;
             }
 
-            public static CuiElementContainer Popup(string panelName, string text, int size, UI4 dimensions, TextAnchor align = TextAnchor.MiddleCenter, string parent = "Overlay")
-            {
-                CuiElementContainer container = new CuiElementContainer()
-                {
-                    {
-                        new CuiPanel { Image = {Color = "0 0 0 0" }, RectTransform = {AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax()} },
-                        new CuiElement().Parent = parent,
-                        panelName
-                    }
-                };
-                container.Add(new CuiLabel
-                {
-                    Text = { FontSize = size, Align = align, Text = text },
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" }
-                },
-                panelName);
-                return container;
-            }
-
-            public static void Panel(ref CuiElementContainer container, string panel, string color, UI4 dimensions, bool cursor = false)
+            public static void Panel(CuiElementContainer container, string panel, string color, UI4 dimensions, bool blur = false)
             {
                 container.Add(new CuiPanel
                 {
-                    Image = { Color = color },
-                    RectTransform = { AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() },
-                    CursorEnabled = cursor
+                    Image = { Color = color, Material = blur ? "assets/content/ui/uibackgroundblur-ingamemenu.mat" : string.Empty },
+                    RectTransform = { AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() }
                 },
                 panel);
             }
 
-            public static void Label(ref CuiElementContainer container, string panel, string text, int size, UI4 dimensions, TextAnchor align = TextAnchor.MiddleCenter)
+            public static void Label(CuiElementContainer container, string panel, string text, int size, UI4 dimensions, TextAnchor align = TextAnchor.MiddleCenter)
             {
                 container.Add(new CuiLabel
                 {
@@ -1080,12 +1130,12 @@ namespace Oxide.Plugins
                 panel);
             }
 
-            public static void OutlineLabel(ref CuiElementContainer container, string panel, string color, string text, int size, string distance, string aMin, string aMax, TextAnchor align = TextAnchor.MiddleCenter, string parent = "Overlay")
+            public static void OutlinedLabel(CuiElementContainer container, string panel, string text, int size, UI4 dimensions, TextAnchor align = TextAnchor.MiddleCenter)
             {
-                CuiElement textElement = new CuiElement
+                container.Add(new CuiElement
                 {
                     Name = CuiHelper.GetGuid(),
-                    Parent = panel,
+                    Parent = panel.ToString(),
                     FadeOut = 0.2f,
                     Components =
                     {
@@ -1093,25 +1143,24 @@ namespace Oxide.Plugins
                         {
                             Text = text,
                             FontSize = size,
-                            Align = TextAnchor.MiddleCenter,
+                            Align = align,
                             FadeIn = 0.2f
                         },
                         new CuiOutlineComponent
                         {
-                            Distance = distance,
-                            Color = color
+                            Distance = "1 1",
+                            Color = Color("000000", 0.7f)
                         },
                         new CuiRectTransformComponent
                         {
-                            AnchorMin = aMin,
-                            AnchorMax = aMax
+                            AnchorMin = dimensions.GetMin(),
+                            AnchorMax = dimensions.GetMax()
                         }
                     }
-                };
-                container.Add(textElement);
+                });
             }
 
-            public static void Button(ref CuiElementContainer container, string panel, string color, string text, int size, UI4 dimensions, string command, TextAnchor align = TextAnchor.MiddleCenter)
+            public static void Button(CuiElementContainer container, string panel, string color, string text, int size, UI4 dimensions, string command, TextAnchor align = TextAnchor.MiddleCenter)
             {
                 container.Add(new CuiButton
                 {
@@ -1122,7 +1171,7 @@ namespace Oxide.Plugins
                 panel);
             }
 
-            public static void Button(ref CuiElementContainer container, string panel, UI4 dimensions, string command)
+            public static void Button(CuiElementContainer container, string panel, UI4 dimensions, string command)
             {
                 container.Add(new CuiButton
                 {
@@ -1133,7 +1182,7 @@ namespace Oxide.Plugins
                 panel);
             }
 
-            public static void Image(ref CuiElementContainer container, string panel, string png, UI4 dimensions)
+            public static void Image(CuiElementContainer container, string panel, string png, UI4 dimensions)
             {
                 container.Add(new CuiElement
                 {
@@ -1142,28 +1191,6 @@ namespace Oxide.Plugins
                     Components =
                     {
                         new CuiRawImageComponent {Png = png },
-                        new CuiRectTransformComponent {AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() }
-                    }
-                });
-            }
-
-            public static void Input(ref CuiElementContainer container, string panel, string text, int size, string command, UI4 dimensions)
-            {
-                container.Add(new CuiElement
-                {
-                    Name = CuiHelper.GetGuid(),
-                    Parent = panel,
-                    Components =
-                    {
-                        new CuiInputFieldComponent
-                        {
-                            Align = TextAnchor.MiddleLeft,
-                            CharsLimit = 300,
-                            Command = command + text,
-                            FontSize = size,
-                            IsPassword = false,
-                            Text = text
-                        },
                         new CuiRectTransformComponent {AnchorMin = dimensions.GetMin(), AnchorMax = dimensions.GetMax() }
                     }
                 });
@@ -1195,17 +1222,13 @@ namespace Oxide.Plugins
             public string GetMin() => $"{xMin} {yMin}";
             public string GetMax() => $"{xMax} {yMax}";
 
-            private static UI4 _fullScreen;
+            private static UI4 _fullScreen = new UI4(0, 0, 1, 1);
 
-            public static UI4 FullScreen
-            {
-                get
-                {
-                    if (_fullScreen == null)
-                        _fullScreen = new UI4(0, 0, 1, 1);
-                    return _fullScreen;
-                }
-            }
+            private static UI4 _zero = new UI4(0, 0, 0, 0);
+
+            public static UI4 FullScreen { get { return _fullScreen; } }
+
+            public static UI4 Zero { get { return _zero; } }
         }
         #endregion
 
@@ -1338,7 +1361,7 @@ namespace Oxide.Plugins
                     SaveData();
 
                     CardGame cardgame = baseEntity.GetComponent<CardGame>();
-                    GameType type = cardgame.gameType;
+                    GameType type = cardgame.Type;
 
                     UnityEngine.Object.Destroy(cardgame);
 
@@ -1399,10 +1422,9 @@ namespace Oxide.Plugins
         }
         #endregion
 
-        #region Config   
-        public enum BettingType { Item, ServerRewards, Economics }
+        #region Config  
 
-        private ConfigData configData;
+        private static ConfigData Configuration;
 
         private class ConfigData
         {
@@ -1418,21 +1440,27 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "DDraw bounds multiplier (size of table bounds multiplied by this number)")]
             public float DDrawBoundsMultiplier { get; set; }
 
+            [JsonProperty(PropertyName = "Force image update on load")]
+            public bool ForceUpdate { get; set; }
+
+            [JsonProperty(PropertyName = "Chair skin ID")]
+            public ulong ChairSkinID { get; set; }
+
             public Oxide.Core.VersionNumber Version { get; set; }
         }
 
         protected override void LoadConfig()
         {
             base.LoadConfig();
-            configData = Config.ReadObject<ConfigData>();
+            Configuration = Config.ReadObject<ConfigData>();
 
-            if (configData.Version < Version)
+            if (Configuration.Version < Version)
                 UpdateConfigValues();
 
-            Config.WriteObject(configData, true);
+            Config.WriteObject(Configuration, true);
         }
 
-        protected override void LoadDefaultConfig() => configData = GetBaseConfig();
+        protected override void LoadDefaultConfig() => Configuration = GetBaseConfig();
 
         private ConfigData GetBaseConfig()
         {
@@ -1441,39 +1469,44 @@ namespace Oxide.Plugins
                 BettingItem = "scrap",
                 BettingType = "Item",
                 WipeOnNewSave = true,
+                ForceUpdate = false,
+                DDrawBoundsMultiplier = 1.5f,
+                ChairSkinID = 1385535192,
                 Version = Version
             };
         }
 
-        protected override void SaveConfig() => Config.WriteObject(configData, true);
+        protected override void SaveConfig() => Config.WriteObject(Configuration, true);
 
         private void UpdateConfigValues()
         {
             PrintWarning("Config update detected! Updating config values...");
 
-            if (configData.Version < new VersionNumber(0, 1, 7))
+            if (Configuration.Version < new VersionNumber(0, 1, 9))
             {
-                configData.DDrawBoundsMultiplier = 1.5f;
-
-                if (string.IsNullOrEmpty(configData.BettingType))
-                    configData.BettingType = "Item";
+                Configuration.DDrawBoundsMultiplier = 1.5f;
+                Configuration.ChairSkinID = 1385535192;
+                if (string.IsNullOrEmpty(Configuration.BettingType))
+                    Configuration.BettingType = "Item";
             }
 
-            configData.Version = Version;
+            Configuration.Version = Version;
             PrintWarning("Config update completed!");
         }
 
         #endregion
 
-        #region Data Management
-        public enum GameType { BlackJack/*, TexasHoldem*/ }
+        #region Data Management        
+        private StoredData storedData;
 
-        public enum GameState { Waiting, PlacingBets, Prestart, Playing }
+        private DynamicConfigFile data;
 
         private void SaveData() => data.WriteObject(storedData);
 
         private void LoadData()
         {
+            data = Interface.Oxide.DataFileSystem.GetFile("Casino/casino_data");
+
             try
             {
                 storedData = data.ReadObject<StoredData>();
@@ -1482,6 +1515,9 @@ namespace Oxide.Plugins
             {
                 storedData = new StoredData();
             }
+
+            if (storedData?.tables == null)
+                storedData = new StoredData();
         }
 
         public class StoredData
@@ -1513,6 +1549,33 @@ namespace Oxide.Plugins
 
                 public float x, y, z, rx, ry, rz;
 
+                [JsonIgnore]
+                public int BetItemID { get; private set; }
+
+                [JsonIgnore]
+                public string BetItemName { get; private set; }
+
+                [JsonIgnore]
+                public BettingType BetType { get; private set; }
+
+                [JsonIgnore]
+                public Vector3 Position
+                {
+                    get
+                    {
+                        return new Vector3(x, y, z);
+                    }
+                }
+
+                [JsonIgnore]
+                public Vector3 Rotation
+                {
+                    get
+                    {
+                        return new Vector3(rx, ry, rz);
+                    }
+                }
+
                 public GameData() { }
 
                 public GameData(BaseEntity baseEntity, GameType gameType, int maxPlayers, int minimumBet, int maximumBet)
@@ -1533,24 +1596,128 @@ namespace Oxide.Plugins
                     this.rz = baseEntity.transform.eulerAngles.z;
                 }
 
-                [JsonIgnore]
-                public Vector3 Position
+                public void InitializeBetData()
                 {
-                    get
+                    string type = string.IsNullOrEmpty(bettingTypeOverride) ? Configuration.BettingType : bettingTypeOverride;
+
+                    BetType = ParseType<BettingType>(type);
+
+                    if (BetType == BettingType.ServerRewards && !Instance.ServerRewards)
                     {
-                        return new Vector3(x, y, z);
+                        Debug.LogError("[Casino] - Betting Type set to ServerRewards but ServerRewards can not be found? Defaulting to Item");
+                        BetType = BettingType.Item;
+                    }
+
+                    if (BetType == BettingType.Economics && !Instance.Economics)
+                    {
+                        Debug.LogError("[Casino] - Betting Type set to Economics but Economics can not be found? Defaulting to Item");
+                        BetType = BettingType.Item;
+                    }
+
+                    if (BetType == BettingType.Item)
+                    {
+                        string shortname = string.IsNullOrEmpty(bettingItemOverride) ? Configuration.BettingItem : bettingItemOverride;
+
+                        ItemDefinition itemDefinition = ItemManager.FindItemDefinition(shortname);
+                        if (itemDefinition == null)
+                        {
+                            Debug.LogError($"[Casino] - Betting item shortname is not a valid item shortname :{shortname}. Defaulting to scrap");
+                            itemDefinition = ItemManager.FindItemDefinition("scrap");
+                        }
+
+                        BetItemID = itemDefinition.itemid;
+                        BetItemName = itemDefinition.displayName.english;
+                    }
+                }               
+            }
+        }
+        #endregion
+
+        #region Playing Cards
+        public class PlayingCards
+        {
+            private Action _callback;
+
+            private Plugin _imageLibrary;
+
+            public static bool IsReady { get; private set; }
+
+            private Plugin ImageLibrary
+            {
+                get
+                {
+                    if (_imageLibrary == null)
+                    {
+                        _imageLibrary = Interface.Oxide.RootPluginManager.GetPlugin("Image Library");
+
+                        if (_imageLibrary == null)                        
+                            throw new Exception("Casino requires the Image Library plugin, but it could not be found!");
+                    }
+
+                    return _imageLibrary;
+                }                
+            }
+
+            private const string URI = "https://www.rustedit.io/images/casino/";
+
+            public PlayingCards(Plugin plugin)
+            {
+                _imageLibrary = plugin;                
+            }
+
+            public void ImportCardImages(ICollection<GameType> cardgames, bool forceUpdate, Action callback)
+            {
+                _callback = callback;
+
+                Dictionary<string, Dictionary<ulong, string>> loadOrder = new Dictionary<string, Dictionary<ulong, string>>();
+
+                string[] values = new string[] { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
+                string[] suits = new string[] { "C", "D", "H", "S" };
+                int[] chips = new int[] { 1, 10, 50, 100, 500 };
+
+                for (int i = 0; i < suits.Length; i++)
+                {
+                    for (int j = 0; j < values.Length; j++)
+                    {
+                        loadOrder.Add($"{values[j]}{suits[i]}", new Dictionary<ulong, string>() { [0U] = $"{URI}{values[j]}{suits[i]}.png" });
                     }
                 }
 
-                [JsonIgnore]
-                public Vector3 Rotation
-                {
-                    get
-                    {
-                        return new Vector3(rx, ry, rz);
-                    }
-                }
+                loadOrder.Add("blue_back", new Dictionary<ulong, string>() { [0U] = $"{URI}blue_back.png" });
+                loadOrder.Add("gray_back", new Dictionary<ulong, string>() { [0U] = $"{URI}gray_back.png" });
+                loadOrder.Add("green_back", new Dictionary<ulong, string>() { [0U] = $"{URI}green_back.png" });
+                loadOrder.Add("purple_back", new Dictionary<ulong, string>() { [0U] = $"{URI}purple_back.png" });
+                loadOrder.Add("red_back", new Dictionary<ulong, string>() { [0U] = $"{URI}red_back.png" });
+                loadOrder.Add("yellow_back", new Dictionary<ulong, string>() { [0U] = $"{URI}yellow_back.png" });
+
+                foreach (GameType gameType in cardgames)
+                    loadOrder.Add($"board_{gameType}".ToLower(), new Dictionary<ulong, string>() { [0U] = $"{URI}board_{gameType}.png".ToLower() });
+
+                loadOrder.Add("betting_stack", new Dictionary<ulong, string>() { [0U] = $"{URI}betting_stack.png" });
+
+                for (int i = 0; i < chips.Length; i++)                
+                    loadOrder.Add($"chip_{chips[i]}", new Dictionary<ulong, string>() { [0U] = $"{URI}chip_{chips[i]}.png" });                
+
+                ImageLibrary.Call("ImportItemList", "Casino - Playing card imagery", loadOrder, forceUpdate, new Action(OnImagesLoaded));
             }
+
+            private void OnImagesLoaded()
+            {
+                IsReady = true;
+                _callback?.Invoke();
+            }
+
+            public void AddImage(string imageName, string fileName) => ImageLibrary.Call("AddImage", fileName, imageName, 0U);
+
+            public string GetCardImage(string value, string suit) => (string)ImageLibrary?.Call("GetImage", $"{value}{suit}");
+
+            public string GetChipImage(int value) => (string)ImageLibrary?.Call("GetImage", $"chip_{value}");
+
+            public string GetChipStackImage() => (string)ImageLibrary?.Call("GetImage", "betting_stack");
+
+            public string GetBoardImage(string gameType) => (string)ImageLibrary?.Call("GetImage", $"board_{gameType}");
+            
+            public string GetCardBackground(string color) => (string)ImageLibrary?.Call("GetImage", $"{color}_back");
         }
         #endregion
     }

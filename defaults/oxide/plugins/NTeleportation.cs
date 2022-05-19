@@ -19,9 +19,20 @@ using System;
 using UnityEngine;
 using System.IO;
 
+// scrap payments to bypass cooldown
+// costs to buy teleport
+
+/*
+Fixed home limit daily reset check
+Fixed ErrorTPR showing a blank target message
+Added TPTargetInsideEntity message to language API
+Updated /radiushome to reply with any error message
+Removed bounds check in CheckFoundation
+*/
+
 namespace Oxide.Plugins
 {
-    [Info("NTeleportation", "nivex", "1.6.9")]
+    [Info("NTeleportation", "nivex", "1.7.0")]
     [Description("Multiple teleportation systems for admin and players")]
     class NTeleportation : RustPlugin
     {
@@ -756,6 +767,7 @@ namespace Oxide.Plugins
                 {"TPAboveWater", "You can't teleport while above water!"},
                 {"TPTargetBuildingBlocked", "You can't teleport in a building blocked zone!"},
                 {"TPTargetInsideBlock", "You can't teleport into a foundation!"},
+                {"TPTargetInsideEntity", "You can't teleport into another entity!"},
                 {"TPTargetInsideRock", "You can't teleport into a rock!"},
                 {"TPSwimming", "You can't teleport while swimming!"},
                 {"TPCargoShip", "You can't teleport from the cargo ship!"},
@@ -2775,9 +2787,11 @@ namespace Oxide.Plugins
                 {
                     if ((player.transform.position - location.Value).magnitude <= radius)
                     {
-                        if (CheckFoundation(homeData.Key, location.Value) != null)
+                        string err = CheckFoundation(homeData.Key, location.Value);
+                        if (err != null)
                         {
                             PrintMsgL(player, "HomeRemovedInvalid", $"{location.Key} {location.Value}");
+                            PrintMsgL(player, err);
                             toRemove.Add(location.Key);
                             found = true;
                             continue;
@@ -2866,13 +2880,12 @@ namespace Oxide.Plugins
                 return false;
             }
             if (CanBypassRestrictions(player.UserIDString)) return true;
-            double balance;
             bool foundmoney = false;
 
             // Check Economics first.  If not in use or balance low, check ServerRewards below
             if (config.Settings.UseEconomics && Economics != null)
             {
-                balance = (double)Economics?.CallHook("Balance", player.UserIDString);
+                var balance = (double)Economics?.CallHook("Balance", player.UserIDString);
                 if (balance >= bypass)
                 {
                     foundmoney = true;
@@ -2891,7 +2904,7 @@ namespace Oxide.Plugins
             if (!foundmoney && config.Settings.UseServerRewards && ServerRewards != null)
             {
                 object bal = ServerRewards?.Call("CheckPoints", player.userID);
-                balance = Convert.ToDouble(bal);
+                var balance = Convert.ToDouble(bal);
                 if (balance >= bypass)
                 {
                     foundmoney = true;
@@ -3027,17 +3040,17 @@ namespace Oxide.Plugins
                         return;
                     }
                 }
-                limit = GetHigher(player, config.Home.VIPDailyLimits, config.Home.DailyLimit, true);
-                if (limit > 0 && homeData.Teleports.Amount >= limit)
-                {
-                    PrintMsgL(player, "HomeTPLimitReached", limit);
-                    return;
-                }
                 var currentDate = DateTime.Now.ToString("d");
                 if (homeData.Teleports.Date != currentDate)
                 {
                     homeData.Teleports.Amount = 0;
                     homeData.Teleports.Date = currentDate;
+                }
+                limit = GetHigher(player, config.Home.VIPDailyLimits, config.Home.DailyLimit, true);
+                if (limit > 0 && homeData.Teleports.Amount >= limit)
+                {
+                    PrintMsgL(player, "HomeTPLimitReached", limit);
+                    return;
                 }
                 err = CanPlayerTeleport(player, location);
                 if (err != null)
@@ -3406,7 +3419,7 @@ namespace Oxide.Plugins
                 var err2 = CheckPlayer(target, config.TPR.UsableIntoBuildingBlocked, CanCraftTPR(target), true, "tpr");
                 if (err2 != null)
                 {
-                    string error = string.Format(lang.GetMessage("ErrorTPR", this, player.UserIDString), target.displayName, err);
+                    string error = string.Format(lang.GetMessage("ErrorTPR", this, player.UserIDString), target.displayName, err2);
                     PrintMsg(player, error);
                     return;
                 }
@@ -5076,8 +5089,6 @@ namespace Oxide.Plugins
         private string CheckTargetLocation(BasePlayer player, Vector3 targetLocation, bool usableIntoBuildingBlocked, bool cupOwnerAllowOnBuildingBlocked)
         {
             if (CanBypassRestrictions(player.UserIDString)) return null;
-            //if (AntiHack.TestInsideTerrain(targetLocation + new Vector3(0f, 0.1f, 0f))) return "TPInsideTerrainTo";
-
             // ubb == UsableIntoBuildingBlocked
             // obb == CupOwnerAllowOnBuildingBlocked
             var entities = Pool.GetList<BuildingBlock>();
@@ -5212,7 +5223,7 @@ namespace Oxide.Plugins
             var entities = FindEntitiesOfType<BaseEntity>(a, 0.5f, Layers.Mask.Construction | Layers.Mask.Deployed);
             if (entities.Any(e => e is BuildingBlock || e is SimpleBuildingBlock || e is IceFence || e is ElectricBattery || e is Door))
             {
-                return "TPTargetInsideBlock";
+                return "TPTargetInsideEntity";
             }
             if (Exploits.TestRock(targetLocation))
             {
@@ -5257,9 +5268,10 @@ namespace Oxide.Plugins
         private string CheckFoundation(ulong userid, Vector3 position)
         {
             if (CanBypassRestrictions(userid.ToString())) return null;
-            if (CheckInsideEntity(position, userid) != null)
+            string insideErr = CheckInsideEntity(position, userid);
+            if (insideErr != null) 
             {
-                return "HomeNoFoundation";
+                return insideErr;                    
             }
             if (permission.UserHasPermission(userid.ToString(), PermFoundationCheck))
             {
@@ -5431,7 +5443,7 @@ namespace Oxide.Plugins
 
                 if (entity.IsValid())
                 {
-                    if (entity.PrefabName.Contains("foundation") || position.y < entity.WorldSpaceBounds().ToBounds().max.y)
+                    if (entity.PrefabName.Contains("foundation")) // || position.y < entity.WorldSpaceBounds().ToBounds().max.y)
                     {
                         if (ValidBlock(entity, position))
                         {

@@ -40,7 +40,7 @@ using UnityEngine.SceneManagement;
 
 namespace Oxide.Plugins
 {
-    [Info("Raidable Bases", "nivex", "2.4.3")]
+    [Info("Raidable Bases", "nivex", "2.4.4")]
     [Description("Create fully automated raidable bases with npcs.")]
     class RaidableBases : RustPlugin
     {
@@ -75,7 +75,7 @@ namespace Oxide.Plugins
         private bool bypassRestarting { get; set; }
         private List<string> tryBuyCooldowns { get; set; } = new List<string>();
         private BuildingTables Buildings { get; set; }
-        private bool DebugMode { get; set; }
+        private bool DebugMode { get; set; }        
         private List<RandomBase> Locations { get; set; } = new List<RandomBase>();
         private Dictionary<string, ItemDefinition> _definitions { get; set; } = new Dictionary<string, ItemDefinition>();
         private Dictionary<Vector3, float> LoadingTimes { get; set; } = new Dictionary<Vector3, float>();
@@ -142,7 +142,11 @@ namespace Oxide.Plugins
                 if (data.IsNull()) data = new StoredData();
                 if (data.UI.IsNull()) data.UI = new Dictionary<string, UI.Info>();
                 if (data.Players.IsNull()) data.Players = new Dictionary<string, PlayerInfo>();
-                if (data.TemporaryUID.Count > 0) timer.Once(30f, CleanupTemporaryFiles);
+                if (data.TemporaryUID.Count > 0)
+                {
+                    var uids = data.TemporaryUID.ToList();
+                    timer.Once(30f, () => CleanupTemporaryFiles(uids));
+                }
             }
             public void Save()
             {
@@ -151,22 +155,17 @@ namespace Oxide.Plugins
                 data.Players.RemoveAll((userid, playerInfo) => playerInfo.TotalRaids == 0 || playerInfo.IsExpired());
                 Interface.Oxide.DataFileSystem.WriteObject(Name, this);
             }
-            private static void CleanupTemporaryFiles()
+            private static void CleanupTemporaryFiles(List<uint> uids)
             {
                 var entities = new List<BaseEntity>();
-                foreach (uint uid in data.TemporaryUID)
+                foreach (uint uid in uids)
                 {
+                    data.TemporaryUID.Remove(uid);
                     var entity = BaseNetworkable.serverEntities.Find(uid) as BaseEntity;
                     if (entity.IsKilled()) continue;
                     entities.Add(entity);
                 }
-                data.TemporaryUID.Clear(); 
                 if (entities.Count == 0) return;
-                GarbageController.UndoLoop(new UndoSettings
-                {
-                    Limit = 3,
-                    Entities = RaidableBase.GetChildren(entities)
-                });
                 GarbageController.UndoLoop(new UndoSettings
                 {
                     Entities = entities,
@@ -454,7 +453,6 @@ namespace Oxide.Plugins
             public bool Mounts;
             public bool Teleport;
             public int Limit;
-            public Vector3 position;
         }
 
         public static class GarbageController
@@ -462,11 +460,24 @@ namespace Oxide.Plugins
             internal static Dictionary<BaseEntity, MountInfo> MountEntities { get; set; } = new Dictionary<BaseEntity, MountInfo>();
             internal static Dictionary<BaseEntity, RaidableBase> RaidEntities { get; set; } = new Dictionary<BaseEntity, RaidableBase>();
 
+            public static int Evaluate(BaseEntity entity)
+            {
+                if (entity is BuildingBlock)
+                {
+                    return 2;
+                }
+                if (!entity.HasParent())
+                {
+                    return 1;
+                }
+                return 0;
+            }
+
             public static void UndoLoop(UndoSettings undo, int count = 0)
             {
                 undo.Entities.RemoveAll(e => e.IsKilled());
 
-                undo.Entities.Sort((x, y) => (x is BuildingBlock).CompareTo(y is BuildingBlock));
+                undo.Entities.Sort((x, y) => Evaluate(x).CompareTo(Evaluate(y)));
 
                 undo.Entities.Take(undo.Limit).ToList().ForEach(entity =>
                 {
@@ -522,27 +533,8 @@ done:
                 {
                     Interface.CallHook("OnRaidableBaseDespawned", undo.hookObjects);
                 }
-
-                if (undo.position != Vector3.zero)
-                {
-                    //UpdateNetworkGroup(undo.position);
-                }
             }
-
-            private static void UpdateNetworkGroup(Vector3 target)
-            {
-                BasePlayer.activePlayerList.Where(player => InRange(player.transform.position, target, 400f)).ToList().ForEach(player =>
-                {
-                    player.SendEntityUpdate();
-
-                    if (!player.limitNetworking)
-                    {
-                        player.UpdateNetworkGroup();
-                        player.SendNetworkUpdateImmediate();
-                    }
-                });
-            }
-
+            
             private static bool KeepEntity(BaseEntity entity, UndoSettings undo)
             {
                 if (!undo.Mounts && KeepMountable(entity) || entity.OwnerID.IsSteamId() && KeepPlayerEntity(entity, undo))
@@ -592,7 +584,7 @@ done:
                     return false;
                 }
 
-                return !mi.mountable.GetMounted().IsNull() || !InRange(entity.transform.position, mi.position, mi.radius);
+                return !mi.mountable.GetMounted().IsNull() || !InRange2D(entity.transform.position, mi.position, mi.radius);
             }
 
             public static void RemoveHeldEntities()
@@ -655,12 +647,6 @@ done:
 
                 UndoLoop(new UndoSettings
                 {
-                    Limit = 3,
-                    Entities = RaidableBase.GetChildren(entities)
-                });
-
-                UndoLoop(new UndoSettings
-                {
                     Structures = config.Settings.Management.DoNotDestroyStructures,
                     Deployables = config.Settings.Management.DoNotDestroyDeployables,
                     Mounts = config.Settings.Management.DespawnMounts,
@@ -668,21 +654,20 @@ done:
                     Limit = limit,
                     Entities = entities,
                     hookObjects = null,
-                    position = Vector3.zero
                 });
             }
         }
 
         public static class GridController
         {
-            internal static List<RaidableSpawnLocation> Seabed { get; set; }
+            internal static HashSet<RaidableSpawnLocation> Seabed { get; set; }
             internal static Dictionary<RaidableType, RaidableSpawns> Spawns { get; set; }
             internal static Coroutine gridCoroutine { get; set; }
             internal static float gridTime { get; set; }
 
             public static void Initialize()
             {
-                Seabed = new List<RaidableSpawnLocation>();
+                Seabed = new HashSet<RaidableSpawnLocation>();
                 Spawns = new Dictionary<RaidableType, RaidableSpawns>();
             }
 
@@ -848,7 +833,7 @@ done:
                 return FileExists($"SpawnsDatabase{Path.DirectorySeparatorChar}{spawnsFile}");
             }
 
-            public static List<RaidableSpawnLocation> GetSpawnsLocations(string spawnsFile)
+            public static HashSet<RaidableSpawnLocation> GetSpawnsLocations(string spawnsFile)
             {
                 Spawnfile data;
 
@@ -861,7 +846,7 @@ done:
                     return null;
                 }
 
-                var locations = new List<RaidableSpawnLocation>();
+                var locations = new HashSet<RaidableSpawnLocation>();
 
                 if (data.IsNull())
                 {
@@ -878,7 +863,7 @@ done:
 
                     var vector = value.ToVector3();
 
-                    if (vector == Vector3.zero || locations.Exists(x => x.Location == vector)) continue;
+                    if (vector == Vector3.zero) continue;
 
                     locations.Add(new RaidableSpawnLocation(vector));
                 }
@@ -1461,7 +1446,6 @@ done:
                     CleanElevatorKill(entity);
                 }
                 Elevator elevator = GameManager.server.CreateEntity("assets/prefabs/deployable/elevator/static/elevator.static.prefab", bottom, rot, true) as Elevator;
-                elevator.enableSaving = false;
                 elevator.transform.rotation = rot;
                 elevator.transform.position = bottom;
                 elevator.transform.localPosition += new Vector3(0f, 0.25f, 0f);
@@ -1523,7 +1507,7 @@ done:
                 return result;
             }
 
-            private List<ulong> _granted = new List<ulong>();
+            private HashSet<ulong> _granted = new HashSet<ulong>();
 
             public bool HasCardPermission(BasePlayer player)
             {
@@ -1584,19 +1568,19 @@ done:
 
         public class RaidableSpawns
         {
-            public List<RaidableSpawnLocation> Spawns { get; set; } = new List<RaidableSpawnLocation>();
-            private Dictionary<CacheType, List<RaidableSpawnLocation>> Cached { get; set; } = new Dictionary<CacheType, List<RaidableSpawnLocation>>();
+            public HashSet<RaidableSpawnLocation> Spawns { get; set; } = new HashSet<RaidableSpawnLocation>();
+            private Dictionary<CacheType, HashSet<RaidableSpawnLocation>> Cached { get; set; } = new Dictionary<CacheType, HashSet<RaidableSpawnLocation>>();
             private float lastTryTime;
 
             public bool IsCustomSpawn { get; set; }
 
             public int Count => Spawns.Count;
 
-            public List<RaidableSpawnLocation> Active => Spawns;
+            public HashSet<RaidableSpawnLocation> Active => Spawns;
 
-            public List<RaidableSpawnLocation> Inactive(CacheType cacheType) => Get(cacheType);
+            public HashSet<RaidableSpawnLocation> Inactive(CacheType cacheType) => Get(cacheType);
 
-            public RaidableSpawns(List<RaidableSpawnLocation> spawns)
+            public RaidableSpawns(HashSet<RaidableSpawnLocation> spawns)
             {
                 Spawns = spawns;
                 IsCustomSpawn = true;
@@ -1626,10 +1610,7 @@ done:
                         break;
                 }
 
-                if (!Spawns.Exists(x => x.Location == rsl.Location))
-                {
-                    Spawns.Add(rsl);
-                }
+                Spawns.Add(rsl);
             }
 
             public void Check()
@@ -1649,21 +1630,18 @@ done:
 
             public void TryAddRange(CacheType cacheType = CacheType.Generic, bool forced = false)
             {
-                List<RaidableSpawnLocation> cache = Get(cacheType);
+                HashSet<RaidableSpawnLocation> cache = Get(cacheType);
 
                 foreach (var rsl in cache)
                 {
                     if (forced)
                     {
-                        if (!Spawns.Exists(x => x.Location == rsl.Location))
-                        {
-                            Spawns.Add(rsl);
-                        }
+                        Spawns.Add(rsl);
                     }
                     else Add(rsl, cacheType);
                 }
 
-                cache.RemoveAll(x => Spawns.Contains(x));
+                cache.RemoveWhere(x => Spawns.Contains(x));
             }
 
             public RaidableSpawnLocation GetRandom(BuildingWaterOptions options)
@@ -1690,12 +1668,12 @@ done:
                 }
             }
 
-            public List<RaidableSpawnLocation> Get(CacheType cacheType)
+            public HashSet<RaidableSpawnLocation> Get(CacheType cacheType)
             {
-                List<RaidableSpawnLocation> cache;
+                HashSet<RaidableSpawnLocation> cache;
                 if (!Cached.TryGetValue(cacheType, out cache))
                 {
-                    Cached[cacheType] = cache = new List<RaidableSpawnLocation>();
+                    Cached[cacheType] = cache = new HashSet<RaidableSpawnLocation>();
                 }
 
                 return cache;
@@ -1709,22 +1687,22 @@ done:
                     return;
                 }
 
-                List<RaidableSpawnLocation> cache = Get(cacheType);
+                HashSet<RaidableSpawnLocation> cache = Get(cacheType);
 
                 AddNear(cache, target, radius);
             }
 
-            private void AddNear(List<RaidableSpawnLocation> cache, Vector3 target, float radius)
+            private void AddNear(HashSet<RaidableSpawnLocation> cache, Vector3 target, float radius)
             {
                 foreach (var b in cache)
                 {
-                    if (InRange(target, b.Location, radius))
+                    if (InRange2D(target, b.Location, radius))
                     {
                         Spawns.Add(b);
                     }
                 }
 
-                cache.RemoveAll(x => Spawns.Contains(x));
+                cache.RemoveWhere(x => Spawns.Contains(x));
             }
 
             public void Remove(RaidableSpawnLocation a, CacheType cacheType)
@@ -1744,13 +1722,13 @@ done:
 
                 foreach (var b in Spawns)
                 {
-                    if (InRange(target, b.Location, radius))
+                    if (InRange2D(target, b.Location, radius))
                     {
                         cache.Add(b);
                     }
                 }
 
-                Spawns.RemoveAll(x => cache.Contains(x));
+                Spawns.RemoveWhere(x => cache.Contains(x));
                 return radius;
             }
         }
@@ -2063,7 +2041,7 @@ done:
                 else result = entities.Exists(e => e is BaseLadder);
                 return result;
             }
-
+            
             public string GetConstructionPrefab(ItemDefinition def)
             {
                 switch (def.shortname)
@@ -2091,7 +2069,6 @@ done:
                 FlameThrower,
                 Melee,
                 Water,
-                Syringe,
                 None
             }
 
@@ -2100,7 +2077,6 @@ done:
             private FlameThrower flameThrower;
             private BaseProjectile launcher;
             private LiquidWeapon liquidWeapon;
-            private MedicalTool syringe;
             private BaseMelee baseMelee;
             private BasePlayer AttackTarget;
             internal RaidableBase raid;
@@ -2239,10 +2215,6 @@ done:
                         liquidWeapon = _attackEntity as LiquidWeapon;
                         liquidWeapon.AutoPump = true;
                         SetAttackRestrictions(AttackType.Water, 10f, 2f);
-                        break;
-                    case "syringe_medical.entity":
-                        syringe = _attackEntity as MedicalTool;
-                        SetAttackRestrictions(AttackType.Syringe, 2.5f, 4f);
                         break;
                     default: _attackEntity = null; break;
                 }
@@ -2443,10 +2415,6 @@ done:
                     else if (brain.attackType == AttackType.Water)
                     {
                         brain.UseWaterGun();
-                    }
-                    else if (brain.CanUseMedicalTool())
-                    {
-                        brain.UseSyringe(true);
                     }
                     else brain.MeleeAttack();
                 }
@@ -2720,7 +2688,7 @@ done:
 
             private void TryToRoam()
             {
-                if (npc.IsSwimming())
+                if (Settings.KillUnderwater && npc.IsSwimming())
                 {
                     npc.Kill();
                     Destroy(this);
@@ -2780,20 +2748,6 @@ done:
                 List<DamageTypeEntry> damage = new List<DamageTypeEntry>();
                 WaterBall.DoSplash(hit.point, 2f, ItemManager.FindItemDefinition("water"), 10);
                 DamageUtil.RadiusDamage(npc, liquidWeapon.LookupPrefab(), hit.point, 0.15f, 0.15f, damage, 131072, true);
-            }
-
-            public bool CanUseMedicalTool()
-            {
-                return npc.inventory.containerBelt.itemList.Exists(item => item.info.shortname == "syringe.medical") && npc.health <= npc.MaxHealth() / 2f;
-            }
-
-            private void UseSyringe(bool now = false)
-            {
-                raid.EquipWeapon(npc, this, now);
-                IdentifyWeapon();
-                if (syringe == null) return;
-                syringe.ServerUse();
-                Invoke(() => UseSyringe(), 4f);
             }
 
             private void UseChainsaw()
@@ -3028,17 +2982,17 @@ done:
 
             private bool IsInAttackRange(float range = 0f)
             {
-                return InRange(ServerPosition, AttackPosition, range == 0f ? attackRange : range, false);
+                return InRange(ServerPosition, AttackPosition, range == 0f ? attackRange : range);
             }
 
             private bool IsInHomeRange()
             {
-                return InRange(ServerPosition, raid.Location, Mathf.Max(raid.ProtectionRadius, TargetLostRange), false);
+                return InRange(ServerPosition, raid.Location, Mathf.Max(raid.ProtectionRadius, TargetLostRange));
             }
 
             private bool IsInLeaveRange(Vector3 destination)
             {
-                return InRange(raid.Location, destination, raid.ProtectionRadius, false);
+                return InRange(raid.Location, destination, raid.ProtectionRadius);
             }
 
             private bool IsInReachableRange()
@@ -3048,22 +3002,22 @@ done:
                     return false;
                 }
 
-                return attackType != AttackType.Melee || InRange(AttackPosition, ServerPosition, 15f, false);
+                return attackType != AttackType.Melee || InRange(AttackPosition, ServerPosition, 15f);
             }
 
             private bool IsInSenseRange(Vector3 destination)
             {
-                return InRange(raid.Location, destination, SenseRange);
+                return InRange2D(raid.Location, destination, SenseRange);
             }
 
             private bool IsInTargetRange(Vector3 destination)
             {
-                return InRange(raid.Location, destination, TargetLostRange);
+                return InRange2D(raid.Location, destination, TargetLostRange);
             }
 
             private bool IsInThrowRange()
             {
-                return InRange(ServerPosition, AttackPosition, attackRange, false);
+                return InRange(ServerPosition, AttackPosition, attackRange);
             }
 
             private bool ShouldForgetTarget(BasePlayer target)
@@ -3085,6 +3039,18 @@ done:
             public bool LockedOnEnter;
             public BasePlayer player;
             public PlayerInputEx Input;
+            public bool IsParticipant
+            {
+                get
+                {
+                    return IsRaider || LockedOnEnter;
+                }
+                set
+                {
+                    IsRaider = value;
+                    LockedOnEnter = value;
+                }
+            }
             public Raider(BasePlayer target)
             {
                 player = target;
@@ -3103,8 +3069,7 @@ done:
             {
                 DestroyInput();
                 IsAllowed = false;
-                IsRaider = false;
-                LockedOnEnter = false;
+                IsParticipant = false;
             }
         }
 
@@ -3126,8 +3091,8 @@ done:
             public List<ulong> intruders { get; set; } = Pool.GetList<ulong>();
             public Dictionary<ulong, Raider> raiders { get; set; } = Pool.Get<Dictionary<ulong, Raider>>();
             public Hash<uint, float> conditions { get; set; } = Pool.Get<Hash<uint, float>>();
-            public List<StorageContainer> _containers { get; set; } = new List<StorageContainer>();
-            public List<StorageContainer> _allcontainers { get; set; } = new List<StorageContainer>();
+            internal HashSet<StorageContainer> _containers { get; set; } = new HashSet<StorageContainer>();
+            internal HashSet<StorageContainer> _allcontainers { get; set; } = new HashSet<StorageContainer>();
             public List<ScientistNPC> npcs { get; set; } = Pool.GetList<ScientistNPC>();
             public List<HotAirBalloon> habs { get; set; } = Pool.GetList<HotAirBalloon>();
             public List<BaseMountable> mountables { get; set; } = Pool.GetList<BaseMountable>();
@@ -3213,7 +3178,7 @@ done:
             private int _undoLimit { get; set; }
             private Dictionary<Elevator, BMGELEVATOR> Elevators { get; set; } = new Dictionary<Elevator, BMGELEVATOR>();
             private ItemDefinition lowgradefuel { get; set; } = ItemManager.FindItemDefinition("lowgradefuel");
-            public List<BaseEntity> Entities { get; set; } = new List<BaseEntity>();
+            public HashSet<BaseEntity> Entities { get; set; } = new HashSet<BaseEntity>();
             public Dictionary<BaseEntity, Vector3> BuiltList { get; set; } = new Dictionary<BaseEntity, Vector3>();
             public RaidableSpawns spawns { get; set; }
             public float RemoveNearDistance { get; set; }
@@ -3267,14 +3232,11 @@ done:
                 {
                     return;
                 }
-                if (!Entities.Contains(entity))
-                {
-                    Entities.Add(entity);                    
-                }
                 if (!data.TemporaryUID.Contains(entity.net.ID))
                 {
                     data.TemporaryUID.Add(entity.net.ID);
                 }
+                Entities.Add(entity);
             }
 
             private void ResetToPool<T>(ICollection<T> collection)
@@ -3365,15 +3327,11 @@ done:
                         playersInSphere.Add(entity as BasePlayer);
                     }
                     else if (entity is BaseMountable)
-                    {
-                        if (Time.time < lastMountCheckTime) continue;
-                        lastMountCheckTime = Time.time + 1f;
+                    {                        
                         mountablesInSphere.Add(entity as BaseMountable);
                     }
                     else if (entity is HotAirBalloon)
-                    {
-                        if (Time.time < lastMountCheckTime) continue;
-                        lastMountCheckTime = Time.time + 1f;
+                    {                        
                         habsInSphere.Add(entity as HotAirBalloon);
                     }
                 }
@@ -3381,8 +3339,9 @@ done:
 
             private void CheckMountablesExiting()
             {
-                if (habs.Count > 0)
+                if (habs.Count > 0 && Time.time > lastMountCheckTime)
                 {
+                    lastMountCheckTime = Time.time + 1f;
                     habs.ToList().ForEach(m =>
                     {
                         if (m.IsKilled())
@@ -3397,8 +3356,9 @@ done:
                         }
                     });
                 }
-                if (mountables.Count > 0)
+                if (mountables.Count > 0 && Time.time > lastMountCheckTime)
                 {
+                    lastMountCheckTime = Time.time + 1f;
                     mountables.ToList().ForEach(m =>
                     {
                         if (m.IsKilled())
@@ -3419,7 +3379,7 @@ done:
             {
                 if (habsInSphere.Count > 0)
                 {
-                    habsInSphere.ToList().ForEach(m =>
+                    habsInSphere.ForEach(m =>
                     {
                         if (!habs.Contains(m))
                         {
@@ -3429,7 +3389,7 @@ done:
                 }
                 if (mountablesInSphere.Count > 0)
                 {
-                    mountablesInSphere.ToList().ForEach(m =>
+                    mountablesInSphere.ForEach(m =>
                     {
                         if (!mountables.Contains(m))
                         {
@@ -3578,7 +3538,7 @@ done:
 
                 foreach (var brain in Instance.HumanoidBrains.Values)
                 {
-                    if (!InRange(brain.DestinationOverride, Location, brain.SenseRange))
+                    if (!InRange2D(brain.DestinationOverride, Location, brain.SenseRange))
                     {
                         continue;
                     }
@@ -3969,30 +3929,8 @@ enterExit:
                 }
             }
 
-            public static List<BaseEntity> GetChildren(List<BaseEntity> entities)
-            {
-                var children = new List<BaseEntity>();
-
-                entities.ForEach(e =>
-                {
-                    if (!e.IsKilled() && e.HasParent())
-                    {
-                        //e.SetParent(null);
-                        children.Add(e);
-                    }
-                });
-
-                return children;
-            }
-
             private void DestroyEntities()
             {
-                GarbageController.UndoLoop(new UndoSettings
-                {
-                    Limit = 3,
-                    Entities = GetChildren(Entities)
-                });
-
                 GarbageController.UndoLoop(new UndoSettings
                 {
                     Structures = _undoStructures,
@@ -4002,7 +3940,6 @@ enterExit:
                     Limit = _undoLimit,
                     Entities = Entities.ToList(),
                     hookObjects = hookObjects,
-                    position = Location
                 });
             }
 
@@ -4066,7 +4003,7 @@ enterExit:
 
             public List<BasePlayer> GetRaiders()
             {
-                return raiders.Values.Where(x => x.player.IsReallyValid() && (x.IsRaider || x.LockedOnEnter)).Select(x => x.player).ToList();
+                return raiders.Values.Where(x => x.player.IsReallyValid() && x.IsParticipant).Select(x => x.player).ToList();
             }
 
             public bool AddLooter(BasePlayer looter, HitInfo hitInfo = null)
@@ -4376,35 +4313,59 @@ enterExit:
 
                 foreach (var ri in raiders.Values)
                 {
-                    if (ri.player.IsNull() || ri.player.IsFlying || ri.player._limitedNetworking || !IsPlayerActive(ri.id))
+                    if (ri.player.IsNull())
                     {
+                        ri.reward = false;
+                        continue;
+                    }
+
+                    if (ri.player.IsFlying)
+                    {
+                        if (config.EventMessages.Rewards.Flying) Message(ri.player, "No Reward: Flying");
+                        ri.reward = false;
+                        continue;
+                    }
+                    
+                    if (ri.player._limitedNetworking)
+                    {
+                        if (config.EventMessages.Rewards.Vanished) Message(ri.player, "No Reward: Vanished");
+                        ri.reward = false;
+                        continue;
+                    }
+                    
+                    if (!IsPlayerActive(ri.id))
+                    {
+                        if (config.EventMessages.Rewards.Inactive) Message(ri.player, "No Reward: Inactive");
                         ri.reward = false;
                         continue;
                     }
 
                     if (config.Settings.RemoveAdminRaiders && ri.player.IsAdmin && Type != RaidableType.None)
                     {
+                        if (config.EventMessages.Rewards.RemoveAdmin) Message(ri.player, "No Reward: Admin");
                         ri.reward = false;
                         continue;
                     }
 
                     if (config.Settings.Management.OnlyAwardOwner && ri.player.userID != ownerId && ownerId.IsSteamId())
                     {
+                        if (config.EventMessages.Rewards.NotOwner) Message(ri.player, "No Reward: Not Owner");
                         ri.reward = false;
-                        continue;
                     }
 
-                    if (!ri.IsRaider && !ri.LockedOnEnter)
+                    if (!ri.IsParticipant)
                     {
+                        if (config.EventMessages.Rewards.NotParticipant) Message(ri.player, "No Reward: Not A Participant");
                         ri.reward = false;
                         continue;
                     }
 
                     if (config.Settings.Management.OnlyAwardAllies && ri.player.userID != ownerId && !IsAlly(ri.userid, ownerId))
                     {
-                        continue;
+                        if (config.EventMessages.Rewards.NotAlly) Message(ri.player, "No Reward: Not Ally");
+                        ri.reward = false;
                     }
-
+                    
                     sb.Append(ri.displayName).Append(", ");
                 }
 
@@ -4429,13 +4390,14 @@ enterExit:
                 string thieves = sb.ToString();
                 string posStr = FormatGridReference(Location);
 
-                Puts(mx("Thief", null, posStr, thieves));
+                Puts(mx("Thieves", null, mx($"Mode{Options.Mode}"), posStr, thieves));
 
                 if (config.EventMessages.AnnounceThief)
                 {
                     foreach (var target in BasePlayer.activePlayerList)
                     {
-                        QueueNotification(target, "Thief", posStr, thieves);
+                        string mode = mx($"Mode{Options.Mode}", target.UserIDString);
+                        QueueNotification(target, "Thieves", mode, posStr, thieves);
                     }
                 }
             }
@@ -4463,7 +4425,7 @@ enterExit:
                 {
                     TrySetLockout(ri);
 
-                    if (!ri.IsRaider && !ri.LockedOnEnter || !ri.reward)
+                    if (!ri.IsParticipant || !ri.reward)
                     {
                         continue;
                     }
@@ -4546,7 +4508,7 @@ enterExit:
                         return;
                     }
 
-                    int total = raiders.Values.ToList().Sum(x => x.IsRaider || x.LockedOnEnter ? 1 : 0);
+                    int total = raiders.Values.ToList().Sum(x => x.IsParticipant ? 1 : 0);
 
                     if (Options.Rewards.Custom.IsReallyValid())
                     {
@@ -4719,7 +4681,7 @@ enterExit:
 
             private void TrySetLockout(Raider ri)
             {
-                if (IsUnloading || IsResetting || ri == null || (!ri.IsRaider && !ri.LockedOnEnter) || Type == RaidableType.None || ri.id.HasPermission("raidablebases.canbypass") || ri.id.HasPermission("raidablebases.lockoutbypass"))
+                if (IsUnloading || IsResetting || ri == null || !ri.IsParticipant || Type == RaidableType.None || ri.id.HasPermission("raidablebases.canbypass") || ri.id.HasPermission("raidablebases.lockoutbypass"))
                 {
                     return;
                 }
@@ -5011,7 +4973,7 @@ enterExit:
                     return;
                 }
 
-                if (InRange(attacker.transform.position, Location, ProtectionRadius) || IsLootingWeapon(hitInfo))
+                if (InRange2D(attacker.transform.position, Location, ProtectionRadius) || IsLootingWeapon(hitInfo))
                 {
                     SetOwner(attacker);
                 }
@@ -5048,7 +5010,7 @@ enterExit:
             {
                 samsites.ForEach(ss =>
                 {
-                    if (ss.IsKilled() || !ss.staticRespawn || !InRange(ss.transform.position, entity.transform.position, 6f))
+                    if (ss.IsKilled() || !ss.staticRespawn || !InRange2D(ss.transform.position, entity.transform.position, 6f))
                     {
                         return;
                     }
@@ -5264,7 +5226,7 @@ enterExit:
                     return;
                 }
 
-                if (Type != RaidableType.None && raiders.Exists(ri => ri.Value.IsRaider || ri.Value.LockedOnEnter))
+                if (Type != RaidableType.None && raiders.Exists(ri => ri.Value.IsParticipant))
                 {
                     CheckDespawn();
                 }
@@ -5306,12 +5268,13 @@ enterExit:
 
             public void Init(RandomBase x, List<BaseEntity> entities, Dictionary<Elevator, BMGELEVATOR> elevators = null)
             {
+                float radius = x.Profile.Options.ProtectionRadius(x.Type);
                 float distance;
                 if (x.spawns == null)
                 {
-                    distance = x.Profile.Options.ProtectionRadius(x.Type);
+                    distance = radius;
                 }
-                else distance = x.spawns.RemoveNear(x.Position, x.Profile.Options.ProtectionRadius(x.Type), CacheType.Generic, x.Type);
+                else distance = x.spawns.RemoveNear(x.Position, radius, CacheType.Generic, x.Type);
 
                 Instance.Cycle.Add(x.Type, x.Profile.Options.Mode, x.BaseName);
 
@@ -5322,16 +5285,16 @@ enterExit:
                 
                 IsLoading = true;
                 spawns = x.spawns;
-                Entities = entities;
                 Elevators = elevators;
                 BaseIndex = x.BaseIndex;
-                RemoveNearDistance = distance; 
-                
-                TryInvokeMethod(SetCenterFromMultiplePoints);
-                TryInvokeMethod(SetupElevators);
+                RemoveNearDistance = distance;
+
+                TryInvokeMethod(() => AddEntities(entities));
 
                 Interface.Oxide.NextTick(() =>
                 {
+                    TryInvokeMethod(SetCenterFromMultiplePoints);
+                    TryInvokeMethod(SetupElevators); 
                     SetupCollider();
 
                     setupRoutine = ServerMgr.Instance.StartCoroutine(EntitySetup());
@@ -5348,24 +5311,34 @@ enterExit:
                 Elevators.ToList().ForEach(element => element.Value.Init(this));
             }
 
+            private void AddEntities(List<BaseEntity> entities)
+            {
+                for (int i = 0; i < entities.Count; i++)
+                {
+                    var e = entities[i];
+                    if (e.IsKilled())
+                        continue;
+                    if (e.ShortPrefabName == "foundation.triangle" || e.ShortPrefabName == "foundation")
+                        foundations.Add(e.transform.position);
+                    Entities.Add(e);
+                }
+            }
+
             private void SetCenterFromMultiplePoints()
             {
+                if (foundations.Count < 2)
+                {
+                    Location = PastedLocation;
+                    return;
+                }
+
                 float x = 0f;
                 float z = 0f;
 
-                foreach (var e in Entities.Where(e => !e.IsKilled() && (e.ShortPrefabName == "foundation.triangle" || e.ShortPrefabName == "foundation")))
+                foreach (var position in foundations)
                 {
-                    var position = e.transform.position;
-
-                    if (foundations.Contains(position))
-                    {
-                        continue;
-                    }
-
                     z += position.z;
                     x += position.x;
-
-                    foundations.Add(position);
                 }
 
                 var vector = new Vector3(x / foundations.Count, 0f, z / foundations.Count);
@@ -5420,7 +5393,6 @@ enterExit:
                     stacks = Mathf.CeilToInt(Options.Setup.ForcedHeight / 6f);
                 }
 
-                float invokeTime = 0f;
                 var center = new Vector3(Location.x, Location.y, Location.z);
                 string prefab = Options.ArenaWalls.Ice ? StringPool.Get(921229511) : Options.ArenaWalls.Stone ? StringPool.Get(1585379529) : StringPool.Get(1745077396);
                 float maxHeight = -999f;
@@ -5492,9 +5464,7 @@ enterExit:
                             e.transform.Rotate(-67.5f, 0f, 0f);
                         }
 
-                        e.enableSaving = false;
                         e.Spawn();
-
                         e.gameObject.SetActive(true);
 
                         if (CanSetupEntity(e))
@@ -5507,7 +5477,7 @@ enterExit:
                             RaycastHit hit;
                             if (Physics.Raycast(new Vector3(position.x, position.y + 6.5f, position.z), Vector3.down, out hit, 13f, targetMask))
                             {
-                                if (hit.collider.name.Contains("rock") || hit.collider.name.Contains("formation", CompareOptions.OrdinalIgnoreCase))
+                                if (hit.collider.ObjectName().Contains("rock") || hit.collider.ObjectName().Contains("formation", CompareOptions.OrdinalIgnoreCase))
                                 {
                                     stacks++;
                                 }
@@ -5581,143 +5551,8 @@ enterExit:
                         yield break;
                     }
 
-                    if (!CanSetupEntity(e))
-                    {
-                        goto next;
-                    }
+                    TryInvokeMethod(() => TrySetupEntity(e, ref invokeTime));
 
-                    var position = e.transform.position;
-
-                    NetworkID = Math.Min(NetworkID, e.net.ID);
-                    e.OwnerID = 0;
-
-                    //if (e.tag == "Untagged")
-                    //{
-                    //    e.tag = "RaidableBaseEntity";
-                    //}
-
-                    SetupEntity(e);
-
-                    if (!Options.AllowPickup && e is BaseCombatEntity)
-                    {
-                        SetupPickup(e as BaseCombatEntity);
-                    }
-
-                    if (e is DecorDeployable && !_decorDeployables.Contains(e))
-                    {
-                        _decorDeployables.Add(e);
-                    }
-
-                    if (e is IOEntity)
-                    {
-                        if (e is ContainerIOEntity)
-                        {
-                            SetupIO(e as ContainerIOEntity);
-                        }
-
-                        if (e is AutoTurret)
-                        {
-                            var turret = e as AutoTurret;
-
-                            triggers[turret.targetTrigger] = turret;
-
-                            Instance.timer.Once(invokeTime += 0.1f, () => SetupTurret(turret));
-                        }
-                        else if (e is Igniter)
-                        {
-                            SetupIgniter(e as Igniter);
-                        }
-                        else if (e is SamSite)
-                        {
-                            SetupSamSite(e as SamSite);
-                        }
-                        else if (e is TeslaCoil)
-                        {
-                            SetupTeslaCoil(e as TeslaCoil);
-                        }
-                        else if (e.name.Contains("light"))
-                        {
-                            SetupLight(e as IOEntity);
-                        }
-                        else if (e is CustomDoorManipulator)
-                        {
-                            doorControllers.Add(e as CustomDoorManipulator);
-                        }
-                        else if (e is HBHFSensor)
-                        {
-                            SetupHBHFSensor(e as HBHFSensor);
-                        }
-                        else if (e.ShortPrefabName == "generator.small" || e.ShortPrefabName == "generator.static")
-                        {
-                            SetupGenerator(e as ElectricGenerator);
-                        }
-                        else if (e is PressButton)
-                        {
-                            SetupButton(e as PressButton);
-                        }
-                    }
-                    else if (e is StorageContainer)
-                    {
-                        SetupContainer(e as StorageContainer);
-
-                        if (e is BaseOven)
-                        {
-                            ovens.Add(e as BaseOven);
-                        }
-                        else if (e is FogMachine)
-                        {
-                            SetupFogMachine(e as FogMachine);
-                        }
-                        else if (e is FlameTurret)
-                        {
-                            SetupFlameTurret(e as FlameTurret);
-                        }
-                        else if (e is VendingMachine)
-                        {
-                            SetupVendingMachine(e as VendingMachine);
-                        }
-                        else if (e is BuildingPrivlidge)
-                        {
-                            SetupBuildingPriviledge(e as BuildingPrivlidge);
-                        }
-                        else if (config.Settings.Management.Lockers && e is Locker)
-                        {
-                            lockers.Add(e as Locker);
-                        }
-                        else if (e is GunTrap)
-                        {
-                            SetupGunTrap(e as GunTrap);
-                        }
-                    }
-                    else if (e is BuildingBlock)
-                    {
-                        SetupBuildingBlock(e as BuildingBlock);
-                    }
-                    else if (e is BaseLock)
-                    {
-                        SetupLock(e);
-                    }
-                    else if (e is SleepingBag)
-                    {
-                        SetupSleepingBag(e as SleepingBag);
-                    }
-                    else if (e is BaseMountable)
-                    {
-                        SetupMountable(e as BaseMountable);
-                    }
-
-                    if (e is DecayEntity)
-                    {
-                        SetupDecayEntity(e as DecayEntity);
-                    }
-
-                    if (e is Door)
-                    {
-                        doors.Add(e as Door);
-                    }
-                    else SetupSkin(e);
-
-next:
                     if (++checks >= limit)
                     {
                         checks = 0;
@@ -5762,6 +5597,140 @@ next:
                 }
             }
 
+            private void TrySetupEntity(BaseEntity e, ref float invokeTime)
+            {
+                if (!CanSetupEntity(e))
+                {
+                    return;
+                }
+                
+                SetupEntity(e);
+
+                var position = e.transform.position;
+
+                NetworkID = Math.Min(NetworkID, e.net.ID);
+                e.OwnerID = 0;
+
+                if (!Options.AllowPickup && e is BaseCombatEntity)
+                {
+                    SetupPickup(e as BaseCombatEntity);
+                }
+
+                if (e is DecorDeployable && !_decorDeployables.Contains(e))
+                {
+                    _decorDeployables.Add(e);
+                }
+
+                if (e is IOEntity)
+                {
+                    if (e is ContainerIOEntity)
+                    {
+                        SetupIO(e as ContainerIOEntity);
+                    }
+
+                    if (e is AutoTurret)
+                    {
+                        var turret = e as AutoTurret;
+
+                        triggers[turret.targetTrigger] = turret;
+
+                        Instance.timer.Once(invokeTime += 0.1f, () => SetupTurret(turret));
+                    }
+                    else if (e is Igniter)
+                    {
+                        SetupIgniter(e as Igniter);
+                    }
+                    else if (e is SamSite)
+                    {
+                        SetupSamSite(e as SamSite);
+                    }
+                    else if (e is TeslaCoil)
+                    {
+                        SetupTeslaCoil(e as TeslaCoil);
+                    }
+                    else if (e.name.Contains("light"))
+                    {
+                        SetupLight(e as IOEntity);
+                    }
+                    else if (e is CustomDoorManipulator)
+                    {
+                        doorControllers.Add(e as CustomDoorManipulator);
+                    }
+                    else if (e is HBHFSensor)
+                    {
+                        SetupHBHFSensor(e as HBHFSensor);
+                    }
+                    else if (e.ShortPrefabName == "generator.small" || e.ShortPrefabName == "generator.static")
+                    {
+                        SetupGenerator(e as ElectricGenerator);
+                    }
+                    else if (e is PressButton)
+                    {
+                        SetupButton(e as PressButton);
+                    }
+                }
+                else if (e is StorageContainer)
+                {
+                    SetupContainer(e as StorageContainer);
+
+                    if (e is BaseOven)
+                    {
+                        ovens.Add(e as BaseOven);
+                    }
+                    else if (e is FogMachine)
+                    {
+                        SetupFogMachine(e as FogMachine);
+                    }
+                    else if (e is FlameTurret)
+                    {
+                        SetupFlameTurret(e as FlameTurret);
+                    }
+                    else if (e is VendingMachine)
+                    {
+                        SetupVendingMachine(e as VendingMachine);
+                    }
+                    else if (e is BuildingPrivlidge)
+                    {
+                        SetupBuildingPriviledge(e as BuildingPrivlidge);
+                    }
+                    else if (config.Settings.Management.Lockers && e is Locker)
+                    {
+                        lockers.Add(e as Locker);
+                    }
+                    else if (e is GunTrap)
+                    {
+                        SetupGunTrap(e as GunTrap);
+                    }
+                }
+                else if (e is BuildingBlock)
+                {
+                    SetupBuildingBlock(e as BuildingBlock);
+                }
+                else if (e is BaseLock)
+                {
+                    SetupLock(e);
+                }
+                else if (e is SleepingBag)
+                {
+                    SetupSleepingBag(e as SleepingBag);
+                }
+                else if (e is BaseMountable)
+                {
+                    SetupMountable(e as BaseMountable);
+                }
+
+                if (e is DecayEntity)
+                {
+                    SetupDecayEntity(e as DecayEntity);
+                }
+
+                if (e is Door)
+                {
+                    doors.Add(e as Door);
+                }
+                else SetupSkin(e);
+            }
+
             private void SetLoadTime()
             {
                 float time;
@@ -5794,7 +5763,7 @@ next:
 
             private void SetupLoot()
             {
-                _containers.RemoveAll(x => x.IsKilled());
+                _containers.RemoveWhere(x => x.IsKilled());
 
                 treasureAmount = Options.MinTreasure > 0 ? UnityEngine.Random.Range(Options.MinTreasure, Options.MaxTreasure + 1) : Options.MaxTreasure;
 
@@ -6460,7 +6429,7 @@ next:
 
                 foreach (var deployable in _decorDeployables)
                 {
-                    _rugs.RemoveAll(rug => rug != deployable && deployable.transform.position.y >= rug.transform.position.y && InRange(rug.transform.position, deployable.transform.position, 1f, false));
+                    _rugs.RemoveAll(rug => rug != deployable && deployable.transform.position.y >= rug.transform.position.y && InRange(rug.transform.position, deployable.transform.position, 1f));
                 }
             }
 
@@ -6741,7 +6710,7 @@ next:
             {
                 if (Type == RaidableType.None)
                 {
-                    _allcontainers.RemoveAll(x => x.IsKilled());
+                    _allcontainers.RemoveWhere(x => x.IsKilled());
 
                     itemAmountSpawned = _allcontainers.ToList().Sum(x => x.inventory.itemList.Count);
                 }
@@ -6840,11 +6809,7 @@ next:
                 IsEngaged = true;
                 IsPayLocked = false;
                 CheckBackpacks(true);
-                raiders.Values.ToList().ForEach(ri =>
-                {
-                    ri.IsRaider = false;
-                    ri.LockedOnEnter = false;
-                });
+                raiders.Values.ToList().ForEach(ri => ri.IsParticipant = false);
             }
 
             private void ResetLock()
@@ -6930,7 +6895,7 @@ next:
                         break;
                     }
 
-                    var lootItem = GetRandomLootItem();
+                    var lootItem = Loot.GetRandom();
 
                     Loot.Remove(lootItem);
 
@@ -6942,8 +6907,8 @@ next:
             {
                 while (Loot.Count > 0 && containers.Count > 0 && itemAmountSpawned < treasureAmount)
                 {
-                    var lootItem = GetRandomLootItem(); 
-                    
+                    var lootItem = Loot.GetRandom();
+
                     if (containers.Count > 1)
                     {
                         var lastContainer = containers[0];
@@ -6962,38 +6927,17 @@ next:
                 }
             }
 
-            private LootItem GetRandomLootItem()
-            {
-                for (int i = 0; i < Loot.Count; i++)
-                {
-                    if (Loot[i].isPriority)
-                    {
-                        return Loot[i];
-                    }
-                }
-                
-                LootItem lootItem = Loot.GetRandom();
-
-                for (int i = 0; i < Loot.Count; i++)
-                {
-                    if (Loot[i].shortname == lootItem.shortname)
-                    {
-                        Loot[i].isPriority = true;
-                    }
-                }
-
-                return lootItem;
-            }
-
-            private void AddToLoot(List<LootItem> source, bool isPriority)
+            private void AddToLoot(List<LootItem> source)
             {
                 foreach (var ti in source)
                 {
                     bool isBlueprint = ti.shortname.EndsWith(".bp");
                     string shortname = isBlueprint ? ti.shortname.Replace(".bp", string.Empty) : ti.shortname;
+                    bool isModified = false;
 
                     if (shortname.Contains("_") && ItemManager.FindItemDefinition(shortname) == null)
                     {
+                        isModified = true;
                         shortname = shortname.Substring(shortname.IndexOf("_") + 1);
                     }
 
@@ -7021,12 +6965,15 @@ next:
 
                     if (config.Treasure.UseStackSizeLimit || ti.stacksize != -1)
                     {
-                        foreach (int stack in GetStacks(amount, ti.stacksize <= 0 ? ti.definition.stackable : ti.stacksize))
+                        int stackable = ti.stacksize <= 0 ? ti.definition.stackable : ti.stacksize;
+                        isModified = amount > stackable;
+                        
+                        foreach (int stack in GetStacks(amount, stackable))
                         {
-                            Loot.Add(new LootItem(shortname, stack, stack, ti.skin, isBlueprint, ti.probability, ti.stacksize, ti.name, isPriority));
+                            Loot.Add(new LootItem(shortname, stack, stack, ti.skin, isBlueprint, ti.probability, ti.stacksize, ti.name, isModified));
                         }
                     }
-                    else Loot.Add(new LootItem(shortname, amount, amount, ti.skin, isBlueprint, ti.probability, ti.stacksize, ti.name, isPriority));
+                    else Loot.Add(new LootItem(shortname, amount, amount, ti.skin, isBlueprint, ti.probability, ti.stacksize, ti.name, isModified));
                 }
 
                 source.Clear();
@@ -7075,8 +7022,6 @@ next:
                         continue;
                     }
 
-                    ti.isUnique = isUnique;
-
                     Collective.Add(ti.Clone());
                     from.Add(ti.Clone());
                 }
@@ -7121,6 +7066,13 @@ next:
             {
                 if (_containers.Count == 0)
                 {
+                    if (Entities.Count == 0 || !Entities.Exists())
+                    {
+                        Puts(mx("NoEntitiesFound", null, BaseName, PositionToGrid(Location)));
+                        return false;
+                    }
+
+                    _containers.Where(container => !container.IsKilled()).ForEach(container => Puts("Found {0}:", container.ShortPrefabName));
                     Puts(mx("NoContainersFound", null, BaseName, PositionToGrid(Location)));
                     return false;
                 }
@@ -7195,17 +7147,17 @@ next:
             {
                 if (!unique || !config.Treasure.UniqueBaseLoot)
                 {
-                    AddToLoot(BaseLoot, Options.AlwaysSpawn);
+                    AddToLoot(BaseLoot);
                 }
 
                 if (!unique || !config.Treasure.UniqueDifficultyLoot)
                 {
-                    AddToLoot(DifficultyLoot, false);
+                    AddToLoot(DifficultyLoot);
                 }
 
                 if (!unique || !config.Treasure.UniqueDefaultLoot)
                 {
-                    AddToLoot(DefaultLoot, false);
+                    AddToLoot(DefaultLoot);
                 }
             }
 
@@ -7214,20 +7166,23 @@ next:
                 if (Options.AllowDuplicates && Loot.Count > 0 && Loot.Count < treasureAmount)
                 {
                     var collective = new List<LootItem>();
-                    int attempts = collective.Count;
 
                     Collective.ForEach(ti => collective.Add(ti.Clone()));
+
+                    int attempts = collective.Count;
 
                     while (Loot.Count < treasureAmount && collective.Count > 0 && --attempts > 0)
                     {
                         var ti = collective.GetRandom();
 
-                        if (!ti.isUnique)
+                        if (IsUnique(ti))
                         {
-                            attempts++;
-                            Loot.Add(ti); 
+                            collective.Remove(ti);
+                            continue;
                         }
-                        else collective.Remove(ti);
+
+                        attempts++;
+                        Loot.Add(ti);
                     }
                 }
             }
@@ -7240,12 +7195,11 @@ next:
 
                     foreach (var ti in Loot)
                     {
-                        if (!LootNames.Contains(ti.shortname))
+                        if (ti.isModified || !LootNames.Contains(ti.shortname) || IsPriority(ti))
                         {
-                            LootNames.Add(ti.shortname);                            
+                            LootNames.Add(ti.shortname);
                             newLoot.Add(ti);
                         }
-                        else if (ti.isPriority) newLoot.Add(ti);
                     }
 
                     Loot = newLoot;
@@ -7253,11 +7207,38 @@ next:
 
                 foreach (var ti in Loot)
                 {
-                    if (!LootNames.Contains(ti.shortname))
-                    {
-                        LootNames.Add(ti.shortname);
-                    }
+                    LootNames.Add(ti.shortname);
                 }
+            }
+
+            private bool IsPriority(LootItem a)
+            {
+                return Options.AlwaysSpawn && BaseLootPermanent.Exists(b => a.shortname == b.shortname);
+            }
+
+            private bool IsUnique(LootItem ti)
+            {
+                if (!Options.AllowDuplicates && Loot.Exists(x => x.Equals(ti) || x.shortname == ti.shortname && x.isModified))
+                {
+                    return true;
+                }
+
+                if (config.Treasure.UniqueBaseLoot && BaseLootPermanent.Exists(x => x.Equals(ti)))
+                {
+                    return true;
+                }
+
+                if (config.Treasure.UniqueDifficultyLoot && DifficultyLoot.Exists(x => x.Equals(ti)))
+                {
+                    return true;
+                }
+
+                if (config.Treasure.UniqueDefaultLoot && DefaultLoot.Exists(x => x.Equals(ti)))
+                {
+                    return true;
+                }
+
+                return false;
             }
 
             private void VerifyLootAmount()
@@ -7270,7 +7251,7 @@ next:
 
                     while (Loot.Count > treasureAmount && --index >= 0)
                     {
-                        if (!Loot[index].isPriority)
+                        if (!IsPriority(Loot[index]))
                         {
                             Loot.RemoveAt(index);
                         }
@@ -7284,17 +7265,13 @@ next:
                     {
                         var ti = collective.GetRandom();
 
-                        if (ti.isUnique || !Options.AllowDuplicates && Loot.Exists(x => x.shortname == ti.shortname))
+                        if (!Options.AllowDuplicates && Loot.Exists(x => x.shortname == ti.shortname) || IsUnique(ti))
                         {
                             collective.Remove(ti);
                             continue;
                         }
 
-                        if (!LootNames.Contains(ti.shortname))
-                        {
-                            LootNames.Add(ti.shortname);
-                        }
-
+                        LootNames.Add(ti.shortname);
                         Loot.Add(ti);
                     }
                 }
@@ -7351,7 +7328,7 @@ next:
             private List<LootItem> DifficultyLoot { get; set; } = new List<LootItem>();
             private List<LootItem> DefaultLoot { get; set; } = new List<LootItem>();
             private List<LootItem> Loot { get; set; } = new List<LootItem>();
-            private List<string> LootNames { get;set;} = new List<string>();
+            private HashSet<string> LootNames { get;set;} = new HashSet<string>();
 
             private void SpawnItem(LootItem ti, ItemContainer[] containers)
             {
@@ -7803,7 +7780,7 @@ next:
                 if (ownerId == userid) return true;
                 Raider ri;
                 if (!raiders.TryGetValue(userid, out ri)) return false;
-                return ri.IsRaider || ri.LockedOnEnter || checkAllies && ri.IsAlly;
+                return ri.IsParticipant || checkAllies && ri.IsAlly;
             }
 
             public static bool IsOwner(BasePlayer player)
@@ -7845,7 +7822,7 @@ next:
 
             public static RaidableBase Get(Vector3 target, float f = 0f)
             {
-                return Instance.Raids.FirstOrDefault(raid => InRange(raid.Location, target, raid.ProtectionRadius + f));
+                return Instance.Raids.FirstOrDefault(raid => InRange2D(raid.Location, target, raid.ProtectionRadius + f));
             }
 
             public static RaidableBase Get(BasePlayer victim, HitInfo hitInfo = null)
@@ -7907,7 +7884,14 @@ next:
 
             public static bool IsTooClose(Vector3 target, float radius)
             {
-                return Instance.Locations.Exists(value => InRange(value.Position, target, radius));
+                for (int i = 0; i < Instance.Locations.Count; i++)
+                {
+                    if (InRange2D(Instance.Locations[i].Position, target, radius))
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             private static bool IsBlacklistedSkin(ItemDefinition def, int num)
@@ -8558,7 +8542,7 @@ next:
 
                 BaseVehicle vehicle = m.HasParent() ? m.VehicleParent() : m as BaseVehicle;
 
-                if (m is RidableHorse || InRange(m.transform.position, position, radius + 1f, false))
+                if (m is RidableHorse || InRange(m.transform.position, position, radius + 1f))
                 {
                     m.transform.position = target;
                 }
@@ -8585,8 +8569,6 @@ next:
 
             public bool CanSetupEntity(BaseEntity e)
             {
-                BaseEntity.saveList.Remove(e);
-
                 if (e.IsKilled())
                 {
                     Entities.Remove(e);
@@ -8606,7 +8588,7 @@ next:
                 }
 
                 data.TemporaryUID.Add(e.net.ID);
-                e.enableSaving = false;
+                
                 return true;
             }
 
@@ -8661,12 +8643,12 @@ next:
 
             public bool IsInForwardOperatingBase(Vector3 from)
             {
-                return BuiltList.Count > 0 && BuiltList.Values.Exists(to => InRange(from, to, 3f));
+                return BuiltList.Count > 0 && BuiltList.Values.Exists(to => InRange2D(from, to, 3f));
             }
 
             public bool NearFoundation(Vector3 from, float range = 5f)
             {
-                return foundations.Exists(to => InRange(from, to, range));
+                return foundations.Exists(to => InRange2D(from, to, range));
             }
 
             private NavMeshHit _navHit;
@@ -8725,13 +8707,13 @@ next:
                 Vector3 b = a + new Vector3(0f, 20f, 0f);
                 Vector3 d = a - b;
                 hits = Physics.RaycastAll(b, d, d.magnitude, Layers.World);
-                return hits.Exists(hit => IsRock(hit.collider.name));
+                return hits.Exists(hit => IsRock(hit.collider.ObjectName()));
             }
 
             private bool IsRockFaceUpwards(Vector3 point)
             {
                 if (!Physics.Raycast(point, Vector3.up, out _hit, 20f, Layers.World)) return false;
-                return IsRock(_hit.collider.gameObject.name);
+                return IsRock(_hit.collider.ObjectName());
             }
 
             private bool IsRock(string name) => _prefabs.Exists(value => name.Contains(value, CompareOptions.OrdinalIgnoreCase));
@@ -8751,7 +8733,6 @@ next:
                 ScientistBrain scientistBrain = go.GetComponent<ScientistBrain>();
                 ScientistNPC npc = go.GetComponent<ScientistNPC>();
 
-                npc.enableSaving = false;
                 humanoidBrain = go.AddComponent<HumanoidBrain>();
                 humanoidBrain.DestinationOverride = position;
                 humanoidBrain.CheckLOS = humanoidBrain.RefreshKnownLOS = true;
@@ -8883,7 +8864,6 @@ next:
 
                 Instance.Npcs[npc.userID] = this;
 
-                npc.enableSaving = false;
                 npc.Spawn();
                 npc.CancelInvoke(npc.EquipTest);
                 
@@ -9038,7 +9018,7 @@ next:
                     Instance.Kits?.Call("GiveKit", npc, kits.GetRandom());
                 }
 
-                EquipWeapon(npc, brain, false);
+                EquipWeapon(npc, brain);
 
                 if (!ToggleNpcMinerHat(npc, TOD_Sky.Instance?.IsNight == true))
                 {
@@ -9046,7 +9026,7 @@ next:
                 }
             }
 
-            public void EquipWeapon(ScientistNPC npc, HumanoidBrain brain, bool allowSyringe)
+            public void EquipWeapon(ScientistNPC npc, HumanoidBrain brain)
             {
                 foreach (Item item in npc.inventory.AllItems())
                 {
@@ -9060,7 +9040,7 @@ next:
                             e.SendNetworkUpdate();
                         }
 
-                        if (!brain.AttackEntity.IsNull() || !allowSyringe && item.info.shortname == "syringe.medical")
+                        if (!brain.AttackEntity.IsNull() || item.info.shortname == "syringe.medical")
                         {
                             continue;
                         }
@@ -9224,12 +9204,12 @@ next:
 
                     foreach (var position in _randomSpots)
                     {
-                        if (Options.NPC.Inside.SpawnOnRugs && _decorDeployables.Exists(x => x.ShortPrefabName.StartsWith("rug") && InRange(x.transform.position, position, 1f, false)))
+                        if (Options.NPC.Inside.SpawnOnRugs && _decorDeployables.Exists(x => x.ShortPrefabName.StartsWith("rug") && InRange(x.transform.position, position, 1f)))
                         {
                             continue;
                         }
 
-                        if (Options.NPC.Inside.SpawnOnBeds && _beds.Exists(x => InRange(x.transform.position, position, 1f, false)))
+                        if (Options.NPC.Inside.SpawnOnBeds && _beds.Exists(x => InRange(x.transform.position, position, 1f)))
                         {
                             continue;
                         }
@@ -9248,7 +9228,7 @@ next:
 
             private bool IsNpcNearSpot(Vector3 position)
             {
-                return npcs.Exists(npc => !npc.IsKilled() && InRange(npc.transform.position, position, 1f));
+                return npcs.Exists(npc => !npc.IsKilled() && InRange2D(npc.transform.position, position, 1f));
             }
 
             public Vector3 SpawnInsideBase()
@@ -9562,7 +9542,7 @@ next:
             {
                 Monuments = new List<MonumentInfoEx>();
                 managedZones = new List<ZoneInfo>();
-                assets = new List<string> { "/props/", "/structures/", "/building/", "train_", "powerline_", "dune", "candy-cane", "assets/content/nature/", "walkway", "invisible_collider" };
+                assets = new List<string> { "/props/", "/structures/", "/building/", "train_", "powerline_", "dune", "candy-cane", "assets/content/nature/", "walkway", "invisible_collider", "train_track" };
                 blockedcolliders = new List<string> { "powerline", "invisible", "TopCol" };
 
                 SetupMonuments();
@@ -9604,12 +9584,9 @@ next:
                 float p = TerrainMeta.HighestPoint.y + 250f;
                 RaycastHit hit;
 
-                if (Physics.Raycast(target.WithY(p), Vector3.down, out hit, ++p, targetMask, QueryTriggerInteraction.Ignore))
+                if (Physics.Raycast(target.WithY(p), Vector3.down, out hit, ++p, targetMask, QueryTriggerInteraction.Ignore) && !blockedcolliders.Exists(hit.collider.ObjectName().Contains))
                 {
-                    if (!blockedcolliders.Exists(hit.collider.name.Contains))
-                    {
-                        y = Mathf.Max(y, hit.point.y);
-                    }
+                    y = Mathf.Max(y, hit.point.y);
                 }
 
                 return flag ? Mathf.Max(y, w) : y;
@@ -9642,7 +9619,7 @@ next:
             {
                 CacheType cacheType;
                 string message;
-                SafeAreaCheck sac = new SafeAreaCheck(vector, radius, Layers.Mask.World | Layers.Mask.Deployed | Layers.Mask.Trigger);
+                SafeAreaCheck sac = new SafeAreaCheck(vector, radius, radius, Layers.Mask.World | Layers.Mask.Deployed | Layers.Mask.Trigger);
                 if (!IsAreaSafe(sac, out cacheType, out message))
                 {
                     return false;
@@ -9657,7 +9634,7 @@ next:
                             return false;
                         }
                     }
-                    else if (InRange(zone.Position, vector, zone.Distance))
+                    else if (InRange2D(zone.Position, vector, zone.Distance))
                     {
                         return false;
                     }
@@ -9771,20 +9748,22 @@ next:
 
             private static bool IsSafeZone(Vector3 a)
             {
-                return TriggerSafeZone.allSafeZones.Exists(triggerSafeZone => InRange(triggerSafeZone.transform.position, a, triggerSafeZone.triggerCollider.GetRadius(triggerSafeZone.transform.localScale) + config.Settings.Management.MonumentDistance));
+                return TriggerSafeZone.allSafeZones.Exists(triggerSafeZone => InRange2D(triggerSafeZone.transform.position, a, triggerSafeZone.triggerCollider.GetRadius(triggerSafeZone.transform.localScale) + config.Settings.Management.MonumentDistance));
             }
 
             public class SafeAreaCheck
             {
                 public Vector3 position;
-                public float radius;
+                public float safeRadius;
+                public float buildRadius;
                 public int layers;
                 public RaidableType type;
                 public BuildingOptionsDifficultySpawns spawns;
-                public SafeAreaCheck(Vector3 position, float radius, int layers, RaidableType type = RaidableType.None, BuildingOptionsDifficultySpawns spawns = null)
+                public SafeAreaCheck(Vector3 position, float safeRadius, float buildRadius, int layers, RaidableType type = RaidableType.None, BuildingOptionsDifficultySpawns spawns = null)
                 {
                     this.position = position;
-                    this.radius = radius;
+                    this.safeRadius = safeRadius;
+                    this.buildRadius = buildRadius;
                     this.layers = layers;
                     this.type = type;
                     this.spawns = spawns;
@@ -9803,7 +9782,7 @@ next:
                 cacheType = CacheType.Generic;
                 message = string.Empty;
 
-                int hits = Physics.OverlapSphereNonAlloc(sac.position, sac.radius, Vis.colBuffer, sac.layers, QueryTriggerInteraction.Collide);
+                int hits = Physics.OverlapSphereNonAlloc(sac.position, Mathf.Max(sac.safeRadius, sac.buildRadius), Vis.colBuffer, sac.layers, QueryTriggerInteraction.Collide);
 
                 for (int i = 0; i < hits; i++)
                 {
@@ -9813,17 +9792,34 @@ next:
                     }
 
                     var collider = Vis.colBuffer[i];
-
-                    if (collider.name == "ZoneManager" || collider.name.Contains("xmas"))
+                    var colName = collider.ObjectName();
+                    
+                    if (colName == "ZoneManager" || colName.Contains("xmas"))
                     {
                         goto next;
                     }
 
                     var e = collider.ToBaseEntity();
 
-                    if (assets.Exists(collider.name.Contains) && (e.IsNull() || e.name.Contains("/treessource/")))
+                    if (e is BuildingPrivlidge)
                     {
-                        message = $"Blocked by a map prefab {collider.transform.position} {collider.name}";
+                        if (!RaidableBase.Has(e))
+                        {
+                            message = $"Blocked by a building privilege {collider.transform.position} {colName}";
+                            cacheType = CacheType.Privilege;
+                        }
+
+                        goto next;
+                    }
+
+                    if (!InRange(collider.transform.position, sac.position, sac.safeRadius))
+                    {
+                        goto next;
+                    }
+
+                    if (assets.Exists(colName.Contains) && (e.IsNull() || e.name.Contains("/treessource/")))
+                    {
+                        message = $"Blocked by a map prefab {collider.transform.position} {colName}";
                         cacheType = CacheType.Delete;
                         goto next;
                     }
@@ -9933,7 +9929,7 @@ next:
                     }
                     else if (collider.gameObject.layer == (int)Layer.World)
                     {
-                        if (collider.name.Contains("rock_") || collider.name.Contains("formation_", CompareOptions.OrdinalIgnoreCase))
+                        if (colName.Contains("rock_") || colName.Contains("formation_", CompareOptions.OrdinalIgnoreCase))
                         {
                             float height = GetRockHeight(collider.transform.position);
 
@@ -9944,13 +9940,13 @@ next:
                                 goto next;
                             }
                         }
-                        else if (!config.Settings.Management.AllowOnRoads && collider.name.StartsWith("road_"))
+                        else if (!config.Settings.Management.AllowOnRoads && colName.StartsWith("road_"))
                         {
                             message = $"Not allowed on roads {collider.transform.position}";
                             cacheType = CacheType.Delete;
                             goto next;
                         }
-                        else if (collider.name.StartsWith("ice_sheet"))
+                        else if (colName.StartsWith("ice_sheet"))
                         {
                             message = $"Not allowed on ice sheets {collider.transform.position}";
                             cacheType = CacheType.Delete;
@@ -9959,7 +9955,7 @@ next:
                     }
                     else if (collider.gameObject.layer == (int)Layer.Water)
                     {
-                        if (!config.Settings.Management.AllowOnRivers && collider.name.StartsWith("River Mesh"))
+                        if (!config.Settings.Management.AllowOnRivers && colName.StartsWith("River Mesh"))
                         {
                             message = $"Not allowed on rivers {collider.transform.position}";
                             cacheType = CacheType.Delete;
@@ -10057,6 +10053,7 @@ next:
                 float f = radius * 0.2f;
                 int n = 5;
                 bool flag = false;
+                bool isValid = player.IsReallyValid();
 
                 if (forcedHeight != -1)
                 {
@@ -10072,7 +10069,7 @@ next:
                     {
                         if (Mathf.Abs(a.y - target.y) > elevation)
                         {
-                            if (player.IsReallyValid()) player.SendConsoleCommand("ddraw.text", 15f, Color.red, a, "X");
+                            if (isValid) player.SendConsoleCommand("ddraw.text", 15f, Color.red, a, "X");
                             flag = true;
                         }
                     }
@@ -10590,7 +10587,7 @@ next:
         {
             if (EventTerritory(ss.transform.position) && RaidableBase.Has(ss))
             {
-                if (ss.HasValidTarget() && InRange(ss.currentTarget.CenterPoint(), ss.transform.position, config.Weapons.SamSiteRange, false))
+                if (ss.HasValidTarget() && InRange(ss.currentTarget.CenterPoint(), ss.transform.position, config.Weapons.SamSiteRange))
                 {
                     return null;
                 }
@@ -10712,7 +10709,7 @@ next:
                     return;
                 }
 
-                if (InRange(player.transform.position, raid.Location, raid.ProtectionRadius))
+                if (InRange2D(player.transform.position, raid.Location, raid.ProtectionRadius))
                 {
                     raid.OnEnterRaid(player);
                 }
@@ -11251,7 +11248,7 @@ done:
             }
             else if (construction.prefabID == 2150203378) // LADDER
             {
-                if (CanBuild(target.player, raid))
+                if (CanBuildLadders(target.player, raid))
                 {
                     Raider ri;
                     if (raid.raiders.TryGetValue(target.player.userID, out ri) && ri.Input != null)
@@ -11292,7 +11289,7 @@ done:
             return null;
         }
 
-        private bool CanBuild(BasePlayer player, RaidableBase raid)
+        private bool CanBuildLadders(BasePlayer player, RaidableBase raid)
         {
             if (!config.Settings.Management.AllowLadders) return false;
             if (raid.Options.RequiresCupboardAccessLadders) return player.CanBuild();
@@ -11414,7 +11411,7 @@ done:
             }
             else if (player is ScientistNPC)
             {
-                return InRange((player as ScientistNPC).spawnPos, raid.Location, raid.ProtectionRadius) ? !raid.Options.NPC.IgnoreTrapsTurrets : (object)null;
+                return InRange2D((player as ScientistNPC).spawnPos, raid.Location, raid.ProtectionRadius) ? !raid.Options.NPC.IgnoreTrapsTurrets : (object)null;
             }
 
             if (!raid.AllowPVP)
@@ -11458,7 +11455,7 @@ done:
 
         private object CanEntityTakeDamage(BaseCombatEntity entity, HitInfo hitInfo)
         {
-            if (hitInfo == null || hitInfo.damageTypes == null || entity.IsNull())
+            if (hitInfo == null || hitInfo.damageTypes == null || entity.IsNull() || entity.OwnerID == 1337422)
             {
                 return null;
             }
@@ -11478,7 +11475,7 @@ done:
 
         private object HandlePlayerDamage(BasePlayer victim, HitInfo hitInfo)
         {
-            if (RaidableBase.Has(victim.userID) && hitInfo.Initiator is SimpleBuildingBlock)
+            if (RaidableBase.Has(victim.userID) && hitInfo.Initiator?.ShortPrefabName.Contains("external.high") == true)
             {
                 return false;
             }
@@ -11537,7 +11534,7 @@ done:
 
                 if (weapon.OwnerID.IsSteamId())
                 {
-                    if (InRange(weapon.transform.position, raid.Location, raid.ProtectionRadius))
+                    if (InRange2D(weapon.transform.position, raid.Location, raid.ProtectionRadius))
                     {
                         return victim.IsHuman() ? raid.AllowPVP : true;
                     }
@@ -11574,7 +11571,7 @@ done:
                 }
             }
 
-            if (config.Settings.Management.PVPDelayDamageInside && PvpDelay.ContainsKey(attacker.userID) && InRange(raid.Location, victim.transform.position, raid.ProtectionRadius))
+            if (config.Settings.Management.PVPDelayDamageInside && PvpDelay.ContainsKey(attacker.userID) && InRange2D(raid.Location, victim.transform.position, raid.ProtectionRadius))
             {
                 return true;
             }
@@ -11620,7 +11617,7 @@ done:
                 return false;
             }
 
-            if (!raid.Options.NPC.CanLeave && raid.Options.NPC.BlockOutsideDamageOnLeave && !InRange(attacker.transform.position, raid.Location, raid.ProtectionRadius, false))
+            if (!raid.Options.NPC.CanLeave && raid.Options.NPC.BlockOutsideDamageOnLeave && !InRange(attacker.transform.position, raid.Location, raid.ProtectionRadius))
             {
                 brain.Forget();
 
@@ -11646,12 +11643,12 @@ done:
 
             if (IsPVE())
             {
-                if (!InRange(attacker.transform.position, raid.Location, raid.ProtectionRadius, false))
+                if (!InRange(attacker.transform.position, raid.Location, raid.ProtectionRadius))
                 {
                     return false;
                 }
 
-                return InRange(victim.transform.position, raid.Location, raid.ProtectionRadius, false);
+                return InRange(victim.transform.position, raid.Location, raid.ProtectionRadius);
             }
 
             return true;
@@ -11665,7 +11662,7 @@ done:
                 return true;
             }
 
-            if (RaidableBase.Has(victim.userID) || (InRange(attacker.transform.position, raid.Location, raid.ProtectionRadius) && CanBlockOutsideDamage(raid, victim, raid.Options.BlockNpcDamageToPlayersOutside)))
+            if (RaidableBase.Has(victim.userID) || (InRange2D(attacker.transform.position, raid.Location, raid.ProtectionRadius) && CanBlockOutsideDamage(raid, victim, raid.Options.BlockNpcDamageToPlayersOutside)))
             {
                 return false;
             }
@@ -12236,13 +12233,12 @@ done:
         {
             string message;
             var randomBase = SpawnRandomBase(out message, RaidableType.Purchased, mode, null, false, payments, owner.UserIDString);
-
             if (randomBase != null)
             {
                 var grid = FormatGridReference(randomBase.Position);
-
+                
                 Message(owner, "BuyBaseSpawnedAt", randomBase.Position, grid);
-
+                
                 if (config.EventMessages.AnnounceBuy)
                 {
                     foreach (var target in BasePlayer.activePlayerList)
@@ -12250,7 +12246,7 @@ done:
                         QueueNotification(target, "BuyBaseAnnouncement", owner.displayName, randomBase.Position, grid);
                     }
                 }
-
+                
                 Puts(mx("BuyBaseAnnouncementConsole", null, owner.displayName, mode, randomBase.BaseName, randomBase.Position, grid));
 
                 return true;
@@ -12442,9 +12438,11 @@ done:
 
         private Vector3 GetEventPosition(BuildingOptions options, List<Payment> payments, float distanceFrom, bool checkTerrain, RaidableSpawns spawns, RaidableType type, out string message, float scanDistance = -1f, Vector3 scanVector = default(Vector3))
         {
+            //if (type == RaidableType.Purchased) distanceFrom = 5000f;
             spawns.Check();
 
             message = null;
+            _totalattempts = 0;
 
             int attempts = 1000; //spawns.Count;
             Vector3 paymentPos = Payment.GetPosition(payments);
@@ -12453,24 +12451,22 @@ done:
             float safeRadius = Mathf.Max(options.ArenaWalls.Radius, protectionRadius);
             float buildRadius = Mathf.Max(config.Settings.Management.CupboardDetectionRadius, options.ArenaWalls.Radius, protectionRadius) + 5f;
             int layers = Layers.Mask.Player_Server | Layers.Mask.Construction | Layers.Mask.Deployed | Layers.Mask.Ragdoll;
-
             CacheType cacheType;
 
             while (spawns.Count > 0 && --attempts > 0)
             {
-                _attempts++;
-
+                _totalattempts++;
+                
                 var rsl = spawns.GetRandom(options.Water);
-
                 var vector = rsl.Location;
-
+                
                 if (options.Setup.ForcedHeight != -1)
                 {
                     vector.y = options.Setup.ForcedHeight;
                 }
                 else vector.y += options.Setup.PasteHeightAdjustment;
 
-                if (scanDistance > 0 && !InRange(vector, scanVector, scanDistance))
+                if (scanDistance > 0 && !InRange2D(vector, scanVector, scanDistance))
                 {
                     message = "Not close enough to specified parameter";
                     continue;
@@ -12482,7 +12478,7 @@ done:
                     message = "Too close to another raidable base";
                     continue;
                 }
-
+                
                 if (spawns.IsCustomSpawn && (options.CustomSpawns.Ignore || options.CustomSpawns.SafeRadius > 0f))
                 {
                     if (options.CustomSpawns.SafeRadius <= 0f)
@@ -12492,7 +12488,7 @@ done:
                     }
                     else safeRadius = options.CustomSpawns.SafeRadius;
                 }
-
+                
                 if (type == RaidableType.Maintained && spawns.IsCustomSpawn && (config.Settings.Maintained.Ignore || config.Settings.Maintained.SafeRadius > 0f))
                 {
                     if (config.Settings.Maintained.SafeRadius <= 0f)
@@ -12502,7 +12498,7 @@ done:
                     }
                     else safeRadius = config.Settings.Maintained.SafeRadius;
                 }
-
+                
                 if (type == RaidableType.Scheduled && spawns.IsCustomSpawn && (config.Settings.Schedule.Ignore || config.Settings.Schedule.SafeRadius > 0f))
                 {
                     if (config.Settings.Schedule.SafeRadius <= 0f)
@@ -12512,7 +12508,7 @@ done:
                     }
                     else safeRadius = config.Settings.Schedule.SafeRadius;
                 }
-
+                
                 if (type == RaidableType.Purchased && spawns.IsCustomSpawn && (config.Settings.Buyable.Ignore || config.Settings.Buyable.SafeRadius > 0f))
                 {
                     if (config.Settings.Buyable.SafeRadius <= 0f)
@@ -12522,31 +12518,28 @@ done:
                     }
                     else safeRadius = config.Settings.Buyable.SafeRadius;
                 }
-
+                
                 if (!spawns.IsCustomSpawn && options.Setup.ForcedHeight == -1f && options.Water.Seabed <= 0f && SpawnsController.IsSubmerged(options.Water, rsl))
                 {
                     continue;
                 }
-
-                if (paymentPos != Vector3.zero && distanceFrom > 0 && !InRange(paymentPos, vector, distanceFrom))
+                
+                if (paymentPos != Vector3.zero && distanceFrom > 0 && !InRange2D(paymentPos, vector, distanceFrom))
                 {
                     continue;
                 }
-
-                if (!spawns.IsCustomSpawn && GetBuildingPrivilege(vector, buildRadius) != Vector3.zero)
-                {
-                    spawns.RemoveNear(vector, buildRadius, CacheType.Privilege, type);
-
-                    continue;
-                }
-
-                var sac = new SpawnsController.SafeAreaCheck(vector, safeRadius, layers, type, options.CustomSpawns);
-
+                
+                var sac = new SpawnsController.SafeAreaCheck(vector, safeRadius, buildRadius, layers, type, options.CustomSpawns);
+                
                 if (!SpawnsController.IsAreaSafe(sac, out cacheType, out message))
                 {
                     if (cacheType == CacheType.Delete)
                     {
                         spawns.Remove(rsl, cacheType);
+                    }
+                    else if (cacheType == CacheType.Privilege)
+                    {
+                        spawns.RemoveNear(vector, buildRadius, cacheType, type);
                     }
                     else spawns.RemoveNear(vector, safeRadius / 2f, cacheType, type);
 
@@ -12554,40 +12547,36 @@ done:
                     {
                         message = "Failed safe check; trying again...";
                     }
-
                     continue;
                 }
-
+                
                 if (!spawns.IsCustomSpawn && SpawnsController.IsObstructed(vector, protectionRadius, options.Elevation, options.Setup.ForcedHeight))
                 {
                     spawns.RemoveNear(vector, protectionRadius / 2f, CacheType.Temporary, type);
-
                     continue;
                 }
-
-                PrintDebugMessage($"Attempts before finding position to paste base: {_attempts}");
-
-                _attempts = 0;
-
+                
+                PrintDebugMessage($"Attempts before finding position to paste base: {_totalattempts}");
+                
                 return vector;
             }
 
             spawns.TryAddRange();
-
+            
             if (paymentPos != Vector3.zero && spawns.Count > 0 && distanceFrom < 5000f)
             {
                 return GetEventPosition(options, payments, 5000f, checkTerrain, spawns, type, out message);
             }
-
+            
             if (message == null)
             {
                 message = mx("CannotFindPosition");
             }
-
+            
             return Vector3.zero;
         }
 
-        private int _attempts = 0;
+        private int _totalattempts = 0;
 
         private object SpawnRandomBase(string baseName, Vector3 a, int type = 1)
         {
@@ -12637,7 +12626,10 @@ done:
 
             if (validProfile && spawns != null)
             {
+                //var sw3 = Stopwatch.StartNew();
                 var eventPos = GetEventPosition(profile.Value.Options, payments, config.Settings.Buyable.DistanceToSpawnFrom, checkTerrain, spawns, type, out message, distance, scanVector);
+                //sw3.Stop();
+                //Puts("Took {0}ms and {1} attempts to find spawn location", sw3.Elapsed.TotalMilliseconds, _totalattempts);
 
                 if (eventPos != Vector3.zero)
                 {
@@ -12734,7 +12726,7 @@ done:
             RaidableSpawns spawns;
             checkTerrain = false;
 
-            if (profile?.Spawns.Count > 0)
+            if (profile?.Spawns.IsCustomSpawn == true)
             {
                 return profile.Spawns;
             }
@@ -13091,7 +13083,7 @@ done:
             }
 
             var player = user.ToPlayer();
-
+            
             if (user.IsServer && args.Length >= 1 && args[0].IsSteamId())
             {
                 player = BasePlayer.FindByID(ulong.Parse(args[0]));
@@ -13109,14 +13101,15 @@ done:
             }
 
             var buyer = user.ToPlayer() ?? player;
+            var members = GetMembers(buyer);
 
-            if (tryBuyCooldowns.Contains(buyer.UserIDString))
+            if (members.Exists(memberId => tryBuyCooldowns.Contains(memberId)))
             {
                 Message(buyer, "BuyableAlreadyRequestedNew");
                 return;
             }
 
-            GetMembers(buyer).ForEach(memberId =>
+            members.ForEach(memberId =>
             {
                 tryBuyCooldowns.Add(memberId);
                 timer.Once(5f, () => tryBuyCooldowns.Remove(memberId));
@@ -13128,7 +13121,10 @@ done:
                 {
                     UI.CreateBuyableUI(player);
                 }
-                else Message(buyer, "BuySyntax", config.Settings.BuyCommand, user.IsServer ? "ID" : user.Id);
+                else
+                {
+                    Message(buyer, "BuySyntax", config.Settings.BuyCommand, user.IsServer ? "ID" : user.Id);
+                }
                 return;
             }
 
@@ -13154,10 +13150,10 @@ done:
                 Message(buyer, "Max Manual Events", config.Settings.Buyable.Max);
                 return;
             }
-
+            
             string value = args[0].ToLower();
             RaidableMode mode = GetRaidableMode(value);
-
+            
             if (!CanSpawnDifficultyToday(mode))
             {
                 Message(buyer, "BuyDifficultyNotAvailableToday", value);
@@ -13444,7 +13440,7 @@ done:
         {
             foreach (var raid in Raids)
             {
-                if (InRange(raid.Location, player.transform.position, 100f))
+                if (InRange2D(raid.Location, player.transform.position, 100f))
                 {
                     Player.Message(player, string.Format("{0} @ {1} ({2})", raid.BaseName, raid.Location, PositionToGrid(raid.Location)));
                 }
@@ -13640,7 +13636,7 @@ done:
 
                 foreach (var rsl in spawns.Active)
                 {
-                    if (InRange(rsl.Location, player.transform.position, 1000f))
+                    if (InRange2D(rsl.Location, player.transform.position, 1000f))
                     {
                         player.SendConsoleCommand("ddraw.text", 30f, Color.green, rsl.Location, "X");
                     }
@@ -13653,7 +13649,7 @@ done:
 
                     foreach (var rsl in spawns.Inactive(cacheType))
                     {
-                        if (InRange(rsl.Location, player.transform.position, 1000f))
+                        if (InRange2D(rsl.Location, player.transform.position, 1000f))
                         {
                             player.SendConsoleCommand("ddraw.text", 30f, color, rsl.Location, text);
                         }
@@ -13828,10 +13824,10 @@ done:
                     CacheType cacheType;
                     int layers2 = Layers.Mask.Player_Server | Layers.Mask.Construction | Layers.Mask.Deployed;
                     var radius = Mathf.Max(M_RADIUS * 2f, profile.Value.Options.ArenaWalls.Radius);
-                    var sac = new SpawnsController.SafeAreaCheck(hit.point, radius, layers2, RaidableType.Manual, profile.Value.Options.CustomSpawns);
+                    var sac = new SpawnsController.SafeAreaCheck(hit.point, radius, radius, layers2, RaidableType.Manual, profile.Value.Options.CustomSpawns);
                     var safe = player.IsAdmin || SpawnsController.IsAreaSafe(sac, out cacheType, out message);
 
-                    if (!safe && !player.IsFlying && InRange(player.transform.position, hit.point, 50f, false))
+                    if (!safe && !player.IsFlying && InRange(player.transform.position, hit.point, 50f))
                     {
                         user.Reply(m("PasteIsBlockedStandAway", user.Id));
                         return;
@@ -13839,7 +13835,7 @@ done:
 
                     if (safe && (isAllowed || !SpawnsController.IsMonumentPosition(hit.point)))
                     {
-                        var spawns = GridController.Spawns.FirstOrDefault(s => s.Value.Spawns.Exists(t => InRange(t.Location, hit.point, M_RADIUS))).Value;
+                        var spawns = GridController.Spawns.FirstOrDefault(s => s.Value.Spawns.Exists(t => InRange2D(t.Location, hit.point, M_RADIUS))).Value;
                         var x = new RandomBase(profile.Key, profile.Value, hit.point, RaidableType.Manual, spawns, null);
                         if (PasteBuilding(x, out message) && player.IsAdmin)
                         {
@@ -13994,8 +13990,8 @@ done:
                     if (!isAllowed) return false;
                     BaseNetworkable.serverEntities.OfType<BaseEntity>().ToList().ForEach(entity =>
                     {
-                        if (entity.OwnerID != 0 || entity.Distance(player) > 100f) return;
-                        if (entity.name.Contains("building") || entity.name.Contains("deploy")) entity.Kill();
+                        if (entity.IsDestroyed || entity.OwnerID != 0 || entity.Distance(player) > 100f) return;
+                        if (entity.name.Contains("building") || entity.name.Contains("deploy")) entity.SafelyKill();
                     });
 
                     return true;
@@ -14346,37 +14342,22 @@ done:
 
         private List<string> GetMembers(BasePlayer buyer)
         {
-            var members = new List<string>();
+            var members = new HashSet<string>();
 
             if (buyer.currentTeam == 0uL)
             {
-                if (!members.Contains(buyer.UserIDString))
-                {
-                    members.Add(buyer.UserIDString);
-                }
+                members.Add(buyer.UserIDString);
             }
-            else buyer.Team.members.ForEach(member =>
-            {
-                if (!members.Contains(member.ToString()))
-                {
-                    members.Add(member.ToString());
-                }
-            });
+            else buyer.Team.members.ForEach(member => members.Add(member.ToString()));
 
             var clan = Clans?.Call("GetClanMembers", buyer.userID) as List<string>;
 
             if (clan != null)
             {
-                clan.ForEach(member =>
-                {
-                    if (!members.Contains(member))
-                    {
-                        members.Add(member);
-                    }
-                });
+                clan.ForEach(member => members.Add(member));
             }
 
-            return members;
+            return members.ToList();
         }
 
         private bool IsHelicopter(HitInfo hitInfo)
@@ -14867,7 +14848,7 @@ done:
 
             foreach (var x in Raids)
             {
-                if (InRange(x.Location, target, radius))
+                if (InRange2D(x.Location, target, radius))
                 {
                     values.Add(x);
                 }
@@ -14927,14 +14908,14 @@ done:
 
         private Vector3 GetCenterLocation(Vector3 position)
         {
-            return Raids.FirstOrDefault(raid => InRange(raid.Location, position, raid.ProtectionRadius))?.Location ?? Vector3.zero;
+            return Raids.FirstOrDefault(raid => InRange2D(raid.Location, position, raid.ProtectionRadius))?.Location ?? Vector3.zero;
         }
 
         private bool HasEventEntity(BaseEntity entity) => !entity.IsKilled() && RaidableBase.Has(entity);
 
         private bool EventTerritory(Vector3 position)
         {
-            return Raids.Exists(raid => InRange(raid.Location, position, raid.ProtectionRadius));
+            return Raids.Exists(raid => InRange2D(raid.Location, position, raid.ProtectionRadius));
         }
 
         private bool CanBlockOutsideDamage(RaidableBase raid, BasePlayer attacker, bool isEnabled)
@@ -14943,20 +14924,20 @@ done:
             {
                 float radius = Mathf.Max(raid.ProtectionRadius, raid.Options.ArenaWalls.Radius, M_RADIUS);
 
-                return !InRange(attacker.transform.position, raid.Location, radius, false);
+                return !InRange(attacker.transform.position, raid.Location, radius);
             }
 
             return false;
         }
 
-        private static bool InRange(Vector3 a, Vector3 b, float distance, bool ex = true)
+        private static bool InRange2D(Vector3 a, Vector3 b, float distance)
         {
-            if (!ex)
-            {
-                return (a - b).sqrMagnitude <= distance * distance;
-            }
-
             return (new Vector3(a.x, 0f, a.z) - new Vector3(b.x, 0f, b.z)).sqrMagnitude <= distance * distance;
+        }
+
+        private static bool InRange(Vector3 a, Vector3 b, float distance)
+        {
+            return (a - b).sqrMagnitude <= distance * distance;
         }
 
         private bool AssignTreasureHunters()
@@ -15217,8 +15198,7 @@ done:
                 }
                 catch (Exception ex)
                 {
-                    Puts(file);
-                    Puts("{0}", ex);
+                    Puts("{0}\n{1}", file, ex);
                 }
             }
 
@@ -15309,33 +15289,33 @@ done:
 
         private void LoadTable(string file, List<LootItem> lootList)
         {
-            if (lootList.Count == 0) // if its empty then do nothing. more importantly this prevents it from being saved when your current loot table is corrupted and won't load. otherwise it'd reset the file as empty
+            if (lootList.Count == 0)
             {
                 return;
             }
 
-            if (lootList.All(ti => ti.probability == 0f)) // fix for prior bug where all were set to 0.0 (not spawning)
+            if (lootList.All(ti => ti.probability == 0f))
             {
                 lootList.ForEach(ti => ti.probability = 1f);
             }
 
-            if (lootList.All(ti => ti.stacksize == 0)) // ditto, preventitive
+            if (lootList.All(ti => ti.stacksize == 0))
             {
                 lootList.ForEach(ti => ti.stacksize = -1);
             }
 
-            Interface.Oxide.DataFileSystem.WriteObject(file, lootList); // save loot table - this allows adding new options which must be saved to apply to the file
+            Interface.Oxide.DataFileSystem.WriteObject(file, lootList);
 
-            lootList.RemoveAll(ti => ti == null || ti.amount == 0 && ti.amountMin == 0); // invalid entries that reside in memory only and do not get written back to the file since it was written above already
+            lootList.RemoveAll(ti => ti == null || ti.amount == 0 && ti.amountMin == 0);
 
-            if (lootList.Count == 0) // verify again that its not empty
+            if (lootList.Count == 0)
             {
                 return;
             }
 
-            _sb.AppendLine($"Loaded {lootList.Count} items from {file}"); // print in server console that the file loaded
+            _sb.AppendLine($"Loaded {lootList.Count} items from {file}");
 
-            lootList.ForEach(ti => // someone put the min as the max and the max as the min so reverse them
+            lootList.ForEach(ti =>
             {
                 if (ti != null && ti.amount < ti.amountMin)
                 {
@@ -15438,7 +15418,7 @@ done:
                 ["CannotFindPosition"] = "Could not find a random position!",
                 ["PasteOnCooldown"] = "Paste is on cooldown!",
                 ["SpawnOnCooldown"] = "Try again, a manual spawn was already requested.",
-                ["Thief"] = "<color=#FFFF00>The base at <color=#FFFF00>{0}</color> has been raided by <color=#FFFF00>{1}</color>!</color>",
+                ["Thieves"] = "<color=#FFFF00>The {0} base at <color=#FFFF00>{1}</color> has been raided by <color=#FFFF00>{2}</color>!</color>",
                 ["BuySyntax"] = "<color=#FFFF00>Syntax: {0} easy|medium|hard {1}</color>",
                 ["TargetNotFoundId"] = "<color=#FFFF00>Target {0} not found, or not online.</color>",
                 ["TargetNotFoundNoId"] = "<color=#FFFF00>No steamid provided.</color>",
@@ -15475,6 +15455,7 @@ done:
                 ["DoomAndGloom"] = "<color=#FF0000>You have left a {0} zone and can be attacked for another {1} seconds!</color>",
                 ["NoConfiguredLoot"] = "Error: No loot found in the config!",
                 ["NoContainersFound"] = "Error: No usable containers found for {0} @ {1}!",
+                ["NoEntitiesFound"] = "Error: No entities found at {0} @ {1}!",
                 ["NoBoxesFound"] = "Error: No usable boxes found for {0} @ {1}!",
                 ["NoLootSpawned"] = "Error: No loot was spawned!",
                 ["LoadedManual"] = "Loaded {0} manual spawns.",
@@ -15581,7 +15562,14 @@ done:
                 ["Invite Ownership Error"] = "You must have ownership of a raid to invite someone.",
                 ["Invite Lockout Error"] = "You cannot invite this person until their lockout expires.",
                 ["Invite Success"] = "You have invited {0} to join your raid.",
-                ["Invite Allowed"] = "You have been allowed to join the raid owned by {0}."
+                ["Invite Allowed"] = "You have been allowed to join the raid owned by {0}.",
+                ["No Reward: Flying"] = "You cannot earn a reward while flying.",
+                ["No Reward: Vanished"] = "You cannot earn a reward while vanished.",
+                ["No Reward: Inactive"] = "You cannot earn a reward while inactive.",
+                ["No Reward: Admin"] = "Administrators cannot earn rewards.",
+                ["No Reward: Not Owner"] = "You must be the owner of the raid to be eligible.",
+                ["No Reward: Not Ally"] = "You must be the owner or an ally of the raid to be eligible.",
+                ["No Reward: Not A Participant"] = "You must be a participant of the raid to be eligible."
             }, this, "en");
         }
 
@@ -15652,6 +15640,11 @@ done:
 
         private static void QueueNotification(BasePlayer player, string key, params object[] args)
         {
+            if (!player.IsReallyConnected())
+            {
+                return;
+            }
+
             string message = m(key, player.UserIDString, args);
 
             if (string.IsNullOrEmpty(message))
@@ -16561,8 +16554,35 @@ done:
             public string ConsoleCommand { get; set; } = "rbevent";
         }
 
+        public class EventMessageRewardSettings
+        {
+            [JsonProperty(PropertyName = "Flying")]
+            public bool Flying { get; set; }
+
+            [JsonProperty(PropertyName = "Vanished")]
+            public bool Vanished { get; set; }
+
+            [JsonProperty(PropertyName = "Inactive")]
+            public bool Inactive { get; set; } = true;
+
+            [JsonProperty(PropertyName = "Not An Ally")]
+            public bool NotAlly { get; set; } = true;
+
+            [JsonProperty(PropertyName = "Not The Owner")]
+            public bool NotOwner { get; set; } = true;
+
+            [JsonProperty(PropertyName = "Not A Participant")]
+            public bool NotParticipant { get; set; } = true;
+
+            [JsonProperty(PropertyName = "Remove Admins From Raiders List")]
+            public bool RemoveAdmin { get; set; }
+        }
+
         public class EventMessageSettings
         {
+            [JsonProperty(PropertyName = "Ineligible For Rewards")]
+            public EventMessageRewardSettings Rewards { get; set; } = new EventMessageRewardSettings();
+
             [JsonProperty(PropertyName = "Announce Raid Unlocked")]
             public bool AnnounceRaidUnlock { get; set; }
 
@@ -16817,6 +16837,9 @@ done:
 
             [JsonProperty(PropertyName = "Health For Scientists (100 min, 5000 max)")]
             public float ScientistHealth { get; set; } = 150f;
+
+            [JsonProperty(PropertyName = "Kill Underwater Npcs")]
+            public bool KillUnderwater { get; set; } = true;
 
             [JsonProperty(PropertyName = "Player Traps And Turrets Ignore Npcs")]
             public bool IgnoreTrapsTurrets { get; set; }
@@ -17846,14 +17869,11 @@ done:
             public bool isBlueprint { get; set; }
 
             [JsonIgnore]
-            public bool isPriority { get; set; }
-
-            [JsonIgnore]
-            public bool isUnique { get; set; }
+            public bool isModified { get; set; }
 
             public LootItem() { }
 
-            public LootItem(string shortname, int amountMin = 1, int amount = 1, ulong skin = 0, bool isBlueprint = false, float probability = 1.0f, int stacksize = -1, string name = null, bool isPriority = false, bool isUnique = false)
+            public LootItem(string shortname, int amountMin = 1, int amount = 1, ulong skin = 0, bool isBlueprint = false, float probability = 1.0f, int stacksize = -1, string name = null, bool isModified = false)
             {
                 this.shortname = shortname;
                 this.amountMin = amountMin;
@@ -17863,13 +17883,12 @@ done:
                 this.probability = probability;
                 this.stacksize = stacksize;
                 this.name = name;
-                this.isPriority = isPriority;
-                this.isUnique = isUnique;
+                this.isModified = isModified;
             }
 
             public LootItem Clone()
             {
-                return new LootItem(shortname, amountMin, amount, skin, isBlueprint, probability, stacksize, name, isPriority, isUnique);
+                return new LootItem(shortname, amountMin, amount, skin, isBlueprint, probability, stacksize, name, isModified);
             }
 
             public bool Equals(LootItem other)
@@ -19019,6 +19038,7 @@ namespace Oxide.Plugins.RaidableBasesExtensionMethods
         public static bool All<T>(this IList<T> a, Func<T, bool> b) { for (int i = 0; i < a.Count; i++) { if (!b(a[i])) { return false; } } return true; }
         public static int Average(this IList<int> a) { if (a.Count == 0) { return 0; } int b = 0; for (int i = 0; i < a.Count; i++) { b += a[i]; } return b / a.Count; }
         public static T ElementAt<T>(this IEnumerable<T> a, int b) { using (var c = a.GetEnumerator()) { while (c.MoveNext()) { if (b == 0) { return c.Current; } b--; } } return default(T); }
+        public static bool Exists<T>(this HashSet<T> a) where T : BaseEntity { foreach (var b in a) { if (!b.IsKilled()) { return true; } } return false; }
         public static bool Exists<T>(this IEnumerable<T> a, Func<T, bool> b = null) { using (var c = a.GetEnumerator()) { while (c.MoveNext()) { if (b == null || b(c.Current)) { return true; } } } return false; }
         public static T FirstOrDefault<T>(this IEnumerable<T> a, Func<T, bool> b = null) { using (var c = a.GetEnumerator()) { while (c.MoveNext()) { if (b == null || b(c.Current)) { return c.Current; } } } return default(T); }
         public static int RemoveAll<T, V>(this IDictionary<T, V> a, Func<T, V, bool> b) { var c = new List<T>(); using (var d = a.GetEnumerator()) { while (d.MoveNext()) { if (b(d.Current.Key, d.Current.Value)) { c.Add(d.Current.Key); } } } c.ForEach(e => a.Remove(e)); return c.Count; }
@@ -19045,5 +19065,7 @@ namespace Oxide.Plugins.RaidableBasesExtensionMethods
         public static bool IsCheating(this BasePlayer a) { return a._limitedNetworking || a.IsFlying || a.UsedAdminCheat(30f) || a.IsGod() || a.metabolism?.calories?.min == 500; }
         public static void SetAiming(this BasePlayer a, bool f) { a.modelState.aiming = f; a.SendNetworkUpdate(); }
         public static BasePlayer ToPlayer(this IPlayer user) { return user.Object as BasePlayer; }
+        public static string ObjectName(this Collider collider) { try { return collider.gameObject.name ?? string.Empty; } catch { return string.Empty; } }
+        public static T GetRandom<T>(this HashSet<T> h) { if (h == null || h.Count == 0) { return default(T); } return h.ElementAt(UnityEngine.Random.Range(0, h.Count)); }
     }
 }

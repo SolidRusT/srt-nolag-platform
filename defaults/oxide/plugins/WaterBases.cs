@@ -16,7 +16,10 @@ namespace Oxide.Plugins
         private static WaterBases Instance;
         #region CONST & STATIC
 
-        public const string VERSION = "1.0.4";
+        public const string VERSION = "1.0.5";
+
+        public const string PREFAB_SHARK_ALIVE = "assets/rust.ai/agents/fish/simpleshark.prefab";
+        public const string PREFAB_SHARK_DEAD = "assets/rust.ai/agents/fish/shark.corpse.prefab";
 
         public const string PREFAB_FLOOR_SQUARE = "assets/prefabs/building core/floor/floor.prefab";
         public const string PREFAB_FLOOR_TRIANGLE = "assets/prefabs/building core/floor.triangle/floor.triangle.prefab";
@@ -31,8 +34,6 @@ namespace Oxide.Plugins
 
         public const string PREFAB_POOL_BIG = "assets/prefabs/misc/summer_dlc/abovegroundpool/abovegroundpool.deployed.prefab";
         public const string PREFAB_POOL_SMALL = "assets/prefabs/misc/summer_dlc/paddling_pool/paddlingpool.deployed.prefab";
-
-        public const string PREFAB_INNER_TUBE = "assets/prefabs/misc/summer_dlc/inner_tube/innertube.deployed.prefab";
 
         public const string PREFAB_BUILD_EFFECT = "assets/bundled/prefabs/fx/build/frame_place.prefab";
 
@@ -50,9 +51,12 @@ namespace Oxide.Plugins
         public const ulong SKIN_INVERSE_FOUNDATION_SQUARE = 1337424003;
         public const ulong SKIN_INVERSE_FOUNDATION_TRIANGLE = 1337424004;
         public const ulong SKIN_INVERSE_DECAY_ENTITY = 1337424002;
+        public const ulong SKIN_SHARK_NETTING = 1337424005;
 
         public static LayerMask DeployedMask = LayerMask.GetMask("Deployed");
         public static LayerMask ConstructionMask = LayerMask.GetMask("Construction");
+
+        public static BaseEntity.Flags FLAG_ALREADY_APPLIED = BaseEntity.Flags.OnFire;
 
         private static object ReusableObject;
         private static bool ReusableBool;
@@ -153,6 +157,8 @@ namespace Oxide.Plugins
         public const string MSG_DEPLOY_RESULT_IN_POOL = "MSG_DEPLOY_RESULT_IN_POOL";
         public const string MSG_DEPLOY_RESULT_LACKS_ITEM = "MSG_DEPLOY_RESULT_LACKS_ITEM";
 
+        public const string MSG_DEPLOY_RESULT_PEBCAK = "MSG_DEPLOY_RESULT_PEBCAK";
+
         public const string MSG_EXPAND_REINFORCEMENT_NOT_ALLOWED = "MSG_EXPAND_REINFORCEMENT_NOT_ALLOWED";
         public const string MSG_REINFORCEMENT_NOT_ALLOWED = "MSG_REINFORCEMENT_NOT_ALLOWED";
         public const string MSG_REINFORCEMENT_LACKS_ITEM = "MSG_REINFORCEMENT_LACKS_ITEM";
@@ -221,6 +227,8 @@ namespace Oxide.Plugins
             [MSG_CFG_RUNDOWN_FORMAT] = "/wb_cfg <color=yellow>{0}</color> (currently: {1})",
             [MSG_CFG_DETAILS_FORMAT] = "<color=green>{0}</color>:\n{1} ({2})\nThis value is currently set to: {3}\n",
             [MSG_CFG_NO_SETTING_FOUND] = "No setting with that name has been found. Type /wb_cfg to get a rundown.",
+
+            [MSG_DEPLOY_RESULT_PEBCAK] = "That's not how you expand your foundations! You only need to deploy one blue doughnut as a starter. Then take out your building plan, select a square or triangle floor (NOT foundation!) and build just like in vanilla."
         };
 
         private static string MSG(string msg, string userID = null, params object[] args)
@@ -301,6 +309,10 @@ namespace Oxide.Plugins
                     {
                         return $"{MSG(MSG_DEPLOY_ERROR, userID)} {MSG(MSG_DEPLOY_RESULT_OUTSIDE_GRID, userID)}";
                     }
+                case DeploymentResult.ProblemExistsBetweenChairAndKeyboard:
+                    {
+                        return $"{MSG(MSG_DEPLOY_ERROR, userID)} {MSG(MSG_DEPLOY_RESULT_PEBCAK, userID)}";
+                    }
             }
         }
         #endregion
@@ -335,16 +347,19 @@ namespace Oxide.Plugins
 
             GenerateAllInteractiveConfigValues();
 
-            RecalculateUnderwaterLootWeights();
+            RecalculateUnderwaterAndSharkHarvestLootWeights();
 
-            GuiManager.GenerateGUI();
+            GuiManager.ReGenerateGUI();
 
             ActivateSpecialStuff();
         }
 
         void Unload()
         {
-            Instance = null;
+            foreach (var helper in UnityEngine.Object.FindObjectsOfType<NettingSharkHelper>())
+            {
+                UnityEngine.Object.DestroyImmediate(helper);
+            }
 
             foreach (var helper in UnityEngine.Object.FindObjectsOfType<InverseFoundationHelper>())
             {
@@ -360,11 +375,42 @@ namespace Oxide.Plugins
             {
                 GuiManager.HideGUI(player);
             }
+
+            configData.OilrigPositions = null;
+            configData.ProfileTopologyMask = null;
+            configData.NettingSharks = null;
+
+            GuiManager.CleanupGUI();
+
+            Instance = null;
         }
 
         void OnPlayerDeath(BasePlayer player, HitInfo info)
         {
             GuiManager.HideGUI(player);
+        }
+        object OnDispenserGather(ResourceDispenser dispenser, BasePlayer player, Item item)
+        {
+            if (dispenser.baseEntity.PrefabName != PREFAB_SHARK_DEAD)
+            {
+                return null;
+            }
+
+            float chance = dispenser.baseEntity.Health() / dispenser.baseEntity.MaxHealth();
+
+            if (UnityEngine.Random.Range(0F, 1F) < chance)
+            {
+                var randomItem = CreateRandomSharkHarvestItem();
+
+                if (randomItem == null)
+                {
+                    return null;
+                }
+
+                player.GiveItem(randomItem, BaseEntity.GiveItemReason.ResourceHarvested);
+            }
+
+            return null;
         }
 
         void OnItemRemovedFromContainer(ItemContainer container, Item item)
@@ -487,6 +533,84 @@ namespace Oxide.Plugins
             }
 
             return null;
+        }
+
+        void OnEntitySpawned(SimpleShark shark)
+        {
+            if (Instance == null)
+            {
+                return;
+            }
+
+            if (configData == null)
+            {
+                return;
+            }
+
+            if (shark == null)
+            {
+                return;
+            }
+
+            if (shark.skinID != SKIN_SHARK_NETTING)
+            {
+                return;
+            }
+
+            if (shark.IsDestroyed)
+            {
+                return;
+            }
+
+            if (shark.net == null)
+            {
+                return;
+            }
+
+            if (configData.NettingSharks == null)
+            {
+                return;
+            }
+
+            var newNettingSharkCompo = shark.gameObject.AddComponent<NettingSharkHelper>();
+
+            newNettingSharkCompo.Prepare(shark);
+
+            if (configData.NettingSharks.ContainsKey(shark.net.ID))
+            {
+                configData.NettingSharks.Remove(shark.net.ID);
+            }
+
+            if (configData.NettingSharks.Count >= configData.UnderwaterNetsSharkPopulationLimitGlobal)
+            {
+                shark.Invoke(() => shark.Kill(), 0.02F);
+            }
+
+            configData.NettingSharks.Add(shark.net.ID, shark);
+        }
+
+        void OnEntityKill(SimpleShark shark)
+        {
+            if (Instance == null)
+            {
+                return;
+            }
+
+            if (configData == null)
+            {
+                return;
+            }
+
+            if (shark.skinID != SKIN_SHARK_NETTING)
+            {
+                return;
+            }
+
+            if (!configData.NettingSharks.ContainsKey(shark.net.ID))
+            {
+                configData.NettingSharks.Remove(shark.net.ID);
+            }
+
         }
 
         object OnHammerHit(BasePlayer player, HitInfo info)
@@ -646,7 +770,7 @@ namespace Oxide.Plugins
                                     //let's make a foundation first. relative please.
                                     var transf = GetWorldTransformRelativeTo(newBuildingBlock.transform, Vector3.down * 1.5F, new Vector3(0F, 0F, -180F));
 
-                                    maybeAboveYou = BuildWaterFoundationAt(player, newBuildingBlock.PrefabName == PREFAB_FLOOR_SQUARE ? SKIN_FOUNDATION_SQUARE : SKIN_FOUNDATION_TRIANGLE, transf.Item1, transf.Item2);
+                                    maybeAboveYou = BuildWaterFoundationAt(player, false, newBuildingBlock.PrefabName == PREFAB_FLOOR_SQUARE ? SKIN_FOUNDATION_SQUARE : SKIN_FOUNDATION_TRIANGLE, transf.Item1, transf.Item2);
 
                                     maybeAboveYou.AttachToBuilding(nearby);
 
@@ -743,7 +867,7 @@ namespace Oxide.Plugins
 
                 Instance.NextTick(() =>
                 {
-                    BuildWaterFoundationAt(player, maybeInflatable.skinID, maybeInflatable.transform.position, Quaternion.Euler(maybeInflatable.transform.eulerAngles.WithX(0).WithZ(0)));
+                    BuildWaterFoundationAt(player, true, maybeInflatable.skinID, maybeInflatable.transform.position, Quaternion.Euler(maybeInflatable.transform.eulerAngles.WithX(0).WithZ(0)));
 
                     maybeInflatable.Kill(BaseNetworkable.DestroyMode.None);
 
@@ -768,37 +892,204 @@ namespace Oxide.Plugins
 
         #region MONO
 
-        public class UnderwaterNetHelper : MonoBehaviour
+        public class NettingSharkHelper : MonoBehaviour
         {
-            public StabilityEntity netting;
+            public float LastCheckAt = float.MinValue;
+            public float CheckEvery = 1F;
 
-            public float NextUpdateAt = NextRandomTime();
+            public bool SeemsToBeAsleepCurrent = false;
+            public bool SeemsToBeAsleepPrevious = false;
 
-            public void Prepare(StabilityEntity netting)
+            public float WentToSleepAt = float.MinValue;
+
+            public SimpleShark OwnerShark;
+
+            public bool NoNeedToUpdateAnymore = false;
+
+            public void Prepare(SimpleShark shark)
             {
-                this.netting = netting;
+                OwnerShark = shark;
+
+                if (!shark.HasFlag(FLAG_ALREADY_APPLIED))
+                {
+                    shark.SetHealth(Instance.configData.UnderwaterNetsSharkHealthMultiplier * shark.health);
+                    shark.SetMaxHealth(Instance.configData.UnderwaterNetsSharkHealthMultiplier * shark.health);
+
+                    shark.maxSpeed = shark.maxSpeed * Instance.configData.UnderwaterNetsSharkSpeedMultiplier;
+                    shark.minSpeed = shark.minSpeed * Instance.configData.UnderwaterNetsSharkSpeedMultiplier;
+
+                    shark.maxTurnSpeed = shark.maxTurnSpeed * Instance.configData.UnderwaterNetsSharkSpeedMultiplier;
+                    shark.minTurnSpeed = shark.minTurnSpeed * Instance.configData.UnderwaterNetsSharkSpeedMultiplier;
+
+                    shark.SetFlag(FLAG_ALREADY_APPLIED, true, false, true);
+                    shark.SendChildrenNetworkUpdateImmediate();
+                }
+
+                //might aswell be reapplied
+                shark.aggroRange = Instance.configData.UnderwaterNetsSharkAggroRange;
             }
 
             private void FixedUpdate()
             {
-                if (UnityEngine.Time.realtimeSinceStartup < NextUpdateAt)
+                if (NoNeedToUpdateAnymore)
                 {
                     return;
                 }
 
-                NextUpdateAt = NextRandomTime();
-
-                if (netting.gameObject.GetComponentsInChildren<DroppedItem>().Length >= Instance.configData.UnderwaterNetsItemLimit)
+                if (Time.time < LastCheckAt + CheckEvery)
                 {
                     return;
                 }
 
-                CreateRandomUnderwaterJunk(netting);
+                SeemsToBeAsleepPrevious = SeemsToBeAsleepCurrent;
+                SeemsToBeAsleepCurrent = !BaseNetworkable.HasCloseConnections(transform.position, 100F);
+
+                //did something change?
+                if (SeemsToBeAsleepCurrent != SeemsToBeAsleepPrevious)
+                {
+                    //yes it did.
+                    //did you just go to sleep fron non-sleep, or did you just wake up?
+                    if (SeemsToBeAsleepCurrent)
+                    {
+                        //you just went to sleep
+                        WentToSleepAt = Time.time;
+                    }
+                    else
+                    {
+                        //you just woke up
+                        WentToSleepAt = float.MinValue;
+                    }
+                }
+                else
+                {
+                    //nope. check.
+                    if (SeemsToBeAsleepCurrent)
+                    {
+                        if (Time.time > WentToSleepAt + Instance.configData.UnderwaterNetsSharkSleepDespawnTimer)
+                        {
+                            //that's it for you. Kill yourself.
+                            NoNeedToUpdateAnymore = true;
+                            OwnerShark.Kill();
+                        }
+                    }
+                }
+
+            }
+        }
+
+        public class UnderwaterNetHelper : MonoBehaviour
+        {
+            //reapproacchi. keep TimerSetOn separately to SecondsAdded.
+
+            public StabilityEntity OwnerNetting;
+
+            public float NextCreateUnderwaterJunk;
+
+            public float TimerSetWithTimestamp = float.MinValue;
+            public float TimerSetWithSecondsAdded = 0;
+
+            public bool TimerRunning = false;
+
+            public void Prepare(StabilityEntity netting)
+            {
+                this.OwnerNetting = netting;
+
+                //when the first one spawns, it will set off the timer.
+                NextRandomTimeSpawnJunk();
             }
 
-            public static float NextRandomTime()
+            public void SetupSharkTimer()
             {
-                return UnityEngine.Time.realtimeSinceStartup + UnityEngine.Random.Range(Instance.configData.UnderwaterNetsRandomTimerMin, Instance.configData.UnderwaterNetsRandomTimerMin);
+                TimerSetWithTimestamp = Time.realtimeSinceStartup;
+                TimerSetWithSecondsAdded = UnityEngine.Random.Range(Instance.configData.UnderwaterNetsSharkRandomTimerMin, Instance.configData.UnderwaterNetsRandomTimerMax);
+                TimerRunning = true;
+            }
+
+            public void ShortenSharkTimer()
+            {
+                TimerRunning = true; //make sure the value is between 0 and 100
+                TimerSetWithSecondsAdded *= (100F - Mathf.Clamp(Instance.configData.UnderwaterNetsSharkTimerShortenByPercent, 0F, 100F)) / 100F; //normalize back to 0 - 1 range
+            }
+
+            public void NextRandomTimeSpawnJunk()
+            {
+                float nextRandomTime = NextRandomTime(Instance.configData.UnderwaterNetsRandomTimerMin, Instance.configData.UnderwaterNetsRandomTimerMax);
+                NextCreateUnderwaterJunk = nextRandomTime;
+            }
+
+            private void TryCreateRandomUnderwaterJunk()
+            {
+                var countBeforeAdding = CountNettingItems(OwnerNetting);
+
+                if (countBeforeAdding >= Instance.configData.UnderwaterNetsItemLimit)
+                {
+                    //Instance.PrintWarning($"{countBeforeAdding} is too many alreaaaadyyyYYY, no timer action!!!! Making sure the timer is stopped.");
+                    TimerRunning = false;
+                    return;
+                }
+
+                var newItem = CreateRandomItemFromTable(Instance.configData.UnderwaterLoot, Instance.configData.UnderwaterLootWeightSum);
+
+                if (newItem == null)
+                {
+                    return;
+                }
+
+                //figure out where to drop...
+                var transf = GetWorldTransformRelativeTo(OwnerNetting.transform, new Vector3(UnityEngine.Random.Range(-0.2F, 0.2F), UnityEngine.Random.Range(0.1F, 2.9F), UnityEngine.Random.Range(-1.4F, 1.4F)), new Vector3(UnityEngine.Random.Range(0, 360F), UnityEngine.Random.Range(0, 360F), UnityEngine.Random.Range(0, 360F)));
+
+                var dropped = newItem.Drop(transf.Item1, Vector3.zero, transf.Item2) as DroppedItem;
+
+                var rigid = dropped.gameObject.GetComponent<Rigidbody>();
+                rigid.useGravity = false;
+                rigid.isKinematic = true;
+
+                //parent...
+                dropped.SetParent(OwnerNetting, true, false);
+
+                if (countBeforeAdding == 0)
+                {
+                    SetupSharkTimer();
+                }
+                else
+                {
+                    ShortenSharkTimer();
+                }
+            }
+
+            private void FixedUpdate()
+            {
+                //which one is happening sooner?
+                if (Time.realtimeSinceStartup > NextCreateUnderwaterJunk)
+                {
+                    NextRandomTimeSpawnJunk();
+                    TryCreateRandomUnderwaterJunk(); //if succeeded, this will decrease the timer (if not running already)
+                }
+
+                if (!Instance.configData.UnderwaterNetsSpawnSharks)
+                {
+                    return;
+                }
+
+                if (!TimerRunning)
+                {
+                    return;
+                }
+
+                if (Time.realtimeSinceStartup > TimerSetWithTimestamp + TimerSetWithSecondsAdded)
+                {
+                    //well, it's time. to spawn sum sharkzors.
+                    TrySpawnSharkNearNetting(OwnerNetting);
+
+                    //next item will trigger it back to true - but why?
+                    TimerRunning = false;
+                }
+
+            }
+
+            public static float NextRandomTime(float timeMin, float timeMax)
+            {
+                return UnityEngine.Time.realtimeSinceStartup + UnityEngine.Random.Range(timeMin, timeMax);
             }
         }
 
@@ -810,7 +1101,7 @@ namespace Oxide.Plugins
             public static float UPDATE_RATE_MIN = 3F;
             public static float UPDATE_RATE_MAX = 5F;
 
-            public float UpdateRateCurrent = RandomUpdateRate();
+            public float UpdateRateCurrent = 3F;
             public float UpdatedLast = float.MinValue;
 
             public BuildingManager.Building myBuilding;
@@ -818,6 +1109,7 @@ namespace Oxide.Plugins
 
             public void Prepare(BuildingBlock inverseFoundation)
             {
+                UpdateRateCurrent = RandomUpdateRate();
                 this.inverseFoundation = inverseFoundation;
                 this.waterFoundationParent = inverseFoundation.GetParentEntity() as BuildingBlock;
             }
@@ -916,27 +1208,94 @@ namespace Oxide.Plugins
             }
         }
 
+
+        public const float ANCHOR_X = 0.5F;
+        public const float ANCHOR_Y = 0F;
+
+        public const float SCREEN_WIDTH_IN_PIXELS = 1280;
+        public const float SCREEN_HEIGHT_IN_PIXELS = 720;
+
+        public static string ANCHOR_DEFAULT = ANCHOR_X.ToString() + " " + ANCHOR_Y.ToString();
+
+        public const float ANCHOR_DEFAULT_PIXEL_X = ANCHOR_X * SCREEN_WIDTH_IN_PIXELS;
+        public const float ANCHOR_DEFAULT_PIXEL_Y = 0;
+
+        public static CuiRectTransformComponent GetCuiRectTransformFromNewGuiConfig()
+        {
+            return new CuiRectTransformComponent
+            {
+                AnchorMin = $"{Instance.configData.GuiNEW1AnchorMinX} {Instance.configData.GuiNEW2AnchorMinY}",
+                AnchorMax = $"{Instance.configData.GuiNEW3AnchorMaxX} {Instance.configData.GuiNEW4AnchorMaxY}",
+
+                OffsetMin = $"{Instance.configData.GuiNEW5OffsetMinX} {Instance.configData.GuiNEW6OffsetMinY}",
+                OffsetMax = $"{Instance.configData.GuiNEW7OffsetMaxX} {Instance.configData.GuiNEW8OffsetMaxY}",
+            };
+        }
+            
+
+        public static CuiRectTransformComponent GetAnchorFromScreenBoxOld(float leftmostX, float bottommostY, float rightmostX, float topmostY, out float calculatedOffsetMinX, out float calculatedOffsetMinY, out float calculatedOffsetMaxX, out float calculatedOffsetMaxY)
+        {
+
+            string alignedTo = ANCHOR_DEFAULT;
+
+            leftmostX *= SCREEN_WIDTH_IN_PIXELS;
+            bottommostY *= SCREEN_HEIGHT_IN_PIXELS;
+
+            rightmostX *= SCREEN_WIDTH_IN_PIXELS;
+            topmostY *= SCREEN_HEIGHT_IN_PIXELS;
+
+            leftmostX = (leftmostX - ANCHOR_DEFAULT_PIXEL_X);
+            bottommostY = (bottommostY - ANCHOR_DEFAULT_PIXEL_Y);
+
+            rightmostX = (rightmostX - ANCHOR_DEFAULT_PIXEL_X);
+            topmostY = (topmostY - ANCHOR_DEFAULT_PIXEL_Y);
+
+            calculatedOffsetMinX = Mathf.Ceil(leftmostX) + 1; //correction, don't ask me why
+            calculatedOffsetMinY = Mathf.Ceil(bottommostY) -2; 
+
+            calculatedOffsetMaxX = Mathf.Ceil(rightmostX);
+            calculatedOffsetMaxY = Mathf.Ceil(topmostY);
+
+            var result = new CuiRectTransformComponent
+            {
+                AnchorMin = alignedTo,
+                AnchorMax = alignedTo,
+                OffsetMin = $"{calculatedOffsetMinX} {calculatedOffsetMinY}",
+                OffsetMax = $"{calculatedOffsetMaxX} {calculatedOffsetMaxY}",
+            };
+
+            return result;
+        }
+
         public static class GuiManager
         {
             public static CuiElementContainer ContainerMain;
-            public static string ContainerMainJson;
+            public static string ContainerMainJSON;
+            public static CuiRectTransformComponent Anchor;
 
-            public static void GenerateGUI()
+            public static void ReGenerateGUI()
             {
+                //move this to legacy gen
                 ContainerMain = new CuiElementContainer();
+
+                float rubbish1, rubbish2, rubbish3, rubbish4;
+
+                Anchor = Instance.configData.GuiUseNewPositioning ? GetCuiRectTransformFromNewGuiConfig() : GetAnchorFromScreenBoxOld(Instance.configData.GuiAnchorALeft, Instance.configData.GuiAnchorBBottom, Instance.configData.GuiAnchorCRight, Instance.configData.GuiAnchorDTop, out rubbish1, out rubbish2, out rubbish3, out rubbish4);
 
                 ContainerMain.Add(new CuiPanel
                 {
                     RectTransform =
                     {
-                        AnchorMin = $"{Instance.configData.GuiAnchorALeft} {Instance.configData.GuiAnchorBBottom}",
-                        AnchorMax = $"{Instance.configData.GuiAnchorCRight} {Instance.configData.GuiAnchorDTop}",
+                        AnchorMin = Anchor.AnchorMin,
+                        AnchorMax = Anchor.AnchorMax,
+                        OffsetMin = Anchor.OffsetMin,
+                        OffsetMax = Anchor.OffsetMax
                     }
                 }, "Overlay", "wbgui.panel");
 
                 ContainerMain.Add(new CuiButton
                 {
-                    Button = 
+                    Button =
                     {
                         Color = $"{new ColorCode(Instance.configData.GuiButtonColor).rustString} {Instance.configData.GuiButtonAlpha}",
                         Command = "wb_craft.square",
@@ -978,7 +1337,14 @@ namespace Oxide.Plugins
 
                 }, "wbgui.panel", "wbgui.button.craft.triangle");
 
-                ContainerMainJson = ContainerMain.ToJson();
+                ContainerMainJSON = ContainerMain.ToJson();
+            }
+
+            public static void CleanupGUI()
+            {
+                ContainerMain = null;
+                ContainerMainJSON = null;
+                Anchor = null;
             }
 
             public static void ShowGUI(BasePlayer player)
@@ -990,7 +1356,7 @@ namespace Oxide.Plugins
                     return;
                 }
 
-                CuiHelper.AddUi(player, ContainerMainJson);
+                CuiHelper.AddUi(player, ContainerMainJSON);
             }
 
             public static void HideGUI(BasePlayer player)
@@ -1448,29 +1814,79 @@ namespace Oxide.Plugins
 
             AddInteractiveConfigValue("UnderwaterNetsCollectJunk", $"If true, Nettings deployed in wall frames underwater will accumulate random low-tier items. The full loot table (items and their weights) can be edited in the config file.", () => Instance.configData.UnderwaterNetsCollectJunk, val => { Instance.configData.UnderwaterNetsCollectJunk = val.Equals(true); }, typeof(bool));
 
-            AddInteractiveConfigValue("UnderwaterNetsRandomTimerMin", $"Minimum duration of time before the next random item spawns in a net (in seconds)", () => Instance.configData.UnderwaterNetsRandomTimerMin, val => { Instance.configData.UnderwaterNetsRandomTimerMin = (float)val; }, typeof(float), 1F, 100000F);
+            AddInteractiveConfigValue("UnderwaterNetsRandomTimerMin", $"Minimum duration of time before the next random item spawns in a Netting (in seconds)", () => Instance.configData.UnderwaterNetsRandomTimerMin, val => { Instance.configData.UnderwaterNetsRandomTimerMin = (float)val; }, typeof(float), 1F, 100000F);
 
-            AddInteractiveConfigValue("UnderwaterNetsRandomTimerMax", $"Maximum duration of time before the next random item spawns in a net (in seconds)", () => Instance.configData.UnderwaterNetsRandomTimerMax, val => { Instance.configData.UnderwaterNetsRandomTimerMax = (float)val; }, typeof(float), 1F, 100000F);
+            AddInteractiveConfigValue("UnderwaterNetsRandomTimerMax", $"Maximum duration of time before the next random item spawns in a Netting (in seconds)", () => Instance.configData.UnderwaterNetsRandomTimerMax, val => { Instance.configData.UnderwaterNetsRandomTimerMax = (float)val; }, typeof(float), 1F, 100000F);
 
-            AddInteractiveConfigValue("UnderwaterNetsItemLimit", $"If the amount of items currently caught in the net is larger than this number, don't catch new items until room is made (or one of the items despawns)", () => Instance.configData.UnderwaterNetsItemLimit, val => { Instance.configData.UnderwaterNetsItemLimit = (int)val; }, typeof(int), 0, 100);
+            AddInteractiveConfigValue("UnderwaterNetsItemLimit", $"If the amount of items currently caught in the Netting is larger than this number, don't catch new items until room is made (or one of the items despawns)", () => Instance.configData.UnderwaterNetsItemLimit, val => { Instance.configData.UnderwaterNetsItemLimit = (int)val; }, typeof(int), 0, 100);
 
-            AddInteractiveConfigValue("GuiAnchorALeft", $"Building plan crafting GUI anchor min x (left)", () => Instance.configData.GuiAnchorALeft, val => { Instance.configData.GuiAnchorALeft = (float)val; GuiManager.GenerateGUI(); }, typeof(float), 0F, 1F);
 
-            AddInteractiveConfigValue("GuiAnchorBBottom", $"Building plan crafting GUI anchor min y (bottom)", () => Instance.configData.GuiAnchorBBottom, val => { Instance.configData.GuiAnchorBBottom = (float)val; GuiManager.GenerateGUI(); }, typeof(float), 0F, 1F);
+            //new in 1.0.5: sharks.
 
-            AddInteractiveConfigValue("GuiAnchorCRight", $"Building plan crafting GUI anchor max x (right)", () => Instance.configData.GuiAnchorCRight, val => { Instance.configData.GuiAnchorCRight = (float)val; GuiManager.GenerateGUI(); }, typeof(float), 0F, 1F);
+            AddInteractiveConfigValue("UnderwaterNetsSpawnSharks", $"If true, Nettings deployed in wall frames underwater will spawn Sharks nearby. The full loot table (items and their weights) can be edited in the config file.", () => Instance.configData.UnderwaterNetsSpawnSharks, val => { Instance.configData.UnderwaterNetsSpawnSharks = val.Equals(true); }, typeof(bool));
 
-            AddInteractiveConfigValue("GuiAnchorDTop", $"Building plan crafting GUI anchor max y (top)", () => Instance.configData.GuiAnchorDTop, val => { Instance.configData.GuiAnchorDTop = (float)val; GuiManager.GenerateGUI(); }, typeof(float), 0F, 1F);
+            AddInteractiveConfigValue("UnderwaterNetsSharkRandomTimerMin", $"When the first item in the netting is caught, minimum duration of time before the next random Shark spawns near a Netting (in seconds)", () => Instance.configData.UnderwaterNetsSharkRandomTimerMin, val => { Instance.configData.UnderwaterNetsSharkRandomTimerMin = (float)val; }, typeof(float), 1F, 100000F);
 
-            AddInteractiveConfigValue("GuiTextSize", $"Building plan crafting GUI text size", () => Instance.configData.GuiTextSize, val => { Instance.configData.GuiTextSize = (int)val; GuiManager.GenerateGUI(); }, typeof(int), 4, 72);
+            AddInteractiveConfigValue("UnderwaterNetsSharkRandomTimerMax", $"When the first item in the netting is caught, maximum duration of time before the next random Shark spawns near a Netting (in seconds)", () => Instance.configData.UnderwaterNetsSharkRandomTimerMax, val => { Instance.configData.UnderwaterNetsSharkRandomTimerMax = (float)val; }, typeof(float), 1F, 100000F);
+            //UnderwaterNetsSharkTimerShortenByPercent
 
-            AddInteractiveConfigValue("GuiButtonColor", $"Building plan crafting GUI button background colour (hex number, no preceeding hash)", () => Instance.configData.GuiButtonColor, val => { Instance.configData.GuiButtonColor = (string)val; GuiManager.GenerateGUI(); }, typeof(string));
+            AddInteractiveConfigValue("UnderwaterNetsSharkTimerShortenByPercent", $"If this value is greater than 0%, every time an additional item is caught, the currently running timer to spawn the Shark gets shortened by this percentage.", () => Instance.configData.UnderwaterNetsSharkTimerShortenByPercent, val => { Instance.configData.UnderwaterNetsSharkTimerShortenByPercent = (float)val; }, typeof(float), 0F, 100F);
 
-            AddInteractiveConfigValue("GuiTextColor", $"Building plan crafting GUI text colour (hex number, no preceeding hash)", () => Instance.configData.GuiTextColor, val => { Instance.configData.GuiTextColor = (string)val; GuiManager.GenerateGUI(); }, typeof(string));
+            AddInteractiveConfigValue("UnderwaterNetsSharkSpawningMinDistance", $"Minimum distance from the Netting for a random Shark position relative to the Netting it spawns from. Sharks have big colliders, so make sure you set this value to at least 2 meters.", () => Instance.configData.UnderwaterNetsSharkSpawningMinDistance, val => { Instance.configData.UnderwaterNetsSharkSpawningMinDistance = (float)val; }, typeof(float), 2F, 100000F);
 
-            AddInteractiveConfigValue("GuiButtonAlpha", $"Building plan crafting GUI button alpha (0 = fully transparent, 1 = fully opaque)", () => Instance.configData.GuiButtonAlpha, val => { Instance.configData.GuiButtonAlpha = (float)val; GuiManager.GenerateGUI(); }, typeof(float), 0F, 1F);
+            AddInteractiveConfigValue("UnderwaterNetsSharkSpawningMaxDistance", $"Maximum distance from the Netting for a random Shark position relative to the Netting it spawns from. Over 100 meters, Rust makes Shark automatically go to sleep if no nearby players are found, so don't set this over 100 meters.", () => Instance.configData.UnderwaterNetsSharkSpawningMaxDistance, val => { Instance.configData.UnderwaterNetsSharkSpawningMaxDistance = (float)val; }, typeof(float), 5F, 100F);
 
-            AddInteractiveConfigValue("GuiTextAlpha", $"Building plan crafting GUI text alpha (0 = fully transparent, 1 = fully opaque)", () => Instance.configData.GuiTextAlpha, val => { Instance.configData.GuiTextAlpha = (float)val; GuiManager.GenerateGUI(); }, typeof(float), 0F, 1F);
+            AddInteractiveConfigValue("UnderwaterNetsSharkPopulationLimitLocal", $"Useful for limiting how many Sharks max can spawn around a given Netting (in a radius of 100 meters from that Netting). Many Nettings close together share the same space and thus the same limit.", () => Instance.configData.UnderwaterNetsSharkPopulationLimitLocal, val => { Instance.configData.UnderwaterNetsSharkPopulationLimitLocal = (int)val; }, typeof(int), 1, 100);
+
+            AddInteractiveConfigValue("UnderwaterNetsSharkPopulationLimitGlobal", $"No more Sharks will spawn on the server AT ALL (around the nettings or in the wild) if this limit had been exceeded. Useful for balancing server performance.", () => Instance.configData.UnderwaterNetsSharkPopulationLimitGlobal, val => { Instance.configData.UnderwaterNetsSharkPopulationLimitGlobal = (int)val; }, typeof(int), 1, 100);
+
+            AddInteractiveConfigValue("UnderwaterNetsSharkSleepDespawnTimer", $"When no players are found within a 100 radius meters of a shark, a timer starts with this value. When it wakes up, the timer is cancelled. Adjust it to let sleeping sharks live longer.", () => Instance.configData.UnderwaterNetsSharkSleepDespawnTimer, val => { Instance.configData.UnderwaterNetsSharkSleepDespawnTimer = (float)val; }, typeof(float), 0F, 100000F);
+
+            AddInteractiveConfigValue("UnderwaterNetsSharkHealthMultiplier", $"Use values lower than 1 to give them less health, and higher than 1 to give them more health than they'd normally have as vanilla Sharks", () => Instance.configData.UnderwaterNetsSharkHealthMultiplier, val => { Instance.configData.UnderwaterNetsSharkHealthMultiplier = (float)val; }, typeof(float), 0.001F, 100F);
+
+            AddInteractiveConfigValue("UnderwaterNetsSharkSpeedMultiplier", $"Use values lower than 1 to give them less speed, and higher than 1 to give them more speed than they'd normally have as vanilla Sharks", () => Instance.configData.UnderwaterNetsSharkSpeedMultiplier, val => { Instance.configData.UnderwaterNetsSharkSpeedMultiplier = (float)val; }, typeof(float), 0.001F, 100F);
+
+            AddInteractiveConfigValue("UnderwaterNetsSharkAggroRange", $"When a player underwater gets closer (in meters) to a Shark than this value, the Shark might pursue them. Default Rust vanilla is 15", () => Instance.configData.UnderwaterNetsSharkAggroRange, val => { Instance.configData.UnderwaterNetsSharkAggroRange = (float)val; }, typeof(float), 0.001F, 100F);
+
+            AddInteractiveConfigValue("SharkHarvestingLootEnabled", $"If true, harvesting a Shark corpse with a proper tool will have a chance of giving random low-tier items. The full loot table (items and their weights) can be edited in the config file.", () => Instance.configData.SharkHarvestingLootEnabled, val => { Instance.configData.SharkHarvestingLootEnabled = val.Equals(true); }, typeof(bool));
+
+            //DEPRECATED
+            /*
+            AddInteractiveConfigValue("GuiAnchorALeft", $"Building plan crafting GUI anchor min x (left)", () => Instance.configData.GuiAnchorALeft, val => { Instance.configData.GuiAnchorALeft = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiAnchorBBottom", $"Building plan crafting GUI anchor min y (bottom)", () => Instance.configData.GuiAnchorBBottom, val => { Instance.configData.GuiAnchorBBottom = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiAnchorCRight", $"Building plan crafting GUI anchor max x (right)", () => Instance.configData.GuiAnchorCRight, val => { Instance.configData.GuiAnchorCRight = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiAnchorDTop", $"Building plan crafting GUI anchor max y (top)", () => Instance.configData.GuiAnchorDTop, val => { Instance.configData.GuiAnchorDTop = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+            */
+
+            //replaced with...
+            AddInteractiveConfigValue("GuiNEW1AnchorMinX", $"Building plan crafting GUI anchor min x (left)", () => Instance.configData.GuiNEW1AnchorMinX, val => { Instance.configData.GuiNEW1AnchorMinX = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiNEW2AnchorMinY", $"Building plan crafting GUI anchor min y (bottom)", () => Instance.configData.GuiNEW2AnchorMinY, val => { Instance.configData.GuiNEW2AnchorMinY = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiNEW3AnchorMaxX", $"Building plan crafting GUI anchor max x (right)", () => Instance.configData.GuiNEW3AnchorMaxX, val => { Instance.configData.GuiNEW3AnchorMaxX = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiNEW4AnchorMaxY", $"Building plan crafting GUI anchor max y (top)", () => Instance.configData.GuiNEW4AnchorMaxY, val => { Instance.configData.GuiNEW4AnchorMaxY = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiNEW5OffsetMinX", $"Building plan crafting GUI offset from anchor min x (left)", () => Instance.configData.GuiNEW5OffsetMinX, val => { Instance.configData.GuiNEW5OffsetMinX = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiNEW6OffsetMinY", $"Building plan crafting GUI offset from anchor min y (bottom)", () => Instance.configData.GuiNEW6OffsetMinY, val => { Instance.configData.GuiNEW6OffsetMinY = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiNEW7OffsetMaxX", $"Building plan crafting GUI offset from anchor max x (right)", () => Instance.configData.GuiNEW7OffsetMaxX, val => { Instance.configData.GuiNEW7OffsetMaxX = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiNEW8OffsetMaxY", $"Building plan crafting GUI offset from anchor max y (top)", () => Instance.configData.GuiNEW8OffsetMaxY, val => { Instance.configData.GuiNEW8OffsetMaxY = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiTextSize", $"Building plan crafting GUI text size", () => Instance.configData.GuiTextSize, val => { Instance.configData.GuiTextSize = (int)val; GuiManager.ReGenerateGUI(); }, typeof(int), 4, 72);
+
+            AddInteractiveConfigValue("GuiButtonColor", $"Building plan crafting GUI button background colour (hex number, no preceeding hash)", () => Instance.configData.GuiButtonColor, val => { Instance.configData.GuiButtonColor = (string)val; GuiManager.ReGenerateGUI(); }, typeof(string));
+
+            AddInteractiveConfigValue("GuiTextColor", $"Building plan crafting GUI text colour (hex number, no preceeding hash)", () => Instance.configData.GuiTextColor, val => { Instance.configData.GuiTextColor = (string)val; GuiManager.ReGenerateGUI(); }, typeof(string));
+
+            AddInteractiveConfigValue("GuiButtonAlpha", $"Building plan crafting GUI button alpha (0 = fully transparent, 1 = fully opaque)", () => Instance.configData.GuiButtonAlpha, val => { Instance.configData.GuiButtonAlpha = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
+
+            AddInteractiveConfigValue("GuiTextAlpha", $"Building plan crafting GUI text alpha (0 = fully transparent, 1 = fully opaque)", () => Instance.configData.GuiTextAlpha, val => { Instance.configData.GuiTextAlpha = (float)val; GuiManager.ReGenerateGUI(); }, typeof(float), 0F, 1F);
 
             AddInteractiveConfigValue("EnableBarrelEntities", $"If true, water foundation and reinforcements will spawn barrels for visuals. If you're worried about potential server lag with extra entities, set to false, but it will fully expose your foundation/reinforcement soft sides. Changes will take effect for newly deployed foundations or after server restart.", () => Instance.configData.EnableBarrelEntities, val => { Instance.configData.EnableBarrelEntities = val.Equals(true); }, typeof(bool));
         }
@@ -1497,8 +1913,9 @@ namespace Oxide.Plugins
             OnCargoShipPath,
             NoRequiredItem,
 
-            OutsideMapGrid
+            OutsideMapGrid,
 
+            ProblemExistsBetweenChairAndKeyboard,
         }
 
         public enum CargoPathHandling
@@ -1607,34 +2024,72 @@ namespace Oxide.Plugins
             public CargoPathHandling CargoShipPathHandling = CargoPathHandling.Warn;
 
             public float MinDistanceFromCargoShipNode = 40F;
+            public bool RestrictBuildingToMapGrid = false;
+            public bool EnableBarrelEntities = true;
+            public float UpkeepMultiplier = 1F;
 
             public bool UnderwaterNetsCollectJunk = true;
             public float UnderwaterNetsRandomTimerMin = 600;
             public float UnderwaterNetsRandomTimerMax = 1200;
             public int UnderwaterNetsItemLimit = 10;
 
-            public bool RestrictBuildingToMapGrid = false;
-
-            public bool EnableBarrelEntities = true;
-
-            public List<UnderwaterLootDefinition> UnderwaterLoot = new List<UnderwaterLootDefinition>();
-
-            public float UpkeepMultiplier = 1F;
-
             public List<SerializableItemAmount> CraftingCostSquare = new List<SerializableItemAmount>();
             public List<SerializableItemAmount> CraftingCostTriangle = new List<SerializableItemAmount>();
 
             public Dictionary<string, PermissionProfile> PermissionProfiles = new Dictionary<string, PermissionProfile>();
 
+            //deprecated, will be moved to const soon
+            //
             public float GuiAnchorALeft = 0.645833F;
             public float GuiAnchorBBottom = 0.02592F;
             public float GuiAnchorCRight = 0.83125F;
             public float GuiAnchorDTop = 0.108333F;
+
+            public float GuiNEW1AnchorMinX = float.PositiveInfinity;
+            public float GuiNEW2AnchorMinY = float.PositiveInfinity;
+            public float GuiNEW3AnchorMaxX = float.PositiveInfinity;
+            public float GuiNEW4AnchorMaxY = float.PositiveInfinity;
+
+            public float GuiNEW5OffsetMinX = float.PositiveInfinity;
+            public float GuiNEW6OffsetMinY = float.PositiveInfinity;
+            public float GuiNEW7OffsetMaxX = float.PositiveInfinity;
+            public float GuiNEW8OffsetMaxY = float.PositiveInfinity;
+
             public int GuiTextSize = 14;
             public string GuiButtonColor = "4897ce";
             public string GuiTextColor = "f6eae0";
             public float GuiButtonAlpha = 1.0F;
             public float GuiTextAlpha = 1.0F;
+
+            public bool GuiUseNewPositioning = true;
+
+            public bool SharkHarvestingLootEnabled = true;
+
+            public bool UnderwaterNetsSpawnSharks = true;
+
+            public float UnderwaterNetsSharkRandomTimerMin = 1800; //between 30 mins
+            public float UnderwaterNetsSharkRandomTimerMax = 3600; //to an hour
+
+            public float UnderwaterNetsSharkTimerShortenByPercent = 8F; //so after 10 spawns, it goes down to roughly 0.38 (23/46 minutes from 60/120 minutes, respectively)
+
+            public float UnderwaterNetsSharkSpawningMinDistance = 5F;
+            public float UnderwaterNetsSharkSpawningMaxDistance = 30F;
+
+            public int UnderwaterNetsSharkPopulationLimitLocal = 3; //max 3 sharks in 100 meter radius
+            public int UnderwaterNetsSharkPopulationLimitGlobal = 30;
+
+            public float UnderwaterNetsSharkSleepDespawnTimer = 600; //10 minutes
+
+            public float UnderwaterNetsSharkHealthMultiplier = 1F;
+
+            public float UnderwaterNetsSharkSpeedMultiplier = 1F;
+
+            public float UnderwaterNetsSharkAggroRange = 15F;
+
+            public List<UnderwaterLootDefinition> SharkHarvestLoot = new List<UnderwaterLootDefinition>();
+
+
+            public List<UnderwaterLootDefinition> UnderwaterLoot = new List<UnderwaterLootDefinition>();
 
             [JsonIgnore]
             public Dictionary<string, int> ProfileTopologyMask = new Dictionary<string, int>();
@@ -1642,9 +2097,15 @@ namespace Oxide.Plugins
             [JsonIgnore]
             public Dictionary<Vector3, string> OilrigPositions = new Dictionary<Vector3, string>();
 
+            [JsonIgnore]
+            public Dictionary<uint, SimpleShark> NettingSharks = new Dictionary<uint, SimpleShark>();
+
             //needs recalculation
             [JsonIgnore]
             public float UnderwaterLootWeightSum;
+
+            [JsonIgnore]
+            public float SharkHarvestLootWeightSum;
 
         }
 
@@ -1657,6 +2118,83 @@ namespace Oxide.Plugins
 
         private void ProcessConfigData()
         {
+            bool needsSave = false;
+
+            if (configData.PermissionProfiles?.Count == 0)
+            {
+                configData.PermissionProfiles = new Dictionary<string, PermissionProfile>
+                {
+                    [PERM_ADMIN] = AdminPermissionProfile(),
+
+                    ["default"] = DefaultPermissionProfile(),
+
+                    [PERM_VIP1] = VIPPermissionProfile(),
+
+                };
+                needsSave = true;
+            }
+
+            if (float.IsPositiveInfinity(configData.GuiNEW1AnchorMinX) || float.IsPositiveInfinity(configData.GuiNEW2AnchorMinY) || float.IsPositiveInfinity(configData.GuiNEW3AnchorMaxX) || float.IsPositiveInfinity(configData.GuiNEW4AnchorMaxY) || float.IsPositiveInfinity(configData.GuiNEW5OffsetMinX) || float.IsPositiveInfinity(configData.GuiNEW7OffsetMaxX) || float.IsPositiveInfinity(configData.GuiNEW8OffsetMaxY))
+            {
+                float minOffsetX, minOffsetY, maxOffsetX, maxOffsetY;
+
+                var rubbish = GetAnchorFromScreenBoxOld(Instance.configData.GuiAnchorALeft, Instance.configData.GuiAnchorBBottom, Instance.configData.GuiAnchorCRight, Instance.configData.GuiAnchorDTop, out minOffsetX, out minOffsetY, out maxOffsetX, out maxOffsetY);
+
+                Instance.configData.GuiNEW1AnchorMinX = ANCHOR_X;
+                Instance.configData.GuiNEW2AnchorMinY = ANCHOR_Y;
+                Instance.configData.GuiNEW3AnchorMaxX = ANCHOR_X;
+                Instance.configData.GuiNEW4AnchorMaxY = ANCHOR_Y;
+
+                Instance.configData.GuiNEW5OffsetMinX = minOffsetX;
+                Instance.configData.GuiNEW6OffsetMinY = minOffsetY;
+                Instance.configData.GuiNEW7OffsetMaxX = maxOffsetX;
+                Instance.configData.GuiNEW8OffsetMaxY = maxOffsetY;
+
+                needsSave = true;
+            }
+
+            if (configData.UnderwaterLoot?.Count == 0)
+            {
+                configData.UnderwaterLoot = DefaultUnderwaterLoot();
+                needsSave = true;
+            }
+
+            if (configData.SharkHarvestLoot?.Count == 0)
+            {
+                //copy underwater loot from the current config and multiply amounts by 5
+                configData.SharkHarvestLoot = new List<UnderwaterLootDefinition>();
+
+                for (var i=0; i<configData.UnderwaterLoot.Count; i++)
+                {
+                    var copyFrom = configData.UnderwaterLoot[i];
+
+                    var copyTo = new UnderwaterLootDefinition
+                    {
+                        Shortname = copyFrom.Shortname,
+                        SkinID = copyFrom.SkinID,
+                        CustomName = copyFrom.CustomName,
+                        MaxRandomAmount = copyFrom.MaxRandomAmount*5,
+                        MinRandomAmount = copyFrom.MinRandomAmount*5
+                    };
+
+                    configData.SharkHarvestLoot.Add(copyTo);
+                }
+
+                needsSave = true;
+            }
+
+            if (configData.CraftingCostSquare?.Count == 0)
+            {
+                configData.CraftingCostSquare = DefaultCostSquare();
+                needsSave = true;
+            }
+
+            if (configData.CraftingCostTriangle?.Count == 0)
+            {
+                configData.CraftingCostTriangle = DefaultCostTriangle();
+                needsSave = true;
+            }
+
             if (configData.Version != VERSION)
             {
                 var version = configData.Version;
@@ -1675,6 +2213,12 @@ namespace Oxide.Plugins
 
                 configData.Version = VERSION;
                 Instance.PrintWarning($"\n\nYou have succesfully updated from {version} to {VERSION}\n");
+                needsSave = true;
+
+            }
+
+            if (needsSave)
+            {
                 SaveConfigData();
             }
 
@@ -1709,21 +2253,6 @@ namespace Oxide.Plugins
             PrintWarning("Generating default config...");
 
             configData = new ConfigData();
-
-            configData.PermissionProfiles = new Dictionary<string, PermissionProfile>
-            {
-                [PERM_ADMIN] = AdminPermissionProfile(),
-
-                ["default"] = DefaultPermissionProfile(),
-
-                [PERM_VIP1] = VIPPermissionProfile(),
-
-            };
-
-            configData.UnderwaterLoot = DefaultUnderwaterLoot();
-
-            configData.CraftingCostSquare = DefaultCostSquare();
-            configData.CraftingCostTriangle = DefaultCostTriangle();
 
             SaveConfigData();
         }
@@ -2137,6 +2666,7 @@ namespace Oxide.Plugins
         #endregion
 
         #region HELPERS
+
         private static bool HasAdminPermission(BasePlayer player)
         {
             if (player.IsDeveloper) return true;
@@ -2262,9 +2792,9 @@ namespace Oxide.Plugins
             return result;
         }
 
-        private static DroppedItem CreateRandomUnderwaterJunk(StabilityEntity netting)
+        private static Item CreateRandomItemFromTable(List<UnderwaterLootDefinition> table, float weightSum)
         {
-            DroppedItem result = null;
+            Item newItem = null;
 
             var diceThrow = UnityEngine.Random.Range(0F, Instance.configData.UnderwaterLootWeightSum);
 
@@ -2283,11 +2813,11 @@ namespace Oxide.Plugins
                 }
             }
 
-            if (foundID !=-1)
+            if (foundID != -1)
             {
                 var tableEntry = Instance.configData.UnderwaterLoot[foundID];
 
-                var newItem = ItemManager.CreateByName(tableEntry.Shortname, tableEntry.MinRandomAmount == tableEntry.MaxRandomAmount ? tableEntry.MinRandomAmount : UnityEngine.Random.Range(tableEntry.MinRandomAmount, tableEntry.MaxRandomAmount), tableEntry.SkinID);
+                newItem = ItemManager.CreateByName(tableEntry.Shortname, tableEntry.MinRandomAmount == tableEntry.MaxRandomAmount ? tableEntry.MinRandomAmount : UnityEngine.Random.Range(tableEntry.MinRandomAmount, tableEntry.MaxRandomAmount), tableEntry.SkinID);
 
                 if (tableEntry.CustomName != null)
                 {
@@ -2295,22 +2825,143 @@ namespace Oxide.Plugins
                 }
 
                 newItem.MarkDirty();
-
-                //figure out where to drop...
-                var transf = GetWorldTransformRelativeTo(netting.transform, new Vector3(UnityEngine.Random.Range(-0.2F, 0.2F), UnityEngine.Random.Range(0.1F, 2.9F), UnityEngine.Random.Range(-1.4F, 1.4F)), new Vector3(UnityEngine.Random.Range(0, 360F), UnityEngine.Random.Range(0, 360F), UnityEngine.Random.Range(0, 360F)));
-
-                result = newItem.Drop(transf.Item1, Vector3.zero, transf.Item2) as DroppedItem;
-
-                var rigid = result.gameObject.GetComponent<Rigidbody>();
-                rigid.useGravity = false;
-                rigid.isKinematic = true;
-
-                //parent...
-                result.SetParent(netting, true, false);
             }
 
+            return newItem;
+        }
 
-            return result;
+        private static Item CreateRandomSharkHarvestItem()
+        {
+            return CreateRandomItemFromTable(Instance.configData.SharkHarvestLoot, Instance.configData.SharkHarvestLootWeightSum);
+        }
+
+        private static SimpleShark SpawnNettingShark(Vector3 positionForAppearingAt, Vector3 positionToBeFixatedAbout)
+        {
+            var newSharkboi = GameManager.server.CreateEntity(PREFAB_SHARK_ALIVE, positionToBeFixatedAbout, Quaternion.Euler(0F, UnityEngine.Random.Range(0, 360F), 0F)) as SimpleShark;
+            newSharkboi.limitNetworking = true;
+
+            newSharkboi.skinID = SKIN_SHARK_NETTING;
+
+            newSharkboi.Spawn();
+
+            newSharkboi.Invoke(() =>
+            {
+                //reset the shark spawnPos to positionToBeFixatedAbout
+                newSharkboi.transform.position = positionForAppearingAt;
+                newSharkboi.transform.hasChanged = true;
+                newSharkboi.SendChildrenNetworkUpdateImmediate();
+                newSharkboi.limitNetworking = false;
+            }, 0.02F);
+
+            return newSharkboi;
+        }
+
+        private static void TrySpawnSharkNearNetting(StabilityEntity netting)
+        {
+            if (!BaseNetworkable.HasCloseConnections(netting.transform.position, 100F))
+            {
+                return;
+            }
+
+            //how many sharks total?
+            if (Instance.configData.NettingSharks.Count >= Instance.configData.UnderwaterNetsSharkPopulationLimitGlobal)
+            {
+                return;
+            }
+
+            //do a vis. entities. how many sharks around the radius?
+            //do a pebcak check. Do a Vis.Entites
+            List<SimpleShark> listToCheck = Facepunch.Pool.GetList<SimpleShark>();
+
+            Vis.Entities(netting.transform.position, 100F, listToCheck, int.MaxValue, QueryTriggerInteraction.Ignore);
+
+            if (listToCheck.Count < Instance.configData.UnderwaterNetsSharkPopulationLimitLocal)
+            {
+                //keep trying to find a valid spawn position.
+                //try a random distance from config times random on unity sphere.
+                //keep doing that while...
+
+                Vector3 potentialPosition;
+                const int MAX_ATTEMPS_SPAWNING_SHARKS = 64;
+
+                int currentAttemps = 0;
+
+                do
+                {
+                    if (currentAttemps == MAX_ATTEMPS_SPAWNING_SHARKS)
+                    {
+                        break; //failed. try next time.
+                    }
+                    Vector3 onUnitSphere = UnityEngine.Random.onUnitSphere;
+
+                    if (onUnitSphere.y > 0)
+                    {
+                        onUnitSphere *= -1; //change sign to negative if it's positive, this creates a hemisphere with a pole pointing up
+                    }
+
+                    potentialPosition = netting.transform.position + UnityEngine.Random.Range(Instance.configData.UnderwaterNetsSharkSpawningMinDistance, Instance.configData.UnderwaterNetsSharkSpawningMaxDistance) * onUnitSphere;
+
+                    //over water?
+                    float terrainHeight = TerrainMeta.HeightMap.GetHeight(potentialPosition);
+
+                    float waterHeight = WaterSystem.GetHeight(potentialPosition);//try also TerrainMeta.HeightMap.GetHeight(potentialPosition);
+
+                    //water must be covering land...
+
+                    
+                    if (waterHeight < terrainHeight)
+                    {
+                        currentAttemps++;
+                        continue;
+                    }
+
+                    //and be at least 5 m deep...
+
+                    if (Mathf.Abs(terrainHeight - waterHeight) < 5F)
+                    {
+                        currentAttemps++;
+                        continue;
+                    }
+
+                    //must not be under terrain...
+                    if (potentialPosition.y < terrainHeight)
+                    {
+                        currentAttemps++;
+                        continue;
+                    }
+
+                    //or over water...
+                    if (potentialPosition.y > waterHeight)
+                    {
+                        currentAttemps++;
+                        continue;
+                    }
+
+                    //overlapping colliders?
+
+                    if (Physics.CheckSphere(potentialPosition, 2F, Rust.Layers.Solid, QueryTriggerInteraction.Ignore))
+                    {
+                        currentAttemps++;
+                        continue;
+                    }
+
+                    //ok, we good to go!
+
+                    //spawning it will also auto-apply compo
+                    var newShark = SpawnNettingShark(potentialPosition, netting.transform.position);
+
+                    break;
+                }
+                while (true);
+
+            }
+
+            Facepunch.Pool.FreeList(ref listToCheck);
+        }
+
+        private static int CountNettingItems(StabilityEntity netting)
+        {
+            return netting.gameObject.GetComponentsInChildren<DroppedItem>().Length;
         }
 
         private static void ConsumeFromSpecificItemList(ref List<Item> specificList, int amount = 1)
@@ -2524,7 +3175,7 @@ namespace Oxide.Plugins
 
         }
 
-        private static void RecalculateUnderwaterLootWeights()
+        private static void RecalculateUnderwaterAndSharkHarvestLootWeights()
         {
             Instance.configData.UnderwaterLootWeightSum = 0F;
 
@@ -2538,6 +3189,20 @@ namespace Oxide.Plugins
                 }
 
                 Instance.configData.UnderwaterLootWeightSum += entry.RandomChanceWeight;
+            }
+
+            Instance.configData.SharkHarvestLootWeightSum = 0F;
+
+            foreach (var entry in Instance.configData.SharkHarvestLoot.ToArray())
+            {
+                //remove non existing while you're at it
+                if (!ItemManager.FindItemDefinition(entry.Shortname))
+                {
+                    Instance.configData.SharkHarvestLoot.Remove(entry);
+                    continue;
+                }
+
+                Instance.configData.SharkHarvestLootWeightSum += entry.RandomChanceWeight;
             }
         }
 
@@ -2568,7 +3233,13 @@ namespace Oxide.Plugins
 
         private static void ActivateSpecialStuff()
         {
-            foreach (var stability in UnityEngine.Object.FindObjectsOfType<StabilityEntity>())
+            foreach (var shark in BaseNetworkable.serverEntities.OfType<SimpleShark>())
+            {
+                //this will count already existing sharks
+                Instance.OnEntitySpawned(shark);
+            }
+
+            foreach (var stability in BaseNetworkable.serverEntities.OfType<StabilityEntity>())
             {
                 var buildingBlock = stability as BuildingBlock;
 
@@ -2985,6 +3656,41 @@ namespace Oxide.Plugins
                     result = DeploymentResult.NoPermissionToDeploy;
                     return;
                 }
+
+                //do a pebcak check. Do a Vis.Entites
+                List<BuildingBlock> listToCheck = Facepunch.Pool.GetList<BuildingBlock>();
+
+                Vis.Entities<BuildingBlock>(newWaterFoundation.transform.position, 2F, listToCheck, ConstructionMask, QueryTriggerInteraction.Ignore);
+
+                //you're gonna find yourself, so iterate...
+
+                bool foundSomethingOtherThanYou = false;
+                BuildingBlock currentBlockChecked;
+
+                for (var f = 0; f<listToCheck.Count; f++)
+                {
+                    currentBlockChecked = listToCheck[f];
+
+                    //ignore inverse
+
+                    if (currentBlockChecked.EqualNetID(newWaterFoundation))
+                    {
+                        //that's you.
+                        continue;
+                    }
+
+
+                    foundSomethingOtherThanYou = true;
+                    break;
+                }
+
+                if (foundSomethingOtherThanYou)
+                {
+                    result = DeploymentResult.ProblemExistsBetweenChairAndKeyboard;
+                    return;
+                }
+
+                Facepunch.Pool.FreeList(ref listToCheck);
             }
             else
             {
@@ -3220,7 +3926,7 @@ namespace Oxide.Plugins
             return inverseFloor;
         }
 
-        public static BuildingBlock BuildWaterFoundationAt(BasePlayer deployingPlayer, ulong foundationSkin, Vector3 position, Quaternion rotation)
+        public static BuildingBlock BuildWaterFoundationAt(BasePlayer deployingPlayer, bool deployedFromInflatable, ulong foundationSkin, Vector3 position, Quaternion rotation)
         {
             if (!IsSkinRelevant(foundationSkin))
             {
@@ -3247,7 +3953,7 @@ namespace Oxide.Plugins
             //building.AddBuildingBlock(newFloor);
             //building.Dirty();
 
-            TurnFloorIntoWaterFoundation(newFloor, deployingPlayer, true);
+            TurnFloorIntoWaterFoundation(newFloor, deployingPlayer, deployedFromInflatable);
             return newFloor;
         }
         #endregion

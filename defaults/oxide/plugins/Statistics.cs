@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Statistics", "Mevent", "1.0.12")]
+    [Info("Statistics", "Mevent", "1.0.13")]
     public class Statistics : RustPlugin
     {
         #region Fields
@@ -23,7 +23,7 @@ namespace Oxide.Plugins
         [PluginReference] private Plugin ImageLibrary, PlayerDatabase, Notify, UINotify;
 
         private static Statistics _instance;
-        
+
         private const string Layer = "UI.Statistics";
 
         private const string UsePermission = "statistics.use";
@@ -45,11 +45,11 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Statistics Commands",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public string[] StatisticsCommands = { "stats", "statistics" };
+            public string[] StatisticsCommands = {"stats", "statistics"};
 
             [JsonProperty(PropertyName = "Leaderboard Commands",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
-            public string[] LeaderboardCommands = { "leaders", "leaderboard" };
+            public string[] LeaderboardCommands = {"leaders", "leaderboard"};
 
             [JsonProperty(PropertyName = "Automatic wipe on wipe")]
             public bool AutoWipe;
@@ -60,9 +60,10 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Open player profile by clicking on leaderboard?")]
             public bool ProfileByBoard = true;
 
-            [JsonProperty(PropertyName = "Permission to open player profile when clicked on leaderboard? (ex: statistics.profile)")]
+            [JsonProperty(PropertyName =
+                "Permission to open player profile when clicked on leaderboard? (ex: statistics.profile)")]
             public string ProfileBoardPerm = string.Empty;
-            
+
             [JsonProperty(PropertyName = "Weapons",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<string> Weapons = new List<string>
@@ -122,16 +123,17 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Use Awards?")]
             public bool UseAwards = false;
-            
-            [JsonProperty(PropertyName = "Awards (top position - award)", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+
+            [JsonProperty(PropertyName = "Awards (top position - award)",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public Dictionary<int, AwardConf> Awards = new Dictionary<int, AwardConf>
             {
-                [1] = new AwardConf()
+                [1] = new AwardConf
                 {
                     Amount = 1,
                     Items = new List<AwardItem>
                     {
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 1,
@@ -145,7 +147,7 @@ namespace Oxide.Plugins
                             Amount = 20000,
                             Chance = 50
                         },
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 2,
@@ -159,7 +161,7 @@ namespace Oxide.Plugins
                             Amount = 15000,
                             Chance = 50
                         },
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 3,
@@ -175,12 +177,12 @@ namespace Oxide.Plugins
                         }
                     }
                 },
-                [2] = new AwardConf()
+                [2] = new AwardConf
                 {
                     Amount = 1,
                     Items = new List<AwardItem>
                     {
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 4,
@@ -194,7 +196,7 @@ namespace Oxide.Plugins
                             Amount = 15000,
                             Chance = 50
                         },
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 5,
@@ -208,7 +210,7 @@ namespace Oxide.Plugins
                             Amount = 10000,
                             Chance = 50
                         },
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 6,
@@ -224,12 +226,12 @@ namespace Oxide.Plugins
                         }
                     }
                 },
-                [3] = new AwardConf()
+                [3] = new AwardConf
                 {
                     Amount = 1,
                     Items = new List<AwardItem>
                     {
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 7,
@@ -243,7 +245,7 @@ namespace Oxide.Plugins
                             Amount = 1000,
                             Chance = 50
                         },
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 8,
@@ -257,7 +259,7 @@ namespace Oxide.Plugins
                             Amount = 5000,
                             Chance = 50
                         },
-                        new AwardItem()
+                        new AwardItem
                         {
                             Type = ItemType.Item,
                             ID = 9,
@@ -280,14 +282,14 @@ namespace Oxide.Plugins
         {
             [JsonProperty(PropertyName = "Amount of items given out")]
             public int Amount;
-            
+
             [JsonProperty(PropertyName = "Items", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public List<AwardItem> Items;
 
             public List<AwardData> GetItems()
             {
                 var items = new List<AwardItem>();
-                
+
                 for (var i = 0; i < Amount; i++)
                 {
                     AwardItem item = null;
@@ -324,8 +326,7 @@ namespace Oxide.Plugins
 
         private class AwardItem
         {
-            [JsonProperty(PropertyName = "Type")]
-            [JsonConverter(typeof(StringEnumConverter))]
+            [JsonProperty(PropertyName = "Type")] [JsonConverter(typeof(StringEnumConverter))]
             public ItemType Type;
 
             [JsonProperty(PropertyName = "ID")] public int ID;
@@ -350,10 +351,10 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Amount")]
             public int Amount;
-            
+
             [JsonProperty(PropertyName = "Chance")]
             public float Chance;
-            
+
             [JsonIgnore] private string _publicTitle;
 
             [JsonIgnore]
@@ -454,7 +455,7 @@ namespace Oxide.Plugins
                 return list;
             }
         }
-        
+
         private class PluginItem
         {
             [JsonProperty(PropertyName = "Hook")] public string Hook;
@@ -478,7 +479,7 @@ namespace Oxide.Plugins
                 {
                     case "Economics":
                     {
-                        plug.Call(Hook, player.userID, (double)Amount * count);
+                        plug.Call(Hook, player.userID, (double) Amount * count);
                         break;
                     }
                     default:
@@ -589,10 +590,10 @@ namespace Oxide.Plugins
             public void GiveAwards(BasePlayer player)
             {
                 Awards.ForEach(award => award.GetItem().Get(player));
-                
+
                 Awards.Clear();
             }
-            
+
             #region Stats
 
             [JsonIgnore]
@@ -642,7 +643,7 @@ namespace Oxide.Plugins
             {
                 get
                 {
-                    return (float)Math.Round(Stats
+                    return (float) Math.Round(Stats
                         .Where(x => _config.ScoreTable.ContainsKey(x.Key))
                         .Sum(x => x.Value * _config.ScoreTable[x.Key]));
                 }
@@ -653,15 +654,14 @@ namespace Oxide.Plugins
 
         private class AwardData
         {
-            [JsonProperty(PropertyName = "ID")]
-            public int ID;
+            [JsonProperty(PropertyName = "ID")] public int ID;
 
             public AwardItem GetItem()
             {
                 AwardItem item;
                 return _instance._awardItems.TryGetValue(ID, out item) ? item : null;
             }
-            
+
             #region Constructor
 
             public AwardData()
@@ -675,7 +675,7 @@ namespace Oxide.Plugins
 
             #endregion
         }
-        
+
         private PlayerData GetPlayerData(BasePlayer player)
         {
             return GetPlayerData(player.userID);
@@ -742,17 +742,17 @@ namespace Oxide.Plugins
             var i = 1;
 
             foreach (var player in _data.Players.OrderByDescending(x =>
-            {
-                switch (mode)
-                {
-                    case 2:
-                        return x.Value.KD;
-                    case 1:
-                        return x.Value.Resources;
-                    default:
-                        return x.Value.Score;
-                }
-            }))
+                     {
+                         switch (mode)
+                         {
+                             case 2:
+                                 return x.Value.KD;
+                             case 1:
+                                 return x.Value.Resources;
+                             default:
+                                 return x.Value.Score;
+                         }
+                     }))
             {
                 if (player.Key == member)
                     return i;
@@ -771,7 +771,9 @@ namespace Oxide.Plugins
             var weapon = data.Stats.Where(x => _config.Weapons.Contains(x.Key))
                 .OrderByDescending(x => x.Value).FirstOrDefault().Key;
 
-            return string.IsNullOrEmpty(weapon) ? "NONE" : ItemManager.FindItemDefinition(weapon)?.displayName?.translated;
+            return string.IsNullOrEmpty(weapon)
+                ? "NONE"
+                : ItemManager.FindItemDefinition(weapon)?.displayName?.translated;
         }
 
         #endregion
@@ -783,14 +785,14 @@ namespace Oxide.Plugins
         private void Init()
         {
             _instance = this;
-            
+
             LoadData();
         }
 
         private void OnServerInitialized()
         {
             LoadItems();
-            
+
             LoadImages();
 
             if (_config.PlayerDatabase.Enabled && !PlayerDatabase)
@@ -803,7 +805,8 @@ namespace Oxide.Plugins
 
             permission.RegisterPermission(HidePermission, this);
 
-            if (!string.IsNullOrEmpty(_config.ProfileBoardPerm) && !permission.PermissionExists(_config.ProfileBoardPerm))
+            if (!string.IsNullOrEmpty(_config.ProfileBoardPerm) &&
+                !permission.PermissionExists(_config.ProfileBoardPerm))
                 permission.RegisterPermission(_config.ProfileBoardPerm, this);
 
             AddCovalenceCommand(_config.LeaderboardCommands, nameof(CmdStats));
@@ -840,7 +843,7 @@ namespace Oxide.Plugins
             data.DisplayName = player.displayName;
 
             if (_config.UseAwards) data.GiveAwards(player);
-            
+
             if (_config.PlayerDatabase.Enabled) LoadStats(player);
         }
 
@@ -855,10 +858,10 @@ namespace Oxide.Plugins
 
             _playersData.Clear();
             _data.Players.Clear();
-            
-            if (_config.UseAwards) 
+
+            if (_config.UseAwards)
                 GiveAwards();
-            
+
             SaveData();
         }
 
@@ -876,10 +879,10 @@ namespace Oxide.Plugins
             if (player == attacker && !_config.CountSuicide)
                 return;
 
-            if (!player.userID.IsSteamId() && !_config.CountBots)
+            if ((player.IsNpc || !player.userID.IsSteamId()) && !_config.CountBots)
                 return;
 
-            if (!attacker.userID.IsSteamId() && !_config.CountFromBots)
+            if ((attacker.IsNpc || !attacker.userID.IsSteamId()) && !_config.CountFromBots)
                 return;
 
             if (IsTeammates(player.userID, attacker.userID) && !_config.CountFromTeammates)
@@ -942,15 +945,16 @@ namespace Oxide.Plugins
 
         private void OnLootEntity(BasePlayer player, BaseEntity entity)
         {
-            if (player == null || entity == null || entity.net == null || _loots.ContainsKey(player.userID) &&
-                _loots[player.userID].Contains(entity.net.ID)) return;
+            if (player == null || entity == null || entity.net == null || (_loots.ContainsKey(player.userID) &&
+                                                                           _loots[player.userID]
+                                                                               .Contains(entity.net.ID))) return;
 
             AddToStats(player.userID, entity.ShortPrefabName);
 
             if (_loots.ContainsKey(player.userID))
                 _loots[player.userID].Add(entity.net.ID);
             else
-                _loots.Add(player.userID, new List<uint> { entity.net.ID });
+                _loots.Add(player.userID, new List<uint> {entity.net.ID});
         }
 
         #endregion
@@ -1035,7 +1039,7 @@ namespace Oxide.Plugins
                         SendNotify(player, NoPermission, 1);
                         return;
                     }
-                    
+
                     ProfileUi(player, target);
                     break;
                 }
@@ -1073,7 +1077,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Image =
                     {
                         Color = "0 0 0 0.9",
@@ -1084,8 +1088,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -1123,7 +1127,7 @@ namespace Oxide.Plugins
                 Parent = Layer + ".Main",
                 Components =
                 {
-                    new CuiRawImageComponent { Png = ImageLibrary.Call<string>("GetImage", $"avatar_{targetId}") },
+                    new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{targetId}")},
                     new CuiRectTransformComponent
                     {
                         AnchorMin = "0 1", AnchorMax = "0 1",
@@ -1224,7 +1228,7 @@ namespace Oxide.Plugins
                     OffsetMin = "327 -120",
                     OffsetMax = "328 -25"
                 },
-                Image = { Color = HexToCuiColor("#161617") }
+                Image = {Color = HexToCuiColor("#161617")}
             }, Layer + ".Main");
 
             #endregion
@@ -1319,7 +1323,7 @@ namespace Oxide.Plugins
                     OffsetMin = "490 -120",
                     OffsetMax = "491 -25"
                 },
-                Image = { Color = HexToCuiColor("#161617") }
+                Image = {Color = HexToCuiColor("#161617")}
             }, Layer + ".Main");
 
             #endregion
@@ -1360,7 +1364,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiLabel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Text =
                 {
                     Text = $"{GetTop(targetId)}",
@@ -1409,7 +1413,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiLabel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Text =
                 {
                     Text = $"{GetStatsValue(targetId, "kills")}",
@@ -1458,7 +1462,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiLabel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Text =
                 {
                     Text = $"{GetStatsValue(targetId, "deaths")}",
@@ -1481,7 +1485,7 @@ namespace Oxide.Plugins
                     OffsetMin = "384.5 -180",
                     OffsetMax = "385.5 -157.5"
                 },
-                Image = { Color = HexToCuiColor("#161617") }
+                Image = {Color = HexToCuiColor("#161617")}
             }, Layer + ".Main");
 
             #endregion
@@ -1551,7 +1555,7 @@ namespace Oxide.Plugins
                         OffsetMin = "25 -206",
                         OffsetMax = "-25 -205"
                     },
-                    Image = { Color = HexToCuiColor("#161617") }
+                    Image = {Color = HexToCuiColor("#161617")}
                 }, Layer + ".Main");
 
             #endregion
@@ -1594,7 +1598,7 @@ namespace Oxide.Plugins
                             OffsetMin = $"{xSwitch} -350",
                             OffsetMax = $"{xSwitch + Width} -235"
                         },
-                        Image = { Color = HexToCuiColor("#161617") }
+                        Image = {Color = HexToCuiColor("#161617")}
                     }, Layer + ".Main", Layer + $".Resources.{resource}");
 
                     container.Add(new CuiElement
@@ -1602,7 +1606,7 @@ namespace Oxide.Plugins
                         Parent = Layer + $".Resources.{resource}",
                         Components =
                         {
-                            new CuiRawImageComponent { Png = ImageLibrary.Call<string>("GetImage", $"{resource}") },
+                            new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", $"{resource}")},
                             new CuiRectTransformComponent
                             {
                                 AnchorMin = "0.5 1", AnchorMax = "0.5 1",
@@ -1675,7 +1679,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiPanel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Image =
                     {
                         Color = "0 0 0 0.9",
@@ -1686,8 +1690,8 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiButton
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
-                    Text = { Text = "" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                    Text = {Text = ""},
                     Button =
                     {
                         Color = "0 0 0 0",
@@ -1940,7 +1944,7 @@ namespace Oxide.Plugins
                     OffsetMin = "10 -130",
                     OffsetMax = "-10 -80"
                 },
-                Image = { Color = "0 0 0 0" }
+                Image = {Color = "0 0 0 0"}
             }, Layer + ".Main", Layer + ".My.Profile");
 
             CreateOutLine(ref container, Layer + ".My.Profile", HexToCuiColor("#161617"), 1);
@@ -1953,12 +1957,12 @@ namespace Oxide.Plugins
                     OffsetMin = "10 -40",
                     OffsetMax = "40 -10"
                 },
-                Image = { Color = HexToCuiColor("#161617") }
+                Image = {Color = HexToCuiColor("#161617")}
             }, Layer + ".My.Profile", Layer + ".My.Profile.Top");
 
             container.Add(new CuiLabel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Text =
                 {
                     Text = $"{GetTop(player.userID)}",
@@ -2003,7 +2007,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiLabel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Text =
                 {
                     Text = $"{GetStatsValue(player.userID, "kills")}",
@@ -2030,7 +2034,7 @@ namespace Oxide.Plugins
 
             container.Add(new CuiLabel
             {
-                RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                 Text =
                 {
                     Text = $"{GetStatsValue(player.userID, "deaths")}",
@@ -2104,7 +2108,7 @@ namespace Oxide.Plugins
                     OffsetMin = "10 -138",
                     OffsetMax = "-10 -137"
                 },
-                Image = { Color = HexToCuiColor("#161617") }
+                Image = {Color = HexToCuiColor("#161617")}
             }, Layer + ".Main", Layer + ".My.Profile");
 
             #endregion
@@ -2161,12 +2165,12 @@ namespace Oxide.Plugins
                         OffsetMin = "10 -40",
                         OffsetMax = "40 -10"
                     },
-                    Image = { Color = HexToCuiColor("#161617") }
+                    Image = {Color = HexToCuiColor("#161617")}
                 }, Layer + $".Profile.{i}", Layer + $".Profile.{i}.Top");
 
                 container.Add(new CuiLabel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Text =
                     {
                         Text = $"{top}",
@@ -2211,7 +2215,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiLabel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Text =
                     {
                         Text = $"{check.Value.Kills}",
@@ -2238,7 +2242,7 @@ namespace Oxide.Plugins
 
                 container.Add(new CuiLabel
                 {
-                    RectTransform = { AnchorMin = "0 0", AnchorMax = "1 1" },
+                    RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
                     Text =
                     {
                         Text = $"{check.Value.Deaths}",
@@ -2336,7 +2340,7 @@ namespace Oxide.Plugins
         {
             foreach (var item in _config.Awards.SelectMany(x => x.Value.Items)) _awardItems[item.ID] = item;
         }
-        
+
         private void GiveAwards()
         {
             var top = 1;
@@ -2345,13 +2349,13 @@ namespace Oxide.Plugins
                          .OrderByDescending(x => x.Value.Score))
             {
                 AwardConf award;
-                if (_config.Awards.TryGetValue(top, out award)) 
+                if (_config.Awards.TryGetValue(top, out award))
                     check.Value.Awards.AddRange(award.GetItems());
 
                 top++;
             }
         }
-        
+
         #region Avatar
 
         private readonly Regex _regex = new Regex(@"<avatarFull><!\[CDATA\[(.*)\]\]></avatarFull>");
@@ -2379,7 +2383,7 @@ namespace Oxide.Plugins
         {
             if (!_config.ValueRounding)
                 return Mathf.Round(value).ToString(CultureInfo.InvariantCulture);
-            
+
             var t = string.Empty;
             while (value > 1000)
             {
@@ -2389,7 +2393,7 @@ namespace Oxide.Plugins
 
             return Mathf.Round(value) + t;
         }
-        
+
         private static string HexToCuiColor(string hex, float alpha = 100)
         {
             if (string.IsNullOrEmpty(hex)) hex = "#FFFFFF";
@@ -2400,7 +2404,7 @@ namespace Oxide.Plugins
             var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
             var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
 
-            return $"{(double)r / 255} {(double)g / 255} {(double)b / 255} {alpha / 100f}";
+            return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {alpha / 100f}";
         }
 
         private static bool IsTeammates(ulong player, ulong friend)
@@ -2420,7 +2424,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{size} 0",
                         OffsetMax = $"-{size} {size}"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -2432,7 +2436,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"{size} -{size}",
                         OffsetMax = $"-{size} 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -2443,7 +2447,7 @@ namespace Oxide.Plugins
                         OffsetMin = "0 0",
                         OffsetMax = $"{size} 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
             container.Add(new CuiPanel
@@ -2455,7 +2459,7 @@ namespace Oxide.Plugins
                         OffsetMin = $"-{size} 0",
                         OffsetMax = "0 0"
                     },
-                    Image = { Color = color }
+                    Image = {Color = color}
                 },
                 parent);
         }

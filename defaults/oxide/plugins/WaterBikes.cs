@@ -6,7 +6,7 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("WaterBikes", "senyaa", "1.2.2")]
+    [Info("WaterBikes", "senyaa", "1.2.4")]
     [Description("Turns snowmobiles into waterbikes")]
     class WaterBikes : RustPlugin
     {
@@ -87,7 +87,7 @@ namespace Oxide.Plugins
                 autoFlip = false,
                 engineThrust = 5000,
                 engineThrustOnLand = 49,
-                steeringScale = 0.1f,
+                steeringScale = 0.05f,
                 offAxisDrag = 0.35f,
                 ThrustPoint = new Vector3(-0.001150894f, 0.055f, -1.125f),
                 BuoyancyPoints = new SerializedBuoyancyPoint[]
@@ -400,6 +400,7 @@ namespace Oxide.Plugins
                     if (snowmobile.OwnerID != 0)
                     {
                         var player = BasePlayer.FindByID(snowmobile.OwnerID);
+                        if (player == null) continue;
                         if (playerWaterbikes.ContainsKey(player))
                             playerWaterbikes[player] = snowmobile;
                         else
@@ -504,7 +505,7 @@ namespace Oxide.Plugins
             RaycastHit hit;
             Vector3 position;
             if (Physics.Raycast(player.eyes.position, player.eyes.HeadForward(), out hit, 15f))
-                position = hit.point + new Vector3(0, 0.3f, 0);
+                position = hit.point + new Vector3(0, 0.7f, 0);
             else
                 position = player.transform.position;
 
