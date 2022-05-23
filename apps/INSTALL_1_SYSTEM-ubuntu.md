@@ -1,6 +1,8 @@
 ## Install
 ### Bootstrap Ubuntu 20.04
 
+setup your ssh keys, then start installing and configuring the cluster
+
 ```bash
 sudo apt install -y net-tools python3 certbot python3-certbot-dns-cloudflare
 ```
@@ -52,6 +54,11 @@ sudo apt update -y
 sudo apt install kubelet kubeadm kubectl -y
 ```
 
+add user to docker group
+
+```bash
+sudo usermod -aG docker ${USER}
+```
 
 ```bash
 sudo apt install unzip

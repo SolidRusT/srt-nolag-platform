@@ -1,7 +1,13 @@
 {
   "folders": [
-	{
-		"path": "."
-	}
-]
+		{
+			"path": "."
+		},
+		{
+			"path": "../mlops-platform-k8s"
+		},
+		{
+			"path": "../fast-albatross-factory-k8s"
+		}
+	]
 }
