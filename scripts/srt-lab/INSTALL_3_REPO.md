@@ -7,7 +7,6 @@ sudo chown nobody:nogroup /opt/registry
 sudo chown nobody:nogroup /opt/certs
 sudo chmod 755 /opt/registry
 sudo chmod 755 /opt/certs
-sudo usermod -aG docker admin
 ```
 
 /etc/exports:
@@ -29,7 +28,9 @@ sudo systemctl restart nfs-kernel-server
 10.42.69.124:/opt/registry	/opt/registry	nfs4	defaults,user,exec	0 0
 ```
 
-`mount -a`
+mount the filesystems
+
+`sudo mount -a`
 
 
 ### Cloudflare integration
