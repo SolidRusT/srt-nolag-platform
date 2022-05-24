@@ -93,16 +93,3 @@ kubectl get pods --all-namespaces -o custom-columns=NAMESPACE:.metadata.namespac
 ```bash
 kubectl apply -n ingress-nginx -f ${HOME}/solidrust.net/apps/ingress-nginx.yaml
 ```
-
-#### Depricated DO NOT USE
-
-OPTIONAL, may no longer be required. 
-/etc/default/kubelet:
-  `KUBELET_EXTRA_ARGS="--cgroup-driver=cgroupfs"`
-
-```bash
-#sudo iptables -P INPUT ACCEPT
-#sudo iptables -P FORWARD ACCEPT
-#sudo iptables -P OUTPUT ACCEPT
-#sudo iptables -F
-```
