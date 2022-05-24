@@ -49,9 +49,9 @@ docker image rm repo.eks.solidrust.net:5000/nginx:latest
 #### Depricated
 
 ```bash
-kubectl create namespace srt-repo
+kubectl create namespace private-repo
 kubectl apply -f ${HOME}/solidrust.net/apps/private-registry.yaml -n srt-repo
 kubectl apply -f ${HOME}/solidrust.net/apps/private-registry-svc.yaml -n srt-repo
 kubectl -n srt-repo get svc
-kubectl get svc private-repository-k8s -n srt-repo
+kubectl get svc private-repository-k8s -n private-repo
 ```
