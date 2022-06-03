@@ -2,40 +2,52 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Oxide.Core;
+using Oxide.Core.Libraries;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
+using Oxide.Plugins.ShopExtensionMethods;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Shop", "Mevent", "1.0.32")]
+    [Info("Shop", "Mevent", "1.1.2")]
     public class Shop : RustPlugin
     {
         #region Fields
 
-        [PluginReference]
-        private Plugin ImageLibrary, ItemCostCalculator, HumanNPC, Notify, UINotify, NoEscape, Duel, Duelist;
+        [PluginReference] private Plugin
+            ImageLibrary = null,
+            ItemCostCalculator = null,
+            Notify = null,
+            UINotify = null,
+            NoEscape = null,
+            Duel = null,
+            Duelist = null;
 
         private static Shop _instance;
+
+        private bool _enabledImageLibrary;
 
         private readonly Dictionary<int, ShopItem> _shopItems = new Dictionary<int, ShopItem>();
 
         private readonly Dictionary<BasePlayer, Coroutine> _coroutines = new Dictionary<BasePlayer, Coroutine>();
 
-        private readonly Dictionary<string, List<string>> _itemsCategories =
-            new Dictionary<string, List<string>>();
+        private readonly Dictionary<string, List<KeyValuePair<int, string>>> _itemsCategories =
+            new Dictionary<string, List<KeyValuePair<int, string>>>();
 
         private readonly List<string> _images = new List<string>();
+
+        private List<ulong> _openedUI = new List<ulong>();
 
         private const string Layer = "UI.Shop";
 
@@ -47,138 +59,18 @@ namespace Oxide.Plugins
 
         private const string PermFreeBypass = "Shop.free";
 
+        private const string PermSetVM = "Shop.setvm";
+
+        private const int _itemsPerTick = 10;
+
         private readonly Dictionary<ulong, DataCart> _carts = new Dictionary<ulong, DataCart>();
-
-        private class DataCart
-        {
-            public readonly Dictionary<ShopItem, int> Items = new Dictionary<ShopItem, int>();
-
-            public void AddItem(ShopItem item, BasePlayer player)
-            {
-                int result;
-                int amount;
-                if (Items.TryGetValue(item, out amount))
-                {
-                    if (item.BuyMaxAmount > 0 && amount >= item.BuyMaxAmount) return;
-
-                    if (!CanAdd(player, item, amount + 1, out result))
-                    {
-                        _instance.SendNotify(player, result == 1 ? BuyLimitReached : DailyBuyLimitReached, 1,
-                            item.PublicTitle);
-                        return;
-                    }
-
-                    Items[item]++;
-                }
-                else
-                {
-                    if (!CanAdd(player, item, 1, out result))
-                    {
-                        _instance.SendNotify(player, result == 1 ? BuyLimitReached : DailyBuyLimitReached, 1,
-                            item.PublicTitle);
-                        return;
-                    }
-
-                    Items.Add(item, 1);
-                }
-            }
-
-            private bool CanAdd(BasePlayer player, ShopItem item, int amount, out int result)
-            {
-                int leftLimit;
-                if (HasLimit(player, item, true, out leftLimit) && amount >= leftLimit) //total Limit
-                {
-                    result = 1;
-                    return false;
-                }
-
-                if (HasLimit(player, item, true, out leftLimit, true) && amount > leftLimit) //daily Limit
-                {
-                    result = 2;
-                    return false;
-                }
-
-                result = 0;
-                return true;
-            }
-
-            public void RemoveItem(ShopItem item)
-            {
-                Items.Remove(item);
-            }
-
-            public void ChangeAmountItem(BasePlayer player, ShopItem item, int amount)
-            {
-                if (amount > 0)
-                {
-                    int totalLimit;
-                    if (HasLimit(player, item, true, out totalLimit) && amount >= totalLimit)
-                        amount = Math.Min(totalLimit, amount);
-
-                    int dailyLimit;
-                    if (HasLimit(player, item, true, out dailyLimit, true) && amount >= dailyLimit)
-                        amount = Math.Min(dailyLimit, amount);
-
-                    if (amount <= 0) return;
-
-                    Items[item] = amount;
-                }
-                else
-                {
-                    Items.Remove(item);
-                }
-            }
-
-            public int GetAmount()
-            {
-                return Items.Sum(x => x.Key.Amount * x.Value);
-            }
-
-            public double GetPrice(BasePlayer player)
-            {
-                return Items.Sum(x => x.Key.GetPrice(player) * x.Value);
-            }
-
-            public int GetTotalAmount()
-            {
-                return (from check in Items
-                    let shopItem = check.Key
-                    where shopItem.Type == ItemType.Item && shopItem.Definition != null
-                    select shopItem.GetStacks(shopItem.Definition, shopItem.Amount * check.Value).Count).Sum();
-            }
-
-            #region Data
-
-            public PlayerCart ToPlayerCart()
-            {
-                return new PlayerCart
-                {
-                    Items = Items.ToDictionary(x => x.Key.ID, y => y.Value)
-                };
-            }
-
-            public DataCart()
-            {
-            }
-
-            public DataCart(PlayerCart cart)
-            {
-                Items = cart.Items.ToDictionary(x => _instance.FindItemById(x.Key), y => y.Value);
-            }
-
-            #endregion
-        }
 
         private readonly Dictionary<BasePlayer, NPCShop> _openedShops = new Dictionary<BasePlayer, NPCShop>();
 
-        private NPCShop GetShopByPlayer(BasePlayer player)
-        {
-            NPCShop shop;
-            return _openedShops.TryGetValue(player, out shop) ? shop : null;
-        }
-
         private readonly Dictionary<BasePlayer, Dictionary<string, object>> _itemEditing =
             new Dictionary<BasePlayer, Dictionary<string, object>>();
+
+        private Timer _updateController;
 
         #endregion
 
@@ -196,7 +88,7 @@ namespace Oxide.Plugins
 
         #region Config
 
-        private Configuration _config;
+        private static Configuration _config;
 
         private class Configuration
         {
@@ -222,10 +114,10 @@ namespace Oxide.Plugins
             public readonly bool FlagAdmin = true;
 
             [JsonProperty(PropertyName = "Block (NoEscape)")]
-            public bool BlockNoEscape;
+            public bool BlockNoEscape = false;
 
             [JsonProperty(PropertyName = "Wipe Block")]
-            public bool WipeCooldown = true;
+            public bool WipeCooldown = false;
 
             [JsonProperty(PropertyName = "Wipe Cooldown")]
             public float WipeCooldownTimer = 3600;
@@ -237,7 +129,7 @@ namespace Oxide.Plugins
             public float RespawnCooldownTimer = 60;
 
             [JsonProperty(PropertyName = "Blocking the opening in duels?")]
-            public bool UseDuels;
+            public bool UseDuels = false;
 
             [JsonProperty(PropertyName = "Delay between loading images")]
             public readonly float ImagesDelay = 1f;
@@ -252,7 +144,30 @@ namespace Oxide.Plugins
                 Plug = "Economics",
                 ShortName = "scrap",
                 DisplayName = string.Empty,
-                Skin = 0
+                Skin = 0,
+                TitleLangKey = "LangTitle",
+                BalanceLangKey = "BalanceTitle"
+            };
+
+            [JsonProperty(PropertyName = "Additional Economics",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<AdditionalEconomy> AdditionalEconomics = new List<AdditionalEconomy>
+            {
+                new AdditionalEconomy
+                {
+                    ID = 1,
+                    Enabled = true,
+                    Type = EconomyType.Plugin,
+                    AddHook = "AddPoints",
+                    BalanceHook = "CheckPoints",
+                    RemoveHook = "TakePoints",
+                    Plug = "ServerRewards",
+                    ShortName = "scrap",
+                    DisplayName = string.Empty,
+                    Skin = 0,
+                    TitleLangKey = "sr_title",
+                    BalanceLangKey = "sr_balance"
+                }
             };
 
             [JsonProperty(PropertyName = "Shop", ObjectCreationHandling = ObjectCreationHandling.Replace)]
@@ -324,7 +239,39 @@ namespace Oxide.Plugins
                 Margin = 35,
                 UseScrollCategories = true,
                 EnableSearch = true,
-                RoundDigits = 5
+                RoundDigits = 5,
+                SelectCurrency = new SelectCurrencyUI
+                {
+                    Title = new LabelSettings
+                    {
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 14,
+                        Color = new IColor("#FFFFFF")
+                    },
+                    TitlePosition = new InterfacePosition
+                    {
+                        AnchorMin = "0 1", AnchorMax = "1 1",
+                        OffsetMin = "0 -30", OffsetMax = "0 0"
+                    },
+                    EconomyTitle = new LabelSettings
+                    {
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-regular.ttf",
+                        FontSize = 12,
+                        Color = new IColor("#FFFFFF")
+                    },
+                    SelectedEconomyColor = new IColor("#4B68FF"),
+                    UnselectedEconomyColor = new IColor("#4B68FF", 33),
+                    EconomyWidth = 105f,
+                    EconomyHeight = 25f,
+                    EconomyMargin = 5f,
+                    EconomyIndent = 5f,
+                    FrameWidth = 10,
+                    FrameIndent = 15,
+                    FrameHeader = 35,
+                    CloseAfterChange = true
+                }
             };
 
             [JsonProperty(PropertyName = "Blocked skins for sell",
@@ -347,18 +294,149 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Auto-Wipe Settings")]
             public WipeSettings Wipe = new WipeSettings
             {
-                Cooldowns = true,
+                Cooldown = true,
                 Players = true,
                 Limits = true
             };
 
+            [JsonProperty(PropertyName = "Custom Vending Machines (Entity ID - settings)",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public readonly Dictionary<uint, CustomVendingConf> CustomVending =
+                new Dictionary<uint, CustomVendingConf>
+                {
+                    [123343941] = new CustomVendingConf
+                    {
+                        Categories = new List<string>
+                        {
+                            "Cars", "Misc"
+                        }
+                    }
+                };
+
             public VersionNumber Version;
+        }
+
+        private class SelectCurrencyUI
+        {
+            [JsonProperty(PropertyName = "Title")] public LabelSettings Title;
+
+            [JsonProperty(PropertyName = "Title Position")]
+            public InterfacePosition TitlePosition;
+
+            [JsonProperty(PropertyName = "Economy Title")]
+            public LabelSettings EconomyTitle;
+
+            [JsonProperty(PropertyName = "Selected Economy Color")]
+            public IColor SelectedEconomyColor;
+
+            [JsonProperty(PropertyName = "Unselected Economy Color")]
+            public IColor UnselectedEconomyColor;
+
+            [JsonProperty(PropertyName = "Economy Width")]
+            public float EconomyWidth;
+
+            [JsonProperty(PropertyName = "Economy Height")]
+            public float EconomyHeight;
+
+            [JsonProperty(PropertyName = "Economy Margin")]
+            public float EconomyMargin;
+
+            [JsonProperty(PropertyName = "Economy Indent")]
+            public float EconomyIndent;
+
+            [JsonProperty(PropertyName = "Frame Width")]
+            public float FrameWidth;
+
+            [JsonProperty(PropertyName = "Frame Indent")]
+            public float FrameIndent;
+
+            [JsonProperty(PropertyName = "Frame Header")]
+            public float FrameHeader;
+
+            [JsonProperty(PropertyName = "Close the menu after a currency change?")]
+            public bool CloseAfterChange;
+        }
+
+        private class InterfacePosition
+        {
+            public string AnchorMin;
+
+            public string AnchorMax;
+
+            public string OffsetMin;
+
+            public string OffsetMax;
+        }
+
+        private class LabelSettings
+        {
+            [JsonProperty(PropertyName = "FontSize")]
+            public int FontSize;
+
+            [JsonProperty(PropertyName = "Align")] [JsonConverter(typeof(StringEnumConverter))]
+            public TextAnchor Align;
+
+            [JsonProperty(PropertyName = "Color")] public IColor Color;
+
+            [JsonProperty(PropertyName = "Font")] public string Font;
+        }
+
+        private class IColor
+        {
+            [JsonProperty(PropertyName = "HEX")] public string Hex;
+
+            [JsonProperty(PropertyName = "Opacity (0 - 100)")]
+            public readonly float Alpha;
+
+            [JsonIgnore] private string _color;
+
+            [JsonIgnore]
+            public string Get
+            {
+                get
+                {
+                    if (string.IsNullOrEmpty(_color))
+                        _color = GetColor();
+
+                    return _color;
+                }
+            }
+
+            private string GetColor()
+            {
+                if (string.IsNullOrEmpty(Hex)) Hex = "#FFFFFF";
+
+                var str = Hex.Trim('#');
+                if (str.Length != 6) throw new Exception(Hex);
+                var r = byte.Parse(str.Substring(0, 2), NumberStyles.HexNumber);
+                var g = byte.Parse(str.Substring(2, 2), NumberStyles.HexNumber);
+                var b = byte.Parse(str.Substring(4, 2), NumberStyles.HexNumber);
+
+                return $"{(double) r / 255} {(double) g / 255} {(double) b / 255} {Alpha / 100}";
+            }
+
+            public IColor()
+            {
+            }
+
+            public IColor(string hex, float alpha = 100)
+            {
+                Hex = hex;
+                Alpha = alpha;
+            }
+        }
+
+        private class CustomVendingConf
+        {
+            [JsonProperty(PropertyName = "Categories (Titles) [* - all]",
+                ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public List<string> Categories;
         }
 
         private class WipeSettings
         {
             [JsonProperty(PropertyName = "Wipe Cooldowns?")]
-            public bool Cooldowns;
+            public bool Cooldown;
 
             [JsonProperty(PropertyName = "Wipe Players?")]
             public bool Players;
@@ -409,6 +487,9 @@ namespace Oxide.Plugins
 
             [JsonProperty(PropertyName = "Number of digits after decimal point for rounding prices")]
             public int RoundDigits;
+
+            [JsonProperty(PropertyName = "Select Currency Settings")]
+            public SelectCurrencyUI SelectCurrency;
         }
 
         private class NPCShop
@@ -452,12 +533,12 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Title")] public string Title;
 
             [JsonProperty(PropertyName = "Description")]
-            public string Description;
+            public string Description = string.Empty;
 
             [JsonProperty(PropertyName = "Command (%steamid%)")]
             public string Command;
 
-            [JsonProperty(PropertyName = "Kit")] public string Kit;
+            [JsonProperty(PropertyName = "Kit")] public string Kit = string.Empty;
 
             [JsonProperty(PropertyName = "Plugin")]
             public PluginItem Plugin;
@@ -479,10 +560,10 @@ namespace Oxide.Plugins
             public double SellPrice;
 
             [JsonProperty(PropertyName = "Buy Cooldown (0 - disable)")]
-            public float BuyCooldown;
+            public float BuyCooldown = 0;
 
             [JsonProperty(PropertyName = "Sell Cooldown (0 - disable)")]
-            public float SellCooldown;
+            public float SellCooldown = 0;
 
             [JsonProperty(PropertyName = "Discount (%)", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public Dictionary<string, int> Discount = new Dictionary<string, int>();
@@ -509,6 +590,23 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "Max Sell Amount (0 - disable)")]
             public int SellMaxAmount;
 
+            [JsonProperty(PropertyName = "Force Buy")]
+            public bool ForceBuy;
+
+            [JsonIgnore] private int _itemId = -1;
+
+            [JsonIgnore]
+            public int itemId
+            {
+                get
+                {
+                    if (_itemId == -1)
+                        _itemId = ItemManager.FindItemDefinition(ShortName)?.itemid ?? -1;
+
+                    return _itemId;
+                }
+            }
+
             [JsonIgnore] private string _publicTitle;
 
             [JsonIgnore]
@@ -521,6 +619,42 @@ namespace Oxide.Plugins
 
                     return _publicTitle;
                 }
+            }
+
+            [JsonIgnore] private ICuiComponent _image;
+
+            public CuiElement GetImage(string aMin, string aMax, string oMin, string oMax, string parent,
+                string name = null)
+            {
+                if (_image == null)
+                {
+                    if (_instance._enabledImageLibrary && !string.IsNullOrEmpty(Image))
+                        _image = new CuiRawImageComponent
+                        {
+                            Png = _instance.ImageLibrary.Call<string>("GetImage", Image)
+                        };
+                    else
+                        _image = new CuiImageComponent
+                        {
+                            ItemId = itemId,
+                            SkinId = Skin
+                        };
+                }
+
+                return new CuiElement
+                {
+                    Name = string.IsNullOrEmpty(name) ? CuiHelper.GetGuid() : name,
+                    Parent = parent,
+                    Components =
+                    {
+                        _image,
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = aMin, AnchorMax = aMax,
+                            OffsetMin = oMin, OffsetMax = oMax
+                        }
+                    }
+                };
             }
 
             private string GetName()
@@ -595,14 +729,20 @@ namespace Oxide.Plugins
                 var price = Price;
 
                 return Math.Round(discount != 0 ? price * (1f - discount / 100f) : price,
-                    _instance._config.UI.RoundDigits);
+                    _config.UI.RoundDigits);
             }
 
             public int GetDiscount(BasePlayer player)
             {
-                return (from check in Discount
-                    where _instance.permission.UserHasPermission(player.UserIDString, check.Key)
-                    select check.Value).Prepend(0).Max();
+                var result = 0;
+                Discount.Where(check => player.HasPermission(check.Key)).ForEach(
+                    check =>
+                    {
+                        if (check.Value > result)
+                            result = check.Value;
+                    });
+
+                return result;
             }
 
             public int GetLimit(BasePlayer player, bool buy = true, bool daily = false)
@@ -613,9 +753,15 @@ namespace Oxide.Plugins
                 if (dict.Count == 0)
                     return 0;
 
-                return (from check in dict
-                    where _instance.permission.UserHasPermission(player.UserIDString, check.Key)
-                    select check.Value).Prepend(0).Max();
+                var result = 0;
+                dict.Where(check => player.HasPermission(check.Key)).ForEach(
+                    check =>
+                    {
+                        if (check.Value > result)
+                            result = check.Value;
+                    });
+
+                return result;
             }
 
             public void Get(BasePlayer player, int count = 1)
@@ -731,10 +877,10 @@ namespace Oxide.Plugins
 
         private class PluginItem
         {
-            [JsonProperty(PropertyName = "Hook")] public string Hook;
+            [JsonProperty(PropertyName = "Hook")] public string Hook = string.Empty;
 
             [JsonProperty(PropertyName = "Plugin Name")]
-            public string Plugin;
+            public string Plugin = string.Empty;
 
             [JsonProperty(PropertyName = "Amount")]
             public int Amount;
@@ -761,6 +907,43 @@ namespace Oxide.Plugins
                         break;
                     }
                 }
+            }
+        }
+
+        private class AdditionalEconomy : EconomyConf
+        {
+            [JsonProperty(PropertyName = "ID")] public int ID;
+
+            [JsonProperty(PropertyName = "Enabled")]
+            public bool Enabled;
+
+            public bool IsSame(EconomyConf configEconomy)
+            {
+                return Type == configEconomy.Type &&
+                       Plug == configEconomy.Plug &&
+                       ShortName == configEconomy.ShortName &&
+                       Skin == configEconomy.Skin;
+            }
+
+            public AdditionalEconomy(EconomyConf configEconomy)
+            {
+                Type = configEconomy.Type;
+                Plug = configEconomy.Plug;
+                AddHook = configEconomy.AddHook;
+                RemoveHook = configEconomy.RemoveHook;
+                BalanceHook = configEconomy.BalanceHook;
+                ShortName = configEconomy.ShortName;
+                DisplayName = configEconomy.DisplayName;
+                Skin = configEconomy.Skin;
+                TitleLangKey = configEconomy.TitleLangKey;
+                BalanceLangKey = configEconomy.BalanceLangKey;
+                ID = 0;
+                Enabled = true;
+            }
+
+            [JsonConstructor]
+            public AdditionalEconomy()
+            {
             }
         }
 
@@ -794,6 +977,22 @@ namespace Oxide.Plugins
             public string DisplayName;
 
             [JsonProperty(PropertyName = "Skin")] public ulong Skin;
+
+            [JsonProperty(PropertyName = "Lang Key (for Title)")]
+            public string TitleLangKey;
+
+            [JsonProperty(PropertyName = "Lang Key (for Balance)")]
+            public string BalanceLangKey;
+
+            public string GetTitle(BasePlayer player)
+            {
+                return _instance.Msg(player, TitleLangKey);
+            }
+
+            public string GetBalanceTitle(BasePlayer player)
+            {
+                return _instance.Msg(player, BalanceLangKey, ShowBalance(player));
+            }
 
             public double ShowBalance(BasePlayer player)
             {
@@ -1003,6 +1202,8 @@ namespace Oxide.Plugins
             SaveCooldown();
 
             SaveLimits();
+
+            SaveSelectEconomy();
         }
 
         private void SavePlayers()
@@ -1025,13 +1226,20 @@ namespace Oxide.Plugins
             Interface.Oxide.DataFileSystem.WriteObject($"{Name}/Limits", _limits);
         }
 
+        private void SaveSelectEconomy()
+        {
+            Interface.Oxide.DataFileSystem.WriteObject($"{Name}/EconomyChoice", _economyChoice);
+        }
+
         private void LoadData()
         {
             try
             {
                 _data = Interface.Oxide.DataFileSystem.ReadObject<PluginData>($"{Name}/Players");
-                _cooldown = Interface.Oxide.DataFileSystem.ReadObject<Dictionary<ulong, Cooldown>>($"{Name}/Cooldown");
+                _cooldown =
+                    Interface.Oxide.DataFileSystem.ReadObject<Dictionary<ulong, CooldownInfo>>($"{Name}/Cooldown");
                 _limits = Interface.Oxide.DataFileSystem.ReadObject<PlayerLimits>($"{Name}/Limits");
+                _economyChoice = Interface.Oxide.DataFileSystem.ReadObject<EconomyChoice>($"{Name}/EconomyChoice");
             }
             catch (Exception e)
             {
@@ -1039,8 +1247,9 @@ namespace Oxide.Plugins
             }
 
             if (_data == null) _data = new PluginData();
-            if (_cooldown == null) _cooldown = new Dictionary<ulong, Cooldown>();
+            if (_cooldown == null) _cooldown = new Dictionary<ulong, CooldownInfo>();
             if (_limits == null) _limits = new PlayerLimits();
+            if (_economyChoice == null) _economyChoice = new EconomyChoice();
         }
 
         private class PluginData
@@ -1055,6 +1264,125 @@ namespace Oxide.Plugins
             public Dictionary<int, int> Items = new Dictionary<int, int>();
         }
 
+        private class DataCart
+        {
+            public readonly Dictionary<ShopItem, int> Items = new Dictionary<ShopItem, int>();
+
+            public void AddCartItem(ShopItem item, BasePlayer player)
+            {
+                int result;
+                int amount;
+                if (Items.TryGetValue(item, out amount))
+                {
+                    if (item.BuyMaxAmount > 0 && amount >= item.BuyMaxAmount) return;
+
+                    if (!CanCartAdd(player, item, amount + 1, out result))
+                    {
+                        _instance.SendNotify(player, result == 1 ? BuyLimitReached : DailyBuyLimitReached, 1,
+                            item.PublicTitle);
+                        return;
+                    }
+
+                    Items[item]++;
+                }
+                else
+                {
+                    if (!CanCartAdd(player, item, 1, out result))
+                    {
+                        _instance.SendNotify(player, result == 1 ? BuyLimitReached : DailyBuyLimitReached, 1,
+                            item.PublicTitle);
+                        return;
+                    }
+
+                    Items.Add(item, 1);
+                }
+            }
+
+            private bool CanCartAdd(BasePlayer player, ShopItem item, int amount, out int result)
+            {
+                int leftLimit;
+                if (HasLimit(player, item, true, out leftLimit) && amount >= leftLimit) //total Limit
+                {
+                    result = 1;
+                    return false;
+                }
+
+                if (HasLimit(player, item, true, out leftLimit, true) && amount > leftLimit) //daily Limit
+                {
+                    result = 2;
+                    return false;
+                }
+
+                result = 0;
+                return true;
+            }
+
+            public void RemoveCartItem(ShopItem item)
+            {
+                Items.Remove(item);
+            }
+
+            public void ChangeAmountItem(BasePlayer player, ShopItem item, int amount)
+            {
+                if (amount > 0)
+                {
+                    int totalLimit;
+                    if (HasLimit(player, item, true, out totalLimit) && amount >= totalLimit)
+                        amount = Math.Min(totalLimit, amount);
+
+                    int dailyLimit;
+                    if (HasLimit(player, item, true, out dailyLimit, true) && amount >= dailyLimit)
+                        amount = Math.Min(dailyLimit, amount);
+
+                    if (amount <= 0) return;
+
+                    Items[item] = amount;
+                }
+                else
+                {
+                    Items.Remove(item);
+                }
+            }
+
+            public int GetAmount()
+            {
+                return Items.Sum(x => x.Key.Amount * x.Value);
+            }
+
+            public double GetPrice(BasePlayer player)
+            {
+                return Items.Sum(x => x.Key.GetPrice(player) * x.Value);
+            }
+
+            public int GetTotalAmount()
+            {
+                return Items.Sum(check => check.Key.Type == ItemType.Item && check.Key.Definition != null
+                    ? check.Key.GetStacks(check.Key.Definition, check.Key.Amount * check.Value).Count
+                    : 0);
+            }
+
+            #region Data
+
+            public PlayerCart ToPlayerCart()
+            {
+                return new PlayerCart
+                {
+                    Items = Items.ToDictionary(x => x.Key.ID, y => y.Value)
+                };
+            }
+
+            public DataCart()
+            {
+            }
+
+            public DataCart(PlayerCart cart)
+            {
+                Items = cart.Items.ToDictionary(x => _instance.FindItemById(x.Key), y => y.Value);
+            }
+
+            #endregion
+        }
+
         #endregion
 
         #region Hooks
@@ -1065,50 +1393,34 @@ namespace Oxide.Plugins
 
             LoadData();
 
-            _firstColor = HexToCuiColor(_config.FirstColor);
-            _secondColor = HexToCuiColor(_config.SecondColor);
-            _thirdColor = HexToCuiColor(_config.ThirdColor);
-            _fourthColor = HexToCuiColor(_config.FourthColor);
-            _fifthColor = HexToCuiColor(_config.FifthColor);
-            _sixthColor = HexToCuiColor(_config.SixthColor);
-            _seventhColor = HexToCuiColor(_config.SeventhColor);
+            LoadColors();
+
+            RegisterPermissions();
+
+            CheckOnDuplicates();
+
+            LoadEconomics();
         }
 
         private void OnServerInitialized()
         {
-            if (_config.Shop.Count == 0)
-                FillCategories();
+            FillCategories();
 
             LoadImages();
 
-            _config.Shop.ForEach(category =>
-            {
-                if (!string.IsNullOrEmpty(category.Permission) && !permission.PermissionExists(category.Permission))
-                    permission.RegisterPermission(category.Permission, this);
-            });
-
-            permission.RegisterPermission(PermAdmin, this);
-            permission.RegisterPermission(PermFreeBypass, this);
-
-            CheckOnDuplicates();
-
             ItemsToDict();
 
-            foreach (var image in _shopItems.Values
-                         .Select(shopItem =>
-                             !string.IsNullOrEmpty(shopItem.Image) ? shopItem.Image : shopItem.ShortName)
-                         .Where(image => !_images.Contains(image))) _images.Add(image);
+            CacheImages();
 
-            foreach (var check in _data.PlayerCarts)
-                _carts.Add(check.Key, new DataCart(check.Value));
+            LoadCarts();
 
-            foreach (var player in BasePlayer.activePlayerList)
-                OnPlayerConnected(player);
+            LoadPlayers();
 
-            AddCovalenceCommand(_config.Commands, nameof(CmdShopOpen));
+            LoadCustomVMs();
 
-            if (_shopItems.Any(x => x.Value.BuyCooldown > 0 || x.Value.SellCooldown > 0))
-                timer.Every(1, ItemsUpdateController);
+            RegisterCommands();
+
+            CheckUpdateController();
         }
 
         private void Unload()
@@ -1124,6 +1436,7 @@ namespace Oxide.Plugins
 
             SaveData();
 
+            _config = null;
             _instance = null;
         }
 
@@ -1135,14 +1448,7 @@ namespace Oxide.Plugins
                 avatar => ImageLibrary?.Call("AddImage", avatar, $"avatar_{player.UserIDString}"));
 
             if (_config.LoginImages)
-            {
-                var coroutine = ServerMgr.Instance.StartCoroutine(LoadImages(player));
-
-                if (_coroutines.ContainsKey(player))
-                    _coroutines[player] = coroutine;
-                else
-                    _coroutines.Add(player, coroutine);
-            }
+                _coroutines[player] = ServerMgr.Instance.StartCoroutine(LoadImages(player));
         }
 
         private void OnPlayerDisconnected(BasePlayer player)
@@ -1150,15 +1456,13 @@ namespace Oxide.Plugins
             if (player == null) return;
 
             _itemsToUpdate.Remove(player);
+            CheckUpdateController();
 
             if (_itemEditing.ContainsKey(player)) _itemEditing.Remove(player);
 
-            if (_coroutines.ContainsKey(player))
-            {
-                var coroutine = _coroutines[player];
-                if (coroutine != null)
-                    ServerMgr.Instance.StopCoroutine(coroutine);
-            }
+            Coroutine coroutine;
+            if (_coroutines.TryGetValue(player, out coroutine) && coroutine != null)
+                ServerMgr.Instance.StopCoroutine(coroutine);
         }
 
         private void OnUseNPC(BasePlayer npc, BasePlayer player)
@@ -1173,12 +1477,12 @@ namespace Oxide.Plugins
             MainUi(player, npcShop: npcShop, first: true);
         }
 
-        private void OnNewSave(string filename)
+        private void OnNewSave()
         {
             if (_config.Wipe.Players)
                 _data.PlayerCarts.Clear();
 
-            if (_config.Wipe.Cooldowns)
+            if (_config.Wipe.Cooldown)
                 _cooldown.Clear();
 
             if (_config.Wipe.Limits)
@@ -1187,9 +1491,62 @@ namespace Oxide.Plugins
             SaveData();
         }
 
+        #region Image Library
+
+        private void OnPluginLoaded(Plugin plugin)
+        {
+            if (plugin.Name == "ImageLibrary") _enabledImageLibrary = true;
+        }
+
+        private void OnPluginUnloaded(Plugin plugin)
+        {
+            if (plugin.Name == "ImageLibrary") _enabledImageLibrary = false;
+        }
+
+        #endregion
+
+        #region Vending Machine
+
+        private object CanLootEntity(BasePlayer player, VendingMachine vendingMachine)
+        {
+            if (player == null || vendingMachine == null)
+                return null;
+
+            CustomVendingConf customVendingConf;
+            if (_config.CustomVending.TryGetValue(vendingMachine.net.ID, out customVendingConf))
+            {
+                _openedCustomVending[player] = customVendingConf;
+
+                MainUi(player, first: true);
+                return false;
+            }
+
+            return null;
+        }
+
+        #endregion
+
         #endregion
 
         #region Commands
+
+        [ConsoleCommand("openshopUI")]
+        private void OpenShopUI(ConsoleSystem.Arg arg)
+        {
+            var player = arg?.Player();
+            if (player == null) return;
+
+            if (_openedUI.Contains(player.userID))
+            {
+                CuiHelper.DestroyUi(player, Layer);
+                _openedUI.Remove(player.userID);
+            }
+            else
+            {
+                MainUi(player, first: true);
+                _openedUI.Add(player.userID);
+            }
+        }
 
         private void CmdShopOpen(IPlayer cov, string command, string[] args)
         {
@@ -1205,6 +1562,58 @@ namespace Oxide.Plugins
             MainUi(player, first: true);
         }
 
+        private void CmdSetCustomVM(IPlayer cov, string command, string[] args)
+        {
+            var player = cov?.Object as BasePlayer;
+            if (player == null) return;
+
+            if (!player.HasPermission(PermSetVM))
+            {
+                SendNotify(player, NoPermission, 1);
+                return;
+            }
+
+            if (args.Length == 0)
+            {
+                SendNotify(player, ErrorSyntax, 1, $"{command} [categories: cat1 cat2 ...]");
+                return;
+            }
+
+            var categories = args.ToList();
+            categories.RemoveAll(cat => !_config.Shop.Exists(confCat => confCat.Title == cat));
+            if (categories.Count == 0)
+            {
+                SendNotify(player, VMNotFoundCategories, 1);
+                return;
+            }
+
+            var workbench = GetLookVM(player);
+            if (workbench == null)
+            {
+                SendNotify(player, VMNotFound, 1);
+                return;
+            }
+
+            if (_config.CustomVending.ContainsKey(workbench.net.ID))
+            {
+                SendNotify(player, VMExists, 1);
+                return;
+            }
+
+            var conf = new CustomVendingConf
+            {
+                Categories = categories
+            };
+
+            _config.CustomVending[workbench.net.ID] = conf;
+
+            SaveConfig();
+
+            SendNotify(player, VMInstalled, 0);
+
+            Subscribe(nameof(CanLootEntity));
+        }
+
         [ConsoleCommand("UI_Shop")]
         private void CmdConsoleShop(ConsoleSystem.Arg arg)
         {
@@ -1217,6 +1626,7 @@ namespace Oxide.Plugins
                 {
                     _itemsToUpdate.Remove(player);
                     _openedShops.Remove(player);
+                    CheckUpdateController();
                     break;
                 }
 
@@ -1262,7 +1672,7 @@ namespace Oxide.Plugins
                     var playerCart = GetPlayerCart(player);
                     if (playerCart == null) return;
 
-                    playerCart.AddItem(shopItem, player);
+                    playerCart.AddCartItem(shopItem, player);
 
                     var cooldownTime = GetCooldownTime(player.userID, shopItem, true);
                     if (cooldownTime > 0)
@@ -1331,7 +1741,7 @@ namespace Oxide.Plugins
                     var playerCart = GetPlayerCart(player);
                     if (playerCart == null) return;
 
-                    playerCart.RemoveItem(shopItem);
+                    playerCart.RemoveCartItem(shopItem);
 
                     var container = new CuiElementContainer();
                     RefreshCart(ref container, player, playerCart);
@@ -1377,15 +1787,12 @@ namespace Oxide.Plugins
                     var price = playerCart.GetPrice(player);
                     if (price <= 0) return;
 
-                    if (_config.BlockNoEscape && NoEscape != null)
-                    {
-                        var success = NoEscape?.Call("IsBlocked", player);
-                        if (success is bool && (bool) success)
+                    if (_config.BlockNoEscape)
+                        if (NoEscape_IsBlocked(player))
                         {
                             ErrorUi(player, Msg(player, BuyRaidBlocked));
                             return;
                         }
-                    }
 
                     if (_config.WipeCooldown)
                     {
@@ -1411,20 +1818,20 @@ namespace Oxide.Plugins
                         }
                     }
 
-                    var totalcount = playerCart.GetTotalAmount();
+                    var totalAmount = playerCart.GetTotalAmount();
 
                     var slots = player.inventory.containerBelt.capacity -
                                 player.inventory.containerBelt.itemList.Count +
                                 (player.inventory.containerMain.capacity -
                                  player.inventory.containerMain.itemList.Count);
-                    if (slots < totalcount)
+                    if (slots < totalAmount)
                     {
-                        ErrorUi(player, Msg(player, NotEnoughtSpace));
+                        ErrorUi(player, Msg(player, NotEnoughSpace));
                         return;
                     }
 
-                    if (!permission.UserHasPermission(player.UserIDString, PermFreeBypass) &&
-                        !_config.Economy.RemoveBalance(player, price))
+                    if (!player.HasPermission(PermFreeBypass) &&
+                        !EconomyChoice.GetEconomy(player).RemoveBalance(player, price))
                     {
                         ErrorUi(player, Msg(player, NotMoney));
                         return;
@@ -1450,17 +1857,96 @@ namespace Oxide.Plugins
                         }))
                         return;
 
-                    var logItems = Pool.GetList<string>();
-                    foreach (var cartItem in playerCart.Items)
+                    ServerMgr.Instance.StartCoroutine(GiveCartItems(player, playerCart.Items, price));
+
+                    CuiHelper.DestroyUi(player, Layer);
+                    _carts.Remove(player.userID);
+                    _itemsToUpdate.Remove(player);
+
+                    CheckUpdateController();
+
+                    SendNotify(player, ReceivedItems, 0);
+                    break;
+                }
+
+                case "fastbuyitem":
+                {
+                    int itemId, amount;
+                    if (!arg.HasArgs(3) ||
+                        !int.TryParse(arg.Args[1], out itemId) ||
+                        !int.TryParse(arg.Args[2], out amount)) return;
+
+                    var item = FindItemById(itemId);
+                    if (item == null) return;
+
+                    if (_config.BlockNoEscape)
+                        if (NoEscape_IsBlocked(player))
+                        {
+                            ErrorUi(player, Msg(player, BuyRaidBlocked));
+                            return;
+                        }
+
+                    if (_config.WipeCooldown)
                     {
-                        logItems.Add(cartItem.Key.ToString());
-
-                        cartItem.Key?.Get(player, cartItem.Value);
-
-                        SetCooldown(player, cartItem.Key, true);
-                        UseLimit(player, cartItem.Key, true, cartItem.Value);
-                        UseLimit(player, cartItem.Key, true, cartItem.Value, true);
+                        var seconds = SecondsFromWipe();
+                        if (seconds < _config.WipeCooldownTimer)
+                        {
+                            ErrorUi(player,
+                                Msg(player, BuyWipeCooldown,
+                                    FormatShortTime(seconds)));
+                            return;
+                        }
                     }
+
+                    if (_config.RespawnCooldown)
+                    {
+                        var timeLeft = Mathf.RoundToInt(_config.RespawnCooldownTimer - player.TimeAlive());
+                        if (timeLeft > 0)
+                        {
+                            ErrorUi(player,
+                                Msg(player, BuyRespawnCooldown,
+                                    FormatShortTime(timeLeft)));
+                            return;
+                        }
+                    }
+
+                    var totalAmount = item.Amount * amount;
+
+                    var slots = player.inventory.containerBelt.capacity -
+                                player.inventory.containerBelt.itemList.Count +
+                                (player.inventory.containerMain.capacity -
+                                 player.inventory.containerMain.itemList.Count);
+                    if (slots < totalAmount)
+                    {
+                        ErrorUi(player, Msg(player, NotEnoughSpace));
+                        return;
+                    }
+
+                    var price = item.GetPrice(player);
+
+                    if (!player.HasPermission(PermFreeBypass) &&
+                        !EconomyChoice.GetEconomy(player).RemoveBalance(player, price))
+                    {
+                        ErrorUi(player, Msg(player, NotMoney));
+                        return;
+                    }
+
+                    var limit = GetLimit(player, item, true);
+                    if (limit <= 0)
+                    {
+                        ErrorUi(player, Msg(player, BuyLimitReached, item.PublicTitle));
+                        return;
+                    }
+
+                    var logItems = Pool.GetList<string>();
+
+                    logItems.Add(item.ToString());
+
+                    item.Get(player, amount);
+
+                    SetCooldown(player, item, true);
+                    UseLimit(player, item, true, amount);
+                    UseLimit(player, item, true, amount, true);
 
                     Log("Buy", LogBuyItems, player.displayName, player.UserIDString,
                         price, string.Join(", ", logItems));
@@ -1469,24 +1955,49 @@ namespace Oxide.Plugins
                     _carts.Remove(player.userID);
                     _itemsToUpdate.Remove(player);
 
+                    CheckUpdateController();
+
                     SendNotify(player, ReceivedItems, 0);
                     break;
                 }
 
-                case "trysellitem":
+                case "tryoperateitem":
                 {
                     int itemId;
-                    if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out itemId)) return;
+                    bool buy;
+                    if (!arg.HasArgs(3) || !int.TryParse(arg.Args[1], out itemId) ||
+                        !bool.TryParse(arg.Args[2], out buy)) return;
 
                     var item = FindItemById(itemId);
                     if (item == null) return;
 
                     var amount = 1;
-                    if (arg.HasArgs(3) && !int.TryParse(arg.Args[2], out amount) || amount < 1) return;
+                    if (arg.HasArgs(4))
+                    {
+                        if (arg.Args[3] == "all")
+                            amount = buy
+                                ? Mathf.FloorToInt((float) (EconomyChoice.GetEconomy(player).ShowBalance(player) /
+                                                            item.GetPrice(player)))
+                                : ItemCount(player.inventory.AllItems(), item.ShortName, item.Skin);
+                        else
+                            int.TryParse(arg.Args[3], out amount);
 
-                    if (item.SellMaxAmount > 0 && amount > item.SellMaxAmount) amount = item.SellMaxAmount;
+                        if (amount < 1)
+                            return;
+                    }
 
-                    SellUi(player, item, amount);
+                    if (buy)
+                    {
+                        if (item.BuyMaxAmount > 0)
+                            amount = Mathf.Min(amount, item.BuyMaxAmount);
+                    }
+                    else
+                    {
+                        if (item.SellMaxAmount > 0)
+                            amount = Mathf.Min(amount, item.SellMaxAmount);
+                    }
+
+                    SecondModalUi(player, item, buy, amount);
                     break;
                 }
 
@@ -1578,7 +2089,7 @@ namespace Oxide.Plugins
 
                     Take(playerItems, item.ShortName, item.Skin, totalAmount);
 
-                    _config.Economy.AddBalance(player, item.SellPrice * amount);
+                    EconomyChoice.GetEconomy(player).AddBalance(player, item.SellPrice * amount);
 
                     SetCooldown(player, item, false, true);
                     UseLimit(player, item, false, amount);
@@ -1594,6 +2105,7 @@ namespace Oxide.Plugins
                         _itemsToUpdate.Add(player, new List<ShopItem> {item});
                     }
 
+                    CheckUpdateController();
 
                     var container = new CuiElementContainer();
                     SellButtonUi(player, ref container, item);
@@ -1737,7 +2249,7 @@ namespace Oxide.Plugins
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(newItem.Image))
+                    if (_enabledImageLibrary && !string.IsNullOrEmpty(newItem.Image))
                         ImageLibrary.Call("AddImage", newItem.Image, newItem.Image);
 
                     _itemEditing.Remove(player);
@@ -1945,7 +2457,7 @@ namespace Oxide.Plugins
                         return;
                     }
 
-                    if (!_config.Economy.Transfer(player, targetPlayer, amount))
+                    if (!EconomyChoice.GetEconomy(player).Transfer(player, targetPlayer, amount))
                     {
                         ErrorUi(player, Msg(player, NotMoney));
                         return;
@@ -1974,6 +2486,32 @@ namespace Oxide.Plugins
                     MainUi(player, catPage, shopPage, GetShopByPlayer(player), search, searchPage, true);
                     break;
                 }
+
+                case "economychange":
+                {
+                    bool select;
+                    if (!arg.HasArgs(2) || !bool.TryParse(arg.Args[1], out select))
+                        return;
+
+                    var container = new CuiElementContainer();
+                    BalanceUi(ref container, player, select);
+                    CuiHelper.AddUi(player, container);
+                    break;
+                }
+
+                case "economy_set":
+                {
+                    int id;
+                    if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out id))
+                        return;
+
+                    EconomyChoice.SelectEconomy(player, id);
+
+                    var container = new CuiElementContainer();
+                    BalanceUi(ref container, player, !_config.UI.SelectCurrency.CloseAfterChange);
+                    CuiHelper.AddUi(player, container);
+                    break;
+                }
             }
         }
 
@@ -1995,7 +2533,7 @@ namespace Oxide.Plugins
             if (_config.Wipe.Players)
                 _data.PlayerCarts.Clear();
 
-            if (_config.Wipe.Cooldowns)
+            if (_config.Wipe.Cooldown)
                 _cooldown.Clear();
 
             if (_config.Wipe.Limits)
@@ -2020,10 +2558,22 @@ namespace Oxide.Plugins
             int searchPage = 0,
             bool first = false)
         {
+            #region Fields
+
             var shopCategories = GetCategories(player, npcShop);
             var playerCart = GetPlayerCart(player);
 
+            var isSearch = _config.UI.EnableSearch && !string.IsNullOrEmpty(search);
+            var shopItems = isSearch
+                ? shopCategories.SelectMany(x => x.Items)
+                    .Where(
+                        item => item.PublicTitle.StartsWith(search) || item.PublicTitle.Contains(search) ||
+                                item.ShortName.StartsWith(search) || item.ShortName.Contains(search))
+                : shopCategories[catPage].Items;
+
             var container = new CuiElementContainer();
+
+            #endregion
 
             #region Background
 
@@ -2077,7 +2627,7 @@ namespace Oxide.Plugins
             {
                 RectTransform =
                 {
-                    AnchorMin = "0 0", AnchorMax = "1 1"
+                    AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5"
                 },
                 Image =
                 {
@@ -2092,7 +2642,8 @@ namespace Oxide.Plugins
                 RectTransform =
                 {
                     AnchorMin = "0 1", AnchorMax = "1 1",
-                    OffsetMin = "0 -50", OffsetMax = "0 0"
+                    OffsetMin = $"-{_config.UI.Width / 2f} {_config.UI.Height / 2f - 50}",
+                    OffsetMax = $"{_config.UI.Width / 2f} {_config.UI.Height / 2f}"
                 },
                 Image =
                 {
@@ -2200,7 +2751,7 @@ namespace Oxide.Plugins
                     },
                     Text =
                     {
-                        Text = Msg(player, AddItem),
+                        Text = Msg(player, BtnAddItem),
                         Align = TextAnchor.MiddleCenter,
                         Font = "robotocondensed-regular.ttf",
                         FontSize = 10,
@@ -2232,7 +2783,7 @@ namespace Oxide.Plugins
                 },
                 Image =
                 {
-                    Color = _secondColor
+                    Color = "0 0 0 0"
                 }
             }, Layer + ".Header", Layer + ".Balance");
 
@@ -2261,29 +2812,24 @@ namespace Oxide.Plugins
 
             if (shopCategories.Count > 0)
             {
-                var enableSearch = _config.UI.EnableSearch;
-
                 #region Items
 
                 xSwitch = MainSwitch;
-                var ySwitch = -70f;
+                var ySwitch = _config.UI.Height / 2f - 70f;
 
-                var isSearch = enableSearch && !string.IsNullOrEmpty(search);
-                var shopItems = isSearch
-                    ? shopCategories.SelectMany(x => x.Items).Where(
-                        item => item.PublicTitle.StartsWith(search) || item.PublicTitle.Contains(search) ||
-                                item.ShortName.StartsWith(search) || item.ShortName.Contains(search)).ToList()
-                    : shopCategories[catPage].Items;
-
-                var inPageItems = shopItems.Skip((isSearch ? searchPage : shopPage) * MainTotalAmount)
-                    .Take(MainTotalAmount).ToList();
+                var inPageItems = shopItems
+                    .Skip((isSearch ? searchPage : shopPage) * MainTotalAmount)
+                    .Take(MainTotalAmount);
 
                 var cdItems = inPageItems.FindAll(x =>
                     GetCooldownTime(player.userID, x, true) > 0 || GetCooldownTime(player.userID, x, false) > 0);
+
                 if (cdItems.Count > 0)
                     _itemsToUpdate[player] = cdItems;
                 else
                     _itemsToUpdate.Remove(player);
+
+                CheckUpdateController();
 
                 for (var i = 0; i < inPageItems.Count; i++)
                 {
@@ -2319,15 +2865,15 @@ namespace Oxide.Plugins
 
                 #region Search
 
-                if (enableSearch)
+                if (_config.UI.EnableSearch)
                 {
                     container.Add(new CuiPanel
                     {
                         RectTransform =
                         {
                             AnchorMin = "0.5 0", AnchorMax = "0.5 0",
-                            OffsetMin = "-140 20",
-                            OffsetMax = "60 55"
+                            OffsetMin = $"-140 {-_config.UI.Height / 2f + 20}",
+                            OffsetMax = $"60 {-_config.UI.Height / 2f + 55}"
                         },
                         Image =
                         {
@@ -2359,11 +2905,9 @@ namespace Oxide.Plugins
                                 Align = TextAnchor.MiddleCenter,
                                 Font = "robotocondensed-regular.ttf",
                                 Command = $"UI_Shop search_page {catPage} {shopPage} {searchPage} ",
-                                /*Command = catPage != -1 && shopPage != 0
-                                    ? "UI_Shop main_page -1 0 "
-                                    : $"UI_Shop main_page -1 {shopPage} ",*/
                                 Color = "1 1 1 0.95",
-                                CharsLimit = 32
+                                CharsLimit = 32,
+                                NeedsKeyboard = true
                             },
                             new CuiRectTransformComponent
                             {
@@ -2382,8 +2926,8 @@ namespace Oxide.Plugins
                     RectTransform =
                     {
                         AnchorMin = "0.5 0", AnchorMax = "0.5 0",
-                        OffsetMin = $"{(enableSearch ? 65 : -37.5f)} 20",
-                        OffsetMax = $"{(enableSearch ? 100 : -2.5f)} 55"
+                        OffsetMin = $"{(_config.UI.EnableSearch ? 65 : -37.5f)} {-_config.UI.Height / 2f + 20}",
+                        OffsetMax = $"{(_config.UI.EnableSearch ? 100 : -2.5f)} {-_config.UI.Height / 2f + 55}"
                     },
                     Text =
                     {
@@ -2397,8 +2941,9 @@ namespace Oxide.Plugins
                     {
                         Color = _sixthColor,
                         Command = isSearch
-                            ? searchPage != 0 ? $"UI_Shop search_page {catPage} {shopPage} {searchPage - 1} {search}" :
-                            ""
+                            ? searchPage != 0
+                                ? $"UI_Shop search_page {catPage} {shopPage} {searchPage - 1} {search}"
+                                : ""
                             : shopPage != 0
                                 ? $"UI_Shop main_page {catPage} {shopPage - 1} {search}"
                                 : ""
@@ -2410,8 +2955,8 @@ namespace Oxide.Plugins
                     RectTransform =
                     {
                         AnchorMin = "0.5 0", AnchorMax = "0.5 0",
-                        OffsetMin = $"{(enableSearch ? 105 : 2.5f)} 20",
-                        OffsetMax = $"{(enableSearch ? 140 : 37.5f)} 55"
+                        OffsetMin = $"{(_config.UI.EnableSearch ? 105 : 2.5f)} {-_config.UI.Height / 2f + 20}",
+                        OffsetMax = $"{(_config.UI.EnableSearch ? 140 : 37.5f)} {-_config.UI.Height / 2f + 55}"
                     },
                     Text =
                     {
@@ -2509,10 +3054,14 @@ namespace Oxide.Plugins
 
             var ySwitch = -65f;
 
-            var i = iCategory * _config.UI.CategoriesOnString;
-            foreach (var category in shopCategories.Skip(iCategory * _config.UI.CategoriesOnString)
-                         .Take(_config.UI.CategoriesOnString))
+            var catId = iCategory * _config.UI.CategoriesOnString;
+            var categories = shopCategories.Skip(iCategory * _config.UI.CategoriesOnString)
+                .Take(_config.UI.CategoriesOnString);
+
+            for (var j = 0; j < categories.Count; j++)
             {
+                var category = categories[j];
+
                 container.Add(new CuiButton
                 {
                     RectTransform =
@@ -2531,14 +3080,14 @@ namespace Oxide.Plugins
                     },
                     Button =
                     {
-                        Color = i == catPage ? _secondColor : _firstColor,
-                        Command = i != catPage ? $"UI_Shop gocat {i} {iCategory}" : ""
+                        Color = catId == catPage ? _secondColor : _firstColor,
+                        Command = catId != catPage ? $"UI_Shop gocat {catId} {iCategory}" : ""
                     }
                 }, Layer + ".Categories");
 
                 ySwitch = ySwitch - _config.UI.CategoriesMargin - _config.UI.CategoriesHeight;
 
-                i++;
+                catId++;
             }
 
             #endregion
@@ -2765,25 +3314,7 @@ namespace Oxide.Plugins
                     }
                 }, Layer + ".PlayerCart", Layer + $".PlayerCart.Item.{i}");
 
-                container.Add(new CuiElement
-                {
-                    Parent = Layer + $".PlayerCart.Item.{i}",
-                    Components =
-                    {
-                        new CuiRawImageComponent
-                        {
-                            Png =
-                                !string.IsNullOrEmpty(check.Key.Image)
-                                    ? ImageLibrary.Call<string>("GetImage", check.Key.Image)
-                                    : ImageLibrary.Call<string>("GetImage", check.Key.ShortName, check.Key.Skin)
-                        },
-                        new CuiRectTransformComponent
-                        {
-                            AnchorMin = "0 0", AnchorMax = "0 0",
-                            OffsetMin = "10 5", OffsetMax = "45 40"
-                        }
-                    }
-                });
+                container.Add(check.Key.GetImage("0 0", "0 0", "10 5", "45 40", Layer + $".PlayerCart.Item.{i}"));
 
                 container.Add(new CuiLabel
                 {
@@ -2915,7 +3446,8 @@ namespace Oxide.Plugins
                             Align = TextAnchor.MiddleCenter,
                             Command = $"UI_Shop cart_item_change {check.Key.ID} ",
                             Color = "1 1 1 0.95",
-                            CharsLimit = 5
+                            CharsLimit = 5,
+                            NeedsKeyboard = true
                         },
                         new CuiRectTransformComponent
                         {
@@ -3186,72 +3718,64 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
-        private void SellUi(BasePlayer player, ShopItem item, int amount = 1)
+        private void SecondModalUi(BasePlayer player, ShopItem item, bool buy, int amount = 1)
         {
-            var container = new CuiElementContainer();
-
-            container.Add(new CuiPanel
+            var container = new CuiElementContainer
             {
-                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                Image = {Color = HexToCuiColor(_config.ThirdColor, 98)},
-                CursorEnabled = true
-            }, _config.UI.DisplayType, ModalLayer);
-
-            container.Add(new CuiButton
-            {
-                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
-                Text = {Text = ""},
-                Button = {Color = "0 0 0 0", Close = ModalLayer}
-            }, ModalLayer);
-
-            container.Add(new CuiPanel
-            {
-                RectTransform =
                 {
-                    AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
-                    OffsetMin = "-95 -100", OffsetMax = "95 110"
-                },
-                Image =
-                {
-                    Color = _firstColor
-                }
-            }, ModalLayer, ModalLayer + ".Main");
-
-            container.Add(new CuiElement
-            {
-                Parent = ModalLayer + ".Main",
-                Components =
-                {
-                    new CuiRawImageComponent
+                    new CuiPanel
                     {
-                        Png = !string.IsNullOrEmpty(item.Image)
-                            ? ImageLibrary.Call<string>("GetImage", item.Image)
-                            : ImageLibrary.Call<string>("GetImage", item.ShortName, item.Skin)
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Image = {Color = HexToCuiColor(_config.ThirdColor, 98)},
+                        CursorEnabled = true
                     },
-                    new CuiRectTransformComponent
-                    {
-                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                        OffsetMin = "-45 -100", OffsetMax = "45 -10"
-                    }
-                }
-            });
-
-            container.Add(new CuiLabel
-            {
-                RectTransform =
-                {
-                    AnchorMin = "0 1", AnchorMax = "1 1",
-                    OffsetMin = "0 -135", OffsetMax = "0 -95"
+                    _config.UI.DisplayType, ModalLayer
                 },
-                Text =
                 {
-                    Text = $"{item.PublicTitle}",
-                    Align = TextAnchor.MiddleCenter,
-                    Font = "robotocondensed-regular.ttf",
-                    FontSize = 16,
-                    Color = "1 1 1 1"
+                    new CuiButton
+                    {
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
+                        Button = {Color = "0 0 0 0", Close = ModalLayer}
+                    },
+                    ModalLayer
+                },
+                {
+                    new CuiPanel
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0.5 0.5", AnchorMax = "0.5 0.5",
+                            OffsetMin = "-95 -100", OffsetMax = "95 110"
+                        },
+                        Image =
+                        {
+                            Color = _firstColor
+                        }
+                    },
+                    ModalLayer, ModalLayer + ".Main"
+                },
+                item.GetImage("0.5 1", "0.5 1", "-45 -100", "45 -10", ModalLayer + ".Main"),
+                {
+                    new CuiLabel
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0 1", AnchorMax = "1 1",
+                            OffsetMin = "0 -135", OffsetMax = "0 -95"
+                        },
+                        Text =
+                        {
+                            Text = $"{item.PublicTitle}",
+                            Align = TextAnchor.MiddleCenter,
+                            Font = "robotocondensed-regular.ttf",
+                            FontSize = 16,
+                            Color = "1 1 1 1"
+                        }
+                    },
+                    ModalLayer + ".Main"
                 }
-            }, ModalLayer + ".Main");
+            };
 
             #region Sell Btn
 
@@ -3264,7 +3788,9 @@ namespace Oxide.Plugins
                 },
                 Text =
                 {
-                    Text = Msg(player, SellBtn, item.SellPrice * amount),
+                    Text = buy
+                        ? Msg(player, BuyBtn, item.Price * amount)
+                        : Msg(player, SellBtn, item.SellPrice * amount),
                     Align = TextAnchor.MiddleCenter,
                     Font = "robotocondensed-regular.ttf",
                     FontSize = 12,
@@ -3273,7 +3799,7 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Color = _secondColor,
-                    Command = $"UI_Shop sellitem {item.ID} {amount}",
+                    Command = buy ? $"UI_Shop fastbuyitem {item.ID} {amount}" : $"UI_Shop sellitem {item.ID} {amount}",
                     Close = ModalLayer
                 }
             }, ModalLayer + ".Main");
@@ -3300,7 +3826,7 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Color = _secondColor,
-                    Command = $"UI_Shop trysellitem {item.ID} {amount - 1}"
+                    Command = $"UI_Shop tryoperateitem {item.ID} {buy} {amount - 1}"
                 }
             }, ModalLayer + ".Main");
 
@@ -3309,7 +3835,7 @@ namespace Oxide.Plugins
                 RectTransform =
                 {
                     AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                    OffsetMin = "45 -165", OffsetMax = "60 -150"
+                    OffsetMin = "15 -165", OffsetMax = "30 -150"
                 },
                 Text =
                 {
@@ -3322,7 +3848,7 @@ namespace Oxide.Plugins
                 Button =
                 {
                     Color = _secondColor,
-                    Command = $"UI_Shop trysellitem {item.ID} {amount + 1}"
+                    Command = $"UI_Shop tryoperateitem {item.ID} {buy} {amount + 1}"
                 }
             }, ModalLayer + ".Main");
 
@@ -3331,7 +3857,7 @@ namespace Oxide.Plugins
                 RectTransform =
                 {
                     AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                    OffsetMin = "-45 -165", OffsetMax = "45 -150"
+                    OffsetMin = "-45 -165", OffsetMax = "15 -150"
                 },
                 Text =
                 {
@@ -3343,6 +3869,28 @@ namespace Oxide.Plugins
                 }
             }, ModalLayer + ".Main", ModalLayer + ".Amount");
 
+            container.Add(new CuiButton
+            {
+                RectTransform =
+                {
+                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                    OffsetMin = "35 -165", OffsetMax = "60 -150"
+                },
+                Text =
+                {
+                    Text = Msg(player, TitleMax),
+                    Align = TextAnchor.MiddleCenter,
+                    Font = "robotocondensed-regular.ttf",
+                    FontSize = 10,
+                    Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Color = _secondColor,
+                    Command = $"UI_Shop tryoperateitem {item.ID} {buy} all"
+                }
+            }, ModalLayer + ".Main");
+
             container.Add(new CuiElement
             {
                 Parent = ModalLayer + ".Amount",
@@ -3352,9 +3900,10 @@ namespace Oxide.Plugins
                     {
                         FontSize = 10,
                         Align = TextAnchor.MiddleCenter,
-                        Command = $"UI_Shop trysellitem {item.ID} ",
+                        Command = $"UI_Shop tryoperateitem {item.ID} {buy} ",
                         Color = "1 1 1 0.95",
-                        CharsLimit = 5
+                        CharsLimit = 5,
+                        NeedsKeyboard = true
                     },
                     new CuiRectTransformComponent
                     {
@@ -3369,20 +3918,111 @@ namespace Oxide.Plugins
             CuiHelper.AddUi(player, container);
         }
 
-        private void BalanceUi(ref CuiElementContainer container, BasePlayer player)
+        private void BalanceUi(ref CuiElementContainer container, BasePlayer player, bool select = false)
         {
-            container.Add(new CuiLabel
+            var nowEconomy = EconomyChoice.GetEconomy(player);
+
+            container.Add(new CuiButton
             {
-                RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                RectTransform = {AnchorMin = "0 0", AnchorMax = "0.99 0.99"},
                 Text =
                 {
-                    Text = Msg(player, BalanceTitle, _config.Economy.ShowBalance(player)),
+                    Text = nowEconomy.GetBalanceTitle(player),
                     Align = TextAnchor.MiddleCenter,
                     Font = "robotocondensed-regular.ttf",
                     FontSize = 10,
                     Color = "1 1 1 1"
+                },
+                Button =
+                {
+                    Color = _secondColor,
+                    Command = $"UI_Shop economychange {!select}",
+                    Close = Layer + ".Balance.Value"
                 }
             }, Layer + ".Balance", Layer + ".Balance.Value");
+
+            if (select && _economics.Count > 1)
+            {
+                var halfWidth = (_economics.Count * _config.UI.SelectCurrency.EconomyWidth +
+                                 (_economics.Count - 1) * _config.UI.SelectCurrency.EconomyMargin) / 2f;
+                var xSwitch = -halfWidth;
+
+                #region Background
+
+                container.Add(new CuiPanel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                        OffsetMin =
+                            $"-{halfWidth + _config.UI.SelectCurrency.FrameWidth} {_config.UI.SelectCurrency.FrameIndent}",
+                        OffsetMax =
+                            $"{halfWidth + _config.UI.SelectCurrency.FrameWidth} {_config.UI.SelectCurrency.FrameIndent + _config.UI.SelectCurrency.EconomyHeight + _config.UI.SelectCurrency.FrameHeader}"
+                    },
+                    Image =
+                    {
+                        Color = _firstColor
+                    }
+                }, Layer + ".Balance.Value", Layer + ".Balance.Background");
+
+                container.Add(new CuiLabel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = _config.UI.SelectCurrency.TitlePosition.AnchorMin,
+                        AnchorMax = _config.UI.SelectCurrency.TitlePosition.AnchorMax,
+                        OffsetMin = _config.UI.SelectCurrency.TitlePosition.OffsetMin,
+                        OffsetMax = _config.UI.SelectCurrency.TitlePosition.OffsetMax
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, ChoiceEconomy),
+                        Align = _config.UI.SelectCurrency.Title.Align,
+                        Font = _config.UI.SelectCurrency.Title.Font,
+                        FontSize = _config.UI.SelectCurrency.Title.FontSize,
+                        Color = _config.UI.SelectCurrency.Title.Color.Get
+                    }
+                }, Layer + ".Balance.Background");
+
+                #endregion
+
+                #region Economics
+
+                for (var i = 0; i < _economics.Count; i++)
+                {
+                    var economyConf = _economics[i];
+
+                    container.Add(new CuiButton
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                            OffsetMin = $"{xSwitch} {_config.UI.SelectCurrency.EconomyIndent}",
+                            OffsetMax =
+                                $"{xSwitch + _config.UI.SelectCurrency.EconomyWidth} {_config.UI.SelectCurrency.EconomyIndent + _config.UI.SelectCurrency.EconomyHeight}"
+                        },
+                        Text =
+                        {
+                            Text = economyConf.GetTitle(player),
+                            Align = _config.UI.SelectCurrency.EconomyTitle.Align,
+                            Font = _config.UI.SelectCurrency.EconomyTitle.Font,
+                            FontSize = _config.UI.SelectCurrency.EconomyTitle.FontSize,
+                            Color = _config.UI.SelectCurrency.EconomyTitle.Color.Get
+                        },
+                        Button =
+                        {
+                            Color = economyConf.IsSame(nowEconomy)
+                                ? _config.UI.SelectCurrency.SelectedEconomyColor.Get
+                                : _config.UI.SelectCurrency.UnselectedEconomyColor.Get,
+                            Command = $"UI_Shop economy_set {economyConf.ID}"
+                        }
+                    }, Layer + ".Balance.Background");
+
+                    xSwitch += _config.UI.SelectCurrency.EconomyWidth + _config.UI.SelectCurrency.EconomyMargin;
+                }
+
+                #endregion
+            }
 
             CuiHelper.DestroyUi(player, Layer + ".Balance.Value");
         }
@@ -3613,14 +4253,17 @@ namespace Oxide.Plugins
                 Image = {Color = _firstColor}
             }, EditingLayer + ".Main", EditingLayer + ".Image");
 
-            if (!string.IsNullOrEmpty(shortName) && ImageLibrary)
+            if (_enabledImageLibrary && !string.IsNullOrEmpty(shortName))
                 container.Add(new CuiElement
                 {
                     Parent = EditingLayer + ".Image",
                     Components =
                     {
-                        new CuiRawImageComponent
-                            {Png = ImageLibrary.Call<string>("GetImage", shortName, edit["Skin"])},
+                        new CuiImageComponent
+                        {
+                            ItemId = ItemManager.FindItemDefinition(shortName)?.itemid ?? 0,
+                            SkinId = Convert.ToUInt64(edit["Skin"])
+                        },
                         new CuiRectTransformComponent
                         {
                             AnchorMin = "0 0", AnchorMax = "1 1",
@@ -3911,7 +4554,8 @@ namespace Oxide.Plugins
                         Align = TextAnchor.MiddleLeft,
                         Command = $"{command}",
                         Color = "1 1 1 0.99",
-                        CharsLimit = 150
+                        CharsLimit = 150,
+                        NeedsKeyboard = true
                     },
                     new CuiRectTransformComponent
                     {
@@ -3925,7 +4569,8 @@ namespace Oxide.Plugins
         private void SelectItem(BasePlayer player, int category, string selectedCategory = "", int page = 0,
             string input = "")
         {
-            if (string.IsNullOrEmpty(selectedCategory)) selectedCategory = _itemsCategories.FirstOrDefault().Key;
+            if (string.IsNullOrEmpty(selectedCategory))
+                selectedCategory = _itemsCategories.FirstOrDefault().Key;
 
             var container = new CuiElementContainer();
 
@@ -4039,11 +4684,11 @@ namespace Oxide.Plugins
             var temp = canSearch
                 ? _itemsCategories
                     .SelectMany(x => x.Value)
-                    .Where(x => x.StartsWith(input) || x.Contains(input) || x.EndsWith(input)).ToList()
+                    .Where(x => x.Value.StartsWith(input) || x.Value.Contains(input) || x.Value.EndsWith(input))
                 : _itemsCategories[selectedCategory];
 
             var itemsAmount = temp.Count;
-            var Items = temp.Skip(page * totalAmount).Take(totalAmount).ToList();
+            var Items = temp.Skip(page * totalAmount).Take(totalAmount);
 
             Items.ForEach(item =>
             {
@@ -4056,22 +4701,24 @@ namespace Oxide.Plugins
                         OffsetMax = $"{xSwitch + Width} {ySwitch}"
                     },
                     Image = {Color = _firstColor}
-                }, ModalLayer + ".Main", ModalLayer + $".Item.{item}");
+                }, ModalLayer + ".Main", ModalLayer + $".Item.{item.Key}");
 
-                if (ImageLibrary)
-                    container.Add(new CuiElement
+                container.Add(new CuiElement
+                {
+                    Parent = ModalLayer + $".Item.{item.Key}",
+                    Components =
                     {
-                        Parent = ModalLayer + $".Item.{item}",
-                        Components =
+                        new CuiImageComponent
                         {
-                            new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", item)},
-                            new CuiRectTransformComponent
-                            {
-                                AnchorMin = "0 0", AnchorMax = "1 1",
-                                OffsetMin = "5 5", OffsetMax = "-5 -5"
-                            }
+                            ItemId = item.Key
+                        },
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = "0 0", AnchorMax = "1 1",
+                            OffsetMin = "5 5", OffsetMax = "-5 -5"
                         }
-                    });
+                    }
+                });
 
                 container.Add(new CuiButton
                 {
@@ -4080,10 +4727,10 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = "0 0 0 0",
-                        Command = $"UI_Shop takeitem {category} {page} {item}",
+                        Command = $"UI_Shop takeitem {category} {page} {item.Value}",
                         Close = ModalLayer
                     }
-                }, ModalLayer + $".Item.{item}");
+                }, ModalLayer + $".Item.{item.Key}");
 
                 if (i % amountOnString == 0)
                 {
@@ -4140,7 +4787,8 @@ namespace Oxide.Plugins
                         Align = TextAnchor.MiddleLeft,
                         Command = $"UI_Shop selectitem {category} {selectedCategory} 0 ",
                         Color = "1 1 1 0.95",
-                        CharsLimit = 150
+                        CharsLimit = 150,
+                        NeedsKeyboard = true
                     },
                     new CuiRectTransformComponent
                     {
@@ -4320,7 +4968,9 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = "0 0 0 0",
-                        Command = $"UI_Shop buyitem {shopItem.ID}"
+                        Command = shopItem.ForceBuy
+                            ? $"UI_Shop tryoperateitem {shopItem.ID} {true}"
+                            : $"UI_Shop buyitem {shopItem.ID}"
                     }
                 }, Layer + $".Item.{shopItem.ID}.Buy");
             }
@@ -4437,7 +5087,7 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = "0 0 0 0",
-                        Command = $"UI_Shop trysellitem {shopItem.ID}"
+                        Command = $"UI_Shop tryoperateitem {shopItem.ID} {false}"
                     }
                 }, Layer + $".Item.{shopItem.ID}.Sell");
             }
@@ -4482,25 +5132,8 @@ namespace Oxide.Plugins
             }
             else
             {
-                container.Add(new CuiElement
-                {
-                    Name = Layer + $".Item.{shopItem.ID}.Image",
-                    Parent = Layer + $".Item.{shopItem.ID}",
-                    Components =
-                    {
-                        new CuiRawImageComponent
-                        {
-                            Png = !string.IsNullOrEmpty(shopItem.Image)
-                                ? ImageLibrary.Call<string>("GetImage", shopItem.Image)
-                                : ImageLibrary.Call<string>("GetImage", shopItem.ShortName, shopItem.Skin)
-                        },
-                        new CuiRectTransformComponent
-                        {
-                            AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                            OffsetMin = "-35 -85", OffsetMax = "35 -15"
-                        }
-                    }
-                });
+                container.Add(shopItem.GetImage("0.5 1", "0.5 1", "-35 -85", "35 -15", Layer + $".Item.{shopItem.ID}",
+                    Layer + $".Item.{shopItem.ID}.Image"));
 
                 #region Name
 
@@ -4688,7 +5321,8 @@ namespace Oxide.Plugins
 
             var i = 1;
 
-            var players = BasePlayer.activePlayerList.Where(x => x != player).ToList();
+            var players =
+                BasePlayer.activePlayerList.Where(x => x != player).ToList();
 
             #endregion
 
@@ -4721,77 +5355,174 @@ namespace Oxide.Plugins
 
             #endregion
 
-            #region Title
-
-            container.Add(new CuiLabel
+            if (players.Count > 0)
             {
-                RectTransform =
-                {
-                    AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                    OffsetMin = "-200 -140",
-                    OffsetMax = "200 -100"
-                },
-                Text =
-                {
-                    Text = Msg(player, SelectPlayerTitle),
-                    Align = TextAnchor.MiddleCenter,
-                    Font = "robotocondensed-bold.ttf",
-                    FontSize = 32,
-                    Color = "1 1 1 1"
-                }
-            }, Layer);
-
-            #endregion
-
-            #region Players
-
-            foreach (var member in players.Skip(selectPage * totalAmount).Take(totalAmount))
-            {
-                container.Add(new CuiPanel
-                {
-                    RectTransform =
-                    {
-                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                        OffsetMin = $"{xSwitch} {ySwitch - Height}",
-                        OffsetMax = $"{xSwitch + Width} {ySwitch}"
-                    },
-                    Image =
-                    {
-                        Color = "0 0 0 0"
-                    }
-                }, Layer, Layer + $".Player.{i}");
-
-                container.Add(new CuiElement
-                {
-                    Parent = Layer + $".Player.{i}",
-                    Components =
-                    {
-                        new CuiRawImageComponent
-                            {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{member.userID}")},
-                        new CuiRectTransformComponent
-                        {
-                            AnchorMin = "0 0", AnchorMax = "0 0",
-                            OffsetMin = "0 0", OffsetMax = "50 50"
-                        }
-                    }
-                });
+                #region Title
 
                 container.Add(new CuiLabel
                 {
                     RectTransform =
                     {
-                        AnchorMin = "0 0.5", AnchorMax = "1 1",
-                        OffsetMin = "55 0", OffsetMax = "0 0"
+                        AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                        OffsetMin = "-200 -140",
+                        OffsetMax = "200 -100"
                     },
                     Text =
                     {
-                        Text = $"{member.displayName}",
-                        Align = TextAnchor.LowerLeft,
-                        Font = "robotocondensed-regular.ttf",
-                        FontSize = 18,
+                        Text = Msg(player, SelectPlayerTitle),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 32,
                         Color = "1 1 1 1"
                     }
-                }, Layer + $".Player.{i}");
+                }, Layer);
+
+                #endregion
+
+                #region Players
+
+                var members = players.Skip(selectPage * totalAmount).Take(totalAmount);
+                for (var j = 0; j < members.Count; j++)
+                {
+                    var member = members[j];
+
+                    container.Add(new CuiPanel
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0.5 1", AnchorMax = "0.5 1",
+                            OffsetMin = $"{xSwitch} {ySwitch - Height}",
+                            OffsetMax = $"{xSwitch + Width} {ySwitch}"
+                        },
+                        Image =
+                        {
+                            Color = "0 0 0 0"
+                        }
+                    }, Layer, Layer + $".Player.{i}");
+
+                    if (_enabledImageLibrary)
+                        container.Add(new CuiElement
+                        {
+                            Parent = Layer + $".Player.{i}",
+                            Components =
+                            {
+                                new CuiRawImageComponent
+                                    {Png = ImageLibrary.Call<string>("GetImage", $"avatar_{member.userID}")},
+                                new CuiRectTransformComponent
+                                {
+                                    AnchorMin = "0 0", AnchorMax = "0 0",
+                                    OffsetMin = "0 0", OffsetMax = "50 50"
+                                }
+                            }
+                        });
+
+                    container.Add(new CuiLabel
+                    {
+                        RectTransform =
+                        {
+                            AnchorMin = "0 0.5", AnchorMax = "1 1",
+                            OffsetMin = "55 0", OffsetMax = "0 0"
+                        },
+                        Text =
+                        {
+                            Text = $"{member.displayName}",
+                            Align = TextAnchor.LowerLeft,
+                            Font = "robotocondensed-regular.ttf",
+                            FontSize = 18,
+                            Color = "1 1 1 1"
+                        }
+                    }, Layer + $".Player.{i}");
+
+                    container.Add(new CuiButton
+                    {
+                        RectTransform = {AnchorMin = "0 0", AnchorMax = "1 1"},
+                        Text = {Text = ""},
+                        Button =
+                        {
+                            Color = "0 0 0 0",
+                            Command =
+                                $"UI_Shop try_ptransfer {catPage} {shopPage} {searchPage} {member.userID} {search}"
+                        }
+                    }, Layer + $".Player.{i}");
+
+                    if (i % amountOnString == 0)
+                    {
+                        xSwitch = constSwitch;
+                        ySwitch = ySwitch - Height - yMargin;
+                    }
+                    else
+                    {
+                        xSwitch += Width + xMargin;
+                    }
+
+                    i++;
+                }
+
+                #endregion
+
+                #region Pages
+
+                var pageSize = 25f;
+                var selPageSize = 40f;
+                xMargin = 5f;
+
+                var pages = (int) Math.Ceiling((double) players.Count / totalAmount);
+                if (pages > 1)
+                {
+                    xSwitch = -((pages - 1) * pageSize + (pages - 1) * xMargin + selPageSize) / 2f;
+
+                    for (var j = 0; j < pages; j++)
+                    {
+                        var selected = selectPage == j;
+
+                        container.Add(new CuiButton
+                        {
+                            RectTransform =
+                            {
+                                AnchorMin = "0.5 0", AnchorMax = "0.5 0",
+                                OffsetMin = $"{xSwitch} 60",
+                                OffsetMax =
+                                    $"{xSwitch + (selected ? selPageSize : pageSize)} {60 + (selected ? selPageSize : pageSize)}"
+                            },
+                            Text =
+                            {
+                                Text = $"{j + 1}",
+                                Align = TextAnchor.MiddleCenter,
+                                Font = "robotocondensed-bold.ttf",
+                                FontSize = selected ? 18 : 12,
+                                Color = "1 1 1 1"
+                            },
+                            Button =
+                            {
+                                Color = _secondColor,
+                                Command =
+                                    $"UI_Shop pselect_page {catPage} {shopPage} {searchPage} {j} {search}"
+                            }
+                        }, Layer);
+
+                        xSwitch += (selected ? selPageSize : pageSize) + xMargin;
+                    }
+                }
+
+                #endregion
+            }
+            else
+            {
+                container.Add(new CuiLabel
+                {
+                    RectTransform =
+                    {
+                        AnchorMin = "0 0", AnchorMax = "1 1"
+                    },
+                    Text =
+                    {
+                        Text = Msg(player, NoTransferPlayers),
+                        Align = TextAnchor.MiddleCenter,
+                        Font = "robotocondensed-bold.ttf",
+                        FontSize = 28,
+                        Color = "1 1 1 0.85"
+                    }
+                }, Layer);
 
                 container.Add(new CuiButton
                 {
@@ -4800,70 +5531,11 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = "0 0 0 0",
-                        Command = $"UI_Shop try_ptransfer {catPage} {shopPage} {searchPage} {member.userID} {search}"
+                        Close = Layer,
+                        Command = $"UI_Shop goback {catPage} {shopPage} {searchPage} {search}"
                     }
-                }, Layer + $".Player.{i}");
-
-                if (i % amountOnString == 0)
-                {
-                    xSwitch = constSwitch;
-                    ySwitch = ySwitch - Height - yMargin;
-                }
-                else
-                {
-                    xSwitch += Width + xMargin;
-                }
-
-                i++;
+                }, Layer);
             }
-
-            #endregion
-
-            #region Pages
-
-            var pageSize = 25f;
-            var selPageSize = 40f;
-            xMargin = 5f;
-
-            var pages = (int) Math.Ceiling((double) players.Count / totalAmount);
-            if (pages > 1)
-            {
-                xSwitch = -((pages - 1) * pageSize + (pages - 1) * xMargin + selPageSize) / 2f;
-
-                for (var j = 0; j < pages; j++)
-                {
-                    var selected = selectPage == j;
-
-                    container.Add(new CuiButton
-                    {
-                        RectTransform =
-                        {
-                            AnchorMin = "0.5 0", AnchorMax = "0.5 0",
-                            OffsetMin = $"{xSwitch} 60",
-                            OffsetMax =
-                                $"{xSwitch + (selected ? selPageSize : pageSize)} {60 + (selected ? selPageSize : pageSize)}"
-                        },
-                        Text =
-                        {
-                            Text = $"{j + 1}",
-                            Align = TextAnchor.MiddleCenter,
-                            Font = "robotocondensed-bold.ttf",
-                            FontSize = selected ? 18 : 12,
-                            Color = "1 1 1 1"
-                        },
-                        Button =
-                        {
-                            Color = _secondColor,
-                            Command =
-                                $"UI_Shop pselect_page {catPage} {shopPage} {searchPage} {j} {search}"
-                        }
-                    }, Layer);
-
-                    xSwitch += (selected ? selPageSize : pageSize) + xMargin;
-                }
-            }
-
-            #endregion
 
             CuiHelper.DestroyUi(player, Layer);
             CuiHelper.AddUi(player, container);
@@ -5005,7 +5677,7 @@ namespace Oxide.Plugins
 
             #region Avatar
 
-            if (ImageLibrary)
+            if (_enabledImageLibrary)
                 container.Add(new CuiElement
                 {
                     Parent = Layer + ".Player",
@@ -5120,7 +5792,8 @@ namespace Oxide.Plugins
                         Command =
                             $"UI_Shop ptransfer_amount {catPage} {shopPage} {searchPage} {targetId} {hasSearch} {search} ",
                         Color = "1 1 1 0.95",
-                        CharsLimit = 32
+                        CharsLimit = 32,
+                        NeedsKeyboard = true
                     },
                     new CuiRectTransformComponent
                     {
@@ -5141,6 +5814,158 @@ namespace Oxide.Plugins
         #endregion
 
         #region Utils
+
+        private readonly Dictionary<int, EconomyConf> _additionalEconomics = new Dictionary<int, EconomyConf>();
+
+        private readonly List<AdditionalEconomy> _economics = new List<AdditionalEconomy>();
+
+        private void LoadEconomics()
+        {
+            _config.AdditionalEconomics.FindAll(x => x.Enabled)
+                .ForEach(x =>
+                {
+                    if (x.ID == 0 || _additionalEconomics.ContainsKey(x.ID))
+                    {
+                        PrintError($"Additional economy caching error. There are several economies with ID {x.ID}");
+                        return;
+                    }
+
+                    _additionalEconomics[x.ID] = x;
+                });
+
+            _economics.Add(new AdditionalEconomy(_config.Economy));
+            _economics.AddRange(_config.AdditionalEconomics.FindAll(x => x.Enabled));
+        }
+
+        private bool NoEscape_IsBlocked(BasePlayer player)
+        {
+            return Convert.ToBoolean(NoEscape?.Call("IsBlocked", player));
+        }
+
+        private IEnumerator GiveCartItems(BasePlayer player, Dictionary<ShopItem, int> items, double price)
+        {
+            var logItems = Pool.GetList<string>();
+
+            var i = 0;
+
+            foreach (var cartItem in items)
+            {
+                logItems.Add(cartItem.Key.ToString());
+
+                cartItem.Key?.Get(player, cartItem.Value);
+
+                SetCooldown(player, cartItem.Key, true);
+                UseLimit(player, cartItem.Key, true, cartItem.Value);
+                UseLimit(player, cartItem.Key, true, cartItem.Value, true);
+
+                if (i++ % _itemsPerTick == 0)
+                    yield return CoroutineEx.waitForEndOfFrame;
+            }
+
+            Log("Buy", LogBuyItems, player.displayName, player.UserIDString,
+                price, string.Join(", ", logItems));
+
+            Pool.FreeList(ref logItems);
+        }
+
+        private NPCShop GetShopByPlayer(BasePlayer player)
+        {
+            NPCShop shop;
+            return _openedShops.TryGetValue(player, out shop) ? shop : null;
+        }
+
+        private VendingMachine GetLookVM(BasePlayer player)
+        {
+            RaycastHit RaycastHit;
+            if (!Physics.Raycast(player.eyes.HeadRay(), out RaycastHit, 5f)) return null;
+            return RaycastHit.GetEntity() as VendingMachine;
+        }
+
+        private void LoadColors()
+        {
+            _firstColor = HexToCuiColor(_config.FirstColor);
+            _secondColor = HexToCuiColor(_config.SecondColor);
+            _thirdColor = HexToCuiColor(_config.ThirdColor);
+            _fourthColor = HexToCuiColor(_config.FourthColor);
+            _fifthColor = HexToCuiColor(_config.FifthColor);
+            _sixthColor = HexToCuiColor(_config.SixthColor);
+            _seventhColor = HexToCuiColor(_config.SeventhColor);
+        }
+
+        private void RegisterPermissions()
+        {
+            _config.Shop.ForEach(category =>
+            {
+                if (!string.IsNullOrEmpty(category.Permission) && !permission.PermissionExists(category.Permission))
+                    permission.RegisterPermission(category.Permission, this);
+            });
+
+            permission.RegisterPermission(PermAdmin, this);
+            permission.RegisterPermission(PermFreeBypass, this);
+            permission.RegisterPermission(PermSetVM, this);
+        }
+
+        private void RegisterCommands()
+        {
+            AddCovalenceCommand(_config.Commands, nameof(CmdShopOpen));
+
+            AddCovalenceCommand("shop.setvm", nameof(CmdSetCustomVM));
+        }
+
+        private void CheckUpdateController()
+        {
+            if (_itemsToUpdate.Count == 0)
+            {
+                _updateController?.Destroy();
+                return;
+            }
+
+            if (_updateController == null && _shopItems.Any(x => x.Value.BuyCooldown > 0 || x.Value.SellCooldown > 0))
+                _updateController = timer.Every(1, ItemsUpdateController);
+        }
+
+        private void CacheImages()
+        {
+            foreach (var image in _shopItems.Values
+                         .Select(shopItem =>
+                             !string.IsNullOrEmpty(shopItem.Image) ? shopItem.Image : shopItem.ShortName)
+                         .Where(image => !_images.Contains(image))) _images.Add(image);
+        }
+
+        private void LoadCarts()
+        {
+            foreach (var check in _data.PlayerCarts)
+                _carts.Add(check.Key, new DataCart(check.Value));
+        }
+
+        private void LoadPlayers()
+        {
+            foreach (var player in BasePlayer.activePlayerList)
+                OnPlayerConnected(player);
+        }
+
+        #region Custom Vending
+
+        private readonly Dictionary<BasePlayer, CustomVendingConf> _openedCustomVending =
+            new Dictionary<BasePlayer, CustomVendingConf>();
+
+        private void LoadCustomVMs()
+        {
+            _config.CustomVending.ToList().ForEach(wb => CheckCustomVending(wb.Key));
+
+            Subscribe(nameof(CanLootEntity));
+        }
+
+        private void CheckCustomVending(uint netId)
+        {
+            var vendingMachine = BaseNetworkable.serverEntities.Find(netId) as VendingMachine;
+            if (vendingMachine != null) return;
+
+            _config.CustomVending.Remove(netId);
+            SaveConfig();
+        }
+
+        #endregion
 
         #region Avatar
 
@@ -5184,8 +6009,7 @@ namespace Oxide.Plugins
 
         private bool IsAdmin(BasePlayer player)
         {
-            return player != null && (player.IsAdmin && _config.FlagAdmin ||
-                                      permission.UserHasPermission(player.UserIDString, PermAdmin));
+            return player != null && ((player.IsAdmin && _config.FlagAdmin) || player.HasPermission(PermAdmin));
         }
 
         private int GetId()
@@ -5275,6 +6099,9 @@ namespace Oxide.Plugins
 
         private void FillCategories()
         {
+            if (_config.Shop.Count != 0)
+                return;
+
             _config.Shop.Clear();
 
             var sw = Stopwatch.StartNew();
@@ -5303,8 +6130,7 @@ namespace Oxide.Plugins
                 };
 
                 check.Value
-                    .FindAll(itemDefinition => itemDefinition.shortname != "blueprintbase" &&
-                                               ImageLibrary.Call<bool>("HasImage", itemDefinition.shortname))
+                    .FindAll(itemDefinition => itemDefinition.shortname != "blueprintbase")
                     .ForEach(
                         itemDefinition =>
                         {
@@ -5348,7 +6174,10 @@ namespace Oxide.Plugins
                                 {
                                     ["shop.default"] = 0,
                                     ["shop.vip"] = 0
-                                }
+                                },
+                                BuyMaxAmount = 0,
+                                SellMaxAmount = 0,
+                                ForceBuy = false
                             });
                         });
 
@@ -5368,15 +6197,25 @@ namespace Oxide.Plugins
 
         private void CheckOnDuplicates()
         {
-            var duplicates = _config.Shop.SelectMany(x => x.Items)
-                .GroupBy(x => x.ID)
-                .Where(group => group.Count() > 1)
-                .Select(group => group.Key);
+            if (_config.Shop.Count == 0) return;
 
-            var shopItems = duplicates as int[] ?? duplicates.ToArray();
-            if (shopItems.Length > 0)
+            var items = new List<int>();
+            var duplicates = new List<int>();
+
+            _config.Shop.SelectMany(x => x.Items).ForEach(item =>
+            {
+                if (items.Contains(item.ID))
+                {
+                    duplicates.Add(item.ID);
+                    return;
+                }
+
+                items.Add(item.ID);
+            });
+
+            if (duplicates.Count > 0)
                 PrintError(
-                    $"Matching item IDs found (Shop): {string.Join(", ", shopItems.Select(x => x.ToString()))}");
+                    $"Matching item IDs found (Shop): {string.Join(", ", duplicates.Select(x => x.ToString()))}");
         }
 
         private void ItemsToDict()
@@ -5387,14 +6226,16 @@ namespace Oxide.Plugins
             {
                 var itemCategory = item.category.ToString();
 
+                var kvp = new KeyValuePair<int, string>(item.itemid, item.shortname);
+
                 if (_itemsCategories.ContainsKey(itemCategory))
                 {
-                    if (!_itemsCategories[itemCategory].Contains(item.shortname))
-                        _itemsCategories[itemCategory].Add(item.shortname);
+                    if (!_itemsCategories[itemCategory].Contains(kvp))
+                        _itemsCategories[itemCategory].Add(kvp);
                 }
                 else
                 {
-                    _itemsCategories.Add(itemCategory, new List<string> {item.shortname});
+                    _itemsCategories.Add(itemCategory, new List<KeyValuePair<int, string>> {kvp});
                 }
             });
 
@@ -5419,12 +6260,31 @@ namespace Oxide.Plugins
 
         private List<ShopCategory> GetCategories(BasePlayer player, NPCShop npcShop = null)
         {
-            return _config.Shop.FindAll(cat => cat != null && cat.Enabled && (string.IsNullOrEmpty(cat.Permission) ||
-                                                                              permission.UserHasPermission(
-                                                                                  player.UserIDString,
-                                                                                  cat.Permission)) &&
-                                               (npcShop == null || npcShop.Shops.Contains(cat.Title) ||
-                                                npcShop.Shops.Contains("*")));
+            CustomVendingConf customVendingConf;
+            _openedCustomVending.TryGetValue(player, out customVendingConf);
+
+            return _config.Shop.FindAll(cat =>
+            {
+                var enabled = cat != null && cat.Enabled;
+                if (!enabled)
+                    return false;
+
+                var hasPermissions = string.IsNullOrEmpty(cat.Permission) || player.HasPermission(cat.Permission);
+                if (!hasPermissions)
+                    return false;
+
+                var useNpc = npcShop == null || npcShop.Shops.Contains("*") || npcShop.Shops.Contains(cat.Title);
+                if (!useNpc)
+                    return false;
+
+                var useVending = customVendingConf == null ||
+                                 customVendingConf.Categories.Contains("*") ||
+                                 customVendingConf.Categories.Contains(cat.Title);
+                if (!useVending)
+                    return false;
+
+                return true;
+            });
         }
 
         private static string HexToCuiColor(string hex, float alpha = 100)
@@ -5457,7 +6317,7 @@ namespace Oxide.Plugins
             foreach (var item in itemList)
             {
                 if (item.info.shortname != shortname ||
-                    skinId != 0 && item.skin != skinId || item.isBroken) continue;
+                    (skinId != 0 && item.skin != skinId) || item.isBroken) continue;
 
                 var num2 = iAmount - num1;
                 if (num2 <= 0) continue;
@@ -5465,7 +6325,6 @@ namespace Oxide.Plugins
                 {
                     item.MarkDirty();
                     item.amount -= num2;
-                    num1 += num2;
                     break;
                 }
 
@@ -5487,10 +6346,10 @@ namespace Oxide.Plugins
 
         private DataCart GetPlayerCart(BasePlayer player)
         {
-            if (!_carts.ContainsKey(player.userID))
-                _carts.Add(player.userID, new DataCart());
-
-            return _carts[player.userID];
+            DataCart cart;
+            if (!_carts.TryGetValue(player.userID, out cart))
+                _carts.Add(player.userID, cart = new DataCart());
+            return cart;
         }
 
         private string FormatShortTime(BasePlayer player, TimeSpan time)
@@ -5512,34 +6371,27 @@ namespace Oxide.Plugins
 
         private void LoadImages()
         {
-            timer.In(5, () =>
+            if (!ImageLibrary)
             {
-                if (!ImageLibrary)
-                {
-                    PrintError("IMAGE LIBRARY IS NOT INSTALLED.");
-                }
-                else
-                {
-                    var imagesList = new Dictionary<string, string>();
+                PrintError("IMAGE LIBRARY IS NOT INSTALLED.");
+            }
+            else
+            {
+                _enabledImageLibrary = true;
 
-                    var itemIcons = new List<KeyValuePair<string, ulong>>();
+                var imagesList = new Dictionary<string, string>();
 
-                    _config.Shop.ForEach(category =>
+                _config.Shop.ForEach(category =>
+                {
+                    category.Items.ForEach(item =>
                     {
-                        category.Items.ForEach(item =>
-                        {
-                            if (!string.IsNullOrEmpty(item.Image) && !imagesList.ContainsKey(item.Image))
-                                imagesList.Add(item.Image, item.Image);
-
-                            itemIcons.Add(new KeyValuePair<string, ulong>(item.ShortName, item.Skin));
-                        });
+                        if (!string.IsNullOrEmpty(item.Image) && !imagesList.ContainsKey(item.Image))
+                            imagesList.Add(item.Image, item.Image);
                     });
+                });
 
-                    if (itemIcons.Count > 0) ImageLibrary?.Call("LoadImageList", Title, itemIcons, null);
-
-                    ImageLibrary?.Call("ImportImageList", Title, imagesList, 0UL, true);
-                }
-            });
+                ImageLibrary?.Call("ImportImageList", Title, imagesList, 0UL, true);
+            }
         }
 
         #endregion
@@ -5549,13 +6401,16 @@ namespace Oxide.Plugins
         private readonly Dictionary<BasePlayer, List<ShopItem>> _itemsToUpdate =
             new Dictionary<BasePlayer, List<ShopItem>>();
 
-        private Dictionary<ulong, Cooldown> _cooldown = new Dictionary<ulong, Cooldown>();
+        private Dictionary<ulong, CooldownInfo> _cooldown = new Dictionary<ulong, CooldownInfo>();
+
+        private List<BasePlayer> toRemove = new List<BasePlayer>();
+
+        private List<KeyValuePair<BasePlayer, ShopItem>> toRemove2 = new List<KeyValuePair<BasePlayer, ShopItem>>();
 
         private void ItemsUpdateController()
         {
-            var toRemove = Pool.GetList<BasePlayer>();
-
-            var toRemove2 = Pool.GetList<KeyValuePair<BasePlayer, ShopItem>>();
+            toRemove.Clear();
+            toRemove2.Clear();
 
             foreach (var check in _itemsToUpdate)
             {
@@ -5567,7 +6422,7 @@ namespace Oxide.Plugins
 
                 var container = new CuiElementContainer();
 
-                check.Value.ToList().ForEach(shopItem =>
+                Array.ForEach(check.Value.ToArray(), shopItem =>
                 {
                     if (shopItem.Price > 0.0)
                         BuyButtonUi(check.Key, ref container, shopItem);
@@ -5575,8 +6430,8 @@ namespace Oxide.Plugins
                     if (shopItem.SellPrice > 0.0)
                         SellButtonUi(check.Key, ref container, shopItem);
 
-                    if (GetCooldownTime(check.Key.userID, shopItem, true) <= 0 &&
-                        GetCooldownTime(check.Key.userID, shopItem, false) <= 0)
+                    if (HasCooldown(check.Key.userID, shopItem, true) &&
+                        HasCooldown(check.Key.userID, shopItem, false))
                         toRemove2.Add(new KeyValuePair<BasePlayer, ShopItem>(check.Key, shopItem));
                 });
 
@@ -5587,14 +6442,13 @@ namespace Oxide.Plugins
 
             toRemove.ForEach(x => _itemsToUpdate.Remove(x));
 
-            Pool.FreeList(ref toRemove);
-            Pool.FreeList(ref toRemove2);
+            CheckUpdateController();
         }
 
-        private Cooldown GetCooldown(ulong player)
+        private CooldownInfo GetCooldown(ulong player)
         {
-            Cooldown cooldown;
-            return _cooldown.TryGetValue(player, out cooldown) ? cooldown : null;
+            CooldownInfo cooldownInfo;
+            return _cooldown.TryGetValue(player, out cooldownInfo) ? cooldownInfo : null;
         }
 
         private CooldownData GetCooldown(ulong player, ShopItem item)
@@ -5607,6 +6461,11 @@ namespace Oxide.Plugins
             return GetCooldown(player)?.GetCooldownTime(item, buy) ?? -1;
         }
 
+        private bool HasCooldown(ulong player, ShopItem item, bool buy)
+        {
+            return GetCooldown(player)?.HasCooldown(item, buy) ?? false;
+        }
+
         private void SetCooldown(BasePlayer player, ShopItem item, bool buy, bool needUpdate = false)
         {
             if ((buy ? item.BuyCooldown : item.SellCooldown) <= 0) return;
@@ -5614,7 +6473,7 @@ namespace Oxide.Plugins
             if (_cooldown.ContainsKey(player.userID))
                 _cooldown[player.userID].SetCooldown(item, buy);
             else
-                _cooldown.Add(player.userID, new Cooldown().SetCooldown(item, buy));
+                _cooldown.Add(player.userID, new CooldownInfo().SetCooldown(item, buy));
 
             if (needUpdate)
             {
@@ -5627,6 +6486,8 @@ namespace Oxide.Plugins
                 {
                     _itemsToUpdate.Add(player, new List<ShopItem> {item});
                 }
+
+                CheckUpdateController();
             }
         }
 
@@ -5644,9 +6505,11 @@ namespace Oxide.Plugins
 
                 _itemsToUpdate.Remove(player);
             }
+
+            CheckUpdateController();
         }
 
-        private class Cooldown
+        private class CooldownInfo
         {
             #region Fields
 
@@ -5672,12 +6535,21 @@ namespace Oxide.Plugins
                     buy ? item.BuyCooldown : item.SellCooldown) - DateTime.Now).TotalSeconds;
             }
 
+            public bool HasCooldown(ShopItem item, bool buy)
+            {
+                var data = GetCooldown(item);
+                if (data == null) return false;
+
+                return (int) ((buy ? data.LastBuyTime : data.LastSellTime).AddSeconds(
+                    buy ? item.BuyCooldown : item.SellCooldown) - DateTime.Now).TotalSeconds <= 0;
+            }
+
             public void RemoveCooldown(ShopItem item)
             {
                 Data.Remove(item.ID);
             }
 
-            public Cooldown SetCooldown(ShopItem item, bool buy)
+            public CooldownInfo SetCooldown(ShopItem item, bool buy)
             {
                 if (!Data.ContainsKey(item.ID))
                     Data.Add(item.ID, new CooldownData());
@@ -5798,6 +6670,50 @@ namespace Oxide.Plugins
 
         #endregion
 
+        #region Economy Choice
+
+        private EconomyChoice _economyChoice;
+
+        private class EconomyChoice
+        {
+            [JsonProperty(PropertyName = "Players", ObjectCreationHandling = ObjectCreationHandling.Replace)]
+            public Dictionary<ulong, int> Players = new Dictionary<ulong, int>();
+
+            public static EconomyConf GetEconomy(BasePlayer player)
+            {
+                if (_instance._economics.Count > 1)
+                {
+                    int id;
+                    if (_instance._economyChoice.Players.TryGetValue(player.userID, out id))
+                    {
+                        EconomyConf economyConf;
+                        if (_instance._additionalEconomics.TryGetValue(id, out economyConf)) return economyConf;
+                    }
+                }
+
+                return _config.Economy;
+            }
+
+            public static void SelectEconomy(BasePlayer player, int id)
+            {
+                switch (id)
+                {
+                    case 0:
+                    {
+                        _instance._economyChoice.Players.Remove(player.userID);
+                        break;
+                    }
+                    default:
+                    {
+                        _instance._economyChoice.Players[player.userID] = id;
+                        break;
+                    }
+                }
+            }
+        }
+
+        #endregion
+
         #region Log
 
         private void Log(string filename, string key, params object[] obj)
@@ -5813,6 +6729,16 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            ChoiceEconomy = "ChoiceEconomy",
+            LangTitle = "LangTitle",
+            VMInstalled = "VMInstalled",
+            VMExists = "VMExists",
+            VMNotFound = "VMNotFound",
+            VMNotFoundCategories = "VMNotFoundCategories",
+            ErrorSyntax = "ErrorSyntax",
+            NoPermission = "NoPermission",
+            NoTransferPlayers = "NoTransferPlayers",
+            TitleMax = "TitleMax",
             TransferButton = "TransferButton",
             TransferTitle = "TransferTitle",
             SuccessfulTransfer = "SuccessfulTransfer",
@@ -5837,7 +6763,7 @@ namespace Oxide.Plugins
             HoursFormat = "HoursFormat",
             MinutesFormat = "MinutesFormat",
             SecondsFormat = "SecondsFormat",
-            NotEnoughtSpace = "NotEnoughtSpace",
+            NotEnoughSpace = "NotEnoughtSpace",
             NotMoney = "NotMoney",
             ReceivedItems = "GiveItem",
             BalanceTitle = "BalanceTitle",
@@ -5866,6 +6792,7 @@ namespace Oxide.Plugins
             NotEnough = "NotEnough",
             Back = "Back",
             Next = "Next",
+            BuyBtn = "BuyBtn",
             SellBtn = "SellBtn",
             ItemName = "ItemName",
             CmdName = "CmdName",
@@ -5873,7 +6800,7 @@ namespace Oxide.Plugins
             ItemSearch = "ItemSearch",
             PluginName = "PluginName",
             BtnSelect = "BtnSelect",
-            AddItem = "AddItem",
+            BtnAddItem = "AddItem",
             EditingTitle = "EditingTitle",
             SearchTitle = "SearchTitle",
             BackPage = "BackPage",
@@ -5894,7 +6821,7 @@ namespace Oxide.Plugins
                 [HoursFormat] = " {0} h. ",
                 [MinutesFormat] = " {0} m. ",
                 [SecondsFormat] = " {0} s. ",
-                [NotEnoughtSpace] = "Not enought space",
+                [NotEnoughSpace] = "Not enought space",
                 [NotMoney] = "You don't have enough money!",
                 [ReceivedItems] = "All items received!",
                 [BalanceTitle] = "{0} RP",
@@ -5930,8 +6857,9 @@ namespace Oxide.Plugins
                 [ItemName] = "Item",
                 [CmdName] = "Command",
                 [PluginName] = "Plugin",
-                [AddItem] = "Add Item",
+                [BtnAddItem] = "Add Item",
                 [SellBtn] = "SELL FOR {0} RP",
+                [BuyBtn] = "BUY FOR {0} RP",
                 [SearchTitle] = "Search...",
                 [BackPage] = "<",
                 [NextPage] = ">",
@@ -5963,7 +6891,19 @@ namespace Oxide.Plugins
                 [PlayerNotFound] = "Player not found",
                 [SuccessfulTransfer] = "Transferred {0}RP to player '{1}'",
                 [TransferTitle] = "Transfer",
-                [TransferButton] = "Send money"
+                [TransferButton] = "Send money",
+                [TitleMax] = "MAX",
+                [NoTransferPlayers] = "Unfortunately, there are currently no players available for transfer",
+                [NoPermission] = "You don't have the required permission",
+                [ErrorSyntax] = "Syntax error! Use: /{0}",
+                [VMNotFoundCategories] = "Categories not found!",
+                [VMNotFound] = "Vending Machine not found!",
+                [VMExists] = "This Vending Machine is already in the config!",
+                [VMInstalled] = "You have successfully installed the custom Vending Machine!",
+                [LangTitle] = "Economics",
+                [ChoiceEconomy] = "Choice of currency",
+                ["sr_title"] = "Server Rewards",
+                ["sr_balance"] = "{0} RP"
             }, this);
         }
 
@@ -5979,8 +6919,8 @@ namespace Oxide.Plugins
 
         private void SendNotify(BasePlayer player, string key, int type, params object[] obj)
         {
-            if (Notify && _config.UseNotify)
-                Notify?.Call("SendNotify", player, type, Msg(player, key, obj));
+            if (_config.UseNotify && (Notify != null || UINotify != null))
+                Interface.Oxide.CallHook("SendNotify", player, type, Msg(player, key, obj));
             else
                 Reply(player, key, obj);
         }
@@ -5988,3 +6928,384 @@ namespace Oxide.Plugins
         #endregion
     }
 }
+
+#region Extension Methods
+
+namespace Oxide.Plugins.ShopExtensionMethods
+{
+    [SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+    public static class ExtensionMethods
+    {
+        internal static Permission p;
+
+        public static bool All<T>(this IList<T> a, Func<T, bool> b)
+        {
+            for (var i = 0; i < a.Count; i++)
+                if (!b(a[i]))
+                    return false;
+            return true;
+        }
+
+        public static int Average(this IList<int> a)
+        {
+            if (a.Count == 0) return 0;
+            var b = 0;
+            for (var i = 0; i < a.Count; i++) b += a[i];
+            return b / a.Count;
+        }
+
+        public static T ElementAt<T>(this IEnumerable<T> a, int b)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                {
+                    if (b == 0) return c.Current;
+                    b--;
+                }
+            }
+
+            return default(T);
+        }
+
+        public static bool Exists<T>(this IEnumerable<T> a, Func<T, bool> b = null)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (b == null || b(c.Current))
+                        return true;
+            }
+
+            return false;
+        }
+
+        public static T FirstOrDefault<T>(this IEnumerable<T> a, Func<T, bool> b = null)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (b == null || b(c.Current))
+                        return c.Current;
+            }
+
+            return default(T);
+        }
+
+        public static int RemoveAll<T, V>(this IDictionary<T, V> a, Func<T, V, bool> b)
+        {
+            var c = new List<T>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    if (b(d.Current.Key, d.Current.Value))
+                        c.Add(d.Current.Key);
+            }
+
+            c.ForEach(e => a.Remove(e));
+            return c.Count;
+        }
+
+        public static IEnumerable<V> Select<T, V>(this IEnumerable<T> a, Func<T, V> b)
+        {
+            var c = new List<V>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext()) c.Add(b(d.Current));
+            }
+
+            return c;
+        }
+
+        public static List<TResult> Select<T, TResult>(this List<T> source, Func<T, TResult> selector)
+        {
+            if (source == null || selector == null) return new List<TResult>();
+
+            var r = new List<TResult>(source.Count);
+            for (var i = 0; i < source.Count; i++) r.Add(selector(source[i]));
+
+            return r;
+        }
+
+        public static string[] Skip(this string[] a, int count)
+        {
+            if (a.Length == 0) return Array.Empty<string>();
+            var c = new string[a.Length - count];
+            var n = 0;
+            for (var i = 0; i < a.Length; i++)
+            {
+                if (i < count) continue;
+                c[n] = a[i];
+                n++;
+            }
+
+            return c;
+        }
+
+        public static List<T> Skip<T>(this IList<T> source, int count)
+        {
+            if (count < 0)
+                count = 0;
+
+            if (source == null || count > source.Count)
+                return new List<T>();
+
+            var result = new List<T>(source.Count - count);
+            for (var i = count; i < source.Count; i++)
+                result.Add(source[i]);
+            return result;
+        }
+
+        public static Dictionary<T, V> Skip<T, V>(
+            this IDictionary<T, V> source,
+            int count)
+        {
+            var result = new Dictionary<T, V>();
+            using (var iterator = source.GetEnumerator())
+            {
+                for (var i = 0; i < count; i++)
+                    if (!iterator.MoveNext())
+                        break;
+
+                while (iterator.MoveNext()) result.Add(iterator.Current.Key, iterator.Current.Value);
+            }
+
+            return result;
+        }
+
+        public static List<T> Take<T>(this IList<T> a, int b)
+        {
+            var c = new List<T>();
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (c.Count == b) break;
+                c.Add(a[i]);
+            }
+
+            return c;
+        }
+
+        public static Dictionary<T, V> Take<T, V>(this IDictionary<T, V> a, int b)
+        {
+            var c = new Dictionary<T, V>();
+            foreach (var f in a)
+            {
+                if (c.Count == b) break;
+                c.Add(f.Key, f.Value);
+            }
+
+            return c;
+        }
+
+        public static Dictionary<T, V> ToDictionary<S, T, V>(this IEnumerable<S> a, Func<S, T> b, Func<S, V> c)
+        {
+            var d = new Dictionary<T, V>();
+            using (var e = a.GetEnumerator())
+            {
+                while (e.MoveNext()) d[b(e.Current)] = c(e.Current);
+            }
+
+            return d;
+        }
+
+        public static List<T> ToList<T>(this IEnumerable<T> a)
+        {
+            var b = new List<T>();
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext()) b.Add(c.Current);
+            }
+
+            return b;
+        }
+
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> a)
+        {
+            return new HashSet<T>(a);
+        }
+
+        public static List<T> Where<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+        {
+            var c = new List<T>();
+
+            using (var d = source.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    if (predicate(d.Current))
+                        c.Add(d.Current);
+            }
+
+            return c;
+        }
+
+        public static List<T> OfType<T>(this IEnumerable<BaseNetworkable> a) where T : BaseEntity
+        {
+            var b = new List<T>();
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (c.Current is T)
+                        b.Add(c.Current as T);
+            }
+
+            return b;
+        }
+
+        public static int Sum<T>(this IList<T> a, Func<T, int> b)
+        {
+            var c = 0;
+            for (var i = 0; i < a.Count; i++)
+            {
+                var d = b(a[i]);
+                if (!float.IsNaN(d)) c += d;
+            }
+
+            return c;
+        }
+
+        public static int Sum(this IList<int> a)
+        {
+            var c = 0;
+            for (var i = 0; i < a.Count; i++)
+            {
+                var d = a[i];
+                if (!float.IsNaN(d)) c += d;
+            }
+
+            return c;
+        }
+
+        public static bool HasPermission(this string a, string b)
+        {
+            if (p == null) p = Interface.Oxide.GetLibrary<Permission>();
+            return !string.IsNullOrEmpty(a) && p.UserHasPermission(a, b);
+        }
+
+        public static bool HasPermission(this BasePlayer a, string b)
+        {
+            return a.UserIDString.HasPermission(b);
+        }
+
+        public static bool HasPermission(this ulong a, string b)
+        {
+            return a.ToString().HasPermission(b);
+        }
+
+        public static bool IsReallyConnected(this BasePlayer a)
+        {
+            return a.IsReallyValid() && a.net.connection != null;
+        }
+
+        public static bool IsKilled(this BaseNetworkable a)
+        {
+            return (object) a == null || a.IsDestroyed;
+        }
+
+        public static bool IsNull<T>(this T a) where T : class
+        {
+            return a == null;
+        }
+
+        public static bool IsNull(this BasePlayer a)
+        {
+            return (object) a == null;
+        }
+
+        public static bool IsReallyValid(this BaseNetworkable a)
+        {
+            return !((object) a == null || a.IsDestroyed || a.net == null);
+        }
+
+        public static void SafelyKill(this BaseNetworkable a)
+        {
+            if (a.IsKilled()) return;
+            a.Kill();
+        }
+
+        public static bool CanCall(this Plugin o)
+        {
+            return o != null && o.IsLoaded;
+        }
+
+        public static bool IsInBounds(this OBB o, Vector3 a)
+        {
+            return o.ClosestPoint(a) == a;
+        }
+
+        public static bool IsHuman(this BasePlayer a)
+        {
+            return !(a.IsNpc || !a.userID.IsSteamId());
+        }
+
+        public static BasePlayer ToPlayer(this IPlayer user)
+        {
+            return user.Object as BasePlayer;
+        }
+
+        public static List<TResult> SelectMany<TSource, TResult>(this List<TSource> source,
+            Func<TSource, List<TResult>> selector)
+        {
+            if (source == null || selector == null)
+                return new List<TResult>();
+
+            var result = new List<TResult>(source.Count);
+            source.ForEach(i => selector(i).ForEach(j => result.Add(j)));
+            return result;
+        }
+
+        public static IEnumerable<TResult> SelectMany<TSource, TResult>(
+            this IEnumerable<TSource> source,
+            Func<TSource, IEnumerable<TResult>> selector)
+        {
+            using (var item = source.GetEnumerator())
+            {
+                while (item.MoveNext())
+                    using (var result = selector(item.Current).GetEnumerator())
+                    {
+                        while (result.MoveNext()) yield return result.Current;
+                    }
+            }
+        }
+
+        public static int Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector)
+        {
+            var sum = 0;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext()) sum += selector(element.Current);
+            }
+
+            return sum;
+        }
+
+        public static double Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, double> selector)
+        {
+            var sum = 0.0;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext()) sum += selector(element.Current);
+            }
+
+            return sum;
+        }
+
+        public static bool Any<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            if (source == null) return false;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext())
+                    if (predicate(element.Current))
+                        return true;
+            }
+
+            return false;
+        }
+    }
+}
+
+#endregion Extension Methods

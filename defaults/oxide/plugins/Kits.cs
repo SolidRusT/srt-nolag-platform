@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -12,17 +12,23 @@ using Oxide.Core.Libraries;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
+using Oxide.Plugins.KitsExtensionMethods;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Kits", "Mevent", "1.0.35")]
+    [Info("Kits", "Mevent", "1.1.0")]
     public class Kits : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary, CopyPaste, Notify, UINotify, NoEscape;
+        [PluginReference] private Plugin
+            ImageLibrary = null,
+            CopyPaste = null,
+            Notify = null,
+            UINotify = null,
+            NoEscape = null;
 
         private static Kits _instance;
 
@@ -34,6 +40,8 @@ namespace Oxide.Plugins
 
         private const string ModalLayer = "UI.Kits.Modal";
 
+        private bool _enabledImageLibrary;
+
         private readonly Dictionary<BasePlayer, List<Kit>> _openGUI = new Dictionary<BasePlayer, List<Kit>>();
 
         private readonly Dictionary<BasePlayer, Dictionary<string, object>> _kitEditing =
@@ -42,8 +50,10 @@ namespace Oxide.Plugins
         private readonly Dictionary<BasePlayer, Dictionary<string, object>> _itemEditing =
             new Dictionary<BasePlayer, Dictionary<string, object>>();
 
-        private readonly Dictionary<string, List<string>> _itemsCategories =
-            new Dictionary<string, List<string>>();
+        private readonly Dictionary<string, List<KeyValuePair<int, string>>> _itemsCategories =
+            new Dictionary<string, List<KeyValuePair<int, string>>>();
+
+        private readonly List<BasePlayer> _toRemove = new List<BasePlayer>();
 
         private const string PermAdmin = "Kits.admin";
 
@@ -65,7 +75,7 @@ namespace Oxide.Plugins
         private class Configuration
         {
             [JsonProperty(PropertyName = "Automatic wipe on wipe")]
-            public bool AutoWipe;
+            public bool AutoWipe = false;
 
             [JsonProperty(PropertyName = "Default Kit Color")]
             public readonly string KitColor = "#A0A935";
@@ -74,7 +84,7 @@ namespace Oxide.Plugins
             public readonly bool UseNotify = true;
 
             [JsonProperty(PropertyName = "Use NoEscape? (Raid/Combat block)")]
-            public bool UseNoEscape;
+            public bool UseNoEscape = false;
 
             [JsonProperty(PropertyName = "Whitelist for NoEscape")]
             public readonly List<string> NoEscapeWhiteList = new List<string>
@@ -112,7 +122,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Getting an auto kit 1 time?")]
-            public bool OnceAutoKit;
+            public bool OnceAutoKit = false;
 
             [JsonProperty(PropertyName = "Allow to enable/disable autokit?")]
             public readonly bool UseChangeAutoKit = false;
@@ -151,7 +161,7 @@ namespace Oxide.Plugins
             public readonly bool ShowNoPermDescription = true;
 
             [JsonProperty(PropertyName = "Show All Kits?")]
-            public bool ShowAllKits;
+            public bool ShowAllKits = false;
 
             [JsonProperty(PropertyName = "CopyPaste Parameters",
                 ObjectCreationHandling = ObjectCreationHandling.Replace)]
@@ -161,7 +171,7 @@ namespace Oxide.Plugins
             };
 
             [JsonProperty(PropertyName = "Block in Building Block?")]
-            public bool BlockBuilding;
+            public bool BlockBuilding = false;
 
             [JsonProperty(PropertyName = "NPC Kits", ObjectCreationHandling = ObjectCreationHandling.Replace)]
             public readonly Dictionary<string, NpcKitsData> NpcKits = new Dictionary<string, NpcKitsData>
@@ -420,7 +430,7 @@ namespace Oxide.Plugins
                 foreach (var item in itemList)
                 {
                     if (item.info.shortname != shortname ||
-                        skinId != 0 && item.skin != skinId || item.isBroken) continue;
+                        (skinId != 0 && item.skin != skinId) || item.isBroken) continue;
 
                     var num2 = iAmount - num1;
                     if (num2 <= 0) continue;
@@ -982,6 +992,56 @@ namespace Oxide.Plugins
 
                 return newItem;
             }
+
+            [JsonIgnore] private int _itemId = -1;
+
+            [JsonIgnore]
+            public int itemId
+            {
+                get
+                {
+                    if (_itemId == -1)
+                        _itemId = ItemManager.FindItemDefinition(ShortName)?.itemid ?? -1;
+
+                    return _itemId;
+                }
+            }
+
+            [JsonIgnore] private ICuiComponent _image;
+
+            public CuiElement GetImage(string aMin, string aMax, string oMin, string oMax, string parent,
+                string name = null)
+            {
+                if (_image == null)
+                {
+                    if (_instance._enabledImageLibrary && !string.IsNullOrEmpty(Image))
+                        _image = new CuiRawImageComponent
+                        {
+                            Png = _instance.ImageLibrary.Call<string>("GetImage", Image)
+                        };
+                    else
+                        _image = new CuiImageComponent
+                        {
+                            ItemId = itemId,
+                            SkinId = SkinID
+                        };
+                }
+
+                return new CuiElement
+                {
+                    Name = string.IsNullOrEmpty(name) ? CuiHelper.GetGuid() : name,
+                    Parent = parent,
+                    Components =
+                    {
+                        _image,
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = aMin, AnchorMax = aMax,
+                            OffsetMin = oMin, OffsetMax = oMax
+                        }
+                    }
+                };
+            }
         }
 
         private class Weapon
@@ -1022,40 +1082,17 @@ namespace Oxide.Plugins
         {
             LoadImages();
 
-            #region Colors
+            LoadColors();
 
-            _colorOne = HexToCuiColor(_config.ColorOne);
-            _colorTwo = HexToCuiColor(_config.ColorTwo);
-            _colorWhite = HexToCuiColor(_config.ColorWhite);
-            _colorThree = HexToCuiColor(_config.ColorThree);
-            _colorFour = HexToCuiColor(_config.ColorFour);
-            _colorRed = HexToCuiColor(_config.ColorRed);
-
-            #endregion
-
-            #region Set IDs
-
-            _data.Kits.ForEach(kit =>
-            {
-                kit.ID = _lastKitID;
-                ++_lastKitID;
-
-                if (!string.IsNullOrEmpty(kit.Permission) && !permission.PermissionExists(kit.Permission))
-                    permission.RegisterPermission(kit.Permission, this);
-            });
-
-            #endregion
-
-            permission.RegisterPermission(PermAdmin, this);
-
-            if (!permission.PermissionExists(_config.ChangeAutoKitPermission))
-                permission.RegisterPermission(_config.ChangeAutoKitPermission, this);
+            GenerateIDs();
 
             FixItemsPositions();
 
             FillCategories();
 
-            AddCovalenceCommand(_config.Commands, nameof(CmdOpenKits));
+            RegisterPermissions();
+
+            RegisterCommands();
 
             timer.Every(1, HandleUi);
         }
@@ -1080,7 +1117,7 @@ namespace Oxide.Plugins
             _instance = null;
         }
 
-        private void OnNewSave(string filename)
+        private void OnNewSave()
         {
             if (!_config.AutoWipe) return;
 
@@ -1093,7 +1130,7 @@ namespace Oxide.Plugins
 
         private void OnPlayerRespawned(BasePlayer player)
         {
-            if (player == null || _config.UseChangeAutoKit && _disablesAutoKits.Contains(player.userID)) return;
+            if (player == null || (_config.UseChangeAutoKit && _disablesAutoKits.Contains(player.userID))) return;
 
             var kits = GetAutoKits(player);
             if (kits.Count == 0)
@@ -1129,6 +1166,20 @@ namespace Oxide.Plugins
 
             MainUi(player, npc.userID, first: true);
         }
+
+        #region Image Library
+
+        private void OnPluginLoaded(Plugin plugin)
+        {
+            if (plugin.Name == "ImageLibrary") _enabledImageLibrary = true;
+        }
+
+        private void OnPluginUnloaded(Plugin plugin)
+        {
+            if (plugin.Name == "ImageLibrary") _enabledImageLibrary = false;
+        }
+
+        #endregion
 
         #endregion
 
@@ -1795,11 +1846,11 @@ namespace Oxide.Plugins
             var constSwitch = -(_config.UI.KitsOnString * _config.UI.KitWidth +
                                 (_config.UI.KitsOnString - 1) * _config.UI.Margin) / 2f;
 
-            var xSwicth = constSwitch;
+            var xSwitch = constSwitch;
             var ySwitch = _config.UI.YIndent;
 
             var allKits = GetAvailableKits(player, targetId.ToString(), showAll);
-            var kitsList = allKits.Skip(page * totalAmount).Take(totalAmount).ToList();
+            var kitsList = allKits.Skip(page * totalAmount).Take(totalAmount);
 
             _openGUI[player] = kitsList;
 
@@ -2057,8 +2108,8 @@ namespace Oxide.Plugins
                         RectTransform =
                         {
                             AnchorMin = "0.5 1", AnchorMax = "0.5 1",
-                            OffsetMin = $"{xSwicth} {ySwitch - _config.UI.KitHeight}",
-                            OffsetMax = $"{xSwicth + _config.UI.KitWidth} {ySwitch}"
+                            OffsetMin = $"{xSwitch} {ySwitch - _config.UI.KitHeight}",
+                            OffsetMax = $"{xSwitch + _config.UI.KitWidth} {ySwitch}"
                         },
                         Image =
                         {
@@ -2215,12 +2266,12 @@ namespace Oxide.Plugins
 
                     if ((i + 1) % _config.UI.KitsOnString == 0)
                     {
-                        xSwicth = constSwitch;
+                        xSwitch = constSwitch;
                         ySwitch = ySwitch - _config.UI.KitHeight - _config.UI.Margin;
                     }
                     else
                     {
-                        xSwicth += _config.UI.Margin + _config.UI.KitWidth;
+                        xSwitch += _config.UI.Margin + _config.UI.KitWidth;
                     }
                 }
 
@@ -3349,11 +3400,11 @@ namespace Oxide.Plugins
             var temp = canSearch
                 ? _itemsCategories
                     .SelectMany(x => x.Value)
-                    .Where(x => x.StartsWith(input) || x.Contains(input) || x.EndsWith(input)).ToList()
+                    .Where(x => x.Value.StartsWith(input) || x.Value.Contains(input) || x.Value.EndsWith(input))
                 : _itemsCategories[selectedCategory];
 
             var itemsAmount = temp.Count;
-            var items = temp.Skip(page * totalAmount).Take(totalAmount).ToList();
+            var items = temp.Skip(page * totalAmount).Take(totalAmount);
 
             items.ForEach(item =>
             {
@@ -3368,20 +3419,22 @@ namespace Oxide.Plugins
                     Image = {Color = _colorOne}
                 }, ModalLayer + ".Main", ModalLayer + $".Item.{item}");
 
-                if (ImageLibrary)
-                    container.Add(new CuiElement
+                container.Add(new CuiElement
+                {
+                    Parent = ModalLayer + $".Item.{item}",
+                    Components =
                     {
-                        Parent = ModalLayer + $".Item.{item}",
-                        Components =
+                        new CuiImageComponent
                         {
-                            new CuiRawImageComponent {Png = ImageLibrary.Call<string>("GetImage", item)},
-                            new CuiRectTransformComponent
-                            {
-                                AnchorMin = "0 0", AnchorMax = "1 1",
-                                OffsetMin = "5 5", OffsetMax = "-5 -5"
-                            }
+                            ItemId = item.Key
+                        },
+                        new CuiRectTransformComponent
+                        {
+                            AnchorMin = "0 0", AnchorMax = "1 1",
+                            OffsetMin = "5 5", OffsetMax = "-5 -5"
                         }
-                    });
+                    }
+                });
 
                 container.Add(new CuiButton
                 {
@@ -3390,7 +3443,7 @@ namespace Oxide.Plugins
                     Button =
                     {
                         Color = "0 0 0 0",
-                        Command = $"UI_Kits takeitem {itemContainer} {kitId} {slot} {item}",
+                        Command = $"UI_Kits takeitem {itemContainer} {kitId} {slot} {item.Value}",
                         Close = ModalLayer
                     }
                 }, ModalLayer + $".Item.{item}");
@@ -3450,7 +3503,8 @@ namespace Oxide.Plugins
                         Align = TextAnchor.MiddleLeft,
                         Command = $"UI_Kits selectitem {itemContainer} {kitId} {slot} {selectedCategory} 0 ",
                         Color = "1 1 1 0.95",
-                        CharsLimit = 150
+                        CharsLimit = 150,
+                        NeedsKeyboard = true
                     },
                     new CuiRectTransformComponent
                     {
@@ -3689,7 +3743,8 @@ namespace Oxide.Plugins
                         Align = TextAnchor.MiddleLeft,
                         Command = $"{command}",
                         Color = "1 1 1 0.99",
-                        CharsLimit = 150
+                        CharsLimit = 150,
+                        NeedsKeyboard = true
                     },
                     new CuiRectTransformComponent
                     {
@@ -3800,25 +3855,7 @@ namespace Oxide.Plugins
 
             if (kitItem != null)
             {
-                if (ImageLibrary)
-                    container.Add(new CuiElement
-                    {
-                        Parent = InfoLayer + $".Item.{total}",
-                        Components =
-                        {
-                            new CuiRawImageComponent
-                            {
-                                Png = !string.IsNullOrEmpty(kitItem.Image)
-                                    ? ImageLibrary.Call<string>("GetImage", kitItem.Image)
-                                    : GetItemImage(kitItem.ShortName, kitItem.SkinID)
-                            },
-                            new CuiRectTransformComponent
-                            {
-                                AnchorMin = "0 0", AnchorMax = "1 1",
-                                OffsetMin = "10 10", OffsetMax = "-10 -10"
-                            }
-                        }
-                    });
+                container.Add(kitItem.GetImage("0 0", "1 1", "10 10", "-10 -10", InfoLayer + $".Item.{total}"));
 
                 container.Add(new CuiLabel
                 {
@@ -3901,7 +3938,7 @@ namespace Oxide.Plugins
             }, Layer + $".Kit.{kit.ID}.Main", Layer + $".Kit.{kit.ID}");
 
             if (_config.ShowAllKits && _config.ShowNoPermDescription && !string.IsNullOrEmpty(kit.Permission) &&
-                !permission.UserHasPermission(player.UserIDString, kit.Permission))
+                !player.HasPermission(kit.Permission))
             {
                 container.Add(new CuiLabel
                 {
@@ -3922,7 +3959,7 @@ namespace Oxide.Plugins
                 return;
             }
 
-            if (kit.Cooldown > 0 && playerData.Cooldown - 1 < GetCurrentTime() || kit.Cooldown == 0)
+            if ((kit.Cooldown > 0 && playerData.Cooldown - 1 < GetCurrentTime()) || kit.Cooldown == 0)
             {
                 if (kit.Sale)
                 {
@@ -4074,10 +4111,24 @@ namespace Oxide.Plugins
 
             var playerData = GetPlayerData(player.userID, kit.Name);
 
+            var beltCount = kit.Items.Count(i => i.Container == "belt");
+            var wearCount = kit.Items.Count(i => i.Container == "wear");
+            var mainCount = kit.Items.Count(i => i.Container == "main");
+            var totalCount = beltCount + wearCount + mainCount;
+            if (player.inventory.containerBelt.capacity - player.inventory.containerBelt.itemList.Count < beltCount ||
+                player.inventory.containerWear.capacity - player.inventory.containerWear.itemList.Count < wearCount ||
+                player.inventory.containerMain.capacity - player.inventory.containerMain.itemList.Count < mainCount)
+                if (totalCount > player.inventory.containerMain.capacity -
+                    player.inventory.containerMain.itemList.Count)
+                {
+                    ErrorUi(player, Msg(player, NotEnoughSpace));
+                    return;
+                }
+
             if (!force)
             {
                 if (!string.IsNullOrEmpty(kit.Permission) &&
-                    !permission.UserHasPermission(player.UserIDString, kit.Permission))
+                    !player.HasPermission(kit.Permission))
                 {
                     ErrorUi(player, Msg(player, NoPermission));
                     return;
@@ -4117,20 +4168,21 @@ namespace Oxide.Plugins
                     }
                 }
 
-                if (playerData == null) return;
-
-                if (kit.Amount > 0 && playerData.Amount >= kit.Amount)
+                if (playerData != null)
                 {
-                    ErrorUi(player, Msg(player, KitLimit));
-                    return;
-                }
+                    if (kit.Amount > 0 && playerData.Amount >= kit.Amount)
+                    {
+                        ErrorUi(player, Msg(player, KitLimit));
+                        return;
+                    }
 
-                if (kit.Cooldown > 0 && playerData.Cooldown > currentTime)
-                {
-                    ErrorUi(player,
-                        Msg(player, KitCooldown,
-                            FormatShortTime(TimeSpan.FromSeconds(playerData.Cooldown - currentTime))));
-                    return;
+                    if (kit.Cooldown > 0 && playerData.Cooldown > currentTime)
+                    {
+                        ErrorUi(player,
+                            Msg(player, KitCooldown,
+                                FormatShortTime(TimeSpan.FromSeconds(playerData.Cooldown - currentTime))));
+                        return;
+                    }
                 }
 
                 if (kit.Sale && !_config.Economy.RemoveBalance(player, kit.Price))
@@ -4150,20 +4202,6 @@ namespace Oxide.Plugins
                     return;
                 }
             }
-
-            var beltcount = kit.Items.Count(i => i.Container == "belt");
-            var wearcount = kit.Items.Count(i => i.Container == "wear");
-            var maincount = kit.Items.Count(i => i.Container == "main");
-            var totalcount = beltcount + wearcount + maincount;
-            if (player.inventory.containerBelt.capacity - player.inventory.containerBelt.itemList.Count < beltcount ||
-                player.inventory.containerWear.capacity - player.inventory.containerWear.itemList.Count < wearcount ||
-                player.inventory.containerMain.capacity - player.inventory.containerMain.itemList.Count < maincount)
-                if (totalcount > player.inventory.containerMain.capacity -
-                    player.inventory.containerMain.itemList.Count)
-                {
-                    ErrorUi(player, Msg(player, NotEnoughSpace));
-                    return;
-                }
 
             kit.Items.ForEach(item => item?.Get(player));
 
@@ -4262,6 +4300,41 @@ namespace Oxide.Plugins
 
         #region Utils
 
+        private void GenerateIDs()
+        {
+            _data.Kits.ForEach(kit =>
+            {
+                kit.ID = _lastKitID;
+                ++_lastKitID;
+
+                if (!string.IsNullOrEmpty(kit.Permission) && !permission.PermissionExists(kit.Permission))
+                    permission.RegisterPermission(kit.Permission, this);
+            });
+        }
+
+        private void LoadColors()
+        {
+            _colorOne = HexToCuiColor(_config.ColorOne);
+            _colorTwo = HexToCuiColor(_config.ColorTwo);
+            _colorWhite = HexToCuiColor(_config.ColorWhite);
+            _colorThree = HexToCuiColor(_config.ColorThree);
+            _colorFour = HexToCuiColor(_config.ColorFour);
+            _colorRed = HexToCuiColor(_config.ColorRed);
+        }
+
+        private void RegisterPermissions()
+        {
+            permission.RegisterPermission(PermAdmin, this);
+
+            if (!permission.PermissionExists(_config.ChangeAutoKitPermission))
+                permission.RegisterPermission(_config.ChangeAutoKitPermission, this);
+        }
+
+        private void RegisterCommands()
+        {
+            AddCovalenceCommand(_config.Commands, nameof(CmdOpenKits));
+        }
+
         private bool RaidBlocked(BasePlayer player)
         {
             return Convert.ToBoolean(NoEscape?.Call("IsRaidBlocked", player) ?? false);
@@ -4284,28 +4357,30 @@ namespace Oxide.Plugins
             {
                 var itemCategory = item.category.ToString();
 
+                var kvp = new KeyValuePair<int, string>(item.itemid, item.shortname);
+
                 if (_itemsCategories.ContainsKey(itemCategory))
                 {
-                    if (!_itemsCategories[itemCategory].Contains(item.shortname))
-                        _itemsCategories[itemCategory].Add(item.shortname);
+                    if (!_itemsCategories[itemCategory].Contains(kvp))
+                        _itemsCategories[itemCategory].Add(kvp);
                 }
                 else
                 {
-                    _itemsCategories.Add(itemCategory, new List<string> {item.shortname});
+                    _itemsCategories.Add(itemCategory, new List<KeyValuePair<int, string>> {kvp});
                 }
             });
         }
 
         private void HandleUi()
         {
-            var toRemove = Pool.GetList<BasePlayer>();
+            _toRemove.Clear();
 
             foreach (var check in _openGUI)
             {
                 var player = check.Key;
                 if (player == null || !player.IsConnected)
                 {
-                    toRemove.Add(player);
+                    _toRemove.Add(player);
                     continue;
                 }
 
@@ -4316,8 +4391,7 @@ namespace Oxide.Plugins
                 CuiHelper.AddUi(player, container);
             }
 
-            toRemove.ForEach(x => _openGUI.Remove(x));
-            Pool.FreeList(ref toRemove);
+            _toRemove.ForEach(x => _openGUI.Remove(x));
         }
 
         private void FixItemsPositions()
@@ -4353,9 +4427,9 @@ namespace Oxide.Plugins
             }
             else
             {
-                var imagesList = new Dictionary<string, string>();
+                _enabledImageLibrary = true;
 
-                var itemIcons = new List<KeyValuePair<string, ulong>>();
+                var imagesList = new Dictionary<string, string>();
 
                 _data.Kits.ForEach(kit =>
                 {
@@ -4367,15 +4441,8 @@ namespace Oxide.Plugins
                     {
                         if (!string.IsNullOrEmpty(item.Image) && !imagesList.ContainsKey(item.Image))
                             imagesList.Add(item.Image, item.Image);
-
-                        itemIcons.Add(new KeyValuePair<string, ulong>(item.ShortName, item.SkinID));
                     });
                 });
-
-                itemIcons.AddRange(_itemsCategories.SelectMany(x => x.Value)
-                    .Select(item => new KeyValuePair<string, ulong>(item, 0)));
-
-                if (itemIcons.Count > 0) ImageLibrary?.Call("LoadImageList", Title, itemIcons, null);
 
                 ImageLibrary?.Call("ImportImageList", Title, imagesList, 0UL, true);
             }
@@ -4460,22 +4527,21 @@ namespace Oxide.Plugins
                 {
                     var data = GetPlayerData(player.userID, x.Name);
                     return !x.Hide &&
-                           (targetId == "0" || _config.NpcKits.ContainsKey(targetId) &&
-                               _config.NpcKits[targetId].Kits.Contains(x.Name)) &&
-                           (!checkAmount || x.Amount == 0 || x.Amount > 0 &&
-                               data != null && data.Amount < x.Amount) &&
+                           (targetId == "0" || (_config.NpcKits.ContainsKey(targetId) &&
+                                                _config.NpcKits[targetId].Kits.Contains(x.Name))) &&
+                           (!checkAmount || x.Amount == 0 || (x.Amount > 0 &&
+                                                              data != null && data.Amount < x.Amount)) &&
                            (_config.ShowAllKits || string.IsNullOrEmpty(x.Permission) ||
-                            permission.UserHasPermission(player.UserIDString, x.Permission));
+                            player.HasPermission(x.Permission));
                 });
         }
 
         private List<Kit> GetAutoKits(BasePlayer player)
         {
             return _data.Kits
-                .FindAll(kit => kit.Name == "autokit" || _config.AutoKits.Contains(kit.Name) &&
-                    (string.IsNullOrEmpty(kit.Permission) ||
-                     permission.UserHasPermission(
-                         player.UserIDString, kit.Permission)));
+                .FindAll(kit => kit.Name == "autokit" || (_config.AutoKits.Contains(kit.Name) &&
+                                                          (string.IsNullOrEmpty(kit.Permission) ||
+                                                           player.HasPermission(kit.Permission))));
         }
 
         private double UnBlockTime(double amount)
@@ -4490,7 +4556,7 @@ namespace Oxide.Plugins
 
         private bool IsAdmin(BasePlayer player)
         {
-            return player != null && (player.IsAdmin || permission.UserHasPermission(player.UserIDString, PermAdmin));
+            return player != null && (player.IsAdmin || player.HasPermission(PermAdmin));
         }
 
         #region Images
@@ -5051,3 +5117,480 @@ namespace Oxide.Plugins
         #endregion
     }
 }
+
+#region Extension Methods
+
+namespace Oxide.Plugins.KitsExtensionMethods
+{
+    [SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+    public static class ExtensionMethods
+    {
+        internal static Permission p;
+
+        public static bool All<T>(this IList<T> a, Func<T, bool> b)
+        {
+            for (var i = 0; i < a.Count; i++)
+                if (!b(a[i]))
+                    return false;
+            return true;
+        }
+
+        public static int Average(this IList<int> a)
+        {
+            if (a.Count == 0) return 0;
+            var b = 0;
+            for (var i = 0; i < a.Count; i++) b += a[i];
+            return b / a.Count;
+        }
+
+        public static T ElementAt<T>(this IEnumerable<T> a, int b)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                {
+                    if (b == 0) return c.Current;
+                    b--;
+                }
+            }
+
+            return default(T);
+        }
+
+        public static bool Exists<T>(this IEnumerable<T> a, Func<T, bool> b = null)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (b == null || b(c.Current))
+                        return true;
+            }
+
+            return false;
+        }
+
+        public static T FirstOrDefault<T>(this IEnumerable<T> a, Func<T, bool> b = null)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (b == null || b(c.Current))
+                        return c.Current;
+            }
+
+            return default(T);
+        }
+
+        public static int RemoveAll<T, V>(this IDictionary<T, V> a, Func<T, V, bool> b)
+        {
+            var c = new List<T>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    if (b(d.Current.Key, d.Current.Value))
+                        c.Add(d.Current.Key);
+            }
+
+            c.ForEach(e => a.Remove(e));
+            return c.Count;
+        }
+
+        public static IEnumerable<V> Select<T, V>(this IEnumerable<T> a, Func<T, V> b)
+        {
+            var c = new List<V>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext()) c.Add(b(d.Current));
+            }
+
+            return c;
+        }
+
+        public static List<TResult> Select<T, TResult>(this List<T> source, Func<T, TResult> selector)
+        {
+            if (source == null || selector == null) return new List<TResult>();
+
+            var r = new List<TResult>(source.Count);
+            for (var i = 0; i < source.Count; i++) r.Add(selector(source[i]));
+
+            return r;
+        }
+
+        public static string[] Skip(this string[] a, int count)
+        {
+            if (a.Length == 0) return Array.Empty<string>();
+            var c = new string[a.Length - count];
+            var n = 0;
+            for (var i = 0; i < a.Length; i++)
+            {
+                if (i < count) continue;
+                c[n] = a[i];
+                n++;
+            }
+
+            return c;
+        }
+
+        public static List<T> Skip<T>(this IList<T> source, int count)
+        {
+            if (count < 0)
+                count = 0;
+
+            if (source == null || count > source.Count)
+                return new List<T>();
+
+            var result = new List<T>(source.Count - count);
+            for (var i = count; i < source.Count; i++)
+                result.Add(source[i]);
+            return result;
+        }
+
+        public static Dictionary<T, V> Skip<T, V>(
+            this IDictionary<T, V> source,
+            int count)
+        {
+            var result = new Dictionary<T, V>();
+            using (var iterator = source.GetEnumerator())
+            {
+                for (var i = 0; i < count; i++)
+                    if (!iterator.MoveNext())
+                        break;
+
+                while (iterator.MoveNext()) result.Add(iterator.Current.Key, iterator.Current.Value);
+            }
+
+            return result;
+        }
+
+        public static List<T> Take<T>(this IList<T> a, int b)
+        {
+            var c = new List<T>();
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (c.Count == b) break;
+                c.Add(a[i]);
+            }
+
+            return c;
+        }
+
+        public static Dictionary<T, V> Take<T, V>(this IDictionary<T, V> a, int b)
+        {
+            var c = new Dictionary<T, V>();
+            foreach (var f in a)
+            {
+                if (c.Count == b) break;
+                c.Add(f.Key, f.Value);
+            }
+
+            return c;
+        }
+
+        public static Dictionary<T, V> ToDictionary<S, T, V>(this IEnumerable<S> a, Func<S, T> b, Func<S, V> c)
+        {
+            var d = new Dictionary<T, V>();
+            using (var e = a.GetEnumerator())
+            {
+                while (e.MoveNext()) d[b(e.Current)] = c(e.Current);
+            }
+
+            return d;
+        }
+
+        public static List<T> ToList<T>(this IEnumerable<T> a)
+        {
+            var b = new List<T>();
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext()) b.Add(c.Current);
+            }
+
+            return b;
+        }
+
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> a)
+        {
+            return new HashSet<T>(a);
+        }
+
+        public static List<T> Where<T>(this List<T> source, Predicate<T> predicate)
+        {
+            if (source == null)
+                return new List<T>();
+
+            if (predicate == null)
+                return new List<T>();
+
+            return source.FindAll(predicate);
+        }
+
+        public static List<T> Where<T>(this List<T> source, Func<T, int, bool> predicate)
+        {
+            if (source == null)
+                return new List<T>();
+
+            if (predicate == null)
+                return new List<T>();
+
+            var r = new List<T>();
+            for (var i = 0; i < source.Count; i++)
+                if (predicate(source[i], i))
+                    r.Add(source[i]);
+            return r;
+        }
+
+        public static List<T> Where<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+        {
+            var c = new List<T>();
+
+            using (var d = source.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    if (predicate(d.Current))
+                        c.Add(d.Current);
+            }
+
+            return c;
+        }
+
+        public static List<T> OfType<T>(this IEnumerable<BaseNetworkable> a) where T : BaseEntity
+        {
+            var b = new List<T>();
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (c.Current is T)
+                        b.Add(c.Current as T);
+            }
+
+            return b;
+        }
+
+        public static int Sum<T>(this IList<T> a, Func<T, int> b)
+        {
+            var c = 0;
+            for (var i = 0; i < a.Count; i++)
+            {
+                var d = b(a[i]);
+                if (!float.IsNaN(d)) c += d;
+            }
+
+            return c;
+        }
+
+        public static T LastOrDefault<T>(this List<T> source)
+        {
+            if (source == null || source.Count == 0)
+                return default(T);
+
+            return source[source.Count - 1];
+        }
+
+        public static int Count<T>(this List<T> source, Func<T, bool> predicate)
+        {
+            if (source == null)
+                return 0;
+
+            if (predicate == null)
+                return 0;
+
+            var count = 0;
+            for (var i = 0; i < source.Count; i++)
+                checked
+                {
+                    if (predicate(source[i])) count++;
+                }
+
+            return count;
+        }
+
+        public static TAccumulate Aggregate<TSource, TAccumulate>(this List<TSource> source, TAccumulate seed,
+            Func<TAccumulate, TSource, TAccumulate> func)
+        {
+            if (source == null) throw new Exception("Aggregate: source is null");
+
+            if (func == null) throw new Exception("Aggregate: func is null");
+
+            var result = seed;
+            for (var i = 0; i < source.Count; i++) result = func(result, source[i]);
+            return result;
+        }
+
+        public static int Sum(this IList<int> a)
+        {
+            var c = 0;
+            for (var i = 0; i < a.Count; i++)
+            {
+                var d = a[i];
+                if (!float.IsNaN(d)) c += d;
+            }
+
+            return c;
+        }
+
+        public static bool HasPermission(this string a, string b)
+        {
+            if (p == null) p = Interface.Oxide.GetLibrary<Permission>();
+            return !string.IsNullOrEmpty(a) && p.UserHasPermission(a, b);
+        }
+
+        public static bool HasPermission(this BasePlayer a, string b)
+        {
+            return a.UserIDString.HasPermission(b);
+        }
+
+        public static bool HasPermission(this ulong a, string b)
+        {
+            return a.ToString().HasPermission(b);
+        }
+
+        public static bool IsReallyConnected(this BasePlayer a)
+        {
+            return a.IsReallyValid() && a.net.connection != null;
+        }
+
+        public static bool IsKilled(this BaseNetworkable a)
+        {
+            return (object) a == null || a.IsDestroyed;
+        }
+
+        public static bool IsNull<T>(this T a) where T : class
+        {
+            return a == null;
+        }
+
+        public static bool IsNull(this BasePlayer a)
+        {
+            return (object) a == null;
+        }
+
+        public static bool IsReallyValid(this BaseNetworkable a)
+        {
+            return !((object) a == null || a.IsDestroyed || a.net == null);
+        }
+
+        public static void SafelyKill(this BaseNetworkable a)
+        {
+            if (a.IsKilled()) return;
+            a.Kill();
+        }
+
+        public static bool CanCall(this Plugin o)
+        {
+            return o != null && o.IsLoaded;
+        }
+
+        public static bool IsInBounds(this OBB o, Vector3 a)
+        {
+            return o.ClosestPoint(a) == a;
+        }
+
+        public static bool IsHuman(this BasePlayer a)
+        {
+            return !(a.IsNpc || !a.userID.IsSteamId());
+        }
+
+        public static BasePlayer ToPlayer(this IPlayer user)
+        {
+            return user.Object as BasePlayer;
+        }
+
+        public static List<TResult> SelectMany<TSource, TResult>(this List<TSource> source,
+            Func<TSource, List<TResult>> selector)
+        {
+            if (source == null || selector == null)
+                return new List<TResult>();
+
+            var result = new List<TResult>(source.Count);
+            source.ForEach(i => selector(i).ForEach(j => result.Add(j)));
+            return result;
+        }
+
+        public static IEnumerable<TResult> SelectMany<TSource, TResult>(
+            this IEnumerable<TSource> source,
+            Func<TSource, IEnumerable<TResult>> selector)
+        {
+            using (var item = source.GetEnumerator())
+            {
+                while (item.MoveNext())
+                    using (var result = selector(item.Current).GetEnumerator())
+                    {
+                        while (result.MoveNext()) yield return result.Current;
+                    }
+            }
+        }
+
+        public static int Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector)
+        {
+            var sum = 0;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext()) sum += selector(element.Current);
+            }
+
+            return sum;
+        }
+
+        public static double Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, double> selector)
+        {
+            var sum = 0.0;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext()) sum += selector(element.Current);
+            }
+
+            return sum;
+        }
+
+        public static bool Any<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            if (source == null) return false;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext())
+                    if (predicate(element.Current))
+                        return true;
+            }
+
+            return false;
+        }
+
+        public static List<TSource> OrderByDescending<TSource, TKey>(this List<TSource> source,
+            Func<TSource, TKey> keySelector, IComparer<TKey> comparer = null)
+        {
+            if (source == null) return new List<TSource>();
+
+            if (keySelector == null) return new List<TSource>();
+
+            if (comparer == null) comparer = Comparer<TKey>.Default;
+
+            var result = new List<TSource>(source);
+            var lambdaComparer = new ReverseLambdaComparer<TSource, TKey>(keySelector, comparer);
+            result.Sort(lambdaComparer);
+            return result;
+        }
+
+        internal sealed class ReverseLambdaComparer<T, U> : IComparer<T>
+        {
+            private IComparer<U> comparer;
+            private Func<T, U> selector;
+
+            public ReverseLambdaComparer(Func<T, U> selector, IComparer<U> comparer)
+            {
+                this.comparer = comparer;
+                this.selector = selector;
+            }
+
+            public int Compare(T x, T y)
+            {
+                return comparer.Compare(selector(y), selector(x));
+            }
+        }
+    }
+}
+
+#endregion Extension Methods

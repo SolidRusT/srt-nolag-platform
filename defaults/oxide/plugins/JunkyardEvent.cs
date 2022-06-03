@@ -11,7 +11,7 @@ using Oxide.Plugins.JunkyardEventExtensionMethods;
 
 namespace Oxide.Plugins
 {
-    [Info("JunkyardEvent", "KpucTaJl", "2.0.2")]
+    [Info("JunkyardEvent", "KpucTaJl", "2.0.3")]
     internal class JunkyardEvent : RustPlugin
     {
         #region Config
@@ -271,12 +271,16 @@ namespace Oxide.Plugins
                         TypeLootTable = 0,
                         PrefabLootTable = new PrefabLootTableConfig
                         {
-                            Min = 1, Max = 1, UseCount = true,
+                            Min = 1,
+                            Max = 1,
+                            UseCount = true,
                             Prefabs = new List<PrefabConfig> { new PrefabConfig { Chance = 50.0f, PrefabDefinition = "assets/prefabs/npc/m2bradley/bradley_crate.prefab" } }
                         },
                         OwnLootTable = new LootTableConfig
                         {
-                            Min = 1, Max = 1, UseCount = true,
+                            Min = 1,
+                            Max = 1,
+                            UseCount = true,
                             Items = new List<ItemConfig> { new ItemConfig { ShortName = "scrap", MinAmount = 100, MaxAmount = 200, Chance = 50.0f, IsBluePrint = false, SkinID = 0, Name = "" } }
                         }
                     },
@@ -286,12 +290,16 @@ namespace Oxide.Plugins
                         TypeLootTable = 0,
                         PrefabLootTable = new PrefabLootTableConfig
                         {
-                            Min = 1, Max = 1, UseCount = true,
+                            Min = 1,
+                            Max = 1,
+                            UseCount = true,
                             Prefabs = new List<PrefabConfig> { new PrefabConfig { Chance = 50.0f, PrefabDefinition = "assets/prefabs/npc/patrol helicopter/heli_crate.prefab" } }
                         },
                         OwnLootTable = new LootTableConfig
                         {
-                            Min = 1, Max = 1, UseCount = true,
+                            Min = 1,
+                            Max = 1,
+                            UseCount = true,
                             Items = new List<ItemConfig> { new ItemConfig { ShortName = "scrap", MinAmount = 100, MaxAmount = 200, Chance = 50.0f, IsBluePrint = false, SkinID = 0, Name = "" } }
                         }
                     },
@@ -303,12 +311,16 @@ namespace Oxide.Plugins
                         TypeLootTable = 0,
                         PrefabLootTable = new PrefabLootTableConfig
                         {
-                            Min = 1, Max = 1, UseCount = true,
+                            Min = 1,
+                            Max = 1,
+                            UseCount = true,
                             Prefabs = new List<PrefabConfig> { new PrefabConfig { Chance = 50.0f, PrefabDefinition = "assets/prefabs/deployable/chinooklockedcrate/codelockedhackablecrate.prefab" } }
                         },
                         OwnLootTable = new LootTableConfig
                         {
-                            Min = 1, Max = 1, UseCount = true,
+                            Min = 1,
+                            Max = 1,
+                            UseCount = true,
                             Items = new List<ItemConfig> { new ItemConfig { ShortName = "scrap", MinAmount = 100, MaxAmount = 200, Chance = 50.0f, IsBluePrint = false, SkinID = 0, Name = "" } }
                         }
                     },
@@ -1127,7 +1139,7 @@ namespace Oxide.Plugins
 
                 if (_spawnBrokenCarsCoroutine != null) ServerMgr.Instance.StopCoroutine(_spawnBrokenCarsCoroutine);
                 foreach (BaseCombatEntity car in BrokenCars) if (car.IsExists()) car.Kill();
-                
+
                 if (Truck.IsExists()) Truck.Kill();
                 if (_parachute.IsExists()) _parachute.Kill();
                 CancelInvoke(UpdateTruck);
@@ -1581,22 +1593,28 @@ namespace Oxide.Plugins
 
             private JObject GetObjectConfig(NpcConfig config)
             {
+                HashSet<string> states = config.Stationary ? new HashSet<string> { "IdleState", "CombatStationaryState" } : new HashSet<string> { "RoamState", "ChaseState", "CombatState" };
+                if (config.BeltItems.Any(x => x.ShortName == "rocket.launcher" || x.ShortName == "explosive.timed")) states.Add("RaidState");
                 return new JObject
                 {
                     ["Name"] = config.Name,
                     ["WearItems"] = new JArray { config.WearItems.Select(x => new JObject { ["ShortName"] = x.ShortName, ["SkinID"] = x.SkinID }) },
-                    ["BeltItems"] = new JArray { config.BeltItems.Select(x => new JObject { ["ShortName"] = x.ShortName, ["Amount"] = x.Amount, ["SkinID"] = x.SkinID, ["Mods"] = new JArray { x.Mods.Select(y => y) } }) },
+                    ["BeltItems"] = new JArray { config.BeltItems.Select(x => new JObject { ["ShortName"] = x.ShortName, ["Amount"] = x.Amount, ["SkinID"] = x.SkinID, ["Mods"] = new JArray { x.Mods }, ["Ammo"] = string.Empty }) },
                     ["Kit"] = config.Kit,
                     ["Health"] = config.Health,
                     ["RoamRange"] = config.RoamRange,
                     ["ChaseRange"] = config.ChaseRange,
                     ["DamageScale"] = config.DamageScale,
+                    ["TurretDamageScale"] = 1f,
                     ["AimConeScale"] = config.AimConeScale,
                     ["DisableRadio"] = config.DisableRadio,
-                    ["Stationary"] = config.Stationary,
                     ["CanUseWeaponMounted"] = true,
                     ["CanRunAwayWater"] = true,
                     ["Speed"] = config.Speed,
+                    ["AreaMask"] = 1,
+                    ["AgentTypeID"] = -1372625422,
+                    ["HomePosition"] = string.Empty,
+                    ["States"] = new JArray { states },
                     ["Sensory"] = new JObject
                     {
                         ["AttackRangeMultiplier"] = config.AttackRangeMultiplier,

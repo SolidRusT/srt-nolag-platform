@@ -40,14 +40,14 @@ using UnityEngine.SceneManagement;
 
 namespace Oxide.Plugins
 {
-    [Info("Raidable Bases", "nivex", "2.4.4")]
+    [Info("Raidable Bases", "nivex", "2.4.5")]
     [Description("Create fully automated raidable bases with npcs.")]
     class RaidableBases : RustPlugin
     {
         [PluginReference]
         private Plugin
             DangerousTreasures, ZoneManager, IQEconomic, Economics, ServerRewards, GUIAnnouncements, CopyPaste, AdvancedAlerts,
-            Friends, Clans, Kits, TruePVE, NightLantern, Wizardry, NextGenPVE, Imperium, Backpacks, BaseRepair, Notify;
+            Friends, Clans, Kits, TruePVE, NightLantern, Wizardry, NextGenPVE, Imperium, Backpacks, BaseRepair, Notify, SkillTree;
 
         private new const string Name = "RaidableBases";
         private const int targetMask = Layers.Mask.World | Layers.Mask.Terrain | Layers.Mask.Default;
@@ -64,7 +64,8 @@ namespace Oxide.Plugins
         public Dictionary<ulong, HumanoidBrain> HumanoidBrains { get; set; } = new Dictionary<ulong, HumanoidBrain>();
         private Dictionary<string, SkinInfo> Skins { get; } = new Dictionary<string, SkinInfo>();
         private Dictionary<ulong, BuyableInfo> BuyCooldowns { get; set; } = new Dictionary<ulong, BuyableInfo>();
-        private Dictionary<uint, BMGELEVATOR> _elevators = new Dictionary<uint, BMGELEVATOR>();
+        private Dictionary<uint, BMGELEVATOR> _elevators { get; set; } = new Dictionary<uint, BMGELEVATOR>();
+        private Dictionary<ulong, float> BlacklistTimers { get; set; } = new Dictionary<ulong, float>();
         public static StoredData data { get; set; } = new StoredData();
         private static StringBuilder _sb { get; set; }
         private static StringBuilder _sb2 { get; set; }
@@ -73,9 +74,9 @@ namespace Oxide.Plugins
         private float lastSpawnRequestTime { get; set; }
         private bool IsUnloading { get; set; }
         private bool bypassRestarting { get; set; }
-        private List<string> tryBuyCooldowns { get; set; } = new List<string>();
+        private Dictionary<string, float> tryBuyCooldowns { get; set; }
         private BuildingTables Buildings { get; set; }
-        private bool DebugMode { get; set; }        
+        private bool DebugMode { get; set; }
         private List<RandomBase> Locations { get; set; } = new List<RandomBase>();
         private Dictionary<string, ItemDefinition> _definitions { get; set; } = new Dictionary<string, ItemDefinition>();
         private Dictionary<Vector3, float> LoadingTimes { get; set; } = new Dictionary<Vector3, float>();
@@ -124,10 +125,13 @@ namespace Oxide.Plugins
 
         public enum LootType { Easy, Medium, Hard, Expert, Nightmare, Default }
 
+        public enum LootFileType { Base, Difficulty, Default, Weekday }
+
         public enum SpawnResult { Failure, Transfer, Success, Skipped }
 
         public class StoredData
         {
+            [JsonProperty(PropertyName = "PlayerLockouts")]
             public Dictionary<string, Lockout> Lockouts { get; } = new Dictionary<string, Lockout>();
             public Dictionary<string, PlayerInfo> Players { get; set; } = new Dictionary<string, PlayerInfo>();
             public Dictionary<string, UI.Info> UI { get; set; } = new Dictionary<string, UI.Info>();
@@ -150,10 +154,10 @@ namespace Oxide.Plugins
             }
             public void Save()
             {
-                data.Lockouts.RemoveAll((userid, lo) => lo.IsExpired());
+                data.Lockouts.RemoveAll((userid, lo) => !lo.Any());
                 data.UI.RemoveAll((userid, uii) => uii.All());
                 data.Players.RemoveAll((userid, playerInfo) => playerInfo.TotalRaids == 0 || playerInfo.IsExpired());
-                Interface.Oxide.DataFileSystem.WriteObject(Name, this);
+                RaidableBase.TryInvokeMethod(() => Interface.Oxide.DataFileSystem.WriteObject(Name, data));
             }
             private static void CleanupTemporaryFiles(List<uint> uids)
             {
@@ -166,12 +170,8 @@ namespace Oxide.Plugins
                     entities.Add(entity);
                 }
                 if (entities.Count == 0) return;
-                GarbageController.UndoLoop(new UndoSettings
-                {
-                    Entities = entities,
-                    Limit = 3,
-                    Mounts = true
-                });
+                var undo = new UndoSettings(entities, 3, true);
+                Instance.UndoLoop(undo, 0, 1, Time.time);
             }
         }
 
@@ -246,26 +246,6 @@ namespace Oxide.Plugins
             public double Easy, Medium, Hard, Expert, Nightmare;
 
             public bool Any() => Easy > 0 || Medium > 0 || Hard > 0 || Expert > 0 || Nightmare > 0;
-
-            public bool IsExpired(RaidableMode mode)
-            {
-                switch (mode)
-                {
-                    case RaidableMode.Easy: return Easy <= 0 || Easy - Epoch.Current <= 0;
-                    case RaidableMode.Medium: return Medium <= 0 || Medium - Epoch.Current <= 0;
-                    case RaidableMode.Hard: return Hard <= 0 || Hard - Epoch.Current <= 0;
-                    case RaidableMode.Expert: return Expert <= 0 || Expert - Epoch.Current <= 0;
-                    case RaidableMode.Nightmare: return Nightmare <= 0 || Nightmare - Epoch.Current <= 0;
-                    default: return true;
-                }
-            }
-
-            public bool IsExpired()
-            {
-                var modes = (RaidableMode[])Enum.GetValues(typeof(RaidableMode));
-
-                return modes.All(mode => IsExpired(mode));
-            }
         }
 
         public class RankedRecord
@@ -453,208 +433,15 @@ namespace Oxide.Plugins
             public bool Mounts;
             public bool Teleport;
             public int Limit;
-        }
-
-        public static class GarbageController
-        {
-            internal static Dictionary<BaseEntity, MountInfo> MountEntities { get; set; } = new Dictionary<BaseEntity, MountInfo>();
-            internal static Dictionary<BaseEntity, RaidableBase> RaidEntities { get; set; } = new Dictionary<BaseEntity, RaidableBase>();
-
-            public static int Evaluate(BaseEntity entity)
+            public UndoSettings(List<BaseEntity> entities, int limit = 1, bool mounts = false, bool structures = false, bool deployables = false, bool teleport = false, object[] ho = null)
             {
-                if (entity is BuildingBlock)
-                {
-                    return 2;
-                }
-                if (!entity.HasParent())
-                {
-                    return 1;
-                }
-                return 0;
-            }
-
-            public static void UndoLoop(UndoSettings undo, int count = 0)
-            {
-                undo.Entities.RemoveAll(e => e.IsKilled());
-
-                undo.Entities.Sort((x, y) => Evaluate(x).CompareTo(Evaluate(y)));
-
-                undo.Entities.Take(undo.Limit).ToList().ForEach(entity =>
-                {
-                    undo.Entities.Remove(entity);
-
-                    if (entity.IsKilled() || KeepEntity(entity, undo))
-                    {
-                        return;
-                    }
-
-                    if (entity is IOEntity)
-                    {
-                        var io = entity as IOEntity;
-
-                        io.ClearConnections();
-
-                        if (entity is SamSite)
-                        {
-                            var ss = entity as SamSite;
-
-                            ss.staticRespawn = false;
-                        }
-                    }
-
-                    if (undo.Teleport)
-                    {
-                        entity.transform.position = new Vector3(0f, -500f, 0f);
-                        Interface.Oxide.NextTick(entity.SafelyKill);
-                    }
-                    else entity.Kill(BaseNetworkable.DestroyMode.None);
-                });
-
-                if (count != 0 && undo.Entities.Count != 0 && undo.Entities.Count == count)
-                {
-                    goto done;
-                }
-
-                if (undo.Entities.Count > 0)
-                {
-                    Interface.Oxide.NextTick(() => UndoLoop(undo, undo.Entities.Count));
-                    return;
-                }
-
-done:
-                GarbageController.RaidEntities.RemoveAll((e, raid) => e.IsKilled());
-
-                if (GarbageController.RaidEntities.Count == 0)
-                {
-                    GarbageController.MountEntities.Clear();
-                }
-
-                if (undo.hookObjects != null)
-                {
-                    Interface.CallHook("OnRaidableBaseDespawned", undo.hookObjects);
-                }
-            }
-            
-            private static bool KeepEntity(BaseEntity entity, UndoSettings undo)
-            {
-                if (!undo.Mounts && KeepMountable(entity) || entity.OwnerID.IsSteamId() && KeepPlayerEntity(entity, undo))
-                {
-                    return true;
-                }
-
-                RaidEntities.Remove(entity);
-
-                return false;
-            }
-
-            private static bool KeepPlayerEntity(BaseEntity entity, UndoSettings undo)
-            {
-                if (entity.PrefabName.Contains("assets/prefabs/deployable/"))
-                {
-                    if (!undo.Deployables)
-                    {
-                        if (entity is IItemContainerEntity)
-                        {
-                            var ice = entity as IItemContainerEntity;
-
-                            if (ice != null)
-                            {
-                                DropUtil.DropItems(ice.inventory, entity.transform.position + Vector3.up);
-                            }
-                        }
-
-                        return false;
-                    }
-                }
-                else if (!undo.Structures)
-                {
-                    return false;
-                }
-
-                RaidEntities.Remove(entity);
-
-                return true;
-            }
-
-            private static bool KeepMountable(BaseEntity entity)
-            {
-                MountInfo mi;
-                if (!MountEntities.TryGetValue(entity, out mi) || !MountEntities.Remove(entity))
-                {
-                    return false;
-                }
-
-                return !mi.mountable.GetMounted().IsNull() || !InRange2D(entity.transform.position, mi.position, mi.radius);
-            }
-
-            public static void RemoveHeldEntities()
-            {
-                foreach (var element in RaidEntities.ToList())
-                {
-                    if (element.Key is IItemContainerEntity)
-                    {
-                        var ice = element.Key as IItemContainerEntity;
-
-                        if (ice.IsNull() || ice.inventory.IsNull())
-                        {
-                            continue;
-                        }
-
-                        for (int i = 0; i < ice.inventory.itemList.Count; i++)
-                        {
-                            var e = ice.inventory.itemList[i].GetHeldEntity();
-
-                            if (e.IsReallyValid())
-                            {
-                                e.enableSaving = false;
-                                BaseEntity.saveList.Remove(e);
-                            }
-                        }
-
-                        ice.inventory.Clear();
-                    }
-                }
-
-                ItemManager.DoRemoves();
-            }
-
-            public static void DespawnAll(List<RaidableBase> raids, bool inactiveOnly)
-            {
-                var entities = new List<BaseEntity>();
-                bool teleportEntities = false;
-                int limit = 1;
-
-                for (int i = 0; i < raids.Count; i++)
-                {
-                    var raid = raids[i];
-
-                    if (raid.IsNull() || inactiveOnly && (raid.intruders.Count > 0 || raid.ownerId.IsSteamId()))
-                    {
-                        continue;
-                    }
-
-                    entities.AddRange(raid.Entities);
-
-                    if (raid.Options.Setup.TeleportEntities)
-                    {
-                        teleportEntities = true;
-                    }
-
-                    limit = Math.Max(limit, raid.Options.Setup.DespawnLimit);
-
-                    raid.Despawn(false);
-                }
-
-                UndoLoop(new UndoSettings
-                {
-                    Structures = config.Settings.Management.DoNotDestroyStructures,
-                    Deployables = config.Settings.Management.DoNotDestroyDeployables,
-                    Mounts = config.Settings.Management.DespawnMounts,
-                    Teleport = teleportEntities,
-                    Limit = limit,
-                    Entities = entities,
-                    hookObjects = null,
-                });
+                Entities = entities;
+                Limit = limit;
+                Structures = structures;
+                Deployables = deployables;
+                Mounts = mounts;
+                Teleport = teleport;
+                hookObjects = ho;
             }
         }
 
@@ -1588,7 +1375,7 @@ done:
 
             public RaidableSpawns() { }
 
-            public void Add(RaidableSpawnLocation rsl, CacheType cacheType)
+            public bool Add(RaidableSpawnLocation rsl, CacheType cacheType, HashSet<RaidableSpawnLocation> cache)
             {
                 switch (cacheType)
                 {
@@ -1599,18 +1386,18 @@ done:
                     case CacheType.Generic:
                         if (Instance.EventTerritory(rsl.Location))
                         {
-                            return;
+                            return false;
                         }
                         break;
                     case CacheType.Close:
                         if (RaidableBase.IsTooClose(rsl.Location, GetDistance(RaidableType.None)))
                         {
-                            return;
+                            return false;
                         }
                         break;
                 }
 
-                Spawns.Add(rsl);
+                return Spawns.Add(rsl);
             }
 
             public void Check()
@@ -1631,41 +1418,37 @@ done:
             public void TryAddRange(CacheType cacheType = CacheType.Generic, bool forced = false)
             {
                 HashSet<RaidableSpawnLocation> cache = Get(cacheType);
+                List<RaidableSpawnLocation> remove = new List<RaidableSpawnLocation>();
 
                 foreach (var rsl in cache)
                 {
-                    if (forced)
+                    if (forced && Spawns.Add(rsl) || Add(rsl, cacheType, cache))
                     {
-                        Spawns.Add(rsl);
+                        remove.Add(rsl);
                     }
-                    else Add(rsl, cacheType);
                 }
 
-                cache.RemoveWhere(x => Spawns.Contains(x));
+                remove.ForEach(rsl => cache.Remove(rsl));
             }
 
             public RaidableSpawnLocation GetRandom(BuildingWaterOptions options)
             {
-                options.SpawnOnSeabed = false;
+                RaidableSpawnLocation rsl;
 
                 if (GridController.Seabed.Count > 0 && UnityEngine.Random.Range(0f, 100f) >= options.Seabed)
                 {
-                    var rsl = GridController.Seabed.GetRandom();
-
-                    Remove(rsl, CacheType.Generic);
-
+                    rsl = GridController.Seabed.GetRandom();
                     options.SpawnOnSeabed = true;
-
-                    return rsl;
                 }
                 else
                 {
-                    var rsl = Spawns.GetRandom();
-
-                    Remove(rsl, CacheType.Generic);
-
-                    return rsl;
+                    rsl = Spawns.GetRandom();
+                    options.SpawnOnSeabed = false;
                 }
+
+                Remove(rsl, CacheType.Generic);
+
+                return rsl;
             }
 
             public HashSet<RaidableSpawnLocation> Get(CacheType cacheType)
@@ -1694,15 +1477,17 @@ done:
 
             private void AddNear(HashSet<RaidableSpawnLocation> cache, Vector3 target, float radius)
             {
-                foreach (var b in cache)
+                List<RaidableSpawnLocation> remove = new List<RaidableSpawnLocation>();
+
+                foreach (var rsl in cache)
                 {
-                    if (InRange2D(target, b.Location, radius))
+                    if (InRange2D(target, rsl.Location, radius) && Spawns.Add(rsl))
                     {
-                        Spawns.Add(b);
+                        remove.Add(rsl);
                     }
                 }
 
-                cache.RemoveWhere(x => Spawns.Contains(x));
+                remove.ForEach(rsl => cache.Remove(rsl));
             }
 
             public void Remove(RaidableSpawnLocation a, CacheType cacheType)
@@ -1718,17 +1503,19 @@ done:
                     radius = Mathf.Max(GetDistance(type), radius);
                 }
 
-                var cache = Get(cacheType);
+                HashSet<RaidableSpawnLocation> cache = Get(cacheType);
+                List<RaidableSpawnLocation> remove = new List<RaidableSpawnLocation>();
 
-                foreach (var b in Spawns)
+                foreach (var rsl in Spawns)
                 {
-                    if (InRange2D(target, b.Location, radius))
+                    if (InRange2D(target, rsl.Location, radius) && cache.Add(rsl))
                     {
-                        cache.Add(b);
+                        remove.Add(rsl);
                     }
                 }
 
-                Spawns.RemoveWhere(x => cache.Contains(x));
+                remove.ForEach(rsl => Spawns.Remove(rsl));
+
                 return radius;
             }
         }
@@ -1970,7 +1757,7 @@ done:
                         e.SetParent(hit.GetEntity(), true, false);
                     }
 
-                    raid.BuiltList[e] = hit.point;                    
+                    raid.BuiltList[e] = hit.point;
                     raid.AddEntity(e);
                 });
 
@@ -2041,7 +1828,7 @@ done:
                 else result = entities.Exists(e => e is BaseLadder);
                 return result;
             }
-            
+
             public string GetConstructionPrefab(ItemDefinition def)
             {
                 switch (def.shortname)
@@ -2492,7 +2279,7 @@ done:
 
                 navigator.Agent.agentTypeID = -1372625422;
                 navigator.MaxWaterDepth = config.Settings.Management.WaterDepth;
-                
+
                 if (navigator.CanUseNavMesh)
                 {
                     navigator.Init(owner, navigator.Agent);
@@ -3153,7 +2940,7 @@ done:
             public BuildingOptions Options { get; set; }
             public bool IsAuthed { get; set; }
             public bool IsOpened { get; set; } = true;
-            public bool IsResetting { get; set; } 
+            public bool IsResetting { get; set; }
             public bool IsUnloading { get; set; }
             public bool IsPayLocked { get; set; }
             public int npcMaxAmount { get; set; }
@@ -3189,6 +2976,7 @@ done:
             private static float isSpawningTime { get; set; }
             public float ProtectionRadius => Options.ProtectionRadius(Type);
             public int foundationsDestroyed { get; set; }
+            public RaidableBases MyInstance { get; set; }
 
             private object[] hookObjects
             {
@@ -3202,7 +2990,7 @@ done:
             {
                 get
                 {
-                    if (Time.realtimeSinceStartup - isSpawningTime > 180f)
+                    if (Time.time - isSpawningTime > 180f)
                     {
                         isSpawning = false;
                     }
@@ -3211,7 +2999,7 @@ done:
                 }
                 set
                 {
-                    isSpawningTime = Time.realtimeSinceStartup;
+                    isSpawningTime = Time.time;
                     isSpawning = value;
                 }
             }
@@ -3284,7 +3072,7 @@ done:
             {
                 _lastInvokeUpdate = Time.time;
                 markerName = config.Settings.Markers.MarkerName;
-                spawnTime = Time.realtimeSinceStartup;
+                spawnTime = Time.time;
                 go = gameObject;
             }
 
@@ -3295,14 +3083,18 @@ done:
                 Destroy(this);
             }
 
+
+
             internal List<BasePlayer> playersInSphere = new List<BasePlayer>();
+            internal List<HotAirBalloon> habRemoval = new List<HotAirBalloon>();
             internal List<HotAirBalloon> habsInSphere = new List<HotAirBalloon>();
+            internal List<BaseMountable> mountableRemoval = new List<BaseMountable>();
             internal List<BaseMountable> mountablesInSphere = new List<BaseMountable>();
             internal float lastMountCheckTime;
 
             private void CheckEntitiesInSphere()
             {
-                FindEntities(Location, ProtectionRadius, 174088, ref lastMountCheckTime, habsInSphere, playersInSphere, mountablesInSphere);
+                FindEntities(Location, ProtectionRadius, 174088);
                 CheckMountablesExiting();
                 CheckMountablesEntering();
                 CheckIntrudersExiting();
@@ -3312,7 +3104,7 @@ done:
                 mountablesInSphere.Clear();
             }
 
-            public static void FindEntities(Vector3 a, float n, int m, ref float lastMountCheckTime, List<HotAirBalloon> habsInSphere, List<BasePlayer> playersInSphere, List<BaseMountable> mountablesInSphere)
+            public void FindEntities(Vector3 a, float n, int m)
             {
                 var entities = FindEntitiesOfType<BaseCombatEntity>(a, n, m);
                 for (int i = 0; i < entities.Count; i++)
@@ -3327,11 +3119,11 @@ done:
                         playersInSphere.Add(entity as BasePlayer);
                     }
                     else if (entity is BaseMountable)
-                    {                        
+                    {
                         mountablesInSphere.Add(entity as BaseMountable);
                     }
                     else if (entity is HotAirBalloon)
-                    {                        
+                    {
                         habsInSphere.Add(entity as HotAirBalloon);
                     }
                 }
@@ -3342,36 +3134,46 @@ done:
                 if (habs.Count > 0 && Time.time > lastMountCheckTime)
                 {
                     lastMountCheckTime = Time.time + 1f;
-                    habs.ToList().ForEach(m =>
+                    habs.ForEach(m =>
                     {
-                        if (m.IsKilled())
+                        if (m.IsKilled() || m.health <= 0 || m.IsDead())
                         {
-                            habs.Remove(m);
+                            habRemoval.Add(m);
                         }
                         else if (!habsInSphere.Contains(m))
                         {
                             GetMountedPlayers(m).ForEach(player =>
                             OnPlayerExit(player, player.IsDead()));
-                            habs.Remove(m);
+                            habRemoval.Add(m);
                         }
                     });
+                    if (habRemoval.Count > 0)
+                    {
+                        habRemoval.ForEach(m => habs.Remove(m));
+                        habRemoval.Clear();
+                    }
                 }
                 if (mountables.Count > 0 && Time.time > lastMountCheckTime)
                 {
                     lastMountCheckTime = Time.time + 1f;
-                    mountables.ToList().ForEach(m =>
+                    mountables.ForEach(m =>
                     {
-                        if (m.IsKilled())
+                        if (m.IsKilled() || m.health <= 0 || m.IsDead())
                         {
-                            mountables.Remove(m);
+                            mountableRemoval.Add(m);
                         }
                         else if (!mountablesInSphere.Contains(m))
                         {
                             GetMountedPlayers(m).ForEach(player =>
                             OnPlayerExit(player, player.IsDead()));
-                            mountables.Remove(m);
+                            mountableRemoval.Add(m);
                         }
                     });
+                    if (mountableRemoval.Count > 0)
+                    {
+                        mountableRemoval.ForEach(m => mountables.Remove(m));
+                        mountableRemoval.Clear();
+                    }
                 }
             }
 
@@ -3419,7 +3221,7 @@ done:
                 {
                     playersInSphere.ToList().ForEach(player =>
                     {
-                        if (!intruders.Contains(player.userID))
+                        if (!player.IsKilled() && !intruders.Contains(player.userID))
                         {
                             OnPreEnterRaid(player);
                         }
@@ -3558,6 +3360,7 @@ done:
                     return;
                 }
 
+                MyInstance.BlacklistTimers[target.userID] = Time.realtimeSinceStartup;
                 UpdateTime(target, false);
                 UI.DestroyStatusUI(target);
 
@@ -3577,7 +3380,7 @@ done:
                 }
 
                 Interface.CallHook("OnPlayerExitedRaidableBase", new object[] { target, Location, AllowPVP, (int)Options.Mode, ID, spawnTime, despawnTime, loadTime, ownerId, BaseName });
-                                
+
                 if (config.Settings.Management.PVPDelay > 0)
                 {
                     if (skipDelay || !Instance.IsPVE() || !AllowPVP)
@@ -3611,20 +3414,10 @@ done:
                     return;
                 }
 
-enterExit:
+            enterExit:
                 if (config.EventMessages.AnnounceEnterExit)
                 {
                     QueueNotification(target, AllowPVP ? "OnPlayerExit" : "OnPlayerExitPVE");
-                }
-            }
-
-            public static void UpdateReferences(BasePlayer player)
-            {
-                foreach (var raid in Instance.Raids.ToList())
-                {
-                    foreach (var x in raid.Elevators.Values.Where(e => e._UI.ContainsKey(player.userID)).ToList()) { x._UI[player.userID] = player; }
-                    if (raid.raiders.ContainsKey(player.userID)) { raid.raiders[player.userID].player = player; }
-                    if (raid.ownerId == player.userID) { raid.owner = player; }
                 }
             }
 
@@ -3678,7 +3471,7 @@ enterExit:
 
             private bool IsHogging(BasePlayer player, bool shouldMessage = true)
             {
-                if (!config.Settings.Management.PreventHogging || !player.IsReallyValid() || CanBypass(player))
+                if (!config.Settings.Management.PreventHogging || !player.IsReallyValid() || CanBypass(player) || player.HasPermission("raidablebases.hoggingbypass"))
                 {
                     return false;
                 }
@@ -3788,13 +3581,13 @@ enterExit:
 
                 foreach (var ri in raiders.Values.ToList())
                 {
-                    if (ri.player.IsNull() || ri.player == owner || ri.IsAllowed || CanBypass(ri.player) || RemoveFauxAdmin(ri.player) || !intruders.Contains(ri.userid))
+                    if (ri.player.IsNull() || RemoveFauxAdmin(ri.player) || ri.player == owner || ri.IsAllowed || CanBypass(ri.player) || !intruders.Contains(ri.userid))
                     {
                         continue;
                     }
 
                     if (CanEject(ri.player))
-                    {   
+                    {
                         ri.Reset();
                         UI.DestroyStatusUI(ri.player);
                         RemovePlayer(ri.player, EjectCode.Protector, Location, ProtectionRadius, Type);
@@ -3804,7 +3597,7 @@ enterExit:
                     if (config.Settings.Management.LockToRaidOnEnter && !ri.LockedOnEnter)
                     {
                         QueueNotification(ri.player, "OnLockedToRaid");
-                        
+
                         ri.LockedOnEnter = true;
                     }
 
@@ -3931,16 +3724,14 @@ enterExit:
 
             private void DestroyEntities()
             {
-                GarbageController.UndoLoop(new UndoSettings
-                {
-                    Structures = _undoStructures,
-                    Deployables = _undoDeployables,
-                    Mounts = _undoMounts,
-                    Teleport = _undoTeleport,
-                    Limit = _undoLimit,
-                    Entities = Entities.ToList(),
-                    hookObjects = hookObjects,
-                });
+                MyInstance.UndoLoop(
+                    new UndoSettings(
+                    Entities.ToList(),
+                    _undoLimit,
+                    _undoMounts,
+                    _undoStructures,
+                    _undoDeployables,
+                    _undoTeleport), 0, 3, spawnTime);
             }
 
             public void UndoInit()
@@ -3952,14 +3743,14 @@ enterExit:
                 _undoLimit = Mathf.Clamp(Options.Setup.DespawnLimit, 1, 500);
             }
 
-            public void BuildingPrivilegeDestroyed()
+            public void OnBuildingPrivilegeDestroyed()
             {
                 Interface.CallHook("OnRaidableBasePrivilegeDestroyed", hookObjects);
             }
 
             public void UpdateTime(BasePlayer player, bool state)
             {
-                if (!player.HasPermission("raidablebases.time"))
+                if (!player.IsConnected || !player.HasPermission("raidablebases.time"))
                 {
                     return;
                 }
@@ -4325,14 +4116,14 @@ enterExit:
                         ri.reward = false;
                         continue;
                     }
-                    
+
                     if (ri.player._limitedNetworking)
                     {
                         if (config.EventMessages.Rewards.Vanished) Message(ri.player, "No Reward: Vanished");
                         ri.reward = false;
                         continue;
                     }
-                    
+
                     if (!IsPlayerActive(ri.id))
                     {
                         if (config.EventMessages.Rewards.Inactive) Message(ri.player, "No Reward: Inactive");
@@ -4365,7 +4156,7 @@ enterExit:
                         if (config.EventMessages.Rewards.NotAlly) Message(ri.player, "No Reward: Not Ally");
                         ri.reward = false;
                     }
-                    
+
                     sb.Append(ri.displayName).Append(", ");
                 }
 
@@ -4429,7 +4220,7 @@ enterExit:
                     {
                         continue;
                     }
-                                        
+
                     if (config.RankedLadder.Enabled)
                     {
                         PlayerInfo playerInfo = PlayerInfo.Get(ri.id);
@@ -4510,7 +4301,7 @@ enterExit:
 
                     int total = raiders.Values.ToList().Sum(x => x.IsParticipant ? 1 : 0);
 
-                    if (Options.Rewards.Custom.IsReallyValid())
+                    if (Options.Rewards.Custom.IsReallyValid() && !ri.player.IsNull())
                     {
                         int amount = config.Settings.Management.DivideRewards ? Options.Rewards.Custom.Amount / total : Options.Rewards.Custom.Amount;
                         Item item = ItemManager.Create(Options.Rewards.Custom.Definition, amount, Options.Rewards.Custom.Skin);
@@ -4539,8 +4330,15 @@ enterExit:
                     if (Options.Rewards.Points > 0 && Instance.ServerRewards.CanCall())
                     {
                         int points = config.Settings.Management.DivideRewards ? Options.Rewards.Points / total : Options.Rewards.Points;
-                        Instance.ServerRewards?.Call("AddPoints", ri.player.userID, points);
+                        Instance.ServerRewards?.Call("AddPoints", ri.userid, points);
                         QueueNotification(ri.player, "ServerRewardPoints", points);
+                    }
+
+                    if (Options.Rewards.XP > 0 && Instance.SkillTree.CanCall())
+                    {
+                        double xp = config.Settings.Management.DivideRewards ? Options.Rewards.XP / total : Options.Rewards.XP;
+                        QueueNotification(ri.player, "SkillTreeXP", xp);
+                        Instance.SkillTree?.Call("AwardXP", ri.player, xp);
                     }
                 }
             }
@@ -4637,7 +4435,7 @@ enterExit:
 
                     if (config.Settings.Management.Lockout.Global)
                     {
-                        time = Math.Max(Math.Max(lo.Easy, lo.Medium), Math.Max(Math.Max(lo.Hard, lo.Expert), lo.Nightmare)) - Epoch.Current;
+                        time = Math.Max(Math.Max(lo.Easy, lo.Medium), Math.Max(Math.Max(lo.Hard, lo.Expert), lo.Nightmare));
                     }
                     else time = GetLockoutTime(Options.Mode, lo, player.UserIDString);
 
@@ -4665,12 +4463,11 @@ enterExit:
                     data.Lockouts[playerId] = lo = new Lockout();
                 }
 
-                double time;
-                if (lo.IsExpired(RaidableMode.Easy) && ((time = GetLockoutTime(RaidableMode.Easy)) > 0)) lo.Easy = Epoch.Current + time;
-                if (lo.IsExpired(RaidableMode.Medium) && ((time = GetLockoutTime(RaidableMode.Medium)) > 0)) lo.Medium = Epoch.Current + time;
-                if (lo.IsExpired(RaidableMode.Hard) && ((time = GetLockoutTime(RaidableMode.Hard)) > 0)) lo.Hard = Epoch.Current + time;
-                if (lo.IsExpired(RaidableMode.Expert) && ((time = GetLockoutTime(RaidableMode.Expert)) > 0)) lo.Expert = Epoch.Current + time;
-                if (lo.IsExpired(RaidableMode.Nightmare) && ((time = GetLockoutTime(RaidableMode.Nightmare)) > 0)) lo.Nightmare = Epoch.Current + time;
+                if (lo.Easy <= 0) lo.Easy = GetLockoutTime(RaidableMode.Easy);
+                if (lo.Medium <= 0) lo.Medium = GetLockoutTime(RaidableMode.Medium);
+                if (lo.Hard <= 0) lo.Hard = GetLockoutTime(RaidableMode.Hard);
+                if (lo.Expert <= 0) lo.Expert = GetLockoutTime(RaidableMode.Expert);
+                if (lo.Nightmare <= 0) lo.Nightmare = GetLockoutTime(RaidableMode.Nightmare);
 
                 if (lo.Any())
                 {
@@ -4710,20 +4507,13 @@ enterExit:
                     data.Lockouts[ri.id] = lo = new Lockout();
                 }
 
-                time += Epoch.Current;
-
                 switch (Options.Mode)
                 {
-                    case RaidableMode.Easy:
-                        if (lo.IsExpired(RaidableMode.Easy)) lo.Easy = time; break;
-                    case RaidableMode.Medium:
-                        if (lo.IsExpired(RaidableMode.Medium)) lo.Medium = time; break;
-                    case RaidableMode.Hard:
-                        if (lo.IsExpired(RaidableMode.Hard)) lo.Hard = time; break;
-                    case RaidableMode.Expert:
-                        if (lo.IsExpired(RaidableMode.Expert)) lo.Expert = time; break;
-                    case RaidableMode.Nightmare:
-                        if (lo.IsExpired(RaidableMode.Nightmare)) lo.Nightmare = time; break;
+                    case RaidableMode.Easy: if (lo.Easy <= 0) lo.Easy = time; break;
+                    case RaidableMode.Medium: if (lo.Medium <= 0) lo.Medium = time; break;
+                    case RaidableMode.Hard: if (lo.Hard <= 0) lo.Hard = time; break;
+                    case RaidableMode.Expert: if (lo.Expert <= 0) lo.Expert = time; break;
+                    case RaidableMode.Nightmare: if (lo.Nightmare <= 0) lo.Nightmare = time; break;
                 }
 
                 if (lo.Any())
@@ -4741,11 +4531,11 @@ enterExit:
                     data.Lockouts[player.UserIDString] = lo = new Lockout();
                 }
 
-                lo.Easy = Epoch.Current + 180;
-                lo.Medium = Epoch.Current + 180;
-                lo.Hard = Epoch.Current + 180;
-                lo.Expert = Epoch.Current + 180;
-                lo.Nightmare = Epoch.Current + 180;
+                lo.Easy = 180;
+                lo.Medium = 180;
+                lo.Hard = 180;
+                lo.Expert = 180;
+                lo.Nightmare = 180;
 
                 UI.UpdateLockoutUI(player);
             }
@@ -4766,11 +4556,11 @@ enterExit:
             {
                 switch (mode)
                 {
-                    case RaidableMode.Easy: return lo.IsExpired(RaidableMode.Easy) ? lo.Easy = 0 : lo.Easy - Epoch.Current;
-                    case RaidableMode.Medium: return lo.IsExpired(RaidableMode.Medium) ? lo.Medium = 0 : lo.Medium - Epoch.Current;
-                    case RaidableMode.Hard: return lo.IsExpired(RaidableMode.Hard) ? lo.Hard = 0 : lo.Hard - Epoch.Current;
-                    case RaidableMode.Expert: return lo.IsExpired(RaidableMode.Expert) ? lo.Expert = 0 : lo.Expert - Epoch.Current;
-                    case RaidableMode.Nightmare: return lo.IsExpired(RaidableMode.Nightmare) ? lo.Nightmare = 0 : lo.Nightmare - Epoch.Current;
+                    case RaidableMode.Easy: return lo.Easy;
+                    case RaidableMode.Medium: return lo.Medium;
+                    case RaidableMode.Hard: return lo.Hard;
+                    case RaidableMode.Expert: return lo.Expert;
+                    case RaidableMode.Nightmare: return lo.Nightmare;
                     default: return 0d;
                 }
             }
@@ -4931,11 +4721,11 @@ enterExit:
                 }
 
                 float time;
-                if (!lastActive.TryGetValue(playerId, out time)) 
+                if (!lastActive.TryGetValue(playerId, out time))
                 {
                     return true;
                 }
-                
+
                 float secondsInactive = Time.realtimeSinceStartup - time;
                 float secondsBeforeInactive = config.Settings.Management.LockTime * 60f;
 
@@ -4987,7 +4777,7 @@ enterExit:
                 Protector();
             }
 
-            public void ResetRaiderRelations() 
+            public void ResetRaiderRelations()
             {
                 foreach (var ri in raiders.Values.ToList())
                 {
@@ -5004,19 +4794,6 @@ enterExit:
             public void ClearEnemies()
             {
                 raiders.RemoveAll((uid, ri) => !ri.player.IsReallyConnected() || !IsAlly(ri.player));
-            }
-
-            public void UpdateStability(StabilityEntity entity)
-            {
-                samsites.ForEach(ss =>
-                {
-                    if (ss.IsKilled() || !ss.staticRespawn || !InRange2D(ss.transform.position, entity.transform.position, 6f))
-                    {
-                        return;
-                    }
-
-                    ss.staticRespawn = false;
-                });
             }
 
             public void CheckDespawn()
@@ -5042,7 +4819,7 @@ enterExit:
                 }
 
                 float time = config.Settings.Management.DespawnMinutesInactive * 60f;
-                despawnTime = Time.realtimeSinceStartup + time;
+                despawnTime = Time.time + time;
                 Invoke(Despawn, time);
             }
 
@@ -5073,7 +4850,7 @@ enterExit:
 
                 foreach (var container in _containers)
                 {
-                    if (!container.IsKilled() && !container.inventory.IsEmpty() && IsBox(container, true))
+                    if (!container.IsKilled() && !container.inventory.IsEmpty())
                     {
                         return false;
                     }
@@ -5168,6 +4945,11 @@ enterExit:
 
             public void OnLootEntityInternal(BasePlayer player, BaseEntity entity)
             {
+                if (!entity.OwnerID.IsSteamId() && !RaidableBase.Has(entity))
+                {
+                    return;
+                }
+
                 UpdateStatus(player);
 
                 if (entity.ShortPrefabName == "coffinstorage" && Mathf.Approximately(Vector3.Distance(entity.transform.position, new Vector3(0f, -50f, 0f)), 0f))
@@ -5282,7 +5064,7 @@ enterExit:
                 {
                     TrySetPayLock(x.payments);
                 }
-                
+
                 IsLoading = true;
                 spawns = x.spawns;
                 Elevators = elevators;
@@ -5294,7 +5076,7 @@ enterExit:
                 Interface.Oxide.NextTick(() =>
                 {
                     TryInvokeMethod(SetCenterFromMultiplePoints);
-                    TryInvokeMethod(SetupElevators); 
+                    TryInvokeMethod(SetupElevators);
                     SetupCollider();
 
                     setupRoutine = ServerMgr.Instance.StartCoroutine(EntitySetup());
@@ -5320,7 +5102,7 @@ enterExit:
                         continue;
                     if (e.ShortPrefabName == "foundation.triangle" || e.ShortPrefabName == "foundation")
                         foundations.Add(e.transform.position);
-                    Entities.Add(e);
+                    AddEntity(e);
                 }
             }
 
@@ -5361,7 +5143,7 @@ enterExit:
 
                 for (int i = 0; i < Options.SphereAmount; i++)
                 {
-                    var sphere = GameManager.server.CreateEntity(StringPool.Get(3211242734), Location, default(Quaternion), true) as SphereEntity;
+                    var sphere = GameManager.server.CreateEntity(StringPool.Get(3211242734), Location) as SphereEntity;
 
                     if (sphere.IsNull())
                     {
@@ -5470,6 +5252,7 @@ enterExit:
                         if (CanSetupEntity(e))
                         {
                             SetupEntity(e);
+                            data.TemporaryUID.Add(e.net.ID);
                         }
 
                         if (stacks == i - 1)
@@ -5579,7 +5362,7 @@ enterExit:
                 TryInvokeMethod(SetLoadTime);
                 InvokeRepeating(Protector, 1f, 1f);
 
-                IsLoading = false; 
+                IsLoading = false;
                 IsSpawning = false;
                 setupRoutine = null;
                 Interface.CallHook("OnRaidableBaseStarted", hookObjects);
@@ -5603,13 +5386,18 @@ enterExit:
                 {
                     return;
                 }
-                
+
                 SetupEntity(e);
 
                 var position = e.transform.position;
 
                 NetworkID = Math.Min(NetworkID, e.net.ID);
                 e.OwnerID = 0;
+
+                if (e.skinID == 1337424001 && e is CollectibleEntity)
+                {
+                    (e as CollectibleEntity).itemList = null; // WaterBases compatibility
+                }
 
                 if (!Options.AllowPickup && e is BaseCombatEntity)
                 {
@@ -5693,9 +5481,9 @@ enterExit:
                     {
                         SetupBuildingPriviledge(e as BuildingPrivlidge);
                     }
-                    else if (config.Settings.Management.Lockers && e is Locker)
+                    else if (e is Locker)
                     {
-                        lockers.Add(e as Locker);
+                        SetupLocker(e as Locker);
                     }
                     else if (e is GunTrap)
                     {
@@ -5717,6 +5505,10 @@ enterExit:
                 else if (e is BaseMountable)
                 {
                     SetupMountable(e as BaseMountable);
+                }
+                else if (e is CollectibleEntity)
+                {
+                    SetupCollectible(e as CollectibleEntity);
                 }
 
                 if (e is DecayEntity)
@@ -5778,7 +5570,8 @@ enterExit:
                 {
                     return;
                 }
-                
+
+                SetTreasureLootLimit(containers);
                 TakeLootFromBaseLoot();
                 TakeLootFromDifficultyLoot();
                 TakeLootFromDefaultLoot();
@@ -5797,7 +5590,7 @@ enterExit:
                 SpawnLoot(containers);
                 SetupSellOrders();
             }
-
+            
             private void SetupContainers()
             {
                 foreach (var container in _containers)
@@ -5815,7 +5608,7 @@ enterExit:
                     AddEntity(e);
                 }
 
-                GarbageController.RaidEntities[e] = this;
+                MyInstance.RaidEntities[e] = this;
             }
 
             private void SetupPickup(BaseCombatEntity e)
@@ -5825,15 +5618,12 @@ enterExit:
 
             private void AddContainer(StorageContainer container)
             {
-                if (!_containers.Contains(container) && (IsBox(container, true) || container is BuildingPrivlidge))
-                {                    
+                if (IsBox(container, true) || container is BuildingPrivlidge)
+                {
                     _containers.Add(container);
                 }
 
-                if (!_allcontainers.Contains(container))
-                {
-                    _allcontainers.Add(container);
-                }
+                _allcontainers.Add(container);
 
                 AddEntity(container);
             }
@@ -6289,6 +6079,7 @@ enterExit:
                 {
                     SetupEntity(e);
                     SetupDoor(e as Door, true);
+                    data.TemporaryUID.Add(e.net.ID);
                 }
 
                 return true;
@@ -6422,6 +6213,14 @@ enterExit:
                 privSpawned = true;
             }
 
+            private void SetupLocker(Locker locker)
+            {
+                if (config.Settings.Management.Lockers)
+                {
+                    lockers.Add(locker);
+                }
+            }
+
             private void SetupRugs()
             {
                 _rugs.RemoveAll(rug => rug.IsKilled());
@@ -6450,12 +6249,20 @@ enterExit:
             {
                 if (!config.Settings.Management.DespawnMounts)
                 {
-                    GarbageController.MountEntities[mountable] = new MountInfo
+                    Instance.MountEntities[mountable] = new MountInfo
                     {
                         position = Location,
                         radius = ProtectionRadius,
                         mountable = mountable
                     };
+                }
+            }
+
+            private void SetupCollectible(CollectibleEntity ce)
+            {
+                if (IsBlacklisted(ce.ShortPrefabName))
+                {
+                    ce.itemList = null;
                 }
             }
 
@@ -6606,6 +6413,11 @@ enterExit:
                     Subscribe(nameof(CanSamSiteShoot));
                 }
 
+                if (config.Settings.Management.NoLifeSupport)
+                {
+                    Subscribe(nameof(OnLifeSupportSavingLife));
+                }
+
                 if (Options.NPC.SpawnAmount > 0 && Options.NPC.Enabled)
                 {
                     Options.NPC.SpawnAmount = Mathf.Clamp(Options.NPC.SpawnAmount, 0, 25);
@@ -6689,6 +6501,11 @@ enterExit:
                 if (Options.BuildingRestrictions.Any() || !config.Settings.Management.AllowUpgrade)
                 {
                     Subscribe(nameof(OnStructureUpgrade));
+                }
+
+                if (config.Settings.BlacklistedCommands.Exists(x => x.Equals("remove", StringComparison.OrdinalIgnoreCase)))
+                {
+                    Subscribe(nameof(canRemove));
                 }
 
                 Subscribe(nameof(CanPickupEntity));
@@ -6853,6 +6670,17 @@ enterExit:
                 }, 1f);
             }
 
+            private void ClearLoot()
+            {
+                BaseLoot.Clear();
+                BaseLootPermanent.Clear();
+                DifficultyLoot.Clear();
+                DefaultLoot.Clear();
+                Collective.Clear();
+                Loot.Clear();
+                LootNames.Clear();
+            }
+
             private void SpawnLoot(List<StorageContainer> containers)
             {
                 if (Options.DivideLoot)
@@ -6865,6 +6693,8 @@ enterExit:
                 {
                     Puts(mx("NoLootSpawned"));
                 }
+
+                Interface.Oxide.NextTick(ClearLoot);
             }
 
             private void SpawnLoot(List<StorageContainer> containers, int amount)
@@ -6895,19 +6725,30 @@ enterExit:
                         break;
                     }
 
-                    var lootItem = Loot.GetRandom();
-
-                    Loot.Remove(lootItem);
+                    var lootItem = GetRandomLootItem();
 
                     SpawnItem(lootItem, new List<StorageContainer> { container });
                 }
+            }
+
+            private LootItem GetRandomLootItem()
+            {
+                for (int i = 0; i < Loot.Count; i++)
+                {
+                    if (IsPriority(Loot[i]) || Loot[i].isModified)
+                    {
+                        return Loot[i];
+                    }
+                }
+
+                return Loot.GetRandom();
             }
 
             private void DivideLoot(List<StorageContainer> containers)
             {
                 while (Loot.Count > 0 && containers.Count > 0 && itemAmountSpawned < treasureAmount)
                 {
-                    var lootItem = Loot.GetRandom();
+                    var lootItem = GetRandomLootItem();
 
                     if (containers.Count > 1)
                     {
@@ -6921,8 +6762,6 @@ enterExit:
                     }
                     else SpawnItem(lootItem, containers);
 
-                    Loot.Remove(lootItem);
-
                     containers.RemoveAll(container => container.inventory.IsFull());
                 }
             }
@@ -6931,52 +6770,58 @@ enterExit:
             {
                 foreach (var ti in source)
                 {
-                    bool isBlueprint = ti.shortname.EndsWith(".bp");
-                    string shortname = isBlueprint ? ti.shortname.Replace(".bp", string.Empty) : ti.shortname;
-                    bool isModified = false;
-
-                    if (shortname.Contains("_") && ItemManager.FindItemDefinition(shortname) == null)
-                    {
-                        isModified = true;
-                        shortname = shortname.Substring(shortname.IndexOf("_") + 1);
-                    }
-
-                    if (ti.definition == null)
-                    {
-                        Puts("Invalid shortname in config: {0} -> {1}", ti.shortname, shortname);
-                        continue;
-                    }
-
-                    ti.isBlueprint = isBlueprint;
-
-                    int amount = ti.amount;
-
-                    if (ti.amountMin < ti.amount)
-                    {
-                        amount = Core.Random.Range(ti.amountMin, ti.amount + 1);
-                    }
-
-                    if (amount <= 0)
-                    {
-                        Loot.RemoveAll(x => ti.Equals(x));
-                        Collective.RemoveAll(x => ti.Equals(x));
-                        continue;
-                    }
-
-                    if (config.Treasure.UseStackSizeLimit || ti.stacksize != -1)
-                    {
-                        int stackable = ti.stacksize <= 0 ? ti.definition.stackable : ti.stacksize;
-                        isModified = amount > stackable;
-                        
-                        foreach (int stack in GetStacks(amount, stackable))
-                        {
-                            Loot.Add(new LootItem(shortname, stack, stack, ti.skin, isBlueprint, ti.probability, ti.stacksize, ti.name, isModified));
-                        }
-                    }
-                    else Loot.Add(new LootItem(shortname, amount, amount, ti.skin, isBlueprint, ti.probability, ti.stacksize, ti.name, isModified));
+                    AddToLoot(ti);
                 }
 
                 source.Clear();
+            }
+
+            private void AddToLoot(LootItem lootItem)
+            {
+                LootItem ti = lootItem.Clone();
+                bool isBlueprint = ti.shortname.EndsWith(".bp");
+                string shortname = isBlueprint ? ti.shortname.Replace(".bp", string.Empty) : ti.shortname;
+                bool isModified = false;
+
+                if (shortname.Contains("_") && ItemManager.FindItemDefinition(shortname) == null)
+                {
+                    isModified = true;
+                    shortname = shortname.Substring(shortname.IndexOf("_") + 1);
+                }
+
+                if (ti.definition == null)
+                {
+                    Puts("Invalid shortname in config: {0} -> {1}", ti.shortname, shortname);
+                    return;
+                }
+
+                ti.isBlueprint = isBlueprint;
+
+                int amount = ti.amount;
+
+                if (ti.amountMin < ti.amount)
+                {
+                    amount = Core.Random.Range(ti.amountMin, ti.amount + 1);
+                }
+
+                if (amount <= 0)
+                {
+                    Loot.RemoveAll(x => lootItem.Equals(x));
+                    Collective.RemoveAll(x => lootItem.Equals(x));
+                    return;
+                }
+
+                if (config.Treasure.UseStackSizeLimit || ti.stacksize != -1)
+                {
+                    int stackable = ti.stacksize <= 0 ? ti.definition.stackable : ti.stacksize;
+                    if (!isModified) isModified = amount > stackable;
+
+                    foreach (int stack in GetStacks(amount, stackable))
+                    {
+                        Loot.Add(new LootItem(shortname, stack, stack, ti.skin, isBlueprint, ti.probability, ti.stacksize, ti.name, isModified));
+                    }
+                }
+                else Loot.Add(new LootItem(shortname, amount, amount, ti.skin, isBlueprint, ti.probability, ti.stacksize, ti.name, isModified));
             }
 
             private List<int> GetStacks(int amount, int maxStack)
@@ -7002,11 +6847,11 @@ enterExit:
                 List<LootItem> lootList;
                 if (Instance.Buildings.DifficultyLootLists.TryGetValue(type, out lootList))
                 {
-                    TakeLootFrom(lootList, DifficultyLoot, false, config.Treasure.UniqueDifficultyLoot);
+                    TakeLootFrom(lootList, DifficultyLoot, LootFileType.Difficulty, config.Treasure.UniqueDifficultyLoot);
                 }
             }
 
-            private void TakeLootFrom(List<LootItem> source, List<LootItem> to, bool baseLoot, bool isUnique)
+            private void TakeLootFrom(List<LootItem> source, List<LootItem> to, LootFileType lootFileType, bool isUnique)
             {
                 if (source.Count == 0)
                 {
@@ -7033,7 +6878,7 @@ enterExit:
 
                 Shuffle(from);
 
-                if (!baseLoot || !Options.AlwaysSpawn)
+                if (lootFileType != LootFileType.Base || !Options.AlwaysSpawn)
                 {
                     foreach (var ti in from)
                     {
@@ -7066,14 +6911,7 @@ enterExit:
             {
                 if (_containers.Count == 0)
                 {
-                    if (Entities.Count == 0 || !Entities.Exists())
-                    {
-                        Puts(mx("NoEntitiesFound", null, BaseName, PositionToGrid(Location)));
-                        return false;
-                    }
-
-                    _containers.Where(container => !container.IsKilled()).ForEach(container => Puts("Found {0}:", container.ShortPrefabName));
-                    Puts(mx("NoContainersFound", null, BaseName, PositionToGrid(Location)));
+                    Puts(mx(Entities.Exists() ? "NoContainersFound" : "NoEntitiesFound", null, BaseName, PositionToGrid(Location)));
                     return false;
                 }
 
@@ -7081,15 +6919,16 @@ enterExit:
 
                 foreach (var container in _containers)
                 {
-                    if (IsBox(container, true))
+                    if (!IsBox(container, true) || Options.IgnoreContainedLoot && !container.inventory.IsEmpty())
                     {
-                        containers.Add(container);
+                        continue;
                     }
+
+                    containers.Add(container);
                 }
 
                 if (Options.IgnoreContainedLoot)
                 {
-                    containers.RemoveAll(x => !x.inventory.IsEmpty());
                     lockers.RemoveAll(x => !x.inventory.IsEmpty());
                 }
 
@@ -7100,6 +6939,57 @@ enterExit:
                 }
 
                 return true;
+            }
+
+            private void SetTreasureLootLimit(List<StorageContainer> containers)
+            {
+                if (treasureAmount <= 400)
+                {
+                    return;
+                }
+
+                int availableSpace = privSpawned && config.Settings.Management.Cupboard ? 24 : 0;
+
+                foreach (var container in containers)
+                {
+                    availableSpace += container.InventorySlots();
+                }
+
+                if (config.Settings.Management.Lockers)
+                {
+                    foreach (var container in lockers)
+                    {
+                        availableSpace += container.InventorySlots();
+                    }
+                }
+
+                if (config.Settings.Management.Cook)
+                {
+                    foreach (var container in ovens)
+                    {
+                        availableSpace += container.InventorySlots();
+                    }
+                }
+
+                if (config.Settings.Management.Food)
+                {
+                    foreach (var container in _allcontainers)
+                    {
+                        if (container?.ShortPrefabName != "fridge.deployed") continue;
+                        availableSpace += container.InventorySlots();
+                    }
+
+                    foreach (var container in ovens)
+                    {
+                        if (!Instance.BBQs.Contains(container.ShortPrefabName)) continue;
+                        availableSpace += container.InventorySlots();
+                    }
+                }
+
+                if (treasureAmount > availableSpace)
+                {
+                    treasureAmount = availableSpace;
+                }
             }
 
             private void TakeLootFromBaseLoot()
@@ -7115,7 +7005,7 @@ enterExit:
                     }
                 }
 
-                TakeLootFrom(baseLoot, BaseLoot, true, config.Treasure.UniqueBaseLoot);
+                TakeLootFrom(baseLoot, BaseLoot, LootFileType.Base, config.Treasure.UniqueBaseLoot);
 
                 BaseLootPermanent = BaseLoot.ToList();
             }
@@ -7139,7 +7029,12 @@ enterExit:
             {
                 if (BaseLoot.Count + DifficultyLoot.Count < treasureAmount)
                 {
-                    TakeLootFrom(TreasureLoot, DefaultLoot, false, config.Treasure.UniqueDefaultLoot);
+                    TakeLootFrom(TreasureLoot, DefaultLoot, LootFileType.Default, config.Treasure.UniqueDefaultLoot);
+                }
+
+                if (BaseLoot.Count + DifficultyLoot.Count + DefaultLoot.Count < treasureAmount)
+                {
+                    TakeLootFrom(WeekdayLoot, DefaultLoot, LootFileType.Weekday, config.Treasure.UniqueDefaultLoot);
                 }
             }
 
@@ -7165,24 +7060,19 @@ enterExit:
             {
                 if (Options.AllowDuplicates && Loot.Count > 0 && Loot.Count < treasureAmount)
                 {
-                    var collective = new List<LootItem>();
+                    int attempts = treasureAmount;
 
-                    Collective.ForEach(ti => collective.Add(ti.Clone()));
-
-                    int attempts = collective.Count;
-
-                    while (Loot.Count < treasureAmount && collective.Count > 0 && --attempts > 0)
+                    while (Loot.Count < treasureAmount && Collective.Count > 0 && --attempts > 0)
                     {
-                        var ti = collective.GetRandom();
+                        var ti = Collective.GetRandom();
 
                         if (IsUnique(ti))
                         {
-                            collective.Remove(ti);
+                            Collective.Remove(ti);
                             continue;
                         }
 
-                        attempts++;
-                        Loot.Add(ti);
+                        AddToLoot(ti);
                     }
                 }
             }
@@ -7218,7 +7108,7 @@ enterExit:
 
             private bool IsUnique(LootItem ti)
             {
-                if (!Options.AllowDuplicates && Loot.Exists(x => x.Equals(ti) || x.shortname == ti.shortname && x.isModified))
+                if (!Options.AllowDuplicates && Loot.Exists(x => x.shortname == ti.shortname))
                 {
                     return true;
                 }
@@ -7259,20 +7149,21 @@ enterExit:
                 }
                 else
                 {
-                    var collective = Collective.ToList();
-                    
-                    while (Loot.Count < treasureAmount && collective.Count > 0)
-                    {
-                        var ti = collective.GetRandom();
+                    int retries = treasureAmount - Loot.Count;
 
-                        if (!Options.AllowDuplicates && Loot.Exists(x => x.shortname == ti.shortname) || IsUnique(ti))
+                    while (Loot.Count < treasureAmount && Collective.Count > 0 && --retries > 0)
+                    {
+                        var ti = Collective.GetRandom();
+
+                        if (IsUnique(ti))
                         {
-                            collective.Remove(ti);
+                            Collective.Remove(ti);
                             continue;
                         }
 
                         LootNames.Add(ti.shortname);
-                        Loot.Add(ti);
+                        AddToLoot(ti);
+                        retries++;
                     }
                 }
             }
@@ -7328,7 +7219,7 @@ enterExit:
             private List<LootItem> DifficultyLoot { get; set; } = new List<LootItem>();
             private List<LootItem> DefaultLoot { get; set; } = new List<LootItem>();
             private List<LootItem> Loot { get; set; } = new List<LootItem>();
-            private HashSet<string> LootNames { get;set;} = new HashSet<string>();
+            private HashSet<string> LootNames { get; set; } = new HashSet<string>();
 
             private void SpawnItem(LootItem ti, ItemContainer[] containers)
             {
@@ -7757,7 +7648,7 @@ enterExit:
 
                     if (time > 0f)
                     {
-                        despawnTime = Time.realtimeSinceStartup + time;
+                        despawnTime = Time.time + time;
 
                         if (config.EventMessages.ShowWarning)
                         {
@@ -7800,7 +7691,7 @@ enterExit:
 
             public static bool Has(BaseEntity entity)
             {
-                return GarbageController.RaidEntities.ContainsKey(entity);
+                return Instance.RaidEntities.ContainsKey(entity);
             }
 
             public static int Get(RaidableType type)
@@ -7878,8 +7769,7 @@ enterExit:
             public static RaidableBase Get(BaseEntity entity)
             {
                 RaidableBase raid;
-
-                return GarbageController.RaidEntities.TryGetValue(entity, out raid) ? raid : null;
+                return Instance.RaidEntities.TryGetValue(entity, out raid) ? raid : null;
             }
 
             public static bool IsTooClose(Vector3 target, float radius)
@@ -8582,13 +8472,12 @@ enterExit:
 
                 if (e is StaticInstrument)
                 {
+                    data.TemporaryUID.Remove(e.net.ID);
                     Entities.Remove(e);
                     e.Invoke(e.SafelyKill, 0.01f);
                     return false;
                 }
 
-                data.TemporaryUID.Add(e.net.ID);
-                
                 return true;
             }
 
@@ -8866,7 +8755,7 @@ enterExit:
 
                 npc.Spawn();
                 npc.CancelInvoke(npc.EquipTest);
-                
+
                 npcs.Add(npc);
 
                 SetupNpc(npc, brain, isMurderer, positions);
@@ -9321,7 +9210,7 @@ enterExit:
                 if (!vendingMarker.IsKilled())
                 {
                     vendingMarker.transform.position = Location;
-                    float seconds = despawnTime - Time.realtimeSinceStartup;
+                    float seconds = despawnTime - Time.time;
                     string despawnText = config.Settings.Management.DespawnMinutesInactive > 0 && seconds > 0 ? string.Format(" [{0}m]", Math.Floor(TimeSpan.FromSeconds(seconds).TotalMinutes)) : null;
                     string flag = mx(AllowPVP ? "PVPFlag" : "PVEFlag");
 
@@ -9793,7 +9682,7 @@ enterExit:
 
                     var collider = Vis.colBuffer[i];
                     var colName = collider.ObjectName();
-                    
+
                     if (colName == "ZoneManager" || colName.Contains("xmas"))
                     {
                         goto next;
@@ -9812,7 +9701,9 @@ enterExit:
                         goto next;
                     }
 
-                    if (!InRange(collider.transform.position, sac.position, sac.safeRadius))
+                    float dist = (collider.transform.position - sac.position).magnitude;
+
+                    if (dist > sac.safeRadius && dist <= sac.buildRadius)
                     {
                         goto next;
                     }
@@ -9963,7 +9854,7 @@ enterExit:
                         }
                     }
 
-next:
+                next:
                     Vis.colBuffer[i] = null;
                 }
 
@@ -10089,10 +9980,12 @@ next:
             }
 
             Unsubscribe(nameof(CanBGrade));
+            Unsubscribe(nameof(OnLifeSupportSavingLife));
             Unsubscribe(nameof(OnRestoreUponDeath));
             Unsubscribe(nameof(OnNpcKits));
             Unsubscribe(nameof(CanTeleport));
             Unsubscribe(nameof(canTeleport));
+            Unsubscribe(nameof(canRemove));
             Unsubscribe(nameof(CanEntityBeTargeted));
             Unsubscribe(nameof(CanEntityTrapTrigger));
             Unsubscribe(nameof(CanEntityTakeDamage));
@@ -10147,7 +10040,7 @@ next:
 
         private void Init()
         {
-            tryBuyCooldowns = new List<string>();
+            tryBuyCooldowns = new Dictionary<string, float>();
             Instance = this;
             IsUnloading = false;
             _sb = new StringBuilder();
@@ -10184,6 +10077,7 @@ next:
             permission.RegisterPermission("raidablebases.elevators.bypass.card", this);
             permission.RegisterPermission("raidablebases.time", this);
             permission.RegisterPermission("raidablebases.buyraid", this);
+            permission.RegisterPermission("raidablebases.hoggingbypass", this);
             lastSpawnRequestTime = Time.realtimeSinceStartup;
             buyableEnabled = config.Settings.Buyable.Max > 0;
             Unsubscribe(nameof(OnMapMarkerAdded));
@@ -10209,12 +10103,12 @@ next:
             StoredData.Load(timer);
             CheckForWipe();
             Initialize();
-            float interval = Mathf.Clamp(config.EventMessages.Interval, 1f, 60f);
             OceanLevel = WaterSystem.OceanLevel;
-            timer.Repeat(300f, 0, SaveData);
+            if (config.Settings.Management.Lockout.Any()) timer.Repeat(1f, 0, CheckLockouts);
+            timer.Repeat(Mathf.Clamp(config.EventMessages.Interval, 1f, 60f), 0, CheckNotifications);
             timer.Repeat(30f, 0, RaidableBase.UpdateAllMarkers);
-            timer.Repeat(interval, 0, CheckNotifications);
             timer.Repeat(60f, 0, CheckOceanLevel);
+            timer.Repeat(300f, 0, SaveData);
         }
 
         private void OnSunrise()
@@ -10227,7 +10121,7 @@ next:
             Raids.ToList().ForEach(raid => raid.ToggleLights(true));
         }
 
-        private void SaveData() => data.Save();
+        private void SaveData() => RaidableBase.TryInvokeMethod(data.Save);
 
         private void OnServerShutdown()
         {
@@ -10363,6 +10257,11 @@ next:
             }
 
             return null;
+        }
+
+        private object canRemove(BasePlayer player)
+        {
+            return !player.IsFlying && EventTerritory(player.transform.position) ? m("CannotRemove", player.UserIDString) : null;
         }
 
         private object canTeleport(BasePlayer player)
@@ -10678,8 +10577,6 @@ next:
                     return;
                 }
 
-                RaidableBase.UpdateReferences(player);
-
                 DelaySettings ds;
                 if (PvpDelay.TryGetValue(player.userID, out ds))
                 {
@@ -10853,7 +10750,7 @@ next:
                 raid.Undo();
             }
 
-            raid.BuildingPrivilegeDestroyed();
+            raid.OnBuildingPrivilegeDestroyed();
         }
 
         private void OnEntityKill(StorageContainer container)
@@ -11026,7 +10923,7 @@ next:
             Unsubscribe(nameof(OnCupboardAuthorize));
         }
 
-        private object CanPickupEntity(BasePlayer player, BaseCombatEntity entity)
+        private object CanPickupEntity(BasePlayer player, BaseEntity entity)
         {
             var raid = RaidableBase.Get(entity);
 
@@ -11197,7 +11094,7 @@ next:
                     return;
                 }
 
-done:
+            done:
 
                 if (config.Settings.Management.PlayersLootableInPVE && !raid.AllowPVP || config.Settings.Management.PlayersLootableInPVP && raid.AllowPVP)
                 {
@@ -11336,9 +11233,9 @@ done:
         {
             var raid = RaidableBase.Get(player);
 
-            if (raid != null && 
-                (raid.Type == RaidableType.None || 
-                raid.AllowPVP && !raid.Options.PenalizePVP || 
+            if (raid != null &&
+                (raid.Type == RaidableType.None ||
+                raid.AllowPVP && !raid.Options.PenalizePVP ||
                 !raid.AllowPVP && !raid.Options.PenalizePVE))
             {
                 return false;
@@ -11389,6 +11286,11 @@ done:
         private object CanEntityBeTargeted(BasePlayer player, BaseEntity entity)
         {
             if (player.IsNull() || entity.IsNull() || player.limitNetworking)
+            {
+                return null;
+            }
+
+            if (entity is NPCAutoTurret && !player.userID.IsSteamId())
             {
                 return null;
             }
@@ -11902,6 +11804,7 @@ done:
         {
             var raid = new GameObject().AddComponent<RaidableBase>();
 
+            raid.MyInstance = this;
             raid.name = Name;
             raid.Definitions = _definitions;
             raid.SetAllowPVP(x.Type, x.Profile.Options.AllowPVP);
@@ -12236,9 +12139,9 @@ done:
             if (randomBase != null)
             {
                 var grid = FormatGridReference(randomBase.Position);
-                
+
                 Message(owner, "BuyBaseSpawnedAt", randomBase.Position, grid);
-                
+
                 if (config.EventMessages.AnnounceBuy)
                 {
                     foreach (var target in BasePlayer.activePlayerList)
@@ -12246,7 +12149,7 @@ done:
                         QueueNotification(target, "BuyBaseAnnouncement", owner.displayName, randomBase.Position, grid);
                     }
                 }
-                
+
                 Puts(mx("BuyBaseAnnouncementConsole", null, owner.displayName, mode, randomBase.BaseName, randomBase.Position, grid));
 
                 return true;
@@ -12557,10 +12460,10 @@ done:
                 }
                 
                 PrintDebugMessage($"Attempts before finding position to paste base: {_totalattempts}");
-                
+
                 return vector;
             }
-
+            
             spawns.TryAddRange();
             
             if (paymentPos != Vector3.zero && spawns.Count > 0 && distanceFrom < 5000f)
@@ -12626,10 +12529,7 @@ done:
 
             if (validProfile && spawns != null)
             {
-                //var sw3 = Stopwatch.StartNew();
                 var eventPos = GetEventPosition(profile.Value.Options, payments, config.Settings.Buyable.DistanceToSpawnFrom, checkTerrain, spawns, type, out message, distance, scanVector);
-                //sw3.Stop();
-                //Puts("Took {0}ms and {1} attempts to find spawn location", sw3.Elapsed.TotalMilliseconds, _totalattempts);
 
                 if (eventPos != Vector3.zero)
                 {
@@ -12733,38 +12633,10 @@ done:
 
             switch (type)
             {
-                case RaidableType.Maintained:
-                {
-                    if (GridController.Spawns.TryGetValue(RaidableType.Maintained, out spawns))
-                    {
-                        return spawns;
-                    }
-                    break;
-                }
-                case RaidableType.Manual:
-                {
-                    if (GridController.Spawns.TryGetValue(RaidableType.Manual, out spawns))
-                    {
-                        return spawns;
-                    }
-                    break;
-                }
-                case RaidableType.Purchased:
-                {
-                    if (GridController.Spawns.TryGetValue(RaidableType.Purchased, out spawns))
-                    {
-                        return spawns;
-                    }
-                    break;
-                }
-                case RaidableType.Scheduled:
-                {
-                    if (GridController.Spawns.TryGetValue(RaidableType.Scheduled, out spawns))
-                    {
-                        return spawns;
-                    }
-                    break;
-                }
+                case RaidableType.Maintained: if (GridController.Spawns.TryGetValue(RaidableType.Maintained, out spawns)) return spawns; break;
+                case RaidableType.Manual: if (GridController.Spawns.TryGetValue(RaidableType.Manual, out spawns)) return spawns; break;
+                case RaidableType.Purchased: if (GridController.Spawns.TryGetValue(RaidableType.Purchased, out spawns)) return spawns; break;
+                case RaidableType.Scheduled: if (GridController.Spawns.TryGetValue(RaidableType.Scheduled, out spawns)) return spawns; break;
             }
 
             checkTerrain = true;
@@ -12960,22 +12832,22 @@ done:
             switch (type)
             {
                 case RaidableType.Purchased:
-                {
-                    if (!CanSpawnDifficultyToday(buildingMode) || !config.Settings.Buyable.BuyPVP && allowPVP)
                     {
-                        return false;
+                        if (!CanSpawnDifficultyToday(buildingMode) || !config.Settings.Buyable.BuyPVP && allowPVP)
+                        {
+                            return false;
+                        }
+                        break;
                     }
-                    break;
-                }
                 case RaidableType.Maintained:
                 case RaidableType.Scheduled:
-                {
-                    if (!CanSpawnDifficultyToday(buildingMode))
                     {
-                        return false;
+                        if (!CanSpawnDifficultyToday(buildingMode))
+                        {
+                            return false;
+                        }
+                        break;
                     }
-                    break;
-                }
             }
 
             return true;
@@ -13083,7 +12955,7 @@ done:
             }
 
             var player = user.ToPlayer();
-            
+
             if (user.IsServer && args.Length >= 1 && args[0].IsSteamId())
             {
                 player = BasePlayer.FindByID(ulong.Parse(args[0]));
@@ -13103,15 +12975,19 @@ done:
             var buyer = user.ToPlayer() ?? player;
             var members = GetMembers(buyer);
 
-            if (members.Exists(memberId => tryBuyCooldowns.Contains(memberId)))
+            foreach (string memberId in members)
             {
-                Message(buyer, "BuyableAlreadyRequestedNew");
-                return;
+                float time;
+                if (tryBuyCooldowns.TryGetValue(memberId, out time) && time > Time.time)
+                {
+                    Message(buyer, "BuyableAlreadyRequestedTime", $"{time - Time.time:N02}");
+                    return;
+                }
             }
 
             members.ForEach(memberId =>
             {
-                tryBuyCooldowns.Add(memberId);
+                tryBuyCooldowns[memberId] = Time.time + 5f;
                 timer.Once(5f, () => tryBuyCooldowns.Remove(memberId));
             });
 
@@ -13150,10 +13026,10 @@ done:
                 Message(buyer, "Max Manual Events", config.Settings.Buyable.Max);
                 return;
             }
-            
+
             string value = args[0].ToLower();
             RaidableMode mode = GetRaidableMode(value);
-            
+
             if (!CanSpawnDifficultyToday(mode))
             {
                 Message(buyer, "BuyDifficultyNotAvailableToday", value);
@@ -13208,7 +13084,7 @@ done:
             bool isValid;
             Payment customPayment = null;
             var payments = new List<Payment>();
-
+            
             if (config.Settings.Costs.IncludeCustom)
             {
                 customPayment = TryBuyRaidCustom(buyer, player, mode, out isValid);
@@ -13217,7 +13093,7 @@ done:
                 {
                     return;
                 }
-
+                
                 if (customPayment != null)
                 {
                     payments.Add(customPayment);
@@ -13274,125 +13150,125 @@ done:
             switch (arg)
             {
                 case "version":
-                {
-                    user.Reply($"Version: {Version}");
-                    return;
-                }
+                    {
+                        user.Reply($"Version: {Version}");
+                        return;
+                    }
                 case "invite":
-                {
-                    CommandInvite(player, args);
-                    return;
-                }
+                    {
+                        CommandInvite(player, args);
+                        return;
+                    }
                 case "resettime":
-                {
-                    if (isAdmin)
                     {
-                        data.RaidTime = DateTime.MinValue.ToString();
-                    }
+                        if (isAdmin)
+                        {
+                            data.RaidTime = DateTime.MinValue.ToString();
+                        }
 
-                    return;
-                }
+                        return;
+                    }
                 case "wipe":
-                {
-                    if (isAdmin)
                     {
-                        wiped = true;
-                        CheckForWipe();
-                    }
+                        if (isAdmin)
+                        {
+                            wiped = true;
+                            CheckForWipe();
+                        }
 
-                    return;
-                }
+                        return;
+                    }
                 case "ignore_restart":
-                {
-                    if (isAdmin)
                     {
-                        bypassRestarting = !bypassRestarting;
-                        user.Reply($"Bypassing restart check: {bypassRestarting}");
-                    }
+                        if (isAdmin)
+                        {
+                            bypassRestarting = !bypassRestarting;
+                            user.Reply($"Bypassing restart check: {bypassRestarting}");
+                        }
 
-                    return;
-                }
+                        return;
+                    }
                 case "savefix":
-                {
-                    if (user.IsAdmin || user.HasPermission("raidablebases.allow"))
                     {
-                        int removed = BaseEntity.saveList.RemoveWhere(e => e.IsKilled());
-
-                        if (removed > 0)
+                        if (user.IsAdmin || user.HasPermission("raidablebases.allow"))
                         {
-                            user.Reply($"Removed {removed} invalid entities from the save list.");
-                        }
+                            int removed = BaseEntity.saveList.RemoveWhere(e => e.IsKilled());
 
-                        if (SaveRestore.IsSaving)
-                        {
-                            SaveRestore.IsSaving = false;
-                            user.Reply("Server save has been canceled. You must type server.save again, and then restart your server.");
-                        }
-                        else user.Reply("Server save is operating normally.");
-                    }
-
-                    return;
-                }
-                case "tp":
-                {
-                    if (player.IsReallyValid() && (isAdmin || user.HasPermission("raidablebases.allow")))
-                    {
-                        RaidableBase raid = null;
-                        float num = 9999f;
-
-                        foreach (var other in Raids)
-                        {
-                            float num2 = player.Distance(other.Location);
-
-                            if (num2 > other.ProtectionRadius * 2f && num2 < num)
+                            if (removed > 0)
                             {
-                                num = num2;
-                                raid = other;
+                                user.Reply($"Removed {removed} invalid entities from the save list.");
+                            }
+
+                            if (SaveRestore.IsSaving)
+                            {
+                                SaveRestore.IsSaving = false;
+                                user.Reply("Server save has been canceled. You must type server.save again, and then restart your server.");
+                            }
+                            else user.Reply("Server save is operating normally.");
+                        }
+
+                        return;
+                    }
+                case "tp":
+                    {
+                        if (player.IsReallyValid() && (isAdmin || user.HasPermission("raidablebases.allow")))
+                        {
+                            RaidableBase raid = null;
+                            float num = 9999f;
+
+                            foreach (var other in Raids)
+                            {
+                                float num2 = player.Distance(other.Location);
+
+                                if (num2 > other.ProtectionRadius * 2f && num2 < num)
+                                {
+                                    num = num2;
+                                    raid = other;
+                                }
+                            }
+
+                            if (raid != null)
+                            {
+                                player.Teleport(raid.Location);
                             }
                         }
 
-                        if (raid != null)
-                        {
-                            player.Teleport(raid.Location);
-                        }
+                        return;
                     }
-
-                    return;
-                }
                 case "grid":
-                {
-                    if (player.IsReallyValid() && (isAdmin || user.HasPermission("raidablebases.ddraw")))
                     {
-                        ShowGrid(player);
-                    }
+                        if (player.IsReallyValid() && (isAdmin || user.HasPermission("raidablebases.ddraw")))
+                        {
+                            ShowGrid(player);
+                        }
 
-                    return;
-                }
+                        return;
+                    }
                 case "monuments":
-                {
-                    if (player.IsReallyValid() && (isAdmin || user.HasPermission("raidablebases.ddraw")))
                     {
-                        ShowMonuments(player);
-                    }
+                        if (player.IsReallyValid() && (isAdmin || user.HasPermission("raidablebases.ddraw")))
+                        {
+                            ShowMonuments(player);
+                        }
 
-                    return;
-                }
+                        return;
+                    }
                 case "ui":
-                {
-                    CommandUI(user, command, args.Skip(1));
-                    return;
-                }
+                    {
+                        CommandUI(user, command, args.Skip(1));
+                        return;
+                    }
                 case "ladder":
                 case "lifetime":
-                {
-                    ShowLadder(user, args);
-                    return;
-                }
+                    {
+                        ShowLadder(user, args);
+                        return;
+                    }
                 case "prod":
-                {
-                    Prodigy(player, args);
-                    return;
-                }
+                    {
+                        Prodigy(player, args);
+                        return;
+                    }
             }
 
             if (config.UI.Enabled)
@@ -13429,7 +13305,7 @@ done:
             var raid = Raids.FirstOrDefault(x => x.ownerId == player.userID);
             if (raid == null) { Message(player, "Invite Ownership Error"); return; }
             if (raid.HasLockout(target)) { Message(player, "Invite Lockout Error"); return; }
-            Raider raider; 
+            Raider raider;
             if (!raid.raiders.TryGetValue(target.userID, out raider)) raid.raiders[target.userID] = raider = new Raider(target);
             raider.IsAlly = true;
             Message(player, "Invite Success", target.displayName);
@@ -13526,7 +13402,7 @@ done:
 
             _sb.Clear();
             _sb.AppendLine(string.Format("Owner ID: {0}", entity.OwnerID));
-            _sb.AppendLine(string.Format("RaidEntities: {0}", GarbageController.RaidEntities.ContainsKey(entity)));
+            _sb.AppendLine(string.Format("RaidEntities: {0}", RaidEntities.ContainsKey(entity)));
             _sb.AppendLine(string.Format("EventTerritory: {0}", EventTerritory(entity.transform.position)));
 
             var raid = RaidableBase.Get(entity.transform.position);
@@ -13956,156 +13832,156 @@ done:
             switch (args[0].ToLower())
             {
                 case "flat":
-                {
-                    if (!isAllowed) return false;
-                    if (SpawnsController.IsObstructed(player.transform.position, 50f, 2.5f, -1f, player))
                     {
-                        user.Reply("Test failed");
+                        if (!isAllowed) return false;
+                        if (SpawnsController.IsObstructed(player.transform.position, 50f, 2.5f, -1f, player))
+                        {
+                            user.Reply("Test failed");
+                        }
+                        else user.Reply("Test passed");
+                        return true;
                     }
-                    else user.Reply("Test passed");
-                    return true;
-                }
                 case "debug":
-                {
-                    if (!isAllowed) return false;
-                    DebugMode = !DebugMode;
-                    user.Reply(string.Format("Debug mode: {0}", DebugMode));
-                    user.Reply(string.Format("Scheduled Events Running: {0}", Scheduled.Coroutine != null));
-                    user.Reply(string.Format("Maintained Events Running: {0}", Maintained.Coroutine != null));
-                    if (_messages.Count > 0)
                     {
-                        user.Reply($"DEBUG: Last {_messages.Count} messages:");
-                        _messages.ForEach(message => user.Reply($"PREVIOUS DEBUG: {message}"));
+                        if (!isAllowed) return false;
+                        DebugMode = !DebugMode;
+                        user.Reply(string.Format("Debug mode: {0}", DebugMode));
+                        user.Reply(string.Format("Scheduled Events Running: {0}", Scheduled.Coroutine != null));
+                        user.Reply(string.Format("Maintained Events Running: {0}", Maintained.Coroutine != null));
+                        if (_messages.Count > 0)
+                        {
+                            user.Reply($"DEBUG: Last {_messages.Count} messages:");
+                            _messages.ForEach(message => user.Reply($"PREVIOUS DEBUG: {message}"));
+                        }
+                        return true;
                     }
-                    return true;
-                }
                 case "lockout":
-                {
-                    if (!isAllowed) return false;
-                    RaidableBase.SetTestLockout(player);
-                    return true;
-                }
-                case "kill_cleanup":
-                {
-                    if (!isAllowed) return false;
-                    BaseNetworkable.serverEntities.OfType<BaseEntity>().ToList().ForEach(entity =>
                     {
-                        if (entity.IsDestroyed || entity.OwnerID != 0 || entity.Distance(player) > 100f) return;
-                        if (entity.name.Contains("building") || entity.name.Contains("deploy")) entity.SafelyKill();
-                    });
+                        if (!isAllowed) return false;
+                        RaidableBase.SetTestLockout(player);
+                        return true;
+                    }
+                case "kill_cleanup":
+                    {
+                        if (!isAllowed) return false;
+                        BaseNetworkable.serverEntities.OfType<BaseEntity>().ToList().ForEach(entity =>
+                        {
+                            if (entity.IsDestroyed || entity.OwnerID != 0 || entity.Distance(player) > 100f) return;
+                            if (entity.name.Contains("building") || entity.name.Contains("deploy")) entity.SafelyKill();
+                        });
 
-                    return true;
-                }
+                        return true;
+                    }
                 case "despawnall":
                 case "despawn_inactive":
-                {
-                    if (!isAllowed) return false;
-                    if (Raids.Count > 0)
                     {
-                        DespawnAllBasesNow(args[0].ToLower() == "despawn_inactive");
-                        Puts(mx("DespawnedAll", null, user.Name));
-                    }
-
-                    return true;
-                }
-                case "active":
-                {
-                    if (!isAllowed) return false;
-                    int count = 0;
-
-                    foreach (var raid in Raids)
-                    {
-                        if (raid.intruders.Count > 0 || raid.ownerId.IsSteamId())
+                        if (!isAllowed) return false;
+                        if (Raids.Count > 0)
                         {
-                            user.Reply($"Active raid at {raid.Location} in {FormatGridReference(raid.Location)}");
-                            count++;
+                            DespawnAllBasesNow(args[0].ToLower() == "despawn_inactive");
+                            Puts(mx("DespawnedAll", null, user.Name));
                         }
-                    }
 
-                    user.Reply($"{count} active raids");
-                    return true;
-                }
+                        return true;
+                    }
+                case "active":
+                    {
+                        if (!isAllowed) return false;
+                        int count = 0;
+
+                        foreach (var raid in Raids)
+                        {
+                            if (raid.intruders.Count > 0 || raid.ownerId.IsSteamId())
+                            {
+                                user.Reply($"Active raid at {raid.Location} in {FormatGridReference(raid.Location)}");
+                                count++;
+                            }
+                        }
+
+                        user.Reply($"{count} active raids");
+                        return true;
+                    }
                 case "expire":
                 case "resetcooldown":
-                {
-                    if (!isAllowed) return false;
-                    if (args.Length >= 2)
                     {
-                        var target = RustCore.FindPlayer(args[1]);
-
-                        if (!target.IsNull())
+                        if (!isAllowed) return false;
+                        if (args.Length >= 2)
                         {
-                            BuyableInfo bi;
-                            if (BuyCooldowns.TryGetValue(target.userID, out bi))
+                            var target = RustCore.FindPlayer(args[1]);
+
+                            if (!target.IsNull())
                             {
-                                bi.Timer.Destroy();
-                                BuyCooldowns.Remove(target.userID);
+                                BuyableInfo bi;
+                                if (BuyCooldowns.TryGetValue(target.userID, out bi))
+                                {
+                                    bi.Timer.Destroy();
+                                    BuyCooldowns.Remove(target.userID);
+                                }
+
+                                data.Lockouts.Remove(target.UserIDString);
+
+                                user.Reply(m("RemovedLockFor", user.Id, target.displayName, target.UserIDString));
                             }
-
-                            data.Lockouts.Remove(target.UserIDString);
-
-                            user.Reply(m("RemovedLockFor", user.Id, target.displayName, target.UserIDString));
                         }
-                    }
 
-                    return true;
-                }
+                        return true;
+                    }
                 case "expireall":
                 case "resetall":
                 case "resetallcooldowns":
-                {
-                    if (!isAllowed) return false;
-                    BuyCooldowns.Clear();
-                    data.Lockouts.Clear();
-                    Puts($"All cooldowns and lockouts have been reset by {user.Name} ({user.Id})");
-                    return true;
-                }
+                    {
+                        if (!isAllowed) return false;
+                        BuyCooldowns.Clear();
+                        data.Lockouts.Clear();
+                        Puts($"All cooldowns and lockouts have been reset by {user.Name} ({user.Id})");
+                        return true;
+                    }
                 case "setowner":
                 case "lockraid":
-                {
-                    if (args.Length >= 2 && (isAllowed || user.HasPermission("raidablebases.setowner")))
                     {
-                        var target = RustCore.FindPlayer(args[1]);
-
-                        if (target.IsReallyValid())
+                        if (args.Length >= 2 && (isAllowed || user.HasPermission("raidablebases.setowner")))
                         {
-                            var raid = GetNearestBase(target.transform.position);
+                            var target = RustCore.FindPlayer(args[1]);
+
+                            if (target.IsReallyValid())
+                            {
+                                var raid = GetNearestBase(target.transform.position);
+
+                                if (raid == null)
+                                {
+                                    user.Reply(m("TargetTooFar", user.Id));
+                                }
+                                else
+                                {
+                                    var payments = new List<Payment> { new Payment(0, 0, target, target, target.transform.position) };
+                                    raid.TrySetPayLock(payments, true);
+                                    user.Reply(m("RaidLockedTo", user.Id, target.displayName));
+                                }
+                            }
+                            else user.Reply(m("TargetNotFoundId", user.Id, args[1]));
+                        }
+
+                        return true;
+                    }
+                case "clearowner":
+                    {
+                        if (player.IsReallyValid() && (isAllowed || user.HasPermission("raidablebases.setowner")))
+                        {
+                            var raid = GetNearestBase(player.transform.position);
 
                             if (raid == null)
                             {
-                                user.Reply(m("TargetTooFar", user.Id));
+                                user.Reply(m("TooFar", user.Id));
                             }
                             else
                             {
-                                var payments = new List<Payment> { new Payment(0, 0, target, target, target.transform.position) };
-                                raid.TrySetPayLock(payments, true);
-                                user.Reply(m("RaidLockedTo", user.Id, target.displayName));
+                                raid.TrySetPayLock(null);
+                                user.Reply(m("RaidOwnerCleared", user.Id));
                             }
                         }
-                        else user.Reply(m("TargetNotFoundId", user.Id, args[1]));
+
+                        return true;
                     }
-
-                    return true;
-                }
-                case "clearowner":
-                {
-                    if (player.IsReallyValid() && (isAllowed || user.HasPermission("raidablebases.setowner")))
-                    {
-                        var raid = GetNearestBase(player.transform.position);
-
-                        if (raid == null)
-                        {
-                            user.Reply(m("TooFar", user.Id));
-                        }
-                        else
-                        {
-                            raid.TrySetPayLock(null);
-                            user.Reply(m("RaidOwnerCleared", user.Id));
-                        }
-                    }
-
-                    return true;
-                }
             }
 
             return false;
@@ -14267,7 +14143,234 @@ done:
 
         #endregion Commands
 
+        #region Garbage
+
+        internal Dictionary<BaseEntity, MountInfo> MountEntities { get; set; } = new Dictionary<BaseEntity, MountInfo>();
+        internal Dictionary<BaseEntity, RaidableBase> RaidEntities { get; set; } = new Dictionary<BaseEntity, RaidableBase>();
+
+        private bool KeepEntity(BaseEntity entity, UndoSettings undo)
+        {
+            if (!undo.Mounts && KeepMountable(entity) || entity.OwnerID.IsSteamId() && KeepPlayerEntity(entity, undo))
+            {
+                return true;
+            }
+
+            RaidEntities.Remove(entity);
+
+            return false;
+        }
+
+        private bool KeepPlayerEntity(BaseEntity entity, UndoSettings undo)
+        {
+            if (entity.PrefabName.Contains("assets/prefabs/deployable/"))
+            {
+                if (!undo.Deployables)
+                {
+                    if (entity is IItemContainerEntity)
+                    {
+                        var ice = entity as IItemContainerEntity;
+
+                        if (ice != null)
+                        {
+                            DropUtil.DropItems(ice.inventory, entity.transform.position + Vector3.up);
+                        }
+                    }
+
+                    return false;
+                }
+            }
+            else if (!undo.Structures)
+            {
+                return false;
+            }
+
+            RaidEntities.Remove(entity);
+
+            return true;
+        }
+
+        private bool KeepMountable(BaseEntity entity)
+        {
+            MountInfo mi;
+            if (!MountEntities.TryGetValue(entity, out mi) || !MountEntities.Remove(entity))
+            {
+                return false;
+            }
+
+            return !mi.mountable.GetMounted().IsNull() || !InRange2D(entity.transform.position, mi.position, mi.radius);
+        }
+
+        public void RemoveHeldEntities()
+        {
+            foreach (var element in RaidEntities.ToList())
+            {
+                if (element.Key is IItemContainerEntity)
+                {
+                    var ice = element.Key as IItemContainerEntity;
+
+                    if (ice.IsNull() || ice.inventory.IsNull())
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < ice.inventory.itemList.Count; i++)
+                    {
+                        var e = ice.inventory.itemList[i].GetHeldEntity();
+
+                        if (e.IsReallyValid())
+                        {
+                            e.enableSaving = false;
+                            BaseEntity.saveList.Remove(e);
+                        }
+                    }
+
+                    ice.inventory.Clear();
+                }
+            }
+
+            ItemManager.DoRemoves();
+        }
+
+        public void DespawnAll(List<RaidableBase> raids, bool inactiveOnly)
+        {
+            var entities = new List<BaseEntity>();
+            bool teleportEntities = false;
+            int limit = 1;
+
+            for (int i = 0; i < raids.Count; i++)
+            {
+                var raid = raids[i];
+
+                if (raid.IsNull() || inactiveOnly && (raid.intruders.Count > 0 || raid.ownerId.IsSteamId()))
+                {
+                    continue;
+                }
+
+                entities.AddRange(raid.Entities);
+
+                if (raid.Options.Setup.TeleportEntities)
+                {
+                    teleportEntities = true;
+                }
+
+                limit = Math.Max(limit, raid.Options.Setup.DespawnLimit);
+
+                raid.Despawn(false);
+            }
+
+            UndoLoop(new UndoSettings(
+                entities,
+                limit,
+                config.Settings.Management.DespawnMounts,
+                config.Settings.Management.DoNotDestroyStructures,
+                config.Settings.Management.DoNotDestroyDeployables,
+                teleportEntities), 0, 2, Time.realtimeSinceStartup + 5.33333f);
+        }
+
+        public static int Evaluate(BaseEntity entity)
+        {
+            if (entity is BuildingBlock)
+            {
+                return 2;
+            }
+            if (!entity.HasParent())
+            {
+                return 1;
+            }
+            return 0;
+        }
+
+        public void UndoLoop(UndoSettings undo, int count, int index, float spawnTime)
+        {
+            undo.Entities.RemoveAll(e => e.IsKilled() || KeepEntity(e, undo));
+
+            undo.Entities.Sort((x, y) => Evaluate(x).CompareTo(Evaluate(y)));
+
+            undo.Entities.Take(undo.Limit).ToList().ForEach(entity =>
+            {
+                undo.Entities.Remove(entity);
+
+                if (entity.IsKilled())
+                {
+                    return;
+                }
+
+                if (entity is IOEntity)
+                {
+                    var io = entity as IOEntity;
+
+                    io.ClearConnections();
+
+                    if (entity is SamSite)
+                    {
+                        var ss = entity as SamSite;
+
+                        ss.staticRespawn = false;
+                    }
+                }
+
+                if (data != null && entity.net != null)
+                {
+                    data.TemporaryUID.Remove(entity.net.ID);
+                }
+
+                if (undo.Teleport)
+                {
+                    entity.transform.position = new Vector3(0f, -500f, 0f);
+                    Interface.Oxide.NextTick(entity.SafelyKill);
+                }
+                else entity.Kill(BaseNetworkable.DestroyMode.None);
+            });
+
+            if (count != 0 && undo.Entities.Count != 0 && undo.Entities.Count == count)
+            {
+                goto done;
+            }
+
+            if (undo.Entities.Count > 0)
+            {
+                var action = new Action(() => UndoLoop(undo, undo.Entities.Count, index, spawnTime));
+                Interface.Oxide.NextTick(action);
+                return;
+            }
+
+        done:
+            RaidEntities.RemoveAll((e, raid) => e.IsKilled());
+
+            if (RaidEntities.Count == 0)
+            {
+                MountEntities.Clear();
+            }
+
+            if (undo.hookObjects != null)
+            {
+                Interface.CallHook("OnRaidableBaseDespawned", undo.hookObjects);
+            }
+        }
+
+        #endregion Garbage
+
         #region Helpers
+
+        private List<string> _lockoutKeys = new List<string>();
+
+        private void CheckLockouts()
+        {
+            if (data.Lockouts.Count == 0) return;
+            foreach (var element in data.Lockouts)
+            {
+                var lo = element.Value;
+                if (--lo.Easy <= 0) lo.Easy = 0;
+                if (--lo.Medium <= 0) lo.Medium = 0;
+                if (--lo.Hard <= 0) lo.Hard = 0;
+                if (--lo.Expert <= 0) lo.Expert = 0;
+                if (--lo.Nightmare <= 0) lo.Nightmare = 0;
+                if (!lo.Any()) _lockoutKeys.Add(element.Key);
+            }
+            if (_lockoutKeys.Count == 0) return;
+            _lockoutKeys.ForEach(key => data.Lockouts.Remove(key));
+            _lockoutKeys.Clear();
+        }
 
         private static List<T> FindEntitiesOfType<T>(Vector3 a, float n, int m = -1) where T : BaseEntity
         {
@@ -14279,6 +14382,7 @@ done:
                 if (entity is T) entities.Add(entity as T);
                 Vis.colBuffer[i] = null;
             }
+
             return entities;
         }
 
@@ -14873,13 +14977,13 @@ done:
 
             if (!IsUnloading)
             {
-                GarbageController.DespawnAll(Raids.ToList(), inactiveOnly);
+                DespawnAll(Raids.ToList(), inactiveOnly);
                 return;
             }
 
             if (Interface.Oxide.IsShuttingDown)
             {
-                GarbageController.RemoveHeldEntities();
+                RemoveHeldEntities();
                 return;
             }
 
@@ -14911,11 +15015,24 @@ done:
             return Raids.FirstOrDefault(raid => InRange2D(raid.Location, position, raid.ProtectionRadius))?.Location ?? Vector3.zero;
         }
 
-        private bool HasEventEntity(BaseEntity entity) => !entity.IsKilled() && RaidableBase.Has(entity);
+        private bool HasEventEntity(BaseEntity entity)
+        {
+            if (entity.IsKilled()) return false;
+            if (RaidableBase.Has(entity)) return true;
+            if (entity is BasePlayer) return RaidableBase.Has(((BasePlayer)entity).userID);
+            return false;
+        }
 
         private bool EventTerritory(Vector3 position)
         {
-            return Raids.Exists(raid => InRange2D(raid.Location, position, raid.ProtectionRadius));
+            for (int i = 0; i < Raids.Count; i++)
+            {
+                if (InRange2D(Raids[i].Location, position, Raids[i].ProtectionRadius))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private bool CanBlockOutsideDamage(RaidableBase raid, BasePlayer attacker, bool isEnabled)
@@ -15395,6 +15512,7 @@ done:
                 ["ServerRewardPointsTaken"] = "You have paid <color=#FFFF00>{0} RP</color> for a raidable base!",
                 ["ServerRewardPointsGift"] = "{0} has paid <color=#FFFF00>{1} RP</color> for your raidable base!",
                 ["ServerRewardPointsFailed"] = "You do not have <color=#FFFF00>{0} RP</color> for a raidable base!",
+                ["SkillTreeXP"] = "You have received <color=#FFFF00>{0} XP</color> for stealing the treasure!",
                 ["CustomDeposit"] = "You have received <color=#FFFF00>{0}</color> for stealing the treasure!",
                 ["CustomWithdraw"] = "You have paid <color=#FFFF00>{0}</color> for a raidable base!",
                 ["CustomWithdrawGift"] = "{0} has paid <color=#FFFF00>{1}</color> for your raidable base!",
@@ -15413,6 +15531,7 @@ done:
                 ["OnRaidFinished"] = "The raid at <color=#FFFF00>{0}</color> has been unlocked!",
                 ["CannotBeMounted"] = "You cannot loot the treasure while mounted!",
                 ["CannotTeleport"] = "You are not allowed to teleport from this event.",
+                ["CannotRemove"] = "You are not allowed to remove entities from this event.",
                 ["MustBeAuthorized"] = "You must have building privilege to access this treasure!",
                 ["OwnerLocked"] = "This treasure belongs to someone else!",
                 ["CannotFindPosition"] = "Could not find a random position!",
@@ -15513,7 +15632,7 @@ done:
                 ["HoggingFinishYourRaidTeam"] = "<color=#FF0000>Your team mate `{0}` must finish their last raid at {1}.</color>",
                 ["HoggingFinishYourRaidFriend"] = "<color=#FF0000>Your friend `{0}` must finish their last raid at {1}.</color>",
                 ["TimeFormat"] = "{0:D2}h {1:D2}m {2:D2}s",
-                ["BuyableAlreadyRequestedNew"] = "You must wait 5 seconds to try buying again.",
+                ["BuyableAlreadyRequestedTime"] = "You must wait {0} seconds to try buying again.",
                 ["BuyableServerRestarting"] = "You cannot buy a raid when a server restart is pending.",
                 ["BuyableServerRestartingAdmin"] = "You cannot buy a raid when a server restart is pending. You can bypass this typing: /rb ignore_restart",
                 ["BuyableServerSaving"] = "You cannot buy a raid while the server is saving.",
@@ -15651,7 +15770,7 @@ done:
             {
                 return;
             }
-            
+
             if (config.EventMessages.Message)
             {
                 Instance.Player.Message(player, message, config.Settings.ChatID);
@@ -16324,6 +16443,9 @@ done:
 
             [JsonProperty(PropertyName = "Block RestoreUponDeath Plugin For PVE Bases")]
             public bool BlockRestorePVE { get; set; }
+
+            [JsonProperty(PropertyName = "Block LifeSupport Plugin")]
+            public bool NoLifeSupport { get; set; } = true;
 
             [JsonProperty(PropertyName = "Bypass Lock Treasure To First Attacker For PVE Bases")]
             public bool BypassUseOwnersForPVE { get; set; }
@@ -17745,6 +17867,9 @@ done:
             [JsonProperty(PropertyName = "ServerRewards Points")]
             public int Points { get; set; }
 
+            [JsonProperty(PropertyName = "SkillTree XP")]
+            public double XP { get; set; }
+
             [JsonProperty(PropertyName = "Do Not Reward Buyable Events")]
             public bool NoBuyableRewards { get; set; }
         }
@@ -18276,15 +18401,23 @@ done:
             get
             {
                 List<LootItem> lootList;
-
-                if (config.Treasure.UseDOWL && Instance.Buildings.WeekdayLootLists.TryGetValue(DateTime.Now.DayOfWeek, out lootList) && lootList.Count > 0)
-                {
-                    return lootList.ToList();
-                }
-
                 if (!Instance.Buildings.DifficultyLootLists.TryGetValue(LootType.Default, out lootList))
                 {
                     Instance.Buildings.DifficultyLootLists[LootType.Default] = lootList = new List<LootItem>();
+                }
+
+                return lootList.ToList();
+            }
+        }
+
+        public static List<LootItem> WeekdayLoot
+        {
+            get
+            {
+                List<LootItem> lootList;
+                if (!config.Treasure.UseDOWL || !Instance.Buildings.WeekdayLootLists.TryGetValue(DateTime.Now.DayOfWeek, out lootList))
+                {
+                    Instance.Buildings.WeekdayLootLists[DateTime.Now.DayOfWeek] = lootList = new List<LootItem>();
                 }
 
                 return lootList.ToList();
@@ -18575,67 +18708,77 @@ done:
                 switch (mode)
                 {
                     case RaidableMode.Easy:
-                    {
-                        if (config.Settings.ServerRewards.Easy > 0)
                         {
-                            return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Easy, mx("RP", userid));
+                            if (config.Settings.ServerRewards.Easy > 0)
+                            {
+                                return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Easy, mx("RP", userid));
+                            }
+                            else if (config.Settings.Economics.Easy > 0)
+                            {
+                                return string.Format("{0} (${1})", langMode, config.Settings.Economics.Easy);
+                            }
+                            return GetCustomName(langMode, RaidableMode.Easy);
                         }
-                        else if (config.Settings.Economics.Easy > 0)
-                        {
-                            return string.Format("{0} (${1})", langMode, config.Settings.Economics.Easy);
-                        }
-                    }
-                    break;
                     case RaidableMode.Medium:
-                    {
-                        if (config.Settings.ServerRewards.Medium > 0)
                         {
-                            return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Medium, mx("RP", userid));
+                            if (config.Settings.ServerRewards.Medium > 0)
+                            {
+                                return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Medium, mx("RP", userid));
+                            }
+                            else if (config.Settings.Economics.Medium > 0)
+                            {
+                                return string.Format("{0} (${1})", langMode, config.Settings.Economics.Medium);
+                            }
+                            return GetCustomName(langMode, RaidableMode.Medium);
                         }
-                        else if (config.Settings.Economics.Medium > 0)
-                        {
-                            return string.Format("{0} (${1})", langMode, config.Settings.Economics.Medium);
-                        }
-                    }
-                    break;
                     case RaidableMode.Hard:
-                    {
-                        if (config.Settings.ServerRewards.Hard > 0)
                         {
-                            return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Hard, mx("RP", userid));
+                            if (config.Settings.ServerRewards.Hard > 0)
+                            {
+                                return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Hard, mx("RP", userid));
+                            }
+                            else if (config.Settings.Economics.Hard > 0)
+                            {
+                                return string.Format("{0} (${1})", langMode, config.Settings.Economics.Hard);
+                            }
+                            return GetCustomName(langMode, RaidableMode.Hard);
                         }
-                        else if (config.Settings.Economics.Hard > 0)
-                        {
-                            return string.Format("{0} (${1})", langMode, config.Settings.Economics.Hard);
-                        }
-                    }
-                    break;
                     case RaidableMode.Expert:
-                    {
-                        if (config.Settings.ServerRewards.Expert > 0)
                         {
-                            return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Expert, mx("RP", userid));
+                            if (config.Settings.ServerRewards.Expert > 0)
+                            {
+                                return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Expert, mx("RP", userid));
+                            }
+                            else if (config.Settings.Economics.Expert > 0)
+                            {
+                                return string.Format("{0} (${1})", langMode, config.Settings.Economics.Expert);
+                            }
+                            return GetCustomName(langMode, RaidableMode.Expert);
                         }
-                        else if (config.Settings.Economics.Expert > 0)
-                        {
-                            return string.Format("{0} (${1})", langMode, config.Settings.Economics.Expert);
-                        }
-                    }
-                    break;
                     case RaidableMode.Nightmare:
-                    {
-                        if (config.Settings.ServerRewards.Nightmare > 0)
                         {
-                            return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Nightmare, mx("RP", userid));
+                            if (config.Settings.ServerRewards.Nightmare > 0)
+                            {
+                                return string.Format("{0} ({1} {2})", langMode, config.Settings.ServerRewards.Nightmare, mx("RP", userid));
+                            }
+                            else if (config.Settings.Economics.Nightmare > 0)
+                            {
+                                return string.Format("{0} (${1})", langMode, config.Settings.Economics.Nightmare);
+                            }
+                            return GetCustomName(langMode, RaidableMode.Nightmare);
                         }
-                        else if (config.Settings.Economics.Nightmare > 0)
-                        {
-                            return string.Format("{0} (${1})", langMode, config.Settings.Economics.Nightmare);
-                        }
-                    }
-                    break;
                 }
 
+                return null;
+            }
+
+            private static string GetCustomName(string langMode, RaidableMode mode)
+            {
+                List<RaidableBaseCustomCostOptions> options;
+                if (config.Settings.Custom.TryGetValue(mode, out options) && options.All(o => o.IsReallyValid()))
+                {
+                    return string.Format("{0} ({1})", langMode, options[0].Definition.displayName.english);
+                }
                 return null;
             }
 
@@ -18668,7 +18811,7 @@ done:
                 }
 
                 string zone = raid.AllowPVP ? mx("PVP ZONE", player.UserIDString) : mx("PVE ZONE", player.UserIDString);
-                float seconds = raid.despawnTime - Time.realtimeSinceStartup;
+                float seconds = raid.despawnTime - Time.time;
                 string despawnText = config.Settings.Management.DespawnMinutesInactive > 0 && seconds > 0 ? Math.Floor(TimeSpan.FromSeconds(seconds).TotalMinutes).ToString() : null;
                 int lootAmount = raid._containers.Where(x => !x.IsKilled() && !raid.IsProtectedWeapon(x)).Sum(x => x.inventory.itemList.Count);
                 string text;
@@ -18772,7 +18915,7 @@ done:
                     var amin = config.UI.Lockout.Min(mode);
                     var amax = config.UI.Lockout.Max(mode);
                     var time = RaidableBase.GetLockoutTime(mode, lo, player.UserIDString);
-                    var key = Math.Floor(TimeSpan.FromSeconds(time).TotalMinutes).ToString();
+                    var key = Math.Floor(TimeSpan.FromSeconds(Math.Max(0, time)).TotalMinutes).ToString();
                     var text = mx("UIFormatLockoutMinutes", player.UserIDString, key);
                     var color2H = config.Settings.Management.Colors2.Get(mode);
                     var color2 = Color(color2H, config.UI.Lockout.Alpha);
@@ -19012,17 +19155,17 @@ done:
             switch (args[0].ToLower())
             {
                 case "lockouts":
-                {
-                    uii.Lockouts = !uii.Lockouts;
-                    UI.UpdateLockoutUI(player);
-                    return;
-                }
+                    {
+                        uii.Lockouts = !uii.Lockouts;
+                        UI.UpdateLockoutUI(player);
+                        return;
+                    }
                 case "status":
-                {
-                    uii.Status = !uii.Status;
-                    UI.UpdateStatusUI(player);
-                    return;
-                }
+                    {
+                        uii.Status = !uii.Status;
+                        UI.UpdateStatusUI(player);
+                        return;
+                    }
             }
         }
 
@@ -19041,7 +19184,7 @@ namespace Oxide.Plugins.RaidableBasesExtensionMethods
         public static bool Exists<T>(this HashSet<T> a) where T : BaseEntity { foreach (var b in a) { if (!b.IsKilled()) { return true; } } return false; }
         public static bool Exists<T>(this IEnumerable<T> a, Func<T, bool> b = null) { using (var c = a.GetEnumerator()) { while (c.MoveNext()) { if (b == null || b(c.Current)) { return true; } } } return false; }
         public static T FirstOrDefault<T>(this IEnumerable<T> a, Func<T, bool> b = null) { using (var c = a.GetEnumerator()) { while (c.MoveNext()) { if (b == null || b(c.Current)) { return c.Current; } } } return default(T); }
-        public static int RemoveAll<T, V>(this IDictionary<T, V> a, Func<T, V, bool> b) { var c = new List<T>(); using (var d = a.GetEnumerator()) { while (d.MoveNext()) { if (b(d.Current.Key, d.Current.Value)) { c.Add(d.Current.Key); } } } c.ForEach(e => a.Remove(e)); return c.Count; }
+        public static void RemoveAll<K, V>(this IDictionary<K, V> a, Func<K, V, bool> b) { var c = new List<K>(); using (var d = a.GetEnumerator()) { while (d.MoveNext()) { if (b(d.Current.Key, a[d.Current.Key])) { c.Add(d.Current.Key); } } } for (int e = 0; e < c.Count; e++) { a.Remove(c[e]); } }
         public static IEnumerable<V> Select<T, V>(this IEnumerable<T> a, Func<T, V> b) { var c = new List<V>(); using (var d = a.GetEnumerator()) { while (d.MoveNext()) { c.Add(b(d.Current)); } } return c; }
         public static string[] Skip(this string[] a, int b) { if (a.Length == 0) { return Array.Empty<string>(); } string[] c = new string[a.Length - b]; int n = 0; for (int i = 0; i < a.Length; i++) { if (i < b) continue; c[n] = a[i]; n++; } return c; }
         public static List<T> Take<T>(this IList<T> a, int b) { var c = new List<T>(); for (int i = 0; i < a.Count; i++) { if (c.Count == b) { break; } c.Add(a[i]); } return c; }
@@ -19067,5 +19210,5 @@ namespace Oxide.Plugins.RaidableBasesExtensionMethods
         public static BasePlayer ToPlayer(this IPlayer user) { return user.Object as BasePlayer; }
         public static string ObjectName(this Collider collider) { try { return collider.gameObject.name ?? string.Empty; } catch { return string.Empty; } }
         public static T GetRandom<T>(this HashSet<T> h) { if (h == null || h.Count == 0) { return default(T); } return h.ElementAt(UnityEngine.Random.Range(0, h.Count)); }
-    }
+        public static int InventorySlots(this StorageContainer a) { if (a.IsKilled() || a.inventory == null) return 0; return a.inventorySlots; } }
 }

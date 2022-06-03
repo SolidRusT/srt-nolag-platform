@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Oxide.Core;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
 using UnityEngine;
@@ -220,7 +219,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Stack Modifier", "Khan", "1.5.3")]
+    [Info("Stack Modifier", "Khan", "1.5.4")]
     [Description("Modify item stack sizes, includes UI Editor")]
     public class StackModifier : RustPlugin
     {
@@ -1011,6 +1010,9 @@ namespace Oxide.Plugins
             {"attire.egg.suit", 1},
             {"sign.egg.suit", 5},
             {"wagon", 1},
+            {"spraycandecal", 10},
+            {"weapon.mod.extendedmags", 1},
+            {"hmlmg", 1},
         };
 
         private readonly List<string> _exclude = new List<string>
@@ -1294,7 +1296,7 @@ namespace Oxide.Plugins
 
                 if (_config == null)
                 {
-                    PrintWarning($"Generating Config File for StackModifier");
+                    PrintWarning($"Generating Config File for {Name}");
                     throw new JsonException();
                 }
 
@@ -1594,7 +1596,7 @@ namespace Oxide.Plugins
         {
             BasePlayer player = container.GetOwnerPlayer();
             if (player == null || player.IsNpc || player.IsAdmin) return;
-            if (Interface.CallHook("OnIgnoreStackSize", player, item) != null) return;
+            //if (Interface.CallHook("OnIgnoreStackSize", player, item) != null) return;
 
             if ((player.inventory.containerMain.uid == container.uid || player.inventory.containerBelt.uid == container.uid) && item.amount > item.MaxStackable())
             {

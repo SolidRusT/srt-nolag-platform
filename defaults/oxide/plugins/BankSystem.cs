@@ -1,26 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Facepunch;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Oxide.Core;
+using Oxide.Core.Libraries;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Core.Plugins;
 using Oxide.Game.Rust.Cui;
+using Oxide.Plugins.BankSystemExtensionMethods;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Oxide.Plugins
 {
-    [Info("Bank System", "Mevent", "1.2.0")]
+    [Info("Bank System", "Mevent", "1.2.2")]
     public class BankSystem : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin ImageLibrary = null,
+        [PluginReference] private Plugin
+            ImageLibrary = null,
             Notify = null,
             UINotify = null,
             StackSizeController = null,
@@ -116,6 +119,8 @@ namespace Oxide.Plugins
             [JsonProperty(PropertyName = "ATM Settings")]
             public readonly ATMSettings Atm = new ATMSettings
             {
+                MinWithdrawal = 1,
+                MinDeposit = 1,
                 MinDepositFee = 0,
                 MaxDepositFee = 10,
                 StepDepositFee = 0.1f,
@@ -352,7 +357,8 @@ namespace Oxide.Plugins
                 var plugin = _instance?.plugins?.Find(PluginName);
                 if (plugin == null) return 0;
 
-                return Math.Round(Convert.ToDouble(plugin.Call(BalanceHook, player)), 2);
+                return Convert.ToDouble(Math.Floor(Convert.ToDouble(plugin.Call(BalanceHook, player)))
+                    .ToString("0.00"));
             }
 
             public void AddBalance(BasePlayer player, int amount)
@@ -506,6 +512,12 @@ namespace Oxide.Plugins
 
         private class ATMSettings
         {
+            [JsonProperty(PropertyName = "Minimum deposit (amount)")]
+            public float MinDeposit;
+
+            [JsonProperty(PropertyName = "Minimum withdrawal (amount)")]
+            public float MinWithdrawal;
+
             [JsonProperty(PropertyName = "Minimum deposit fee")]
             public float MinDepositFee;
 
@@ -1067,9 +1079,14 @@ namespace Oxide.Plugins
 
             private float LoseConditionAmount()
             {
-                return (from check in _instance._config.Atm.BreakPercent
-                    where _instance.permission.UserHasPermission(OwnerId.ToString(), check.Key)
-                    select check.Value).Prepend(_instance._config.Atm.DefaultBreakPercent).Min();
+                var result = _instance._config.Atm.DefaultBreakPercent;
+
+                _instance._config.Atm.BreakPercent.Where(x => OwnerId.HasPermission(x.Key)).ForEach(check =>
+                {
+                    if (result > check.Value) result = check.Value;
+                });
+
+                return result;
             }
 
             public bool CanOpen()
@@ -1206,8 +1223,7 @@ namespace Oxide.Plugins
         {
             if (player == null || npc == null || !_config.NPC.NPCs.Contains(npc.UserIDString)) return;
 
-            if (!string.IsNullOrEmpty(_config.Permission) &&
-                !permission.UserHasPermission(player.UserIDString, _config.Permission))
+            if (!string.IsNullOrEmpty(_config.Permission) && !player.HasPermission(_config.Permission))
             {
                 SendNotify(player, NoPermissions, 1);
                 return;
@@ -1407,7 +1423,7 @@ namespace Oxide.Plugins
             if (player == null) return;
 
             if (!string.IsNullOrEmpty(_config.Permission) &&
-                !permission.UserHasPermission(player.UserIDString, _config.Permission))
+                !player.HasPermission(_config.Permission))
             {
                 SendNotify(player, NoPermissions, 1);
                 return;
@@ -1652,6 +1668,12 @@ namespace Oxide.Plugins
                     int amount;
                     if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out amount)) return;
 
+                    if (amount < _config.Atm.MinDeposit)
+                    {
+                        SendNotify(player, ForbiddenDeposit, 1, _config.Atm.MinDeposit);
+                        return;
+                    }
+
                     ATMData ATM;
                     if (!_atmByPlayer.TryGetValue(player, out ATM) || ATM == null) return;
 
@@ -1698,6 +1720,12 @@ namespace Oxide.Plugins
                 {
                     int amount;
                     if (!arg.HasArgs(2) || !int.TryParse(arg.Args[1], out amount)) return;
+
+                    if (amount < _config.Atm.MinWithdrawal)
+                    {
+                        SendNotify(player, ForbiddenWithdraw, 1, _config.Atm.MinWithdrawal);
+                        return;
+                    }
 
                     ATMData ATM;
                     if (!_atmByPlayer.TryGetValue(player, out ATM) || ATM == null) return;
@@ -2669,7 +2697,8 @@ namespace Oxide.Plugins
                                 Align = TextAnchor.MiddleLeft,
                                 Command = $"UI_BankSystem setamount {targetId} {transactionPage} {gatherPage} ",
                                 Color = "1 1 1 1",
-                                CharsLimit = 10
+                                CharsLimit = 10,
+                                NeedsKeyboard = true
                             },
                             new CuiRectTransformComponent
                             {
@@ -4376,7 +4405,8 @@ namespace Oxide.Plugins
                                 Font = "robotocondensed-bold.ttf",
                                 Command = $"UI_BankSystem atm_input {page} {targetId} ",
                                 Color = "1 1 1 1",
-                                CharsLimit = 9
+                                CharsLimit = 9,
+                                NeedsKeyboard = true
                             },
                             new CuiRectTransformComponent
                             {
@@ -4597,7 +4627,8 @@ namespace Oxide.Plugins
                                 Font = "robotocondensed-bold.ttf",
                                 Command = $"UI_BankSystem atm_input {page} {targetId} ",
                                 Color = "1 1 1 1",
-                                CharsLimit = 9
+                                CharsLimit = 9,
+                                NeedsKeyboard = true
                             },
                             new CuiRectTransformComponent
                             {
@@ -4818,7 +4849,8 @@ namespace Oxide.Plugins
                                 Font = "robotocondensed-bold.ttf",
                                 Command = $"UI_BankSystem atm_input {page} {targetId} ",
                                 Color = "1 1 1 1",
-                                CharsLimit = 9
+                                CharsLimit = 9,
+                                NeedsKeyboard = true
                             },
                             new CuiRectTransformComponent
                             {
@@ -5682,7 +5714,9 @@ namespace Oxide.Plugins
                         topDict.Add(transfer.TargetId, 1);
                 });
 
-            return topDict.OrderByDescending(x => x.Value).Select(x => x.Key).ToList();
+            return topDict.ToList()
+                .OrderByDescending(x => x.Value)
+                .Select(x => x.Key);
         }
 
         private void CreateCard(BasePlayer player)
@@ -5757,7 +5791,7 @@ namespace Oxide.Plugins
             foreach (var item in itemList)
             {
                 if (item.info.shortname != shortname ||
-                    skinId != 0 && item.skin != skinId || item.isBroken) continue;
+                    (skinId != 0 && item.skin != skinId) || item.isBroken) continue;
 
                 var num2 = iAmount - num1;
                 if (num2 <= 0) continue;
@@ -6055,6 +6089,8 @@ namespace Oxide.Plugins
         #region Lang
 
         private const string
+            ForbiddenWithdraw = "ForbiddenWithdraw",
+            ForbiddenDeposit = "ForbiddenDeposit",
             CardExpiryDate = "CardExpiryDate",
             BtnNext = "BtnNext",
             BtnBack = "BtnBack",
@@ -6232,6 +6268,8 @@ namespace Oxide.Plugins
                 [BtnBack] = "▲",
                 [BtnNext] = "▼",
                 [CardExpiryDate] = "**/**",
+                [ForbiddenDeposit] = "It is forbidden to deposit less than {0}$!",
+                [ForbiddenWithdraw] = "It is forbidden to withdraw less than {0}$!",
                 ["crate_elite"] = "Crate Elite",
                 ["crate_normal"] = "Crate Normal"
             }, this);
@@ -6384,3 +6422,442 @@ namespace Oxide.Plugins
         #endregion
     }
 }
+
+#region Extension Methods
+
+namespace Oxide.Plugins.BankSystemExtensionMethods
+{
+    [SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
+    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+    public static class ExtensionMethods
+    {
+        internal static Permission p;
+
+        public static bool All<T>(this IList<T> a, Func<T, bool> b)
+        {
+            for (var i = 0; i < a.Count; i++)
+                if (!b(a[i]))
+                    return false;
+            return true;
+        }
+
+        public static int Average(this IList<int> a)
+        {
+            if (a.Count == 0) return 0;
+            var b = 0;
+            for (var i = 0; i < a.Count; i++) b += a[i];
+            return b / a.Count;
+        }
+
+        public static T ElementAt<T>(this IEnumerable<T> a, int b)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                {
+                    if (b == 0) return c.Current;
+                    b--;
+                }
+            }
+
+            return default(T);
+        }
+
+        public static bool Exists<T>(this IEnumerable<T> a, Func<T, bool> b = null)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (b == null || b(c.Current))
+                        return true;
+            }
+
+            return false;
+        }
+
+        public static T FirstOrDefault<T>(this IEnumerable<T> a, Func<T, bool> b = null)
+        {
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (b == null || b(c.Current))
+                        return c.Current;
+            }
+
+            return default(T);
+        }
+
+        public static int RemoveAll<T, V>(this IDictionary<T, V> a, Func<T, V, bool> b)
+        {
+            var c = new List<T>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    if (b(d.Current.Key, d.Current.Value))
+                        c.Add(d.Current.Key);
+            }
+
+            c.ForEach(e => a.Remove(e));
+            return c.Count;
+        }
+
+        public static IEnumerable<V> Select<T, V>(this IEnumerable<T> a, Func<T, V> b)
+        {
+            var c = new List<V>();
+            using (var d = a.GetEnumerator())
+            {
+                while (d.MoveNext()) c.Add(b(d.Current));
+            }
+
+            return c;
+        }
+
+        public static List<TResult> Select<T, TResult>(this List<T> source, Func<T, TResult> selector)
+        {
+            if (source == null || selector == null) return new List<TResult>();
+
+            var r = new List<TResult>(source.Count);
+            for (var i = 0; i < source.Count; i++) r.Add(selector(source[i]));
+
+            return r;
+        }
+
+        public static string[] Skip(this string[] a, int count)
+        {
+            if (a.Length == 0) return Array.Empty<string>();
+            var c = new string[a.Length - count];
+            var n = 0;
+            for (var i = 0; i < a.Length; i++)
+            {
+                if (i < count) continue;
+                c[n] = a[i];
+                n++;
+            }
+
+            return c;
+        }
+
+        public static List<T> Skip<T>(this IList<T> source, int count)
+        {
+            if (count < 0)
+                count = 0;
+
+            if (source == null || count > source.Count)
+                return new List<T>();
+
+            var result = new List<T>(source.Count - count);
+            for (var i = count; i < source.Count; i++)
+                result.Add(source[i]);
+            return result;
+        }
+
+        public static Dictionary<T, V> Skip<T, V>(
+            this IDictionary<T, V> source,
+            int count)
+        {
+            var result = new Dictionary<T, V>();
+            using (var iterator = source.GetEnumerator())
+            {
+                for (var i = 0; i < count; i++)
+                    if (!iterator.MoveNext())
+                        break;
+
+                while (iterator.MoveNext()) result.Add(iterator.Current.Key, iterator.Current.Value);
+            }
+
+            return result;
+        }
+
+        public static List<T> Take<T>(this IList<T> a, int b)
+        {
+            var c = new List<T>();
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (c.Count == b) break;
+                c.Add(a[i]);
+            }
+
+            return c;
+        }
+
+        public static Dictionary<T, V> Take<T, V>(this IDictionary<T, V> a, int b)
+        {
+            var c = new Dictionary<T, V>();
+            foreach (var f in a)
+            {
+                if (c.Count == b) break;
+                c.Add(f.Key, f.Value);
+            }
+
+            return c;
+        }
+
+        public static Dictionary<T, V> ToDictionary<S, T, V>(this IEnumerable<S> a, Func<S, T> b, Func<S, V> c)
+        {
+            var d = new Dictionary<T, V>();
+            using (var e = a.GetEnumerator())
+            {
+                while (e.MoveNext()) d[b(e.Current)] = c(e.Current);
+            }
+
+            return d;
+        }
+
+        public static List<T> ToList<T>(this IEnumerable<T> a)
+        {
+            var b = new List<T>();
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext()) b.Add(c.Current);
+            }
+
+            return b;
+        }
+
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> a)
+        {
+            return new HashSet<T>(a);
+        }
+
+        public static List<T> Where<T>(this List<T> source, Predicate<T> predicate)
+        {
+            if (source == null)
+                return new List<T>();
+
+            if (predicate == null)
+                return new List<T>();
+
+            return source.FindAll(predicate);
+        }
+
+        public static List<T> Where<T>(this List<T> source, Func<T, int, bool> predicate)
+        {
+            if (source == null)
+                return new List<T>();
+
+            if (predicate == null)
+                return new List<T>();
+
+            var r = new List<T>();
+            for (var i = 0; i < source.Count; i++)
+                if (predicate(source[i], i))
+                    r.Add(source[i]);
+            return r;
+        }
+
+        public static List<T> Where<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+        {
+            var c = new List<T>();
+
+            using (var d = source.GetEnumerator())
+            {
+                while (d.MoveNext())
+                    if (predicate(d.Current))
+                        c.Add(d.Current);
+            }
+
+            return c;
+        }
+
+        public static List<T> OfType<T>(this IEnumerable<BaseNetworkable> a) where T : BaseEntity
+        {
+            var b = new List<T>();
+            using (var c = a.GetEnumerator())
+            {
+                while (c.MoveNext())
+                    if (c.Current is T)
+                        b.Add(c.Current as T);
+            }
+
+            return b;
+        }
+
+        public static int Sum<T>(this IList<T> a, Func<T, int> b)
+        {
+            var c = 0;
+            for (var i = 0; i < a.Count; i++)
+            {
+                var d = b(a[i]);
+                if (!float.IsNaN(d)) c += d;
+            }
+
+            return c;
+        }
+
+        public static int Sum(this IList<int> a)
+        {
+            var c = 0;
+            for (var i = 0; i < a.Count; i++)
+            {
+                var d = a[i];
+                if (!float.IsNaN(d)) c += d;
+            }
+
+            return c;
+        }
+
+        public static bool HasPermission(this string a, string b)
+        {
+            if (p == null) p = Interface.Oxide.GetLibrary<Permission>();
+            return !string.IsNullOrEmpty(a) && p.UserHasPermission(a, b);
+        }
+
+        public static bool HasPermission(this BasePlayer a, string b)
+        {
+            return a.UserIDString.HasPermission(b);
+        }
+
+        public static bool HasPermission(this ulong a, string b)
+        {
+            return a.ToString().HasPermission(b);
+        }
+
+        public static bool IsReallyConnected(this BasePlayer a)
+        {
+            return a.IsReallyValid() && a.net.connection != null;
+        }
+
+        public static bool IsKilled(this BaseNetworkable a)
+        {
+            return (object) a == null || a.IsDestroyed;
+        }
+
+        public static bool IsNull<T>(this T a) where T : class
+        {
+            return a == null;
+        }
+
+        public static bool IsNull(this BasePlayer a)
+        {
+            return (object) a == null;
+        }
+
+        public static bool IsReallyValid(this BaseNetworkable a)
+        {
+            return !((object) a == null || a.IsDestroyed || a.net == null);
+        }
+
+        public static void SafelyKill(this BaseNetworkable a)
+        {
+            if (a.IsKilled()) return;
+            a.Kill();
+        }
+
+        public static bool CanCall(this Plugin o)
+        {
+            return o != null && o.IsLoaded;
+        }
+
+        public static bool IsInBounds(this OBB o, Vector3 a)
+        {
+            return o.ClosestPoint(a) == a;
+        }
+
+        public static bool IsHuman(this BasePlayer a)
+        {
+            return !(a.IsNpc || !a.userID.IsSteamId());
+        }
+
+        public static BasePlayer ToPlayer(this IPlayer user)
+        {
+            return user.Object as BasePlayer;
+        }
+
+        public static List<TResult> SelectMany<TSource, TResult>(this List<TSource> source,
+            Func<TSource, List<TResult>> selector)
+        {
+            if (source == null || selector == null)
+                return new List<TResult>();
+
+            var result = new List<TResult>(source.Count);
+            source.ForEach(i => selector(i).ForEach(j => result.Add(j)));
+            return result;
+        }
+
+        public static IEnumerable<TResult> SelectMany<TSource, TResult>(
+            this IEnumerable<TSource> source,
+            Func<TSource, IEnumerable<TResult>> selector)
+        {
+            using (var item = source.GetEnumerator())
+            {
+                while (item.MoveNext())
+                    using (var result = selector(item.Current).GetEnumerator())
+                    {
+                        while (result.MoveNext()) yield return result.Current;
+                    }
+            }
+        }
+
+        public static int Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector)
+        {
+            var sum = 0;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext()) sum += selector(element.Current);
+            }
+
+            return sum;
+        }
+
+        public static double Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, double> selector)
+        {
+            var sum = 0.0;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext()) sum += selector(element.Current);
+            }
+
+            return sum;
+        }
+
+        public static bool Any<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        {
+            if (source == null) return false;
+
+            using (var element = source.GetEnumerator())
+            {
+                while (element.MoveNext())
+                    if (predicate(element.Current))
+                        return true;
+            }
+
+            return false;
+        }
+
+        public static List<TSource> OrderByDescending<TSource, TKey>(this List<TSource> source,
+            Func<TSource, TKey> keySelector, IComparer<TKey> comparer = null)
+        {
+            if (source == null) return new List<TSource>();
+
+            if (keySelector == null) return new List<TSource>();
+
+            if (comparer == null) comparer = Comparer<TKey>.Default;
+
+            var result = new List<TSource>(source);
+            var lambdaComparer = new ReverseLambdaComparer<TSource, TKey>(keySelector, comparer);
+            result.Sort(lambdaComparer);
+            return result;
+        }
+
+        internal sealed class ReverseLambdaComparer<T, U> : IComparer<T>
+        {
+            private IComparer<U> comparer;
+            private Func<T, U> selector;
+
+            public ReverseLambdaComparer(Func<T, U> selector, IComparer<U> comparer)
+            {
+                this.comparer = comparer;
+                this.selector = selector;
+            }
+
+            public int Compare(T x, T y)
+            {
+                return comparer.Compare(selector(y), selector(x));
+            }
+        }
+    }
+}
+
+#endregion Extension Methods

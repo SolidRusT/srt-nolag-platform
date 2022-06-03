@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -10,11 +10,10 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("ServerInfo", "FastBurst/Fujikura/baton", "0.5.6", ResourceId = 1317)]
-    [Description("UI customizable server info with multiple tabs.")]
+    [Info("Server Info", "FastBurst", "0.5.7")]
+    [Description("UI customizable server info with multiple tabs")]
     public sealed class ServerInfo : RustPlugin
     {
-
         private static Settings _settings;
         private static readonly Dictionary<ulong, PlayerInfoState> PlayerActiveTabs = new Dictionary<ulong, PlayerInfoState>();
         private static readonly Permission Permission = Interface.GetMod().GetLibrary<Permission>();
@@ -302,6 +301,7 @@ namespace Oxide.Plugins
             var tabContentPanelName = CreateTabContent(activeAllowedTab, container, mainPanelName);
             var activeTabButtonName = AddActiveButton(tabToSelectIndex, activeAllowedTab, container, mainPanelName);
 
+            
             for (int tabIndex = 0; tabIndex < allowedTabs.Count; tabIndex++)
             {
                 if (tabIndex == tabToSelectIndex)
@@ -378,7 +378,6 @@ namespace Oxide.Plugins
 
             return element;
         }
-
 
         private string CreateTabContent(HelpTab helpTab, CuiElementContainer container, string mainPanelName, int pageIndex = 0)
         {
@@ -610,24 +609,19 @@ namespace Oxide.Plugins
         }
 
         private static void AddNonActiveButton(
-            int tabIndex,
-            CuiElementContainer container,
-            HelpTab helpTab,
-            string mainPanelName,
-            string activeTabButtonName)
+             int tabIndex,
+             CuiElementContainer container,
+             HelpTab helpTab,
+             string mainPanelName,
+             string activeTabButtonName)
         {
             Color nonActiveButtonColor;
             ColorExtensions.TryParseHexString(_settings.InactiveButtonColor, out nonActiveButtonColor);
 
             CuiButton helpTabButton = CreateTabButton(tabIndex, helpTab, nonActiveButtonColor);
             string helpTabButtonName = container.Add(helpTabButton, mainPanelName);
-
-            CuiElement helpTabButtonCuiElement =
-                container.First(i => i.Name.Equals(helpTabButtonName, StringComparison.OrdinalIgnoreCase));
-            CuiButtonComponent generatedHelpTabButton = helpTabButtonCuiElement.Components.OfType<CuiButtonComponent>().First();
-
             string command = string.Format("changeTab {0} {1} {2} {3}", tabIndex, activeTabButtonName, helpTabButtonName, mainPanelName);
-            generatedHelpTabButton.Command = command;
+            helpTabButton.Button.Command = command;
         }
 
         private static string AddActiveButton(
@@ -641,14 +635,9 @@ namespace Oxide.Plugins
 
             var activeHelpTabButton = CreateTabButton(activeTabIndex, activeTab, activeButtonColor);
             var activeTabButtonName = container.Add(activeHelpTabButton, mainPanelName);
-
-            var activeTabButtonCuiElement =
-                container.First(i => i.Name.Equals(activeTabButtonName, StringComparison.OrdinalIgnoreCase));
-            var activeTabButton = activeTabButtonCuiElement.Components.OfType<CuiButtonComponent>().First();
-
             var command = string.Format("changeTab {0}", activeTabIndex);
-            activeTabButton.Command = command;
 
+            activeHelpTabButton.Button.Command = command;
             return activeTabButtonName;
         }
 
@@ -1113,6 +1102,5 @@ namespace Oxide.Plugins
                 return new Color32(r, g, b, a);
             }
         }
-
     }
 }

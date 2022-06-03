@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Oxide.Core;
 using Oxide.Core.Plugins;
@@ -11,14 +11,14 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Blueprint Share", "c_creep", "1.2.8")]
+    [Info("Blueprint Share", "c_creep", "1.2.10")]
     [Description("Allows players to share researched blueprints with their friends, clan or team")]
-
     class BlueprintShare : RustPlugin
     {
         #region Fields
 
-        [PluginReference] private Plugin Clans, Friends;
+        [PluginReference]
+        private Plugin Clans, Friends;
 
         private StoredData storedData;
         
@@ -41,20 +41,18 @@ namespace Oxide.Plugins
 
         private void OnNewSave(string filename)
         {
-            if (config.ClearDataOnWipe)
-            {
-                CreateData();
-            }
+            if (!config.ClearDataOnWipe) return;
+
+            CreateData();
         }
 
         private void OnPlayerConnected(BasePlayer player)
         {
             var playerID = player.UserIDString;
 
-            if (!PlayerDataExists(playerID))
-            {
-                CreatePlayerData(playerID);
-            }
+            if (PlayerDataExists(playerID)) return;
+
+            CreatePlayerData(playerID);
         }
 
         private void OnItemAction(Item item, string action, BasePlayer player)
@@ -100,21 +98,26 @@ namespace Oxide.Plugins
 
         private bool HasFriends(ulong playerID)
         {
-            if (Friends == null) return false;
+            if (Friends == null || !Friends.IsLoaded) return false;
 
-            var friendsList = Friends?.Call<ulong[]>("GetFriends", playerID);
+            var friendsList = Friends.Call<ulong[]>("GetFriends", playerID);
 
             return friendsList != null && friendsList.Length != 0;
         }
 
         private List<ulong> GetFriends(ulong playerID)
         {
-            var friends = Friends?.Call<ulong[]>("GetFriends", playerID);
+            if (Friends == null || !Friends.IsLoaded) return new List<ulong>();
+            
+            var friends = Friends.Call<ulong[]>("GetFriends", playerID);
 
             return friends.ToList();
         }
 
-        private bool AreFriends(string playerID, string targetID) => Friends != null && Friends.Call<bool>("AreFriends", playerID, targetID);
+        private bool AreFriends(string playerID, string targetID)
+        {
+            return Friends != null && Friends.IsLoaded && Friends.Call<bool>("AreFriends", playerID, targetID);
+        }
 
         #endregion
 
@@ -196,7 +199,15 @@ namespace Oxide.Plugins
             return player?.Team.members;
         }
 
-        private bool SameTeam(BasePlayer player, BasePlayer target) => player.currentTeam == target.currentTeam;
+        private bool SameTeam(BasePlayer player, BasePlayer target)
+        {
+            if (player.currentTeam == 0 || target.currentTeam == 0) return false;
+
+            var playerTeam = player.currentTeam;
+            var targetTeam = target.currentTeam;
+
+            return playerTeam == targetTeam;
+        }
 
         #endregion
 
@@ -251,7 +262,7 @@ namespace Oxide.Plugins
 
             var playerID = player.UserIDString;
 
-            if (config.BlockedItems.Contains(item.shortname))
+            if (BlueprintBlocked(item))
             {
                 player.ChatMessage(GetLangValue("Prefix", playerID) + GetLangValue("BlueprintBlocked", playerID, item.displayName.translated));
 
@@ -365,7 +376,18 @@ namespace Oxide.Plugins
                 return;
             }
 
-            var learnedBlueprints = UnlockBlueprints(target, player.PersistantPlayerInfo.unlockedItems);
+            var playerBlueprints = GetPlayerBlueprintItems(player.PersistantPlayerInfo.unlockedItems);
+
+            foreach (var blueprint in playerBlueprints.ToList())
+            {
+                if (BlueprintBlocked(blueprint))
+                {
+                    playerBlueprints.Remove(blueprint);
+                }
+            }
+
+            var unlockedItems = ConvertItemsToIds(playerBlueprints);
+            var learnedBlueprints = UnlockBlueprints(target, unlockedItems);
 
             if (learnedBlueprints > 0)
             {
@@ -449,7 +471,7 @@ namespace Oxide.Plugins
                 ids.AddRange(GetClanMembers(playerID));
             }
 
-            if (config.FriendsEnabled && Friends != null && HasFriends(playerID))
+            if (config.FriendsEnabled && HasFriends(playerID))
             {
                 ids.AddRange(GetFriends(playerID));
             }
@@ -521,6 +543,38 @@ namespace Oxide.Plugins
 
             return targets;
         }
+
+        private List<ItemDefinition> GetPlayerBlueprintItems(List<int> blueprintIds)
+        {
+            var blueprintItems = new List<ItemDefinition>();
+
+            foreach (var id in blueprintIds)
+            {
+                var item = ItemManager.FindItemDefinition(id);
+
+                if (item == null) continue;
+
+                blueprintItems.Add(item);
+            }
+
+            return blueprintItems;
+        }
+
+        private List<int> ConvertItemsToIds(List<ItemDefinition> items)
+        {
+            var ids = new List<int>();
+
+            foreach (var item in items)
+            {
+                if (item == null) continue;
+
+                ids.Add(item.itemid);
+            }
+
+            return ids;
+        }
+
+        private bool BlueprintBlocked(ItemDefinition item) => config.BlockedItems.Contains(item.shortname);
 
         #endregion
 

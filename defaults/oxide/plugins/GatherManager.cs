@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,7 +6,8 @@ using UnityEngine;
 namespace Oxide.Plugins
 {
 
-    [Info("Gathering Manager", "Mughisi", "2.2.75", ResourceId = 675)]
+    [Info("Gathering Manager", "Mughisi", "2.2.76")]
+    [Description("Increases the amount of items gained from gathering resources")]
     class GatherManager : RustPlugin
     {
         #region Configuration Data
@@ -50,7 +51,7 @@ namespace Oxide.Plugins
         // Plugin messages
         private const string DefaultNotAllowed = "You don't have permission to use this command.";
         private const string DefaultInvalidArgumentsGather =
-            "Invalid arguments supplied! Use gather.rate <type:dispenser|pickup|quarry|survey> <resource> <multiplier>";
+            "Invalid arguments supplied! Use gather.rate <type:dispenser|pickup|quarry|excavator|survey> <resource> <multiplier>";
         private const string DefaultInvalidArgumentsDispenser =
             "Invalid arguments supplied! Use dispenser.scale <dispenser:tree|ore|corpse> <multiplier>";
         private const string DefaultInvalidArgumentsSpeed =
@@ -105,7 +106,7 @@ namespace Oxide.Plugins
 
         #endregion
 
-        private readonly List<string> subcommands = new List<string>() { "dispenser", "pickup", "quarry", "survey" };
+        private readonly List<string> subcommands = new List<string>() { "dispenser", "pickup", "quarry", "excavator", "survey" };
 
         private readonly Hash<string, ItemDefinition> validResources = new Hash<string, ItemDefinition>();
 
