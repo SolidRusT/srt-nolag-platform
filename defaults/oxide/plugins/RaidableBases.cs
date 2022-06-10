@@ -40,7 +40,7 @@ using UnityEngine.SceneManagement;
 
 namespace Oxide.Plugins
 {
-    [Info("Raidable Bases", "nivex", "2.4.5")]
+    [Info("Raidable Bases", "nivex", "2.4.7")]
     [Description("Create fully automated raidable bases with npcs.")]
     class RaidableBases : RustPlugin
     {
@@ -6355,7 +6355,7 @@ namespace Oxide.Plugins
                     return;
                 }
 
-                if (!config.Skins.Deployables.Everything && !config.Skins.Deployables.Names.Exists(entity.name.Contains))
+                if (!config.Skins.Deployables.Everything && !config.Skins.Deployables.Names.Exists(entity.ObjectName().Contains))
                 {
                     return;
                 }
@@ -6727,6 +6727,8 @@ namespace Oxide.Plugins
 
                     var lootItem = GetRandomLootItem();
 
+                    Loot.Remove(lootItem);
+
                     SpawnItem(lootItem, new List<StorageContainer> { container });
                 }
             }
@@ -6761,6 +6763,8 @@ namespace Oxide.Plugins
                         containers.Insert(containers.Count, lastContainer);
                     }
                     else SpawnItem(lootItem, containers);
+
+                    Loot.Remove(lootItem);
 
                     containers.RemoveAll(container => container.inventory.IsFull());
                 }
@@ -9539,6 +9543,11 @@ namespace Oxide.Plugins
                     return false;
                 }
 
+                if (ContainsTopology(TerrainTopology.Enum.Rail | TerrainTopology.Enum.Railside, vector, M_RADIUS))
+                {
+                    return false;
+                }
+
                 if (!config.Settings.Management.AllowOnBuildingTopology && ContainsTopology(TerrainTopology.Enum.Building, vector, M_RADIUS))
                 {
                     return false;
@@ -9708,7 +9717,9 @@ namespace Oxide.Plugins
                         goto next;
                     }
 
-                    if (assets.Exists(colName.Contains) && (e.IsNull() || e.name.Contains("/treessource/")))
+                    string entityName = e.ObjectName();
+
+                    if (assets.Exists(colName.Contains) && (e.IsNull() || entityName.Contains("/treessource/")))
                     {
                         message = $"Blocked by a map prefab {collider.transform.position} {colName}";
                         cacheType = CacheType.Delete;
@@ -9717,7 +9728,7 @@ namespace Oxide.Plugins
 
                     if (e.IsReallyValid())
                     {
-                        if (e.PrefabName.Contains("xmas") || e.name.StartsWith("assets/prefabs/plants"))
+                        if (e.PrefabName.Contains("xmas") || entityName.StartsWith("assets/prefabs/plants"))
                         {
                             goto next;
                         }
@@ -11645,7 +11656,7 @@ namespace Oxide.Plugins
                 return true;
             }
 
-            if (entity is BaseMountable || entity.name.Contains("modularcar"))
+            if (entity is BaseMountable || entity.ObjectName().Contains("modularcar"))
             {
                 if (hitInfo.Initiator is SamSite)
                 {
@@ -13867,7 +13878,7 @@ namespace Oxide.Plugins
                         BaseNetworkable.serverEntities.OfType<BaseEntity>().ToList().ForEach(entity =>
                         {
                             if (entity.IsDestroyed || entity.OwnerID != 0 || entity.Distance(player) > 100f) return;
-                            if (entity.name.Contains("building") || entity.name.Contains("deploy")) entity.SafelyKill();
+                            if (entity.ObjectName().Contains("building") || entity.ObjectName().Contains("deploy")) entity.SafelyKill();
                         });
 
                         return true;
@@ -19209,6 +19220,7 @@ namespace Oxide.Plugins.RaidableBasesExtensionMethods
         public static void SetAiming(this BasePlayer a, bool f) { a.modelState.aiming = f; a.SendNetworkUpdate(); }
         public static BasePlayer ToPlayer(this IPlayer user) { return user.Object as BasePlayer; }
         public static string ObjectName(this Collider collider) { try { return collider.gameObject.name ?? string.Empty; } catch { return string.Empty; } }
+        public static string ObjectName(this BaseEntity entity) { try { return entity.name ?? string.Empty; } catch { return string.Empty; } }
         public static T GetRandom<T>(this HashSet<T> h) { if (h == null || h.Count == 0) { return default(T); } return h.ElementAt(UnityEngine.Random.Range(0, h.Count)); }
         public static int InventorySlots(this StorageContainer a) { if (a.IsKilled() || a.inventory == null) return 0; return a.inventorySlots; } }
 }
