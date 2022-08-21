@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<dwsync>
+<file name="bootstrap-grid.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511740846" remote="132729687000000000" Dst="2" />
+<file name="bootstrap-reboot.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511740846" remote="132729687000000000" Dst="2" />
+<file name="bootstrap.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511740846" remote="132729687000000000" Dst="2" />
+<file name="prepros-6.config" server="dev.solidrust.net//solidrust.net/" local="132714982511838493" remote="132729687000000000" Dst="2" />
+<file name="_badge.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511604130" remote="132729687000000000" Dst="2" />
+<file name="_breadcrumb.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511604130" remote="132729687000000000" Dst="2" />
+<file name="_alert.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511594357" remote="132729687000000000" Dst="2" />
+<file name="_button-group.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511604130" remote="132729687000000000" Dst="2" />
+<file name="_buttons.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511613910" remote="132729687000000000" Dst="2" />
+<file name="_card.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511613910" remote="132729687000000000" Dst="2" />
+<file name="_carousel.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511613910" remote="132729687000000000" Dst="2" />
+<file name="_close.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511623673" remote="132729687000000000" Dst="2" />
+<file name="_code.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511623673" remote="132729687000000000" Dst="2" />
+<file name="_custom-forms.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511623673" remote="132729687000000000" Dst="2" />
+<file name="_dropdown.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511633438" remote="132729687000000000" Dst="2" />
+<file name="_forms.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511633438" remote="132729687000000000" Dst="2" />
+<file name="_functions.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511633438" remote="132729687000000000" Dst="2" />
+<file name="_grid.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511643194" remote="132729687000000000" Dst="2" />
+<file name="_images.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511643194" remote="132729687000000000" Dst="2" />
+<file name="_jumbotron.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511652967" remote="132729687000000000" Dst="2" />
+<file name="_list-group.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511652967" remote="132729687000000000" Dst="2" />
+<file name="_input-group.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511652967" remote="132729687000000000" Dst="2" />
+<file name="_media.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511662720" remote="132729687000000000" Dst="2" />
+<file name="_mixins.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511662720" remote="132729687000000000" Dst="2" />
+<file name="_modal.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511662720" remote="132729687000000000" Dst="2" />
+<file name="_nav.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511672488" remote="132729687000000000" Dst="2" />
+<file name="_navbar.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511672488" remote="132729687000000000" Dst="2" />
+<file name="_pagination.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511682290" remote="132729687000000000" Dst="2" />
+<file name="_print.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511692021" remote="132729687000000000" Dst="2" />
+<file name="_progress.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511692021" remote="132729687000000000" Dst="2" />
+<file name="_popover.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511682290" remote="132729687000000000" Dst="2" />
+<file name="_reboot.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511701791" remote="132729687000000000" Dst="2" />
+<file name="_root.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511701791" remote="132729687000000000" Dst="2" />
+<file name="_spinners.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511711558" remote="132729687000000000" Dst="2" />
+<file name="_tables.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511711558" remote="132729687000000000" Dst="2" />
+<file name="_toasts.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511721330" remote="132729687000000000" Dst="2" />
+<file name="_tooltip.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511721330" remote="132729687000000000" Dst="2" />
+<file name="_transitions.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511721330" remote="132729687000000000" Dst="2" />
+<file name="_type.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511731100" remote="132729687000000000" Dst="2" />
+<file name="_utilities.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511731100" remote="132729687000000000" Dst="2" />
+<file name="_variables.scss" server="dev.solidrust.net//solidrust.net/" local="132714982511740846" remote="132729687000000000" Dst="2" />
+</dwsync>

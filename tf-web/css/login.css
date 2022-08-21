@@ -1,0 +1,180 @@
+@import url('https://fonts.googleapis.com/css2?family=Krona+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Krona+One&display=swap');
+
+*{transition:all 0.3s ease-in-out;}
+
+.container{
+  clear:both;
+  overflow:auto;
+}
+
+nav{ 
+    float:right;
+    margin-right: 30px;
+    border-bottom: 2px solid orange;
+}
+
+.logo img{
+    float:left;
+    margin-left: 30px;
+}
+
+ul li{
+  display: inline-block; 
+  padding:10px;
+  font-size:20px; 
+  font-family: 'Nunito', sans-serif;
+  color: white;
+}
+
+ul li a {
+    text-decoration: none;
+    color: white;
+}
+
+ul li a:hover {
+    text-decoration: none;
+    color:orange;
+}
+
+
+#logincontent {
+    font-family: 'Krona One', sans-serif;
+
+	width: 600px;
+	height: 100px;
+	background: rgba(25, 25, 25, .5);
+    border-radius: 3px;
+
+    color: white;
+
+    border: 1px solid white;
+
+	position: absolute;
+	top:0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+
+    padding: 10px;
+	
+	margin: auto;
+}
+
+img.logo {
+	height: 150px;
+	position: absolute;
+	top:-500px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+    padding: 10px;
+	margin: auto;
+}
+
+.unlinkButton {
+	position: absolute;
+    background: rgba(25, 25, 25, .5);
+    border: 2px solid white;
+    text-decoration: none;
+    font-family: 'Nunito', sans-serif;
+    text-align: center;
+    border-radius: 3px;
+    padding: 6px;
+	top:250px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+    width: 200px;
+    height: 45px;
+    line-height:45px;
+    color:white;
+}
+
+.steamButton {
+    color: white;
+    border: 2px solid white;
+    padding: 6px;
+    border-radius: 3px;
+    margin-left: 25%;
+    text-decoration: none;
+    font-family: 'Nunito', sans-serif;
+    text-align: center;
+}
+
+.discordButton {
+    color: white;
+    border: 2px solid white;
+    padding: 6px;
+    border-radius: 3px;
+    margin-left: 25%;
+    text-decoration: none;
+    font-family: 'Nunito', sans-serif;
+    text-align: center;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: #222;
+    background-size: cover;
+}
+
+@media only screen and (max-device-width: 480px) {
+    img.logo {
+        height: 300px;
+        position: absolute;
+        top:-500px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        margin: auto;
+    }
+
+    #logincontent {
+        font-family: 'Krona One', sans-serif;
+        font-size: 35px;
+    
+        width: 600px;
+        height: 250px;
+        background: rgba(25, 25, 25, .5);
+        border-radius: 3px;
+    
+        color: white;
+    
+        border: 1px solid white;
+    
+        position: absolute;
+        top:50;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    
+        padding: 10px;
+        
+        margin: auto;
+    }
+
+    .steamButton {
+        color: white;
+        border: 2px solid white;
+        padding: 6px;
+        border-radius: 3px;
+        margin-left: 25%;
+        text-decoration: none;
+        font-family: 'Nunito', sans-serif;
+        text-align: center;
+    }
+
+    .discordButton {
+        color: white;
+        border: 2px solid white;
+        padding: 6px;
+        border-radius: 3px;
+        margin-left: 25%;
+        text-decoration: none;
+        font-family: 'Nunito', sans-serif;
+        text-align: center;
+    }
+}
