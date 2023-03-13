@@ -36,30 +36,24 @@ When making changes to plugins like `Kits`, using the in-game user interface, th
 #### Clone remote GitHub Repository
 
 To create a local copy of this repository, choose from the following methods:
-* Clone Using website username and password
+* Clone the nolag platform to your home directory
 ```bash
-git clone https://github.com/suparious/solidrust.net.git
-cd solidrust.net
-```
-* Clone Using SSH keys
-See: [Adding SSH keys to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) for more information on this method.
-```bash
-git clone git@github.com:suparious/solidrust.net.git
-cd solidrust.net
+git clone https://github.com/SolidRusT/srt-nolag-platform.git
+cd srt-nolag-platform # Optional
 ```
 
-#### Update local GitHub Repository
+#### Update local GitHub Repository clone
 Syncronize your local files with the remote Github repository.
 ```bash
-cd solidrust.net # Optional, if you are already in this folder
+cd srt-nolag-platform # Optional, if you are already in this folder
 git checkout master && git pull
 ```
-If you get some error messages, then you need to read and follow their suggestions OR just trash the `solidrust.net` folder and clone it from the remote repository to start over.
+If you get some error messages, then you need to read and follow their suggestions OR just trash the `srt-nolag-platform` folder and clone it from the remote repository to start over.
 
 #### Commit local changes
 Once you are happy with your edits, commit them with a comment to indicate what you have changed.
 ```bash
-cd solidrust.net                        # Optional, if you are already in this folder
+cd srt-nolag-platform                        # Optional, if you are already in this folder
 git config --global core.autocrlf false # need this if you use a Windows PC
 git add --renormalize .                 # need this if you use a Windows PC
 git add .       # Add any file that was changed into the release
@@ -69,7 +63,7 @@ git commit -m "Type a breif description of what you changed here"
 #### Push local repository changes
 Update GitHub with your local commit(s), by pushing and merging your changes with the remote GitHub repository.
 ```bash
-cd solidrust.net # Optional, if you are already in this folder
+cd srt-nolag-platform # Optional, if you are already in this folder
 git push
 ```
 
