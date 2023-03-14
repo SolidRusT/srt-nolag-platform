@@ -1,4 +1,0 @@
-spawn big_wheel
-/casino create blackjack 4 50 5000
-ent kill
-spawn bigwheelbettingterminal

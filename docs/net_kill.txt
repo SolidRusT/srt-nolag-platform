@@ -1,4 +1,0 @@
-$ ss --tcp state CLOSE-WAIT --kill
-You may also filter your action
-
-$ ss --tcp state CLOSE-WAIT '( dport = 22 or dst 1.1.1.1 )' --kill

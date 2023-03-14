@@ -1,1 +1,0 @@
-Collection of local shellscripts to admin SRT servers

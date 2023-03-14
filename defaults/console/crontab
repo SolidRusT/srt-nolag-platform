@@ -1,4 +1,0 @@
- 1 *    * * *   admin  /bin/bash /home/admin/solidrust.net/defaults/console/1_github_repo_pull.sh
- 3 *    * * *   admin  /bin/bash /home/admin/solidrust.net/defaults/console/3_push_web_content.sh
-15 5    * * *   admin  /bin/bash /home/admin/solidrust.net/defaults/console/15_update_plugins.sh
- 0 *    * * *   admin  /usr/sbin/logrotate -f /home/admin/solidrust.net/defaults/console/logrotate.conf --state /home/admin/logrotate-state

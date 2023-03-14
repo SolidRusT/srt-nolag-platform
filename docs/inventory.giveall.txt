@@ -1,1 +1,0 @@
-inventory.giveall explosive.timed 100
