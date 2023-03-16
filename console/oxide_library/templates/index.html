@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Package Repository</title>
+</head>
+<body>
+    <h1>Package Repository</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Author</th>
+                <th>Version</th>
+                <th>Description</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for package in packages %}
+            <tr>
+                <td>{{ package[0] }}</td>
+                <td>{{ package[1] }}</td>
+                <td>{{ package[2] }}</td>
+                <td>{{ package[3] }}</td>
+                <td>{{ package[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

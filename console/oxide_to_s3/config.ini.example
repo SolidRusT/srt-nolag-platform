@@ -9,3 +9,9 @@ region = your_aws_region
 [s3]
 bucket = your_s3_bucket
 object_key = path/to/save/Oxide.Rust-linux.zip
+
+[mysql]
+host = your_mysql_host
+user = your_mysql_user
+password = your_mysql_password
+database = your_mysql_database

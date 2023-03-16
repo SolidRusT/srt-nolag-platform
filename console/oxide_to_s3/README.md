@@ -25,3 +25,23 @@ python3 oxide_uploader.py
 stuff this up your ${STEAMUSER} contab using `crontab -e`
 
 `0 * * * * /usr/bin/python3 /path/to/your/oxide_uploader.py >> /path/to/your/log_file.log 2>&1`
+
+
+## MySQL upgrade
+
+On the Database server:
+
+```sql
+CREATE DATABASE IF NOT EXISTS oxide;
+USE oxide;
+CREATE TABLE IF NOT EXISTS last_downloaded_version (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    version VARCHAR(255) NOT NULL
+);
+
+INSERT INTO last_downloaded_version (version) VALUES ('0.0.0');
+
+CREATE USER 'oxide_uploader'@'%' IDENTIFIED BY 'SomePassword123';
+GRANT ALL PRIVILEGES ON *.* TO 'oxide_uploader'@'%';
+FLUSH PRIVILEGES;
+```

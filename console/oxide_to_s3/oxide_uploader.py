@@ -1,21 +1,30 @@
 import os
+import zipfile
 import tempfile
 import requests
+import mysql.connector
 from configparser import ConfigParser
 from github import Github
 from boto3.session import Session
 
-LAST_VERSION_FILE = "last_downloaded_version.txt"
+def get_mysql_connection(config):
+    return mysql.connector.connect(
+        host=config.get("mysql", "host"),
+        user=config.get("mysql", "user"),
+        password=config.get("mysql", "password"),
+        database=config.get("mysql", "database"),
+    )
 
-def read_last_downloaded_version() -> str:
-    if os.path.isfile(LAST_VERSION_FILE):
-        with open(LAST_VERSION_FILE, "r") as f:
-            return f.read().strip()
-    return None
+def read_last_downloaded_version(conn) -> str:
+    cursor = conn.cursor()
+    cursor.execute("SELECT version FROM last_downloaded_version LIMIT 1")
+    result = cursor.fetchone()
+    return result[0] if result else None
 
-def write_last_downloaded_version(version: str):
-    with open(LAST_VERSION_FILE, "w") as f:
-        f.write(version)
+def write_last_downloaded_version(conn, version: str):
+    cursor = conn.cursor()
+    cursor.execute("UPDATE last_downloaded_version SET version = %s", (version,))
+    conn.commit()
 
 def download_latest_release(repo_name: str, asset_name: str, access_token: str) -> (str, str):
     github = Github(access_token)
@@ -54,7 +63,10 @@ def main():
         config.get("aws", "region"),
     )
 
-    last_downloaded_version = read_last_downloaded_version()
+    # Connect to MySQL
+    conn = get_mysql_connection(config)
+
+    last_downloaded_version = read_last_downloaded_version(conn)
 
     # Download latest release
     downloaded_file, release_version = download_latest_release(repo_name, asset_name, github_access_token)
@@ -62,8 +74,8 @@ def main():
         if release_version != last_downloaded_version:
             # Upload to S3
             upload_to_s3(downloaded_file, s3_bucket, s3_object_key, aws_credentials)
-            # Update last_downloaded_version
-            write_last_downloaded_version(release_version)
+            # Update last_downloaded_version in MySQL
+            write_last_downloaded_version(conn, release_version)
             # Clean up
             os.remove(downloaded_file)
             print(f"Uploaded {asset_name} to S3 bucket {s3_bucket}")
@@ -72,6 +84,9 @@ def main():
             os.remove(downloaded_file)
     else:
         print("Asset not found.")
+
+    # Close MySQL connection
+    conn.close()
 
 if __name__ == "__main__":
     main()
