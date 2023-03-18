@@ -1,0 +1,10 @@
+[database]
+host = <DB_HOST_OR_IP>
+port = <DB_PORT>
+user = <DB_USERNAME>
+password = <DB_PASSWORD>
+database = package_repo
+
+[s3]
+bucket = <SOME_COOL_S3_BUCKET>
+path = /repo

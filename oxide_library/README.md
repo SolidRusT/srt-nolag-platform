@@ -1,10 +1,24 @@
+Ubuntu or Debian:
 ```bash
 sudo apt-get update
 sudo apt-get install -y python3-pip nginx
 ```
+Arch Linux or SolidRusT-OS
+```bash
+sudo pacman -Syu
+sudo pacman -S python-pip nginx
+```
+Clone this repo
+```bash
+# Optional, organize repos in a foler
+cd ~ && mkdir repos && cd repos
+# download from git
+git clone https://github.com/SolidRusT/srt-nolag-platform.git
+cd srt-nolag-platform/oxide_library
+```
 
 ```bash
-pip3 install mysql-connector-python flask boto3 watchdog
+pip install -r requirements.txt
 ```
 
 ```sql

@@ -6,18 +6,18 @@ import datetime
 import mysql.connector
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import configparser
 
-# Add your MySQL credentials and S3 bucket info here
 db_config = {
-    'host': '10.10.10.11',
-    'port': 3306,
-    'user': 'your_username',
-    'password': 'your_password',
-    'database': 'package_repo'
+    'host': config.get('database', 'host'),
+    'port': int(config.get('database', 'port')),
+    'user': config.get('database', 'user'),
+    'password': config.get('database', 'password'),
+    'database': config.get('database', 'database')
 }
 
-s3_bucket = 'srt-nolag-platform-live-repo'
-s3_path = '/repo'
+s3_bucket = config.get('s3', 'bucket')
+s3_path = config.get('s3', 'path')
 
 # Connect to MySQL and create a cursor
 cnx = mysql.connector.connect(**db_config)

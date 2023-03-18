@@ -1,13 +1,17 @@
 from flask import Flask, render_template
 import mysql.connector
+import configparser
 
-# Add your MySQL credentials here
+# Load configuration values
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 db_config = {
-    'host': '10.10.10.11',
-    'port': 3306,
-    'user': 'your_username',
-    'password': 'your_password',
-    'database': 'package_repo'
+    'host': config.get('database', 'host'),
+    'port': int(config.get('database', 'port')),
+    'user': config.get('database', 'user'),
+    'password': config.get('database', 'password'),
+    'database': config.get('database', 'database')
 }
 
 app = Flask(__name__)

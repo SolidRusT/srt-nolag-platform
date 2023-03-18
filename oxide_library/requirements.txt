@@ -1,0 +1,12 @@
+watchdog
+boto3
+mysql-connector-python
+Flask
+configparser
+
+#watchdog==2.1.6
+#boto3==1.20.19
+#mysql-connector-python==8.0.28
+#Flask==2.1.1
+#configparser==5.2.0
+
