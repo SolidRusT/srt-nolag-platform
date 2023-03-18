@@ -83,3 +83,6 @@ defaults/oxide/data/ZoneManager/*
 
 # node files
 **/node_modules
+
+# dev-notes
+dev-notes.txt
