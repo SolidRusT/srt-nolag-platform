@@ -34,12 +34,12 @@ On the Database server:
 ```sql
 CREATE DATABASE IF NOT EXISTS oxide;
 USE oxide;
-CREATE TABLE IF NOT EXISTS last_downloaded_version (
+CREATE TABLE IF NOT EXISTS oxide_ext_linux (
     id INT AUTO_INCREMENT PRIMARY KEY,
     version VARCHAR(255) NOT NULL
 );
 
-INSERT INTO last_downloaded_version (version) VALUES ('0.0.0');
+INSERT INTO oxide_ext_linux (version) VALUES ('0.0.0');
 
 CREATE USER 'oxide_uploader'@'%' IDENTIFIED BY 'SomePassword123';
 GRANT ALL PRIVILEGES ON *.* TO 'oxide_uploader'@'%';

@@ -17,13 +17,13 @@ def get_mysql_connection(config):
 
 def read_last_downloaded_version(conn) -> str:
     cursor = conn.cursor()
-    cursor.execute("SELECT version FROM last_downloaded_version LIMIT 1")
+    cursor.execute("SELECT version FROM oxide_ext_discord LIMIT 1")
     result = cursor.fetchone()
     return result[0] if result else None
 
 def write_last_downloaded_version(conn, version: str):
     cursor = conn.cursor()
-    cursor.execute("UPDATE last_downloaded_version SET version = %s", (version,))
+    cursor.execute("UPDATE oxide_ext_discord SET version = %s", (version,))
     conn.commit()
 
 def download_latest_release(repo_name: str, asset_name: str, access_token: str) -> (str, str):
@@ -52,8 +52,8 @@ def main():
     config = ConfigParser()
     config.read("config.ini")
 
-    repo_name = "OxideMod/Oxide.Rust"
-    asset_name = "Oxide.Rust-linux.zip"
+    repo_name = "dassjosh/Oxide.Ext.Discord"
+    asset_name = "Oxide.Ext.Discord-2.1.9.zip"
     s3_bucket = config.get("s3", "bucket")
     s3_object_key = config.get("s3", "object_key")
     github_access_token = config.get("github", "access_token")

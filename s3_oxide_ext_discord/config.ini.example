@@ -1,0 +1,17 @@
+[github]
+access_token = your_github_api_token
+
+[aws]
+access_key_id = your_aws_access_key_id
+secret_access_key = your_aws_secret_access_key
+region = your_aws_region
+
+[s3]
+bucket = your_s3_bucket
+object_key = path/to/save/Oxide.Ext.Discord.zip
+
+[mysql]
+host = your_mysql_host
+user = your_mysql_user
+password = your_mysql_password
+database = your_mysql_database
