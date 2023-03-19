@@ -1,12 +1,12 @@
 Ubuntu or Debian:
 ```bash
 sudo apt-get update
-sudo apt-get install -y python3-pip nginx
+sudo apt-get install -y python3-pip nginx python3-venv
 ```
 Arch Linux or SolidRusT-OS
 ```bash
 sudo pacman -Syu
-sudo pacman -S python-pip nginx
+sudo pacman -S python-pip nginx python-venv
 ```
 Clone this repo
 ```bash
@@ -17,9 +17,22 @@ git clone https://github.com/SolidRusT/srt-nolag-platform.git
 cd srt-nolag-platform/oxide_library
 ```
 
+
 ```bash
+python -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+Copy the example config to your own file called `config.ini`. Edit the placeholders with your real values.
+
+```bash
+cp config.ini.example config.ini
+```
+
+
+Make sure this SQl is on your database server
 
 ```sql
 CREATE DATABASE package_repo;
@@ -33,6 +46,14 @@ CREATE TABLE packages (
     package_description TEXT,
     timestamp DATETIME
 );
+```
+
+create a user for this app
+
+```sql
+CREATE USER 'package_repo'@'%' IDENTIFIED BY 'SomePassword123';
+GRANT ALL PRIVILEGES ON *.* TO 'package_repo'@'%';
+FLUSH PRIVILEGES;
 ```
 
 /etc/nginx/sites-available/package_repo:
@@ -59,9 +80,21 @@ sudo systemctl restart nginx
 - The Flask web application (app.py) queries the MySQL database and displays the package repository contents.
 - NGINX is configured to serve the Flask web application.
 
-To get started, run the Python script and the Flask application on the 'moros' server:
+To get started, run the Python script and the Flask application on the server:
 
 ```bash
+source venv/bin/activate
 python3 package_watcher.py /path/to/watch/folder &
 python3 app.py &
+```
+
+If you are on windows, then for the virtualenv part instead use:
+```bash
+venv\Scripts\activate
+```
+
+To exit the virtualenv
+
+```bash
+deactivate
 ```

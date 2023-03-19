@@ -1,12 +1,17 @@
 import os
 import re
 import sys
+import time
 import boto3
 import datetime
+import configparser
 import mysql.connector
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-import configparser
+
+# Load configuration values
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 db_config = {
     'host': config.get('database', 'host'),
@@ -48,19 +53,27 @@ class PackageEventHandler(FileSystemEventHandler):
             package_description, = desc.groups()
 
             # Store package info in MySQL
-            query = "INSERT INTO packages (package_name, package_author, package_version, package_description, timestamp) VALUES (%s, %s, %s, %s, %s)"
+            query = """
+            INSERT INTO packages (package_name, package_author, package_version, package_description, timestamp)
+            VALUES (%s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                package_author = VALUES(package_author),
+                package_version = VALUES(package_version),
+                package_description = VALUES(package_description),
+                timestamp = VALUES(timestamp)
+            """
             cursor.execute(query, (package_name, package_author, package_version, package_description, datetime.datetime.utcnow()))
             cnx.commit()
 
             # Upload to S3
             s3_key_cs = f"{s3_path}/plugins/{package_name}.cs"
-            s3.upload_file(path, s3_bucket,s3_key_cs)
+            s3.upload_file(path, s3_bucket, s3_key_cs)
 
             # Upload JSON to S3
             json_path = os.path.splitext(path)[0] + '.json'
             if os.path.exists(json_path):
-              s3_key_json = f"{s3_path}/configs/{package_name}.json"
-              s3.upload_file(json_path, s3_bucket, s3_key_json)
+                s3_key_json = f"{s3_path}/configs/{package_name}.json"
+                s3.upload_file(json_path, s3_bucket, s3_key_json)
 
             print(f"Package '{package_name}' processed and uploaded to S3")
 
