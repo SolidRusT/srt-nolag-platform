@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Config Values Manager</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Config Values Manager</h1>
+    <form id="add-config-value">
+        <input type="text" id="server_name" placeholder="Server Name" required>
+        <input type="text" id="key_name" placeholder="Key Name" required>
+        <input type="text" id="value" placeholder="Value" required>
+        <button type="submit">Add</button>
+    </form>
+    <hr>
+    <h2>Config Values</h2>
+    <table id="config-values">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Server Name</th>
+                <th>Key Name</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <script>
+        function loadConfigValues() {
+            $.get("/api/config_values", function(data) {
+                $("#config-values tbody").empty();
+                data.forEach(function(cv) {
+                    $("#config-values tbody").append(
+                        $("<tr>").append(
+                            $("<td>").text(cv.id),
+                            $("<td>").text(cv.server_name),
+                            $("<td>").text(cv.key_name),
+                            $("<td>").text(cv.value)
+                        )
+                    );
+                });
+            });
+        }
+
+        $(document).ready(function() {
+            loadConfigValues();
+
+            $("#add-config-value").submit(function(e) {
+                e.preventDefault();
+
+                let server_name = $("#server_name").val();
+                let key_name = $("#key_name").val();
+                let value = $("#value").val();
+
+                $.post("/api/config_values", {server_name: server_name, key_name: key_name, value: value}, function() {
+                    loadConfigValues();
+                    $("#server_name").val("");
+                    $("#key_name").val("");
+                    $("#value").val("");
+                });
+            });
+        });
+    </script>
+</body>
+</html>
