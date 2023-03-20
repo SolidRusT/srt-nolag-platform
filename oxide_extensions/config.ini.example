@@ -1,3 +1,0 @@
-[DEFAULT]
-game_root = </path/to/the/game/root>
-s3_repo = s3://<bucket-from-mod-library>
