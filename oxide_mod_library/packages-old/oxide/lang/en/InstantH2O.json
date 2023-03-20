@@ -1,6 +1,0 @@
-{
-  "Enabled": "<color=#ffc34d>InstantH2O</color>: Instantly fill water catchers <color=#b0fa66>Enabled</color>.",
-  "Disabled": "<color=#ffc34d>InstantH2O</color>: Instantly fill water catchers <color=#ff6666>Disabled</color>.",
-  "noPerm": "<color=#ffc34d>InstantH2O</color>: You do not have permissions to use this.",
-  "Reload": "<color=#ffc34d>InstantH2O</color>: Instantly fill water catchers <color=#ff6666>disabled</color> due to a plugin reload."
-}

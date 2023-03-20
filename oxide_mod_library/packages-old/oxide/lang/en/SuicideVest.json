@@ -1,8 +1,0 @@
-{
-  "Armed": "You have armed your vest and it will explode in {0} seconds.",
-  "UnArmed": "You have unarmed your vest.",
-  "CannotMoveWhilstArmed": "You cannot move your vest whilst it's armed!",
-  "NoPermission": "No permission!",
-  "InvalidPlayer": "Invalid player!",
-  "VestGiveSuccess": "You have given {0} a suicide vest"
-}

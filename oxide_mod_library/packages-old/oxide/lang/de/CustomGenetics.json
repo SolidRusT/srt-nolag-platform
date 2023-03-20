@@ -1,7 +1,0 @@
-{
-  "GenesSet": "Ihre Samengenetik wurde eingestellt ",
-  "NoPermmision": "Sie dürfen diesen Befehl nicht verwenden",
-  "WrongFormat": "Syntaxfehler, das richtige Format ist \"/setgenes GGGGYY\"",
-  "WrongGene": "Syntaxfehler, ungültiger Gentyp",
-  "WrongItem": "Der Gegenstand, den Sie halten, ist kein gültiger Samen"
-}

@@ -1,9 +1,0 @@
-{
-  "Null Crusher": "{0}'s skull was crushed",
-  "Crushed own skull": "{0} crushed their own skull!",
-  "Default Crush Message": "{0}'s skull was crushed by {1}",
-  "Skulls chat command reply": "You have crushed a total of {0} skulls",
-  "Economy Notice": "You received ${0} for crushing an enemies skull!",
-  "ScrapRewards Notice": "You received {0} scrap for crushing an enemies skull!",
-  "ServerRewards Notice": "You received {0} RP for crushing an enemies skull!"
-}

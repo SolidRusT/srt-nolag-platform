@@ -1,7 +1,0 @@
-{
-  "feesFraction": 0.05,
-  "startingBalance": 50,
-  "allowPlayerVendingMachines": false,
-  "resetOnMapWipe": true,
-  "interestRate": 0.1
-}

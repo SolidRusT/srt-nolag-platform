@@ -1,1 +1,0 @@
-<link href="rust-font.ttf" rel="preload" type="font/ttf" as="font" crossorigin="anonymous" />

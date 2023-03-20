@@ -1,7 +1,0 @@
-{
-  "GenesSet": "Your seeds genetics have been set to ",
-  "NoPermmision": "you're not allowed to use this command",
-  "WrongFormat": "Syntax error, proper format is \"/setgenes GGGGYY\"",
-  "WrongGene": "Syntax error, invalid gene type",
-  "WrongItem": "the item you're holding is not a valid seed"
-}

@@ -1,9 +1,0 @@
-{
-    "InvalidSyntax": "gc start|stop",
-    "Permission": "No permission",
-    "CreateEvent": "",
-    "CleanEvents": "",
-    "EventStarted": "",
-    "EventEnded": "",
-    "EventClear": ""
-}
