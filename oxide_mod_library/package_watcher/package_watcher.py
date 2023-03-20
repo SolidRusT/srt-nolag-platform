@@ -21,6 +21,11 @@ db_config = {
     'database': config.get('database', 'database')
 }
 
+# Load AWS credentials from the config file
+aws_access_key_id = config.get('aws', 'access_key_id')
+aws_secret_access_key = config.get('aws', 'secret_access_key')
+
+# Load bucket details
 s3_bucket = config.get('s3', 'bucket')
 s3_path = config.get('s3', 'path')
 
@@ -29,7 +34,11 @@ cnx = mysql.connector.connect(**db_config)
 cursor = cnx.cursor()
 
 # Configure Boto3 for interacting with S3
-s3 = boto3.client('s3')
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key
+)
 
 # Define the event handler for new files
 class PackageEventHandler(FileSystemEventHandler):
@@ -43,37 +52,28 @@ class PackageEventHandler(FileSystemEventHandler):
 
             # Parse Info and Description arrays
             info = re.search(r'\[Info\("(.*?)", "(.*?)", "(.*?)"\)\]', content)
-            desc = re.search(r'\[Description\("(.*?)"\)\]', content)
 
-            if not info or not desc:
+            if not info:
                 print(f"Invalid package format: {path}")
                 return
 
             package_name, package_author, package_version = info.groups()
-            package_description, = desc.groups()
 
             # Store package info in MySQL
             query = """
-            INSERT INTO packages (package_name, package_author, package_version, package_description, timestamp)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO packages (package_name, package_author, package_version, timestamp)
+            VALUES (%s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
                 package_author = VALUES(package_author),
                 package_version = VALUES(package_version),
-                package_description = VALUES(package_description),
                 timestamp = VALUES(timestamp)
             """
-            cursor.execute(query, (package_name, package_author, package_version, package_description, datetime.datetime.utcnow()))
+            cursor.execute(query, (package_name, package_author, package_version, datetime.datetime.utcnow()))
             cnx.commit()
 
             # Upload to S3
             s3_key_cs = f"{s3_path}/plugins/{package_name}.cs"
             s3.upload_file(path, s3_bucket, s3_key_cs)
-
-            # Upload JSON to S3
-            json_path = os.path.splitext(path)[0] + '.json'
-            if os.path.exists(json_path):
-                s3_key_json = f"{s3_path}/configs/{package_name}.json"
-                s3.upload_file(json_path, s3_bucket, s3_key_json)
 
             print(f"Package '{package_name}' processed and uploaded to S3")
 

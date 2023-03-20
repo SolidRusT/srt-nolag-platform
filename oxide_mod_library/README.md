@@ -13,15 +13,14 @@
 Make sure this SQl is on your database server
 
 ```sql
-CREATE DATABASE package_repo;
-USE package_repo;
+CREATE DATABASE IF NOT EXISTS oxide;
+USE oxide;
 
 CREATE TABLE IF NOT EXISTS packages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     package_name VARCHAR(255) UNIQUE NOT NULL,
     package_author VARCHAR(255) NOT NULL,
     package_version VARCHAR(255) NOT NULL,
-    package_description TEXT NOT NULL,
     timestamp TIMESTAMP NOT NULL
 );
 ```

@@ -5,6 +5,11 @@ user = <DB_USERNAME>
 password = <DB_PASSWORD>
 database = package_repo
 
+[aws]
+access_key_id = your_access_key_id
+secret_access_key = your_secret_access_key
+region = us-west-2
+
 [s3]
 bucket = <SOME_COOL_S3_BUCKET>
 path = /repo
